@@ -40,6 +40,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -71,9 +72,12 @@ public class MessagingServerControl extends StandardMBean implements
    private final HierarchicalRepository<Set<Role>> securityRepository;
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
    private final MessagingServer server;
+   private final MessageCounterManager messageCounterManager;
 
    private final NotificationBroadcasterSupport broadcaster;
    private AtomicLong notifSeq = new AtomicLong(0);
+
+   private boolean enableMessageCounters;
 
    // Static --------------------------------------------------------
 
@@ -83,7 +87,7 @@ public class MessagingServerControl extends StandardMBean implements
          StorageManager storageManager, Configuration configuration,
          HierarchicalRepository<Set<Role>> securityRepository,
          HierarchicalRepository<QueueSettings> queueSettingsRepository,
-         MessagingServer messagingServer) throws Exception
+         MessagingServer messagingServer, MessageCounterManager messageCounterManager) throws Exception
    {
       super(MessagingServerControlMBean.class);
       this.postOffice = postOffice;
@@ -92,6 +96,7 @@ public class MessagingServerControl extends StandardMBean implements
       this.securityRepository = securityRepository;
       this.queueSettingsRepository = queueSettingsRepository;
       this.server = messagingServer;
+      this.messageCounterManager = messageCounterManager;
 
       broadcaster = new NotificationBroadcasterSupport();
    }
@@ -371,6 +376,21 @@ public class MessagingServerControl extends StandardMBean implements
       return postOffice.removeDestination(new SimpleString(address), false);
    }
 
+   public void enableMessageCounters()
+   {
+      setEnableMessageCounters(true);
+   }
+
+   public void disableMessageCounters()
+   {
+      setEnableMessageCounters(false);
+   }
+      
+   public boolean isEnableMessageCounters()
+   {
+      return enableMessageCounters;
+   } 
+   
    // NotificationEmitter implementation ----------------------------
 
    public void removeNotificationListener(final NotificationListener listener,
@@ -411,6 +431,36 @@ public class MessagingServerControl extends StandardMBean implements
 
    // Private -------------------------------------------------------
 
+   private synchronized void setEnableMessageCounters(boolean enable) 
+   {
+      if (isStarted())
+      {
+         if (enableMessageCounters && !enable)
+         {
+            stopMessageCounters();
+         }
+         else if (!enableMessageCounters && enable)
+         {
+            startMessageCounters();
+         }        
+      }
+      enableMessageCounters = enable;
+   }
+
+   private void startMessageCounters()
+   {
+      messageCounterManager.start();
+   }
+   
+   private void stopMessageCounters()
+   {
+      messageCounterManager.stop();
+      
+      messageCounterManager.resetAllCounters();
+
+      messageCounterManager.resetAllCounterHistories();
+   }
+   
    private void sendNotification(final NotificationType type,
          final String message)
    {

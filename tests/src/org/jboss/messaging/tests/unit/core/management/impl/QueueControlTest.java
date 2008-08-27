@@ -48,6 +48,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.management.impl.QueueControl;
+import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -70,6 +71,13 @@ public class QueueControlTest extends TestCase
 
    // Attributes ----------------------------------------------------
 
+   private Queue queue;
+   private StorageManager storageManager;
+   private PostOffice postOffice;
+   private HierarchicalRepository<QueueSettings> repository;
+   private MessageCounter messageCounter;
+   private SimpleString queueName;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -78,298 +86,206 @@ public class QueueControlTest extends TestCase
 
    public void testGetName() throws Exception
    {
-      String name = randomString();
+      expect(queue.getName()).andReturn(queueName);
 
-      Queue queue = createMock(Queue.class);
-      expect(queue.getName()).andReturn(new SimpleString(name));
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
+      replayMockedAttributes();
 
-      replay(queue, storageManager, postOffice, repository);
+      QueueControlMBean control = createControl();
+      assertEquals(queueName.toString(), control.getName());
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
-      assertEquals(name, control.getName());
-
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testGetFilter() throws Exception
    {
       String filterStr = "color = 'green'";
-      Queue queue = createMock(Queue.class);
       Filter filter = createMock(Filter.class);
       expect(filter.getFilterString()).andReturn(new SimpleString(filterStr));
       expect(queue.getFilter()).andReturn(filter);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository, filter);
+      replayMockedAttributes();
+      replay(filter);
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertEquals(filterStr, control.getFilter());
 
-      verify(queue, storageManager, postOffice, repository, filter);
+      verifyMockedAttributes();
+      verify(filter);
    }
 
    public void testGetFilterWithNull() throws Exception
    {
-      Queue queue = createMock(Queue.class);
       expect(queue.getFilter()).andReturn(null);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertNull(control.getFilter());
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testIsClustered() throws Exception
    {
       boolean clustered = randomBoolean();
-
-      Queue queue = createMock(Queue.class);
       expect(queue.isClustered()).andReturn(clustered);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertEquals(clustered, control.isClustered());
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testIsDurable() throws Exception
    {
       boolean durable = randomBoolean();
-
-      Queue queue = createMock(Queue.class);
       expect(queue.isDurable()).andReturn(durable);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertEquals(durable, control.isDurable());
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testIsTemporary() throws Exception
    {
       boolean temp = randomBoolean();
-
-      Queue queue = createMock(Queue.class);
       expect(queue.isDurable()).andReturn(temp);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertEquals(temp, control.isTemporary());
 
       verify(queue, storageManager, postOffice, repository);
    }
-   
+
    public void testIsBackup() throws Exception
    {
       boolean backup = randomBoolean();
-
-      Queue queue = createMock(Queue.class);
       expect(queue.isBackup()).andReturn(backup);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertEquals(backup, control.isBackup());
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testGetMessageCount() throws Exception
    {
       int count = randomInt();
-
-      Queue queue = createMock(Queue.class);
       expect(queue.getMessageCount()).andReturn(count);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertEquals(count, control.getMessageCount());
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testGetMessagesAdded() throws Exception
    {
       int count = randomInt();
-
-      Queue queue = createMock(Queue.class);
       expect(queue.getMessagesAdded()).andReturn(count);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertEquals(count, control.getMessagesAdded());
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testGetMaxSizeBytes() throws Exception
    {
       int size = randomInt();
-
-      Queue queue = createMock(Queue.class);
       expect(queue.getMaxSizeBytes()).andReturn(size);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertEquals(size, control.getMaxSizeBytes());
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testGetSizeBytes() throws Exception
    {
       int size = randomInt();
-
-      Queue queue = createMock(Queue.class);
       expect(queue.getSizeBytes()).andReturn(size);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertEquals(size, control.getSizeBytes());
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testGetScheduledCount() throws Exception
    {
       int count = randomInt();
-
-      Queue queue = createMock(Queue.class);
       expect(queue.getScheduledCount()).andReturn(count);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertEquals(count, control.getScheduledCount());
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testGetConsumerCount() throws Exception
    {
       int count = randomInt();
-
-      Queue queue = createMock(Queue.class);
       expect(queue.getConsumerCount()).andReturn(count);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertEquals(count, control.getConsumerCount());
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testGetDeliveringCount() throws Exception
    {
       int count = randomInt();
-
-      Queue queue = createMock(Queue.class);
       expect(queue.getDeliveringCount()).andReturn(count);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertEquals(count, control.getDeliveringCount());
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testGetPersistenceID() throws Exception
    {
       long id = randomLong();
-
-      Queue queue = createMock(Queue.class);
       expect(queue.getPersistenceID()).andReturn(id);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertEquals(id, control.getPersistenceID());
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testGetDLQ() throws Exception
    {
-      String queueName = randomString();
       final String dlqName = randomString();
 
-      Queue queue = createMock(Queue.class);
-      expect(queue.getName()).andReturn(new SimpleString(queueName));
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
+      expect(queue.getName()).andReturn(queueName);
       QueueSettings queueSettings = new QueueSettings()
       {
          @Override
@@ -378,27 +294,22 @@ public class QueueControlTest extends TestCase
             return new SimpleString(dlqName);
          }
       };
-      expect(repository.getMatch(queueName)).andReturn(queueSettings);
+      expect(repository.getMatch(queueName.toString()))
+            .andReturn(queueSettings);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertEquals(dlqName, control.getDLQ());
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testGetExpiryQueue() throws Exception
    {
-      String queueName = randomString();
       final String expiryQueueName = randomString();
 
-      Queue queue = createMock(Queue.class);
-      expect(queue.getName()).andReturn(new SimpleString(queueName));
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
+      expect(queue.getName()).andReturn(queueName);
       QueueSettings queueSettings = new QueueSettings()
       {
          @Override
@@ -407,47 +318,37 @@ public class QueueControlTest extends TestCase
             return new SimpleString(expiryQueueName);
          }
       };
-      expect(repository.getMatch(queueName)).andReturn(queueSettings);
+      expect(repository.getMatch(queueName.toString()))
+            .andReturn(queueSettings);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertEquals(expiryQueueName, control.getExpiryQueue());
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testRemoveAllMessages() throws Exception
    {
-      Queue queue = createMock(Queue.class);
-      StorageManager storageManager = createMock(StorageManager.class);
       queue.deleteAllReferences(storageManager);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       control.removeAllMessages();
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testRemoveAllMessagesThrowsException() throws Exception
    {
-      Queue queue = createMock(Queue.class);
-      StorageManager storageManager = createMock(StorageManager.class);
       queue.deleteAllReferences(storageManager);
       expectLastCall().andThrow(new MessagingException());
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       try
       {
          control.removeAllMessages();
@@ -457,45 +358,33 @@ public class QueueControlTest extends TestCase
 
       }
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testRemoveMessage() throws Exception
    {
       long messageID = randomLong();
       boolean deleted = randomBoolean();
-
-      Queue queue = createMock(Queue.class);
-      StorageManager storageManager = createMock(StorageManager.class);
       expect(queue.deleteReference(messageID, storageManager)).andReturn(
             deleted);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertEquals(deleted, control.removeMessage(messageID));
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testRemoveMessageThrowsException() throws Exception
    {
       long messageID = randomLong();
-
-      Queue queue = createMock(Queue.class);
-      StorageManager storageManager = createMock(StorageManager.class);
       expect(queue.deleteReference(messageID, storageManager)).andThrow(
             new MessagingException());
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       try
       {
          control.removeMessage(messageID);
@@ -505,7 +394,7 @@ public class QueueControlTest extends TestCase
 
       }
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testListMessages() throws Exception
@@ -527,16 +416,12 @@ public class QueueControlTest extends TestCase
       expect(message.getPropertyNames()).andReturn(new HashSet<SimpleString>());
       expect(ref.getMessage()).andReturn(message);
       refs.add(ref);
-      Queue queue = createMock(Queue.class);
-      StorageManager storageManager = createMock(StorageManager.class);
       expect(queue.list(isA(Filter.class))).andReturn(refs);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository, ref, message);
+      replayMockedAttributes();
+      replay(ref, message);
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       TabularData data = control.listMessages(filterStr);
       assertEquals(1, data.size());
       CompositeData info = data.get(new Object[] { message.getMessageID() });
@@ -551,48 +436,37 @@ public class QueueControlTest extends TestCase
       assertEquals(message.isExpired(), info.get("expired"));
       assertEquals(message.getExpiration(), info.get("expiration"));
 
-      verify(queue, storageManager, postOffice, repository, ref, message);
+      verifyMockedAttributes();
+      verify(ref, message);
    }
 
    public void testExpireMessageWithMessageID() throws Exception
    {
       long messageID = randomLong();
-
-      Queue queue = createMock(Queue.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
       expect(
             queue.expireMessage(messageID, storageManager, postOffice,
                   repository)).andReturn(true);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertTrue(control.expireMessage(messageID));
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testExpireMessageWithNoMatch() throws Exception
    {
       long messageID = randomLong();
-
-      Queue queue = createMock(Queue.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
       expect(
             queue.expireMessage(messageID, storageManager, postOffice,
                   repository)).andReturn(false);
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertFalse(control.expireMessage(messageID));
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testExpireMessagesWithFilter() throws Exception
@@ -611,11 +485,7 @@ public class QueueControlTest extends TestCase
       expect(ref_2.getMessage()).andReturn(message_2);
       refs.add(ref_1);
       refs.add(ref_2);
-      Queue queue = createMock(Queue.class);
-      StorageManager storageManager = createMock(StorageManager.class);
       expect(queue.list(isA(Filter.class))).andReturn(refs);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
       expect(
             queue.expireMessage(messageID_1, storageManager, postOffice,
                   repository)).andReturn(true);
@@ -623,55 +493,45 @@ public class QueueControlTest extends TestCase
             queue.expireMessage(messageID_2, storageManager, postOffice,
                   repository)).andReturn(true);
 
-      replay(queue, storageManager, postOffice, repository, ref_1, ref_2,
-            message_1, message_2);
+      replayMockedAttributes();
+      replay(ref_1, ref_2, message_1, message_2);
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertEquals(2, control.expireMessages("foo = true"));
 
-      verify(queue, storageManager, postOffice, repository, ref_1, ref_2,
-            message_1, message_2);
+      verifyMockedAttributes();
+      verify(ref_1, ref_2, message_1, message_2);
    }
 
    public void testMoveMessage() throws Exception
    {
       long messageID = randomLong();
       SimpleString otherQueueName = randomSimpleString();
-      Queue queue = createMock(Queue.class);
       Binding otherBinding = createMock(Binding.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
       expect(postOffice.getBinding(otherQueueName)).andReturn(otherBinding);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
       expect(
             queue.moveMessage(messageID, otherBinding, storageManager,
                   postOffice)).andReturn(true);
 
-      replay(queue, storageManager, postOffice, repository, otherBinding);
+      replayMockedAttributes();
+      replay(otherBinding);
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertTrue(control.moveMessage(messageID, otherQueueName.toString()));
 
-      verify(queue, storageManager, postOffice, repository, otherBinding);
+      verifyMockedAttributes();
+      verify(otherBinding);
    }
 
    public void testMoveMessageWithNoQueue() throws Exception
    {
       long messageID = randomLong();
       SimpleString otherQueueName = randomSimpleString();
-
-      Queue queue = createMock(Queue.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
       expect(postOffice.getBinding(otherQueueName)).andReturn(null);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControl control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControl control = createControl();
       try
       {
          control.moveMessage(messageID, otherQueueName.toString());
@@ -680,28 +540,27 @@ public class QueueControlTest extends TestCase
       {
 
       }
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testMoveMessageWithNoMessageID() throws Exception
    {
       long messageID = randomLong();
       SimpleString otherQueueName = randomSimpleString();
-      Queue queue = createMock(Queue.class);
       Binding otherBinding = createMock(Binding.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
       expect(postOffice.getBinding(otherQueueName)).andReturn(otherBinding);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
-      expect(queue.moveMessage(messageID, otherBinding, storageManager, postOffice)).andReturn(false);
-      
-      replay(queue, storageManager, postOffice, repository, otherBinding);
+      expect(
+            queue.moveMessage(messageID, otherBinding, storageManager,
+                  postOffice)).andReturn(false);
 
-      QueueControl control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      replayMockedAttributes();
+      replay(otherBinding);
+
+      QueueControl control = createControl();
       assertFalse(control.moveMessage(messageID, otherQueueName.toString()));
 
-      verify(queue, storageManager, postOffice, repository, otherBinding);
+      verifyMockedAttributes();
+      verify(otherBinding);
    }
 
    public void testChangeMessagePriority() throws Exception
@@ -711,34 +570,28 @@ public class QueueControlTest extends TestCase
       List<MessageReference> refs = new ArrayList<MessageReference>();
       MessageReference ref = createMock(MessageReference.class);
       refs.add(ref);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
-      Queue queue = createMock(Queue.class);
-      expect(queue.changeMessagePriority(messageID, newPriority, storageManager, postOffice, repository)).andReturn(true);
+      expect(
+            queue.changeMessagePriority(messageID, newPriority, storageManager,
+                  postOffice, repository)).andReturn(true);
 
-      replay(queue, storageManager, postOffice, repository, ref);
+      replayMockedAttributes();
+      replay(ref);
 
-      QueueControl control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControl control = createControl();
       assertTrue(control.changeMessagePriority(messageID, newPriority));
 
-      verify(queue, storageManager, postOffice, repository, ref);
+      verifyMockedAttributes();
+      verify(ref);
    }
 
    public void testChangeMessagePriorityWithInvalidPriorityValues()
          throws Exception
    {
       long messageID = randomLong();
-      Queue queue = createMock(Queue.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControl control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControl control = createControl();
 
       try
       {
@@ -756,75 +609,102 @@ public class QueueControlTest extends TestCase
       {
       }
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testChangeMessagePriorityWithNoMessageID() throws Exception
    {
       long messageID = randomLong();
       byte newPriority = 5;
-      Queue queue = createMock(Queue.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
-      expect(queue.changeMessagePriority(messageID, newPriority, storageManager, postOffice, repository)).andReturn(false);
-      
-      replay(queue, storageManager, postOffice, repository);
+      expect(
+            queue.changeMessagePriority(messageID, newPriority, storageManager,
+                  postOffice, repository)).andReturn(false);
 
-      QueueControl control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      replayMockedAttributes();
+
+      QueueControl control = createControl();
       assertFalse(control.changeMessagePriority(messageID, newPriority));
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testSendMessageToDLQ() throws Exception
    {
       long messageID = randomLong();
-
-      Queue queue = createMock(Queue.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
       expect(
             queue.sendMessageToDLQ(messageID, storageManager, postOffice,
                   repository)).andReturn(true);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertTrue(control.sendMessageToDLQ(messageID));
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    public void testSendMessageToDLQWithNoMessageID() throws Exception
    {
       long messageID = randomLong();
-
-      Queue queue = createMock(Queue.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      HierarchicalRepository<QueueSettings> repository = createMock(HierarchicalRepository.class);
       expect(
             queue.sendMessageToDLQ(messageID, storageManager, postOffice,
                   repository)).andReturn(false);
 
-      replay(queue, storageManager, postOffice, repository);
+      replayMockedAttributes();
 
-      QueueControlMBean control = new QueueControl(queue, storageManager,
-            postOffice, repository);
+      QueueControlMBean control = createControl();
       assertFalse(control.sendMessageToDLQ(messageID));
 
-      verify(queue, storageManager, postOffice, repository);
+      verifyMockedAttributes();
    }
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      queueName = randomSimpleString();
+      queue = createMock(Queue.class);
+      storageManager = createMock(StorageManager.class);
+      postOffice = createMock(PostOffice.class);
+      repository = createMock(HierarchicalRepository.class);
+      messageCounter = new MessageCounter(queueName.toString(), null, queue,
+            false, false, 10);
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      queue = null;
+      storageManager = null;
+      postOffice = null;
+      repository = null;
+      messageCounter = null;
+
+      super.tearDown();
+   }
+
    // Private -------------------------------------------------------
+
+   private void replayMockedAttributes()
+   {
+      replay(queue, storageManager, postOffice, repository);
+   }
+
+   private void verifyMockedAttributes()
+   {
+      verify(queue, storageManager, postOffice, repository);
+   }
+
+   private QueueControl createControl() throws Exception
+   {
+      return new QueueControl(queue, storageManager, postOffice, repository,
+            messageCounter);
+   }
 
    // Inner classes -------------------------------------------------
 }

@@ -114,4 +114,10 @@ public interface MessagingServerControlMBean
    boolean removeAddress(
          @Parameter(name = "address", desc = "The address to remove") String address)
          throws Exception;
+
+   void enableMessageCounters();
+
+   void disableMessageCounters();
+
+   boolean isEnableMessageCounters();
 }

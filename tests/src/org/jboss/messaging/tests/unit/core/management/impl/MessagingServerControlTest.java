@@ -54,6 +54,7 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.management.impl.MessagingServerControl;
 import org.jboss.messaging.core.management.impl.MessagingServerControl.NotificationType;
+import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -85,6 +86,7 @@ public class MessagingServerControlTest extends TestCase
    private HierarchicalRepository<Set<Role>> securityRepository;
    private HierarchicalRepository<QueueSettings> queueSettingsRepository;
    private MessagingServer server;
+   private MessageCounterManager messageCounterManager;
 
    // Constants -----------------------------------------------------
 
@@ -112,14 +114,12 @@ public class MessagingServerControlTest extends TestCase
       boolean started = randomBoolean();
 
       expect(server.isStarted()).andStubReturn(started);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(started, control.isStarted());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testGetVersion() throws Exception
@@ -129,16 +129,14 @@ public class MessagingServerControlTest extends TestCase
       Version version = createMock(Version.class);
       expect(version.getFullVersion()).andReturn(fullVersion);
       expect(server.getVersion()).andStubReturn(version);
-      replayMocks();
+      replayMockedAttributes();
       replay(version);
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(fullVersion, control.getVersion());
 
       verify(version);
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testGetBindingsDirectory() throws Exception
@@ -146,14 +144,12 @@ public class MessagingServerControlTest extends TestCase
       String dir = randomString();
 
       expect(configuration.getBindingsDirectory()).andReturn(dir);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(dir, control.getBindingsDirectory());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testGetInterceptorClassNames() throws Exception
@@ -162,14 +158,12 @@ public class MessagingServerControlTest extends TestCase
       list.add(randomString());
 
       expect(configuration.getInterceptorClassNames()).andReturn(list);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(list, control.getInterceptorClassNames());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testGetJournalDirectory() throws Exception
@@ -177,14 +171,12 @@ public class MessagingServerControlTest extends TestCase
       String dir = randomString();
 
       expect(configuration.getJournalDirectory()).andReturn(dir);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(dir, control.getJournalDirectory());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testGetJournalFileSize() throws Exception
@@ -192,14 +184,12 @@ public class MessagingServerControlTest extends TestCase
       int size = randomInt();
 
       expect(configuration.getJournalFileSize()).andReturn(size);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(size, control.getJournalFileSize());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testGetJournalMaxAIO() throws Exception
@@ -207,14 +197,12 @@ public class MessagingServerControlTest extends TestCase
       int max = randomInt();
 
       expect(configuration.getJournalMaxAIO()).andReturn(max);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(max, control.getJournalMaxAIO());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testGetJournalMinFiles() throws Exception
@@ -222,27 +210,23 @@ public class MessagingServerControlTest extends TestCase
       int minFiles = randomInt();
 
       expect(configuration.getJournalMinFiles()).andReturn(minFiles);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(minFiles, control.getJournalMinFiles());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testGetJournalType() throws Exception
    {
       expect(configuration.getJournalType()).andReturn(JournalType.ASYNCIO);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(JournalType.ASYNCIO.toString(), control.getJournalType());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testGetKeyStorePath() throws Exception
@@ -250,14 +234,12 @@ public class MessagingServerControlTest extends TestCase
       String path = randomString();
 
       expect(configuration.getKeyStorePath()).andReturn(path);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(path, control.getKeyStorePath());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testGetLocation() throws Exception
@@ -265,14 +247,12 @@ public class MessagingServerControlTest extends TestCase
       Location location = new LocationImpl(TransportType.TCP, "localhost");
 
       expect(configuration.getLocation()).andReturn(location);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(location.toString(), control.getLocation());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testGetScheduledThreadPoolMaxSize() throws Exception
@@ -280,14 +260,12 @@ public class MessagingServerControlTest extends TestCase
       int size = randomInt();
 
       expect(configuration.getScheduledThreadPoolMaxSize()).andReturn(size);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(size, control.getScheduledThreadPoolMaxSize());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testGetSecurityInvalidationInterval() throws Exception
@@ -296,14 +274,12 @@ public class MessagingServerControlTest extends TestCase
 
       expect(configuration.getSecurityInvalidationInterval()).andReturn(
             interval);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(interval, control.getSecurityInvalidationInterval());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testGetTrustStorePath() throws Exception
@@ -311,14 +287,12 @@ public class MessagingServerControlTest extends TestCase
       String path = randomString();
 
       expect(configuration.getTrustStorePath()).andReturn(path);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(path, control.getTrustStorePath());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testIsClustered() throws Exception
@@ -326,14 +300,12 @@ public class MessagingServerControlTest extends TestCase
       boolean clustered = randomBoolean();
 
       expect(configuration.isClustered()).andReturn(clustered);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(clustered, control.isClustered());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testIsCreateBindingsDir() throws Exception
@@ -341,14 +313,12 @@ public class MessagingServerControlTest extends TestCase
       boolean createBindingsDir = randomBoolean();
 
       expect(configuration.isCreateBindingsDir()).andReturn(createBindingsDir);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(createBindingsDir, control.isCreateBindingsDir());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testIsCreateJournalDir() throws Exception
@@ -356,14 +326,12 @@ public class MessagingServerControlTest extends TestCase
       boolean createJournalDir = randomBoolean();
 
       expect(configuration.isCreateJournalDir()).andReturn(createJournalDir);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(createJournalDir, control.isCreateJournalDir());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testIsJournalSyncNonTransactional() throws Exception
@@ -372,15 +340,13 @@ public class MessagingServerControlTest extends TestCase
 
       expect(configuration.isJournalSyncNonTransactional()).andReturn(
             journalSyncNonTransactional);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(journalSyncNonTransactional, control
             .isJournalSyncNonTransactional());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testIsJournalSyncTransactional() throws Exception
@@ -389,15 +355,13 @@ public class MessagingServerControlTest extends TestCase
 
       expect(configuration.isJournalSyncTransactional()).andReturn(
             journalSyncTransactional);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(journalSyncTransactional, control
             .isJournalSyncTransactional());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testIsRequireDestinations() throws Exception
@@ -406,14 +370,12 @@ public class MessagingServerControlTest extends TestCase
 
       expect(configuration.isRequireDestinations()).andReturn(
             requireDestinations);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(requireDestinations, control.isRequireDestinations());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testIsSSLEnabled() throws Exception
@@ -421,14 +383,12 @@ public class MessagingServerControlTest extends TestCase
       boolean sslEnabled = randomBoolean();
 
       expect(configuration.isSSLEnabled()).andReturn(sslEnabled);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(sslEnabled, control.isSSLEnabled());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testIsSecurityEnabled() throws Exception
@@ -436,14 +396,12 @@ public class MessagingServerControlTest extends TestCase
       boolean securityEnabled = randomBoolean();
 
       expect(configuration.isSecurityEnabled()).andReturn(securityEnabled);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(securityEnabled, control.isSecurityEnabled());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testAddDestination() throws Exception
@@ -453,11 +411,9 @@ public class MessagingServerControlTest extends TestCase
 
       expect(postOffice.addDestination(new SimpleString(address), false))
             .andReturn(added);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       mbeanServer.registerMBean(control, serverON);
 
       final CountDownLatch latch = new CountDownLatch(1);
@@ -471,7 +427,7 @@ public class MessagingServerControlTest extends TestCase
             MessagingServerControl.NotificationType.ADDRESS_ADDED, listener,
             latch);
 
-      verifyMocks();
+      verifyMockedAttributes();
 
       mbeanServer.removeNotificationListener(serverON, listener);
    }
@@ -483,11 +439,9 @@ public class MessagingServerControlTest extends TestCase
 
       expect(postOffice.removeDestination(new SimpleString(address), false))
             .andReturn(removed);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       mbeanServer.registerMBean(control, serverON);
 
       final CountDownLatch latch = new CountDownLatch(1);
@@ -501,7 +455,7 @@ public class MessagingServerControlTest extends TestCase
             MessagingServerControl.NotificationType.ADDRESS_REMOVED, listener,
             latch);
 
-      verifyMocks();
+      verifyMockedAttributes();
 
       mbeanServer.removeNotificationListener(serverON, listener);
    }
@@ -516,15 +470,13 @@ public class MessagingServerControlTest extends TestCase
       expect(
             postOffice.addBinding(new SimpleString(address), new SimpleString(
                   name), null, true)).andReturn(newBinding);
-      replayMocks();
+      replayMockedAttributes();
       replay(newBinding);
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       control.createQueue(address, name);
 
-      verifyMocks();
+      verifyMockedAttributes();
       verify(newBinding);
    }
 
@@ -538,12 +490,10 @@ public class MessagingServerControlTest extends TestCase
       expect(
             postOffice.addBinding(new SimpleString(address), new SimpleString(
                   name), null, true)).andReturn(newBinding);
-      replayMocks();
+      replayMockedAttributes();
       replay(newBinding);
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       mbeanServer.registerMBean(control, serverON);
 
       final CountDownLatch latch = new CountDownLatch(1);
@@ -560,7 +510,7 @@ public class MessagingServerControlTest extends TestCase
       mbeanServer.removeNotificationListener(serverON, listener);
 
       verify(newBinding);
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testCreateQueueWithAllParameters() throws Exception
@@ -576,16 +526,14 @@ public class MessagingServerControlTest extends TestCase
             postOffice.addBinding(eq(new SimpleString(address)),
                   eq(new SimpleString(name)), isA(Filter.class), eq(durable)
                   )).andReturn(newBinding);
-      replayMocks();
+      replayMockedAttributes();
       replay(newBinding);
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       control.createQueue(address, name, filter, durable);
 
       verify(newBinding);
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testCreateQueueWithEmptyFilter() throws Exception
@@ -601,15 +549,13 @@ public class MessagingServerControlTest extends TestCase
             postOffice.addBinding(new SimpleString(address), new SimpleString(
                   name), null, durable)).andReturn(newBinding);
       replay(newBinding);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       control.createQueue(address, name, filter, durable);
 
       verify(newBinding);
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testCreateQueueWithNullFilter() throws Exception
@@ -625,15 +571,13 @@ public class MessagingServerControlTest extends TestCase
             postOffice.addBinding(new SimpleString(address), new SimpleString(
                   name), null, durable)).andReturn(newBinding);
       replay(newBinding);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       control.createQueue(address, name, filter, durable);
 
       verify(newBinding);
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    public void testDestroyQueueAndReceiveNotification() throws Exception
@@ -648,12 +592,10 @@ public class MessagingServerControlTest extends TestCase
       queue.deleteAllReferences(storageManager);
       expect(postOffice.removeBinding(new SimpleString(name))).andReturn(
             binding);
-      replayMocks();
+      replayMockedAttributes();
       replay(binding, queue);
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       mbeanServer.registerMBean(control, serverON);
 
       final CountDownLatch latch = new CountDownLatch(1);
@@ -668,7 +610,7 @@ public class MessagingServerControlTest extends TestCase
             latch);
 
       verify(binding, queue);
-      verifyMocks();
+      verifyMockedAttributes();
 
       mbeanServer.removeNotificationListener(serverON, listener);
    }
@@ -678,14 +620,12 @@ public class MessagingServerControlTest extends TestCase
       int count = randomInt();
 
       expect(server.getConnectionCount()).andReturn(count);
-      replayMocks();
+      replayMockedAttributes();
 
-      MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = createControl();
       assertEquals(count, control.getConnectionCount());
 
-      verifyMocks();
+      verifyMockedAttributes();
    }
 
    // Package protected ---------------------------------------------
@@ -706,6 +646,7 @@ public class MessagingServerControlTest extends TestCase
       securityRepository = createMock(HierarchicalRepository.class);
       queueSettingsRepository = createMock(HierarchicalRepository.class);
       server = createMock(MessagingServer.class);
+      messageCounterManager = createMock(MessageCounterManager.class);
    }
 
    @Override
@@ -725,22 +666,31 @@ public class MessagingServerControlTest extends TestCase
       securityRepository = null;
       queueSettingsRepository = null;
       server = null;
+      messageCounterManager = null;
 
       super.tearDown();
    }
 
    // Private -------------------------------------------------------
 
-   private void replayMocks()
+   private MessagingServerControl createControl() throws Exception
    {
-      replay(postOffice, storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+      MessagingServerControl control = new MessagingServerControl(postOffice,
+            storageManager, configuration, securityRepository,
+            queueSettingsRepository, server, messageCounterManager);
+      return control;
    }
 
-   private void verifyMocks()
+   private void replayMockedAttributes()
+   {
+      replay(postOffice, storageManager, configuration, securityRepository,
+            queueSettingsRepository, server, messageCounterManager);
+   }
+
+   private void verifyMockedAttributes()
    {
       verify(postOffice, storageManager, configuration, securityRepository,
-            queueSettingsRepository, server);
+            queueSettingsRepository, server, messageCounterManager);
    }
 
    // Inner classes -------------------------------------------------

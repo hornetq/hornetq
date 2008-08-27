@@ -1,25 +1,24 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
-
+* JBoss, Home of Professional Open Source
+* Copyright 2005, JBoss Inc., and individual contributors as indicated
+* by the @authors tag. See the copyright.txt in the distribution for a
+* full listing of individual contributors.
+*
+* This is free software; you can redistribute it and/or modify it
+* under the terms of the GNU Lesser General Public License as
+* published by the Free Software Foundation; either version 2.1 of
+* the License, or (at your option) any later version.
+*
+* This software is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this software; if not, write to the Free
+* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+*/
 package org.jboss.messaging.core.messagecounter;
 
 import java.text.DateFormat;
@@ -27,8 +26,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.List;
 
-import org.jboss.messaging.core.logging.Logger;
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.server.Queue;
 
 /**
@@ -51,42 +52,85 @@ public class MessageCounter
 
    // destination related information
    private String destName;
+   private String destSubscription;
+   private boolean destTopic;
    private boolean destDurable;
 
    // destination queue
    private Queue destQueue;
 
    // counter
+   private int countTotal;
+   private int countTotalLast;
+   private int depthLast;
    private long timeLastUpdate;
 
    // per hour day counter history
-   private int messageCount;
    private int dayCounterMax;
-   private ArrayList<DayCounter> dayCounter;
+   private ArrayList dayCounter;
+   
+   /**
+    * Get a list of message statistics from a list of message counters
+    * 
+    * @param counter the message counters
+    * @return the message statistics
+    * @throws Exception for any error
+    */
+   public static List getMessageStatistics(List counters) throws Exception
+   {
+      List list = new ArrayList(counters.size());
+      
+      Iterator iter = counters.iterator();
+      
+      while (iter.hasNext())
+      {
+         MessageCounter counter = (MessageCounter)iter.next();
+         
+         MessageStatistics stats = new MessageStatistics();
+         stats.setName(counter.getDestinationName());
+         stats.setSubscriptionID(counter.getDestinationSubscription());
+         stats.setTopic(counter.getDestinationTopic());
+         stats.setDurable(counter.getDestinationDurable());
+         stats.setCount(counter.getCount());
+         stats.setCountDelta(counter.getCountDelta());
+         stats.setDepth(counter.getMessageCount());
+         stats.setDepthDelta(counter.getMessageCountDelta());
+         stats.setTimeLastUpdate(counter.getLastUpdate());
+         
+         list.add(stats);
+      }
+      return list;
+   }
 
    /**
     *    Constructor
     *
     * @param name             destination name
+    * @param subscription     subscription name
     * @param queue            internal queue object
+    * @param topic            topic destination flag
     * @param durable          durable subsciption flag
     * @param daycountmax      max message history day count
     */
    public MessageCounter(String name,
+                         String subscription,
                          Queue queue,
+                         boolean topic,
                          boolean durable,
                          int daycountmax)
    {
       // store destination related information
       destName = name;
+      destSubscription = subscription;
+      destTopic = topic;
       destDurable = durable;
       destQueue = queue;      
-      messageCount = destQueue.getMessageCount();
+
       // initialize counter
       resetCounter();
 
       // initialize message history
-      dayCounter = new ArrayList<DayCounter>();
+      dayCounter = new ArrayList();
 
       setHistoryLimit(daycountmax);
    }
@@ -104,14 +148,21 @@ public class MessageCounter
    /*
     * This method is called periodically to update statistics from the queue
     */
-   public synchronized void sample()
+   public synchronized void onTimer()
    {
+      int latestMessagesAdded = destQueue.getMessagesAdded();
+      
+      int newMessagesAdded = latestMessagesAdded - lastMessagesAdded;
+      
+      countTotal += newMessagesAdded;
+      
+      lastMessagesAdded = latestMessagesAdded;
       
       //update timestamp
       timeLastUpdate = System.currentTimeMillis();
       
       // update message history
-      updateHistory(true);
+      updateHistory(newMessagesAdded);
    }
 
    /**
@@ -125,6 +176,26 @@ public class MessageCounter
    }
 
    /**
+    * Gets the related destination subscription
+    *
+    * @return String    destination name
+    */
+   public String getDestinationSubscription()
+   {
+      return destSubscription;
+   }
+
+   /**
+    * Gets the related destination topic flag
+    *
+    * @return boolean    true: topic destination, false: queue destination
+    */
+   public boolean getDestinationTopic()
+   {
+      return destTopic;
+   }
+
+   /**
     * Gets the related destination durable subscription flag
     *
     * @return boolean   true : durable subscription,
@@ -135,14 +206,29 @@ public class MessageCounter
       return destDurable;
    }
 
-   public int getTotalMessages()
+   /**
+    * Gets the total message count since startup or
+    * last counter reset
+    *
+    * @return int    message count
+    */
+   public int getCount()
    {
-      return this.destQueue.getMessagesAdded();
+      return countTotal;
    }
 
-   public int getCurrentMessageCount()
+   /**
+    * Gets the message count delta since last method call
+    *
+    * @return int    message count delta
+    */
+   public int getCountDelta()
    {
-      return this.destQueue.getMessageCount();
+      int delta = countTotal - countTotalLast;
+
+      countTotalLast = countTotal;
+
+      return delta;
    }
 
    /**
@@ -153,9 +239,24 @@ public class MessageCounter
     */
    public int getMessageCount()
    {
-      return destQueue.getMessagesAdded() - messageCount;
+      return destQueue.getMessageCount();
    }
 
+   /**
+    * Gets the message count delta of pending messages
+    * since last method call. Therefore
+    *
+    * @return int message queue depth delta
+    */
+   public int getMessageCountDelta()
+   {
+      int current = destQueue.getMessageCount();
+      int delta = current - depthLast;
+
+      depthLast = current;
+
+      return delta;
+   }
 
    /**
     * Gets the timestamp of the last message add
@@ -172,7 +273,9 @@ public class MessageCounter
     */
    public void resetCounter()
    {
-      messageCount = destQueue.getMessageCount();
+      countTotal = 0;
+      countTotalLast = 0;
+      depthLast = 0;
       timeLastUpdate = 0;
    }
 
@@ -188,20 +291,45 @@ public class MessageCounter
    {
       StringBuffer ret = new StringBuffer();
 
+      // Topic/Queue
+      if (destTopic)
+         ret.append("Topic,");
+      else
+         ret.append("Queue,");
+
       // name 
       ret.append(destName).append(",");
 
+      // subscription
+      if (destSubscription != null)
+         ret.append(destSubscription).append(",");
+      else
+         ret.append("-,");
+
+      // Durable subscription
+      if (destTopic)
+      {
+         // Topic
+         if (destDurable)
+            ret.append("true,");
+         else
+            ret.append("false,");
+      }
+      else
+      {
+         // Queue
+         ret.append("-,");
+      }
+
       // counter values
-      ret.append("total messages received = ").append(getTotalMessages()).append(",").
-              append("current messages in queue = ").append(getCurrentMessageCount()).append(",").
-              append("current message count = ").append(getMessageCount()).append(",");
+      ret.append(getCount()).append(",").append(getCountDelta()).append(",").append(getMessageCount()).append(",").append(getMessageCountDelta()).append(",");
 
       // timestamp last counter update
       if (timeLastUpdate > 0)
       {
          DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
 
-         ret.append("last reset at ").append(dateFormat.format(new Date(timeLastUpdate)));
+         ret.append(dateFormat.format(new Date(timeLastUpdate)));
       }
       else
       {
@@ -274,8 +402,10 @@ public class MessageCounter
 
    /**
     * Update message counter history
+    * 
+    * @param newMessages number of new messages to add to the latest day counter
     */
-   private void updateHistory(boolean incrementCounter)
+   private void updateHistory(int newMessages)
    {
       // check history activation
       if (dayCounter.isEmpty())
@@ -286,7 +416,7 @@ public class MessageCounter
       // calculate day difference between current date and date of last day counter entry
       synchronized (dayCounter)
       {
-         DayCounter counterLast = dayCounter.get(dayCounter.size() - 1);
+         DayCounter counterLast = (DayCounter) dayCounter.get(dayCounter.size() - 1);
 
          GregorianCalendar calNow = new GregorianCalendar();
          GregorianCalendar calLast = counterLast.getDate();
@@ -340,8 +470,8 @@ public class MessageCounter
          }
 
          // update last day counter entry
-         counterLast = dayCounter.get(dayCounter.size() - 1);
-         counterLast.updateDayCounter(incrementCounter);
+         counterLast = (DayCounter) dayCounter.get(dayCounter.size() - 1);
+         counterLast.updateDayCounter(newMessages);
       }
    }
 
@@ -356,6 +486,13 @@ public class MessageCounter
       setHistoryLimit(max);
    }
 
+   public List<DayCounter> getHistory()
+   {
+      updateHistory(0);
+      
+      return new ArrayList<DayCounter>(dayCounter);
+   }
+   
    /**
     * Get message counter history data as string in format
     * 
@@ -373,7 +510,7 @@ public class MessageCounter
       String ret = "";
 
       // ensure history counters are up to date
-      updateHistory(false);
+      updateHistory(0);
 
       // compile string       
       synchronized (dayCounter)
@@ -382,8 +519,10 @@ public class MessageCounter
          ret += dayCounter.size() + "\n";
 
          // following lines: day counter data
-         for (DayCounter counter : dayCounter)
+         for (int i = 0; i < dayCounter.size(); i++)
          {
+            DayCounter counter = (DayCounter) dayCounter.get(i);
+
             ret += counter.getDayCounterAsString() + "\n";
          }
       }
@@ -394,7 +533,7 @@ public class MessageCounter
    /**
     * Internal day counter class for one day hour based counter history
     */
-   private static class DayCounter
+   public static class DayCounter
    {
       static final int HOURS = 24;
 
@@ -441,17 +580,22 @@ public class MessageCounter
        *
        * @return GregorianCalendar        day counter date
        */
-      GregorianCalendar getDate()
+      public GregorianCalendar getDate()
       {
          return (GregorianCalendar) date.clone();
       }
 
+      public int[] getCounters()
+      {
+          return counters;
+      }
+      
       /**
        * Update day counter hour array elements  
        *
-       * @param incrementCounter      update current hour counter
+       * @param newMessages number of new messages since the counter was last updated.
        */
-      void updateDayCounter(boolean incrementCounter)
+      void updateDayCounter(int newMessages)
       {
          // get the current hour of the day
          GregorianCalendar cal = new GregorianCalendar();
@@ -472,18 +616,15 @@ public class MessageCounter
                bUpdate = true;
             }
 
-            if (bUpdate)
+            if (bUpdate == true)
             {
                if (counters[i] == -1)
                   counters[i] = 0;
             }
          }
 
-         // optionally increment current counter
-         if (incrementCounter)
-         {
-            counters[currentIndex]++;
-         }
+         // increment current counter with the new messages
+         counters[currentIndex] += newMessages;
       }
 
       /**

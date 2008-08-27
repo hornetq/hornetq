@@ -25,6 +25,7 @@ package org.jboss.messaging.core.management;
 import static javax.management.MBeanOperationInfo.ACTION;
 import static javax.management.MBeanOperationInfo.INFO;
 
+import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
 /**
@@ -114,4 +115,11 @@ public interface QueueControlMBean
          @Parameter(name = "newPriority", desc = "the new priority (between 0 and 9)") int newPriority)
          throws Exception;
 
+   CompositeData listMessageCounter();
+
+   String listMessageCounterAsHTML();
+
+   TabularData listMessageCounterHistory() throws Exception;
+
+   String listMessageCounterHistoryAsHTML();
 }

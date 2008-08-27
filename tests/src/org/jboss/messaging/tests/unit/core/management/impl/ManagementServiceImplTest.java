@@ -221,6 +221,7 @@ public class ManagementServiceImplTest extends TestCase
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       Queue queue = createMock(Queue.class);
       expect(queue.getName()).andStubReturn(name);
+      expect(queue.isDurable()).andReturn(true);
       StorageManager storageManager = createMock(StorageManager.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(false);
       expect(
@@ -247,6 +248,7 @@ public class ManagementServiceImplTest extends TestCase
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       Queue queue = createMock(Queue.class);
       expect(queue.getName()).andStubReturn(name);
+      expect(queue.isDurable()).andReturn(true);
       StorageManager storageManager = createMock(StorageManager.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(true);
       mbeanServer.unregisterMBean(objectName);

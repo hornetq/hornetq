@@ -35,6 +35,9 @@ import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.QueueControlMBean;
+import org.jboss.messaging.core.messagecounter.MessageCounter;
+import org.jboss.messaging.core.messagecounter.MessageCounterManager;
+import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.security.Role;
@@ -67,6 +70,7 @@ public class ManagementServiceImpl implements ManagementService
    private PostOffice postOffice;
    private HierarchicalRepository<Set<Role>> securityRepository;
    private HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   private MessageCounterManager messageCounterManager = new MessageCounterManagerImpl(10000);
 
    // Static --------------------------------------------------------
 
@@ -115,7 +119,7 @@ public class ManagementServiceImpl implements ManagementService
       this.queueSettingsRepository = queueSettingsRepository;
       MessagingServerControlMBean managedServer = new MessagingServerControl(
             postOffice, storageManager, configuration, securityRepository,
-            queueSettingsRepository, messagingServer);
+            queueSettingsRepository, messagingServer, messageCounterManager);
       ObjectName objectName = getMessagingServerObjectName();
       register(objectName, managedServer);
       registerInJMX(objectName, managedServer);
@@ -152,9 +156,12 @@ public class ManagementServiceImpl implements ManagementService
    public void registerQueue(final Queue queue, final SimpleString address,
          final StorageManager storageManager) throws Exception
    {
+      MessageCounter counter = new MessageCounter(queue.getName().toString(), null, queue, false, queue.isDurable(),
+            10);
+      messageCounterManager.registerMessageCounter(queue.getName().toString(), counter);
       ObjectName objectName = getQueueObjectName(address, queue.getName());
       QueueControlMBean queueControl = new QueueControl(queue, storageManager,
-            postOffice, queueSettingsRepository);
+            postOffice, queueSettingsRepository, counter);
       register(objectName, queueControl);
       registerInJMX(objectName, queueControl);
       if (log.isDebugEnabled())
@@ -169,6 +176,7 @@ public class ManagementServiceImpl implements ManagementService
       ObjectName objectName = getQueueObjectName(address, name);
       unregister(objectName);
       unregisterFromJMX(objectName);
+      messageCounterManager.unregisterMessageCounter(name.toString());
    }
 
    // Package protected ---------------------------------------------

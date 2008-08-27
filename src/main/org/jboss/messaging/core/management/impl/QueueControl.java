@@ -22,18 +22,27 @@
 
 package org.jboss.messaging.core.management.impl;
 
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.management.MBeanInfo;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
+import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
+import org.jboss.messaging.core.management.DayCounterInfo;
+import org.jboss.messaging.core.management.MessageCounterInfo;
 import org.jboss.messaging.core.management.MessageInfo;
 import org.jboss.messaging.core.management.QueueControlMBean;
+import org.jboss.messaging.core.messagecounter.MessageCounter;
+import org.jboss.messaging.core.messagecounter.MessageCounter.DayCounter;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -57,10 +66,11 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
 
    // Attributes ----------------------------------------------------
 
-   public final Queue queue;
+   private final Queue queue;
    private final StorageManager storageManager;
    private final PostOffice postOffice;
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   private final MessageCounter counter;
 
    // Static --------------------------------------------------------
 
@@ -68,14 +78,15 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
 
    public QueueControl(final Queue queue, final StorageManager storageManager,
          final PostOffice postOffice,
-         final HierarchicalRepository<QueueSettings> queueSettingsRepository)
-         throws NotCompliantMBeanException
+         final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+         final MessageCounter counter) throws NotCompliantMBeanException
    {
       super(QueueControlMBean.class);
       this.queue = queue;
       this.storageManager = storageManager;
       this.postOffice = postOffice;
       this.queueSettingsRepository = queueSettingsRepository;
+      this.counter = counter;
    }
 
    // Public --------------------------------------------------------
@@ -282,6 +293,52 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
             storageManager, postOffice, queueSettingsRepository);
    }
 
+   public CompositeData listMessageCounter()
+   {
+      DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT,
+            DateFormat.MEDIUM);
+      String timestamp = dateFormat.format(new Date(counter.getLastUpdate()));
+      MessageCounterInfo info = new MessageCounterInfo(counter
+            .getDestinationName(), counter.getDestinationSubscription(),
+            counter.getDestinationDurable(), counter.getCount(), counter
+                  .getCountDelta(), counter.getMessageCount(), counter
+                  .getMessageCountDelta(), timestamp);
+      return info.toCompositeData();
+   }
+
+   public String listMessageCounterAsHTML()
+   {
+      return listMessageCounterAsHTML(new MessageCounter[] { counter });
+   }
+
+   public TabularData listMessageCounterHistory() throws Exception
+   {
+      try {
+         List<DayCounter> history = counter.getHistory();
+         DayCounterInfo[] infos = new DayCounterInfo[history.size()];
+         for (int i = 0; i < infos.length; i++)
+         {
+            DayCounter dayCounter = history.get(i);
+            int[] counters = dayCounter.getCounters();
+            GregorianCalendar date = dayCounter.getDate();
+
+            DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
+            String strData = dateFormat.format(date.getTime());
+            infos[i] = new DayCounterInfo(strData, counters);
+         }
+         return DayCounterInfo.toTabularData(infos);
+      } catch (Throwable t)
+      {
+         t.printStackTrace();
+         return null;
+      }
+   }
+   
+   public String listMessageCounterHistoryAsHTML()
+   {
+      return listMessageCounterHistoryAsHTML(new MessageCounter[] { counter });
+   }
+   
    // StandardMBean overrides ---------------------------------------
 
    @Override
@@ -300,5 +357,133 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
 
    // Private -------------------------------------------------------
 
+   private String listMessageCounterAsHTML(MessageCounter[] counters)
+   {
+      if (counters == null)
+         return null;
+
+      String ret = "<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">"
+            + "<tr>"
+            + "<th>Type</th>"
+            + "<th>Name</th>"
+            + "<th>Subscription</th>"
+            + "<th>Durable</th>"
+            + "<th>Count</th>"
+            + "<th>CountDelta</th>"
+            + "<th>Depth</th>"
+            + "<th>DepthDelta</th>"
+            + "<th>Last Add</th>" + "</tr>";
+
+      for (int i = 0; i < counters.length; i++)
+      {
+         String data = counters[i].getCounterAsString();
+         StringTokenizer token = new StringTokenizer(data, ",");
+         String value;
+
+         ret += "<tr bgcolor=\"#" + ((i % 2) == 0 ? "FFFFFF" : "F0F0F0")
+               + "\">";
+
+         ret += "<td>" + token.nextToken() + "</td>"; // type
+         ret += "<td>" + token.nextToken() + "</td>"; // name
+         ret += "<td>" + token.nextToken() + "</td>"; // subscription
+         ret += "<td>" + token.nextToken() + "</td>"; // durable
+
+         ret += "<td>" + token.nextToken() + "</td>"; // count
+
+         value = token.nextToken(); // countDelta
+
+         if (value.equalsIgnoreCase("0"))
+            value = "-";
+
+         ret += "<td>" + value + "</td>";
+
+         ret += "<td>" + token.nextToken() + "</td>"; // depth
+
+         value = token.nextToken(); // depthDelta
+
+         if (value.equalsIgnoreCase("0"))
+            value = "-";
+
+         ret += "<td>" + value + "</td>";
+
+         ret += "<td>" + token.nextToken() + "</td>"; // date last add
+
+         ret += "</tr>";
+      }
+
+      ret += "</table>";
+
+      return ret;
+   }
+
+   private String listMessageCounterHistoryAsHTML(MessageCounter[] counters)
+   {
+      if (counters == null)
+         return null;
+
+      String ret = "";
+
+      for (int i = 0; i < counters.length; i++)
+      {
+         // destination name
+         ret += (counters[i].getDestinationTopic() ? "Topic '" : "Queue '");
+         ret += counters[i].getDestinationName() + "'";
+
+         if (counters[i].getDestinationSubscription() != null)
+            ret += "Subscription '" + counters[i].getDestinationSubscription()
+                  + "'";
+
+         // table header
+         ret += "<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">"
+               + "<tr>" + "<th>Date</th>";
+
+         for (int j = 0; j < 24; j++)
+            ret += "<th width=\"4%\">" + j + "</th>";
+
+         ret += "<th>Total</th></tr>";
+
+         // get history data as CSV string
+         StringTokenizer tokens = new StringTokenizer(counters[i]
+               .getHistoryAsString(), ",\n");
+
+         // get history day count
+         int days = Integer.parseInt(tokens.nextToken());
+
+         for (int j = 0; j < days; j++)
+         {
+            // next day counter row
+            ret += "<tr bgcolor=\"#" + ((j % 2) == 0 ? "FFFFFF" : "F0F0F0")
+                  + "\">";
+
+            // date
+            ret += "<td>" + tokens.nextToken() + "</td>";
+
+            // 24 hour counters
+            int total = 0;
+
+            for (int k = 0; k < 24; k++)
+            {
+               int value = Integer.parseInt(tokens.nextToken().trim());
+
+               if (value == -1)
+               {
+                  ret += "<td></td>";
+               } else
+               {
+                  ret += "<td>" + value + "</td>";
+
+                  total += value;
+               }
+            }
+
+            ret += "<td>" + total + "</td></tr>";
+         }
+
+         ret += "</table><br><br>";
+      }
+
+      return ret;
+   }
+   
    // Inner classes -------------------------------------------------
 }
