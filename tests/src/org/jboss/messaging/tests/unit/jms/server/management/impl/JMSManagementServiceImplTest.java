@@ -39,6 +39,8 @@ import javax.management.ObjectName;
 
 import junit.framework.TestCase;
 
+import org.jboss.messaging.core.messagecounter.MessageCounter;
+import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
@@ -90,14 +92,15 @@ public class JMSManagementServiceImplTest extends TestCase
       expect(
             mbeanServer.registerMBean(isA(JMSServerControlMBean.class),
                   eq(objectName))).andReturn(objectInstance);
-
-      replay(mbeanServer, server);
+      MessageCounterManager messageCounterManager = createMock(MessageCounterManager.class);
+      
+      replay(mbeanServer, server, messageCounterManager);
 
       JMSManagementService service = new JMSManagementServiceImpl(mbeanServer,
-            true);
+            true, messageCounterManager);
       service.registerJMSServer(server);
       
-      verify(mbeanServer, server);
+      verify(mbeanServer, server, messageCounterManager);
    }
 
    public void testRegisterAlreadyRegisteredJMSServer() throws Exception
@@ -115,14 +118,15 @@ public class JMSManagementServiceImplTest extends TestCase
       expect(
             mbeanServer.registerMBean(isA(JMSServerControlMBean.class),
                   eq(objectName))).andReturn(objectInstance);
-
-      replay(mbeanServer, server);
+      MessageCounterManager messageCounterManager = createMock(MessageCounterManager.class);
+      
+      replay(mbeanServer, server, messageCounterManager);
 
       JMSManagementService service = new JMSManagementServiceImpl(mbeanServer,
-            true);
+            true, messageCounterManager);
       service.registerJMSServer(server);
       
-      verify(mbeanServer, server);
+      verify(mbeanServer, server, messageCounterManager);
    }
    
    public void testRegisterQueue() throws Exception
@@ -136,6 +140,7 @@ public class JMSManagementServiceImplTest extends TestCase
 
       JBossQueue queue = new JBossQueue(name);
       Queue coreQueue = createMock(Queue.class);
+      expect(coreQueue.isDurable()).andReturn(true);
       PostOffice postOffice = createMock(PostOffice.class);
       StorageManager storageManager = createMock(StorageManager.class);
       HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
@@ -145,14 +150,17 @@ public class JMSManagementServiceImplTest extends TestCase
       expect(
             mbeanServer.registerMBean(isA(JMSQueueControlMBean.class),
                   eq(objectName))).andReturn(objectInstance);
-
-      replay(mbeanServer, coreQueue, postOffice, storageManager, queueSettingsRepository);
+      MessageCounterManager messageCounterManager = createMock(MessageCounterManager.class);
+      expect(messageCounterManager.getMaxDayCount()).andReturn(10);
+      messageCounterManager.registerMessageCounter(eq(name), isA(MessageCounter.class));
+      
+      replay(mbeanServer, messageCounterManager, coreQueue, postOffice, storageManager, queueSettingsRepository);
 
       JMSManagementService service = new JMSManagementServiceImpl(mbeanServer,
-            true);
+            true, messageCounterManager);
       service.registerQueue(queue, coreQueue, jndiBinding, postOffice, storageManager, queueSettingsRepository);
 
-      verify(mbeanServer, coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verify(mbeanServer, messageCounterManager, coreQueue, postOffice, storageManager, queueSettingsRepository);
    }
 
    public void testRegisterAlreadyRegisteredQueue() throws Exception
@@ -166,6 +174,7 @@ public class JMSManagementServiceImplTest extends TestCase
 
       JBossQueue queue = new JBossQueue(name);
       Queue coreQueue = createMock(Queue.class);
+      expect(coreQueue.isDurable()).andReturn(true);
       PostOffice postOffice = createMock(PostOffice.class);
       StorageManager storageManager = createMock(StorageManager.class);
       HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
@@ -176,14 +185,16 @@ public class JMSManagementServiceImplTest extends TestCase
       expect(
             mbeanServer.registerMBean(isA(JMSQueueControlMBean.class),
                   eq(objectName))).andReturn(objectInstance);
-
-      replay(mbeanServer, coreQueue, postOffice, storageManager, queueSettingsRepository);
+      MessageCounterManager messageCounterManager = createMock(MessageCounterManager.class);
+      expect(messageCounterManager.getMaxDayCount()).andReturn(10);
+      messageCounterManager.registerMessageCounter(eq(name), isA(MessageCounter.class));
+      replay(mbeanServer, messageCounterManager, coreQueue, postOffice, storageManager, queueSettingsRepository);
 
       JMSManagementService service = new JMSManagementServiceImpl(mbeanServer,
-            true);
+            true, messageCounterManager);
       service.registerQueue(queue, coreQueue, jndiBinding, postOffice, storageManager, queueSettingsRepository);
 
-      verify(mbeanServer, coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verify(mbeanServer, messageCounterManager, coreQueue, postOffice, storageManager, queueSettingsRepository);
    }
 
    public void testRegisterTopic() throws Exception
@@ -204,11 +215,12 @@ public class JMSManagementServiceImplTest extends TestCase
       expect(
             mbeanServer.registerMBean(isA(TopicControlMBean.class),
                   eq(objectName))).andReturn(objectInstance);
+      MessageCounterManager messageCounterManager = createMock(MessageCounterManager.class);
 
-      replay(mbeanServer, postOffice, storageManager);
+      replay(mbeanServer, messageCounterManager, postOffice, storageManager);
 
       JMSManagementService service = new JMSManagementServiceImpl(mbeanServer,
-            true);
+            true, messageCounterManager);
       service.registerTopic(topic, jndiBinding, postOffice, storageManager);
 
       verify(mbeanServer, postOffice, storageManager);
@@ -233,14 +245,15 @@ public class JMSManagementServiceImplTest extends TestCase
       expect(
             mbeanServer.registerMBean(isA(TopicControlMBean.class),
                   eq(objectName))).andReturn(objectInstance);
+      MessageCounterManager messageCounterManager = createMock(MessageCounterManager.class);
 
-      replay(mbeanServer, postOffice, storageManager);
+      replay(mbeanServer, messageCounterManager, postOffice, storageManager);
 
       JMSManagementService service = new JMSManagementServiceImpl(mbeanServer,
-            true);
+            true, messageCounterManager);
       service.registerTopic(topic, jndiBinding, postOffice, storageManager);
 
-      verify(mbeanServer, postOffice, storageManager);
+      verify(mbeanServer, messageCounterManager, postOffice, storageManager);
    }
 
    public void testRegisterConnectionFactory() throws Exception
@@ -261,14 +274,15 @@ public class JMSManagementServiceImplTest extends TestCase
       expect(
             mbeanServer.registerMBean(isA(ConnectionFactoryControlMBean.class),
                   eq(objectName))).andReturn(objectInstance);
+      MessageCounterManager messageCounterManager = createMock(MessageCounterManager.class);
 
-      replay(mbeanServer, connectionFactory);
+      replay(mbeanServer, messageCounterManager, connectionFactory);
 
       JMSManagementService service = new JMSManagementServiceImpl(mbeanServer,
-            true);
+            true, messageCounterManager);
       service.registerConnectionFactory(name, connectionFactory, bindings);
 
-      verify(mbeanServer, connectionFactory);
+      verify(mbeanServer, messageCounterManager, connectionFactory);
    }
 
    public void testRegisterAlreadyRegisteredConnectionFactory() throws Exception
@@ -290,14 +304,15 @@ public class JMSManagementServiceImplTest extends TestCase
       expect(
             mbeanServer.registerMBean(isA(ConnectionFactoryControlMBean.class),
                   eq(objectName))).andReturn(objectInstance);
+      MessageCounterManager messageCounterManager = createMock(MessageCounterManager.class);
 
-      replay(mbeanServer, connectionFactory);
+      replay(mbeanServer, messageCounterManager, connectionFactory);
 
       JMSManagementService service = new JMSManagementServiceImpl(mbeanServer,
-            true);
+            true, messageCounterManager);
       service.registerConnectionFactory(name, connectionFactory, bindings);
 
-      verify(mbeanServer, connectionFactory);
+      verify(mbeanServer, messageCounterManager, connectionFactory);
    }
    // Package protected ---------------------------------------------
 

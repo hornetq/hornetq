@@ -129,4 +129,7 @@ public interface MessagingServerControlMBean
 
    void disableMessageCounters();
 
+   void resetAllMessageCounters();
+
+   void resetAllMessageCounterHistories();
 }

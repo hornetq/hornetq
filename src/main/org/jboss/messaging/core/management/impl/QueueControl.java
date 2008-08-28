@@ -26,7 +26,6 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.management.MBeanInfo;
 import javax.management.NotCompliantMBeanException;
@@ -43,6 +42,7 @@ import org.jboss.messaging.core.management.MessageInfo;
 import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounter.DayCounter;
+import org.jboss.messaging.core.messagecounter.impl.MessageCounterHelper;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -308,7 +308,7 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
 
    public String listMessageCounterAsHTML()
    {
-      return listMessageCounterAsHTML(new MessageCounter[] { counter });
+      return MessageCounterHelper.listMessageCounterAsHTML(new MessageCounter[] { counter });
    }
 
    public TabularData listMessageCounterHistory() throws Exception
@@ -336,7 +336,7 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
    
    public String listMessageCounterHistoryAsHTML()
    {
-      return listMessageCounterHistoryAsHTML(new MessageCounter[] { counter });
+      return MessageCounterHelper.listMessageCounterHistoryAsHTML(new MessageCounter[] { counter });
    }
    
    // StandardMBean overrides ---------------------------------------
@@ -357,133 +357,5 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
 
    // Private -------------------------------------------------------
 
-   private String listMessageCounterAsHTML(MessageCounter[] counters)
-   {
-      if (counters == null)
-         return null;
-
-      String ret = "<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">"
-            + "<tr>"
-            + "<th>Type</th>"
-            + "<th>Name</th>"
-            + "<th>Subscription</th>"
-            + "<th>Durable</th>"
-            + "<th>Count</th>"
-            + "<th>CountDelta</th>"
-            + "<th>Depth</th>"
-            + "<th>DepthDelta</th>"
-            + "<th>Last Add</th>" + "</tr>";
-
-      for (int i = 0; i < counters.length; i++)
-      {
-         String data = counters[i].getCounterAsString();
-         StringTokenizer token = new StringTokenizer(data, ",");
-         String value;
-
-         ret += "<tr bgcolor=\"#" + ((i % 2) == 0 ? "FFFFFF" : "F0F0F0")
-               + "\">";
-
-         ret += "<td>" + token.nextToken() + "</td>"; // type
-         ret += "<td>" + token.nextToken() + "</td>"; // name
-         ret += "<td>" + token.nextToken() + "</td>"; // subscription
-         ret += "<td>" + token.nextToken() + "</td>"; // durable
-
-         ret += "<td>" + token.nextToken() + "</td>"; // count
-
-         value = token.nextToken(); // countDelta
-
-         if (value.equalsIgnoreCase("0"))
-            value = "-";
-
-         ret += "<td>" + value + "</td>";
-
-         ret += "<td>" + token.nextToken() + "</td>"; // depth
-
-         value = token.nextToken(); // depthDelta
-
-         if (value.equalsIgnoreCase("0"))
-            value = "-";
-
-         ret += "<td>" + value + "</td>";
-
-         ret += "<td>" + token.nextToken() + "</td>"; // date last add
-
-         ret += "</tr>";
-      }
-
-      ret += "</table>";
-
-      return ret;
-   }
-
-   private String listMessageCounterHistoryAsHTML(MessageCounter[] counters)
-   {
-      if (counters == null)
-         return null;
-
-      String ret = "";
-
-      for (int i = 0; i < counters.length; i++)
-      {
-         // destination name
-         ret += (counters[i].getDestinationTopic() ? "Topic '" : "Queue '");
-         ret += counters[i].getDestinationName() + "'";
-
-         if (counters[i].getDestinationSubscription() != null)
-            ret += "Subscription '" + counters[i].getDestinationSubscription()
-                  + "'";
-
-         // table header
-         ret += "<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">"
-               + "<tr>" + "<th>Date</th>";
-
-         for (int j = 0; j < 24; j++)
-            ret += "<th width=\"4%\">" + j + "</th>";
-
-         ret += "<th>Total</th></tr>";
-
-         // get history data as CSV string
-         StringTokenizer tokens = new StringTokenizer(counters[i]
-               .getHistoryAsString(), ",\n");
-
-         // get history day count
-         int days = Integer.parseInt(tokens.nextToken());
-
-         for (int j = 0; j < days; j++)
-         {
-            // next day counter row
-            ret += "<tr bgcolor=\"#" + ((j % 2) == 0 ? "FFFFFF" : "F0F0F0")
-                  + "\">";
-
-            // date
-            ret += "<td>" + tokens.nextToken() + "</td>";
-
-            // 24 hour counters
-            int total = 0;
-
-            for (int k = 0; k < 24; k++)
-            {
-               int value = Integer.parseInt(tokens.nextToken().trim());
-
-               if (value == -1)
-               {
-                  ret += "<td></td>";
-               } else
-               {
-                  ret += "<td>" + value + "</td>";
-
-                  total += value;
-               }
-            }
-
-            ret += "<td>" + total + "</td></tr>";
-         }
-
-         ret += "</table><br><br>";
-      }
-
-      return ret;
-   }
-   
    // Inner classes -------------------------------------------------
 }

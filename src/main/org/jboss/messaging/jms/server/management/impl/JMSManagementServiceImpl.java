@@ -30,6 +30,8 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
+import org.jboss.messaging.core.messagecounter.MessageCounter;
+import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
@@ -56,6 +58,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    public final MBeanServer mbeanServer;
    private final boolean jmxManagementEnabled;
+   private final MessageCounterManager messageCounterManager;
    private Map<ObjectName, Object> registry;
 
    // Static --------------------------------------------------------
@@ -90,11 +93,12 @@ public class JMSManagementServiceImpl implements JMSManagementService
    // Constructors --------------------------------------------------
 
    public JMSManagementServiceImpl(final MBeanServer mbeanServer,
-         final boolean jmxManagementEnabled)
+         final boolean jmxManagementEnabled, final MessageCounterManager messageCounterManager)
    {
       this.mbeanServer = mbeanServer;
       this.jmxManagementEnabled = jmxManagementEnabled;
       this.registry = new HashMap<ObjectName, Object>();
+      this.messageCounterManager = messageCounterManager;
    }
 
    // Public --------------------------------------------------------
@@ -123,9 +127,12 @@ public class JMSManagementServiceImpl implements JMSManagementService
          HierarchicalRepository<QueueSettings> queueSettingsRepository)
          throws Exception
    {
+      MessageCounter counter = new MessageCounter(queue.getName(), null, coreQueue, false, coreQueue.isDurable(),
+            messageCounterManager.getMaxDayCount());
+      messageCounterManager.registerMessageCounter(queue.getName(), counter);
       ObjectName objectName = getJMSQueueObjectName(queue.getQueueName());
       JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+            jndiBinding, postOffice, storageManager, queueSettingsRepository, counter);
       register(objectName, control);
       registerInJMX(objectName, control);
    }

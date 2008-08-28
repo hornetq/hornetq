@@ -106,8 +106,13 @@ public class ManagementServiceImpl implements ManagementService
 
    // Public --------------------------------------------------------
 
-   // ManagementRegistration implementation -------------------------
+   // ManagementService implementation -------------------------
 
+   public MessageCounterManager getMessageCounterManager()
+   {
+      return messageCounterManager;      
+   }
+   
    public MessagingServerControlMBean registerServer(PostOffice postOffice,
          StorageManager storageManager, Configuration configuration,
          HierarchicalRepository<Set<Role>> securityRepository,

@@ -22,18 +22,28 @@
 
 package org.jboss.messaging.jms.server.management.impl;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.management.MBeanInfo;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
+import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
+import org.jboss.messaging.core.management.DayCounterInfo;
+import org.jboss.messaging.core.management.MessageCounterInfo;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
+import org.jboss.messaging.core.messagecounter.MessageCounter;
+import org.jboss.messaging.core.messagecounter.MessageCounter.DayCounter;
+import org.jboss.messaging.core.messagecounter.impl.MessageCounterHelper;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
@@ -60,14 +70,17 @@ public class JMSQueueControl extends StandardMBean implements
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(JMSQueueControl.class);
+
    // Attributes ----------------------------------------------------
 
    private final JBossQueue managedQueue;
-   private Queue coreQueue;
+   private final Queue coreQueue;
    private final String binding;
    private final PostOffice postOffice;
    private final StorageManager storageManager;
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   private final MessageCounter counter;
 
    // Static --------------------------------------------------------
 
@@ -83,7 +96,8 @@ public class JMSQueueControl extends StandardMBean implements
    public JMSQueueControl(final JBossQueue queue, final Queue coreQueue,
          final String jndiBinding, final PostOffice postOffice,
          final StorageManager storageManager,
-         HierarchicalRepository<QueueSettings> queueSettingsRepository)
+         final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+         final MessageCounter counter)
          throws NotCompliantMBeanException
    {
       super(JMSQueueControlMBean.class);
@@ -93,6 +107,7 @@ public class JMSQueueControl extends StandardMBean implements
       this.postOffice = postOffice;
       this.storageManager = storageManager;
       this.queueSettingsRepository = queueSettingsRepository;
+      this.counter = counter;
    }
 
    // Public --------------------------------------------------------
@@ -303,6 +318,46 @@ public class JMSQueueControl extends StandardMBean implements
       return coreQueue.changeMessagePriority(refs.get(0).getMessage()
             .getMessageID(), (byte) newPriority, storageManager, postOffice,
             queueSettingsRepository);
+   }
+
+   public CompositeData listMessageCounter()
+   {
+      DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT,
+            DateFormat.MEDIUM);
+      String timestamp = dateFormat.format(new Date(counter.getLastUpdate()));
+      MessageCounterInfo info = new MessageCounterInfo(counter
+            .getDestinationName(), counter.getDestinationSubscription(),
+            counter.getDestinationDurable(), counter.getCount(), counter
+                  .getCountDelta(), counter.getMessageCount(), counter
+                  .getMessageCountDelta(), timestamp);
+      return info.toCompositeData();
+   }
+
+   public String listMessageCounterAsHTML()
+   {
+      return MessageCounterHelper.listMessageCounterAsHTML(new MessageCounter[] { counter });
+   }
+
+   public TabularData listMessageCounterHistory() throws Exception
+   {
+      List<DayCounter> history = counter.getHistory();
+      DayCounterInfo[] infos = new DayCounterInfo[history.size()];
+      for (int i = 0; i < infos.length; i++)
+      {
+         DayCounter dayCounter = history.get(i);
+         int[] counters = dayCounter.getCounters();
+         GregorianCalendar date = dayCounter.getDate();
+
+         DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
+         String strData = dateFormat.format(date.getTime());
+         infos[i] = new DayCounterInfo(strData, counters);
+      }
+      return DayCounterInfo.toTabularData(infos);
+   }
+   
+   public String listMessageCounterHistoryAsHTML()
+   {
+      return MessageCounterHelper.listMessageCounterHistoryAsHTML(new MessageCounter[] { counter });
    }
 
    // StandardMBean overrides ---------------------------------------

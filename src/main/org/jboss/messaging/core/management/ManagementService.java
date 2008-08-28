@@ -25,6 +25,7 @@ package org.jboss.messaging.core.management;
 import java.util.Set;
 
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.security.Role;
@@ -42,6 +43,8 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface ManagementService
 {
+   MessageCounterManager getMessageCounterManager();
+
    MessagingServerControlMBean registerServer(PostOffice postOffice, StorageManager storageManager,
          Configuration configuration,
          HierarchicalRepository<Set<Role>> securityRepository,

@@ -386,6 +386,16 @@ public class MessagingServerControl extends StandardMBean implements
       setEnableMessageCounters(false);
    }
       
+   public void resetAllMessageCounters()
+   {
+      messageCounterManager.resetAllCounters();
+   }
+
+   public void resetAllMessageCounterHistories()
+   {
+      messageCounterManager.resetAllCounterHistories();
+   }
+
    public boolean isEnableMessageCounters()
    {
       return enableMessageCounters;

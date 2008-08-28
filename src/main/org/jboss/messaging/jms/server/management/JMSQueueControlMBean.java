@@ -25,6 +25,7 @@ package org.jboss.messaging.jms.server.management;
 import static javax.management.MBeanOperationInfo.ACTION;
 import static javax.management.MBeanOperationInfo.INFO;
 
+import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.management.Operation;
@@ -104,5 +105,14 @@ public interface JMSQueueControlMBean extends DestinationControlMBean
          @Parameter(name = "messageID", desc = "A message ID") String messageID,
          @Parameter(name = "newPriority", desc = "the new priority (between 0 and 9)") int newPriority)
          throws Exception;
+
+   CompositeData listMessageCounter();
+
+   String listMessageCounterAsHTML();
+
+   TabularData listMessageCounterHistory() throws Exception;
+
+   String listMessageCounterHistoryAsHTML();
+
 
 }

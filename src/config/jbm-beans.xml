@@ -134,6 +134,9 @@
          <parameter>
             <inject bean="Configuration" property="JMXManagementEnabled" />
          </parameter>
+         <parameter>
+            <inject bean="ManagementService" property="messageCounterManager" />
+         </parameter>
       </constructor>
    </bean>
    

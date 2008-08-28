@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import javax.management.NotCompliantMBeanException;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
@@ -45,6 +46,7 @@ import junit.framework.TestCase;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
@@ -64,6 +66,15 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class JMSQueueControlTest extends TestCase
 {
+   private String jndiBinding;
+   private String name;
+   private JBossQueue queue;
+   private Queue coreQueue;
+   private PostOffice postOffice;
+   private StorageManager storageManager;
+   private HierarchicalRepository queueSettingsRepository;
+   private MessageCounter counter;
+
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -76,293 +87,164 @@ public class JMSQueueControlTest extends TestCase
 
    public void testGetName() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
+      replayMockedAttributes();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
-
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
-
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertEquals(name, control.getName());
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testGetAddress() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
+      replayMockedAttributes();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
-
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
-
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertEquals(queue.getAddress(), control.getAddress());
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testGetJNDIBinding() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
+      replayMockedAttributes();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
-
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
-
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertEquals(jndiBinding, control.getJNDIBinding());
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testIsTemporary() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
+      replayMockedAttributes();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
-
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
-
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertEquals(queue.isTemporary(), control.isTemporary());
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testIsClustered() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       boolean clustered = randomBoolean();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
       expect(coreQueue.isClustered()).andReturn(clustered);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      replayMockedAttributes();
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
-
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertEquals(clustered, control.isClustered());
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testIsDurabled() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       boolean durable = randomBoolean();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
       expect(coreQueue.isDurable()).andReturn(durable);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      replayMockedAttributes();
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
-
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertEquals(durable, control.isDurable());
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testGetMessageCount() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       int count = randomInt();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
       expect(coreQueue.getMessageCount()).andReturn(count);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      replayMockedAttributes();
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
-
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertEquals(count, control.getMessageCount());
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testGetMessagesAdded() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       int count = randomInt();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
       expect(coreQueue.getMessagesAdded()).andReturn(count);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      replayMockedAttributes();
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
-
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertEquals(count, control.getMessagesAdded());
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testGetConsumerCount() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       int count = randomInt();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
       expect(coreQueue.getConsumerCount()).andReturn(count);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      replayMockedAttributes();
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
-
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertEquals(count, control.getConsumerCount());
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testGetDeliveringCount() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       int count = randomInt();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
       expect(coreQueue.getDeliveringCount()).andReturn(count);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      replayMockedAttributes();
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
-
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertEquals(count, control.getDeliveringCount());
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testGetMaxSizeBytes() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       int size = randomInt();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
       expect(coreQueue.getMaxSizeBytes()).andReturn(size);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      replayMockedAttributes();
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
-
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertEquals(size, control.getMaxSizeBytes());
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testGetSizeBytes() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       int size = randomInt();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
       expect(coreQueue.getSizeBytes()).andReturn(size);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      replayMockedAttributes();
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
-
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertEquals(size, control.getSizeBytes());
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testGetScheduledCount() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       int count = randomInt();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
       expect(coreQueue.getScheduledCount()).andReturn(count);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      replayMockedAttributes();
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
-
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertEquals(count, control.getScheduledCount());
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testGetDLQ() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       final String dlq = randomString();
-
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
 
       QueueSettings settings = new QueueSettings()
       {
@@ -374,26 +256,17 @@ public class JMSQueueControlTest extends TestCase
       };
       expect(queueSettingsRepository.getMatch(name)).andReturn(settings);
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      replayMockedAttributes();
 
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertEquals(dlq, control.getDLQ());
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testGetExpiryQueue() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       final String expiryQueue = randomString();
-
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
 
       QueueSettings settings = new QueueSettings()
       {
@@ -406,27 +279,18 @@ public class JMSQueueControlTest extends TestCase
       };
       expect(queueSettingsRepository.getMatch(name)).andReturn(settings);
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      replayMockedAttributes();
 
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertEquals(expiryQueue, control.getExpiryQueue());
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testRemoveMessage() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       String jmsMessageID = randomString();
       long messageID = randomLong();
-
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
 
       List<MessageReference> refs = new ArrayList<MessageReference>();
       MessageReference ref = createMock(MessageReference.class);
@@ -438,44 +302,30 @@ public class JMSQueueControlTest extends TestCase
       expect(coreQueue.deleteReference(messageID, storageManager)).andReturn(
             true);
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository,
-            ref, message);
+      replayMockedAttributes();
+      replay(ref, message);
 
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertTrue(control.removeMessage(jmsMessageID));
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository,
-            ref, message);
+      verifyMockedAttributes();
+      verify(ref, message);
    }
 
    public void testRemoveAllMessages() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
-
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
       coreQueue.deleteAllReferences(storageManager);
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      replayMockedAttributes();
 
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       control.removeAllMessages();
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testListMessages() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
-
-      JBossQueue queue = new JBossQueue(name);
       String filterStr = "color = 'green'";
       List<MessageReference> refs = new ArrayList<MessageReference>();
       MessageReference ref = createMock(MessageReference.class);
@@ -496,43 +346,29 @@ public class JMSQueueControlTest extends TestCase
             new HashSet<SimpleString>());
       expect(ref.getMessage()).andReturn(message);
       refs.add(ref);
-      Queue coreQueue = createMock(Queue.class);
       expect(coreQueue.list(isA(Filter.class))).andReturn(refs);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository,
-            ref, message);
+      replayMockedAttributes();
+      replay(ref, message);
 
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       TabularData data = control.listMessages(filterStr);
       assertEquals(1, data.size());
       CompositeData info = data.get(new Object[] { message.getProperty(
             new SimpleString("JMSMessageID")).toString() });
       assertNotNull(info);
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository,
-            ref, message);
+      verifyMockedAttributes();
+      verify(ref, message);
    }
 
    public void testListMessagesThrowsException() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       String invalidFilterStr = "this is not a valid filter";
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      replayMockedAttributes();
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
-
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       try
       {
          control.listMessages(invalidFilterStr);
@@ -542,21 +378,13 @@ public class JMSQueueControlTest extends TestCase
 
       }
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testExpireMessage() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       String jmsMessageID = randomString();
       long messageID = randomLong();
-
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
 
       List<MessageReference> refs = new ArrayList<MessageReference>();
       MessageReference ref = createMock(MessageReference.class);
@@ -569,35 +397,26 @@ public class JMSQueueControlTest extends TestCase
             coreQueue.expireMessage(messageID, storageManager, postOffice,
                   queueSettingsRepository)).andReturn(true);
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository,
-            ref, serverMessage);
+      replayMockedAttributes();
+      replay(ref, serverMessage);
 
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertTrue(control.expireMessage(jmsMessageID));
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository,
-            ref, serverMessage);
+      verifyMockedAttributes();
+      verify(ref, serverMessage);
    }
 
    public void testExpireMessageWithNoJMSMesageID() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       String jmsMessageID = randomString();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
       expect(coreQueue.list(isA(Filter.class))).andReturn(
             new ArrayList<MessageReference>());
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      replayMockedAttributes();
 
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       try
       {
          control.expireMessage(jmsMessageID);
@@ -606,20 +425,13 @@ public class JMSQueueControlTest extends TestCase
       {
       }
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testExpireMessages() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       long messageID = randomLong();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
       List<MessageReference> refs = new ArrayList<MessageReference>();
       MessageReference ref = createMock(MessageReference.class);
       ServerMessage serverMessage = createMock(ServerMessage.class);
@@ -631,27 +443,21 @@ public class JMSQueueControlTest extends TestCase
             coreQueue.expireMessage(messageID, storageManager, postOffice,
                   queueSettingsRepository)).andReturn(true);
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository, ref, serverMessage);
+      replayMockedAttributes();
+      replay(ref, serverMessage);
 
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertEquals(1, control.expireMessages("color = 'green'"));
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository, ref, serverMessage);
+      verifyMockedAttributes();
+      verify(ref, serverMessage);
    }
 
    public void testSendMessageToDLQ() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       String jmsMessageID = randomString();
       long messageID = randomLong();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
       List<MessageReference> refs = new ArrayList<MessageReference>();
       MessageReference ref = createMock(MessageReference.class);
       ServerMessage serverMessage = createMock(ServerMessage.class);
@@ -659,35 +465,29 @@ public class JMSQueueControlTest extends TestCase
       expect(ref.getMessage()).andReturn(serverMessage);
       refs.add(ref);
       expect(coreQueue.list(isA(Filter.class))).andReturn(refs);
-      expect(coreQueue.sendMessageToDLQ(messageID, storageManager, postOffice, queueSettingsRepository)).andReturn(true);
-      
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository, ref, serverMessage);
+      expect(
+            coreQueue.sendMessageToDLQ(messageID, storageManager, postOffice,
+                  queueSettingsRepository)).andReturn(true);
 
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      replayMockedAttributes();
+      replay(ref, serverMessage);
+
+      JMSQueueControl control = createControl();
       assertTrue(control.sendMessageToDLQ(jmsMessageID));
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository, ref, serverMessage);
+      verifyMockedAttributes();
+      verify(ref, serverMessage);
    }
 
    public void testSendMessageToDLQWithNoJMSMessageID() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       String jmsMessageID = randomString();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
       expect(coreQueue.list(isA(Filter.class))).andReturn(
             new ArrayList<MessageReference>());
+      replayMockedAttributes();
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
-
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       try
       {
          control.sendMessageToDLQ(jmsMessageID);
@@ -696,22 +496,15 @@ public class JMSQueueControlTest extends TestCase
       {
       }
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testChangeMessagePriority() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       byte newPriority = 5;
       String jmsMessageID = randomString();
       long messageID = randomLong();
-      
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+
       List<MessageReference> refs = new ArrayList<MessageReference>();
       MessageReference ref = createMock(MessageReference.class);
       ServerMessage serverMessage = createMock(ServerMessage.class);
@@ -719,34 +512,29 @@ public class JMSQueueControlTest extends TestCase
       expect(ref.getMessage()).andReturn(serverMessage);
       refs.add(ref);
       expect(coreQueue.list(isA(Filter.class))).andReturn(refs);
-      expect(coreQueue.changeMessagePriority(messageID, newPriority, storageManager, postOffice, queueSettingsRepository)).andReturn(true);
+      expect(
+            coreQueue.changeMessagePriority(messageID, newPriority,
+                  storageManager, postOffice, queueSettingsRepository))
+            .andReturn(true);
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository, ref, serverMessage);
+      replayMockedAttributes();
+      replay(ref, serverMessage);
 
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       assertTrue(control.changeMessagePriority(jmsMessageID, newPriority));
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository, ref, serverMessage);
+      verifyMockedAttributes();
+      verify(ref, serverMessage);
    }
 
    public void testChangeMessagePriorityWithInvalidPriorityValues()
          throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       String jmsMessageID = randomString();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      replayMockedAttributes();
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
-
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       try
       {
          control.changeMessagePriority(jmsMessageID, -1);
@@ -763,28 +551,20 @@ public class JMSQueueControlTest extends TestCase
       {
       }
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    public void testChangeMessagePriorityWithNoJMSMessageID() throws Exception
    {
-      String jndiBinding = randomString();
-      String name = randomString();
       byte newPriority = 5;
       String jmsMessageID = randomString();
 
-      JBossQueue queue = new JBossQueue(name);
-      Queue coreQueue = createMock(Queue.class);
-      PostOffice postOffice = createMock(PostOffice.class);
-      StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
       expect(coreQueue.list(isA(Filter.class))).andReturn(
             new ArrayList<MessageReference>());
 
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      replayMockedAttributes();
 
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      JMSQueueControl control = createControl();
       try
       {
          control.changeMessagePriority(jmsMessageID, newPriority);
@@ -793,14 +573,61 @@ public class JMSQueueControlTest extends TestCase
       {
       }
 
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verifyMockedAttributes();
    }
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      jndiBinding = randomString();
+      name = randomString();
+
+      queue = new JBossQueue(name);
+      coreQueue = createMock(Queue.class);
+      postOffice = createMock(PostOffice.class);
+      storageManager = createMock(StorageManager.class);
+      queueSettingsRepository = createMock(HierarchicalRepository.class);
+      counter = new MessageCounter(name, null, coreQueue, false, true, 10);
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      jndiBinding = null;
+      name = null;
+      queue = null;
+      coreQueue = null;
+      postOffice = null;
+      storageManager = null;
+      queueSettingsRepository = null;
+      counter = null;
+
+      super.tearDown();
+   }
+
    // Private -------------------------------------------------------
+
+   private JMSQueueControl createControl() throws NotCompliantMBeanException
+   {
+      return new JMSQueueControl(queue, coreQueue, jndiBinding, postOffice,
+            storageManager, queueSettingsRepository, counter);
+   }
+
+   private void replayMockedAttributes()
+   {
+      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
+   }
+
+   private void verifyMockedAttributes()
+   {
+      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+   }
 
    // Inner classes -------------------------------------------------
 }
