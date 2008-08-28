@@ -1,10 +1,16 @@
 <deployment>
 
    <connection-factory name="testConnectionFactory">
+      <connector>
+         <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+      </connector>
       <entry name="testConnectionFactory"/>
    </connection-factory>
 
    <connection-factory name="ConnectionFactory">
+      <connector>
+         <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+      </connector>
       <entry name="ConnectionFactory"/>
       <entry name="/ConnectionFactory"/>
       <entry name="/XAConnectionFactory"/>
@@ -13,6 +19,9 @@
    </connection-factory>
 
    <connection-factory name="ClusteredConnectionFactory">
+      <connector>
+         <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+      </connector>
       <entry name="/ClusteredConnectionFactory"/>
       <entry name="/ClusteredXAConnectionFactory"/>
       <entry name="java:/ClusteredConnectionFactory"/>
@@ -22,6 +31,9 @@
    </connection-factory>
 
    <connection-factory name="MyExampleConnectionFactory">
+      <connector>
+         <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+      </connector>
       <entry name="/MyExampleConnectionFactory"/>
       <entry name="/acme/MyExampleConnectionFactoryDupe"/>
       <entry name="java:/xyz/CF1"/>

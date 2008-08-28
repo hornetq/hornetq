@@ -22,7 +22,29 @@
 
 package org.jboss.messaging.core.remoting.impl.mina;
 
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_HOST;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_KEYSTORE_PASSWORD;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_KEYSTORE_PATH;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_PORT;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_SSL_ENABLED;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_TCP_NODELAY;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_TRUSTSTORE_PATH;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.HOST_PROP_NAME;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.KEYSTORE_PASSWORD_PROP_NAME;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.KEYSTORE_PATH_PROP_NAME;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.PORT_PROP_NAME;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.SSL_ENABLED_PROP_NAME;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.TCP_NODELAY_PROPNAME;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.TRUSTSTORE_PATH_PROP_NAME;
+
 import java.net.InetSocketAddress;
+import java.util.Map;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
@@ -33,13 +55,14 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.SocketAcceptor;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
+import org.jboss.messaging.util.ConfigurationHelper;
+
 
 /**
  * A Mina TCP Acceptor that supports SSL
@@ -49,26 +72,78 @@ import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
  */
 public class MinaAcceptor implements Acceptor
 {
-   private static final Logger log = Logger.getLogger(MinaAcceptor.class);
+   public static final Logger log = Logger.getLogger(MinaAcceptor.class);
+   
+   
+   // Attributes ------------------------------------------------------------------------------------
 
    private SocketAcceptor acceptor;
 
    private IoServiceListener acceptorListener;
 
-   private final Configuration configuration;
-
    private final RemotingHandler handler;
 
    private final ConnectionLifeCycleListener listener;
+   
+   private final boolean sslEnabled;
+   
+   private final String host;
 
-   public MinaAcceptor(final Configuration configuration, final RemotingHandler handler,
+   private final int port;
+         
+   private final String keyStorePath;
+ 
+   private final String keyStorePassword;
+   
+   private final String trustStorePath;
+   
+   private final String trustStorePassword;
+   
+   private final boolean tcpNoDelay;
+   
+   private final int tcpSendBufferSize;
+   
+   private final int tcpReceiveBufferSize;
+
+   public MinaAcceptor(final Map<String, Object> configuration, final RemotingHandler handler,
                        final ConnectionLifeCycleListener listener)
    {
-      this.configuration = configuration;
-
       this.handler = handler;
 
       this.listener = listener;
+      
+      this.sslEnabled =
+         ConfigurationHelper.getBooleanProperty(SSL_ENABLED_PROP_NAME, DEFAULT_SSL_ENABLED, configuration);
+      this.host =
+         ConfigurationHelper.getStringProperty(HOST_PROP_NAME, DEFAULT_HOST, configuration);
+      this.port =
+         ConfigurationHelper.getIntProperty(PORT_PROP_NAME, DEFAULT_PORT, configuration);
+      if (sslEnabled)
+      {
+         this.keyStorePath =
+            ConfigurationHelper.getStringProperty(KEYSTORE_PATH_PROP_NAME, DEFAULT_KEYSTORE_PATH, configuration);
+         this.keyStorePassword =
+            ConfigurationHelper.getStringProperty(KEYSTORE_PASSWORD_PROP_NAME, DEFAULT_KEYSTORE_PASSWORD, configuration);
+         this.trustStorePath =
+            ConfigurationHelper.getStringProperty(TRUSTSTORE_PATH_PROP_NAME, DEFAULT_TRUSTSTORE_PATH, configuration);
+         this.trustStorePassword =
+            ConfigurationHelper.getStringProperty(TRUSTSTORE_PASSWORD_PROP_NAME, DEFAULT_TRUSTSTORE_PASSWORD, configuration); 
+      }   
+      else
+      {
+         this.keyStorePath = null;
+         this.keyStorePassword = null;
+         this.trustStorePath = null;
+         this.trustStorePassword = null; 
+      }
+      
+      this.tcpNoDelay =
+         ConfigurationHelper.getBooleanProperty(TCP_NODELAY_PROPNAME, DEFAULT_TCP_NODELAY, configuration);
+      this.tcpSendBufferSize =
+         ConfigurationHelper.getIntProperty(TCP_SENDBUFFER_SIZE_PROPNAME, DEFAULT_TCP_SENDBUFFER_SIZE, configuration);
+      this.tcpReceiveBufferSize =
+         ConfigurationHelper.getIntProperty(TCP_RECEIVEBUFFER_SIZE_PROPNAME, DEFAULT_TCP_RECEIVEBUFFER_SIZE, configuration);
+     
    }
 
    public synchronized void start() throws Exception
@@ -85,27 +160,25 @@ public class MinaAcceptor implements Acceptor
 
       DefaultIoFilterChainBuilder filterChain = acceptor.getFilterChain();
 
-      if (configuration.isSSLEnabled())
+      if (sslEnabled)
       {
-         FilterChainSupport.addSSLFilter(filterChain, false, configuration.getKeyStorePath(),
-                 configuration.getKeyStorePassword(),
-                 configuration.getTrustStorePath(),
-                 configuration.getTrustStorePassword());
+         FilterChainSupport.addSSLFilter(filterChain, false, keyStorePath,
+                 keyStorePassword,
+                 trustStorePath,
+                 trustStorePassword);
       }
       FilterChainSupport.addCodecFilter(filterChain, handler);
 
       // Bind
-      acceptor.setDefaultLocalAddress(new InetSocketAddress(configuration.getHost(), configuration.getPort()));      
-      acceptor.getSessionConfig().setTcpNoDelay(configuration.getConnectionParams().isTcpNoDelay());
-      int receiveBufferSize = configuration.getConnectionParams().getTcpReceiveBufferSize();
-      if (receiveBufferSize != -1)
+      acceptor.setDefaultLocalAddress(new InetSocketAddress(host, port));      
+      acceptor.getSessionConfig().setTcpNoDelay(tcpNoDelay);      
+      if (tcpReceiveBufferSize != -1)
       {
-         acceptor.getSessionConfig().setReceiveBufferSize(receiveBufferSize);
-      }
-      int sendBufferSize = configuration.getConnectionParams().getTcpSendBufferSize();
-      if (sendBufferSize != -1)
+         acceptor.getSessionConfig().setReceiveBufferSize(tcpReceiveBufferSize);
+      }     
+      if (tcpSendBufferSize != -1)
       {
-         acceptor.getSessionConfig().setSendBufferSize(sendBufferSize);
+         acceptor.getSessionConfig().setSendBufferSize(tcpSendBufferSize);
       }
       acceptor.setReuseAddress(true);
       acceptor.getSessionConfig().setReuseAddress(true);

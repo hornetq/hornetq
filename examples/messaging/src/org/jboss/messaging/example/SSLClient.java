@@ -26,20 +26,16 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
-import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
+import org.jboss.messaging.core.remoting.impl.netty.TransportConstants;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- * A simple Client that uses SSL, to run this example enable ssl on the server in the jbm-configuration.xml file.
- * (<remoting-enable-ssl>true</remoting-enable-ssl>)
+ * A simple Client that uses SSL
  * 
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
@@ -49,21 +45,9 @@ public class SSLClient
    {
       ClientSession clientSession = null;
       try
-      {
-         Location location = new LocationImpl(TransportType.TCP, "localhost", 5400);
-         ConnectionParams connectionParams = new ConnectionParamsImpl();
-         connectionParams.setSSLEnabled(true);
-         connectionParams.setKeyStorePath("messaging.keystore");
-         connectionParams.setTrustStorePath("messaging.truststore");
-         connectionParams.setKeyStorePassword("secureexample");
-         connectionParams.setTrustStorePassword("secureexample");
-         //it is also possible to set up ssl by using system properties.
-         /*System.setProperty(ConnectionParams.REMOTING_ENABLE_SSL, "true");
-            System.setProperty(ConnectionParams.REMOTING_SSL_KEYSTORE_PATH,"messaging.keystore");
-            System.setProperty(ConnectionParams.REMOTING_SSL_KEYSTORE_PASSWORD,"secureexample");
-            System.setProperty(ConnectionParams.REMOTING_SSL_TRUSTSTORE_PATH,"messaging.truststore");
-            System.setProperty(ConnectionParams.REMOTING_SSL_TRUSTSTORE_PASSWORD,"secureexample");*/
-         ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(location, connectionParams);         
+      {         
+         ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new NettyConnectorFactory());  
+         sessionFactory.getTransportParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
          clientSession = sessionFactory.createSession(false, true, true, 1, false);
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);

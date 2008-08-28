@@ -1,7 +1,7 @@
 package org.jboss.messaging.core.remoting.impl.netty;
 
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
+import java.util.Map;
+
 import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
@@ -14,9 +14,9 @@ import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
  */
 public class NettyConnectorFactory implements ConnectorFactory
 {
-   public Connector createConnector(final Location location, final ConnectionParams params,
+   public Connector createConnector(final Map<String, Object> configuration,
          final RemotingHandler handler, final ConnectionLifeCycleListener listener)
    {
-      return new NettyConnector(location, params, handler, listener);
+      return new NettyConnector(configuration, handler, listener);
    }
 }

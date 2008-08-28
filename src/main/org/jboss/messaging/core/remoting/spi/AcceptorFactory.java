@@ -22,7 +22,8 @@
 
 package org.jboss.messaging.core.remoting.spi;
 
-import org.jboss.messaging.core.config.Configuration;
+import java.util.Map;
+
 import org.jboss.messaging.core.remoting.RemotingHandler;
 
 /**
@@ -31,7 +32,7 @@ import org.jboss.messaging.core.remoting.RemotingHandler;
  */
 public interface AcceptorFactory
 {
-   Acceptor createAcceptor(Configuration configuration,
+   Acceptor createAcceptor(final Map<String, Object> configuration,
                            RemotingHandler handler,                         
                            ConnectionLifeCycleListener listener);
 }

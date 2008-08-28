@@ -24,8 +24,11 @@ package org.jboss.messaging.jms.server.management;
 
 import static javax.management.MBeanOperationInfo.ACTION;
 
+import java.util.Map;
+
 import org.jboss.messaging.core.management.Operation;
 import org.jboss.messaging.core.management.Parameter;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -68,7 +71,10 @@ public interface JMSServerControlMBean
    @Operation(desc = "Create a JMS ConnectionFactory", impact = ACTION)
    void createConnectionFactory(
          @Parameter(name = "name", desc = "Name of the ConnectionFactory to create") String name,
-         @Parameter(name = "jndiBinding", desc = "JNDI Binding") String jndiBinding,
+         @Parameter(name = "connectorFactory", desc = "The Remoting Connector Factory used by this connection factory") ConnectorFactory connectorFactory,
+         @Parameter(name = "transportParams", desc = "Parameters for the remoting transport") Map<String, Object> transportParams,
+         @Parameter(name = "pingPeriod", desc = "The ping period in m") long pingPeriod,
+         @Parameter(name = "callTimeout", desc = "The call timeout in m") long callTimeout,
          @Parameter(name = "clientID", desc = "ClientID for created connections") String clientID,
          @Parameter(name = "dupsOKBatchSize", desc = "Size of the batch when using DUPS_OK") int dupsOKBatchSize,
          @Parameter(name = "consumerWindowSize", desc = "Consumer's window size") int consumerWindowSize,
@@ -76,9 +82,10 @@ public interface JMSServerControlMBean
          @Parameter(name = "producerWindowSize", desc = "Producer's window size") int producerWindowSize,
          @Parameter(name = "producerMaxRate", desc = "Producer's max rate") int producerMaxRate,
          @Parameter(name = "blockOnAcknowledge", desc = "Does acknowlegment block?") boolean blockOnAcknowledge,
-         @Parameter(name = "defaultSendNonPersistentMessagesBlocking", desc = "Does sending non persistent messages block?") boolean defaultSendNonPersistentMessagesBlocking,
-         @Parameter(name = "defaultSendPersistentMessagesBlocking", desc = "Does sending persistent messages block") boolean defaultSendPersistentMessagesBlocking)
-         throws Exception;
+         @Parameter(name = "blockOnNonPersistentSend", desc = "Does sending non persistent messages block?") boolean blockOnNonPersistentSend,
+         @Parameter(name = "blockOnPersistentSend", desc = "Does sending persistent messages block") boolean blockOnPersistentSend,
+         @Parameter(name = "jndiBinding", desc = "JNDI Binding") String jndiBinding)         
+                  throws Exception;
 
    @Operation(desc = "Create a JMS ConnectionFactory", impact = ACTION)
    void destroyConnectionFactory(

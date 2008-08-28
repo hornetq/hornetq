@@ -22,8 +22,10 @@
 
 package org.jboss.messaging.tests.unit.jms.client;
 
-import static org.easymock.EasyMock.createStrictMock;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.jms.Connection;
 import javax.jms.QueueConnection;
@@ -34,9 +36,8 @@ import javax.jms.XATopicConnection;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
+import org.easymock.classextension.EasyMock;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 
 /**
@@ -213,25 +214,15 @@ public class JBossConnectionFactoryTest extends TestCase
 
    // Private -------------------------------------------------------
 
-//   (final String clientID,
-//            final int dupsOKBatchSize,
-//            final Location location,
-//            final ConnectionParams connectionParams,                         
-//            final int defaultConsumerWindowSize,
-//            final int defaultConsumerMaxRate,
-//            final int defaultProducerWindowSize,
-//            final int defaultProducerMaxRate,
-//            final boolean defaultBlockOnAcknowledge,
-//            final boolean defaultSendNonPersistentMessagesBlocking,
-//            final boolean defaultSendPersistentMessagesBlocking)
-   
    private void doCreateConnection(Class expectedInterface,
          ConnectionCreation creation) throws Exception
    {
+      final ConnectorFactory cf = EasyMock.createMock(ConnectorFactory.class);
+      final Map<String, Object> params = new HashMap<String, Object>();
+      final long pingPeriod = 12987213;
+      final long callTimeout = 27237;
       final String clientID = "kajsakjs";
       final int dupsOKBatchSize = 12344;
-      final Location location = createStrictMock(Location.class);
-      final ConnectionParams params = new ConnectionParamsImpl();
       final int defaultConsumerWindowSize = 1212;
       final int defaultConsumerMaxRate = 5656;
       final int defaultProducerWindowSize = 2323;
@@ -240,8 +231,9 @@ public class JBossConnectionFactoryTest extends TestCase
       final boolean defaultSendNonPersistentMessagesBlocking = true;
       final boolean defaultSendPersistentMessagesBlocking = true;
       
-      JBossConnectionFactory factory = new JBossConnectionFactory(clientID, dupsOKBatchSize,
-               location, params, defaultConsumerWindowSize, defaultConsumerMaxRate,
+      JBossConnectionFactory factory = new JBossConnectionFactory(cf, params,
+               pingPeriod, callTimeout, clientID, dupsOKBatchSize,
+               defaultConsumerWindowSize, defaultConsumerMaxRate,
                defaultProducerWindowSize, defaultProducerMaxRate, defaultBlockOnAcknowledge,
                defaultSendNonPersistentMessagesBlocking, defaultSendPersistentMessagesBlocking);
       Object connection = creation.createConnection(factory);
@@ -252,10 +244,12 @@ public class JBossConnectionFactoryTest extends TestCase
    private void doCreateConnectionWithCredentials(Class expectedInterface, String username, String password,
             ConnectionCreation creation) throws Exception
       {
+      final ConnectorFactory cf = EasyMock.createMock(ConnectorFactory.class);
+      final Map<String, Object> params = new HashMap<String, Object>();
+      final long pingPeriod = 12987213;
+      final long callTimeout = 27237;
          final String clientID = "kajsakjs";
-         final int dupsOKBatchSize = 12344;
-         final Location location = createStrictMock(Location.class);
-         final ConnectionParams params = new ConnectionParamsImpl();
+         final int dupsOKBatchSize = 12344;        
          final int defaultConsumerWindowSize = 1212;
          final int defaultConsumerMaxRate = 5656;
          final int defaultProducerWindowSize = 2323;
@@ -264,8 +258,10 @@ public class JBossConnectionFactoryTest extends TestCase
          final boolean defaultSendNonPersistentMessagesBlocking = true;
          final boolean defaultSendPersistentMessagesBlocking = true;
          
-         JBossConnectionFactory factory = new JBossConnectionFactory(clientID, dupsOKBatchSize,
-                  location, params, defaultConsumerWindowSize, defaultConsumerMaxRate,
+         JBossConnectionFactory factory = new JBossConnectionFactory(cf, params,
+                  pingPeriod, callTimeout,
+                  clientID, dupsOKBatchSize,
+                  defaultConsumerWindowSize, defaultConsumerMaxRate,
                   defaultProducerWindowSize, defaultProducerMaxRate, defaultBlockOnAcknowledge,
                   defaultSendNonPersistentMessagesBlocking, defaultSendPersistentMessagesBlocking);
          Object connection = creation.createConnection(factory, username, password);

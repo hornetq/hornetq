@@ -22,13 +22,11 @@
 
 package org.jboss.messaging.tests.unit.core.remoting.impl.mina;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.easymock.EasyMock;
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
-import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.remoting.RemotingHandler;
-import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -54,12 +52,11 @@ public class MinaConnectorTest extends UnitTestCase
      
    public void testStartStop() throws Exception
    {
-      RemotingHandler handler = EasyMock.createStrictMock(RemotingHandler.class);
-      ConnectionParams params = new ConnectionParamsImpl();
-      Location location = new LocationImpl(TransportType.TCP, "blah", 1234);
+      RemotingHandler handler = EasyMock.createStrictMock(RemotingHandler.class);     
       ConnectionLifeCycleListener listener = EasyMock.createStrictMock(ConnectionLifeCycleListener.class);
-
-      MinaConnector connector = new MinaConnector(location, params, handler, listener);
+      Map<String, Object> params = new HashMap<String, Object>();
+      
+      MinaConnector connector = new MinaConnector(params, handler, listener);
       
       connector.start();
       connector.close();
@@ -68,13 +65,12 @@ public class MinaConnectorTest extends UnitTestCase
    public void testNullParams() throws Exception
    {
       RemotingHandler handler = EasyMock.createStrictMock(RemotingHandler.class);
-      ConnectionParams params = new ConnectionParamsImpl();
-      Location location = new LocationImpl(TransportType.TCP, "blah", 1234);
+      Map<String, Object> params = new HashMap<String, Object>();
       ConnectionLifeCycleListener listener = EasyMock.createStrictMock(ConnectionLifeCycleListener.class);
 
       try
       {
-         new MinaConnector(null, params, handler, listener);
+         new MinaConnector(params, null, listener);
          
          fail("Should throw Exception");
       }
@@ -85,29 +81,7 @@ public class MinaConnectorTest extends UnitTestCase
       
       try
       {
-         new MinaConnector(location, null, handler, listener);
-         
-         fail("Should throw Exception");
-      }
-      catch (IllegalArgumentException e)
-      {
-         //Ok
-      }
-      
-      try
-      {
-         new MinaConnector(location, params, null, listener);
-         
-         fail("Should throw Exception");
-      }
-      catch (IllegalArgumentException e)
-      {
-         //Ok
-      }
-      
-      try
-      {
-         new MinaConnector(location, params, handler, null);
+         new MinaConnector(params, handler, null);
          
          fail("Should throw Exception");
       }

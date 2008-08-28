@@ -23,12 +23,17 @@
 package org.jboss.messaging.jms.server.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -38,18 +43,27 @@ import org.w3c.dom.NodeList;
 public class JMSServerDeployer extends XmlDeployer 
 {
    Logger log = Logger.getLogger(JMSServerManagerImpl.class);
+   
+   public static final int DEFAULT_DUPS_OK_BATCH_SIZE = 1000;
 
    private JMSServerManager jmsServerManager;
 
    private static final String CLIENTID_ELEMENT = "client-id";
+   private static final String PING_PERIOD_ELEMENT = "ping-period";
+   private static final String CALL_TIMEOUT_ELEMENT = "call-timeout";
    private static final String DUPS_OK_BATCH_SIZE_ELEMENT = "dups-ok-batch-size";
    private static final String CONSUMER_WINDOW_SIZE_ELEMENT = "consumer-window-size";
-   private static final String CONSUMER_MAX_RATE = "consumer-max-rate";
-   private static final String PRODUCER_WINDOW_SIZE = "producer-window-size";
-   private static final String PRODUCER_MAX_RATE = "producer-max-rate";
-   private static final String BLOCK_ON_ACKNOWLEDGE = "block-on-acknowledge";
-   private static final String SEND_NP_MESSAGES_SYNCHRONOUSLY = "send-np-messages-synchronously";
-   private static final String SEND_P_MESSAGES_SYNCHRONOUSLY = "send-p-messages-synchronously";
+   private static final String CONSUMER_MAX_RATE_ELEMENT = "consumer-max-rate";
+   private static final String PRODUCER_WINDOW_SIZE_ELEMENT = "producer-window-size";
+   private static final String PRODUCER_MAX_RATE_ELEMENT = "producer-max-rate";
+   private static final String BLOCK_ON_ACKNOWLEDGE_ELEMENT = "block-on-acknowledge";
+   private static final String SEND_NP_MESSAGES_SYNCHRONOUSLY_ELEMENT = "send-np-messages-synchronously";
+   private static final String SEND_P_MESSAGES_SYNCHRONOUSLY_ELEMENT = "send-p-messages-synchronously";
+   private static final String CONNECTOR_ELEMENT = "connector";
+   private static final String FACTORY_CLASS_ELEMENT = "factory-class";
+   private static final String PARAMS_ELEMENT = "params";
+   private static final String PARAM_ELEMENT = "param";
+   
    private static final String ENTRY_NODE_NAME = "entry";
    private static final String CONNECTION_FACTORY_NODE_NAME = "connection-factory";
    private static final String QUEUE_NODE_NAME = "queue";
@@ -96,78 +110,189 @@ public class JMSServerDeployer extends XmlDeployer
    {
       if (node.getNodeName().equals(CONNECTION_FACTORY_NODE_NAME))
       {
-         // See http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4076040#4076040
-         NodeList attributes = node.getChildNodes();
-  
-         String clientID = null;
-         int dupsOKBatchSize = 1000;
-         
-         int consumerWindowSize = 1024 * 1024;
-         int consumerMaxRate = -1;         
-         int producerWindowSize = 1024 * 1024;
-         int producerMaxRate = -1;
-         boolean blockOnAcknowledge = false;
-         boolean sendNonPersistentMessagesSynchronously = false;
-         boolean sendPersistentMessagesSynchronously = false;
-         
-         for (int j = 0; j < attributes.getLength(); j++)
-         {
-            if (CONSUMER_WINDOW_SIZE_ELEMENT.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               consumerWindowSize = Integer.parseInt(attributes.item(j).getTextContent().trim());
-            }
-            else if (CONSUMER_MAX_RATE.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               consumerMaxRate = Integer.parseInt(attributes.item(j).getTextContent().trim());
-            }
-            else if (PRODUCER_WINDOW_SIZE.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               producerWindowSize = Integer.parseInt(attributes.item(j).getTextContent().trim());
-            }
-            else if (PRODUCER_MAX_RATE.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               producerMaxRate = Integer.parseInt(attributes.item(j).getTextContent().trim());
-            }
-            else if (CLIENTID_ELEMENT.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               clientID = attributes.item(j).getTextContent();
-            }
-            else if (DUPS_OK_BATCH_SIZE_ELEMENT.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               dupsOKBatchSize = Integer.parseInt(attributes.item(j).getTextContent().trim());
-            }
-            else if (BLOCK_ON_ACKNOWLEDGE.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               blockOnAcknowledge = Boolean.parseBoolean(attributes.item(j).getTextContent().trim());
-            }
-            else if (SEND_NP_MESSAGES_SYNCHRONOUSLY.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               sendNonPersistentMessagesSynchronously = Boolean.parseBoolean(attributes.item(j).getTextContent().trim());
-            }
-            else if (SEND_P_MESSAGES_SYNCHRONOUSLY.equalsIgnoreCase(attributes.item(j).getNodeName()))
-            {
-               sendPersistentMessagesSynchronously = Boolean.parseBoolean(attributes.item(j).getTextContent().trim());
-            }
-         }
-
          NodeList children = node.getChildNodes();
-         String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
+         
+         long pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
+         long callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
+         String clientID = null;
+         int dupsOKBatchSize = DEFAULT_DUPS_OK_BATCH_SIZE;
+         int consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
+         int consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
+         int producerWindowSize = ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
+         int producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
+         boolean blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
+         boolean blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+         boolean blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+         
          List<String> jndiBindings = new ArrayList<String>();
-         for (int i = 0; i < children.getLength(); i++)
+         String connectorFactoryClassName = null;         
+         Map<String, Object> params = new HashMap<String, Object>();
+         
+         for (int j = 0; j < children.getLength(); j++)
          {
-            Node child = children.item(i);
-
-            if (ENTRY_NODE_NAME.equalsIgnoreCase(children.item(i).getNodeName()))
+            if (PING_PERIOD_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
-               String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
+               pingPeriod = Long.parseLong(children.item(j).getTextContent().trim());
+            }
+            else if (CALL_TIMEOUT_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               callTimeout = Long.parseLong(children.item(j).getTextContent().trim());
+            }
+            else if (CONSUMER_WINDOW_SIZE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               consumerWindowSize = Integer.parseInt(children.item(j).getTextContent().trim());
+            }
+            else if (CONSUMER_MAX_RATE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               consumerMaxRate = Integer.parseInt(children.item(j).getTextContent().trim());
+            }
+            else if (PRODUCER_WINDOW_SIZE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               producerWindowSize = Integer.parseInt(children.item(j).getTextContent().trim());
+            }
+            else if (PRODUCER_MAX_RATE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               producerMaxRate = Integer.parseInt(children.item(j).getTextContent().trim());
+            }
+            else if (CLIENTID_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               clientID = children.item(j).getTextContent().trim();
+            }
+            else if (DUPS_OK_BATCH_SIZE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               dupsOKBatchSize = Integer.parseInt(children.item(j).getTextContent().trim());
+            }
+            else if (BLOCK_ON_ACKNOWLEDGE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               blockOnAcknowledge = Boolean.parseBoolean(children.item(j).getTextContent().trim());
+            }
+            else if (SEND_NP_MESSAGES_SYNCHRONOUSLY_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               blockOnNonPersistentSend = Boolean.parseBoolean(children.item(j).getTextContent().trim());
+            }
+            else if (SEND_P_MESSAGES_SYNCHRONOUSLY_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               blockOnPersistentSend = Boolean.parseBoolean(children.item(j).getTextContent().trim());
+            }
+            else if (ENTRY_NODE_NAME.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               String jndiName = children.item(j).getAttributes().getNamedItem("name").getNodeValue();
                jndiBindings.add(jndiName);
             }
+            else if (CONNECTOR_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               log.info("Got CONNECTOR");
+               
+               NodeList children2 = children.item(j).getChildNodes();
+                                                         
+               for (int l = 0; l < children2.getLength(); l++)
+               {                                  
+                  String nodeName = children2.item(l).getNodeName();
+                  
+                  if (FACTORY_CLASS_ELEMENT.equalsIgnoreCase(nodeName))
+                  {                    
+                     connectorFactoryClassName = children2.item(l).getTextContent();
+                     
+                     log.info("Got factory class " + connectorFactoryClassName);
+                  }
+                  else if (PARAMS_ELEMENT.equalsIgnoreCase(nodeName))
+                  {                                                             
+                     NodeList nlParams = children2.item(l).getChildNodes();
+                     
+                     for (int m = 0; m < nlParams.getLength(); m++)
+                     {
+                        if (PARAM_ELEMENT.equalsIgnoreCase(nlParams.item(m).getNodeName()))
+                        {
+                           Node paramNode = nlParams.item(m);
+                           
+                           NamedNodeMap attributes = paramNode.getAttributes();
+                           
+                           Node nkey = attributes.getNamedItem("key");
+                           
+                           String key = nkey.getTextContent();
+                           
+                           Node nValue = attributes.getNamedItem("value");
+                           
+                           String value = nValue.getTextContent();
+                           
+                           Node nType = attributes.getNamedItem("type");
+                           
+                           String type = nType.getTextContent();
+                           
+                           if (type.equalsIgnoreCase("Integer"))
+                           {
+                              try
+                              {
+                                 Integer iVal = Integer.parseInt(value);
+                                 
+                                 params.put(key, iVal);
+                              }
+                              catch (NumberFormatException e2)
+                              {
+                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value + " is not a valid Integer");
+                              }
+                           }
+                           else if (type.equalsIgnoreCase("Long"))
+                           {
+                              try
+                              {
+                                 Long lVal = Long.parseLong(value);
+                                 
+                                 params.put(key, lVal);
+                              }
+                              catch (NumberFormatException e2)
+                              {
+                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value + " is not a valid Long");
+                              }
+                           }
+                           else if (type.equalsIgnoreCase("String"))
+                           {
+                              params.put(key, value);                             
+                           }
+                           else if (type.equalsIgnoreCase("Boolean"))
+                           {
+                              Boolean lVal = Boolean.parseBoolean(value);
+                                 
+                              params.put(key, lVal);                              
+                           }
+                           else
+                           {
+                              throw new IllegalArgumentException("Invalid parameter type " + type);
+                           }
+                           
+                           log.info("Got prop, key:" + key + " value:" + value);
+                        }
+                     }
+                  }                                                                  
+               }
+            }
          }
          
-         jmsServerManager.createConnectionFactory(name, clientID, dupsOKBatchSize, 
+         if (connectorFactoryClassName == null)
+         {
+            throw new IllegalArgumentException("connector-factory-class-name must be specified in configuration");
+         }
+         
+         ConnectorFactory connectorFactory;
+         
+         ClassLoader loader = Thread.currentThread().getContextClassLoader();
+         try
+         {
+            Class<?> clz = loader.loadClass(connectorFactoryClassName);
+            connectorFactory = (ConnectorFactory) clz.newInstance();
+         }
+         catch (Exception e)
+         {
+            throw new IllegalArgumentException("Error instantiating interceptor \"" + connectorFactoryClassName + "\"", e);
+         }         
+                  
+         String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
+                  
+         jmsServerManager.createConnectionFactory(name, connectorFactory, params,
+                  pingPeriod, callTimeout, clientID, dupsOKBatchSize, 
                consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, 
-               blockOnAcknowledge, sendNonPersistentMessagesSynchronously, 
-               sendPersistentMessagesSynchronously, jndiBindings);
+               blockOnAcknowledge, blockOnNonPersistentSend, 
+               blockOnPersistentSend, jndiBindings);
       }
       else if (node.getNodeName().equals(QUEUE_NODE_NAME))
       {

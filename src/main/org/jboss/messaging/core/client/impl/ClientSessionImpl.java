@@ -38,7 +38,6 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.CommandManager;
@@ -326,8 +325,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       checkClosed();
 
       return createConsumer(queueName, filterString, direct, connectionFactory
-               .getDefaultConsumerWindowSize(), connectionFactory
-               .getDefaultConsumerMaxRate());
+               .getConsumerWindowSize(), connectionFactory
+               .getConsumerMaxRate());
    }
 
    public ClientConsumer createConsumer(final SimpleString queueName,
@@ -422,8 +421,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       checkClosed();
 
       return createProducer(address, connectionFactory
-               .getDefaultProducerWindowSize(), connectionFactory
-               .getDefaultProducerMaxRate());
+               .getProducerWindowSize(), connectionFactory
+               .getProducerMaxRate());
    }
 
    public ClientProducer createRateLimitedProducer(SimpleString address,
@@ -446,8 +445,8 @@ public class ClientSessionImpl implements ClientSessionInternal
             final int windowSize, final int maxRate) throws MessagingException
    {
       return createProducer(address, windowSize, maxRate, connectionFactory
-               .isDefaultBlockOnNonPersistentSend(), connectionFactory
-               .isDefaultBlockOnPersistentSend());
+               .isBlockOnNonPersistentSend(), connectionFactory
+               .isBlockOnPersistentSend());
    }
 
    public ClientProducer createProducer(final SimpleString address,
@@ -1181,10 +1180,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
 
       commandManager.close();
-      
-      Location loc = remotingConnection.getLocation();
             
-      connectionRegistry.returnConnection(loc);
+      connectionRegistry.returnConnection(remotingConnection.getID());
 
       closed = true;
    }

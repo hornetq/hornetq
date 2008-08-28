@@ -65,11 +65,6 @@ public class ConnectionFactoryControl extends StandardMBean implements
 
    // ManagedConnectionFactoryMBean implementation ------------------
 
-   public String getURL()
-   {
-      return cf.getLocation().toString();
-   }
-
    public List<String> getBindings()
    {
       return bindings;
@@ -79,25 +74,35 @@ public class ConnectionFactoryControl extends StandardMBean implements
    {
       return cf.getClientID();
    }
-
+   
+   public long getPingPeriod()
+   {
+      return cf.getPingPeriod();
+   }
+   
+   public long getCallTimeout()
+   {
+      return cf.getCallTimeout();
+   }
+   
    public int getDefaultConsumerMaxRate()
    {      
-      return cf.getDefaultConsumerMaxRate();
+      return cf.getConsumerMaxRate();
    }
 
    public int getDefaultConsumerWindowSize()
    {
-      return cf.getDefaultConsumerWindowSize();
+      return cf.getConsumerWindowSize();
    }
 
    public int getDefaultProducerMaxRate()
    {
-      return cf.getDefaultProducerMaxRate();
+      return cf.getProducerMaxRate();
    }
 
    public int getDefaultProducerWindowSize()
    {
-      return cf.getDefaultProducerWindowSize();
+      return cf.getProducerWindowSize();
    }
 
    public int getDupsOKBatchSize()
@@ -107,17 +112,17 @@ public class ConnectionFactoryControl extends StandardMBean implements
 
    public boolean isDefaultBlockOnAcknowledge()
    {
-      return cf.isDefaultBlockOnAcknowledge();
+      return cf.isBlockOnAcknowledge();
    }
 
    public boolean isDefaultBlockOnNonPersistentSend()
    {
-      return cf.isDefaultSendNonPersistentMessagesBlocking();
+      return cf.isBlockOnNonPersistentSend();
    }
 
    public boolean isDefaultBlockOnPersistentSend()
    {
-      return cf.isDefaultSendPersistentMessagesBlocking();
+      return cf.isBlockOnPersistentSend();
    }
 
    public String getName()

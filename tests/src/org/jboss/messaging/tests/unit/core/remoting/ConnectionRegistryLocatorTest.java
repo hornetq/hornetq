@@ -21,15 +21,8 @@
  */
 package org.jboss.messaging.tests.unit.core.remoting;
 
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Properties;
-
 import org.jboss.messaging.core.remoting.ConnectionRegistry;
 import org.jboss.messaging.core.remoting.ConnectionRegistryLocator;
-import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
@@ -53,40 +46,5 @@ public class ConnectionRegistryLocatorTest extends UnitTestCase
       assertTrue(reg1 instanceof ConnectionRegistryImpl);
       
       assertTrue(reg2 instanceof ConnectionRegistryImpl);
-   }
-   
-   public void testDefaultConnectorFactories() throws Exception
-   {
-      //The connection registry locator should have read the props file and installed
-      //the default connector factories
-      
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
-      
-      Enumeration<URL> urls = loader.getResources(ConnectionRegistryLocator.CONNECTOR_FACTORIES_PROPS_FILE_NAME);
-      
-      ConnectionRegistry registry = ConnectionRegistryLocator.getRegistry();
-                       
-      while (urls.hasMoreElements())
-      {
-         URL url = urls.nextElement();
-         
-         Properties props = new Properties();
-         
-         InputStream is = url.openStream();
-         
-         props.load(is);
-         
-         for (Map.Entry<Object, Object> entry: props.entrySet())
-         {
-            String tt = (String)entry.getKey();
-            String className = (String)entry.getValue();
-            TransportType transport = TransportType.valueOf(tt);
-            
-            assertEquals(className, registry.getConnectorFactory(transport).getClass().getName());            
-         }
-         
-         is.close();            
-      }
-   }
-   
+   }   
 }

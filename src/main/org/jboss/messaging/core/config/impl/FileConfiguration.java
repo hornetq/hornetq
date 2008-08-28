@@ -26,15 +26,16 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
+import org.jboss.messaging.core.config.AcceptorInfo;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -82,71 +83,13 @@ public class FileConfiguration extends ConfigurationImpl
       jmxManagementEnabled = getBoolean(e, "jmx-management-enabled", jmxManagementEnabled);
       
       securityInvalidationInterval = getLong(e, "security-invalidation-interval", securityInvalidationInterval);
+      
+      callTimeout = getLong(e, "call-timeout", callTimeout);
+      
+      packetConfirmationBatchSize = getInteger(e, "packet-confirmation-batch-size", packetConfirmationBatchSize);
+      
+      connectionScanPeriod = getLong(e, "connection-scan-period", connectionScanPeriod);
             
-      // Remoting config
-      
-      transport = TransportType.valueOf(getString(e, "remoting-transport", transport.toString()));
-      
-      host = getString(e, "remoting-host", host);
-
-      if (System.getProperty("java.rmi.server.hostname") == null)
-      {
-         System.setProperty("java.rmi.server.hostname", host);
-      }
-
-      port = getInteger(e, "remoting-port", port);
-      
-      String sbackupTransport = getString(e, "remoting-backup-transport", null);
-      
-      if (sbackupTransport != null)
-      {
-         backupTransport = TransportType.valueOf(sbackupTransport);
-      }
-      
-      backupHost = getString(e, "remoting-backup-host", backupHost);
-
-      backupPort = getInteger(e, "remoting-backup-port", backupPort);
-      
-      int packetConfirmationBatchSize = getInteger(e, "packet-confirmation-batch-size", ConnectionParamsImpl.DEFAULT_PACKET_CONFIRMATION_BATCH_SIZE);
-
-      int callTimeout = getInteger(e, "remoting-call-timeout", ConnectionParamsImpl.DEFAULT_CALL_TIMEOUT);
-
-      boolean inVMOptimisationEnabled = getBoolean(e, "remoting-enable-invm-optimisation", ConnectionParamsImpl.DEFAULT_INVM_OPTIMISATION_ENABLED);
-
-      boolean tcpNoDelay = getBoolean(e, "remoting-tcp-nodelay", ConnectionParamsImpl.DEFAULT_TCP_NODELAY);
-
-      int tcpReceiveBufferSize = getInteger(e, "remoting-tcp-receive-buffer-size", ConnectionParamsImpl.DEFAULT_TCP_RECEIVE_BUFFER_SIZE);
-
-      int tcpSendBufferSize = getInteger(e, "remoting-tcp-send-buffer-size", ConnectionParamsImpl.DEFAULT_TCP_SEND_BUFFER_SIZE);
-
-      int pingInterval = getInteger(e, "remoting-ping-interval", ConnectionParamsImpl.DEFAULT_PING_INTERVAL);
-
-      sslEnabled = getBoolean(e, "remoting-enable-ssl", ConnectionParamsImpl.DEFAULT_SSL_ENABLED);
-
-      keyStorePath = getString(e, "remoting-ssl-keystore-path", ConfigurationImpl.DEFAULT_KEYSTORE_PATH);
-
-      keyStorePassword = getString(e, "remoting-ssl-keystore-password", ConfigurationImpl.DEFAULT_KEYSTORE_PASSWORD);
-
-      trustStorePath = getString(e, "remoting-ssl-truststore-path", ConfigurationImpl.DEFAULT_TRUSTSTORE_PATH);
-
-      trustStorePassword = getString(e, "remoting-ssl-truststore-password", ConfigurationImpl.DEFAULT_TRUSTSTORE_PASSWORD);
-
-      defaultConnectionParams.setCallTimeout(callTimeout);
-      
-      defaultConnectionParams.setInVMOptimisationEnabled(inVMOptimisationEnabled);
-      
-      defaultConnectionParams.setTcpNoDelay(tcpNoDelay);
-      
-      defaultConnectionParams.setTcpReceiveBufferSize(tcpReceiveBufferSize);
-      
-      defaultConnectionParams.setTcpSendBufferSize(tcpSendBufferSize);
-      
-      defaultConnectionParams.setPingInterval(pingInterval);
-      
-      defaultConnectionParams.setSSLEnabled(sslEnabled);
-      
-      defaultConnectionParams.setPacketConfirmationBatchSize(packetConfirmationBatchSize);
-      
       NodeList interceptorNodes = e.getElementsByTagName("remoting-interceptors");
 
       ArrayList<String> interceptorList = new ArrayList<String>();
@@ -167,27 +110,106 @@ public class FileConfiguration extends ConfigurationImpl
       }
       this.interceptorClassNames = interceptorList;
       
-      NodeList acceptorFactoryNodes = e.getElementsByTagName("remoting-acceptor-factories");
+      NodeList acceptorNodes = e.getElementsByTagName("remoting-acceptors");
       
-      Set<String> acceptorFactories = new HashSet<String>();
-
-      if (acceptorFactoryNodes.getLength() > 0)
+      if (acceptorNodes.getLength() > 0)
       {
-         NodeList factories = acceptorFactoryNodes.item(0).getChildNodes();
-
-         for (int k = 0; k < factories.getLength(); k++)
+         NodeList acceptors = acceptorNodes.item(0).getChildNodes();
+         
+         for (int k = 0; k < acceptors.getLength(); k++)
          {
-            if ("class-name".equalsIgnoreCase(factories.item(k).getNodeName()))
+            if ("acceptor".equalsIgnoreCase(acceptors.item(k).getNodeName()))
             {
-               String clazz = factories.item(k).getTextContent();
+               NodeList children = acceptors.item(k).getChildNodes();
                
-               acceptorFactories.add(clazz);
+               String clazz = null;
+               
+               Map<String, Object> params = new HashMap<String, Object>();
+                              
+               for (int l = 0; l < children.getLength(); l++)
+               {                                  
+                  String nodeName = children.item(l).getNodeName();
+                  
+                  if ("factory-class".equalsIgnoreCase(nodeName))
+                  {                    
+                     clazz = children.item(l).getTextContent();
+                  }
+                  else if ("params".equalsIgnoreCase(nodeName))
+                  {                                                             
+                     NodeList nlParams = children.item(l).getChildNodes();
+                     
+                     for (int m = 0; m < nlParams.getLength(); m++)
+                     {
+                        if ("param".equalsIgnoreCase(nlParams.item(m).getNodeName()))
+                        {
+                           Node paramNode = nlParams.item(m);
+                           
+                           NamedNodeMap attributes = paramNode.getAttributes();
+                           
+                           Node nkey = attributes.getNamedItem("key");
+                           
+                           String key = nkey.getTextContent();
+                           
+                           Node nValue = attributes.getNamedItem("value");
+                           
+                           String value = nValue.getTextContent();
+                           
+                           Node nType = attributes.getNamedItem("type");
+                           
+                           String type = nType.getTextContent();
+                           
+                           if (type.equalsIgnoreCase("Integer"))
+                           {
+                              try
+                              {
+                                 Integer iVal = Integer.parseInt(value);
+                                 
+                                 params.put(key, iVal);
+                              }
+                              catch (NumberFormatException e2)
+                              {
+                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value + " is not a valid Integer");
+                              }
+                           }
+                           else if (type.equalsIgnoreCase("Long"))
+                           {
+                              try
+                              {
+                                 Long lVal = Long.parseLong(value);
+                                 
+                                 params.put(key, lVal);
+                              }
+                              catch (NumberFormatException e2)
+                              {
+                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value + " is not a valid Long");
+                              }
+                           }
+                           else if (type.equalsIgnoreCase("String"))
+                           {
+                              params.put(key, value);                             
+                           }
+                           else if (type.equalsIgnoreCase("Boolean"))
+                           {
+                              Boolean lVal = Boolean.parseBoolean(value);
+                                 
+                              params.put(key, lVal);                              
+                           }
+                           else
+                           {
+                              throw new IllegalArgumentException("Invalid parameter type " + type);
+                           }
+                        }
+                     }
+                  }                                                                  
+               }
+      
+               AcceptorInfo info = new AcceptorInfo(clazz, params);
+               
+               acceptorInfos.add(info);    
             }
          }
       }
-      this.acceptorFactoryClassNames = acceptorFactories;
-      
-    
+
       // Persistence config
 
       bindingsDirectory = getString(e, "bindings-directory", bindingsDirectory);

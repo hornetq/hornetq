@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -20,51 +20,79 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */ 
 
-package org.jboss.messaging.tests.unit.jms.referenceable;
+package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import java.util.Map;
-
-import javax.naming.Reference;
-
-import junit.framework.TestCase;
-
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.jms.referenceable.ConnectionFactoryObjectFactory;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- * @version <tt>$Revision$</tt>
+ * 
+ * A Ping
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class ConnectionFactoryObjectFactoryTest extends TestCase
+public class Ping extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
+   private long expirePeriod;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   // Public --------------------------------------------------------
-
-   public void testReference() throws Exception
+   public Ping(final long expirePeriod)
    {
-      JBossConnectionFactory cf =
-         new JBossConnectionFactory(null, null, 123, 123, randomString(), 1, 1, 1, 1, 1, true, true, true);
-      Reference reference = cf.getReference();
+      super(PING);
 
-      ConnectionFactoryObjectFactory factory = new ConnectionFactoryObjectFactory();
-      
-      Object object = factory.getObjectInstance(reference, null, null, null);
-      assertNotNull(object);
-      assertTrue(object instanceof JBossConnectionFactory);
+      this.expirePeriod = expirePeriod;
    }
    
+   public Ping()
+   {
+      super(PING);
+   }
+
+   // Public --------------------------------------------------------
+
+   public long getExpirePeriod()
+   {
+      return expirePeriod;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putLong(expirePeriod);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      expirePeriod = buffer.getLong();
+   }
+
+   @Override
+   public String toString()
+   {
+      StringBuffer buf = new StringBuffer(getParentString());
+      buf.append(", expirePeriod=" + expirePeriod);
+      buf.append("]");
+      return buf.toString();
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof Ping == false)
+      {
+         return false;
+      }
+            
+      Ping r = (Ping)other;
+      
+      return super.equals(other) && this.expirePeriod == r.expirePeriod;
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

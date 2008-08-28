@@ -29,11 +29,14 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -44,6 +47,8 @@ import javax.management.ObjectName;
 
 import junit.framework.TestCase;
 
+import org.easymock.EasyMock;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.jms.server.management.impl.JMSServerControl;
@@ -252,6 +257,10 @@ public class JMSServerControlTest extends TestCase
          throws Exception
    {
       String name = randomString();
+      ConnectorFactory cf = EasyMock.createMock(ConnectorFactory.class);
+      Map<String, Object> params = new HashMap<String, Object>();
+      long pingPeriod = randomLong();
+      long callTimeout = randomLong();
       String clientID = randomString();
       int dupsOKBatchSize = randomInt();
       int consumerWindowSize = randomInt();
@@ -263,19 +272,21 @@ public class JMSServerControlTest extends TestCase
       boolean defaultSendPersistentMessagesBlocking = randomBoolean();
       boolean created = true;
       String jndiBinding = randomString();
-      List<String> bindings = new ArrayList<String>();
-      bindings.add(jndiBinding);
+    //  List<String> bindings = new ArrayList<String>();
+   //   bindings.add(jndiBinding);
 
       JMSServerManager serverManager = createMock(JMSServerManager.class);
       expect(
-            serverManager.createConnectionFactory(name, clientID,
+            serverManager.createConnectionFactory(name, cf, params,
+                     pingPeriod, callTimeout,
+                     clientID,
                   dupsOKBatchSize, consumerWindowSize, consumerMaxRate,
                   producerWindowSize, producerMaxRate, blockOnAcknowledge,
                   defaultSendNonPersistentMessagesBlocking,
-                  defaultSendPersistentMessagesBlocking, bindings)).andReturn(
+                  defaultSendPersistentMessagesBlocking, jndiBinding)).andReturn(
             created);
       replay(serverManager);
-
+      
       JMSServerControl control = new JMSServerControl(serverManager);
       mbeanServer.registerMBean(control, serverON);
 
@@ -293,11 +304,13 @@ public class JMSServerControlTest extends TestCase
       };
 
       mbeanServer.addNotificationListener(serverON, listener, null, null);
-      control.createConnectionFactory(name, jndiBinding, clientID,
+      control.createConnectionFactory(name, cf, params,
+               pingPeriod, callTimeout,
+               clientID,
             dupsOKBatchSize, consumerWindowSize, consumerMaxRate,
-            producerWindowSize, producerMaxRate,
-            blockOnAcknowledge,
-            defaultSendNonPersistentMessagesBlocking, defaultSendPersistentMessagesBlocking);
+            producerWindowSize, producerMaxRate, blockOnAcknowledge,
+            defaultSendNonPersistentMessagesBlocking,
+            defaultSendPersistentMessagesBlocking, jndiBinding);
 
       boolean gotNotification = latch.await(500, MILLISECONDS);
       assertTrue(gotNotification);

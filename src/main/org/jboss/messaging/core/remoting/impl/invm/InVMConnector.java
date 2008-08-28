@@ -21,11 +21,17 @@
   */
 package org.jboss.messaging.core.remoting.impl.invm;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
+import org.jboss.messaging.util.ConfigurationHelper;
 
 /**
  * A InVMConnector
@@ -35,6 +41,8 @@ import org.jboss.messaging.core.remoting.spi.Connector;
  */
 public class InVMConnector implements Connector
 {
+   public static final Logger log = Logger.getLogger(InVMConnector.class);
+
    private final int id;
    
    private final RemotingHandler handler;
@@ -43,14 +51,18 @@ public class InVMConnector implements Connector
    
    private final InVMAcceptor acceptor;
    
-   public InVMConnector(final int id, final RemotingHandler handler,
+   private ConcurrentMap<String, Connection> connections = new ConcurrentHashMap<String, Connection>();
+   
+   private volatile boolean started;
+   
+   public InVMConnector(final Map<String, Object> configuration, final RemotingHandler handler,
                         final ConnectionLifeCycleListener listener)
    {
-      this.id = id;
-      
       this.handler = handler;   
       
       this.listener = listener;
+      
+      this.id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
       
       InVMRegistry registry = InVMRegistry.instance;
       
@@ -64,9 +76,23 @@ public class InVMConnector implements Connector
       }
    }
 
-   public void close()
+   public synchronized void close()
    {      
-      InVMRegistry.instance.unregisterConnector(id);            
+      if (!started)
+      {
+         return;
+      }
+      
+      for (Connection connection: connections.values())
+      {
+         listener.connectionDestroyed(connection.getID());
+      }
+      
+      connections.clear();
+      
+      InVMRegistry.instance.unregisterConnector(id);        
+      
+      started = false;
    }
 
    public Connection createConnection()
@@ -78,8 +104,9 @@ public class InVMConnector implements Connector
       return conn;
    }
 
-   public void start()
+   public synchronized void start()
    {          
+      started = true;
    }
    
    public RemotingHandler getHandler()
@@ -87,22 +114,47 @@ public class InVMConnector implements Connector
       return handler;
    }
    
+   public void disconnect(final String connectionID)
+   {
+      if (!started)
+      {
+         throw new IllegalStateException("Acceptor is not started");
+      }
+      
+      Connection conn = connections.get(connectionID);
+      
+      if (conn != null)
+      {
+         conn.close();
+      }
+   }
+   
    private class Listener implements ConnectionLifeCycleListener
    {
-      public void connectionCreated(Connection connection)
-      {
+      public void connectionCreated(final Connection connection)
+      {         
+         if (connections.putIfAbsent((String)connection.getID(), connection) != null)
+         {
+            throw new IllegalArgumentException("Connection already exists with id " + connection.getID());
+         }
+           
          listener.connectionCreated(connection);
       }
 
-      public void connectionDestroyed(Object connectionID)
-      {
+      public void connectionDestroyed(final Object connectionID)
+      {         
+         if (connections.remove(connectionID) == null)
+         {
+            throw new IllegalArgumentException("Cannot find connection with id " + connectionID + " to remove");
+         }
+           
          //Close the correspond connection on the other side
          acceptor.disconnect((String)connectionID);
          
          listener.connectionDestroyed(connectionID);
       }
 
-      public void connectionException(Object connectionID, MessagingException me)
+      public void connectionException(final Object connectionID, final MessagingException me)
       {
          listener.connectionException(connectionID, me);
       }

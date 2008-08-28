@@ -26,14 +26,10 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
-import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
@@ -49,9 +45,7 @@ public class SimpleClient
       ClientSession clientSession = null;
       try
       {
-         Location location = new LocationImpl(TransportType.TCP, "localhost", 5400);
-         ConnectionParams connectionParams = new ConnectionParamsImpl();
-         ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(location, connectionParams);           
+         ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new NettyConnectorFactory());           
          clientSession = sessionFactory.createSession(false, true, true, 1, false);
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);

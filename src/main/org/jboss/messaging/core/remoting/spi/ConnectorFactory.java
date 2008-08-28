@@ -1,7 +1,8 @@
 package org.jboss.messaging.core.remoting.spi;
 
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
+import java.io.Serializable;
+import java.util.Map;
+
 import org.jboss.messaging.core.remoting.RemotingHandler;
 
 /**
@@ -11,9 +12,9 @@ import org.jboss.messaging.core.remoting.RemotingHandler;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface ConnectorFactory
+public interface ConnectorFactory extends Serializable
 {
-   Connector createConnector(Location location, ConnectionParams params, 
+   Connector createConnector(Map<String, Object> configuration,
                              RemotingHandler handler,
                              ConnectionLifeCycleListener listener);
 }

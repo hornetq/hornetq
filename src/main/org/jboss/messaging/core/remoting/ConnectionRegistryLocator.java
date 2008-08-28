@@ -21,16 +21,8 @@
  */
 package org.jboss.messaging.core.remoting;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Properties;
-
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 
 /**
  * 
@@ -45,55 +37,7 @@ public class ConnectionRegistryLocator
    
    public static final String CONNECTOR_FACTORIES_PROPS_FILE_NAME = "jbm-connector-factories.properties";
    
-   private static ConnectionRegistry registry;
-   
-   static
-   {
-      registry = new ConnectionRegistryImpl();
-      
-      try
-      {      
-         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-         
-         Enumeration<URL> urls = loader.getResources(CONNECTOR_FACTORIES_PROPS_FILE_NAME);
-                          
-         //Only read the first one - this allows user to override the defaults by placing a file
-         //with the same name before it on the classpath
-         if (urls.hasMoreElements())
-         {
-            URL url = urls.nextElement();
-                   
-            Properties props = new Properties();
-            
-            InputStream is = url.openStream();
-            
-            props.load(is);
-            
-            for (Map.Entry<Object, Object> entry: props.entrySet())
-            {
-               String tt = (String)entry.getKey();
-               String className = (String)entry.getValue();
-               TransportType transport = TransportType.valueOf(tt);
-               
-               try
-               {
-                  Class<?> clazz = loader.loadClass(className);            
-                  registry.registerConnectorFactory(transport, (ConnectorFactory)clazz.newInstance());                  
-               }
-               catch (Exception e)
-               {
-                  log.warn("Failed to instantiate connector factory \"" + className + "\"", e);
-               }
-            }
-            
-            is.close();            
-         }
-      }
-      catch (IOException e)
-      {
-         log.error("Failed to load acceptor factories, e");
-      }
-   }
+   private static final ConnectionRegistry registry = new ConnectionRegistryImpl();
    
    public static ConnectionRegistry getRegistry()
    {

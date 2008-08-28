@@ -21,6 +21,7 @@
   */
 package org.jboss.messaging.core.remoting.impl.invm;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -29,6 +30,7 @@ import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
+import org.jboss.messaging.util.ConfigurationHelper;
 
 /**
  * A InVMAcceptor
@@ -47,15 +49,17 @@ public class InVMAcceptor implements Acceptor
    private ConcurrentMap<String, Connection> connections = new ConcurrentHashMap<String, Connection>();
    
    private volatile boolean started;
+   
+   private volatile InVMConnector connector;
       
-   public InVMAcceptor(final int id, final RemotingHandler handler,
+   public InVMAcceptor(final Map<String, Object> configuration, final RemotingHandler handler,
                        final ConnectionLifeCycleListener listener)
    {
-      this.id = id;
-      
       this.handler = handler;
       
-      this.listener = listener;            
+      this.listener = listener;   
+      
+      this.id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
    }
    
    public synchronized void start() throws Exception
@@ -108,6 +112,8 @@ public class InVMAcceptor implements Acceptor
          throw new IllegalStateException("Acceptor is not started");
       }
       
+      connector = InVMRegistry.instance.getConnector(id);
+      
       new InVMConnection(connectionID, remoteHandler, new Listener());               
    }
    
@@ -128,7 +134,7 @@ public class InVMAcceptor implements Acceptor
    
    private class Listener implements ConnectionLifeCycleListener
    {
-      public void connectionCreated(Connection connection)
+      public void connectionCreated(final Connection connection)
       {
          if (connections.putIfAbsent((String)connection.getID(), connection) != null)
          {
@@ -138,17 +144,20 @@ public class InVMAcceptor implements Acceptor
          listener.connectionCreated(connection);
       }
 
-      public void connectionDestroyed(Object connectionID)
+      public void connectionDestroyed(final Object connectionID)
       {
-         if (connections.remove(connectionID) != null)
+         if (connections.remove(connectionID) == null)
          {
             throw new IllegalArgumentException("Cannot find connection with id " + connectionID + " to remove");
          }
          
+         //Remove on the other side too
+         connector.disconnect((String)connectionID);
+         
          listener.connectionDestroyed(connectionID);
       }
 
-      public void connectionException(Object connectionID, MessagingException me)
+      public void connectionException(final Object connectionID, final MessagingException me)
       {
          listener.connectionException(connectionID, me);
       }

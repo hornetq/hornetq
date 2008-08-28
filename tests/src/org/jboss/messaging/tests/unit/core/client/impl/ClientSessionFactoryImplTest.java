@@ -22,24 +22,23 @@
 
 package org.jboss.messaging.tests.unit.core.client.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
-import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.CommandManager;
 import org.jboss.messaging.core.remoting.ConnectionRegistry;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.CommandManagerImpl;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.core.version.impl.VersionImpl;
 import org.jboss.messaging.tests.util.RandomUtil;
@@ -58,54 +57,37 @@ public class ClientSessionFactoryImplTest extends UnitTestCase
    
    public void testWideConstructor() throws Exception
    {
-      final Location location = new LocationImpl(TransportType.TCP, "aardvarks");
+      final ConnectorFactory cf = EasyMock.createMock(ConnectorFactory.class);
+      Map<String, Object> params = new HashMap<String, Object>();
       
-      final ConnectionParams params = new ConnectionParamsImpl();
-      
-      testCreateClientSessionFactory(location, params,
+      testCreateClientSessionFactory(cf, params, 12321, 123123,
             32342, 1254, 152454, 15454, false, false, false);
       
-      testCreateClientSessionFactory(location, params,
+      testCreateClientSessionFactory(cf, params, 12542, 1625,
             65465, 5454, 6544, 654654, true, true, true);      
    }
    
    public void testLocationOnlyConstructor() throws Exception
    {
-      final Location location = new LocationImpl(TransportType.TCP, "bullfrog");
+      final ConnectorFactory cf = EasyMock.createMock(ConnectorFactory.class);
       
-      final ClientSessionFactory cf = new ClientSessionFactoryImpl(location);
+      final ClientSessionFactory sf = new ClientSessionFactoryImpl(cf);
       
-      assertTrue(cf.getLocation() == location);
-      
-      ConnectionParams params = new ConnectionParamsImpl();
-      assertEquals(params, cf.getConnectionParams());
-      
-      checkDefaults(cf);
+      assertTrue(cf == sf.getConnectorFactory());
+
+      checkDefaults(sf);
    }
     
-   public void testLocationAndParamsOnlyConstructor() throws Exception
-   {
-      final Location location = new LocationImpl(TransportType.TCP, "bullfrog");
-      
-      final ConnectionParams params = new ConnectionParamsImpl();
-      
-      ClientSessionFactory cf = new ClientSessionFactoryImpl(location, params);
-      
-      assertTrue(cf.getLocation() == location);
-            
-      assertTrue(params == cf.getConnectionParams());
-      
-      checkDefaults(cf);
-   }   
-   
    public void testGetSetAttributes() throws Exception
    {
-      final Location location = new LocationImpl(TransportType.TCP, "echidna");
+      final ConnectorFactory cf = EasyMock.createMock(ConnectorFactory.class);
       
-      final ClientSessionFactory cf = new ClientSessionFactoryImpl(location);
+      final ClientSessionFactory sf = new ClientSessionFactoryImpl(cf);
       
-      checkGetSetAttributes(cf, new ConnectionParamsImpl(), 12312, 1231, 23424, 123213, false, false, false);
-      checkGetSetAttributes(cf, new ConnectionParamsImpl(), 656, 3453, 4343, 6556, true, true, true);      
+      Map<String, Object> params = new HashMap<String, Object>();
+      
+      checkGetSetAttributes(sf, cf, params, 123, 767, 12312, 1231, 23424, 123213, false, false, false);
+      checkGetSetAttributes(sf, cf, params, 1726, 134, 656, 3453, 4343, 6556, true, true, true);      
    }   
    
    public void testCreateSession() throws Throwable
@@ -122,25 +104,29 @@ public class ClientSessionFactoryImplTest extends UnitTestCase
       
    private void testCreateSessionWithUsernameAndPassword(final String username, final String password) throws Throwable
    {
-      final Location location = new LocationImpl(TransportType.TCP, "cheesecake");
-      
-      final ConnectionParams params = new ConnectionParamsImpl();
-      
       ConnectionRegistry cr = EasyMock.createStrictMock(ConnectionRegistry.class);
       
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
       
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
+      
+      ConnectorFactory cof = EasyMock.createStrictMock(ConnectorFactory.class);
+      
+      Map<String, Object> params = new HashMap<String, Object>();
        
+      final long pingPeriod = 61123;
+      final long callTimeout = 2763;
+      
       ClientSessionFactoryImpl cf =
-         new ClientSessionFactoryImpl(location, params,
+         new ClientSessionFactoryImpl(cof, params,
+               pingPeriod, callTimeout,
                32432, 4323,
                453453, 54543, false,
                false, false);
       
       cf.setConnectionRegistry(cr);
             
-      EasyMock.expect(cr.getConnection(location, params)).andReturn(rc);
+      EasyMock.expect(cr.getConnection(cof, params, pingPeriod, callTimeout)).andReturn(rc);
       
       EasyMock.expect(rc.getPacketDispatcher()).andStubReturn(dispatcher);
       long commandResponseTargetID = 1201922;
@@ -151,11 +137,12 @@ public class ClientSessionFactoryImplTest extends UnitTestCase
       boolean autoCommitAcks = RandomUtil.randomBoolean();
       int lazyAckBatchSize = 123;     
       boolean cacheProducers = RandomUtil.randomBoolean();
+      int confirmationBatchSize = RandomUtil.randomInt();
               
       Version serverVersion = new VersionImpl("blah", 1, 1, 1, 12, "blah");
       
       CreateSessionResponseMessage response = 
-         new CreateSessionResponseMessage(124312, 16226, serverVersion.getIncrementingVersion());
+         new CreateSessionResponseMessage(124312, 16226, serverVersion.getIncrementingVersion(), confirmationBatchSize);
       
       EasyMock.expect(rc.sendBlocking(EasyMock.eq(PacketDispatcherImpl.MAIN_SERVER_HANDLER_ID),
                                       EasyMock.eq(PacketDispatcherImpl.MAIN_SERVER_HANDLER_ID),
@@ -185,64 +172,76 @@ public class ClientSessionFactoryImplTest extends UnitTestCase
    }
    
    
-   private void testCreateClientSessionFactory(final Location location, final ConnectionParams params,
+   private void testCreateClientSessionFactory(final ConnectorFactory cf, final Map<String, Object> params,
+            final long pingPeriod, final long callTimeout,
          final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
          final int defaultProducerWindowSize, final int defaultProducerMaxRate,
          final boolean defaultBlockOnAcknowledge,
          final boolean defaultSendNonPersistentMessagesBlocking,
          final boolean defaultSendPersistentMessagesBlocking) throws Exception
    {
-      ClientSessionFactory cf =
-         new ClientSessionFactoryImpl(location, params, defaultConsumerWindowSize, defaultConsumerMaxRate,
+      ClientSessionFactory sf =
+         new ClientSessionFactoryImpl(cf, params, pingPeriod, callTimeout, defaultConsumerWindowSize, defaultConsumerMaxRate,
                defaultProducerWindowSize, defaultProducerMaxRate, defaultBlockOnAcknowledge,
                defaultSendNonPersistentMessagesBlocking, defaultSendPersistentMessagesBlocking);
       
-      assertTrue(location == cf.getLocation());
-      assertTrue(params == cf.getConnectionParams());
-      assertEquals(defaultConsumerWindowSize, cf.getDefaultConsumerWindowSize());
-      assertEquals(defaultConsumerMaxRate, cf.getDefaultConsumerMaxRate());
-      assertEquals(defaultProducerWindowSize, cf.getDefaultProducerWindowSize());
-      assertEquals(defaultProducerMaxRate, cf.getDefaultProducerMaxRate());
-      assertEquals(defaultBlockOnAcknowledge, cf.isDefaultBlockOnAcknowledge());
-      assertEquals(defaultSendNonPersistentMessagesBlocking, cf.isDefaultBlockOnNonPersistentSend());
-      assertEquals(defaultSendPersistentMessagesBlocking, cf.isDefaultBlockOnPersistentSend());
+      assertTrue(cf == sf.getConnectorFactory());
+      assertTrue(params == sf.getTransportParams());
+      assertEquals(pingPeriod, sf.getPingPeriod());
+      assertEquals(callTimeout, sf.getCallTimeout());
+      assertEquals(defaultConsumerWindowSize, sf.getConsumerWindowSize());
+      assertEquals(defaultConsumerMaxRate, sf.getConsumerMaxRate());
+      assertEquals(defaultProducerWindowSize, sf.getProducerWindowSize());
+      assertEquals(defaultProducerMaxRate, sf.getProducerMaxRate());
+      assertEquals(defaultBlockOnAcknowledge, sf.isBlockOnAcknowledge());
+      assertEquals(defaultSendNonPersistentMessagesBlocking, sf.isBlockOnNonPersistentSend());
+      assertEquals(defaultSendPersistentMessagesBlocking, sf.isBlockOnPersistentSend());
    }
    
    private void checkDefaults(final ClientSessionFactory cf) throws Exception
    {
-      assertEquals(ClientSessionFactoryImpl.DEFAULT_DEFAULT_CONSUMER_WINDOW_SIZE, cf.getDefaultConsumerWindowSize());
-      assertEquals(ClientSessionFactoryImpl.DEFAULT_DEFAULT_CONSUMER_MAX_RATE, cf.getDefaultConsumerMaxRate());
-      assertEquals(ClientSessionFactoryImpl.DEFAULT_DEFAULT_PRODUCER_WINDOW_SIZE, cf.getDefaultProducerWindowSize());
-      assertEquals(ClientSessionFactoryImpl.DEFAULT_DEFAULT_PRODUCER_MAX_RATE, cf.getDefaultProducerMaxRate());
-      assertEquals(ClientSessionFactoryImpl.DEFAULT_DEFAULT_BLOCK_ON_ACKNOWLEDGE, cf.isDefaultBlockOnAcknowledge());
-      assertEquals(ClientSessionFactoryImpl.DEFAULT_DEFAULT_BLOCK_ON_PERSISTENT_SEND, cf.isDefaultBlockOnNonPersistentSend());
-      assertEquals(ClientSessionFactoryImpl.DEFAULT_DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND, cf.isDefaultBlockOnPersistentSend());      
+      assertEquals(ClientSessionFactoryImpl.DEFAULT_PING_PERIOD, cf.getPingPeriod());
+      assertEquals(ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT, cf.getCallTimeout());
+      assertEquals(ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE, cf.getConsumerWindowSize());
+      assertEquals(ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE, cf.getConsumerMaxRate());
+      assertEquals(ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE, cf.getProducerWindowSize());
+      assertEquals(ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE, cf.getProducerMaxRate());
+      assertEquals(ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE, cf.isBlockOnAcknowledge());
+      assertEquals(ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND, cf.isBlockOnNonPersistentSend());
+      assertEquals(ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND, cf.isBlockOnPersistentSend());      
    }
    
-   private void checkGetSetAttributes(ClientSessionFactory cf,
-         final ConnectionParams params,
+   private void checkGetSetAttributes(ClientSessionFactory sf,
+         final ConnectorFactory cf, final Map<String, Object> params,
+         final long pingPeriod, final long callTimeout,
          final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
          final int defaultProducerWindowSize, final int defaultProducerMaxRate,
          final boolean defaultBlockOnAcknowledge,
          final boolean defaultBlockOnPersistentSend,
          final boolean defaultBlockOnNonPersistentSend)
    {
-      cf.setConnectionParams(params);
-      assertTrue(params == cf.getConnectionParams());
-      cf.setDefaultConsumerWindowSize(defaultConsumerWindowSize);
-      assertEquals(defaultConsumerWindowSize, cf.getDefaultConsumerWindowSize());
-      cf.setDefaultConsumerMaxRate(defaultConsumerMaxRate);
-      assertEquals(defaultConsumerMaxRate, cf.getDefaultConsumerMaxRate());
-      cf.setDefaultProducerWindowSize(defaultProducerWindowSize);
-      assertEquals(defaultProducerWindowSize, cf.getDefaultProducerWindowSize());
-      cf.setDefaultProducerMaxRate(defaultProducerMaxRate);
-      assertEquals(defaultProducerMaxRate, cf.getDefaultProducerMaxRate());
-      cf.setDefaultBlockOnAcknowledge(defaultBlockOnAcknowledge);
-      assertEquals(defaultBlockOnAcknowledge, cf.isDefaultBlockOnAcknowledge());
-      cf.setDefaultBlockOnPersistentSend(defaultBlockOnPersistentSend);
-      assertEquals(defaultBlockOnPersistentSend, cf.isDefaultBlockOnPersistentSend());
-      cf.setDefaultBlockOnNonPersistentSend(defaultBlockOnNonPersistentSend);
-      assertEquals(defaultBlockOnNonPersistentSend, cf.isDefaultBlockOnNonPersistentSend());
+      sf.setConnectorFactory(cf);
+      assertTrue(cf == sf.getConnectorFactory());
+      sf.setTransportParams(params);
+      assertTrue(params == sf.getTransportParams());
+      sf.setPingPeriod(pingPeriod);
+      assertEquals(pingPeriod, sf.getPingPeriod());
+      sf.setCallTimeout(callTimeout);
+      assertEquals(callTimeout, sf.getCallTimeout());
+      sf.setConsumerWindowSize(defaultConsumerWindowSize);
+      assertEquals(defaultConsumerWindowSize, sf.getConsumerWindowSize());
+      sf.setConsumerMaxRate(defaultConsumerMaxRate);
+      assertEquals(defaultConsumerMaxRate, sf.getConsumerMaxRate());
+      sf.setProducerWindowSize(defaultProducerWindowSize);
+      assertEquals(defaultProducerWindowSize, sf.getProducerWindowSize());
+      sf.setProducerMaxRate(defaultProducerMaxRate);
+      assertEquals(defaultProducerMaxRate, sf.getProducerMaxRate());
+      sf.setBlockOnAcknowledge(defaultBlockOnAcknowledge);
+      assertEquals(defaultBlockOnAcknowledge, sf.isBlockOnAcknowledge());
+      sf.setBlockOnPersistentSend(defaultBlockOnPersistentSend);
+      assertEquals(defaultBlockOnPersistentSend, sf.isBlockOnPersistentSend());
+      sf.setBlockOnNonPersistentSend(defaultBlockOnNonPersistentSend);
+      assertEquals(defaultBlockOnNonPersistentSend, sf.isBlockOnNonPersistentSend());
    }
    
 }

@@ -24,6 +24,7 @@ package org.jboss.messaging.jms.server.management.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.ListenerNotFoundException;
@@ -38,6 +39,7 @@ import javax.management.NotificationListener;
 import javax.management.StandardMBean;
 
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 
@@ -75,22 +77,23 @@ public class JMSServerControl extends StandardMBean implements
 
    // JMSServerControlMBean implementation --------------------------
 
-   public void createConnectionFactory(final String name,
-         final String jndiBinding, final String clientID,
-         final int dupsOKBatchSize, final int consumerWindowSize,
-         final int consumerMaxRate, final int producerWindowSize,
-         final int producerMaxRate, final boolean blockOnAcknowledge,
-         final boolean defaultSendNonPersistentMessagesBlocking,
-         final boolean defaultSendPersistentMessagesBlocking) throws Exception
+   public void createConnectionFactory(String name, ConnectorFactory connectorFactory,
+            Map<String, Object> transportParams,
+            long pingPeriod, long callTimeout, String clientID,
+         int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
+         int producerWindowSize, int producerMaxRate,
+         boolean blockOnAcknowledge,
+         boolean blockOnNonPersistentSend,
+         boolean blockOnPersistentSend, String jndiBinding) throws Exception
    {
       List<String> bindings = new ArrayList<String>();
       bindings.add(jndiBinding);
 
-      boolean created = server.createConnectionFactory(name, clientID,
-            dupsOKBatchSize, consumerWindowSize, consumerMaxRate,
-            producerWindowSize, producerMaxRate, blockOnAcknowledge,
-            defaultSendNonPersistentMessagesBlocking,
-            defaultSendPersistentMessagesBlocking, bindings);
+      boolean created = server.createConnectionFactory(name, connectorFactory, transportParams,
+                  pingPeriod, callTimeout, clientID, dupsOKBatchSize, 
+               consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, 
+               blockOnAcknowledge, blockOnNonPersistentSend, 
+               blockOnPersistentSend, jndiBinding);
       if (created)
       {
          sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);

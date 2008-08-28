@@ -22,8 +22,6 @@
 
 package org.jboss.messaging.tests.unit.jms.misc;
 
-import static org.jboss.messaging.core.remoting.TransportType.INVM;
-
 import java.io.File;
 import java.util.Properties;
 import java.util.jar.Attributes;
@@ -81,8 +79,6 @@ public class ManifestTest extends TestCase
 
       try
       {
-         ConfigurationImpl config = new ConfigurationImpl();
-         config.setTransport(INVM);
          MessagingServer server = new MessagingServerImpl();
 
 	      ConnectionMetaData meta = new JBossConnectionMetaData(server.getVersion());

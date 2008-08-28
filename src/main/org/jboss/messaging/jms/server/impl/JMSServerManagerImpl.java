@@ -36,6 +36,7 @@ import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.JBossQueue;
@@ -186,25 +187,26 @@ public class JMSServerManagerImpl implements JMSServerManager
       return true;
    }
 
-   public boolean createConnectionFactory(final String name,
-         final String clientID, final int dupsOKBatchSize,
-         final int consumerWindowSize, final int consumerMaxRate,
-         final int producerWindowSize, final int producerMaxRate,
-         final boolean blockOnAcknowledge,
-         final boolean defaultSendNonPersistentMessagesBlocking,
-         final boolean defaultSendPersistentMessagesBlocking,
-         final String jndiBinding) throws Exception
+   public boolean createConnectionFactory(String name, ConnectorFactory connectorFactory,
+                                          Map<String, Object> transportParams,
+                                          long pingPeriod, long callTimeout, String clientID,
+                                          int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
+                                          int producerWindowSize, int producerMaxRate,
+                                          boolean blockOnAcknowledge,
+                                          boolean blockOnNonPersistentSend,
+                                          boolean blockOnPersistentSend, String jndiBinding)
+         throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(clientID, dupsOKBatchSize,
-               messagingServer.getConfiguration().getLocation(),
-               messagingServer.getConfiguration().getConnectionParams(),
-               consumerWindowSize, consumerMaxRate, producerWindowSize,
-               producerMaxRate, blockOnAcknowledge,
-               defaultSendNonPersistentMessagesBlocking,
-               defaultSendPersistentMessagesBlocking);
+         cf = new JBossConnectionFactory(connectorFactory, transportParams,
+                                         pingPeriod, callTimeout,
+                                         clientID, dupsOKBatchSize,
+                                         consumerWindowSize, consumerMaxRate, producerWindowSize,
+                                         producerMaxRate, blockOnAcknowledge,
+                                         blockOnNonPersistentSend,
+                                         blockOnPersistentSend);
          connectionFactories.put(name, cf);
       }
       if (!bindToJndi(jndiBinding, cf))
@@ -224,25 +226,26 @@ public class JMSServerManagerImpl implements JMSServerManager
       return true;
    }
 
-   public boolean createConnectionFactory(final String name,
-         final String clientID, final int dupsOKBatchSize,
-         final int consumerWindowSize, final int consumerMaxRate,
-         final int producerWindowSize, final int producerMaxRate,
-         final boolean blockOnAcknowledge,
-         final boolean defaultSendNonPersistentMessagesBlocking,
-         final boolean defaultSendPersistentMessagesBlocking,
-         final List<String> jndiBindings) throws Exception
+   public boolean createConnectionFactory(String name, ConnectorFactory connectorFactory,
+                                          Map<String, Object> transportParams,
+                                          long pingPeriod, long callTimeout, String clientID,
+                                          int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
+                                          int producerWindowSize, int producerMaxRate,
+                                          boolean blockOnAcknowledge,
+                                          boolean blockOnNonPersistentSend,
+                                          boolean blockOnPersistentSend, List<String> jndiBindings)
+                                       throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(clientID, dupsOKBatchSize,
-               messagingServer.getConfiguration().getLocation(),
-               messagingServer.getConfiguration().getConnectionParams(),
-               consumerWindowSize, consumerMaxRate, producerWindowSize,
-               producerMaxRate, blockOnAcknowledge,
-               defaultSendNonPersistentMessagesBlocking,
-               defaultSendPersistentMessagesBlocking);
+         cf = new JBossConnectionFactory(connectorFactory, transportParams,
+                  pingPeriod, callTimeout,
+                  clientID, dupsOKBatchSize,
+                  consumerWindowSize, consumerMaxRate, producerWindowSize,
+                  producerMaxRate, blockOnAcknowledge,
+                  blockOnNonPersistentSend,
+                  blockOnPersistentSend);
       }
       for (String jndiBinding : jndiBindings)
       {
@@ -296,7 +299,8 @@ public class JMSServerManagerImpl implements JMSServerManager
       if (sepIndex == -1)
       {
          parentContext = "";
-      } else
+      }
+      else
       {
          parentContext = jndiName.substring(0, sepIndex);
       }
@@ -307,7 +311,8 @@ public class JMSServerManagerImpl implements JMSServerManager
 
          log.warn("Binding for " + jndiName + " already exists");
          return false;
-      } catch (Throwable e)
+      }
+      catch (Throwable e)
       {
          // OK
       }

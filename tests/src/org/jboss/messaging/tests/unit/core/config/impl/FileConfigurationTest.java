@@ -22,9 +22,11 @@
 
 package org.jboss.messaging.tests.unit.core.config.impl;
 
+import java.util.Map;
+
+import org.jboss.messaging.core.config.AcceptorInfo;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.FileConfiguration;
-import org.jboss.messaging.core.remoting.TransportType;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -37,21 +39,13 @@ public class FileConfigurationTest extends ConfigurationImplTest
       //Check they match the values from the test file
       assertEquals(true, conf.isClustered());
       assertEquals(true, conf.isBackup());
-      assertEquals(12345, conf.getScheduledThreadPoolMaxSize());
-      assertEquals("blahhost", conf.getHost());
-      assertEquals(TransportType.HTTP, conf.getTransport());
-      assertEquals(6540, conf.getPort());      
-      assertEquals("backuphost", conf.getBackupHost());
-      assertEquals(TransportType.TCP, conf.getBackupTransport());
-      assertEquals(7540, conf.getBackupPort());        
+      assertEquals(12345, conf.getScheduledThreadPoolMaxSize());    
       assertEquals(5423, conf.getSecurityInvalidationInterval());
       assertEquals(false, conf.isRequireDestinations());
       assertEquals(false, conf.isSecurityEnabled());
-      assertEquals(true, conf.isSSLEnabled());
-      assertEquals("blahstore", conf.getKeyStorePath());
-      assertEquals("wibble123", conf.getKeyStorePassword());
-      assertEquals("blahtruststore", conf.getTrustStorePath());
-      assertEquals("eek123", conf.getTrustStorePassword());
+      assertEquals(7654, conf.getCallTimeout());
+      assertEquals(543, conf.getPacketConfirmationBatchSize());
+      assertEquals(6543, conf.getConnectionScanPeriod());
       assertEquals("somedir", conf.getBindingsDirectory());
       assertEquals(false, conf.isCreateBindingsDir());
       assertEquals("somedir2", conf.getJournalDirectory());
@@ -63,19 +57,89 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(100, conf.getJournalMinFiles());      
       assertEquals(56546, conf.getJournalMaxAIO());
       
-      assertEquals(1234, conf.getConnectionParams().getPacketConfirmationBatchSize());
-      assertEquals(false, conf.getConnectionParams().isInVMOptimisationEnabled());
-      assertEquals(7654, conf.getConnectionParams().getCallTimeout());
-      assertEquals(false, conf.getConnectionParams().isTcpNoDelay());
-      assertEquals(987654, conf.getConnectionParams().getTcpReceiveBufferSize());
-      assertEquals(2345676, conf.getConnectionParams().getTcpSendBufferSize());
-      assertEquals(123123, conf.getConnectionParams().getPingInterval());
       assertEquals(2, conf.getInterceptorClassNames().size());
       assertTrue(conf.getInterceptorClassNames().contains("org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1"));
       assertTrue(conf.getInterceptorClassNames().contains("org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor2"));
-      assertEquals(2, conf.getAcceptorFactoryClassNames().size());
-      assertTrue(conf.getAcceptorFactoryClassNames().contains("org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory1"));
-      assertTrue(conf.getAcceptorFactoryClassNames().contains("org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory2")); 
+      assertEquals(2, conf.getAcceptorInfos().size());
+      for (AcceptorInfo info: conf.getAcceptorInfos())
+      {
+         if (info.getFactoryClassName().equals("org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory1"))
+         {
+            Map<String, Object> params = info.getParams();
+            
+            Object obj = params.get("a_mykey1");
+            assertNotNull(obj);
+            assertTrue(obj instanceof String);
+            {
+               String s = (String)obj;
+               assertEquals("a_foovalue1", s);
+            }
+            
+            obj = params.get("a_mykey2");
+            assertNotNull(obj);
+            assertTrue(obj instanceof Long);
+            {
+               Long l = (Long)obj;
+               assertEquals(1234567l, l.longValue());
+            }
+            
+            obj = params.get("a_mykey3");
+            assertNotNull(obj);
+            assertTrue(obj instanceof Integer);
+            {
+               Integer i = (Integer)obj;
+               assertEquals(123, i.intValue());
+            }
+            
+            obj = params.get("a_mykey4");
+            assertNotNull(obj);
+            assertTrue(obj instanceof String);
+            {
+               String s = (String)obj;
+               assertEquals("a_foovalue4", s);
+            }
+         }
+         else if (info.getFactoryClassName().equals("org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory2"))
+         {
+            Map<String, Object> params = info.getParams();
+            
+            Object obj = params.get("b_mykey1");
+            assertNotNull(obj);
+            assertTrue(obj instanceof String);
+            {
+               String s = (String)obj;
+               assertEquals("b_foovalue1", s);
+            }
+            
+            obj = params.get("b_mykey2");
+            assertNotNull(obj);
+            assertTrue(obj instanceof Long);
+            {
+               Long l = (Long)obj;
+               assertEquals(7654321l, l.longValue());
+            }
+            
+            obj = params.get("b_mykey3");
+            assertNotNull(obj);
+            assertTrue(obj instanceof Integer);
+            {
+               Integer i = (Integer)obj;
+               assertEquals(321, i.intValue());
+            }
+            
+            obj = params.get("b_mykey4");
+            assertNotNull(obj);
+            assertTrue(obj instanceof String);
+            {
+               String s = (String)obj;
+               assertEquals("b_foovalue4", s);
+            }
+         }
+         else
+         {
+            fail("Invalid factory class");
+         }
+      }
    }
    
    public void testSetGetConfigurationURL()

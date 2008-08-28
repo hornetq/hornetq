@@ -19,27 +19,58 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.remoting.impl.invm;
+package org.jboss.messaging.core.config;
 
+import java.io.Serializable;
 import java.util.Map;
 
-import org.jboss.messaging.core.remoting.RemotingHandler;
-import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
-import org.jboss.messaging.core.remoting.spi.Connector;
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
-
 /**
- * A InVMConnectorFactory
+ * An AcceptorInfo
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class InVMConnectorFactory implements ConnectorFactory
+public class AcceptorInfo implements Serializable
 {
-   public Connector createConnector(final Map<String, Object> configuration,
-            final RemotingHandler handler, final ConnectionLifeCycleListener listener)
-   {      
-      return new InVMConnector(configuration, handler, listener);
-   }
+   private static final long serialVersionUID = -3994528421527392679L;
 
+   private final String factoryClassName;
+   
+   private final Map<String, Object> params;
+   
+   public AcceptorInfo(final String className, final Map<String, Object> params)
+   {
+      this.factoryClassName = className;
+      
+      this.params = params;
+   }
+   
+   public AcceptorInfo(final String className)
+   {
+      this.factoryClassName = className;
+      
+      this.params = null;
+   }
+   
+   public String getFactoryClassName()
+   {
+      return factoryClassName;
+   }
+   
+   public Map<String, Object> getParams()
+   {
+      return params;
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof AcceptorInfo == false)
+      {
+         return false;
+      }
+      
+      AcceptorInfo ai = (AcceptorInfo)other;
+      
+      return this.factoryClassName.equals(ai.factoryClassName);
+   }
 }

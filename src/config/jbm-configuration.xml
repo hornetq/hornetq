@@ -14,57 +14,9 @@
       
       <!-- true to expose JBoss Messaging resources through JMX -->
       <jmx-management-enabled>true</jmx-management-enabled>
-
-      <!-- Remoting configuration -->
-
-      <!-- one of: TCP, INVM                                                                     -->
-      <!-- INVM: the server is accessible only by clients in the same VM (no sockets are opened) -->
-      <remoting-transport>TCP</remoting-transport>
-
-      <remoting-bind-address>5400</remoting-bind-address>
-
-      <remoting-host>localhost</remoting-host>
-      
-      <remoting-port>5400</remoting-port>
-
+    
       <!--  call timeout in milliseconds -->
-      <remoting-call-timeout>5000</remoting-call-timeout>
-
-      <!-- true to enable invm communication when the client and the server are in the same JVM.     -->
-      <remoting-enable-invm-optimisation>true</remoting-enable-invm-optimisation>
-
-      <!-- Enable/Disable Nagle's Algorithm (resp. true/false)                           -->
-      <!-- This setting is taken into account only when remoting-transport is set to TCP -->
-      <remoting-tcp-nodelay>true</remoting-tcp-nodelay>
-
-      <!-- Set the TCP Receive Buffer size (SO_RCVBUF).                                    -->
-      <!-- Set it to -1 if you want to use the value hinted by the Operating System      -->
-      <!-- This setting is taken into account only when remoting-transport is set to TCP -->
-      <remoting-tcp-receive-buffer-size>32768</remoting-tcp-receive-buffer-size>
-
-      <!-- Set the TCP Send Buffer size (SO_SNDBUF).                                     -->
-      <!-- Set it to -1 if you want to use the value hinted by the Operating System      -->
-      <!-- This setting is taken into account only when remoting-transport is set to TCP -->
-      <remoting-tcp-send-buffer-size>32768</remoting-tcp-send-buffer-size>
-
-      <!-- The interval to send a ping message to send to the client/server to make sure it is still alive.-->
-      <!-- Set to 0 if you want to disable this functionality-->
-      <remoting-ping-interval>10000</remoting-ping-interval>
-
-      <!--How long to wait for a returning pong after sending a ping message to a client/server.-->
-      <!-- If no pong is received after this time resources are cleaned up-->
-      <remoting-ping-timeout>5000</remoting-ping-timeout>
-     
-      <!--  if ssl is enabled, all remoting-ssl-* properties must be set -->
-      <remoting-enable-ssl>false</remoting-enable-ssl>
-
-      <remoting-ssl-keystore-path>messaging.keystore</remoting-ssl-keystore-path>
-
-      <remoting-ssl-keystore-password>secureexample</remoting-ssl-keystore-password>
-
-      <remoting-ssl-truststore-path>messaging.truststore</remoting-ssl-truststore-path>
-
-      <remoting-ssl-truststore-password>secureexample</remoting-ssl-truststore-password>
+      <call-timeout>30000</call-timeout>
       
       <!-- Example interceptors 
       <remoting-interceptors>
@@ -73,12 +25,45 @@
       </remoting-interceptors>
       -->
       
-      <remoting-acceptor-factories>         
-	      <!-- <class-name>org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory</class-name> -->      
-	      <class-name>org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory</class-name>	              
-	      <class-name>org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory</class-name>
-      </remoting-acceptor-factories>
-
+      <remoting-acceptors>
+         <acceptor>
+            <factory-class>org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory</factory-class>
+            <params>
+	            <param key="jbm.remoting.invm.serverid" value="0" type="Integer"/>
+            </params>            
+         </acceptor>
+         <acceptor>
+            <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
+            <params>	            	            
+	            <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
+	            <param key="jbm.remoting.netty.port" value="5400" type="Integer"/>	            
+	            <param key="jbm.remoting.netty.tcpnodelay" value="true" type="Boolean"/>
+	            <param key="jbm.remoting.netty.tcpsendbuffersize" value="32768" type="Integer"/>
+	            <param key="jbm.remoting.netty.tcpreceivebuffersize" value="32768" type="Integer"/>	            
+	            <param key="jbm.remoting.netty.sslenabled" value="false" type="Boolean"/>
+	            <param key="jbm.remoting.netty.keystorepath" value="messaging.keystore" type="String"/>
+	            <param key="jbm.remoting.netty.keystorepassword" value="secureexample" type="String"/>
+	            <param key="jbm.remoting.netty.truststorepath" value="messaging.truststore" type="String"/>
+	            <param key="jbm.remoting.netty.truststorepassword" value="secureexample" type="String"/>
+            </params>
+         </acceptor>         
+         <acceptor>
+            <factory-class>org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory</factory-class>
+            <params>	            	            
+	            <param key="jbm.remoting.mina.host" value="localhost" type="String"/>
+	            <param key="jbm.remoting.mina.port" value="5500" type="Integer"/>	            
+	            <param key="jbm.remoting.mina.tcpnodelay" value="true" type="Boolean"/>
+	            <param key="jbm.remoting.mina.tcpsendbuffersize" value="32768" type="Integer"/>
+	            <param key="jbm.remoting.mina.tcpreceivebuffersize" value="32768" type="Integer"/>	            
+	            <param key="jbm.remoting.mina.sslenabled" value="false" type="Boolean"/>
+	            <param key="jbm.remoting.mina.keystorepath" value="messaging.keystore" type="String"/>
+	            <param key="jbm.remoting.mina.keystorepassword" value="secureexample" type="String"/>
+	            <param key="jbm.remoting.mina.truststorepath" value="messaging.truststore" type="String"/>
+	            <param key="jbm.remoting.mina.truststorepassword" value="secureexample" type="String"/>
+            </params>
+         </acceptor>
+      </remoting-acceptors>
+      
       <!-- Storage configuration -->
 
       <bindings-directory>data/bindings</bindings-directory>

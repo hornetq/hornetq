@@ -37,7 +37,6 @@ import junit.framework.TestCase;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.server.JournalType;
 
 /**
@@ -56,17 +55,12 @@ public class ConfigurationImplTest extends TestCase
       assertEquals(ConfigurationImpl.DEFAULT_CLUSTERED, conf.isClustered());
       assertEquals(ConfigurationImpl.DEFAULT_BACKUP, conf.isBackup());
       assertEquals(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE, conf.getScheduledThreadPoolMaxSize());
-      assertEquals(ConfigurationImpl.DEFAULT_HOST, conf.getHost());
-      assertEquals(ConfigurationImpl.DEFAULT_TRANSPORT, conf.getTransport());
-      assertEquals(ConfigurationImpl.DEFAULT_PORT, conf.getPort());
       assertEquals(ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL, conf.getSecurityInvalidationInterval());
       assertEquals(ConfigurationImpl.DEFAULT_REQUIRE_DESTINATIONS, conf.isRequireDestinations());
       assertEquals(ConfigurationImpl.DEFAULT_SECURITY_ENABLED, conf.isSecurityEnabled());
-      assertEquals(ConfigurationImpl.DEFAULT_SSL_ENABLED, conf.isSSLEnabled());
-      assertEquals(ConfigurationImpl.DEFAULT_KEYSTORE_PATH, conf.getKeyStorePath());
-      assertEquals(ConfigurationImpl.DEFAULT_KEYSTORE_PASSWORD, conf.getKeyStorePassword());
-      assertEquals(ConfigurationImpl.DEFAULT_TRUSTSTORE_PATH, conf.getTrustStorePath());
-      assertEquals(ConfigurationImpl.DEFAULT_TRUSTSTORE_PASSWORD, conf.getTrustStorePassword());
+      assertEquals(ConfigurationImpl.DEFAULT_CALL_TIMEOUT, conf.getCallTimeout());
+      assertEquals(ConfigurationImpl.DEFAULT_PACKET_CONFIRMATION_BATCH_SIZE, conf.getPacketConfirmationBatchSize());
+      assertEquals(ConfigurationImpl.DEFAULT_CONNECTION_SCAN_PERIOD, conf.getConnectionScanPeriod());
       assertEquals(ConfigurationImpl.DEFAULT_BINDINGS_DIRECTORY, conf.getBindingsDirectory());
       assertEquals(ConfigurationImpl.DEFAULT_CREATE_BINDINGS_DIR, conf.isCreateBindingsDir());
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_DIR, conf.getJournalDirectory());
@@ -94,20 +88,7 @@ public class ConfigurationImplTest extends TestCase
          int i = randomInt();
          conf.setScheduledThreadPoolMaxSize(i);
          assertEquals(i, conf.getScheduledThreadPoolMaxSize());
-         
-         String s = randomString();
-         conf.setHost(s);
-         assertEquals(s, conf.getHost());
-         
-         i = randomInt() % 3;
-         TransportType transport = i == 0 ? TransportType.TCP : i == 1 ? TransportType.HTTP : i == 2 ? TransportType.INVM : TransportType.INVM;
-         conf.setTransport(transport);
-         assertEquals(transport, conf.getTransport());
-         
-         i = randomInt();
-         conf.setPort(i);
-         assertEquals(i, conf.getPort());
-         
+                  
          long l = randomLong();
          conf.setSecurityInvalidationInterval(l);
          assertEquals(l, conf.getSecurityInvalidationInterval());
@@ -119,28 +100,20 @@ public class ConfigurationImplTest extends TestCase
          b = randomBoolean();
          conf.setSecurityEnabled(b);
          assertEquals(b, conf.isSecurityEnabled());
+ 
+         l = randomLong();
+         conf.setCallTimeout(l);
+         assertEquals(l, conf.getCallTimeout());
          
-         b = randomBoolean();
-         conf.setSSLEnabled(b);
-         assertEquals(b, conf.isSSLEnabled());
+         i = randomInt();
+         conf.setPacketConfirmationBatchSize(i);
+         assertEquals(i, conf.getPacketConfirmationBatchSize());
          
-         s = randomString();
-         conf.setKeyStorePath(s);
-         assertEquals(s, conf.getKeyStorePath());
-         
-         s = randomString();
-         conf.setKeyStorePassword(s);
-         assertEquals(s, conf.getKeyStorePassword());
-         
-         s = randomString();
-         conf.setTrustStorePath(s);
-         assertEquals(s, conf.getTrustStorePath());
-         
-         s = randomString();
-         conf.setTrustStorePassword(s);
-         assertEquals(s, conf.getTrustStorePassword());
-         
-         s = randomString();
+         l = randomLong();
+         conf.setConnectionScanPeriod(l);
+         assertEquals(l, conf.getConnectionScanPeriod());
+                  
+         String s = randomString();
          conf.setBindingsDirectory(s);
          assertEquals(s, conf.getBindingsDirectory());
          
@@ -183,14 +156,6 @@ public class ConfigurationImplTest extends TestCase
       }
    }
    
-   public void testGetLocation()
-   {
-      conf.setTransport(TransportType.TCP);
-      conf.setHost("blahhost");
-      conf.setPort(1234);
-      assertEquals("TCP://blahhost:1234", conf.getLocation().getLocation());
-   }
-   
    public void testGetSetInterceptors()
    {
       List<String> interceptors = conf.getInterceptorClassNames();
@@ -206,12 +171,6 @@ public class ConfigurationImplTest extends TestCase
       assertFalse(conf.getInterceptorClassNames().contains("iijij"));
    }
    
-   public void testOverrideWithSystemProperties()
-   {
-      testOverrideWithSystemProperties(false);
-      testOverrideWithSystemProperties(true);
-   }
-   
    public void testSerialize() throws Exception
    {
       boolean b = randomBoolean();
@@ -219,17 +178,7 @@ public class ConfigurationImplTest extends TestCase
       
       int i = randomInt();
       conf.setScheduledThreadPoolMaxSize(i);
-   
-      String s = randomString();
-      conf.setHost(s);
-
-      i = randomInt() % 2;
-      TransportType transport = i == 0 ? TransportType.TCP : TransportType.HTTP;
-      conf.setTransport(transport);
-
-      i = randomInt();
-      conf.setPort(i);
- 
+         
       long l = randomLong();
       conf.setSecurityInvalidationInterval(l);
 
@@ -238,23 +187,17 @@ public class ConfigurationImplTest extends TestCase
     
       b = randomBoolean();
       conf.setSecurityEnabled(b);
-
-      b = randomBoolean();
-      conf.setSSLEnabled(b);
- 
-      s = randomString();
-      conf.setKeyStorePath(s);
-
-      s = randomString();
-      conf.setKeyStorePassword(s);
- 
-      s = randomString();
-      conf.setTrustStorePath(s);
- 
-      s = randomString();
-      conf.setTrustStorePassword(s);
-   
-      s = randomString();
+        
+      l = randomLong();
+      conf.setCallTimeout(l);
+      
+      i = randomInt();
+      conf.setPacketConfirmationBatchSize(i);
+      
+      l = randomLong();
+      conf.setConnectionScanPeriod(l);
+      
+      String s = randomString();
       conf.setBindingsDirectory(s);
 
       b = randomBoolean();
@@ -312,19 +255,5 @@ public class ConfigurationImplTest extends TestCase
    }
    
    // Private --------------------------------------------------------------------------------------------
-   
-   private void testOverrideWithSystemProperties(final boolean b)
-   {
-      try
-      {
-         System.setProperty(ConfigurationImpl.ENABLE_SSL_PROPERTY_NAME, String.valueOf(b));
-         
-         assertEquals(b, conf.isSSLEnabled()); 
-      }
-      finally
-      {
-         System.clearProperty(ConfigurationImpl.ENABLE_SSL_PROPERTY_NAME);
-      }
-   }
-     
+    
 }

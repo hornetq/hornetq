@@ -94,7 +94,7 @@ public class RemotingHandlerImplTest extends UnitTestCase
       buff4.getInt();
       final long connectionID4 = 127987;
 
-      Set<Object> failed = handler.scanForFailedConnections(expirePeriod);
+      Set<Object> failed = handler.scanForFailedConnections();
 
       assertEquals(0, failed.size());
 
@@ -103,20 +103,20 @@ public class RemotingHandlerImplTest extends UnitTestCase
       handler.bufferReceived(connectionID3, buff3);
       handler.bufferReceived(connectionID4, buff4);
 
-      failed = handler.scanForFailedConnections(expirePeriod);
+      failed = handler.scanForFailedConnections();
       assertEquals(0, failed.size());
 
       Thread.sleep(expirePeriod + 10);
 
-      failed = handler.scanForFailedConnections(expirePeriod);
+      failed = handler.scanForFailedConnections();
       assertEquals(4, failed.size());
 
-      handler.removeLastPing(connectionID1);
-      handler.removeLastPing(connectionID2);
-      handler.removeLastPing(connectionID3);
-      handler.removeLastPing(connectionID4);
+      handler.removeExpireTime(connectionID1);
+      handler.removeExpireTime(connectionID2);
+      handler.removeExpireTime(connectionID3);
+      handler.removeExpireTime(connectionID4);
 
-      failed = handler.scanForFailedConnections(expirePeriod);
+      failed = handler.scanForFailedConnections();
       assertEquals(0, failed.size());
    }
 

@@ -47,7 +47,7 @@ public class RemotingServiceImplTest extends UnitTestCase
     {
        ConfigurationImpl config = new ConfigurationImpl();
        final long interval = 100;
-       config.getConnectionParams().setPingInterval(interval);
+       config.setConnectionScanPeriod(interval);
        RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
 
        RemotingHandler handler = EasyMock.createStrictMock(RemotingHandler.class);
@@ -55,7 +55,7 @@ public class RemotingServiceImplTest extends UnitTestCase
 
        Set<Object> failed = new HashSet<Object>();
 
-       EasyMock.expect(handler.scanForFailedConnections((long)(1.5 * interval))).andReturn(failed);
+       EasyMock.expect(handler.scanForFailedConnections()).andReturn(failed);
 
        EasyMock.replay(handler);
 
@@ -71,7 +71,7 @@ public class RemotingServiceImplTest extends UnitTestCase
     {
        ConfigurationImpl config = new ConfigurationImpl();
        final long interval = 100;
-       config.getConnectionParams().setPingInterval(interval);
+       config.setConnectionScanPeriod(interval);
        RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
 
        RemotingHandler handler = EasyMock.createStrictMock(RemotingHandler.class);
@@ -81,15 +81,15 @@ public class RemotingServiceImplTest extends UnitTestCase
        failed.add(2L);
        failed.add(3L);
 
-       EasyMock.expect(handler.scanForFailedConnections((long)(1.5 * interval))).andReturn(failed);
+       EasyMock.expect(handler.scanForFailedConnections()).andStubReturn(failed);
 
        Connection conn1 = EasyMock.createStrictMock(Connection.class);
        Connection conn2 = EasyMock.createStrictMock(Connection.class);
        Connection conn3 = EasyMock.createStrictMock(Connection.class);
 
-       EasyMock.expect(conn1.getID()).andStubReturn(1);
-       EasyMock.expect(conn2.getID()).andStubReturn(2);
-       EasyMock.expect(conn3.getID()).andStubReturn(3);
+       EasyMock.expect(conn1.getID()).andStubReturn(1l);
+       EasyMock.expect(conn2.getID()).andStubReturn(2l);
+       EasyMock.expect(conn3.getID()).andStubReturn(3l);
 
        conn2.close();
        conn3.close();
@@ -111,9 +111,9 @@ public class RemotingServiceImplTest extends UnitTestCase
        remotingService.connectionCreated(conn2);
        remotingService.connectionCreated(conn3);
 
-       RemotingConnection rc1 = remotingService.getConnection(1);
-       RemotingConnection rc2 = remotingService.getConnection(2);
-       RemotingConnection rc3 = remotingService.getConnection(3);
+       RemotingConnection rc1 = remotingService.getConnection(1l);
+       RemotingConnection rc2 = remotingService.getConnection(2l);
+       RemotingConnection rc3 = remotingService.getConnection(3l);
 
        Listener listener1 = new Listener();
        rc1.addFailureListener(listener1);

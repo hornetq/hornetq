@@ -1,7 +1,7 @@
 package org.jboss.messaging.core.remoting.impl.mina;
 
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
+import java.util.Map;
+
 import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
@@ -16,10 +16,10 @@ import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
  */
 public class MinaConnectorFactory implements ConnectorFactory
 {
-   public Connector createConnector(final Location location, final ConnectionParams params,
-         final RemotingHandler handler, final ConnectionLifeCycleListener listener)
+   public Connector createConnector(final Map<String, Object> configuration,
+                                    final RemotingHandler handler, final ConnectionLifeCycleListener listener)
    {
-      return new MinaConnector(location, params, handler, listener);
+      return new MinaConnector(configuration, handler, listener);
    }
 
 }

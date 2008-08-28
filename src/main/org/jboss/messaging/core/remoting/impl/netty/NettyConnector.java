@@ -21,9 +21,26 @@
  */
 package org.jboss.messaging.core.remoting.impl.netty;
 
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_HOST;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_KEYSTORE_PASSWORD;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_KEYSTORE_PATH;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_SSL_ENABLED;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_TCP_NODELAY;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.HOST_PROP_NAME;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.KEYSTORE_PASSWORD_PROP_NAME;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.KEYSTORE_PATH_PROP_NAME;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.SSL_ENABLED_PROP_NAME;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.TCP_NODELAY_PROPNAME;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME;
 import static org.jboss.netty.channel.Channels.pipeline;
 
 import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -31,14 +48,13 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
+import org.jboss.messaging.util.ConfigurationHelper;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
@@ -71,11 +87,23 @@ public class NettyConnector implements Connector
 
    private final RemotingHandler handler;
 
-   private final Location location;
-
    private final ConnectionLifeCycleListener listener;
+   
+   private final boolean sslEnabled;
+   
+   private final String host;
 
-   private final ConnectionParams params;
+   private final int port;
+         
+   private final String keyStorePath;
+ 
+   private final String keyStorePassword;
+   
+   private final boolean tcpNoDelay;
+   
+   private final int tcpSendBufferSize;
+   
+   private final int tcpReceiveBufferSize;
 
    // Static --------------------------------------------------------
 
@@ -83,20 +111,10 @@ public class NettyConnector implements Connector
 
    // Public --------------------------------------------------------
 
-   public NettyConnector(final Location location, final ConnectionParams params,
+   public NettyConnector(final Map<String, Object> configuration,
                         final RemotingHandler handler,
                         final ConnectionLifeCycleListener listener)
    {
-      if (location == null)
-      {
-         throw new IllegalArgumentException("Invalid argument null location");
-      }
-
-      if (params == null)
-      {
-         throw new IllegalArgumentException("Invalid argument null connection params");
-      }
-
       if (handler == null)
       {
          throw new IllegalArgumentException("Invalid argument null handler");
@@ -108,9 +126,34 @@ public class NettyConnector implements Connector
       }
 
       this.handler = handler;
-      this.location = location;
       this.listener = listener;
-      this.params = params;
+      
+      this.sslEnabled =
+         ConfigurationHelper.getBooleanProperty(SSL_ENABLED_PROP_NAME, DEFAULT_SSL_ENABLED, configuration);
+      this.host =
+         ConfigurationHelper.getStringProperty(HOST_PROP_NAME, DEFAULT_HOST, configuration);
+      this.port =
+         ConfigurationHelper.getIntProperty(PORT_PROP_NAME, DEFAULT_PORT, configuration);
+      if (sslEnabled)
+      {
+         this.keyStorePath =
+            ConfigurationHelper.getStringProperty(KEYSTORE_PATH_PROP_NAME, DEFAULT_KEYSTORE_PATH, configuration);
+         this.keyStorePassword =
+            ConfigurationHelper.getStringProperty(KEYSTORE_PASSWORD_PROP_NAME, DEFAULT_KEYSTORE_PASSWORD, configuration);
+      }   
+      else
+      {
+         this.keyStorePath = null;
+         this.keyStorePassword = null;
+      }
+      
+      this.tcpNoDelay =
+         ConfigurationHelper.getBooleanProperty(TCP_NODELAY_PROPNAME, DEFAULT_TCP_NODELAY, configuration);
+      this.tcpSendBufferSize =
+         ConfigurationHelper.getIntProperty(TCP_SENDBUFFER_SIZE_PROPNAME, DEFAULT_TCP_SENDBUFFER_SIZE, configuration);
+      this.tcpReceiveBufferSize =
+         ConfigurationHelper.getIntProperty(TCP_RECEIVEBUFFER_SIZE_PROPNAME, DEFAULT_TCP_RECEIVEBUFFER_SIZE, configuration);
+
    }
 
    public synchronized void start()
@@ -125,32 +168,36 @@ public class NettyConnector implements Connector
       channelFactory = new NioClientSocketChannelFactory(bossExecutor, workerExecutor);
       bootstrap = new ClientBootstrap(channelFactory);
 
-      bootstrap.setOption("tcpNoDelay", params.isTcpNoDelay());
-      if (params.getTcpReceiveBufferSize() != -1)
+      bootstrap.setOption("tcpNoDelay", tcpNoDelay);
+      if (tcpReceiveBufferSize != -1)
       {
-         bootstrap.setOption("receiveBufferSize", params.getTcpReceiveBufferSize());
+         bootstrap.setOption("receiveBufferSize", tcpReceiveBufferSize);
       }
-      if (params.getTcpSendBufferSize() != -1)
+      if (tcpSendBufferSize != -1)
       {
-         bootstrap.setOption("sendBufferSize", params.getTcpSendBufferSize());
+         bootstrap.setOption("sendBufferSize", tcpSendBufferSize);
       }
       bootstrap.setOption("keepAlive", true);
       bootstrap.setOption("reuseAddress", true);
 
       final SSLContext context;
-      if (params.isSSLEnabled()) {
-         try {
-            context = SSLSupport.getInstance(true, params.getKeyStorePath(), params.getKeyStorePassword(), null, null);
+      if (sslEnabled)
+      {
+         try
+         {
+            context = SSLSupport.getInstance(true, keyStorePath, keyStorePassword, null, null);
          }
          catch (Exception e)
          {
             close();
             IllegalStateException ise = new IllegalStateException(
-                  "Unable to create NettyConnector for " + location);
+                  "Unable to create NettyConnector for " + host);
             ise.initCause(e);
             throw ise;
          }
-      } else {
+      }
+      else
+      {
          context = null; // Unused
       }
 
@@ -158,9 +205,9 @@ public class NettyConnector implements Connector
          public ChannelPipeline getPipeline() throws Exception
          {
             ChannelPipeline pipeline = pipeline();
-            if (params.isSSLEnabled())
+            if (sslEnabled)
             {
-                  ChannelPipelineSupport.addSSLFilter(pipeline, context, true);
+               ChannelPipelineSupport.addSSLFilter(pipeline, context, true);
             }
             ChannelPipelineSupport.addCodecFilter(pipeline, handler);
             pipeline.addLast("handler", new MessagingClientChannelHandler(handler, listener));
@@ -203,7 +250,7 @@ public class NettyConnector implements Connector
          return null;
       }
 
-      InetSocketAddress address = new InetSocketAddress(location.getHost(), location.getPort());
+      InetSocketAddress address = new InetSocketAddress(host, port);
       ChannelFuture future = bootstrap.connect(address);
       future.awaitUninterruptibly();
 
@@ -211,8 +258,8 @@ public class NettyConnector implements Connector
       {
          final Channel ch = future.getChannel();
          SslHandler sslHandler = ch.getPipeline().get(SslHandler.class);
-         if (sslHandler != null) {
-            log.info("Starting SSL handshake.");
+         if (sslHandler != null)
+         {
             try
             {
                ChannelFuture handshakeFuture = sslHandler.handshake(ch);
@@ -229,7 +276,9 @@ public class NettyConnector implements Connector
                ch.close();
                return null;
             }
-         } else {
+         }
+         else
+         {
             ch.getPipeline().get(MessagingChannelHandler.class).active = true;
          }
 

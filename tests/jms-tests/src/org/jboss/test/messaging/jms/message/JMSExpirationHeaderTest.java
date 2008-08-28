@@ -231,6 +231,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
                                                                       // noticed that if I use 1.01
                                                                       // this assertion sometimes
                                                                       // fails;
+           
       assertNull(expectedMessage);
    }
 

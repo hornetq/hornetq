@@ -40,7 +40,7 @@ public interface RemotingHandler
 
    void closeExecutor(long executorID);
 
-   Set<Object> scanForFailedConnections(long expirePeriod);
+   Set<Object> scanForFailedConnections();
 
-   void removeLastPing(Object connectionID);
+   void removeExpireTime(Object connectionID);
 }

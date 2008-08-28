@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
@@ -53,11 +52,9 @@ public interface RemotingConnection
 
    PacketDispatcher getPacketDispatcher();
 
-   Location getLocation();
-
    MessagingBuffer createBuffer(int size);
 
    void fail(MessagingException me);
 
-   void destroy();
+   void destroy();      
 }

@@ -328,9 +328,7 @@
       </javac>
    	<javah class="org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl"
    	       classpathref="core.compilation.classpath" destdir="./native/src"/>
-
-   	<copy file="${src.config.dir}/jbm-connector-factories.properties"
-   	      tofile="${build.classes.dir}/jbm-connector-factories.properties"/>
+   	
       <copy file="${src.config.dir}/version.properties"
          	tofile="${build.classes.dir}/version.properties"/>
       
@@ -389,8 +387,7 @@
    <target name="client-jar" depends="compile">      
       <jar jarfile="${build.jars.dir}/jboss-${module.name}-client.jar">
          <fileset dir="${build.classes.dir}">
-            <include name="version.properties"/>
-            <include name="jbm-connector-factories.properties"/>
+            <include name="version.properties"/>            
             <include name="org/jboss/messaging/jms/**/*.class"/>
             <include name="org/jboss/messaging/core/client/**/*.class"/>
             <include name="org/jboss/messaging/core/exception/**/*.class"/>

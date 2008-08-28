@@ -2,6 +2,7 @@ package org.jboss.test.messaging.jms;
 
 import javax.naming.InitialContext;
 
+import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 
@@ -36,7 +37,9 @@ public class JMSTestCase extends JBMServerTestCase
       //All jms tests should use a specific cg which has blockOnAcknowledge = true and
       //both np and p messages are sent synchronously
       
-      getJmsServerManager().createConnectionFactory("testsuitecf", null, 1000, 1024 * 1024, -1, 1000, -1, true, true, true, "/testsuitecf");
+      getJmsServerManager().createConnectionFactory("testsuitecf",
+               new NettyConnectorFactory(), null, 5000, 5000,      
+               null, 1000, 1024 * 1024, -1, 1000, -1, true, true, true, "/testsuitecf");
       
       cf = (JBossConnectionFactory) getInitialContext().lookup("/testsuitecf");      
    }

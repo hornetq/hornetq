@@ -21,9 +21,10 @@
  */ 
 package org.jboss.messaging.tests.unit.core.remoting.impl.mina;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.easymock.EasyMock;
-import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.impl.mina.MinaAcceptor;
 import org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory;
@@ -44,11 +45,11 @@ public class MinaAcceptorFactoryTest extends UnitTestCase
    {
       MinaAcceptorFactory factory = new MinaAcceptorFactory();
       
-      RemotingHandler handler = EasyMock.createStrictMock(RemotingHandler.class);
-      Configuration config = new ConfigurationImpl();
+      Map<String, Object> params = new HashMap<String, Object>();
+      RemotingHandler handler = EasyMock.createStrictMock(RemotingHandler.class);    
       ConnectionLifeCycleListener listener = EasyMock.createStrictMock(ConnectionLifeCycleListener.class);      
       
-      Acceptor acceptor = factory.createAcceptor(config, handler, listener);
+      Acceptor acceptor = factory.createAcceptor(params, handler, listener);
       
       assertTrue(acceptor instanceof MinaAcceptor);
    }

@@ -21,7 +21,8 @@
  */ 
 package org.jboss.messaging.tests.unit.core.remoting.impl;
 
-import org.jboss.messaging.core.config.Configuration;
+import java.util.Map;
+
 import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
@@ -37,7 +38,7 @@ import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 public class AcceptorFactory3 implements AcceptorFactory
 {
 
-   public Acceptor createAcceptor(Configuration configuration,
+   public Acceptor createAcceptor(Map<String, Object> params,
          RemotingHandler handler, ConnectionLifeCycleListener listener)
    {
       return new Acceptor3();

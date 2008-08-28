@@ -352,7 +352,7 @@ public class MessagingServerImpl implements MessagingServer
                          
       long sessionID = dispatcher.generateID();
       
-      CommandManager cm = new CommandManagerImpl(configuration.getConnectionParams().getPacketConfirmationBatchSize(),
+      CommandManager cm = new CommandManagerImpl(configuration.getPacketConfirmationBatchSize(),
                remotingConnection, dispatcher, sessionID,
                localCommandResponseTargetID,
                remoteCommandResponseTargetID);
@@ -378,7 +378,9 @@ public class MessagingServerImpl implements MessagingServer
       
       remotingConnection.addFailureListener(session);
                   
-      return new CreateSessionResponseMessage(session.getID(), localCommandResponseTargetID, version.getIncrementingVersion());
+      return
+         new CreateSessionResponseMessage(session.getID(), localCommandResponseTargetID,
+                  version.getIncrementingVersion(), configuration.getPacketConfirmationBatchSize());
    }
    
    public void removeSession(final String name)

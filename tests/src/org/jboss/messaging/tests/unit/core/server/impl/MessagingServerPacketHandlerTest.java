@@ -60,7 +60,8 @@ public class MessagingServerPacketHandlerTest extends UnitTestCase
       RemotingConnection rc = EasyMock.createStrictMock(RemotingConnection.class);
       CreateSessionMessage packet = new CreateSessionMessage("blah", 123, "andy", "taylor",
                                                              false, false, false, 123456);
-      CreateSessionResponseMessage createConnectionResponse = new CreateSessionResponseMessage(16256152, 98365, 123);
+      CreateSessionResponseMessage createConnectionResponse =
+         new CreateSessionResponseMessage(16256152, 98365, 123, 1234);
       MessagingServerPacketHandler messagingServerPacketHandler = new MessagingServerPacketHandler(server, rs);
       final long connectionID = 23982893;
       EasyMock.expect(rs.getConnection(connectionID)).andReturn(rc);      

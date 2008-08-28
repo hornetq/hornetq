@@ -26,18 +26,21 @@ import java.util.List;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:fox@redhat.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  * 
  */
 public interface ConnectionFactoryControlMBean
-{
-   String getURL();
-
+{   
    List<String> getBindings();
 
    String getClientID();
-
+   
+   long getPingPeriod();
+   
+   long getCallTimeout();
+   
    int getDupsOKBatchSize();
 
    int getDefaultConsumerMaxRate();

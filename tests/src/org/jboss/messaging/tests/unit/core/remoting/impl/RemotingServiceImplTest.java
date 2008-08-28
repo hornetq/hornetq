@@ -25,6 +25,7 @@ package org.jboss.messaging.tests.unit.core.remoting.impl;
 import java.util.List;
 
 import org.easymock.EasyMock;
+import org.jboss.messaging.core.config.AcceptorInfo;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -32,7 +33,6 @@ import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingHandler;
-import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
@@ -49,17 +49,11 @@ public class RemotingServiceImplTest extends UnitTestCase
    public void testSingleAcceptorStarted() throws Exception
    {
       final Acceptor acceptor = EasyMock.createStrictMock(Acceptor.class);
-      ConfigurationImpl config = new ConfigurationImpl();
+      ConfigurationImpl config = new ConfigurationImpl();      
+      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
+      TestAcceptorFactory1.acceptor = acceptor;
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
-      remotingService.registerAcceptorFactory(new AcceptorFactory()
-      {
-         public Acceptor createAcceptor(Configuration configuration,
-               RemotingHandler handler,                         
-               ConnectionLifeCycleListener listener)
-         {
-            return acceptor;
-         }
-      });
+                  
       acceptor.start();
       EasyMock.replay(acceptor);
       remotingService.start();
@@ -74,15 +68,8 @@ public class RemotingServiceImplTest extends UnitTestCase
       final Acceptor acceptor = EasyMock.createStrictMock(Acceptor.class);
       ConfigurationImpl config = new ConfigurationImpl();
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
-      remotingService.registerAcceptorFactory(new AcceptorFactory()
-      {
-         public Acceptor createAcceptor(Configuration configuration,
-               RemotingHandler handler,                         
-               ConnectionLifeCycleListener listener)
-         {
-            return acceptor;
-         }
-      });
+      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
+      TestAcceptorFactory1.acceptor = acceptor;
       acceptor.start();
       EasyMock.replay(acceptor);
       remotingService.start();
@@ -98,15 +85,8 @@ public class RemotingServiceImplTest extends UnitTestCase
       final Acceptor acceptor = EasyMock.createStrictMock(Acceptor.class);
       ConfigurationImpl config = new ConfigurationImpl();
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
-      remotingService.registerAcceptorFactory(new AcceptorFactory()
-      {
-         public Acceptor createAcceptor(Configuration configuration,
-               RemotingHandler handler,                         
-               ConnectionLifeCycleListener listener)
-         {
-            return acceptor;
-         }
-      });
+      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
+      TestAcceptorFactory1.acceptor = acceptor;
       acceptor.start();
       acceptor.stop();
       EasyMock.replay(acceptor);
@@ -120,46 +100,26 @@ public class RemotingServiceImplTest extends UnitTestCase
 
    public void testMultipleAcceptorsStarted() throws Exception
    {
-      final Acceptor acceptor = EasyMock.createStrictMock(Acceptor.class);
+      final Acceptor acceptor1 = EasyMock.createStrictMock(Acceptor.class);
       final Acceptor acceptor2 = EasyMock.createStrictMock(Acceptor.class);
       final Acceptor acceptor3 = EasyMock.createStrictMock(Acceptor.class);
       ConfigurationImpl config = new ConfigurationImpl();
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
-      remotingService.registerAcceptorFactory(new AcceptorFactory()
-      {
-         public Acceptor createAcceptor(Configuration configuration,
-               RemotingHandler handler,                         
-               ConnectionLifeCycleListener listener)
-         {
-            return acceptor;
-         }
-      });
-      remotingService.registerAcceptorFactory(new AcceptorFactory()
-      {
-         public Acceptor createAcceptor(Configuration configuration,
-               RemotingHandler handler,                         
-               ConnectionLifeCycleListener listener)
-         {
-            return acceptor2;
-         }
-      });
-      remotingService.registerAcceptorFactory(new AcceptorFactory()
-      {
-         public Acceptor createAcceptor(Configuration configuration,
-               RemotingHandler handler,                         
-               ConnectionLifeCycleListener listener)
-         {
-            return acceptor3;
-         }
-      });
-      acceptor.start();
+      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
+      TestAcceptorFactory1.acceptor = acceptor1;
+      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory2"));
+      TestAcceptorFactory2.acceptor = acceptor2;
+      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory3"));
+      TestAcceptorFactory3.acceptor = acceptor3;
+            
+      acceptor1.start();
       acceptor2.start();
       acceptor3.start();
-      EasyMock.replay(acceptor, acceptor2, acceptor3);
+      EasyMock.replay(acceptor1, acceptor2, acceptor3);
       remotingService.start();
-      EasyMock.verify(acceptor, acceptor2, acceptor3);
+      EasyMock.verify(acceptor1, acceptor2, acceptor3);
       assertEquals(3, remotingService.getAcceptors().size());   
-      assertTrue(remotingService.getAcceptors().contains(acceptor));
+      assertTrue(remotingService.getAcceptors().contains(acceptor1));
       assertTrue(remotingService.getAcceptors().contains(acceptor2));
       assertTrue(remotingService.getAcceptors().contains(acceptor3));
       assertTrue(remotingService.isStarted());
@@ -167,51 +127,29 @@ public class RemotingServiceImplTest extends UnitTestCase
 
    public void testMultipleAcceptorsStartedAndStopped() throws Exception
    {
-      final Acceptor acceptor = EasyMock.createStrictMock(Acceptor.class);
+      final Acceptor acceptor1 = EasyMock.createStrictMock(Acceptor.class);
       final Acceptor acceptor2 = EasyMock.createStrictMock(Acceptor.class);
       final Acceptor acceptor3 = EasyMock.createStrictMock(Acceptor.class);
       ConfigurationImpl config = new ConfigurationImpl();
-      config.setTransport(TransportType.INVM);
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
-      remotingService.registerAcceptorFactory(new AcceptorFactory()
-      {
-         public Acceptor createAcceptor(Configuration configuration,
-               RemotingHandler handler,                         
-               ConnectionLifeCycleListener listener)
-         {
-            return acceptor;
-         }
-      });
-      remotingService.registerAcceptorFactory(new AcceptorFactory()
-      {
-         public Acceptor createAcceptor(Configuration configuration,
-               RemotingHandler handler,                         
-               ConnectionLifeCycleListener listener)
-         {
-            return acceptor2;
-         }
-      });
-      remotingService.registerAcceptorFactory(new AcceptorFactory()
-      {
-         public Acceptor createAcceptor(Configuration configuration,
-               RemotingHandler handler,                         
-               ConnectionLifeCycleListener listener)
-         {
-            return acceptor3;
-         }
-      });
-      acceptor.start();
+      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
+      TestAcceptorFactory1.acceptor = acceptor1;
+      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory2"));
+      TestAcceptorFactory2.acceptor = acceptor2;
+      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory3"));
+      TestAcceptorFactory3.acceptor = acceptor3;
+      acceptor1.start();
       acceptor2.start();
       acceptor3.start();
-      acceptor.stop();
+      acceptor1.stop();
       acceptor2.stop();
       acceptor3.stop();
-      EasyMock.replay(acceptor, acceptor2, acceptor3);
+      EasyMock.replay(acceptor1, acceptor2, acceptor3);
       remotingService.start();
       remotingService.stop();
-      EasyMock.verify(acceptor, acceptor2, acceptor3);
+      EasyMock.verify(acceptor1, acceptor2, acceptor3);
       assertEquals(3, remotingService.getAcceptors().size());   
-      assertTrue(remotingService.getAcceptors().contains(acceptor));
+      assertTrue(remotingService.getAcceptors().contains(acceptor1));
       assertTrue(remotingService.getAcceptors().contains(acceptor2));
       assertTrue(remotingService.getAcceptors().contains(acceptor3));
       assertFalse(remotingService.isStarted());
@@ -219,81 +157,53 @@ public class RemotingServiceImplTest extends UnitTestCase
    
    public void testMultipleAcceptorsStartedAndStoppedAddedAnotherAcceptorThenStarted() throws Exception
    {
-      final Acceptor acceptor = EasyMock.createStrictMock(Acceptor.class);
+      final Acceptor acceptor1 = EasyMock.createStrictMock(Acceptor.class);
       final Acceptor acceptor2 = EasyMock.createStrictMock(Acceptor.class);
       final Acceptor acceptor3 = EasyMock.createStrictMock(Acceptor.class);
       final Acceptor acceptor4 = EasyMock.createStrictMock(Acceptor.class);
       ConfigurationImpl config = new ConfigurationImpl();
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
-      remotingService.registerAcceptorFactory(new AcceptorFactory()
-      {
-         public Acceptor createAcceptor(Configuration configuration,
-               RemotingHandler handler,                         
-               ConnectionLifeCycleListener listener)
-         {
-            return acceptor;
-         }
-      });
-      remotingService.registerAcceptorFactory(new AcceptorFactory()
-      {
-         public Acceptor createAcceptor(Configuration configuration,
-               RemotingHandler handler,                         
-               ConnectionLifeCycleListener listener)
-         {
-            return acceptor2;
-         }
-      });
-      remotingService.registerAcceptorFactory(new AcceptorFactory()
-      {
-         public Acceptor createAcceptor(Configuration configuration,
-               RemotingHandler handler,                         
-               ConnectionLifeCycleListener listener)
-         {
-            return acceptor3;
-         }
-      });
-      acceptor.start();
+      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
+      TestAcceptorFactory1.acceptor = acceptor1;
+      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory2"));
+      TestAcceptorFactory2.acceptor = acceptor2;
+      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory3"));
+      TestAcceptorFactory3.acceptor = acceptor3;
+      acceptor1.start();
       acceptor2.start();
       acceptor3.start();
-      acceptor.stop();
+      acceptor1.stop();
       acceptor2.stop();
       acceptor3.stop();
-      EasyMock.replay(acceptor, acceptor2, acceptor3);
+      EasyMock.replay(acceptor1, acceptor2, acceptor3);
       remotingService.start();
       remotingService.stop();
       
-      EasyMock.verify(acceptor, acceptor2, acceptor3);
+      EasyMock.verify(acceptor1, acceptor2, acceptor3);
       assertEquals(3, remotingService.getAcceptors().size());   
-      assertTrue(remotingService.getAcceptors().contains(acceptor));
+      assertTrue(remotingService.getAcceptors().contains(acceptor1));
       assertTrue(remotingService.getAcceptors().contains(acceptor2));
       assertTrue(remotingService.getAcceptors().contains(acceptor3));
       assertFalse(remotingService.isStarted());
       
-      EasyMock.reset(acceptor, acceptor2, acceptor3);
-      remotingService.registerAcceptorFactory(new AcceptorFactory()
-      {
-         public Acceptor createAcceptor(Configuration configuration,
-               RemotingHandler handler,                         
-               ConnectionLifeCycleListener listener)
-         {
-            return acceptor4;
-         }
-      });
-      acceptor.start();
+      EasyMock.reset(acceptor1, acceptor2, acceptor3);
+      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory4"));
+      TestAcceptorFactory4.acceptor = acceptor4;
+      acceptor1.start();
       acceptor2.start();
       acceptor3.start();
       acceptor4.start();
-      acceptor.stop();
+      acceptor1.stop();
       acceptor2.stop();
       acceptor3.stop();
       acceptor4.stop();
-      EasyMock.replay(acceptor, acceptor2, acceptor3, acceptor4);
+      EasyMock.replay(acceptor1, acceptor2, acceptor3, acceptor4);
       remotingService.start();
       remotingService.stop();
 
-      EasyMock.verify(acceptor, acceptor2, acceptor3, acceptor4);
+      EasyMock.verify(acceptor1, acceptor2, acceptor3, acceptor4);
       assertEquals(4, remotingService.getAcceptors().size());   
-      assertTrue(remotingService.getAcceptors().contains(acceptor));
+      assertTrue(remotingService.getAcceptors().contains(acceptor1));
       assertTrue(remotingService.getAcceptors().contains(acceptor2));
       assertTrue(remotingService.getAcceptors().contains(acceptor3));
       assertTrue(remotingService.getAcceptors().contains(acceptor4));
@@ -327,38 +237,6 @@ public class RemotingServiceImplTest extends UnitTestCase
       assertTrue(interceptors.get(2) instanceof Interceptor3);
    }
    
-   public void testAcceptorFactoriesAdded() throws Exception
-   {
-      ConfigurationImpl config = new ConfigurationImpl();
-
-      config.getAcceptorFactoryClassNames().add("org.jboss.messaging.tests.unit.core.remoting.impl.AcceptorFactory1");
-      config.getAcceptorFactoryClassNames().add("org.jboss.messaging.tests.unit.core.remoting.impl.AcceptorFactory2");
-      config.getAcceptorFactoryClassNames().add("org.jboss.messaging.tests.unit.core.remoting.impl.AcceptorFactory3");
-      
-      RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
-      remotingService.start();
-      
-      assertEquals(3, remotingService.getAcceptors().size());
-      boolean got1 = false;
-      boolean got2 = false;
-      boolean got3 = false;
-      for (Acceptor acceptor: remotingService.getAcceptors())
-      {
-         if (acceptor instanceof AcceptorFactory1.Acceptor1)
-         {
-            got1 = true;
-         }
-         if (acceptor instanceof AcceptorFactory2.Acceptor2)
-         {
-            got2 = true;
-         }
-         if (acceptor instanceof AcceptorFactory3.Acceptor3)
-         {
-            got3 = true;
-         }
-      }
-      assertTrue(got1 && got2 && got3);
-   }
    
    public void testCreateGetDestroyConnection() throws Exception
    {

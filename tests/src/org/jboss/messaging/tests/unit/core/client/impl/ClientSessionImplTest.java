@@ -36,14 +36,12 @@ import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientConsumerInternal;
 import org.jboss.messaging.core.client.impl.ClientConsumerPacketHandler;
 import org.jboss.messaging.core.client.impl.ClientProducerInternal;
 import org.jboss.messaging.core.client.impl.ClientProducerPacketHandler;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionInternal;
-import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.CommandManager;
@@ -51,7 +49,6 @@ import org.jboss.messaging.core.remoting.ConnectionRegistry;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
@@ -756,7 +753,6 @@ public class ClientSessionImplTest extends UnitTestCase
       ClientSessionFactory cf = EasyMock.createStrictMock(ClientSessionFactory.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
-      Location location = new LocationImpl(TransportType.TCP, "localhost", 1234);
       ConnectionRegistry reg = EasyMock.createStrictMock(ConnectionRegistry.class);
         
       final long sessionTargetID = 9121892;
@@ -788,8 +784,9 @@ public class ClientSessionImplTest extends UnitTestCase
       browser2.cleanUp();
       
       cm.close();
-      EasyMock.expect(rc.getLocation()).andStubReturn(location);
-      reg.returnConnection(location);
+      final String connectionID = "uahsjash";
+      EasyMock.expect(rc.getID()).andStubReturn(connectionID);
+      reg.returnConnection(connectionID);
         
       EasyMock.replay(cf, pd, prod1, prod2, cons1, cons2, browser1, browser2, cm, reg, rc);
                  
@@ -959,13 +956,7 @@ public class ClientSessionImplTest extends UnitTestCase
       ClientSessionFactory cf = EasyMock.createStrictMock(ClientSessionFactory.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
-            
-      Location location1 = new LocationImpl(TransportType.TCP, "blah1");            
-      Location location2 = new LocationImpl(TransportType.TCP, "blah2");
-      
-      EasyMock.expect(rc1.getLocation()).andStubReturn(location1);
-      EasyMock.expect(rc2.getLocation()).andStubReturn(location2);
-                    
+                               
       EasyMock.replay(rc1, rc2, cf, pd, cm);
       
       ClientSessionInternal session1 =
@@ -1037,7 +1028,6 @@ public class ClientSessionImplTest extends UnitTestCase
       ClientSessionFactory cf = EasyMock.createStrictMock(ClientSessionFactory.class);
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
-      Location location = new LocationImpl(TransportType.TCP, "localhost", 1234);
       ConnectionRegistry reg = EasyMock.createStrictMock(ConnectionRegistry.class);
 
       SessionCreateQueueMessage request = new SessionCreateQueueMessage(new SimpleString("blah"), new SimpleString("hagshg"),
@@ -1058,8 +1048,9 @@ public class ClientSessionImplTest extends UnitTestCase
 
       EasyMock.reset(rc, cf, pd, cm);   
       cm.close();
-      EasyMock.expect(rc.getLocation()).andReturn(location);
-      reg.returnConnection(location);
+      final String connectionID = "uahsjash";
+      EasyMock.expect(rc.getID()).andStubReturn(connectionID);
+      reg.returnConnection(connectionID);
       EasyMock.replay(rc, cf, pd, cm);
       session.cleanUp();
       EasyMock.verify(rc, cf, pd, cm);
@@ -1281,9 +1272,9 @@ public class ClientSessionImplTest extends UnitTestCase
       
       cm.close();
                  
-      Location location = new LocationImpl(TransportType.TCP, "blah", 1234);
-      EasyMock.expect(rc.getLocation()).andStubReturn(location);
-      reg.returnConnection(location);
+      final String connectionID = "uahsjash";
+      EasyMock.expect(rc.getID()).andStubReturn(connectionID);
+      reg.returnConnection(connectionID);
              
       EasyMock.replay(rc, cf, pd, prod1, prod2, cons1, cons2, browser1, browser2, cm);
                  
@@ -2192,9 +2183,9 @@ public class ClientSessionImplTest extends UnitTestCase
 
       // Defaults from cf
 
-      EasyMock.expect(cf.isDefaultBlockOnNonPersistentSend()).andReturn(blockOnNPSend);
+      EasyMock.expect(cf.isBlockOnNonPersistentSend()).andReturn(blockOnNPSend);
 
-      EasyMock.expect(cf.isDefaultBlockOnPersistentSend()).andReturn(blockOnPSend);   
+      EasyMock.expect(cf.isBlockOnPersistentSend()).andReturn(blockOnPSend);   
 
       final long clientTargetID = 7676876;
 
@@ -2243,9 +2234,9 @@ public class ClientSessionImplTest extends UnitTestCase
       
       // Defaults from cf
         
-      EasyMock.expect(cf.isDefaultBlockOnNonPersistentSend()).andReturn(blockOnNPSend);
+      EasyMock.expect(cf.isBlockOnNonPersistentSend()).andReturn(blockOnNPSend);
       
-      EasyMock.expect(cf.isDefaultBlockOnPersistentSend()).andReturn(blockOnPSend);   
+      EasyMock.expect(cf.isBlockOnPersistentSend()).andReturn(blockOnPSend);   
 
       final long clientTargetID = 7676876;
 
@@ -2293,13 +2284,13 @@ public class ClientSessionImplTest extends UnitTestCase
       
       // Defaults from cf
       
-      EasyMock.expect(cf.getDefaultProducerWindowSize()).andReturn(windowSize);
+      EasyMock.expect(cf.getProducerWindowSize()).andReturn(windowSize);
       
-      EasyMock.expect(cf.getDefaultProducerMaxRate()).andReturn(maxRate);   
+      EasyMock.expect(cf.getProducerMaxRate()).andReturn(maxRate);   
       
-      EasyMock.expect(cf.isDefaultBlockOnNonPersistentSend()).andReturn(blockOnNPSend);
+      EasyMock.expect(cf.isBlockOnNonPersistentSend()).andReturn(blockOnNPSend);
         
-      EasyMock.expect(cf.isDefaultBlockOnPersistentSend()).andReturn(blockOnPSend);   
+      EasyMock.expect(cf.isBlockOnPersistentSend()).andReturn(blockOnPSend);   
 
       final long clientTargetID = 7676876;
 
@@ -2386,9 +2377,9 @@ public class ClientSessionImplTest extends UnitTestCase
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
          
-      EasyMock.expect(cf.getDefaultConsumerWindowSize()).andReturn(windowSize);
+      EasyMock.expect(cf.getConsumerWindowSize()).andReturn(windowSize);
       
-      EasyMock.expect(cf.getDefaultConsumerMaxRate()).andReturn(maxRate);      
+      EasyMock.expect(cf.getConsumerMaxRate()).andReturn(maxRate);      
                   
       final long clientTargetID = 87126716;
       
@@ -2497,9 +2488,9 @@ public class ClientSessionImplTest extends UnitTestCase
       PacketDispatcher pd = EasyMock.createStrictMock(PacketDispatcher.class);
       CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
       
-      EasyMock.expect(cf.getDefaultConsumerWindowSize()).andReturn(windowSize);
+      EasyMock.expect(cf.getConsumerWindowSize()).andReturn(windowSize);
       
-      EasyMock.expect(cf.getDefaultConsumerMaxRate()).andReturn(maxRate);   
+      EasyMock.expect(cf.getConsumerMaxRate()).andReturn(maxRate);   
        
       final long clientTargetID = 87126716;
       

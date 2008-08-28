@@ -244,16 +244,6 @@ public class MessagingServerControl extends StandardMBean implements
       return configuration.getJournalType().toString();
    }
 
-   public String getKeyStorePath()
-   {
-      return configuration.getKeyStorePath();
-   }
-
-   public String getLocation()
-   {
-      return configuration.getLocation().toString();
-   }
-
    public int getScheduledThreadPoolMaxSize()
    {
       return configuration.getScheduledThreadPoolMaxSize();
@@ -263,12 +253,7 @@ public class MessagingServerControl extends StandardMBean implements
    {
       return configuration.getSecurityInvalidationInterval();
    }
-
-   public String getTrustStorePath()
-   {
-      return configuration.getTrustStorePath();
-   }
-
+  
    public boolean isClustered()
    {
       return configuration.isClustered();
@@ -297,11 +282,6 @@ public class MessagingServerControl extends StandardMBean implements
    public boolean isRequireDestinations()
    {
       return configuration.isRequireDestinations();
-   }
-
-   public boolean isSSLEnabled()
-   {
-      return configuration.isSSLEnabled();
    }
 
    public boolean isSecurityEnabled()

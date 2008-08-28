@@ -27,12 +27,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
-import org.jboss.messaging.core.client.impl.LocationImpl;
+import org.jboss.messaging.core.config.AcceptorInfo;
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.server.JournalType;
 
 /**
@@ -43,19 +39,13 @@ public class ConfigurationImpl implements Configuration
 {
    // Constants ------------------------------------------------------------------------------
    
-   public static final String ENABLE_SSL_PROPERTY_NAME = "jbm.remoting.ssl.enable";
-
+   private static final long serialVersionUID = 4077088945050267843L;
+  
    public static final boolean DEFAULT_CLUSTERED = false;
    
    public static final boolean DEFAULT_BACKUP = false;
    
    public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 30;
-   
-   public static final String DEFAULT_HOST = "localhost";
-   
-   public static final TransportType DEFAULT_TRANSPORT = TransportType.TCP;
-   
-   public static final int DEFAULT_PORT = 5400;
    
    public static final long DEFAULT_SECURITY_INVALIDATION_INTERVAL = 10000;
    
@@ -64,17 +54,13 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_SECURITY_ENABLED = true;
    
    public static final boolean DEFAULT_JMX_MANAGEMENT_ENABLED = true;
-   
-   public static final boolean DEFAULT_SSL_ENABLED = false;
      
-   public static final String DEFAULT_KEYSTORE_PATH = "messaging.keystore";
+   public static final int DEFAULT_CALL_TIMEOUT = 30000;
    
-   public static final String DEFAULT_KEYSTORE_PASSWORD = "secureexample";
+   public static final int DEFAULT_PACKET_CONFIRMATION_BATCH_SIZE = 100;
    
-   public static final String DEFAULT_TRUSTSTORE_PATH = "messaging.truststore";
+   public static final long DEFAULT_CONNECTION_SCAN_PERIOD = 1000;
    
-   public static final String DEFAULT_TRUSTSTORE_PASSWORD = "secureexample";
-      
    public static final String DEFAULT_BINDINGS_DIRECTORY = "data/bindings";
    
    public static final boolean DEFAULT_CREATE_BINDINGS_DIR = true;
@@ -95,8 +81,7 @@ public class ConfigurationImpl implements Configuration
    
    public static final int DEFAULT_JOURNAL_MAX_AIO = 5000;
    
-   private static final long serialVersionUID = 4077088945050267843L;
-
+   
    
    // Attributes -----------------------------------------------------------------------------
       
@@ -114,6 +99,13 @@ public class ConfigurationImpl implements Configuration
 
    protected boolean jmxManagementEnabled = DEFAULT_JMX_MANAGEMENT_ENABLED;
    
+   protected long callTimeout = DEFAULT_CALL_TIMEOUT;
+   
+   protected int packetConfirmationBatchSize = DEFAULT_PACKET_CONFIRMATION_BATCH_SIZE;
+   
+   protected long connectionScanPeriod = DEFAULT_CONNECTION_SCAN_PERIOD;
+   
+         
    // Journal related attributes
    
    protected String bindingsDirectory = DEFAULT_BINDINGS_DIRECTORY;
@@ -136,39 +128,10 @@ public class ConfigurationImpl implements Configuration
    
    protected int journalMaxAIO = DEFAULT_JOURNAL_MAX_AIO;
    
-   // remoting config
-   
-   protected int serverID;
-       
-   protected TransportType transport = DEFAULT_TRANSPORT;
-   
-   protected String host = DEFAULT_HOST;
-   
-   protected int port = DEFAULT_PORT;
-   
-   protected TransportType backupTransport;
-   
-   protected String backupHost;
-   
-   protected int backupPort;
-    
-   protected final ConnectionParams defaultConnectionParams = new ConnectionParamsImpl();
-   
-   protected boolean sslEnabled = DEFAULT_SSL_ENABLED;
-      
-   protected String keyStorePath = DEFAULT_KEYSTORE_PATH;
-   
-   protected String keyStorePassword = DEFAULT_KEYSTORE_PASSWORD;
-   
-   protected String trustStorePath = DEFAULT_TRUSTSTORE_PATH;
-   
-   protected String trustStorePassword = DEFAULT_TRUSTSTORE_PASSWORD;
-   
    protected List<String> interceptorClassNames = new ArrayList<String>();
 
-   protected Set<String> acceptorFactoryClassNames = new HashSet<String>();
-   
-      
+   protected Set<AcceptorInfo> acceptorInfos = new HashSet<AcceptorInfo>();
+         
    public boolean isClustered()
    {
       return clustered;
@@ -219,146 +182,54 @@ public class ConfigurationImpl implements Configuration
       this.requireDestinations = require;
    }   
    
-   public TransportType getTransport()
+   public long getCallTimeout()
    {
-      return transport;
+      return callTimeout;
    }
    
-   public void setTransport(TransportType transport)
+   public void setCallTimeout(long timeout)
    {
-      this.transport = transport;
+      this.callTimeout = timeout;
    }
    
-   public int getServerID()
+   public int getPacketConfirmationBatchSize()
    {
-      return serverID;
+      return this.packetConfirmationBatchSize;
    }
    
-   public void setServerID(final int serverID)
+   public void setPacketConfirmationBatchSize(int size)
    {
-      this.serverID = serverID;
-   }
-
-   public String getHost()
-   {
-      return host;
+      this.packetConfirmationBatchSize = size;
    }
    
-   public void setHost(String host)
+   public long getConnectionScanPeriod()
    {
-      this.host = host;
+      return connectionScanPeriod;
    }
-   
-   public int getPort()
+      
+   public void setConnectionScanPeriod(long scanPeriod)
    {
-      return port;
+      this.connectionScanPeriod = scanPeriod;
    }
-   
-   public void setPort(int port)
-   {
-      this.port = port;
-   }
-   
-   public TransportType getBackupTransport()
-   {
-      return backupTransport;
-   }
-   
-   public void setBackupTransport(TransportType transport)
-   {
-      this.backupTransport = transport;
-   }
-
-   public String getBackupHost()
-   {
-      return backupHost;
-   }
-   
-   public void setBackupHost(String host)
-   {
-      this.backupHost = host;
-   }
-   
-   public int getBackupPort()
-   {
-      return backupPort;
-   }
-   
-   public void setBackupPort(int port)
-   {
-      this.backupPort = port;
-   }
-   
-   public Location getLocation()
-   {
-      return new LocationImpl(transport, host, port);      
-   }
-   
-   public String getKeyStorePath()
-   {
-      return keyStorePath;
-   }
-   
-   public void setKeyStorePath(String path)
-   {
-      this.keyStorePath = path;
-   }
-
-   public String getKeyStorePassword()
-   {
-      return keyStorePassword;
-   }
-   
-   public void setKeyStorePassword(String password)
-   {
-      this.keyStorePassword = password;
-   }
-
-   public String getTrustStorePath()
-   {
-      return trustStorePath;
-   }
-   
-   public void setTrustStorePath(String path)
-   {
-      this.trustStorePath = path;
-   }
-
-   public String getTrustStorePassword()
-   {
-      return trustStorePassword;
-   }
-   
-   public void setTrustStorePassword(String password)
-   {
-      this.trustStorePassword = password;
-   }
-
-   public boolean isSSLEnabled()
-   {
-      if (System.getProperty(ENABLE_SSL_PROPERTY_NAME) != null)
-      {
-         return Boolean.parseBoolean(System.getProperty(ENABLE_SSL_PROPERTY_NAME));
-      }
-      else 
-      {
-         return sslEnabled;
-      }
-   }
-   
-   public void setSSLEnabled(boolean enabled)
-   {
-      this.sslEnabled = enabled;
-   }
-   
+      
    public List<String> getInterceptorClassNames()
    {
       return interceptorClassNames;
    }
    
-   public Set<String> getAcceptorFactoryClassNames()
+   public void setInterceptorClassNames(List<String> interceptors)
    {
-      return acceptorFactoryClassNames;
+      this.interceptorClassNames = interceptors;
+   }
+   
+   public Set<AcceptorInfo> getAcceptorInfos()
+   {
+      return this.acceptorInfos;
+   }
+   
+   public void setAcceptorInfos(Set<AcceptorInfo> infos)
+   {
+      this.acceptorInfos = infos;
    }
   
 	public String getBindingsDirectory()
@@ -481,11 +352,6 @@ public class ConfigurationImpl implements Configuration
 	   this.jmxManagementEnabled = enabled;
 	}
 	
-   public ConnectionParams getConnectionParams()
-   {
-      return this.defaultConnectionParams;
-   }
-   
    public boolean equals(Object other)
    {
       if (this == other)
@@ -507,28 +373,14 @@ public class ConfigurationImpl implements Configuration
              cother.isJournalSyncTransactional() == this.isJournalSyncTransactional() &&
              cother.isRequireDestinations() == this.isRequireDestinations() &&
              cother.isSecurityEnabled() == this.isSecurityEnabled() &&
-             cother.isSSLEnabled() == this.isSSLEnabled() &&
              cother.getBindingsDirectory().equals(this.getBindingsDirectory()) &&
-             cother.getConnectionParams().equals(this.getConnectionParams()) &&
-             cother.getHost().equals(this.getHost()) &&
              cother.getJournalDirectory().equals(this.getJournalDirectory()) &&
              cother.getJournalFileSize() == this.getJournalFileSize() &&
              cother.getJournalMaxAIO() == this.getJournalMaxAIO() &&
              cother.getJournalMinFiles() == this.getJournalMinFiles() &&
              cother.getJournalType() == this.getJournalType() &&
-             cother.getKeyStorePassword() == null ?
-                   this.getKeyStorePassword() == null : cother.getKeyStorePassword().equals(this.getKeyStorePassword()) && 
-             cother.getKeyStorePath() == null ?
-                   this.getKeyStorePath() == null : cother.getKeyStorePath().equals(this.getKeyStorePath()) &&
-             cother.getLocation().equals(this.getLocation()) &&
-             cother.getPort() == this.getPort() &&
              cother.getScheduledThreadPoolMaxSize() == this.getScheduledThreadPoolMaxSize() &&
-             cother.getSecurityInvalidationInterval() == this.getSecurityInvalidationInterval() &&
-             cother.getTransport() == this.getTransport() &&
-             cother.getTrustStorePassword() == null ?
-                   this.getTrustStorePassword() == null : cother.getTrustStorePassword().equals(this.getTrustStorePassword()) && 
-             cother.getTrustStorePath() == null ?
-                   this.getTrustStorePath() == null : cother.getTrustStorePath().equals(this.getTrustStorePath());
+             cother.getSecurityInvalidationInterval() == this.getSecurityInvalidationInterval();
    }
 
 }

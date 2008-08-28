@@ -22,6 +22,9 @@
 
 package org.jboss.messaging.tests.unit.core.remoting.impl.mina;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -44,7 +47,8 @@ public class MinaAcceptorTest extends UnitTestCase
       RemotingHandler handler = EasyMock.createStrictMock(RemotingHandler.class);
       Configuration config = new ConfigurationImpl();
       ConnectionLifeCycleListener listener = EasyMock.createStrictMock(ConnectionLifeCycleListener.class);
-      MinaAcceptor acceptor = new MinaAcceptor(config, handler, listener);
+      Map<String, Object> params = new HashMap<String, Object>();
+      MinaAcceptor acceptor = new MinaAcceptor(params, handler, listener);
       
       acceptor.start();
       acceptor.stop();

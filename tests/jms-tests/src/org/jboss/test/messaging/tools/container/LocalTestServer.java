@@ -44,6 +44,7 @@ import javax.transaction.UserTransaction;
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -526,7 +527,9 @@ public class LocalTestServer implements Server, Runnable
                                        boolean blockOnAcknowledge) throws Exception
    {
       log.info("deploying connection factory with name: " + objectName + " and dupsok: " + dupsOkBatchSize);
-      getJMSServerManager().createConnectionFactory(objectName, clientId, dupsOkBatchSize,
+      getJMSServerManager().createConnectionFactory(objectName,
+               new NettyConnectorFactory(), null, 5000, 5000,      
+               clientId, dupsOkBatchSize,
       		prefetchSize, -1, 1000, -1, blockOnAcknowledge, true, true, jndiBindings);
    }
 

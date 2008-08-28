@@ -28,7 +28,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.CommandManager;
@@ -38,6 +37,7 @@ import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
@@ -53,6 +53,8 @@ public class RemotingConnectionImpl implements RemotingConnection
    // ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(RemotingConnectionImpl.class);
+   
+   private static final float EXPIRE_FACTOR = 1.5f;
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -65,8 +67,6 @@ public class RemotingConnectionImpl implements RemotingConnection
    private final List<FailureListener> failureListeners = new ArrayList<FailureListener>();
 
    private final PacketDispatcher dispatcher;
-
-   private final Location location;
 
    private final long blockingCallTimeout;
 
@@ -81,12 +81,16 @@ public class RemotingConnectionImpl implements RemotingConnection
    private volatile PacketHandler pongHandler;
 
    private volatile boolean destroyed;
-
+   
+   private long expirePeriod;
+   
+   private volatile boolean stopPinging;
+   
    // Constructors
    // ---------------------------------------------------------------------------------
 
    public RemotingConnectionImpl(final Connection transportConnection,
-         final PacketDispatcher dispatcher, final Location location,
+         final PacketDispatcher dispatcher,
          final long blockingCallTimeout, final long pingPeriod,
          final ScheduledExecutorService pingExecutor)
    {
@@ -94,13 +98,13 @@ public class RemotingConnectionImpl implements RemotingConnection
 
       this.dispatcher = dispatcher;
 
-      this.location = location;
-
       this.blockingCallTimeout = blockingCallTimeout;
 
       pinger = new Pinger();
 
       pongHandler = new PongHandler(dispatcher.generateID());
+      
+      expirePeriod = (long)(EXPIRE_FACTOR * pingPeriod);
 
       dispatcher.register(pongHandler);
 
@@ -109,20 +113,15 @@ public class RemotingConnectionImpl implements RemotingConnection
    }
 
    public RemotingConnectionImpl(final Connection transportConnection,
-         final PacketDispatcher dispatcher, final Location location,
+         final PacketDispatcher dispatcher,
          final long blockingCallTimeout)
    {
       this.transportConnection = transportConnection;
 
       this.dispatcher = dispatcher;
 
-      this.location = location;
-
       this.blockingCallTimeout = blockingCallTimeout;
    }
-
-   // Public
-   // ---------------------------------------------------------------------------------------
 
    // RemotingConnection implementation
    // ------------------------------------------------------------
@@ -212,11 +211,6 @@ public class RemotingConnectionImpl implements RemotingConnection
       return dispatcher;
    }
 
-   public Location getLocation()
-   {
-      return location;
-   }
-
    public MessagingBuffer createBuffer(final int size)
    {
       return transportConnection.createBuffer(size);
@@ -266,6 +260,12 @@ public class RemotingConnectionImpl implements RemotingConnection
       // We close the underlying transport connection
       transportConnection.close();
    }
+   
+   /* For testing only */
+   public void stopPingingAfterOne()
+   {
+      stopPinging = true;
+   }
 
    // Package protected
    // ----------------------------------------------------------------------------
@@ -311,11 +311,11 @@ public class RemotingConnectionImpl implements RemotingConnection
          firstTime = false;
 
          // Send ping
-         Packet ping = new PacketImpl(PacketImpl.PING);
+         Packet ping = new Ping(expirePeriod);
          ping.setTargetID(0);
          ping.setExecutorID(0);
          ping.setResponseTargetID(pongHandler.getID());
-
+         
          doWrite(ping);
       }
    }
@@ -336,7 +336,16 @@ public class RemotingConnectionImpl implements RemotingConnection
 
       public void handle(Object connectionID, Packet packet)
       {
+         if (packet.getType() != PacketImpl.PONG)
+         {
+            throw new IllegalStateException("Didn't receive pong, received " + packet.getType());
+         }
          gotPong = true;
+         
+         if (stopPinging)
+         {
+            future.cancel(true);
+         }
       }
 
    }

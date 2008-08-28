@@ -5,45 +5,34 @@
       <scheduled-max-pool-size>12345</scheduled-max-pool-size>        
       <require-destinations>false</require-destinations>
       <security-enabled>false</security-enabled>
-      <security-invalidation-interval>5423</security-invalidation-interval>
-      <packet-confirmation-batch-size>1234</packet-confirmation-batch-size>
-      <remoting-transport>HTTP</remoting-transport>
-      <remoting-bind-address>5431</remoting-bind-address>
-      <remoting-host>blahhost</remoting-host>
-      <remoting-port>6540</remoting-port>      
-      <remoting-backup-transport>TCP</remoting-backup-transport>   
-      <remoting-backup-host>backuphost</remoting-backup-host>
-      <remoting-backup-port>7540</remoting-backup-port>      
-      <remoting-call-timeout>7654</remoting-call-timeout>
-      <remoting-enable-invm-optimisation>false</remoting-enable-invm-optimisation>
-      <remoting-tcp-nodelay>false</remoting-tcp-nodelay>
-      <remoting-tcp-receive-buffer-size>987654</remoting-tcp-receive-buffer-size>
-      <remoting-tcp-send-buffer-size>2345676</remoting-tcp-send-buffer-size>
-      <remoting-ping-interval>123123</remoting-ping-interval>
-      <remoting-ping-timeout>321321</remoting-ping-timeout>->
-      <remoting-enable-ssl>true</remoting-enable-ssl>
-      <remoting-ssl-keystore-path>blahstore</remoting-ssl-keystore-path>
-      <remoting-ssl-keystore-password>wibble123</remoting-ssl-keystore-password>
-      <remoting-ssl-truststore-path>blahtruststore</remoting-ssl-truststore-path>
-      <remoting-ssl-truststore-password>eek123</remoting-ssl-truststore-password>
+      <security-invalidation-interval>5423</security-invalidation-interval>  
+      <call-timeout>7654</call-timeout>    
+      <packet-confirmation-batch-size>543</packet-confirmation-batch-size>
+      <connection-scan-period>6543</connection-scan-period>
       <remoting-interceptors>
          <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1</class-name>
          <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor2</class-name>
       </remoting-interceptors>
-      <remoting-connector-factories>
-         <mapping>
-            <transport>TCP</transport>
-            <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory1</class-name>
-         </mapping>
-         <mapping>
-            <transport>HTTP</transport>
-            <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory2</class-name>
-         </mapping>
-      </remoting-connector-factories>
-      <remoting-acceptor-factories>
-         <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory1</class-name>
-         <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory2</class-name>
-      </remoting-acceptor-factories>
+      <remoting-acceptors>
+         <acceptor>
+            <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory1</factory-class>
+            <params>
+	            <param key="a_mykey1" value="a_foovalue1" type="String"/>
+	            <param key="a_mykey2" value="1234567" type="Long"/>
+	            <param key="a_mykey3" value="123" type="Integer"/>
+	            <param key="a_mykey4" value="a_foovalue4" type="String"/>
+            </params>            
+         </acceptor>
+         <acceptor>
+            <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory2</factory-class>
+            <params>
+	            <param key="b_mykey1" value="b_foovalue1" type="String"/>
+	            <param key="b_mykey2" value="7654321" type="Long"/>
+	            <param key="b_mykey3" value="321" type="Integer"/>
+	            <param key="b_mykey4" value="b_foovalue4" type="String"/>
+            </params>
+         </acceptor>
+      </remoting-acceptors>
       <bindings-directory>somedir</bindings-directory>
       <create-bindings-dir>false</create-bindings-dir>
       <journal-directory>somedir2</journal-directory>

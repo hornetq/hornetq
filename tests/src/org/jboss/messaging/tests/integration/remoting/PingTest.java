@@ -22,13 +22,12 @@
 
 package org.jboss.messaging.tests.integration.remoting;
 
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
+import java.util.HashMap;
+import java.util.Map;
+
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
-import org.jboss.messaging.core.client.impl.LocationImpl;
+import org.jboss.messaging.core.config.AcceptorInfo;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -38,8 +37,10 @@ import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory;
+import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
+import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 
@@ -72,9 +73,8 @@ public class PingTest extends TestCase
    protected void setUp() throws Exception
    {
       ConfigurationImpl config = new ConfigurationImpl();
-      config.getConnectionParams().setPingInterval(PING_INTERVAL);
+      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory"));
       messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
-      messagingService.getServer().getRemotingService().registerAcceptorFactory(new MinaAcceptorFactory());
       messagingService.start();
    }
 
@@ -105,9 +105,8 @@ public class PingTest extends TestCase
     */
    public void testNoFailureWithPinging() throws Exception
    {           
-      Location location = new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_PORT);
-      ConnectionParams connectionParams = new ConnectionParamsImpl();
-      connectionParams.setPingInterval(PING_INTERVAL);
+      ConnectorFactory cf = new NettyConnectorFactory();
+      Map<String, Object> params = new HashMap<String, Object>();
       
       ConnectionRegistry registry = ConnectionRegistryLocator.getRegistry();
       
@@ -115,9 +114,9 @@ public class PingTest extends TestCase
       
       try
       {         
-         conn = registry.getConnection(location, connectionParams);
+         conn = registry.getConnection(cf, params, PING_INTERVAL, 5000);
          assertNotNull(conn);
-         assertEquals(1, registry.getCount(location));
+         assertEquals(1, registry.getCount(cf, params));
          
          Listener clientListener = new Listener();
          
@@ -146,7 +145,7 @@ public class PingTest extends TestCase
       {
          try
          {
-            registry.returnConnection(location);
+            registry.returnConnection(conn.getID());
          }
          catch (Exception ignore)
          {            
@@ -159,16 +158,8 @@ public class PingTest extends TestCase
     */
    public void testNoFailureNoPinging() throws Exception
    {           
-      ConfigurationImpl config = new ConfigurationImpl();
-      config.getConnectionParams().setPingInterval(-1);
-      messagingService.stop();
-      messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
-      messagingService.getServer().getRemotingService().registerAcceptorFactory(new MinaAcceptorFactory());
-      messagingService.start();
-            
-      Location location = new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_PORT);
-      ConnectionParams connectionParams = new ConnectionParamsImpl();
-      connectionParams.setPingInterval(-1);
+      ConnectorFactory cf = new NettyConnectorFactory();
+      Map<String, Object> params = new HashMap<String, Object>();
       
       ConnectionRegistry registry = ConnectionRegistryLocator.getRegistry();
       
@@ -176,9 +167,9 @@ public class PingTest extends TestCase
       
       try
       {        
-         conn = registry.getConnection(location, connectionParams);
+         conn = registry.getConnection(cf, params, -1, 5000);
          assertNotNull(conn);
-         assertEquals(1, registry.getCount(location));
+         assertEquals(1, registry.getCount(cf, params));
          
          Listener clientListener = new Listener();
          
@@ -207,7 +198,7 @@ public class PingTest extends TestCase
       {
          try
          {
-            registry.returnConnection(location);
+            registry.returnConnection(conn.getID());
          }
          catch (Exception ignore)
          {            
@@ -219,29 +210,32 @@ public class PingTest extends TestCase
     * Test the server timing out a connection since it doesn't receive a ping in time
     */
    public void testServerFailureNoPing() throws Exception
-   {
-      Location location = new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_PORT);
-      ConnectionParams connectionParams = new ConnectionParamsImpl();
-      connectionParams.setPingInterval(PING_INTERVAL * 2);
+   {            
+      ConnectorFactory cf = new NettyConnectorFactory();
+      Map<String, Object> params = new HashMap<String, Object>();
       
       ConnectionRegistry registry = ConnectionRegistryLocator.getRegistry();
       
-      RemotingConnection conn = null;
+      RemotingConnectionImpl conn = null;
       
       try
       {         
-         conn = registry.getConnection(location, connectionParams);
-         assertEquals(1, registry.getCount(location));
+         conn = (RemotingConnectionImpl)registry.getConnection(cf, params, PING_INTERVAL, 5000);
+         assertEquals(1, registry.getCount(cf, params));
          assertNotNull(conn);
+         
+         //We need to get it to send one ping then stop         
+         conn.stopPingingAfterOne();
                 
          Listener clientListener = new Listener();
          
          conn.addFailureListener(clientListener);
          
          //It's async so need to wait a while
-         Thread.sleep(1000);
-               
-         RemotingConnection serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
+         Thread.sleep(2000);
+                        
+         RemotingConnection serverConn =
+            messagingService.getServer().getRemotingService().getConnections().iterator().next();
          
          Listener serverListener = new Listener();
          
@@ -259,7 +253,7 @@ public class PingTest extends TestCase
          
          //Make sure we don't get the same connection back - it should have been removed from the registry
          
-         RemotingConnection conn2 = registry.getConnection(location, connectionParams);
+         RemotingConnection conn2 = registry.getConnection(cf, params, PING_INTERVAL * 2, 5000);
          assertNotNull(conn2);
          
          assertFalse(conn == conn2);
@@ -269,7 +263,7 @@ public class PingTest extends TestCase
       {
          try
          {
-            registry.returnConnection(location);
+            registry.returnConnection(conn.getID());
          }
          catch (Exception ignore)
          {            
@@ -300,9 +294,8 @@ public class PingTest extends TestCase
      
      messagingService.getServer().getRemotingService().getDispatcher().addInterceptor(noPongInterceptor);
           
-     Location location = new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_PORT);
-     ConnectionParams connectionParams = new ConnectionParamsImpl();
-     connectionParams.setPingInterval(PING_INTERVAL);
+     ConnectorFactory cf = new NettyConnectorFactory();
+     Map<String, Object> params = new HashMap<String, Object>();
      
      ConnectionRegistry registry = ConnectionRegistryLocator.getRegistry();
      
@@ -310,9 +303,9 @@ public class PingTest extends TestCase
      
      try
      {         
-        conn = registry.getConnection(location, connectionParams);
+        conn = registry.getConnection(cf, params, PING_INTERVAL, 5000);
         assertNotNull(conn);
-        assertEquals(1, registry.getCount(location));
+        assertEquals(1, registry.getCount(cf, params));
                
         Listener clientListener = new Listener();
         
@@ -338,7 +331,7 @@ public class PingTest extends TestCase
         
         //Make sure we don't get the same connection back - it should have been removed from the registry
         
-        RemotingConnection conn2 = registry.getConnection(location, connectionParams);
+        RemotingConnection conn2 = registry.getConnection(cf, params, PING_INTERVAL, 5000);
         assertNotNull(conn2);        
      }
      finally
@@ -346,7 +339,7 @@ public class PingTest extends TestCase
         messagingService.getServer().getRemotingService().getDispatcher().removeInterceptor(noPongInterceptor);
         try
         {
-           registry.returnConnection(location);
+           registry.returnConnection(conn.getID());
         }
         catch (Exception ignore)
         {            

@@ -22,7 +22,8 @@
 
 package org.jboss.messaging.core.remoting.impl.netty;
 
-import org.jboss.messaging.core.config.Configuration;
+import java.util.Map;
+
 import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
@@ -35,7 +36,7 @@ import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
  */
 public class NettyAcceptorFactory implements AcceptorFactory
 {
-   public Acceptor createAcceptor(final Configuration configuration,
+   public Acceptor createAcceptor(final Map<String, Object> configuration,
                                   final RemotingHandler handler,
                                   final ConnectionLifeCycleListener listener)
    {

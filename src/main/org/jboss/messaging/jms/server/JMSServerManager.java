@@ -23,6 +23,9 @@
 package org.jboss.messaging.jms.server;
 
 import java.util.List;
+import java.util.Map;
+
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 
 /**
  * The JMS Management interface.
@@ -92,67 +95,26 @@ public interface JMSServerManager
     */
    boolean destroyTopic(String name) throws Exception;
 
-   /**
-    * Creates a connection factory
-    * 
-    * @param name
-    *           the name of this connection factory
-    * @param clientID
-    *           the client id
-    * @param dupsOKBatchSize
-    *           the bath size
-    * @param consumerWindowSize
-    *           The consumer window size
-    * @param consumerMaxRate
-    *           the Consumer max rate
-    * @param producerWindowSize
-    *           the producer window size
-    * @param producerMaxRate
-    *           the producer max rate
-    * @param jndiBinding
-    *           the binding name for JNDI
-    * @return true if the connection factory was created
-    * @throws Exception
-    *            if a problem occurred creating the connection factory
-    */
-   boolean createConnectionFactory(String name, String clientID,
+   boolean createConnectionFactory(String name, ConnectorFactory connectorFactory,
+            Map<String, Object> transportParams,
+            long pingPeriod, long callTimeout, String clientID,
          int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
          int producerWindowSize, int producerMaxRate,
          boolean blockOnAcknowledge,
-         boolean defaultSendNonPersistentMessagesBlocking,
-         boolean defaultSendPersistentMessagesBlocking, String jndiBinding)
+         boolean blockOnNonPersistentSend,
+         boolean blockOnPersistentSend, String jndiBinding)
          throws Exception;
 
-   /**
-    * Creates a connection factory
-    * 
-    * @param name
-    *           the name of this connection factory
-    * @param clientID
-    *           the client id
-    * @param dupsOKBatchSize
-    *           the bath size
-    * @param consumerWindowSize
-    *           The consumer window size
-    * @param consumerMaxRate
-    *           the Consumer max rate
-    * @param producerWindowSize
-    *           the producer window size
-    * @param producerMaxRate
-    *           the producer max rate
-    * @param jndiBindings
-    *           the binding names for JNDI
-    * @return true if the connection factory was created
-    * @throws Exception
-    *            if a problem occurred creating the connection factory
-    */
-   boolean createConnectionFactory(String name, String clientID,
+
+   boolean createConnectionFactory(String name, ConnectorFactory connectorFactory,
+            Map<String, Object> transportParams,
+            long pingPeriod, long callTimeout, String clientID,
          int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
          int producerWindowSize, int producerMaxRate,
          boolean blockOnAcknowledge,
-         boolean defaultSendNonPersistentMessagesBlocking,
-         boolean defaultSendPersistentMessagesBlocking,
-         List<String> jndiBindings) throws Exception;
+         boolean blockOnNonPersistentSend,
+         boolean blockOnPersistentSend, List<String> jndiBinding)
+         throws Exception;
 
    /**
     * destroys a connection factory.

@@ -24,7 +24,6 @@ package org.jboss.messaging.core.remoting;
 
 import java.util.Set;
 
-import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
 import org.jboss.messaging.core.server.MessagingComponent;
 
 /**
@@ -40,8 +39,4 @@ public interface RemotingService extends MessagingComponent
    RemotingConnection getConnection(Object remotingConnectionID);
 
    Set<RemotingConnection> getConnections();
-
-   void registerAcceptorFactory(AcceptorFactory factory);
-
-   void unregisterAcceptorFactory(AcceptorFactory factory);
 }

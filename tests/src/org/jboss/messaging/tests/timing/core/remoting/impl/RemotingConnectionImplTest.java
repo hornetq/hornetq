@@ -32,8 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
-import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.FailureListener;
@@ -41,7 +39,6 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
@@ -64,7 +61,6 @@ public class RemotingConnectionImplTest extends UnitTestCase
    {     
       Connection connection = EasyMock.createStrictMock(Connection.class);
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
-      Location location = new LocationImpl(TransportType.TCP, "blah", 1234);
       ScheduledExecutorService ex = new ScheduledThreadPoolExecutor(1);
       
       final long id = 128712;
@@ -122,7 +118,7 @@ public class RemotingConnectionImplTest extends UnitTestCase
       
       EasyMock.replay(connection, dispatcher);
       
-      RemotingConnection rc = new RemotingConnectionImpl(connection, dispatcher, location, 1000L, pingPeriod, ex);
+      RemotingConnection rc = new RemotingConnectionImpl(connection, dispatcher, 1000L, pingPeriod, ex);
             
       class Listener implements FailureListener
       {
@@ -151,7 +147,6 @@ public class RemotingConnectionImplTest extends UnitTestCase
    {     
       Connection connection = EasyMock.createStrictMock(Connection.class);
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
-      Location location = new LocationImpl(TransportType.TCP, "blah", 1234);
       ScheduledExecutorService ex = new ScheduledThreadPoolExecutor(1);
       
       final long id = 128712;
@@ -173,7 +168,7 @@ public class RemotingConnectionImplTest extends UnitTestCase
       
       EasyMock.replay(connection, dispatcher);
       
-      RemotingConnection rc = new RemotingConnectionImpl(connection, dispatcher, location, 1000L, pingPeriod, ex);
+      RemotingConnection rc = new RemotingConnectionImpl(connection, dispatcher, 1000L, pingPeriod, ex);
             
       class Listener implements FailureListener
       {
@@ -201,7 +196,6 @@ public class RemotingConnectionImplTest extends UnitTestCase
    {     
       Connection connection = EasyMock.createStrictMock(Connection.class);
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
-      Location location = new LocationImpl(TransportType.TCP, "blah", 1234);
       ScheduledExecutorService ex = new ScheduledThreadPoolExecutor(1);
       
       final long id = 128712;
@@ -264,7 +258,7 @@ public class RemotingConnectionImplTest extends UnitTestCase
       
       EasyMock.replay(connection, dispatcher);
       
-      RemotingConnection rc = new RemotingConnectionImpl(connection, dispatcher, location, 1000L, pingPeriod, ex);
+      RemotingConnection rc = new RemotingConnectionImpl(connection, dispatcher, 1000L, pingPeriod, ex);
             
       class Listener implements FailureListener
       {
@@ -291,7 +285,6 @@ public class RemotingConnectionImplTest extends UnitTestCase
    {     
       Connection connection = EasyMock.createStrictMock(Connection.class);
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
-      Location location = new LocationImpl(TransportType.TCP, "blah", 1234);
 
       final long id = 128712;
       EasyMock.expect(dispatcher.generateID()).andReturn(id);
@@ -311,7 +304,7 @@ public class RemotingConnectionImplTest extends UnitTestCase
       
       final long callTimeout = 100;
       
-      RemotingConnection rc = new RemotingConnectionImpl(connection, dispatcher, location, callTimeout);
+      RemotingConnection rc = new RemotingConnectionImpl(connection, dispatcher, callTimeout);
             
       class Listener implements FailureListener
       {
@@ -354,7 +347,6 @@ public class RemotingConnectionImplTest extends UnitTestCase
    {     
       Connection connection = EasyMock.createStrictMock(Connection.class);
       PacketDispatcher dispatcher = EasyMock.createStrictMock(PacketDispatcher.class);
-      Location location = new LocationImpl(TransportType.TCP, "blah", 1234);
 
       final long id = 128712;
       EasyMock.expect(dispatcher.generateID()).andReturn(id);
@@ -419,7 +411,7 @@ public class RemotingConnectionImplTest extends UnitTestCase
 
       EasyMock.replay(connection, dispatcher);
       
-      RemotingConnection rc = new RemotingConnectionImpl(connection, dispatcher, location, callTimeout);
+      RemotingConnection rc = new RemotingConnectionImpl(connection, dispatcher, callTimeout);
             
       class Listener implements FailureListener
       {

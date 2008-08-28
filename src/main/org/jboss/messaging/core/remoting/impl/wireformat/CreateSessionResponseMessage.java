@@ -41,13 +41,15 @@ public class CreateSessionResponseMessage extends PacketImpl
    private long commandResponseTargetID;
    
    private int serverVersion;
+   
+   private int packetConfirmationBatchSize;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public CreateSessionResponseMessage(final long sessionTargetID, final long commandResponseTargetID,
-                                       final int serverVersion)
+                                       final int serverVersion, final int packetConfirmationBatchSize)
    {
       super(CREATESESSION_RESP);
 
@@ -56,6 +58,8 @@ public class CreateSessionResponseMessage extends PacketImpl
       this.commandResponseTargetID = commandResponseTargetID;
       
       this.serverVersion = serverVersion;
+      
+      this.packetConfirmationBatchSize = packetConfirmationBatchSize;
    }
    
    public CreateSessionResponseMessage()
@@ -80,11 +84,17 @@ public class CreateSessionResponseMessage extends PacketImpl
       return serverVersion;
    }
    
+   public int getPacketConfirmationBatchSize()
+   {
+      return packetConfirmationBatchSize;
+   }
+   
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putLong(sessionTargetID);
       buffer.putLong(commandResponseTargetID);
       buffer.putInt(serverVersion);      
+      buffer.putInt(packetConfirmationBatchSize);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
@@ -92,6 +102,7 @@ public class CreateSessionResponseMessage extends PacketImpl
       sessionTargetID = buffer.getLong();
       commandResponseTargetID = buffer.getLong();
       serverVersion = buffer.getInt();
+      packetConfirmationBatchSize = buffer.getInt();
    }
 
    @Override
@@ -112,7 +123,8 @@ public class CreateSessionResponseMessage extends PacketImpl
       
       boolean matches = super.equals(other) &&
                         this.sessionTargetID == r.sessionTargetID &&
-                        this.commandResponseTargetID == r.commandResponseTargetID;
+                        this.commandResponseTargetID == r.commandResponseTargetID &&
+                        this.packetConfirmationBatchSize == r.packetConfirmationBatchSize;
       
       return matches;
    }

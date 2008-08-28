@@ -45,6 +45,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMe
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketsConfirmedMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
@@ -101,7 +102,7 @@ public class RemotingHandlerImpl implements RemotingHandler
 
    private final ConcurrentMap<Long, Executor> executors = new ConcurrentHashMap<Long, Executor>();
  
-   private final ConcurrentMap<Object, Long> lastPings = new ConcurrentHashMap<Object, Long>();
+   private final ConcurrentMap<Object, Long> expireTimes = new ConcurrentHashMap<Object, Long>();
 
    public RemotingHandlerImpl(final PacketDispatcher dispatcher, final ExecutorService executorService)
    {
@@ -122,17 +123,17 @@ public class RemotingHandlerImpl implements RemotingHandler
       }
    }
 
-   public Set<Object> scanForFailedConnections(final long expirePeriod)
+   public Set<Object> scanForFailedConnections()
    {
       long now = System.currentTimeMillis();
-
+      
       Set<Object> failedIDs = new HashSet<Object>();
 
-      for (Map.Entry<Object, Long> entry: lastPings.entrySet())
+      for (Map.Entry<Object, Long> entry: expireTimes.entrySet())
       {
-         long lastPing = entry.getValue();
-
-         if (now - lastPing > expirePeriod)
+         long expireTime = entry.getValue();
+         
+         if (now >= expireTime)
          {
             failedIDs.add(entry.getKey());
          }
@@ -209,9 +210,9 @@ public class RemotingHandlerImpl implements RemotingHandler
       }
    }
 
-   public void removeLastPing(final Object connectionID)
+   public void removeExpireTime(final Object connectionID)
    {
-      lastPings.remove(connectionID);
+      expireTimes.remove(connectionID);
    }
 
    // Public ------------------------------------------------------------------------------
@@ -235,10 +236,11 @@ public class RemotingHandlerImpl implements RemotingHandler
             break;
          }
          case PING:
-         {
-            lastPings.put(connectionID, System.currentTimeMillis());
-            packet = new PacketImpl(PacketImpl.PING);
-            break;
+         {            
+            packet = new Ping();
+            packet.decode(in);
+            expireTimes.put(connectionID, System.currentTimeMillis() + ((Ping)packet).getExpirePeriod());
+            return packet;
          }
          case PONG:
          {

@@ -26,9 +26,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.server.JournalType;
 
 /**
@@ -69,66 +66,30 @@ public interface Configuration extends Serializable
    boolean isJMXManagementEnabled();
 
    void setJMXManagementEnabled(boolean enabled);
-
-   // Remoting related attributes ----------------------------------------------------------
+    
+   long getCallTimeout();
    
+   void setCallTimeout(long timeout);
+   
+   int getPacketConfirmationBatchSize();
+   
+   void setPacketConfirmationBatchSize(int size);
+
    List<String> getInterceptorClassNames();
    
-   Set<String> getAcceptorFactoryClassNames();
+   void setInterceptorClassNames(List<String> interceptors);
    
-   ConnectionParams getConnectionParams();
+   long getConnectionScanPeriod();
    
-   int getServerID(); //For INVM transport only
+   void setConnectionScanPeriod(long scanPeriod);
    
-   void setServerID(int serverID);
+   // Remoting related attributes ----------------------------------------------------------
+        
+   Set<AcceptorInfo> getAcceptorInfos();
    
-   TransportType getTransport();     
-   
-   void setTransport(TransportType transport);
-
-   String getHost();
-   
-   void setHost(String host);
-
-   int getPort();
-   
-   void setPort(int port);
-   
-   TransportType getBackupTransport();
-   
-   void setBackupTransport(TransportType transport);
-   
-   String getBackupHost();
-   
-   void setBackupHost(String host);
-   
-   int getBackupPort();
-   
-   void setBackupPort(int port);
-   
-   Location getLocation();
-         
-   String getKeyStorePath();
-   
-   void setKeyStorePath(String path);
-
-   String getKeyStorePassword();
-   
-   void setKeyStorePassword(String password);
-
-   String getTrustStorePath();
-   
-   void setTrustStorePath(String path);
-
-   String getTrustStorePassword();
-   
-   void setTrustStorePassword(String password);
-   
-   boolean isSSLEnabled();
-   
-   void setSSLEnabled(boolean enabled);
-   
-   // Journal related attributes
+   void setAcceptorInfos(Set<AcceptorInfo> infos);   
+      
+   // Journal related attributes ------------------------------------------------------------
    
    String getBindingsDirectory();
    

@@ -21,10 +21,11 @@
  */ 
 package org.jboss.messaging.core.client.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.CommandManager;
@@ -37,6 +38,7 @@ import org.jboss.messaging.core.remoting.impl.CommandManagerImpl;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.UUIDGenerator;
 import org.jboss.messaging.util.VersionLoader;
@@ -59,43 +61,51 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
    
    private static final Logger log = Logger.getLogger(ClientSessionFactoryImpl.class);
    
-   public static final int DEFAULT_DEFAULT_CONSUMER_WINDOW_SIZE = 1024 * 1024;
+   public static final long DEFAULT_PING_PERIOD = 5000;
    
-   public static final int DEFAULT_DEFAULT_CONSUMER_MAX_RATE = -1;
+   public static final long DEFAULT_CALL_TIMEOUT = 30000;
    
-   public static final int DEFAULT_DEFAULT_PRODUCER_WINDOW_SIZE = 1024 * 1024;
+   public static final int DEFAULT_CONSUMER_WINDOW_SIZE = 1024 * 1024;
    
-   public static final int DEFAULT_DEFAULT_PRODUCER_MAX_RATE = -1;
+   public static final int DEFAULT_CONSUMER_MAX_RATE = -1;
    
-   public static final boolean DEFAULT_DEFAULT_BLOCK_ON_ACKNOWLEDGE = false;
+   public static final int DEFAULT_PRODUCER_WINDOW_SIZE = 1024 * 1024;
    
-   public static final boolean DEFAULT_DEFAULT_BLOCK_ON_PERSISTENT_SEND = false;
+   public static final int DEFAULT_PRODUCER_MAX_RATE = -1;
    
-   public static final boolean DEFAULT_DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND = false;
+   public static final boolean DEFAULT_BLOCK_ON_ACKNOWLEDGE = false;
+   
+   public static final boolean DEFAULT_BLOCK_ON_PERSISTENT_SEND = false;
+   
+   public static final boolean DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND = false;
 
    // Attributes -----------------------------------------------------------------------------------
      
-   private final Location location;
-   
    private ConnectionRegistry connectionRegistry;
    
    //These attributes are mutable and can be updated by different threads so must be volatile
 
-   private volatile ConnectionParams connectionParams;
- 
-   private volatile int defaultConsumerWindowSize;
+   private volatile ConnectorFactory connectorFactory;
    
-   private volatile int defaultConsumerMaxRate;
+   private volatile Map<String, Object> transportParams;
+   
+   private volatile long pingPeriod;
+   
+   private volatile long callTimeout;
+   
+   private volatile int consumerWindowSize;
+   
+   private volatile int consumerMaxRate;
 
-   private volatile int defaultProducerWindowSize;
+   private volatile int producerWindowSize;
    
-   private volatile int defaultProducerMaxRate;
+   private volatile int producerMaxRate;
    
-   private volatile boolean defaultBlockOnAcknowledge;
+   private volatile boolean blockOnAcknowledge;
    
-   private volatile boolean defaultBlockOnPersistentSend;
+   private volatile boolean blockOnPersistentSend;
    
-   private volatile boolean defaultBlockOnNonPersistentSend;
+   private volatile boolean blockOnNonPersistentSend;
         
    // Static ---------------------------------------------------------------------------------------
    
@@ -104,57 +114,46 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
    /**
     * Create a ClientSessionFactoryImpl specifying all attributes
     */
-   public ClientSessionFactoryImpl(final Location location, final ConnectionParams connectionParams,
-                                      final int defaultConsumerWindowSize, final int defaultConsumerMaxRate,
-                                      final int defaultProducerWindowSize, final int defaultProducerMaxRate,
-                                      final boolean defaultBlockOnAcknowledge,
-                                      final boolean defaultSendNonPersistentMessagesBlocking,
-                                      final boolean defaultSendPersistentMessagesBlocking)
+   public ClientSessionFactoryImpl(final ConnectorFactory connectorFactory,
+                                   final Map<String, Object> transportParams,
+                                   final long pingPeriod,
+                                   final long callTimeout,
+                                   final int consumerWindowSize, final int consumerMaxRate,
+                                   final int producerWindowSize, final int producerMaxRate,
+                                   final boolean blockOnAcknowledge,
+                                   final boolean blockOnNonPersistentSend,
+                                   final boolean blockOnPersistentSend)
    {      
-      this.location = location;
-      this.defaultConsumerWindowSize = defaultConsumerWindowSize;  
-      this.defaultConsumerMaxRate = defaultConsumerMaxRate;
-      this.defaultProducerWindowSize = defaultProducerWindowSize;
-      this.defaultProducerMaxRate = defaultProducerMaxRate;
-      this.defaultBlockOnAcknowledge = defaultBlockOnAcknowledge;
-      this.defaultBlockOnNonPersistentSend = defaultSendNonPersistentMessagesBlocking;
-      this.defaultBlockOnPersistentSend = defaultSendPersistentMessagesBlocking;
-      this.connectionParams = connectionParams;
+      this.connectorFactory = connectorFactory;
+      this.transportParams = transportParams;
+      this.pingPeriod = pingPeriod;
+      this.callTimeout = callTimeout;
+      this.consumerWindowSize = consumerWindowSize;  
+      this.consumerMaxRate = consumerMaxRate;
+      this.producerWindowSize = producerWindowSize;
+      this.producerMaxRate = producerMaxRate;
+      this.blockOnAcknowledge = blockOnAcknowledge;
+      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
+      this.blockOnPersistentSend = blockOnPersistentSend;
       this.connectionRegistry = ConnectionRegistryLocator.getRegistry();
    }
    
    /**
-    * Create a ClientSessionFactoryImpl specify location and using all default attribute values
-    * @param location the location of the server
-    */
-   public ClientSessionFactoryImpl(final Location location)
+    * Create a ClientSessionFactoryImpl specify transport type and using defaults
+    */   
+   public ClientSessionFactoryImpl(final ConnectorFactory connectorFactory)
    {
-      this(location, new ConnectionParamsImpl(), false);   
-   }
-
-   /**
-    * Create a ClientSessionFactoryImpl specify location and connection params and using all other default attribute values
-    * @param location the location of the server
-    * @param connectionParams the connection parameters
-    */
-   public ClientSessionFactoryImpl(final Location location, final ConnectionParams connectionParams)
-   {
-      this(location, connectionParams, false);
-   }
-   
-   
-   private ClientSessionFactoryImpl(final Location location, final ConnectionParams connectionParams,
-                                    final boolean dummy)
-   {
-      defaultConsumerWindowSize = DEFAULT_DEFAULT_CONSUMER_WINDOW_SIZE;
-      defaultConsumerMaxRate = DEFAULT_DEFAULT_CONSUMER_MAX_RATE;
-      defaultProducerWindowSize = DEFAULT_DEFAULT_PRODUCER_WINDOW_SIZE;
-      defaultProducerMaxRate = DEFAULT_DEFAULT_PRODUCER_MAX_RATE;
-      defaultBlockOnAcknowledge = DEFAULT_DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-      defaultBlockOnPersistentSend = DEFAULT_DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-      defaultBlockOnNonPersistentSend = DEFAULT_DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;      
-      this.location = location;
-      this.connectionParams = connectionParams;
+      this.connectorFactory = connectorFactory;
+      this.transportParams = new HashMap<String, Object>();
+      pingPeriod = DEFAULT_PING_PERIOD;
+      callTimeout = DEFAULT_CALL_TIMEOUT;
+      consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
+      consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
+      producerWindowSize = DEFAULT_PRODUCER_WINDOW_SIZE;
+      producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
+      blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
+      blockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+      blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;      
       this.connectionRegistry = ConnectionRegistryLocator.getRegistry();
    }
          
@@ -178,91 +177,116 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
                cacheProducers);
    }   
    
-	public int getDefaultConsumerWindowSize()
+	public int getConsumerWindowSize()
 	{
-		return defaultConsumerWindowSize;
+		return consumerWindowSize;
 	}
 	
-	public void setDefaultConsumerWindowSize(final int size)
+	public void setConsumerWindowSize(final int size)
    {
-      defaultConsumerWindowSize = size;
+      consumerWindowSize = size;
    }
 	
-	public int getDefaultProducerWindowSize()
+	public int getProducerWindowSize()
 	{
-		return defaultProducerWindowSize;
+		return producerWindowSize;
 	}
 				
-	public void setDefaultProducerWindowSize(final int size)
+	public void setProducerWindowSize(final int size)
    {
-      defaultProducerWindowSize = size;
+      producerWindowSize = size;
    }
 	
-	public int getDefaultProducerMaxRate()
+	public int getProducerMaxRate()
 	{
-		return defaultProducerMaxRate;
+		return producerMaxRate;
 	}
 		
-	public void setDefaultProducerMaxRate(final int rate)
+	public void setProducerMaxRate(final int rate)
 	{
-	   this.defaultProducerMaxRate = rate;
+	   this.producerMaxRate = rate;
 	}
 		
-	public int getDefaultConsumerMaxRate()
+	public int getConsumerMaxRate()
    {
-      return defaultConsumerMaxRate;
+      return consumerMaxRate;
    }
    	
-   public void setDefaultConsumerMaxRate(final int rate)
+   public void setConsumerMaxRate(final int rate)
    {
-      this.defaultConsumerMaxRate = rate;
+      this.consumerMaxRate = rate;
    }
    
-   public boolean isDefaultBlockOnPersistentSend()
+   public boolean isBlockOnPersistentSend()
    {
-      return defaultBlockOnPersistentSend;
+      return blockOnPersistentSend;
    }
    
-   public void setDefaultBlockOnPersistentSend(final boolean blocking)
+   public void setBlockOnPersistentSend(final boolean blocking)
    {
-      defaultBlockOnPersistentSend = blocking;
+      blockOnPersistentSend = blocking;
    }
    
-   public boolean isDefaultBlockOnNonPersistentSend()
+   public boolean isBlockOnNonPersistentSend()
    {
-      return defaultBlockOnNonPersistentSend;
+      return blockOnNonPersistentSend;
    }
    
-   public void setDefaultBlockOnNonPersistentSend(final boolean blocking)
+   public void setBlockOnNonPersistentSend(final boolean blocking)
    {
-      defaultBlockOnNonPersistentSend = blocking;
+      blockOnNonPersistentSend = blocking;
    }
    
-   public boolean isDefaultBlockOnAcknowledge()
+   public boolean isBlockOnAcknowledge()
    {
-      return this.defaultBlockOnAcknowledge;
+      return this.blockOnAcknowledge;
    }
    
-   public void setDefaultBlockOnAcknowledge(final boolean blocking)
+   public void setBlockOnAcknowledge(final boolean blocking)
    {
-      defaultBlockOnAcknowledge = blocking;
+      blockOnAcknowledge = blocking;
+   }
+   
+   public ConnectorFactory getConnectorFactory()
+   {
+      return connectorFactory;
+   }
+
+   public void setConnectorFactory(final ConnectorFactory connectorFactory)
+   {
+      this.connectorFactory = connectorFactory;
+   }
+
+   public Map<String, Object> getTransportParams()
+   {
+      return transportParams;
+   }
+
+   public void setTransportParams(final Map<String, Object> transportParams)
+   {
+      this.transportParams = transportParams;
+   }
+
+   public long getPingPeriod()
+   {
+      return pingPeriod;
+   }
+
+   public void setPingPeriod(final long pingPeriod)
+   {
+      this.pingPeriod = pingPeriod;
+   }
+
+   public long getCallTimeout()
+   {
+      return callTimeout;
+   }
+
+   public void setCallTimeout(final long callTimeout)
+   {
+      this.callTimeout = callTimeout;
    }
             
-   public ConnectionParams getConnectionParams()
-   {
-      return connectionParams;
-   }
-    
-   public void setConnectionParams(final ConnectionParams params)
-   {
-      this.connectionParams = params;
-   }
-   
-   public Location getLocation()
-   {
-      return location;
-   }
-		  
    // Public ---------------------------------------------------------------------------------------
    
    public void setConnectionRegistry(final ConnectionRegistry registry)
@@ -286,7 +310,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
       RemotingConnection remotingConnection = null;
       try
       {
-         remotingConnection = connectionRegistry.getConnection(location, connectionParams);
+         remotingConnection = connectionRegistry.getConnection(connectorFactory, transportParams,
+                  pingPeriod, callTimeout);
 
          PacketDispatcher dispatcher = remotingConnection.getPacketDispatcher();
 
@@ -304,12 +329,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
             (CreateSessionResponseMessage)remotingConnection.sendBlocking(PacketDispatcherImpl.MAIN_SERVER_HANDLER_ID,
                      PacketDispatcherImpl.MAIN_SERVER_HANDLER_ID, request, null);
          
-         CommandManager cm = new CommandManagerImpl(connectionParams.getPacketConfirmationBatchSize(),
+         CommandManager cm = new CommandManagerImpl(response.getPacketConfirmationBatchSize(),
                   remotingConnection, dispatcher, response.getSessionID(),
                   localCommandResponseTargetID, response.getCommandResponseTargetID());
    
          return new ClientSessionImpl(name, response.getSessionID(), xa, lazyAckBatchSize, cacheProducers,
-                  autoCommitSends, autoCommitAcks, defaultBlockOnAcknowledge,
+                  autoCommitSends, autoCommitAcks, blockOnAcknowledge,
                   remotingConnection, this,
                   dispatcher,
                   response.getServerVersion(), cm);
@@ -320,7 +345,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
          {
             try
             {
-               connectionRegistry.returnConnection(location);  
+               connectionRegistry.returnConnection(remotingConnection.getID());  
             }
             catch (Throwable ignore)
             {               
@@ -341,6 +366,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
          }
       }
    }
+
    
    // Inner Classes --------------------------------------------------------------------------------
 }

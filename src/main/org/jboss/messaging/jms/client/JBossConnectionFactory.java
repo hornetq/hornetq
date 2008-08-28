@@ -23,6 +23,7 @@
 package org.jboss.messaging.jms.client;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -41,10 +42,9 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
 
@@ -72,53 +72,61 @@ public class JBossConnectionFactory implements
    
    private transient ClientSessionFactory sessionFactory;
    
+   private final ConnectorFactory connectorFactory;
+   
+   private final Map<String, Object> transportParams;
+   
    private final String clientID;
    
    private final int dupsOKBatchSize;
 
-   private final Location location;
+   private final long pingPeriod;
 
-   private final ConnectionParams connectionParams;
-
-   private final int defaultConsumerWindowSize;
-
-   private final int defaultConsumerMaxRate;
-
-   private final int defaultProducerWindowSize;
-
-   private final int defaultProducerMaxRate;
+   private final long callTimeout;
    
-   private final boolean defaultBlockOnAcknowledge;
+   private final int consumerWindowSize;
+
+   private final int consumerMaxRate;
+
+   private final int producerWindowSize;
+
+   private final int producerMaxRate;
    
-   private final boolean defaultSendNonPersistentMessagesBlocking;
+   private final boolean blockOnAcknowledge;
    
-   private final boolean defaultSendPersistentMessagesBlocking;
+   private final boolean blockOnNonPersistentSend;
+   
+   private final boolean blockOnPersistentSend;
 
    // Constructors ---------------------------------------------------------------------------------
    
-   public JBossConnectionFactory(final String clientID,
-   		                        final int dupsOKBatchSize,
-                                 final Location location,
-                                 final ConnectionParams connectionParams,                         
-                                 final int defaultConsumerWindowSize,
-                                 final int defaultConsumerMaxRate,
-                                 final int defaultProducerWindowSize,
-                                 final int defaultProducerMaxRate,
-                                 final boolean defaultBlockOnAcknowledge,
-                                 final boolean defaultSendNonPersistentMessagesBlocking,
-                                 final boolean defaultSendPersistentMessagesBlocking)
+   public JBossConnectionFactory(final ConnectorFactory connectorFactory,
+                                 final Map<String, Object> transportParams,
+                                 final long pingPeriod,
+                                 final long callTimeout,
+                                 final String clientID,
+   		                        final int dupsOKBatchSize,                                                         
+                                 final int consumerWindowSize,
+                                 final int consumerMaxRate,
+                                 final int producerWindowSize,
+                                 final int producerMaxRate,
+                                 final boolean blockOnAcknowledge,
+                                 final boolean blockOnNonPersistentSend,
+                                 final boolean blockOnPersistentSend)
    {
+      this.connectorFactory = connectorFactory;
+      this.transportParams = transportParams;
       this.clientID = clientID;
       this.dupsOKBatchSize = dupsOKBatchSize;
-      this.location = location;
-      this.connectionParams = connectionParams;
-      this.defaultConsumerMaxRate = defaultConsumerMaxRate;
-      this.defaultConsumerWindowSize = defaultConsumerWindowSize;
-      this.defaultProducerMaxRate = defaultProducerMaxRate;
-      this.defaultProducerWindowSize = defaultProducerWindowSize;
-      this.defaultBlockOnAcknowledge = defaultBlockOnAcknowledge;
-      this.defaultSendNonPersistentMessagesBlocking = defaultSendNonPersistentMessagesBlocking;
-      this.defaultSendPersistentMessagesBlocking = defaultSendPersistentMessagesBlocking;
+      this.pingPeriod = pingPeriod;
+      this.callTimeout = callTimeout;
+      this.consumerMaxRate = consumerMaxRate;
+      this.consumerWindowSize = consumerWindowSize;
+      this.producerMaxRate = producerMaxRate;
+      this.producerWindowSize = producerWindowSize;
+      this.blockOnAcknowledge = blockOnAcknowledge;
+      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
+      this.blockOnPersistentSend = blockOnPersistentSend;
    }
    
    // ConnectionFactory implementation -------------------------------------------------------------
@@ -215,6 +223,26 @@ public class JBossConnectionFactory implements
    
    // Public ---------------------------------------------------------------------------------------
    
+   public ConnectorFactory getConnectorFactory()
+   {
+      return connectorFactory;
+   }
+
+   public Map<String, Object> getTransportParams()
+   {
+      return transportParams;
+   }
+   
+   public long getPingPeriod()
+   {
+      return pingPeriod;
+   }
+   
+   public long getCallTimeout()
+   {
+      return callTimeout;
+   }
+   
    public String getClientID()
    {
       return clientID;
@@ -224,45 +252,40 @@ public class JBossConnectionFactory implements
    {
       return dupsOKBatchSize;
    }
-   
-   public Location getLocation()
+     
+   public int getConsumerWindowSize()
    {
-      return location;
+      return consumerWindowSize;
    }
 
-   public int getDefaultConsumerWindowSize()
+   public int getConsumerMaxRate()
    {
-      return defaultConsumerWindowSize;
+      return consumerMaxRate;
    }
 
-   public int getDefaultConsumerMaxRate()
+   public int getProducerWindowSize()
    {
-      return defaultConsumerMaxRate;
+      return producerWindowSize;
    }
 
-   public int getDefaultProducerWindowSize()
+   public int getProducerMaxRate()
    {
-      return defaultProducerWindowSize;
+      return producerMaxRate;
    }
 
-   public int getDefaultProducerMaxRate()
+   public boolean isBlockOnAcknowledge()
    {
-      return defaultProducerMaxRate;
+      return blockOnAcknowledge;
    }
 
-   public boolean isDefaultBlockOnAcknowledge()
+   public boolean isBlockOnNonPersistentSend()
    {
-      return defaultBlockOnAcknowledge;
+      return blockOnNonPersistentSend;
    }
 
-   public boolean isDefaultSendNonPersistentMessagesBlocking()
+   public boolean isBlockOnPersistentSend()
    {
-      return defaultSendNonPersistentMessagesBlocking;
-   }
-
-   public boolean isDefaultSendPersistentMessagesBlocking()
-   {
-      return defaultSendPersistentMessagesBlocking;
+      return blockOnPersistentSend;
    }
       
    // Package protected ----------------------------------------------------------------------------
@@ -273,35 +296,29 @@ public class JBossConnectionFactory implements
                                                       final boolean isXA, final int type)
       throws JMSException
    {
-//      try
-//      {
-         synchronized (this)
+      synchronized (this)
+      {
+         if (sessionFactory == null)
          {
-            if (sessionFactory == null)
-            {
-               sessionFactory = new ClientSessionFactoryImpl(
-                     location,
-                     connectionParams,
-                     defaultConsumerWindowSize,
-                     defaultConsumerMaxRate,
-                     defaultProducerWindowSize,
-                     defaultProducerMaxRate,
-                     defaultBlockOnAcknowledge,
-                     defaultSendNonPersistentMessagesBlocking,
-                     defaultSendPersistentMessagesBlocking);
-   
-            }
+            sessionFactory = new ClientSessionFactoryImpl(
+                  connectorFactory,
+                  transportParams,
+                  pingPeriod,
+                  callTimeout,
+                  consumerWindowSize,
+                  consumerMaxRate,
+                  producerWindowSize,
+                  producerMaxRate,
+                  blockOnAcknowledge,
+                  blockOnNonPersistentSend,
+                  blockOnPersistentSend);
+
          }
-           
-         return new JBossConnection(username, password, type, clientID, dupsOKBatchSize, sessionFactory);
-//      }
-//      catch (MessagingException e)
-//      {
-//         throw JMSExceptionHelper.convertFromMessagingException(e);     
-//      }
+      }
+        
+      return new JBossConnection(username, password, type, clientID, dupsOKBatchSize, sessionFactory);
    }
 
-  
    // Private --------------------------------------------------------------------------------------
       
    // Inner classes --------------------------------------------------------------------------------

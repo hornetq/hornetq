@@ -22,20 +22,17 @@
 
 package org.jboss.messaging.tests.integration.ssl;
 
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
-
 import java.util.Arrays;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.client.impl.ConnectionParamsImpl;
-import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
+import org.jboss.messaging.core.remoting.impl.netty.TransportConstants;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 
 /**
@@ -58,25 +55,24 @@ public class CoreClientOverSSL
    {
       try
       {
+         System.out.println("Starting******");
+         
          log.debug("args = " + Arrays.asList(args));
 
-         if (args.length != 3)
+         if (args.length != 1)
          {
-            log.fatal("unexpected number of args (should be 3)");
+            log.fatal("unexpected number of args (should be 1)");
             System.exit(1);
          }
 
-         boolean sslEnabled = Boolean.parseBoolean(args[0]);
-         String keyStorePath = args[1];
-         String keyStorePassword = args[2];
+         boolean sslEnabled = Boolean.parseBoolean(args[0]); 
+         
+         System.out.println("ssl enabled is " + sslEnabled);
+         
+         ConnectorFactory cf = new NettyConnectorFactory();
 
-         Location config = new LocationImpl(TCP, "localhost", CoreClientOverSSLTest.SSL_PORT);
-         ConnectionParams connectionParams = new ConnectionParamsImpl();
-         connectionParams.setSSLEnabled(sslEnabled);
-         connectionParams.setKeyStorePath(keyStorePath);
-         connectionParams.setKeyStorePassword(keyStorePassword);
-
-         ClientSessionFactory sf = new ClientSessionFactoryImpl(config, connectionParams);         
+         ClientSessionFactory sf = new ClientSessionFactoryImpl(cf);         
+         sf.getTransportParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, sslEnabled);
          ClientSession session = sf.createSession(false, true, true, -1, false);
          ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);
 

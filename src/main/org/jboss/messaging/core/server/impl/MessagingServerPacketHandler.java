@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.server.impl;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PING;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PONG;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -35,6 +34,7 @@ import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 import org.jboss.messaging.core.server.MessagingServer;
 
 /**
@@ -76,7 +76,7 @@ public class MessagingServerPacketHandler implements PacketHandler
       {
          if (type == PING)
          {
-            response = new PacketImpl(PONG);
+            response = new Pong(-1);
          }
          else if (type == PacketImpl.CREATESESSION)
          {

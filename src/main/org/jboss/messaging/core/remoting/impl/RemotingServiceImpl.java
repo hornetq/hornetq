@@ -22,8 +22,6 @@
 
 package org.jboss.messaging.core.remoting.impl;
 
-import static org.jboss.messaging.core.remoting.impl.RemotingConfigurationValidator.validate;
-
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.jboss.messaging.core.config.AcceptorInfo;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -64,9 +63,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private volatile boolean started = false;
 
-   private final Configuration config;
-
-   private final Set<Acceptor> acceptors = new HashSet<Acceptor>();
+   private final Set<AcceptorInfo> acceptorInfos;
+   
+   private Set<Acceptor> acceptors = new HashSet<Acceptor>();
 
    private final PacketDispatcher dispatcher;
 
@@ -74,15 +73,15 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private RemotingHandler handler;
 
-   private final long connectionExpirePeriod;
+   private final long callTimeout;
 
    private final Map<Object, RemotingConnection> connections = new ConcurrentHashMap<Object, RemotingConnection>();
-
-   private final Set<AcceptorFactory> acceptorFactories = new HashSet<AcceptorFactory>();
 
    private final Timer failedConnectionTimer = new Timer(true);
 
    private TimerTask failedConnectionsTask;
+   
+   private final long connectionScanPeriod;
 
    // Static --------------------------------------------------------
 
@@ -90,27 +89,16 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public RemotingServiceImpl(final Configuration config)
    {
-      validate(config);
-
-      this.config = config;
-
       dispatcher = new PacketDispatcherImpl(null);
 
       remotingExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-session-ordering-threads"));
 
       handler = new RemotingHandlerImpl(dispatcher, remotingExecutor);
-
-      long pingPeriod = config.getConnectionParams().getPingInterval();
-
-      if (pingPeriod != -1)
-      {
-         connectionExpirePeriod = (long)(1.5 * pingPeriod);
-      }
-      else
-      {
-         connectionExpirePeriod = -1;
-      }
-
+      
+      final long callTimeout = config.getCallTimeout();
+      
+      this.acceptorInfos = config.getAcceptorInfos();
+      
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
       for (String interceptorClass : config.getInterceptorClassNames())
       {
@@ -124,19 +112,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             log.warn("Error instantiating interceptor \"" + interceptorClass + "\"", e);
          }
       }
-
-      for (String factoryClass: config.getAcceptorFactoryClassNames())
-      {
-         try
-         {
-            Class<?> clazz = loader.loadClass(factoryClass);
-            acceptorFactories.add((AcceptorFactory)clazz.newInstance());
-         }
-         catch (Exception e)
-         {
-            log.warn("Error instantiating interceptor \"" + factoryClass + "\"", e);
-         }
-      }
+      
+      this.callTimeout = callTimeout;
+      
+      this.connectionScanPeriod = config.getConnectionScanPeriod();
    }
 
    // RemotingService implementation -------------------------------
@@ -147,12 +126,25 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          return;
       }
-
-      for (AcceptorFactory factory: acceptorFactories)
+      
+      ClassLoader loader = Thread.currentThread().getContextClassLoader();
+      
+      for (AcceptorInfo info: acceptorInfos)
       {
-         Acceptor acceptor = factory.createAcceptor(config, handler, this);
+         try
+         {
+            Class<?> clazz = loader.loadClass(info.getFactoryClassName());
+            
+            AcceptorFactory factory = (AcceptorFactory)clazz.newInstance();
+            
+            Acceptor acceptor = factory.createAcceptor(info.getParams(), handler, this);
 
-         acceptors.add(acceptor);
+            acceptors.add(acceptor);
+         }
+         catch (Exception e)
+         {
+            log.warn("Error instantiating acceptor \"" + info.getFactoryClassName() + "\"", e);
+         }        
       }
 
       for (Acceptor a : acceptors)
@@ -160,13 +152,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          a.start();
       }
 
-      if (connectionExpirePeriod != -1)
-      {
-         failedConnectionsTask = new FailedConnectionsTask();
+      failedConnectionsTask = new FailedConnectionsTask();
 
-         failedConnectionTimer.schedule(failedConnectionsTask, 0, 1000);
-      }
-
+      failedConnectionTimer.schedule(failedConnectionsTask, connectionScanPeriod, connectionScanPeriod);
+      
       started = true;
    }
 
@@ -212,16 +201,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       return connections.get(remotingConnectionID);
    }
 
-   public synchronized void registerAcceptorFactory(final AcceptorFactory factory)
-   {
-      acceptorFactories.add(factory);
-   }
-
-   public synchronized void unregisterAcceptorFactory(final AcceptorFactory factory)
-   {
-      acceptorFactories.remove(factory);
-   }
-
    public synchronized Set<RemotingConnection> getConnections()
    {
       return new HashSet<RemotingConnection>(connections.values());
@@ -244,14 +223,16 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 //      }
       
       RemotingConnection rc =
-         new RemotingConnectionImpl(connection, dispatcher, config.getLocation(), config.getConnectionParams().getCallTimeout());
+         new RemotingConnectionImpl(connection, dispatcher, callTimeout);
           
-      connections.put(connection.getID(), rc);
+      Object id = connection.getID();
+      
+      connections.put(id, rc);
    }
 
    public void connectionDestroyed(Object connectionID)
    {
-      handler.removeLastPing(connectionID);
+      handler.removeExpireTime(connectionID);
 
       if (connections.remove(connectionID) == null)
       {
@@ -262,7 +243,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    public void connectionException(Object connectionID, MessagingException me)
    {
       RemotingConnection rc = connections.remove(connectionID);
-
+      
       if (rc == null)
       {
          throw new IllegalStateException("Cannot find connection with id " + connectionID);
@@ -301,10 +282,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             return;
          }
 
-         Set<Object> failedIDs = handler.scanForFailedConnections(connectionExpirePeriod);
-
+         Set<Object> failedIDs = handler.scanForFailedConnections();
+         
          for (Object id: failedIDs)
          {
+            log.info("Got failed connection " + id);
             RemotingConnection conn = connections.get(id);
 
             if (conn == null)

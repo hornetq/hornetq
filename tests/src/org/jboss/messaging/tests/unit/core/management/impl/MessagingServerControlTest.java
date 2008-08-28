@@ -47,8 +47,6 @@ import javax.management.ObjectName;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.client.Location;
-import org.jboss.messaging.core.client.impl.LocationImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
@@ -58,7 +56,6 @@ import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -229,32 +226,6 @@ public class MessagingServerControlTest extends TestCase
       verifyMockedAttributes();
    }
 
-   public void testGetKeyStorePath() throws Exception
-   {
-      String path = randomString();
-
-      expect(configuration.getKeyStorePath()).andReturn(path);
-      replayMockedAttributes();
-
-      MessagingServerControl control = createControl();
-      assertEquals(path, control.getKeyStorePath());
-
-      verifyMockedAttributes();
-   }
-
-   public void testGetLocation() throws Exception
-   {
-      Location location = new LocationImpl(TransportType.TCP, "localhost");
-
-      expect(configuration.getLocation()).andReturn(location);
-      replayMockedAttributes();
-
-      MessagingServerControl control = createControl();
-      assertEquals(location.toString(), control.getLocation());
-
-      verifyMockedAttributes();
-   }
-
    public void testGetScheduledThreadPoolMaxSize() throws Exception
    {
       int size = randomInt();
@@ -278,19 +249,6 @@ public class MessagingServerControlTest extends TestCase
 
       MessagingServerControl control = createControl();
       assertEquals(interval, control.getSecurityInvalidationInterval());
-
-      verifyMockedAttributes();
-   }
-
-   public void testGetTrustStorePath() throws Exception
-   {
-      String path = randomString();
-
-      expect(configuration.getTrustStorePath()).andReturn(path);
-      replayMockedAttributes();
-
-      MessagingServerControl control = createControl();
-      assertEquals(path, control.getTrustStorePath());
 
       verifyMockedAttributes();
    }
@@ -374,19 +332,6 @@ public class MessagingServerControlTest extends TestCase
 
       MessagingServerControl control = createControl();
       assertEquals(requireDestinations, control.isRequireDestinations());
-
-      verifyMockedAttributes();
-   }
-
-   public void testIsSSLEnabled() throws Exception
-   {
-      boolean sslEnabled = randomBoolean();
-
-      expect(configuration.isSSLEnabled()).andReturn(sslEnabled);
-      replayMockedAttributes();
-
-      MessagingServerControl control = createControl();
-      assertEquals(sslEnabled, control.isSSLEnabled());
 
       verifyMockedAttributes();
    }

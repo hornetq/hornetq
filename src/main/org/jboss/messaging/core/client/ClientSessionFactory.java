@@ -22,7 +22,10 @@
 
 package org.jboss.messaging.core.client;
 
+import java.util.Map;
+
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 
 
 /**
@@ -41,133 +44,49 @@ public interface ClientSessionFactory
    ClientSession createSession(String username, String password, boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
                                int lazyAckBatchSize, boolean cacheProducers)
       throws MessagingException;
-  
-      
-   /**
-    * Set the default consumer window size value to use for consumers created from this connection factory.
-    *     
-    * @param the window size, measured in bytes.
-    * A value of -1 signifies that consumer flow control is disabled.
-    */
-   void setDefaultConsumerWindowSize(int size);
+        
+   void setConsumerWindowSize(int size);
    
-   /**
-    * Get the default consumer window size value to use for consumers created from this connection factory.
-    * @param size
-    * 
-    * JBoss Messaging implements credit based consumer flow control, this value determines the initial pot of credits
-    * the server has for the consumer. The server can only send messages to the consumer as long as it has
-    * sufficient credits.
-    * 
-    * @return The default window size, measured in bytes.
-    * A value of -1 signifies that consumer flow control is disabled.
-    */
-   int getDefaultConsumerWindowSize();
+   int getConsumerWindowSize();
    
-   /**
-    * Set the default producer window size value to use for producers created from this connection factory.
-    * 
-    * @param the window size, measured in bytes.
-    * A value of -1 signifies that producer flow control is disabled.
-    */
-   void setDefaultProducerWindowSize(int size);     
+   void setProducerWindowSize(int size);     
    
-   /**
-    * Get the default consumer window size value to use for consumers created from this connection factory.
-    * 
-    * JBoss Messaging implements credit based consumer flow control, this value determines the initial pot of credits
-    * the server has for the consumer. The server can only send messages to the consumer as long as it has
-    * sufficient credits.
-    * 
-    * @return The default window size, measured in bytes.
-    * A value of -1 signifies that consumer flow control is disabled.
-    */
-   int getDefaultProducerWindowSize();
+   int getProducerWindowSize();
    
-   /**
-    * Set the default consumer maximum consume rate for consumers created from this connection factory.
-    * @param rate- the maximum consume rate, measured in messages / second
-    * A value of -1 signifies there is no maximum rate limit
-    */
-   void setDefaultConsumerMaxRate(int rate);
+   void setConsumerMaxRate(int rate);
    
-   /**
-    * Get the default consumer maximum consume rate for consumers created from this connection factory.
-    * @return the maximum consume rate, measured in messages / second
-    * A value of -1 signifies there is no maximum rate limit
-    */
-   int getDefaultConsumerMaxRate();
+   int getConsumerMaxRate();
    
-   /**
-    * Set the default producer maximum send rate for producers created from this connection factory.
-    * @param rate- the maximum send rate, measured in messages / second
-    * A value of -1 signifies there is no maximum rate limit
-    */
-   void setDefaultProducerMaxRate(int rate);
+   void setProducerMaxRate(int rate);
    
-   /**
-    * Get the default producer maximum send rate for producers created from this connection factory.
-    * @return the maximum send rate, measured in messages / second
-    * A value of -1 signifies there is no maximum rate limit
-    */
-   int getDefaultProducerMaxRate();
+   int getProducerMaxRate();
    
-   /**
-    * Get the default value of whether producers created from this connection factory will send persistent messages
-    * blocking.
-    * @return Whether persistent messages are sent blocking
-    */
-   boolean isDefaultBlockOnPersistentSend();
+   boolean isBlockOnPersistentSend();
    
-   /**
-    * Set the default value of whether producers created from this connection factory will send persistent messages
-    * blocking.
-    * @param blocking Whether persistent messages are sent blocking
-    */
-   void setDefaultBlockOnPersistentSend(final boolean blocking);
+   void setBlockOnPersistentSend(final boolean blocking);
    
-   /**
-    * Get the default value of whether producers created from this connection factory will send non persistent messages
-    * blocking.
-    * @return Whether non persistent messages are sent blocking
-    */
-   boolean isDefaultBlockOnNonPersistentSend();
+   boolean isBlockOnNonPersistentSend();
    
-   /**
-    * Set the default value of whether producers created from this connection factory will send non persistent messages
-    * blocking.
-    * @param blocking Whether non persistent messages are sent blocking
-    */
-   void setDefaultBlockOnNonPersistentSend(final boolean blocking);
+   void setBlockOnNonPersistentSend(final boolean blocking);
    
-   /**
-    * Get the default value of whether producers created from this connection factory will send acknowledgements
-    * blocking
-    * @return Whether acknowledgements are sent blocking
-    */
-   boolean isDefaultBlockOnAcknowledge();
+   boolean isBlockOnAcknowledge();
    
-   /**
-    * Set the default value of whether producers created from this connection factory will send acknowledgements
-    * blockiong
-    * @param blocking Whether acknowledgements are sent blocking
-    */
-   void setDefaultBlockOnAcknowledge(final boolean blocking);
+   void setBlockOnAcknowledge(final boolean blocking);
    
-   /**
-    * Get the location of the server for this connection factory
-    * @return The location
-    */
-   Location getLocation();
+   ConnectorFactory getConnectorFactory();
+
+   void setConnectorFactory(final ConnectorFactory connectorFactory);
+
+   Map<String, Object> getTransportParams();
+
+   void setTransportParams(final Map<String, Object> transportParams);
+
+   long getPingPeriod();
+
+   void setPingPeriod(final long pingPeriod);
+
+   long getCallTimeout();
+
+   void setCallTimeout(final long callTimeout);
    
-   /**
-    * Get the connection params used when creating connections using this connection factory
-    */
-   ConnectionParams getConnectionParams();
-   
-   /**
-    * Set the connection params to be used when creating connections using this connection factory
-    * @param params
-    */
-   void setConnectionParams(ConnectionParams connectionParams);
 }

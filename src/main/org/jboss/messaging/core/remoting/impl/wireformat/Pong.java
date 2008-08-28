@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -20,51 +20,80 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */ 
 
-package org.jboss.messaging.tests.unit.jms.referenceable;
+package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import java.util.Map;
-
-import javax.naming.Reference;
-
-import junit.framework.TestCase;
-
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.jms.referenceable.ConnectionFactoryObjectFactory;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- * @version <tt>$Revision$</tt>
+ * 
+ * A Pong
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class ConnectionFactoryObjectFactoryTest extends TestCase
+public class Pong extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
+   //This is reserved for future use - for now we also pass back -1 - meaning "don't change period"
+   private long newPeriod;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   // Public --------------------------------------------------------
-
-   public void testReference() throws Exception
+   public Pong(final long newPeriod)
    {
-      JBossConnectionFactory cf =
-         new JBossConnectionFactory(null, null, 123, 123, randomString(), 1, 1, 1, 1, 1, true, true, true);
-      Reference reference = cf.getReference();
+      super(PONG);
 
-      ConnectionFactoryObjectFactory factory = new ConnectionFactoryObjectFactory();
-      
-      Object object = factory.getObjectInstance(reference, null, null, null);
-      assertNotNull(object);
-      assertTrue(object instanceof JBossConnectionFactory);
+      this.newPeriod = newPeriod;
    }
    
+   public Pong()
+   {
+      super(PONG);
+   }
+
+   // Public --------------------------------------------------------
+
+   public long getNewPeriod()
+   {
+      return newPeriod;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putLong(newPeriod);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      newPeriod = buffer.getLong();
+   }
+
+   @Override
+   public String toString()
+   {
+      StringBuffer buf = new StringBuffer(getParentString());
+      buf.append(", newPeriod=" + newPeriod);
+      buf.append("]");
+      return buf.toString();
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof Pong == false)
+      {
+         return false;
+      }
+            
+      Pong r = (Pong)other;
+      
+      return super.equals(other) && this.newPeriod == r.newPeriod;
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -73,3 +102,4 @@ public class ConnectionFactoryObjectFactoryTest extends TestCase
 
    // Inner classes -------------------------------------------------
 }
+

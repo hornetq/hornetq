@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.tests.integration.clientcrash;
 
-import static org.jboss.messaging.core.remoting.TransportType.*;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.ClientConsumer;
@@ -31,11 +30,11 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.client.impl.LocationImpl;
+import org.jboss.messaging.core.config.AcceptorInfo;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory;
+import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -140,13 +139,14 @@ public class ClientCrashTest extends TestCase
       super.setUp();
 
       ConfigurationImpl config = new ConfigurationImpl();
-      config.getConnectionParams().setPingInterval(2000);
       config.setSecurityEnabled(false);
+      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory"));
       messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
-      messagingService.getServer().getRemotingService().registerAcceptorFactory(new MinaAcceptorFactory());
       messagingService.start();
 
-      sf = new ClientSessionFactoryImpl(new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_PORT));
+      sf = new ClientSessionFactoryImpl(new NettyConnectorFactory());
+      sf.setPingPeriod(2000);
+      
    }
 
    @Override

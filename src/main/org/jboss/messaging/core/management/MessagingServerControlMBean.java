@@ -53,14 +53,6 @@ public interface MessagingServerControlMBean
 
    boolean isRequireDestinations();
 
-   String getLocation();
-
-   String getKeyStorePath();
-
-   String getTrustStorePath();
-
-   boolean isSSLEnabled();
-
    String getBindingsDirectory();
 
    String getJournalDirectory();

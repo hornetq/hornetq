@@ -1021,7 +1021,7 @@ public class RemotingHandlerImplTest extends UnitTestCase
    {
       CreateSessionResponseMessage message =
          new CreateSessionResponseMessage(RandomUtil.randomLong(), RandomUtil.randomLong(),
-                  RandomUtil.randomInt());
+                  RandomUtil.randomInt(), RandomUtil.randomInt());
       setHeaders(message);
       message.encode(buff);
       buff.getInt();
@@ -1030,6 +1030,7 @@ public class RemotingHandlerImplTest extends UnitTestCase
       assertEquals(message.getSessionID(), copy.getSessionID());
       assertEquals(message.getCommandResponseTargetID(), copy.getCommandResponseTargetID());
       assertEquals(message.getServerVersion(), copy.getServerVersion());
+      assertEquals(message.getPacketConfirmationBatchSize(), copy.getPacketConfirmationBatchSize());
    }
 
    public void testMessagingExceptionMessagePacket() throws Exception

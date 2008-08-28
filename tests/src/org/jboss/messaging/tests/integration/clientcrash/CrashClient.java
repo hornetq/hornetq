@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.tests.integration.clientcrash;
 
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.tests.integration.clientcrash.ClientCrashTest.QUEUE;
 
 import java.util.Arrays;
@@ -32,11 +31,9 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.client.impl.LocationImpl;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 
 
@@ -71,9 +68,8 @@ public class CrashClient
          }
 
          int numberOfConnections = Integer.parseInt(args[0]);
-
-         Location location = new LocationImpl(TCP, "localhost", ConfigurationImpl.DEFAULT_PORT);
-         ClientSessionFactory sf = new ClientSessionFactoryImpl(location);
+         
+         ClientSessionFactory sf = new ClientSessionFactoryImpl(new NettyConnectorFactory());
          ClientSession session = sf.createSession(false, true, true, -1, false);
          ClientProducer producer = session.createProducer(QUEUE);
          ClientConsumer consumer = session.createConsumer(QUEUE);

@@ -22,8 +22,8 @@
 
 package org.jboss.messaging.core.remoting;
 
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
+import java.util.Map;
+
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 
 /**
@@ -33,17 +33,12 @@ import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
  */
 public interface ConnectionRegistry
 {
-   RemotingConnection getConnection(Location location, ConnectionParams connectionParams);
+   RemotingConnection getConnection(ConnectorFactory connectorFactory, Map<String, Object> params,
+                                    long pingInterval, long callTimeout);
    
-   void returnConnection(Location location);
-   
-   void registerConnectorFactory(TransportType transportType, ConnectorFactory factory);
-   
-   void unregisterConnectorFactory(TransportType transportType);  
-   
-   ConnectorFactory getConnectorFactory(final TransportType transport);
+   void returnConnection(Object connectionID);
    
    int size();
    
-   int getCount(Location location);
+   int getCount(ConnectorFactory connectorFactory, Map<String, Object> params);
 }

@@ -40,6 +40,7 @@ import javax.jms.TextMessage;
 import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
 
+import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.jms.message.SimpleJMSBytesMessage;
@@ -83,7 +84,9 @@ public class CTSMiscellaneousTest extends JBMServerTestCase
          List<String> bindings = new ArrayList<String>();
          bindings.add("StrictTCKConnectionFactory");
          
-         getJmsServerManager().createConnectionFactory("StrictTCKConnectionFactory", null,
+         getJmsServerManager().createConnectionFactory("StrictTCKConnectionFactory",
+                  new NettyConnectorFactory(), null, 5000, 5000,                  
+                  null,
                1000, 1024 * 1024, -1, 1000, -1, true, true, true, "/StrictTCKConnectionFactory");
                  
          cf = (JBossConnectionFactory) getInitialContext().lookup("/StrictTCKConnectionFactory");

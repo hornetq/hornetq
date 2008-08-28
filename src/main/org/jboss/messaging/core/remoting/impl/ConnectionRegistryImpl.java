@@ -26,15 +26,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import org.jboss.messaging.core.client.ConnectionParams;
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.ConnectionRegistry;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingHandler;
-import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
@@ -55,36 +52,33 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
 
    // Attributes ----------------------------------------------------
 
-   private final Map<String, ConnectionHolder> connections = new HashMap<String, ConnectionHolder>();
+   private final Map<RegistryKey, ConnectionHolder> connections = new HashMap<RegistryKey, ConnectionHolder>();
 
-   private final Map<TransportType, ConnectorFactory> connectorFactories = new HashMap<TransportType, ConnectorFactory>();
-
-   private final Map<Object, RemotingConnection> remotingConnections = new HashMap<Object, RemotingConnection>();
+  // private final Map<Object, RemotingConnection> remotingConnections = new HashMap<Object, RemotingConnection>();
+   
+   private final Map<Object, RegistryKey> reverseMap = new HashMap<Object, RegistryKey>();
 
    //TODO - core pool size should be configurable
-   private final ScheduledThreadPoolExecutor pingExecutor = new ScheduledThreadPoolExecutor(20, new JBMThreadFactory("jbm-pinger-threads"));
+   private final ScheduledThreadPoolExecutor pingExecutor =
+      new ScheduledThreadPoolExecutor(10, new JBMThreadFactory("jbm-pinger-threads"));
 
    // Static --------------------------------------------------------
 
    // ConnectionRegistry implementation -----------------------------
-
-   public synchronized RemotingConnection getConnection(final Location location,
-                                                              final ConnectionParams connectionParams)
+      
+   public synchronized RemotingConnection getConnection(final ConnectorFactory connectorFactory,
+            final Map<String, Object> params,
+            final long pingInterval, final long callTimeout)
    {
-      String key = location.getLocation();
+      RegistryKey key = new RegistryKey(connectorFactory, params);
 
       ConnectionHolder holder = connections.get(key);
-
+      
       if (holder != null)
       {
          holder.increment();
-
+         
          RemotingConnection connection = holder.getConnection();
-
-         if (log.isDebugEnabled())
-         {
-            log.debug("Reusing " + connection + " to connect to " + key + " [count=" + holder.getCount() + "]");
-         }
 
          return connection;
       }
@@ -94,14 +88,7 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
 
          RemotingHandler handler = new RemotingHandlerImpl(dispatcher, null);
 
-         ConnectorFactory factory = connectorFactories.get(location.getTransport());
-         
-         if (factory == null)
-         {
-            throw new IllegalStateException("No connector factory registered for transport " + location.getTransport());
-         }
-
-         Connector connector = factory.createConnector(location, connectionParams, handler, this);
+         Connector connector = connectorFactory.createConnector(params, handler, this);
          
          connector.start();
             
@@ -109,61 +96,58 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
 
          if (tc == null)
          {
-            throw new IllegalStateException("Failed to connect to " + location);
+            throw new IllegalStateException("Failed to connect");
          }
 
-         long pingInterval = connectionParams.getPingInterval();
          RemotingConnection connection;
 
          if (pingInterval != -1)
          {
-            connection = new RemotingConnectionImpl(tc, dispatcher, location,
-                     connectionParams.getCallTimeout(), connectionParams.getPingInterval(), pingExecutor);
+            connection = new RemotingConnectionImpl(tc, dispatcher, 
+                     callTimeout, pingInterval, pingExecutor);
          }
          else
          {
-            connection = new RemotingConnectionImpl(tc, dispatcher, location,
-                     connectionParams.getCallTimeout());
+            connection = new RemotingConnectionImpl(tc, dispatcher, 
+                     callTimeout);
          }
-
-         remotingConnections.put(tc.getID(), connection);
-
-         if (log.isDebugEnabled())
-         {
-            log.debug("Created " + connector + " to connect to "  + location);
-         }
-
+         
          holder = new ConnectionHolder(connection, connector);
 
+  
          connections.put(key, holder);
+             
+         reverseMap.put(tc.getID(), key);
 
          return connection;
       }
    }
 
-   public synchronized void returnConnection(final Location location)
+   public synchronized void returnConnection(final Object connectionID)
    {
-      String key = location.getLocation();
+      RegistryKey key = reverseMap.get(connectionID);
       
-      ConnectionHolder holder = connections.get(key);
-
-      if (holder == null)
+      if (key == null)
       {
          //This is ok and might happen if connection is returned after an error occurred on it in which
          //case it will have already automatically been closed and removed
          log.warn("Connection not found when returning - probably connection has failed and been automatically removed");
          return;
       }
-
+      
+      ConnectionHolder holder = connections.get(key);
+      
       if (holder.getCount() == 1)
       {           
-         RemotingConnection conn = remotingConnections.remove(holder.getConnection().getID());
-
+         RemotingConnection conn = holder.getConnection();
+           
+         reverseMap.remove(connectionID);
+         
+         connections.remove(key);
+         
          conn.destroy();
 
          holder.getConnector().close();
-
-         connections.remove(key);
       }
       else
       {
@@ -176,24 +160,11 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       return connections.size();
    }
 
-   public synchronized void registerConnectorFactory(final TransportType transport, final ConnectorFactory factory)
+   public synchronized int getCount(final ConnectorFactory connectorFactory, final Map<String, Object> params)
    {
-      connectorFactories.put(transport, factory);
-   }
-
-   public synchronized void unregisterConnectorFactory(final TransportType transport)
-   {
-      connectorFactories.remove(transport);
-   }
-
-   public synchronized ConnectorFactory getConnectorFactory(final TransportType transport)
-   {
-      return connectorFactories.get(transport);
-   }
-   
-   public synchronized int getCount(final Location location)
-   {
-      ConnectionHolder holder = connections.get(location.getLocation());
+      RegistryKey key = new RegistryKey(connectorFactory, params);
+      
+      ConnectionHolder holder = connections.get(key);
       
       if (holder != null)
       {
@@ -217,34 +188,34 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
 
    public void connectionDestroyed(final Object connectionID)
    {
-      RemotingConnection conn = remotingConnections.remove(connectionID);
-
-      if (conn != null)
+      RegistryKey key = reverseMap.remove(connectionID);
+   
+      if (key != null)
       {
-         ConnectionHolder holder = connections.remove(conn.getLocation().getLocation());
+         ConnectionHolder holder = connections.remove(key);
 
          //If conn still exists here this means that the underlying transport connection has been closed from the server side without
          //being returned from the client side so we need to fail the connection and call it's listeners
          MessagingException me = new MessagingException(MessagingException.OBJECT_CLOSED,
                                                         "The connection has been closed.");
-         conn.fail(me);
+         holder.getConnection().fail(me);
 
          holder.getConnector().close();
       }
    }
 
    public void connectionException(final Object connectionID, final MessagingException me)
-   {
-      RemotingConnection conn = remotingConnections.remove(connectionID);
+   { 
+      RegistryKey key = reverseMap.remove(connectionID);
 
-      if (conn == null)
+      if (key == null)
       {
          throw new IllegalStateException("Cannot find connection with id " + connectionID);
       }
 
-      ConnectionHolder holder = connections.remove(conn.getLocation().getLocation());
+      ConnectionHolder holder = connections.remove(key);
 
-      conn.fail(me);
+      holder.getConnection().fail(me);
 
       holder.getConnector().close();
    }
@@ -297,6 +268,64 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       public Connector getConnector()
       {
          return connector;
+      }
+   }
+   
+   private class RegistryKey
+   {
+      private final String connectorFactoryClassName;
+      
+      private final Map<String, Object> params;
+      
+      RegistryKey(final ConnectorFactory connectorFactory, final Map<String, Object> params)
+      {
+         this.connectorFactoryClassName = connectorFactory.getClass().getName();
+         
+         this.params = params;
+      }
+      
+      public boolean equals(Object other)
+      {
+         RegistryKey kother = (RegistryKey)other;
+
+         if (this.connectorFactoryClassName.equals(kother.connectorFactoryClassName))
+         {
+            if (this.params == null)
+            {
+               return kother.params == null;
+            }
+            else
+            {
+               if (this.params.size() == kother.params.size())
+               {
+                  for (Map.Entry<String, Object> entry: this.params.entrySet())
+                  {
+                     Object thisVal = entry.getValue();
+                     
+                     Object otherVal = kother.params.get(entry.getKey());
+                     
+                     if (otherVal == null || !otherVal.equals(thisVal))
+                     {
+                        return false;
+                     }
+                  }
+                  return true;
+               }
+               else
+               {
+                  return false;
+               }
+            }
+         }
+         else
+         {
+            return false;
+         }
+      }
+      
+      public int hashCode()
+      {
+         return connectorFactoryClassName.hashCode();
       }
    }
 }

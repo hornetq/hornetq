@@ -29,13 +29,15 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.Location;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.client.impl.LocationImpl;
+import org.jboss.messaging.core.config.AcceptorInfo;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
+import org.jboss.messaging.core.remoting.impl.mina.MinaConnectorFactory;
+import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -44,50 +46,41 @@ import org.jboss.messaging.util.SimpleString;
 public class CoreClientTest extends TestCase
 {
    private static final Logger log = Logger.getLogger(CoreClientTest.class);
-   
-   
+      
    // Constants -----------------------------------------------------
 
-   private final SimpleString QUEUE = new SimpleString("CoreClientTestQueue");
+  
    // Attributes ----------------------------------------------------
 
-   private ConfigurationImpl conf;
-   private MessagingService messagingService;
-
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
 
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
- 
-      conf = new ConfigurationImpl();
-      conf.setSecurityEnabled(false);
-      conf.setTransport(TransportType.TCP);
-      conf.setHost("localhost");      
-      messagingService = MessagingServiceImpl.newNullStorageMessagingServer(conf);      
-      messagingService.getServer().getRemotingService().registerAcceptorFactory(new MinaAcceptorFactory());      
-      messagingService.start();
-   }
-   
-   @Override
-   protected void tearDown() throws Exception
-   {
-      messagingService.stop();
-      
-      super.tearDown();
-   }
-   
-   
    public void testCoreClient() throws Exception
-   {      
-      Location location = new LocationImpl(TransportType.TCP, "localhost", ConfigurationImpl.DEFAULT_PORT);
+   {
+      testCoreClient("org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory", new MinaConnectorFactory());
+      testCoreClient("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory", new NettyConnectorFactory());
+      testCoreClient("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory", new InVMConnectorFactory());
+   }
+   
+   private void testCoreClient(final String acceptorFactoryClassName, final ConnectorFactory connectorFactory) throws Exception
+   {             
+      final SimpleString QUEUE = new SimpleString("CoreClientTestQueue");
+      
+      Configuration conf = new ConfigurationImpl();
+      
+      conf.setSecurityEnabled(false);   
+      
+      conf.getAcceptorInfos().add(new AcceptorInfo(acceptorFactoryClassName));
             
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(location);
+      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingServer(conf);   
+           
+      messagingService.start();
+      
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(connectorFactory);
 
       ClientSession session = sf.createSession(false, true, true, -1, false);
       
@@ -95,13 +88,14 @@ public class CoreClientTest extends TestCase
       
       ClientProducer producer = session.createProducer(QUEUE);     
       
-      for (int i = 0; i < 100; i++)
+      final int numMessages = 100;
+      
+      for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
-               System.currentTimeMillis(), (byte) 1);
-         
+               System.currentTimeMillis(), (byte) 1);         
          message.getBody().putString("testINVMCoreClient");
-         
+         message.getBody().flip();         
          producer.send(message);
       }
       
@@ -109,14 +103,16 @@ public class CoreClientTest extends TestCase
       
       session.start();
       
-      for (int i = 0; i < 100; i++)
+      for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message2 = consumer.receive(1000);
+         ClientMessage message2 = consumer.receive();
 
          assertEquals("testINVMCoreClient", message2.getBody().getString());
       }
       
       session.close();
+      
+      messagingService.stop();
    }
 
    // Package protected ---------------------------------------------
