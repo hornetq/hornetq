@@ -304,8 +304,6 @@ public class PostOfficeImpl implements PostOffice
       
       Binding binding = new BindingImpl(address, queue);
       
-      managementService.registerQueue(queue, address, storageManager);
-
       return binding;
    }
    

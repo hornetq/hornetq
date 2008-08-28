@@ -159,7 +159,6 @@ public class ManagementServiceImplTest extends TestCase
       expect(
             mbeanServer.registerMBean(isA(AddressControlMBean.class),
                   eq(objectName))).andReturn(objectInstance);
-
       replay(mbeanServer);
 
       ManagementService service = new ManagementServiceImpl(mbeanServer, true);

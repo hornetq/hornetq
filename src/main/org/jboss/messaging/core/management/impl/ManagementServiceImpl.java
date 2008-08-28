@@ -25,8 +25,11 @@ package org.jboss.messaging.core.management.impl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.MBeanServer;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
 
 import org.jboss.messaging.core.config.Configuration;
@@ -35,6 +38,7 @@ import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.QueueControlMBean;
+import org.jboss.messaging.core.management.impl.MessagingServerControl.NotificationType;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
@@ -66,11 +70,15 @@ public class ManagementServiceImpl implements ManagementService
    private final MBeanServer mbeanServer;
    private final boolean jmxManagementEnabled;
    private final Map<ObjectName, Object> registry;
+   private final NotificationBroadcasterSupport broadcaster;
+   private final AtomicLong notifSeq;
 
    private PostOffice postOffice;
    private HierarchicalRepository<Set<Role>> securityRepository;
    private HierarchicalRepository<QueueSettings> queueSettingsRepository;
-   private MessageCounterManager messageCounterManager = new MessageCounterManagerImpl(10000);
+   private MessageCounterManager messageCounterManager = new MessageCounterManagerImpl(
+         10000);
+   private MessagingServerControlMBean managedServer;
 
    // Static --------------------------------------------------------
 
@@ -102,6 +110,8 @@ public class ManagementServiceImpl implements ManagementService
       this.mbeanServer = mbeanServer;
       this.jmxManagementEnabled = jmxManagementEnabled;
       this.registry = new HashMap<ObjectName, Object>();
+      this.broadcaster = new NotificationBroadcasterSupport();
+      this.notifSeq = new AtomicLong(0);
    }
 
    // Public --------------------------------------------------------
@@ -110,9 +120,9 @@ public class ManagementServiceImpl implements ManagementService
 
    public MessageCounterManager getMessageCounterManager()
    {
-      return messageCounterManager;      
+      return messageCounterManager;
    }
-   
+
    public MessagingServerControlMBean registerServer(PostOffice postOffice,
          StorageManager storageManager, Configuration configuration,
          HierarchicalRepository<Set<Role>> securityRepository,
@@ -122,9 +132,9 @@ public class ManagementServiceImpl implements ManagementService
       this.postOffice = postOffice;
       this.securityRepository = securityRepository;
       this.queueSettingsRepository = queueSettingsRepository;
-      MessagingServerControlMBean managedServer = new MessagingServerControl(
-            postOffice, storageManager, configuration, securityRepository,
-            queueSettingsRepository, messagingServer, messageCounterManager);
+      managedServer = new MessagingServerControl(postOffice, storageManager,
+            configuration, securityRepository, queueSettingsRepository,
+            messagingServer, messageCounterManager, broadcaster);
       ObjectName objectName = getMessagingServerObjectName();
       register(objectName, managedServer);
       registerInJMX(objectName, managedServer);
@@ -149,6 +159,7 @@ public class ManagementServiceImpl implements ManagementService
       {
          log.debug("registered address " + objectName);
       }
+      sendNotification(NotificationType.ADDRESS_ADDED, address.toString());
    }
 
    public void unregisterAddress(final SimpleString address) throws Exception
@@ -156,23 +167,29 @@ public class ManagementServiceImpl implements ManagementService
       ObjectName objectName = getAddressObjectName(address);
       unregister(objectName);
       unregisterFromJMX(objectName);
+      sendNotification(NotificationType.ADDRESS_REMOVED, address.toString());
    }
 
    public void registerQueue(final Queue queue, final SimpleString address,
          final StorageManager storageManager) throws Exception
    {
-      MessageCounter counter = new MessageCounter(queue.getName().toString(), null, queue, false, queue.isDurable(),
-            messageCounterManager.getMaxDayCount());
-      messageCounterManager.registerMessageCounter(queue.getName().toString(), counter);
+      MessageCounter counter = new MessageCounter(queue.getName().toString(),
+            null, queue, false, queue.isDurable(), messageCounterManager
+                  .getMaxDayCount());
+      messageCounterManager.registerMessageCounter(queue.getName().toString(),
+            counter);
       ObjectName objectName = getQueueObjectName(address, queue.getName());
       QueueControlMBean queueControl = new QueueControl(queue, storageManager,
             postOffice, queueSettingsRepository, counter);
       register(objectName, queueControl);
       registerInJMX(objectName, queueControl);
+
       if (log.isDebugEnabled())
       {
          log.debug("registered queue " + objectName);
       }
+      sendNotification(NotificationType.QUEUE_CREATED, queue.getName()
+            .toString());
    }
 
    public void unregisterQueue(final SimpleString name,
@@ -182,6 +199,8 @@ public class ManagementServiceImpl implements ManagementService
       unregister(objectName);
       unregisterFromJMX(objectName);
       messageCounterManager.unregisterMessageCounter(name.toString());
+
+      sendNotification(NotificationType.QUEUE_DESTROYED, name.toString());
    }
 
    // Package protected ---------------------------------------------
@@ -223,6 +242,17 @@ public class ManagementServiceImpl implements ManagementService
          mbeanServer.unregisterMBean(objectName);
       }
    }
-   
+
+   private void sendNotification(MessagingServerControl.NotificationType type,
+         String message)
+   {
+      if (managedServer != null)
+      {
+         Notification notif = new Notification(type.toString(), managedServer,
+               notifSeq.incrementAndGet(), message);
+         broadcaster.sendNotification(notif);
+      }
+   }
+
    // Inner classes -------------------------------------------------
 }

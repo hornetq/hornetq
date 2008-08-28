@@ -24,12 +24,10 @@ package org.jboss.messaging.core.management.impl;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanNotificationInfo;
-import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
@@ -75,7 +73,6 @@ public class MessagingServerControl extends StandardMBean implements
    private final MessageCounterManager messageCounterManager;
 
    private final NotificationBroadcasterSupport broadcaster;
-   private AtomicLong notifSeq = new AtomicLong(0);
 
    private boolean enableMessageCounters;
 
@@ -87,7 +84,8 @@ public class MessagingServerControl extends StandardMBean implements
          StorageManager storageManager, Configuration configuration,
          HierarchicalRepository<Set<Role>> securityRepository,
          HierarchicalRepository<QueueSettings> queueSettingsRepository,
-         MessagingServer messagingServer, MessageCounterManager messageCounterManager) throws Exception
+         MessagingServer messagingServer, MessageCounterManager messageCounterManager,
+         NotificationBroadcasterSupport broadcaster) throws Exception
    {
       super(MessagingServerControlMBean.class);
       this.postOffice = postOffice;
@@ -97,8 +95,7 @@ public class MessagingServerControl extends StandardMBean implements
       this.queueSettingsRepository = queueSettingsRepository;
       this.server = messagingServer;
       this.messageCounterManager = messageCounterManager;
-
-      broadcaster = new NotificationBroadcasterSupport();
+      this.broadcaster = broadcaster;
    }
 
    // Public --------------------------------------------------------
@@ -291,7 +288,6 @@ public class MessagingServerControl extends StandardMBean implements
 
    public boolean addAddress(final String address) throws Exception
    {
-      sendNotification(NotificationType.ADDRESS_ADDED, address);
       return postOffice.addDestination(new SimpleString(address), false);
    }
 
@@ -304,8 +300,6 @@ public class MessagingServerControl extends StandardMBean implements
       {
          postOffice.addBinding(sAddress, sName, null, true);
       }
-      sendNotification(NotificationType.ADDRESS_ADDED, address);
-      sendNotification(NotificationType.QUEUE_CREATED, name);
    }
 
    public void createQueue(final String address, final String name,
@@ -325,8 +319,6 @@ public class MessagingServerControl extends StandardMBean implements
       {
          postOffice.addBinding(sAddress, sName, filter, durable);
       }
-      sendNotification(NotificationType.ADDRESS_ADDED, address);
-      sendNotification(NotificationType.QUEUE_CREATED, name);
    }
 
    public void destroyQueue(final String name) throws Exception
@@ -342,7 +334,6 @@ public class MessagingServerControl extends StandardMBean implements
 
          postOffice.removeBinding(queue.getName());
       }
-      sendNotification(NotificationType.QUEUE_DESTROYED, name);
    }
 
    public int getConnectionCount()
@@ -352,7 +343,6 @@ public class MessagingServerControl extends StandardMBean implements
 
    public boolean removeAddress(final String address) throws Exception
    {
-      sendNotification(NotificationType.ADDRESS_REMOVED, address);
       return postOffice.removeDestination(new SimpleString(address), false);
    }
 
@@ -481,14 +471,6 @@ public class MessagingServerControl extends StandardMBean implements
       messageCounterManager.resetAllCounters();
 
       messageCounterManager.resetAllCounterHistories();
-   }
-   
-   private void sendNotification(final NotificationType type,
-         final String message)
-   {
-      Notification notif = new Notification(type.toString(), this, notifSeq
-            .incrementAndGet(), message);
-      broadcaster.sendNotification(notif);
    }
 
    // Inner classes -------------------------------------------------

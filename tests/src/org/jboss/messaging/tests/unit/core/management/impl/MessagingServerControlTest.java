@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.tests.unit.core.management.impl;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
@@ -34,24 +33,17 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 
-import javax.management.MBeanServer;
-import javax.management.Notification;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
+import javax.management.NotificationBroadcasterSupport;
 
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.management.impl.MessagingServerControl;
-import org.jboss.messaging.core.management.impl.MessagingServerControl.NotificationType;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -75,8 +67,6 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class MessagingServerControlTest extends TestCase
 {
-   private MBeanServer mbeanServer;
-   private ObjectName serverON;
    private PostOffice postOffice;
    private StorageManager storageManager;
    private Configuration configuration;
@@ -90,17 +80,6 @@ public class MessagingServerControlTest extends TestCase
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-
-   private static void assertGotNotification(NotificationType expectedType,
-         NotificationListenerWithLatch listener, CountDownLatch latch)
-         throws Exception
-   {
-      boolean gotNotification = latch.await(500, MILLISECONDS);
-      assertTrue(gotNotification);
-      Notification notification = listener.getNotification();
-      assertNotNull(notification);
-      assertEquals(expectedType.toString(), notification.getType());
-   }
 
    // Constructors --------------------------------------------------
 
@@ -359,22 +338,10 @@ public class MessagingServerControlTest extends TestCase
       replayMockedAttributes();
 
       MessagingServerControl control = createControl();
-      mbeanServer.registerMBean(control, serverON);
-
-      final CountDownLatch latch = new CountDownLatch(1);
-      NotificationListenerWithLatch listener = new NotificationListenerWithLatch(
-            latch);
-      mbeanServer.addNotificationListener(serverON, listener, null, null);
 
       assertEquals(added, control.addAddress(address));
 
-      assertGotNotification(
-            MessagingServerControl.NotificationType.ADDRESS_ADDED, listener,
-            latch);
-
       verifyMockedAttributes();
-
-      mbeanServer.removeNotificationListener(serverON, listener);
    }
 
    public void testRemoveAddress() throws Exception
@@ -387,22 +354,9 @@ public class MessagingServerControlTest extends TestCase
       replayMockedAttributes();
 
       MessagingServerControl control = createControl();
-      mbeanServer.registerMBean(control, serverON);
-
-      final CountDownLatch latch = new CountDownLatch(1);
-      NotificationListenerWithLatch listener = new NotificationListenerWithLatch(
-            latch);
-      mbeanServer.addNotificationListener(serverON, listener, null, null);
-
       assertEquals(removed, control.removeAddress(address));
 
-      assertGotNotification(
-            MessagingServerControl.NotificationType.ADDRESS_REMOVED, listener,
-            latch);
-
       verifyMockedAttributes();
-
-      mbeanServer.removeNotificationListener(serverON, listener);
    }
 
    public void testCreateQueue() throws Exception
@@ -423,39 +377,6 @@ public class MessagingServerControlTest extends TestCase
 
       verifyMockedAttributes();
       verify(newBinding);
-   }
-
-   public void testCreateQueueAndReceiveNotification() throws Exception
-   {
-      String address = randomString();
-      String name = randomString();
-
-      expect(postOffice.getBinding(new SimpleString(address))).andReturn(null);
-      Binding newBinding = createMock(Binding.class);
-      expect(
-            postOffice.addBinding(new SimpleString(address), new SimpleString(
-                  name), null, true)).andReturn(newBinding);
-      replayMockedAttributes();
-      replay(newBinding);
-
-      MessagingServerControl control = createControl();
-      mbeanServer.registerMBean(control, serverON);
-
-      final CountDownLatch latch = new CountDownLatch(1);
-      NotificationListenerWithLatch listener = new NotificationListenerWithLatch(
-            latch);
-
-      mbeanServer.addNotificationListener(serverON, listener, null, null);
-      control.createQueue(address, name);
-
-      assertGotNotification(
-            MessagingServerControl.NotificationType.QUEUE_CREATED, listener,
-            latch);
-
-      mbeanServer.removeNotificationListener(serverON, listener);
-
-      verify(newBinding);
-      verifyMockedAttributes();
    }
 
    public void testCreateQueueWithAllParameters() throws Exception
@@ -541,23 +462,10 @@ public class MessagingServerControlTest extends TestCase
       replay(binding, queue);
 
       MessagingServerControl control = createControl();
-      mbeanServer.registerMBean(control, serverON);
-
-      final CountDownLatch latch = new CountDownLatch(1);
-      NotificationListenerWithLatch listener = new NotificationListenerWithLatch(
-            latch);
-
-      mbeanServer.addNotificationListener(serverON, listener, null, null);
       control.destroyQueue(name);
-
-      assertGotNotification(
-            MessagingServerControl.NotificationType.QUEUE_DESTROYED, listener,
-            latch);
 
       verify(binding, queue);
       verifyMockedAttributes();
-
-      mbeanServer.removeNotificationListener(serverON, listener);
    }
 
    public void testGetConnectionCount() throws Exception
@@ -582,9 +490,6 @@ public class MessagingServerControlTest extends TestCase
    {
       super.setUp();
 
-      mbeanServer = ManagementFactory.getPlatformMBeanServer();
-      serverON = ManagementServiceImpl.getMessagingServerObjectName();
-
       postOffice = createMock(PostOffice.class);
       storageManager = createMock(StorageManager.class);
       configuration = createMock(Configuration.class);
@@ -597,14 +502,6 @@ public class MessagingServerControlTest extends TestCase
    @Override
    protected void tearDown() throws Exception
    {
-      if (mbeanServer.isRegistered(serverON))
-      {
-         mbeanServer.unregisterMBean(serverON);
-      }
-
-      serverON = null;
-      mbeanServer = null;
-
       postOffice = null;
       storageManager = null;
       configuration = null;
@@ -622,7 +519,7 @@ public class MessagingServerControlTest extends TestCase
    {
       MessagingServerControl control = new MessagingServerControl(postOffice,
             storageManager, configuration, securityRepository,
-            queueSettingsRepository, server, messageCounterManager);
+            queueSettingsRepository, server, messageCounterManager, new NotificationBroadcasterSupport());
       return control;
    }
 
@@ -639,28 +536,4 @@ public class MessagingServerControlTest extends TestCase
    }
 
    // Inner classes -------------------------------------------------
-
-   private final class NotificationListenerWithLatch implements
-         NotificationListener
-   {
-      private final CountDownLatch latch;
-      private Notification notification;
-
-      private NotificationListenerWithLatch(CountDownLatch latch)
-      {
-         this.latch = latch;
-      }
-
-      public void handleNotification(Notification notification, Object handback)
-      {
-         this.notification = notification;
-         latch.countDown();
-      }
-
-      public Notification getNotification()
-      {
-         return notification;
-      }
-   }
-
 }
