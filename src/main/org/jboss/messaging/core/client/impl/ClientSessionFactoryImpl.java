@@ -38,6 +38,8 @@ import org.jboss.messaging.core.remoting.impl.CommandManagerImpl;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.UUIDGenerator;
@@ -324,10 +326,19 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
                                      username, password,
                                      xa, autoCommitSends, autoCommitAcks,
                                      localCommandResponseTargetID);
-
-         CreateSessionResponseMessage response =
-            (CreateSessionResponseMessage)remotingConnection.sendBlocking(PacketDispatcherImpl.MAIN_SERVER_HANDLER_ID,
+         
+         Packet packet =
+            remotingConnection.sendBlocking(PacketDispatcherImpl.MAIN_SERVER_HANDLER_ID,
                      PacketDispatcherImpl.MAIN_SERVER_HANDLER_ID, request, null);
+         
+         if (packet.getType() == PacketImpl.EXCEPTION)
+         {
+            MessagingExceptionMessage mem = (MessagingExceptionMessage)packet;
+            
+            throw mem.getException();
+         }
+         
+         CreateSessionResponseMessage response = (CreateSessionResponseMessage)packet;
          
          CommandManager cm = new CommandManagerImpl(response.getPacketConfirmationBatchSize(),
                   remotingConnection, dispatcher, response.getSessionID(),

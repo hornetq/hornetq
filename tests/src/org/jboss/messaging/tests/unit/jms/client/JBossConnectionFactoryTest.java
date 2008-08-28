@@ -70,18 +70,18 @@ public class JBossConnectionFactoryTest extends TestCase
       });
    }
 
-   public void testCreateConnectionWithCredentials() throws Exception
-   {
-      doCreateConnectionWithCredentials(Connection.class, randomString(),
-            randomString(), new ConnectionCreation()
-            {
-               Connection createConnection(JBossConnectionFactory factory,
-                     String user, String password) throws Exception
-               {
-                  return factory.createConnection(user, password);
-               }
-            });
-   }
+//   public void testCreateConnectionWithCredentials() throws Exception
+//   {
+//      doCreateConnectionWithCredentials(Connection.class, randomString(),
+//            randomString(), new ConnectionCreation()
+//            {
+//               Connection createConnection(JBossConnectionFactory factory,
+//                     String user, String password) throws Exception
+//               {
+//                  return factory.createConnection(user, password);
+//               }
+//            });
+//   }
 
    public void testCreateQueueConnection() throws Exception
    {
@@ -95,18 +95,18 @@ public class JBossConnectionFactoryTest extends TestCase
       });
    }
 
-   public void testCreateQueueConnectionWithCredentials() throws Exception
-   {
-      doCreateConnectionWithCredentials(QueueConnection.class, randomString(),
-            randomString(), new ConnectionCreation()
-            {
-               Connection createConnection(JBossConnectionFactory factory,
-                     String user, String password) throws Exception
-               {
-                  return factory.createQueueConnection(user, password);
-               }
-            });
-   }
+//   public void testCreateQueueConnectionWithCredentials() throws Exception
+//   {
+//      doCreateConnectionWithCredentials(QueueConnection.class, randomString(),
+//            randomString(), new ConnectionCreation()
+//            {
+//               Connection createConnection(JBossConnectionFactory factory,
+//                     String user, String password) throws Exception
+//               {
+//                  return factory.createQueueConnection(user, password);
+//               }
+//            });
+//   }
 
    public void testCreateTopicConnection() throws Exception
    {
@@ -120,18 +120,18 @@ public class JBossConnectionFactoryTest extends TestCase
       });
    }
 
-   public void testCreateTopicConnectionWithUserPassword() throws Exception
-   {
-      doCreateConnectionWithCredentials(TopicConnection.class, randomString(),
-            randomString(), new ConnectionCreation()
-            {
-               Connection createConnection(JBossConnectionFactory factory,
-                     String user, String password) throws Exception
-               {
-                  return factory.createTopicConnection(user, password);
-               }
-            });
-   }
+//   public void testCreateTopicConnectionWithUserPassword() throws Exception
+//   {
+//      doCreateConnectionWithCredentials(TopicConnection.class, randomString(),
+//            randomString(), new ConnectionCreation()
+//            {
+//               Connection createConnection(JBossConnectionFactory factory,
+//                     String user, String password) throws Exception
+//               {
+//                  return factory.createTopicConnection(user, password);
+//               }
+//            });
+//   }
 
    public void testCreateXAConnection() throws Exception
    {
@@ -145,18 +145,18 @@ public class JBossConnectionFactoryTest extends TestCase
       });
    }
 
-   public void testCreateXAConnectionWithCredentials() throws Exception
-   {
-      doCreateConnectionWithCredentials(XAConnection.class, randomString(),
-            randomString(), new ConnectionCreation()
-            {
-               Connection createConnection(JBossConnectionFactory factory,
-                     String user, String password) throws Exception
-               {
-                  return factory.createXAConnection(user, password);
-               }
-            });
-   }
+//   public void testCreateXAConnectionWithCredentials() throws Exception
+//   {
+//      doCreateConnectionWithCredentials(XAConnection.class, randomString(),
+//            randomString(), new ConnectionCreation()
+//            {
+//               Connection createConnection(JBossConnectionFactory factory,
+//                     String user, String password) throws Exception
+//               {
+//                  return factory.createXAConnection(user, password);
+//               }
+//            });
+//   }
 
    public void testCreateXAQueueConnection() throws Exception
    {
@@ -170,18 +170,18 @@ public class JBossConnectionFactoryTest extends TestCase
       });
    }
 
-   public void testCreateXAQueueConnectionWithCredentials() throws Exception
-   {
-      doCreateConnectionWithCredentials(XAQueueConnection.class,
-            randomString(), randomString(), new ConnectionCreation()
-            {
-               Connection createConnection(JBossConnectionFactory factory,
-                     String user, String password) throws Exception
-               {
-                  return factory.createXAQueueConnection(user, password);
-               }
-            });
-   }
+//   public void testCreateXAQueueConnectionWithCredentials() throws Exception
+//   {
+//      doCreateConnectionWithCredentials(XAQueueConnection.class,
+//            randomString(), randomString(), new ConnectionCreation()
+//            {
+//               Connection createConnection(JBossConnectionFactory factory,
+//                     String user, String password) throws Exception
+//               {
+//                  return factory.createXAQueueConnection(user, password);
+//               }
+//            });
+//   }
 
    public void testCreateXATopicConnection() throws Exception
    {
@@ -195,18 +195,18 @@ public class JBossConnectionFactoryTest extends TestCase
       });
    }
 
-   public void testCreateXATopicConnectionWithUserPassword() throws Exception
-   {
-      doCreateConnectionWithCredentials(XATopicConnection.class,
-            randomString(), randomString(), new ConnectionCreation()
-            {
-               Connection createConnection(JBossConnectionFactory factory,
-                     String user, String password) throws Exception
-               {
-                  return factory.createXATopicConnection(user, password);
-               }
-            });
-   }
+//   public void testCreateXATopicConnectionWithUserPassword() throws Exception
+//   {
+//      doCreateConnectionWithCredentials(XATopicConnection.class,
+//            randomString(), randomString(), new ConnectionCreation()
+//            {
+//               Connection createConnection(JBossConnectionFactory factory,
+//                     String user, String password) throws Exception
+//               {
+//                  return factory.createXATopicConnection(user, password);
+//               }
+//            });
+//   }
 
    // Package protected ---------------------------------------------
 
@@ -243,31 +243,31 @@ public class JBossConnectionFactoryTest extends TestCase
 
    private void doCreateConnectionWithCredentials(Class expectedInterface, String username, String password,
             ConnectionCreation creation) throws Exception
-      {
+   {
       final ConnectorFactory cf = EasyMock.createMock(ConnectorFactory.class);
       final Map<String, Object> params = new HashMap<String, Object>();
       final long pingPeriod = 12987213;
       final long callTimeout = 27237;
-         final String clientID = "kajsakjs";
-         final int dupsOKBatchSize = 12344;        
-         final int defaultConsumerWindowSize = 1212;
-         final int defaultConsumerMaxRate = 5656;
-         final int defaultProducerWindowSize = 2323;
-         final int defaultProducerMaxRate = 988;
-         final boolean defaultBlockOnAcknowledge = true;
-         final boolean defaultSendNonPersistentMessagesBlocking = true;
-         final boolean defaultSendPersistentMessagesBlocking = true;
-         
-         JBossConnectionFactory factory = new JBossConnectionFactory(cf, params,
-                  pingPeriod, callTimeout,
-                  clientID, dupsOKBatchSize,
-                  defaultConsumerWindowSize, defaultConsumerMaxRate,
-                  defaultProducerWindowSize, defaultProducerMaxRate, defaultBlockOnAcknowledge,
-                  defaultSendNonPersistentMessagesBlocking, defaultSendPersistentMessagesBlocking);
-         Object connection = creation.createConnection(factory, username, password);
-         assertNotNull(connection);
-         assertTrue(expectedInterface.isAssignableFrom(connection.getClass()));
-      }
+      final String clientID = "kajsakjs";
+      final int dupsOKBatchSize = 12344;        
+      final int defaultConsumerWindowSize = 1212;
+      final int defaultConsumerMaxRate = 5656;
+      final int defaultProducerWindowSize = 2323;
+      final int defaultProducerMaxRate = 988;
+      final boolean defaultBlockOnAcknowledge = true;
+      final boolean defaultSendNonPersistentMessagesBlocking = true;
+      final boolean defaultSendPersistentMessagesBlocking = true;
+
+      JBossConnectionFactory factory = new JBossConnectionFactory(cf, params,
+               pingPeriod, callTimeout,
+               clientID, dupsOKBatchSize,
+               defaultConsumerWindowSize, defaultConsumerMaxRate,
+               defaultProducerWindowSize, defaultProducerMaxRate, defaultBlockOnAcknowledge,
+               defaultSendNonPersistentMessagesBlocking, defaultSendPersistentMessagesBlocking);
+      Object connection = creation.createConnection(factory, username, password);
+      assertNotNull(connection);
+      assertTrue(expectedInterface.isAssignableFrom(connection.getClass()));
+   }
 
 
    // Inner classes -------------------------------------------------

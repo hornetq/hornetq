@@ -24,6 +24,7 @@ package org.jboss.messaging.tests.integration.remoting;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -90,7 +91,6 @@ public class PingTest extends TestCase
       
       public void connectionFailed(MessagingException me)
       {
-         log.info("** connection failed");
          this.me = me;
       }
       
@@ -110,47 +110,35 @@ public class PingTest extends TestCase
       
       ConnectionRegistry registry = ConnectionRegistryLocator.getRegistry();
       
-      RemotingConnection conn = null;
+      RemotingConnection conn = registry.getConnection(cf, params, PING_INTERVAL, 5000);
+      assertNotNull(conn);
+      assertEquals(1, registry.getCount(cf, params));
       
-      try
-      {         
-         conn = registry.getConnection(cf, params, PING_INTERVAL, 5000);
-         assertNotNull(conn);
-         assertEquals(1, registry.getCount(cf, params));
-         
-         Listener clientListener = new Listener();
-         
-         conn.addFailureListener(clientListener);
-         
-         //It's async so need to wait a while
-         Thread.sleep(1000);
-         
-         RemotingConnection serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
-         
-         Listener serverListener = new Listener();
-         
-         serverConn.addFailureListener(serverListener);
-         
-         Thread.sleep(PING_INTERVAL * 3);
-         
-         assertNull(clientListener.getException());
-         
-         assertNull(serverListener.getException());
-         
-         RemotingConnection serverConn2 = messagingService.getServer().getRemotingService().getConnections().iterator().next();
-         
-         assertTrue(serverConn == serverConn2);      
-      }
-      finally
-      {
-         try
-         {
-            registry.returnConnection(conn.getID());
-         }
-         catch (Exception ignore)
-         {            
-         }
-      }
+      Listener clientListener = new Listener();
+      
+      conn.addFailureListener(clientListener);
+      
+      //It's async so need to wait a while
+      Thread.sleep(1000);
+      
+      RemotingConnection serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
+      
+      Listener serverListener = new Listener();
+      
+      serverConn.addFailureListener(serverListener);
+      
+      Thread.sleep(PING_INTERVAL * 3);
+      
+      assertNull(clientListener.getException());
+      
+      assertNull(serverListener.getException());
+      
+      RemotingConnection serverConn2 = messagingService.getServer().getRemotingService().getConnections().iterator().next();
+      
+      assertTrue(serverConn == serverConn2);    
+        
+      registry.returnConnection(conn.getID());
+      
    }
    
    /*
@@ -163,47 +151,34 @@ public class PingTest extends TestCase
       
       ConnectionRegistry registry = ConnectionRegistryLocator.getRegistry();
       
-      RemotingConnection conn = null;
+      RemotingConnection conn = registry.getConnection(cf, params, -1, 5000);
+      assertNotNull(conn);
+      assertEquals(1, registry.getCount(cf, params));
       
-      try
-      {        
-         conn = registry.getConnection(cf, params, -1, 5000);
-         assertNotNull(conn);
-         assertEquals(1, registry.getCount(cf, params));
-         
-         Listener clientListener = new Listener();
-         
-         conn.addFailureListener(clientListener);
-         
-         //It's async so need to wait a while
-         Thread.sleep(1000);
-         
-         RemotingConnection serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
-         
-         Listener serverListener = new Listener();
-         
-         serverConn.addFailureListener(serverListener);
-         
-         Thread.sleep(PING_INTERVAL * 3);
-         
-         assertNull(clientListener.getException());
-         
-         assertNull(serverListener.getException());
-         
-         RemotingConnection serverConn2 = messagingService.getServer().getRemotingService().getConnections().iterator().next();
-         
-         assertTrue(serverConn == serverConn2);      
-      }
-      finally
-      {
-         try
-         {
-            registry.returnConnection(conn.getID());
-         }
-         catch (Exception ignore)
-         {            
-         }
-      }
+      Listener clientListener = new Listener();
+      
+      conn.addFailureListener(clientListener);
+      
+      //It's async so need to wait a while
+      Thread.sleep(1000);
+      
+      RemotingConnection serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
+      
+      Listener serverListener = new Listener();
+      
+      serverConn.addFailureListener(serverListener);
+      
+      Thread.sleep(PING_INTERVAL * 3);
+      
+      assertNull(clientListener.getException());
+      
+      assertNull(serverListener.getException());
+      
+      RemotingConnection serverConn2 = messagingService.getServer().getRemotingService().getConnections().iterator().next();
+      
+      assertTrue(serverConn == serverConn2); 
+      
+      registry.returnConnection(conn.getID());
    }
    
    /*
@@ -216,59 +191,56 @@ public class PingTest extends TestCase
       
       ConnectionRegistry registry = ConnectionRegistryLocator.getRegistry();
       
-      RemotingConnectionImpl conn = null;
+      RemotingConnectionImpl conn = (RemotingConnectionImpl)registry.getConnection(cf, params, PING_INTERVAL, 5000);
+      assertEquals(1, registry.getCount(cf, params));
+      assertNotNull(conn);
+        
+      //We need to get it to send one ping then stop         
+      conn.stopPingingAfterOne();
+             
+      Listener clientListener = new Listener();
       
-      try
-      {         
-         conn = (RemotingConnectionImpl)registry.getConnection(cf, params, PING_INTERVAL, 5000);
-         assertEquals(1, registry.getCount(cf, params));
-         assertNotNull(conn);
-         
-         //We need to get it to send one ping then stop         
-         conn.stopPingingAfterOne();
-                
-         Listener clientListener = new Listener();
-         
-         conn.addFailureListener(clientListener);
-         
-         //It's async so need to wait a while
-         Thread.sleep(2000);
-                        
-         RemotingConnection serverConn =
-            messagingService.getServer().getRemotingService().getConnections().iterator().next();
-         
-         Listener serverListener = new Listener();
-         
-         serverConn.addFailureListener(serverListener);
-         
-         Thread.sleep(PING_INTERVAL * 4);
-         
-         //The client listener should be called too since the server will close it from the server side which will result in the
-         //MINA detecting closure on the client side and then calling failure listener
-         assertNotNull(clientListener.getException());
-         
-         assertNotNull(serverListener.getException());
-         
-         assertTrue(messagingService.getServer().getRemotingService().getConnections().isEmpty());
-         
-         //Make sure we don't get the same connection back - it should have been removed from the registry
-         
-         RemotingConnection conn2 = registry.getConnection(cf, params, PING_INTERVAL * 2, 5000);
-         assertNotNull(conn2);
-         
-         assertFalse(conn == conn2);
-         
-      }
-      finally
+      conn.addFailureListener(clientListener);
+                      
+      RemotingConnection serverConn = null;
+      
+      while (serverConn == null)
       {
-         try
-         {
-            registry.returnConnection(conn.getID());
-         }
-         catch (Exception ignore)
+         Set<RemotingConnection> conns = messagingService.getServer().getRemotingService().getConnections();
+         
+         if (!conns.isEmpty())
          {            
+            serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
+         }
+         else
+         {
+            //It's async so need to wait a while
+            Thread.sleep(100);
          }
       }
+                  
+      Listener serverListener = new Listener();
+      
+      serverConn.addFailureListener(serverListener);
+      
+      Thread.sleep(PING_INTERVAL * 10);
+      
+      //The client listener should be called too since the server will close it from the server side which will result in the
+      //MINA detecting closure on the client side and then calling failure listener
+      assertNotNull(clientListener.getException());
+      
+      assertNotNull(serverListener.getException());
+      
+      assertTrue(messagingService.getServer().getRemotingService().getConnections().isEmpty());
+      
+      //Make sure we don't get the same connection back - it should have been removed from the registry
+      
+      RemotingConnection conn2 = registry.getConnection(cf, params, PING_INTERVAL * 2, 5000);
+      assertNotNull(conn2);
+      
+      assertFalse(conn == conn2);
+      
+      registry.returnConnection(conn2.getID());    
    }
    
    /*
@@ -282,7 +254,6 @@ public class PingTest extends TestCase
         {
            if (packet.getType() == PacketImpl.PING)
            {
-              log.info("Not sending pong");
               return false;
            }
            else
@@ -299,52 +270,41 @@ public class PingTest extends TestCase
      
      ConnectionRegistry registry = ConnectionRegistryLocator.getRegistry();
      
-     RemotingConnection conn = null;
+     RemotingConnection conn = registry.getConnection(cf, params, PING_INTERVAL, 5000);
+     assertNotNull(conn);
+     assertEquals(1, registry.getCount(cf, params));
+            
+     Listener clientListener = new Listener();
      
-     try
-     {         
-        conn = registry.getConnection(cf, params, PING_INTERVAL, 5000);
-        assertNotNull(conn);
-        assertEquals(1, registry.getCount(cf, params));
-               
-        Listener clientListener = new Listener();
-        
-        conn.addFailureListener(clientListener);
-        
-        //It's async so need to wait a while
-        Thread.sleep(1000);
-              
-        RemotingConnection serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
-        
-        Listener serverListener = new Listener();
-        
-        serverConn.addFailureListener(serverListener);
-        
-        Thread.sleep(PING_INTERVAL * 2);
-        
-        assertNotNull(clientListener.getException());
-        
-        //We don't receive an exception on the server in this case
-        assertNull(serverListener.getException());
-        
-        assertTrue(messagingService.getServer().getRemotingService().getConnections().isEmpty());
-        
-        //Make sure we don't get the same connection back - it should have been removed from the registry
-        
-        RemotingConnection conn2 = registry.getConnection(cf, params, PING_INTERVAL, 5000);
-        assertNotNull(conn2);        
-     }
-     finally
-     {
-        messagingService.getServer().getRemotingService().getDispatcher().removeInterceptor(noPongInterceptor);
-        try
-        {
-           registry.returnConnection(conn.getID());
-        }
-        catch (Exception ignore)
-        {            
-        }
-     }
+     conn.addFailureListener(clientListener);
+     
+     //It's async so need to wait a while
+     Thread.sleep(1000);
+           
+     RemotingConnection serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
+     
+     Listener serverListener = new Listener();
+     
+     serverConn.addFailureListener(serverListener);
+     
+     Thread.sleep(PING_INTERVAL * 2);
+     
+     assertNotNull(clientListener.getException());
+     
+     //We don't receive an exception on the server in this case
+     assertNull(serverListener.getException());
+     
+     assertTrue(messagingService.getServer().getRemotingService().getConnections().isEmpty());
+     
+     //Make sure we don't get the same connection back - it should have been removed from the registry
+     
+     RemotingConnection conn2 = registry.getConnection(cf, params, PING_INTERVAL, 5000);
+     assertNotNull(conn2);        
+
+     messagingService.getServer().getRemotingService().getDispatcher().removeInterceptor(noPongInterceptor);
+     
+     registry.returnConnection(conn2.getID());
+     
   }
    
    // Package protected ---------------------------------------------

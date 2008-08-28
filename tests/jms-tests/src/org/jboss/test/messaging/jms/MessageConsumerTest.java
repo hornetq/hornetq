@@ -1157,10 +1157,8 @@ public class MessageConsumerTest extends JMSTestCase
          assertEquals("hello1", rm1.getText());
 
          //redeliver
-         log.info("calling session.recover");
          sess.recover();
-         log.info("called session.recover");
-
+ 
          TextMessage rm2 = (TextMessage) cons1.receive(1500);
          assertNotNull(rm2);
          assertEquals("hello1", rm2.getText());
@@ -1173,9 +1171,7 @@ public class MessageConsumerTest extends JMSTestCase
          assertNotNull(rm4);
          assertEquals("hello3", rm4.getText());
 
-         log.info("acknowlegfding all");
          rm4.acknowledge();
-         log.info("done ack");
       }
       finally
       {
@@ -2166,15 +2162,13 @@ public class MessageConsumerTest extends JMSTestCase
       {
          try
          {
-            log.info("(ThreadCloser)Waiting on monitor to close thread");
             synchronized (waitMonitor)
             {
                waitMonitor.wait();
             }
-            log.info("(ThreadCloser)Notification received");
+
             Thread.sleep(timeToSleep);
             topicConsumer.close();
-
          }
          catch (Exception e)
          {
@@ -2208,12 +2202,10 @@ public class MessageConsumerTest extends JMSTestCase
       {
          try
          {
-            log.info("(ThreadReceiver)Waiting on monitor to close thread");
             synchronized (waitMonitor)
             {
                waitMonitor.wait();
             }
-            log.info("(ThreadReceiver)Notification received");
             t1 = System.currentTimeMillis();
             receivedObject = topicConsumer.receive(timeToWait);
             t2 = System.currentTimeMillis();
@@ -2261,8 +2253,6 @@ public class MessageConsumerTest extends JMSTestCase
          receiver.join();
 
          assertNull(receiver.receivedObject);
-
-         log.info("Elapsed time was " + (receiver.t2 - receiver.t1));
 
          // We need to make sure the
          assertTrue("Receive was supposed to receive a notification before 2 seconds", receiver.t2 - receiver.t1 <= 1500);

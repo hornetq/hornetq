@@ -41,8 +41,10 @@ import javax.jms.XATopicConnectionFactory;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 
+import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.jms.referenceable.ConnectionFactoryObjectFactory;
@@ -70,7 +72,7 @@ public class JBossConnectionFactory implements
    
    // Attributes -----------------------------------------------------------------------------------
    
-   private transient ClientSessionFactory sessionFactory;
+   private transient volatile ClientSessionFactory sessionFactory;
    
    private final ConnectorFactory connectorFactory;
    
@@ -296,23 +298,51 @@ public class JBossConnectionFactory implements
                                                       final boolean isXA, final int type)
       throws JMSException
    {
-      synchronized (this)
+      if (sessionFactory == null)
       {
-         if (sessionFactory == null)
-         {
-            sessionFactory = new ClientSessionFactoryImpl(
-                  connectorFactory,
-                  transportParams,
-                  pingPeriod,
-                  callTimeout,
-                  consumerWindowSize,
-                  consumerMaxRate,
-                  producerWindowSize,
-                  producerMaxRate,
-                  blockOnAcknowledge,
-                  blockOnNonPersistentSend,
-                  blockOnPersistentSend);
+         //It doesn't matter if more than one is created due to a race
+         sessionFactory = new ClientSessionFactoryImpl(
+               connectorFactory,
+               transportParams,
+               pingPeriod,
+               callTimeout,
+               consumerWindowSize,
+               consumerMaxRate,
+               producerWindowSize,
+               producerMaxRate,
+               blockOnAcknowledge,
+               blockOnNonPersistentSend,
+               blockOnPersistentSend);
 
+      }      
+                  
+      if (username != null)
+      {      
+         //Since core has no connection concept, we need to create a session in order to authenticate at this time
+         
+         ClientSession sess = null;
+         
+         try
+         {
+            sess = sessionFactory.createSession(username, password, false, false,
+                                         false, -1, false);
+         }
+         catch (MessagingException e)
+         {
+            throw JMSExceptionHelper.convertFromMessagingException(e);
+         }
+         finally
+         {
+            if (sess != null)
+            {
+               try
+               {
+                  sess.close();
+               }
+               catch (Throwable ignore)
+               {                  
+               }
+            }
          }
       }
         

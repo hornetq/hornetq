@@ -163,6 +163,8 @@ public class BrowserTest extends JMSTestCase
 				Message m = mc.receive();
 	         assertNotNull(m);
 			}
+			
+			Thread.sleep(1000);
 
 			browser = session.createBrowser(queue1);
 			en = browser.getEnumeration();

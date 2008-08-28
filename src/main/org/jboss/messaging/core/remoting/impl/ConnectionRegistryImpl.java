@@ -22,8 +22,8 @@
 
 package org.jboss.messaging.core.remoting.impl;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.jboss.messaging.core.exception.MessagingException;
@@ -52,11 +52,9 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
 
    // Attributes ----------------------------------------------------
 
-   private final Map<RegistryKey, ConnectionHolder> connections = new HashMap<RegistryKey, ConnectionHolder>();
+   private final Map<RegistryKey, ConnectionHolder> connections = new ConcurrentHashMap<RegistryKey, ConnectionHolder>();
 
-  // private final Map<Object, RemotingConnection> remotingConnections = new HashMap<Object, RemotingConnection>();
-   
-   private final Map<Object, RegistryKey> reverseMap = new HashMap<Object, RegistryKey>();
+   private final Map<Object, RegistryKey> reverseMap = new ConcurrentHashMap<Object, RegistryKey>();
 
    //TODO - core pool size should be configurable
    private final ScheduledThreadPoolExecutor pingExecutor =
@@ -113,10 +111,9 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
          }
          
          holder = new ConnectionHolder(connection, connector);
-
   
          connections.put(key, holder);
-             
+
          reverseMap.put(tc.getID(), key);
 
          return connection;
@@ -165,7 +162,7 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       RegistryKey key = new RegistryKey(connectorFactory, params);
       
       ConnectionHolder holder = connections.get(key);
-      
+       
       if (holder != null)
       {
          return holder.getCount();
@@ -189,11 +186,12 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
    public void connectionDestroyed(final Object connectionID)
    {
       RegistryKey key = reverseMap.remove(connectionID);
-   
+               
       if (key != null)
       {
          ConnectionHolder holder = connections.remove(key);
-
+         
+        
          //If conn still exists here this means that the underlying transport connection has been closed from the server side without
          //being returned from the client side so we need to fail the connection and call it's listeners
          MessagingException me = new MessagingException(MessagingException.OBJECT_CLOSED,
