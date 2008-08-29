@@ -33,7 +33,12 @@
    <connection-factory name="MyExampleConnectionFactory">
       <connector>
          <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+         <params>
+            <param key="jbm.remoting.netty.tcpnodelay" value="true" type="Boolean"/>
+         </params>
       </connector>
+      <ping-period>5000</ping-period>
+      <call-timeout>30000</call-timeout>
       <entry name="/MyExampleConnectionFactory"/>
       <entry name="/acme/MyExampleConnectionFactoryDupe"/>
       <entry name="java:/xyz/CF1"/>
@@ -56,7 +61,30 @@
       <send-np-messages-synchronously>true</send-np-messages-synchronously>
       <!--Whether we send persistent messages synchronously-->
       <send-p-messages-synchronously>true</send-p-messages-synchronously>
-
+   </connection-factory>
+   
+   <connection-factory name="TestInVMConnectionFactory">
+      <connector>
+         <factory-class>org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory</factory-class>
+         <params>
+            <param key="jbm.remoting.invm.serverid" value="0" type="Integer"/>
+         </params>
+      </connector>
+      <entry name="/TestInVMConnectionFactory"/>
+   </connection-factory>
+   
+   <connection-factory name="TestSSLConnectionFactory">
+      <connector>
+         <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+         <params>
+            <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
+            <param key="jbm.remoting.netty.port" value="5500" type="Integer"/>	                       
+            <param key="jbm.remoting.netty.sslenabled" value="true" type="Boolean"/>
+            <param key="jbm.remoting.netty.keystorepath" value="messaging.keystore" type="String"/>
+            <param key="jbm.remoting.netty.keystorepassword" value="secureexample" type="String"/>
+         </params>
+      </connector>      
+      <entry name="/TestSSLConnectionFactory"/>      
    </connection-factory>
 
    <queue name="MyQueue">

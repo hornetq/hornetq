@@ -18,6 +18,10 @@
       <!--  call timeout in milliseconds -->
       <call-timeout>30000</call-timeout>
       
+      <packet-confirmation-batch-size>1000</packet-confirmation-batch-size>
+      
+      <connection-scan-period>1000</connection-scan-period>
+      
       <!-- Example interceptors 
       <remoting-interceptors>
          <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1</class-name>
@@ -26,12 +30,14 @@
       -->
       
       <remoting-acceptors>
+         <!-- In VM acceptor -->
          <acceptor>
             <factory-class>org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory</factory-class>
             <params>
 	            <param key="jbm.remoting.invm.serverid" value="0" type="Integer"/>
             </params>            
          </acceptor>
+         <!-- Netty standard TCP acceptor -->
          <acceptor>
             <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
             <params>	            	            
@@ -41,25 +47,35 @@
 	            <param key="jbm.remoting.netty.tcpsendbuffersize" value="32768" type="Integer"/>
 	            <param key="jbm.remoting.netty.tcpreceivebuffersize" value="32768" type="Integer"/>	            
 	            <param key="jbm.remoting.netty.sslenabled" value="false" type="Boolean"/>
+            </params>
+         </acceptor>   
+         <!-- Netty SSL Acceptor
+         <acceptor>
+            <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
+            <params>	            	            
+	            <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
+	            <param key="jbm.remoting.netty.port" value="5500" type="Integer"/>	            
+	            <param key="jbm.remoting.netty.tcpnodelay" value="true" type="Boolean"/>
+	            <param key="jbm.remoting.netty.tcpsendbuffersize" value="32768" type="Integer"/>
+	            <param key="jbm.remoting.netty.tcpreceivebuffersize" value="32768" type="Integer"/>	            
+	            <param key="jbm.remoting.netty.sslenabled" value="true" type="Boolean"/>
 	            <param key="jbm.remoting.netty.keystorepath" value="messaging.keystore" type="String"/>
 	            <param key="jbm.remoting.netty.keystorepassword" value="secureexample" type="String"/>
 	            <param key="jbm.remoting.netty.truststorepath" value="messaging.truststore" type="String"/>
 	            <param key="jbm.remoting.netty.truststorepassword" value="secureexample" type="String"/>
             </params>
-         </acceptor>         
+         </acceptor> 
+         -->      
+         <!-- Mina Acceptor -->
          <acceptor>
             <factory-class>org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory</factory-class>
             <params>	            	            
 	            <param key="jbm.remoting.mina.host" value="localhost" type="String"/>
-	            <param key="jbm.remoting.mina.port" value="5500" type="Integer"/>	            
+	            <param key="jbm.remoting.mina.port" value="5600" type="Integer"/>	            
 	            <param key="jbm.remoting.mina.tcpnodelay" value="true" type="Boolean"/>
 	            <param key="jbm.remoting.mina.tcpsendbuffersize" value="32768" type="Integer"/>
 	            <param key="jbm.remoting.mina.tcpreceivebuffersize" value="32768" type="Integer"/>	            
 	            <param key="jbm.remoting.mina.sslenabled" value="false" type="Boolean"/>
-	            <param key="jbm.remoting.mina.keystorepath" value="messaging.keystore" type="String"/>
-	            <param key="jbm.remoting.mina.keystorepassword" value="secureexample" type="String"/>
-	            <param key="jbm.remoting.mina.truststorepath" value="messaging.truststore" type="String"/>
-	            <param key="jbm.remoting.mina.truststorepassword" value="secureexample" type="String"/>
             </params>
          </acceptor>
       </remoting-acceptors>

@@ -57,7 +57,7 @@ public class ConfigurationImpl implements Configuration
      
    public static final int DEFAULT_CALL_TIMEOUT = 30000;
    
-   public static final int DEFAULT_PACKET_CONFIRMATION_BATCH_SIZE = 100;
+   public static final int DEFAULT_PACKET_CONFIRMATION_BATCH_SIZE = 1000;
    
    public static final long DEFAULT_CONNECTION_SCAN_PERIOD = 1000;
    
