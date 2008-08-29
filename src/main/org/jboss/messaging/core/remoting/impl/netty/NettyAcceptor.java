@@ -32,6 +32,7 @@ import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DE
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE;
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD;
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_TRUSTSTORE_PATH;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_USE_NIO;
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.HOST_PROP_NAME;
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.KEYSTORE_PASSWORD_PROP_NAME;
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.KEYSTORE_PATH_PROP_NAME;
@@ -42,6 +43,7 @@ import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.TC
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME;
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME;
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.TRUSTSTORE_PATH_PROP_NAME;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.USE_NIO_PROP_NAME;
 import static org.jboss.netty.channel.Channels.pipeline;
 
 import java.net.InetSocketAddress;
@@ -70,6 +72,7 @@ import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
 import org.jboss.netty.handler.ssl.SslHandler;
 
 /**
@@ -96,6 +99,8 @@ public class NettyAcceptor implements Acceptor
    private final ConnectionLifeCycleListener listener;
    
    private final boolean sslEnabled;
+   
+   private final boolean useNio;
    
    private final String host;
 
@@ -124,6 +129,8 @@ public class NettyAcceptor implements Acceptor
       
       this.sslEnabled =
          ConfigurationHelper.getBooleanProperty(SSL_ENABLED_PROP_NAME, DEFAULT_SSL_ENABLED, configuration);
+      this.useNio = 
+         ConfigurationHelper.getBooleanProperty(USE_NIO_PROP_NAME, DEFAULT_USE_NIO, configuration);
       this.host =
          ConfigurationHelper.getStringProperty(HOST_PROP_NAME, DEFAULT_HOST, configuration);
       this.port =
@@ -166,7 +173,14 @@ public class NettyAcceptor implements Acceptor
 
       bossExecutor = Executors.newCachedThreadPool();
       workerExecutor = Executors.newCachedThreadPool();
-      channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor);
+      if (useNio)
+      {
+         channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor);
+      }
+      else
+      {
+         channelFactory = new OioServerSocketChannelFactory(bossExecutor, workerExecutor);
+      }
       bootstrap = new ServerBootstrap(channelFactory);
 
       final SSLContext context;

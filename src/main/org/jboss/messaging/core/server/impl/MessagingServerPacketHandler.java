@@ -76,6 +76,7 @@ public class MessagingServerPacketHandler implements PacketHandler
       {
          if (type == PING)
          {
+            //The pong param is left as a placeholder
             response = new Pong(-1);
          }
          else if (type == PacketImpl.CREATESESSION)

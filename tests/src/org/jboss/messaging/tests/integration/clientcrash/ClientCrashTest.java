@@ -30,7 +30,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.AcceptorInfo;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
@@ -140,7 +140,7 @@ public class ClientCrashTest extends TestCase
 
       ConfigurationImpl config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
-      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory"));
+      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory"));
       messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
       messagingService.start();
 

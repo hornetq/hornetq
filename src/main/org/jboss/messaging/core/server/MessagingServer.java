@@ -96,4 +96,6 @@ public interface MessagingServer extends MessagingComponent
    int getConnectionCount();
    
    PostOffice getPostOffice();
+   
+   RemotingConnection getReplicatingConnection();
 }

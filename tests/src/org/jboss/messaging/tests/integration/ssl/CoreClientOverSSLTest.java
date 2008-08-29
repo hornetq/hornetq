@@ -33,7 +33,7 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.AcceptorInfo;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
@@ -132,7 +132,7 @@ public class CoreClientOverSSLTest extends TestCase
 //      config.setSecurityEnabled(false);
 //      Map<String, Object> params = new HashMap<String, Object>();
 //      params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
-//      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory", params));
+//      config.getAcceptorInfos().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory", params));
 //      messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);      
 //      messagingService.start();
 //      ConnectorFactory cf = new NettyConnectorFactory();

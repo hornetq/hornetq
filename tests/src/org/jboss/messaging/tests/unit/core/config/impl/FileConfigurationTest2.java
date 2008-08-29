@@ -58,7 +58,7 @@ public class FileConfigurationTest2 extends ConfigurationImplTest
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MAX_AIO, conf.getJournalMaxAIO());
       
       assertEquals(0, conf.getInterceptorClassNames().size());
-      assertEquals(0, conf.getAcceptorInfos().size());      
+      assertEquals(0, conf.getAcceptorConfigurations().size());      
    }
    
    // Protected ---------------------------------------------------------------------------------------------

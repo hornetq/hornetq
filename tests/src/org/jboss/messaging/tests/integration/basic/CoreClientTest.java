@@ -30,7 +30,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.AcceptorInfo;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
@@ -74,7 +74,7 @@ public class CoreClientTest extends TestCase
       
       conf.setSecurityEnabled(false);   
       
-      conf.getAcceptorInfos().add(new AcceptorInfo(acceptorFactoryClassName));
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactoryClassName));
             
       MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingServer(conf);   
            

@@ -24,7 +24,7 @@ package org.jboss.messaging.tests.unit.core.config.impl;
 
 import java.util.Map;
 
-import org.jboss.messaging.core.config.AcceptorInfo;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.FileConfiguration;
 
@@ -60,14 +60,51 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(2, conf.getInterceptorClassNames().size());
       assertTrue(conf.getInterceptorClassNames().contains("org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1"));
       assertTrue(conf.getInterceptorClassNames().contains("org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor2"));
-      assertEquals(2, conf.getAcceptorInfos().size());
-      for (AcceptorInfo info: conf.getAcceptorInfos())
+      
+      assertNotNull(conf.getBackupConnectorConfiguration());
+      assertEquals("org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory1", conf.getBackupConnectorConfiguration().getFactoryClassName());
+      Map<String, Object> params = conf.getBackupConnectorConfiguration().getParams();
+      assertNotNull(params);
+      Object obj = params.get("c_mykey1");
+      assertNotNull(obj);
+      assertTrue(obj instanceof String);
+      {
+         String s = (String)obj;
+         assertEquals("c_foovalue1", s);
+      }
+      
+      obj = params.get("c_mykey2");
+      assertNotNull(obj);
+      assertTrue(obj instanceof Long);
+      {
+         Long l = (Long)obj;
+         assertEquals(6000l, l.longValue());
+      }
+      
+      obj = params.get("c_mykey3");
+      assertNotNull(obj);
+      assertTrue(obj instanceof Integer);
+      {
+         Integer i = (Integer)obj;
+         assertEquals(60, i.intValue());
+      }
+      
+      obj = params.get("c_mykey4");
+      assertNotNull(obj);
+      assertTrue(obj instanceof String);
+      {
+         String s = (String)obj;
+         assertEquals("c_foovalue4", s);
+      }
+      
+      assertEquals(2, conf.getAcceptorConfigurations().size());
+      for (TransportConfiguration info: conf.getAcceptorConfigurations())
       {
          if (info.getFactoryClassName().equals("org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory1"))
          {
-            Map<String, Object> params = info.getParams();
+            params = info.getParams();
             
-            Object obj = params.get("a_mykey1");
+            obj = params.get("a_mykey1");
             assertNotNull(obj);
             assertTrue(obj instanceof String);
             {
@@ -101,9 +138,9 @@ public class FileConfigurationTest extends ConfigurationImplTest
          }
          else if (info.getFactoryClassName().equals("org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory2"))
          {
-            Map<String, Object> params = info.getParams();
+            params = info.getParams();
             
-            Object obj = params.get("b_mykey1");
+            obj = params.get("b_mykey1");
             assertNotNull(obj);
             assertTrue(obj instanceof String);
             {

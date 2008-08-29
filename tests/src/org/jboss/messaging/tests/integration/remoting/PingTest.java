@@ -28,16 +28,16 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.config.AcceptorInfo;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.ConnectionRegistry;
-import org.jboss.messaging.core.remoting.ConnectionRegistryLocator;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
@@ -74,7 +74,7 @@ public class PingTest extends TestCase
    protected void setUp() throws Exception
    {
       ConfigurationImpl config = new ConfigurationImpl();
-      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory"));
+      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory"));
       messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
       messagingService.start();
    }
@@ -108,7 +108,7 @@ public class PingTest extends TestCase
       ConnectorFactory cf = new NettyConnectorFactory();
       Map<String, Object> params = new HashMap<String, Object>();
       
-      ConnectionRegistry registry = ConnectionRegistryLocator.getRegistry();
+      ConnectionRegistry registry = ConnectionRegistryImpl.instance;
       
       RemotingConnection conn = registry.getConnection(cf, params, PING_INTERVAL, 5000);
       assertNotNull(conn);
@@ -149,7 +149,7 @@ public class PingTest extends TestCase
       ConnectorFactory cf = new NettyConnectorFactory();
       Map<String, Object> params = new HashMap<String, Object>();
       
-      ConnectionRegistry registry = ConnectionRegistryLocator.getRegistry();
+      ConnectionRegistry registry = ConnectionRegistryImpl.instance;
       
       RemotingConnection conn = registry.getConnection(cf, params, -1, 5000);
       assertNotNull(conn);
@@ -189,7 +189,7 @@ public class PingTest extends TestCase
       ConnectorFactory cf = new NettyConnectorFactory();
       Map<String, Object> params = new HashMap<String, Object>();
       
-      ConnectionRegistry registry = ConnectionRegistryLocator.getRegistry();
+      ConnectionRegistry registry = ConnectionRegistryImpl.instance;
       
       RemotingConnectionImpl conn = (RemotingConnectionImpl)registry.getConnection(cf, params, PING_INTERVAL, 5000);
       assertEquals(1, registry.getCount(cf, params));
@@ -268,7 +268,7 @@ public class PingTest extends TestCase
      ConnectorFactory cf = new NettyConnectorFactory();
      Map<String, Object> params = new HashMap<String, Object>();
      
-     ConnectionRegistry registry = ConnectionRegistryLocator.getRegistry();
+     ConnectionRegistry registry = ConnectionRegistryImpl.instance;
      
      RemotingConnection conn = registry.getConnection(cf, params, PING_INTERVAL, 5000);
      assertNotNull(conn);

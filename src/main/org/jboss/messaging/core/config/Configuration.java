@@ -82,12 +82,14 @@ public interface Configuration extends Serializable
    long getConnectionScanPeriod();
    
    void setConnectionScanPeriod(long scanPeriod);
+     
+   Set<TransportConfiguration> getAcceptorConfigurations();
    
-   // Remoting related attributes ----------------------------------------------------------
-        
-   Set<AcceptorInfo> getAcceptorInfos();
+   void setAcceptorConfigurations(Set<TransportConfiguration> infos);   
    
-   void setAcceptorInfos(Set<AcceptorInfo> infos);   
+   TransportConfiguration getBackupConnectorConfiguration();
+   
+   void setBackupConnectorConfiguration(TransportConfiguration config);
       
    // Journal related attributes ------------------------------------------------------------
    

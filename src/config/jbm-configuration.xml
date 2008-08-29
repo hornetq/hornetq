@@ -29,6 +29,18 @@
       </remoting-interceptors>
       -->
       
+      <backup>false</backup>
+      
+      <!--
+      <backup-connector>
+         <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+         <params>
+            <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
+            <param key="jbm.remoting.netty.port" value="6400" type="Integer"/>
+         </params>
+      </backup-connector>
+      -->
+      
       <remoting-acceptors>
          <!-- In VM acceptor -->
          <acceptor>
@@ -45,8 +57,9 @@
 	            <param key="jbm.remoting.netty.port" value="5400" type="Integer"/>	            
 	            <param key="jbm.remoting.netty.tcpnodelay" value="true" type="Boolean"/>
 	            <param key="jbm.remoting.netty.tcpsendbuffersize" value="32768" type="Integer"/>
-	            <param key="jbm.remoting.netty.tcpreceivebuffersize" value="32768" type="Integer"/>	            
-	            <param key="jbm.remoting.netty.sslenabled" value="false" type="Boolean"/>
+	            <param key="jbm.remoting.netty.tcpreceivebuffersize" value="32768" type="Integer"/>
+	            <param key="jbm.remoting.netty.usenio" value="true" type="Boolean"/>	            
+	            <param key="jbm.remoting.netty.sslenabled" value="false" type="Boolean"/>	            
             </params>
          </acceptor>   
          <!-- Netty SSL Acceptor
@@ -57,7 +70,8 @@
 	            <param key="jbm.remoting.netty.port" value="5500" type="Integer"/>	            
 	            <param key="jbm.remoting.netty.tcpnodelay" value="true" type="Boolean"/>
 	            <param key="jbm.remoting.netty.tcpsendbuffersize" value="32768" type="Integer"/>
-	            <param key="jbm.remoting.netty.tcpreceivebuffersize" value="32768" type="Integer"/>	            
+	            <param key="jbm.remoting.netty.tcpreceivebuffersize" value="32768" type="Integer"/>	 
+	            <param key="jbm.remoting.netty.usenio" value="true" type="Boolean"/>           
 	            <param key="jbm.remoting.netty.sslenabled" value="true" type="Boolean"/>
 	            <param key="jbm.remoting.netty.keystorepath" value="messaging.keystore" type="String"/>
 	            <param key="jbm.remoting.netty.keystorepassword" value="secureexample" type="String"/>

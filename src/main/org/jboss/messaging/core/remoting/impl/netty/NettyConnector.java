@@ -29,6 +29,7 @@ import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DE
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_TCP_NODELAY;
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE;
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_USE_NIO;
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.HOST_PROP_NAME;
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.KEYSTORE_PASSWORD_PROP_NAME;
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.KEYSTORE_PATH_PROP_NAME;
@@ -37,6 +38,7 @@ import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.SS
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.TCP_NODELAY_PROPNAME;
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME;
 import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME;
+import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.USE_NIO_PROP_NAME;
 import static org.jboss.netty.channel.Channels.pipeline;
 
 import java.net.InetSocketAddress;
@@ -63,6 +65,7 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
 import org.jboss.netty.handler.ssl.SslHandler;
 
 /**
@@ -90,6 +93,8 @@ public class NettyConnector implements Connector
    private final ConnectionLifeCycleListener listener;
    
    private final boolean sslEnabled;
+   
+   private final boolean useNio;   
    
    private final String host;
 
@@ -130,6 +135,8 @@ public class NettyConnector implements Connector
       
       this.sslEnabled =
          ConfigurationHelper.getBooleanProperty(SSL_ENABLED_PROP_NAME, DEFAULT_SSL_ENABLED, configuration);
+      this.useNio = 
+         ConfigurationHelper.getBooleanProperty(USE_NIO_PROP_NAME, DEFAULT_USE_NIO, configuration);
       this.host =
          ConfigurationHelper.getStringProperty(HOST_PROP_NAME, DEFAULT_HOST, configuration);
       this.port =
@@ -163,9 +170,16 @@ public class NettyConnector implements Connector
          return;
       }
 
-      bossExecutor = Executors.newCachedThreadPool();
       workerExecutor = Executors.newCachedThreadPool();
-      channelFactory = new NioClientSocketChannelFactory(bossExecutor, workerExecutor);
+      if (useNio)
+      {
+         bossExecutor = Executors.newCachedThreadPool();      
+         channelFactory = new NioClientSocketChannelFactory(bossExecutor, workerExecutor);
+      }
+      else
+      {
+         channelFactory = new OioClientSocketChannelFactory(workerExecutor);
+      }
       bootstrap = new ClientBootstrap(channelFactory);
 
       bootstrap.setOption("tcpNoDelay", tcpNoDelay);
@@ -225,23 +239,28 @@ public class NettyConnector implements Connector
 
       bootstrap = null;
       channelFactory = null;
-      bossExecutor.shutdown();
-      workerExecutor.shutdown();
-
-      for (;;)
+      if (bossExecutor != null)
       {
-         try
+         bossExecutor.shutdown();        
+      }
+      workerExecutor.shutdown();
+      if (bossExecutor != null)
+      {
+         for (;;)
          {
-            if (bossExecutor.awaitTermination(1, TimeUnit.SECONDS))
+            try
             {
-               break;
+               if (bossExecutor.awaitTermination(1, TimeUnit.SECONDS))
+               {
+                  break;
+               }
+            }
+            catch (InterruptedException e)
+            {
+               // Ignore
             }
          }
-         catch (InterruptedException e)
-         {
-            // Ignore
-         }
-      }
+      }     
    }
 
    public Connection createConnection()

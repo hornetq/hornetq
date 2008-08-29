@@ -22,7 +22,6 @@
 package org.jboss.messaging.tests.unit.core.remoting;
 
 import org.jboss.messaging.core.remoting.ConnectionRegistry;
-import org.jboss.messaging.core.remoting.ConnectionRegistryLocator;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
@@ -37,9 +36,9 @@ public class ConnectionRegistryLocatorTest extends UnitTestCase
 {
    public void testSingleton()
    {
-      ConnectionRegistry reg1 = ConnectionRegistryLocator.getRegistry();
+      ConnectionRegistry reg1 = ConnectionRegistryImpl.instance;
       
-      ConnectionRegistry reg2 = ConnectionRegistryLocator.getRegistry();
+      ConnectionRegistry reg2 = ConnectionRegistryImpl.instance;
       
       assertTrue(reg1 == reg2);
       

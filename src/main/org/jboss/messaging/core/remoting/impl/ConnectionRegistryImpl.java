@@ -61,6 +61,8 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       new ScheduledThreadPoolExecutor(10, new JBMThreadFactory("jbm-pinger-threads"));
 
    // Static --------------------------------------------------------
+   
+   public static ConnectionRegistry instance = new ConnectionRegistryImpl();
 
    // ConnectionRegistry implementation -----------------------------
       

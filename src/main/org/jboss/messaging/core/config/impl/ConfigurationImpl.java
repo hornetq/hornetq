@@ -27,7 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.messaging.core.config.AcceptorInfo;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.server.JournalType;
 
@@ -105,6 +105,12 @@ public class ConfigurationImpl implements Configuration
    
    protected long connectionScanPeriod = DEFAULT_CONNECTION_SCAN_PERIOD;
    
+   protected List<String> interceptorClassNames = new ArrayList<String>();
+
+   protected Set<TransportConfiguration> acceptorConfigs = new HashSet<TransportConfiguration>();
+         
+   protected TransportConfiguration backupConnectorConfig;
+   
          
    // Journal related attributes
    
@@ -128,10 +134,7 @@ public class ConfigurationImpl implements Configuration
    
    protected int journalMaxAIO = DEFAULT_JOURNAL_MAX_AIO;
    
-   protected List<String> interceptorClassNames = new ArrayList<String>();
-
-   protected Set<AcceptorInfo> acceptorInfos = new HashSet<AcceptorInfo>();
-         
+   
    public boolean isClustered()
    {
       return clustered;
@@ -222,14 +225,24 @@ public class ConfigurationImpl implements Configuration
       this.interceptorClassNames = interceptors;
    }
    
-   public Set<AcceptorInfo> getAcceptorInfos()
+   public Set<TransportConfiguration> getAcceptorConfigurations()
    {
-      return this.acceptorInfos;
+      return this.acceptorConfigs;
    }
    
-   public void setAcceptorInfos(Set<AcceptorInfo> infos)
+   public void setAcceptorConfigurations(Set<TransportConfiguration> infos)
    {
-      this.acceptorInfos = infos;
+      this.acceptorConfigs = infos;
+   }
+   
+   public TransportConfiguration getBackupConnectorConfiguration()
+   {
+      return backupConnectorConfig;
+   }
+   
+   public void setBackupConnectorConfiguration(TransportConfiguration config)
+   {
+      this.backupConnectorConfig = config;
    }
   
 	public String getBindingsDirectory()

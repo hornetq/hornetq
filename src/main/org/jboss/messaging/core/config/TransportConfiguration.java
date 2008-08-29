@@ -25,12 +25,12 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
- * An AcceptorInfo
+ * A TransportConfiguration
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class AcceptorInfo implements Serializable
+public class TransportConfiguration implements Serializable
 {
    private static final long serialVersionUID = -3994528421527392679L;
 
@@ -38,14 +38,14 @@ public class AcceptorInfo implements Serializable
    
    private final Map<String, Object> params;
    
-   public AcceptorInfo(final String className, final Map<String, Object> params)
+   public TransportConfiguration(final String className, final Map<String, Object> params)
    {
       this.factoryClassName = className;
       
       this.params = params;
    }
    
-   public AcceptorInfo(final String className)
+   public TransportConfiguration(final String className)
    {
       this.factoryClassName = className;
       
@@ -64,12 +64,12 @@ public class AcceptorInfo implements Serializable
    
    public boolean equals(Object other)
    {
-      if (other instanceof AcceptorInfo == false)
+      if (other instanceof TransportConfiguration == false)
       {
          return false;
       }
       
-      AcceptorInfo ai = (AcceptorInfo)other;
+      TransportConfiguration ai = (TransportConfiguration)other;
       
       return this.factoryClassName.equals(ai.factoryClassName);
    }

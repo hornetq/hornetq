@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.jboss.messaging.core.config.AcceptorInfo;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -63,7 +63,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private volatile boolean started = false;
 
-   private final Set<AcceptorInfo> acceptorInfos;
+   private final Set<TransportConfiguration> transportConfigs;
    
    private Set<Acceptor> acceptors = new HashSet<Acceptor>();
 
@@ -97,7 +97,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       
       final long callTimeout = config.getCallTimeout();
       
-      this.acceptorInfos = config.getAcceptorInfos();
+      this.transportConfigs = config.getAcceptorConfigurations();
       
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
       for (String interceptorClass : config.getInterceptorClassNames())
@@ -129,7 +129,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
       
-      for (AcceptorInfo info: acceptorInfos)
+      for (TransportConfiguration info: transportConfigs)
       {
          try
          {

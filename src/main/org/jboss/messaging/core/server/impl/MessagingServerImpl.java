@@ -32,6 +32,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
@@ -40,11 +41,14 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.CommandManager;
+import org.jboss.messaging.core.remoting.ConnectionRegistry;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.CommandManagerImpl;
+import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
@@ -100,6 +104,7 @@ public class MessagingServerImpl implements MessagingServer
    private MessagingServerPacketHandler serverPacketHandler;
    private MessagingServerControlMBean serverManagement;
    private PacketDispatcher dispatcher;
+   private RemotingConnection replicatingConnection;
 
    // plugins
 
@@ -194,7 +199,28 @@ public class MessagingServerImpl implements MessagingServer
 
       postOffice.start();
       postOffice.setBackup(configuration.isBackup());
-      serverPacketHandler = new MessagingServerPacketHandler(this, remotingService);          
+      serverPacketHandler = new MessagingServerPacketHandler(this, remotingService); 
+      
+      TransportConfiguration backupConnector = configuration.getBackupConnectorConfiguration();
+      
+      if (backupConnector != null)
+      {
+         ClassLoader loader = Thread.currentThread().getContextClassLoader();
+         try
+         {
+            Class<?> clz = loader.loadClass(backupConnector.getFactoryClassName());
+            ConnectorFactory connectorFactory = (ConnectorFactory) clz.newInstance();
+            ConnectionRegistry registry = ConnectionRegistryImpl.instance;
+            //TODO don't hardcode ping interval and call timeout here
+            this.replicatingConnection =
+               registry.getConnection(connectorFactory, backupConnector.getParams(),
+                                      5000, 30000);
+         }
+         catch (Exception e)
+         {
+            throw new IllegalArgumentException("Error instantiating interceptor \"" + backupConnector.getFactoryClassName() + "\"", e);
+         }  
+      }
      
       //Register the handler as the last thing - since after that users will be able to connect
       started = true;
@@ -208,7 +234,11 @@ public class MessagingServerImpl implements MessagingServer
          return;
       }
       
-      dispatcher.unregister(serverPacketHandler.getID());       
+      dispatcher.unregister(serverPacketHandler.getID());      
+      if (this.replicatingConnection != null)
+      {
+         ConnectionRegistryImpl.instance.returnConnection(replicatingConnection.getID());
+      }
       securityStore = null;
       postOffice.stop();
       postOffice = null;
@@ -404,6 +434,11 @@ public class MessagingServerImpl implements MessagingServer
    public PostOffice getPostOffice()
    {
       return postOffice;
+   }
+   
+   public RemotingConnection getReplicatingConnection()
+   {
+      return replicatingConnection;
    }
 
    // Public ---------------------------------------------------------------------------------------

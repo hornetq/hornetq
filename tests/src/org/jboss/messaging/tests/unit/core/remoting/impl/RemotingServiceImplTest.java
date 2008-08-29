@@ -25,7 +25,7 @@ package org.jboss.messaging.tests.unit.core.remoting.impl;
 import java.util.List;
 
 import org.easymock.EasyMock;
-import org.jboss.messaging.core.config.AcceptorInfo;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -50,7 +50,7 @@ public class RemotingServiceImplTest extends UnitTestCase
    {
       final Acceptor acceptor = EasyMock.createStrictMock(Acceptor.class);
       ConfigurationImpl config = new ConfigurationImpl();      
-      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
+      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
       TestAcceptorFactory1.acceptor = acceptor;
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
                   
@@ -68,7 +68,7 @@ public class RemotingServiceImplTest extends UnitTestCase
       final Acceptor acceptor = EasyMock.createStrictMock(Acceptor.class);
       ConfigurationImpl config = new ConfigurationImpl();
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
-      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
+      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
       TestAcceptorFactory1.acceptor = acceptor;
       acceptor.start();
       EasyMock.replay(acceptor);
@@ -85,7 +85,7 @@ public class RemotingServiceImplTest extends UnitTestCase
       final Acceptor acceptor = EasyMock.createStrictMock(Acceptor.class);
       ConfigurationImpl config = new ConfigurationImpl();
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
-      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
+      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
       TestAcceptorFactory1.acceptor = acceptor;
       acceptor.start();
       acceptor.stop();
@@ -105,11 +105,11 @@ public class RemotingServiceImplTest extends UnitTestCase
       final Acceptor acceptor3 = EasyMock.createStrictMock(Acceptor.class);
       ConfigurationImpl config = new ConfigurationImpl();
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
-      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
+      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
       TestAcceptorFactory1.acceptor = acceptor1;
-      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory2"));
+      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory2"));
       TestAcceptorFactory2.acceptor = acceptor2;
-      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory3"));
+      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory3"));
       TestAcceptorFactory3.acceptor = acceptor3;
             
       acceptor1.start();
@@ -132,11 +132,11 @@ public class RemotingServiceImplTest extends UnitTestCase
       final Acceptor acceptor3 = EasyMock.createStrictMock(Acceptor.class);
       ConfigurationImpl config = new ConfigurationImpl();
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
-      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
+      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
       TestAcceptorFactory1.acceptor = acceptor1;
-      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory2"));
+      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory2"));
       TestAcceptorFactory2.acceptor = acceptor2;
-      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory3"));
+      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory3"));
       TestAcceptorFactory3.acceptor = acceptor3;
       acceptor1.start();
       acceptor2.start();
@@ -163,11 +163,11 @@ public class RemotingServiceImplTest extends UnitTestCase
       final Acceptor acceptor4 = EasyMock.createStrictMock(Acceptor.class);
       ConfigurationImpl config = new ConfigurationImpl();
       RemotingServiceImpl remotingService = new RemotingServiceImpl(config);
-      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
+      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory1"));
       TestAcceptorFactory1.acceptor = acceptor1;
-      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory2"));
+      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory2"));
       TestAcceptorFactory2.acceptor = acceptor2;
-      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory3"));
+      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory3"));
       TestAcceptorFactory3.acceptor = acceptor3;
       acceptor1.start();
       acceptor2.start();
@@ -187,7 +187,7 @@ public class RemotingServiceImplTest extends UnitTestCase
       assertFalse(remotingService.isStarted());
       
       EasyMock.reset(acceptor1, acceptor2, acceptor3);
-      config.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory4"));
+      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.tests.unit.core.remoting.impl.TestAcceptorFactory4"));
       TestAcceptorFactory4.acceptor = acceptor4;
       acceptor1.start();
       acceptor2.start();

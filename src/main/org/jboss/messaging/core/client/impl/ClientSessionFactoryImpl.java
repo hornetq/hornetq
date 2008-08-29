@@ -30,11 +30,11 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.CommandManager;
 import org.jboss.messaging.core.remoting.ConnectionRegistry;
-import org.jboss.messaging.core.remoting.ConnectionRegistryLocator;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.CommandManagerImpl;
+import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
 import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
@@ -137,7 +137,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
       this.blockOnAcknowledge = blockOnAcknowledge;
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
       this.blockOnPersistentSend = blockOnPersistentSend;
-      this.connectionRegistry = ConnectionRegistryLocator.getRegistry();
+      this.connectionRegistry = ConnectionRegistryImpl.instance;
    }
    
    /**
@@ -156,7 +156,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
       blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
       blockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
       blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;      
-      this.connectionRegistry = ConnectionRegistryLocator.getRegistry();
+      this.connectionRegistry = ConnectionRegistryImpl.instance;
    }
          
    // ClientSessionFactory implementation ---------------------------------------------

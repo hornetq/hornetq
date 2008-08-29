@@ -27,7 +27,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.AcceptorInfo;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.Message;
@@ -54,7 +54,7 @@ public class SimpleExample
          //create a new server with an TCP transport
          ConfigurationImpl configuration = new ConfigurationImpl();
          configuration.setSecurityEnabled(false);
-         configuration.getAcceptorInfos().add(new AcceptorInfo("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory"));
+         configuration.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory"));
          messagingService = MessagingServiceImpl.newNullStorageMessagingServer(configuration);
          //start the server
          messagingService.start();

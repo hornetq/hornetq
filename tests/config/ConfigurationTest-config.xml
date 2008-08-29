@@ -13,6 +13,15 @@
          <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1</class-name>
          <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor2</class-name>
       </remoting-interceptors>
+      <backup-connector>
+         <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory1</factory-class>
+         <params>
+            <param key="c_mykey1" value="c_foovalue1" type="String"/>
+            <param key="c_mykey2" value="6000" type="Long"/>
+            <param key="c_mykey3" value="60" type="Integer"/>
+            <param key="c_mykey4" value="c_foovalue4" type="String"/>
+         </params>            
+      </backup-connector>
       <remoting-acceptors>
          <acceptor>
             <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory1</factory-class>

@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.messaging.core.config.AcceptorInfo;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.util.XMLUtil;
@@ -109,6 +109,100 @@ public class FileConfiguration extends ConfigurationImpl
          }
       }
       this.interceptorClassNames = interceptorList;
+      
+      NodeList backups = e.getElementsByTagName("backup-connector");
+      
+      //TODO  combine all these duplicated transport config parsing code - it's messy!
+      if (backups.getLength() > 0)
+      {
+         Node backup = backups.item(0);
+         
+         NodeList children = backup.getChildNodes();
+         
+         String clazz = null;
+         
+         Map<String, Object> params = new HashMap<String, Object>();
+                        
+         for (int l = 0; l < children.getLength(); l++)
+         {                                  
+            String nodeName = children.item(l).getNodeName();
+            
+            if ("factory-class".equalsIgnoreCase(nodeName))
+            {                    
+               clazz = children.item(l).getTextContent();
+            }
+            else if ("params".equalsIgnoreCase(nodeName))
+            {                                                             
+               NodeList nlParams = children.item(l).getChildNodes();
+               
+               for (int m = 0; m < nlParams.getLength(); m++)
+               {
+                  if ("param".equalsIgnoreCase(nlParams.item(m).getNodeName()))
+                  {
+                     Node paramNode = nlParams.item(m);
+                     
+                     NamedNodeMap attributes = paramNode.getAttributes();
+                     
+                     Node nkey = attributes.getNamedItem("key");
+                     
+                     String key = nkey.getTextContent();
+                     
+                     Node nValue = attributes.getNamedItem("value");
+                     
+                     String value = nValue.getTextContent();
+                     
+                     Node nType = attributes.getNamedItem("type");
+                     
+                     String type = nType.getTextContent();
+                     
+                     if (type.equalsIgnoreCase("Integer"))
+                     {
+                        try
+                        {
+                           Integer iVal = Integer.parseInt(value);
+                           
+                           params.put(key, iVal);
+                        }
+                        catch (NumberFormatException e2)
+                        {
+                           throw new IllegalArgumentException("Remoting acceptor parameter " + value + " is not a valid Integer");
+                        }
+                     }
+                     else if (type.equalsIgnoreCase("Long"))
+                     {
+                        try
+                        {
+                           Long lVal = Long.parseLong(value);
+                           
+                           params.put(key, lVal);
+                        }
+                        catch (NumberFormatException e2)
+                        {
+                           throw new IllegalArgumentException("Remoting acceptor parameter " + value + " is not a valid Long");
+                        }
+                     }
+                     else if (type.equalsIgnoreCase("String"))
+                     {
+                        params.put(key, value);                             
+                     }
+                     else if (type.equalsIgnoreCase("Boolean"))
+                     {
+                        Boolean lVal = Boolean.parseBoolean(value);
+                           
+                        params.put(key, lVal);                              
+                     }
+                     else
+                     {
+                        throw new IllegalArgumentException("Invalid parameter type " + type);
+                     }
+                  }
+               }
+            }
+            
+            this.backupConnectorConfig = new TransportConfiguration(clazz, params);
+         }
+
+      }
       
       NodeList acceptorNodes = e.getElementsByTagName("remoting-acceptors");
       
@@ -203,9 +297,9 @@ public class FileConfiguration extends ConfigurationImpl
                   }                                                                  
                }
       
-               AcceptorInfo info = new AcceptorInfo(clazz, params);
+               TransportConfiguration info = new TransportConfiguration(clazz, params);
                
-               acceptorInfos.add(info);    
+               acceptorConfigs.add(info);    
             }
          }
       }
