@@ -4,18 +4,15 @@
 
    <bean name="Naming" class="org.jnp.server.NamingBeanImpl"/>
 
-   <bean name="Main" class="org.jnp.server.Main">
+   <!-- JNDI server. Disable this if you don't want JNDI -->
+   <bean name="JNDIServer" class="org.jnp.server.Main">
       <property name="namingInfo">
          <inject bean="Naming"/>
       </property>
       <property name="port">1099</property>
-      <property name="bindAddress">
-         <inject bean="Configuration" property="host"/>
-      </property>
+      <property name="bindAddress">localhost</property>
       <property name="rmiPort">1098</property>
-      <property name="rmiBindAddress">
-         <inject bean="Configuration" property="host"/>
-      </property>
+      <property name="rmiBindAddress">localhost</property>
    </bean>
 
    <bean name="DeploymentManager" class="org.jboss.messaging.core.deployers.impl.FileDeploymentManager">
