@@ -14,6 +14,8 @@ import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
  */
 public class NettyConnectorFactory implements ConnectorFactory
 {
+   private static final long serialVersionUID = 5230517134523506528L;
+
    public Connector createConnector(final Map<String, Object> configuration,
          final RemotingHandler handler, final ConnectionLifeCycleListener listener)
    {

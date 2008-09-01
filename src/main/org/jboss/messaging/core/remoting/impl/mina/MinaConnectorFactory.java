@@ -16,6 +16,8 @@ import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
  */
 public class MinaConnectorFactory implements ConnectorFactory
 {
+   private static final long serialVersionUID = -1395375418386685767L;
+
    public Connector createConnector(final Map<String, Object> configuration,
                                     final RemotingHandler handler, final ConnectionLifeCycleListener listener)
    {

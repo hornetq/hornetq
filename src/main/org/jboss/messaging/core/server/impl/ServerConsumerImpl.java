@@ -80,8 +80,6 @@ public class ServerConsumerImpl implements ServerConsumer
    
    private final PostOffice postOffice;
    
-   private final boolean replicated = false;
-   
    // Constructors ---------------------------------------------------------------------------------
  
    public ServerConsumerImpl(final ServerSession session, final long clientTargetID,
@@ -111,29 +109,13 @@ public class ServerConsumerImpl implements ServerConsumer
       {
       	availableCredits = null;
       }
-      
-    //  this.remotingConnection = remotingConnection;
-      
+  
       this.storageManager = storageManager;
       
       this.queueSettingsRepository = queueSettingsRepository;
       
       this.postOffice = postOffice;
-      
-//      this.replicated = remotingConnection.isReplicated();
-//      
-//      if (replicated)
-//      {
-//         PacketDispatcher replicatingDispatcher =
-//            remotingConnection.getReplicatingConnection().getPacketDispatcher();
-//         replicatedDeliveryResponseHandler = new ReplicatedDeliveryResponseHandler(replicatingDispatcher.generateID());
-//         
-//         replicatingDispatcher.register(replicatedDeliveryResponseHandler);                  
-//      }
-      
-      //Also increment the id on the local one so ids are in step
-    //  dispatcher.generateID();
-      
+       
       this.id = dispatcher.generateID();
                
       messageQueue.addConsumer(this);
@@ -150,32 +132,6 @@ public class ServerConsumerImpl implements ServerConsumer
    {
       return clientTargetID;
    }
-   
-//   public void handleReplicatedDelivery(final long messageID, final long responseTargetID) throws Exception
-//   {
-//      MessageReference ref = messageQueue.removeFirst();
-//      
-//      //Sanity check - can remove once stable
-//      if (ref.getMessage().getMessageID() != messageID)
-//      {
-//         throw new IllegalStateException("Message with id " + messageID + " should be at head of queue " +
-//                  "but instead I found " + ref.getMessage().getMessageID());
-//      }
-//      
-//      HandleStatus handled = handle(ref);
-//      
-//      //Sanity check
-//      if (handled != HandleStatus.HANDLED)
-//      {
-//         throw new IllegalStateException("Should be handled");
-//      }
-//      
-//      Packet response = new ConsumerReplicateDeliveryResponseMessage(messageID);
-//      
-//      response.setTargetID(responseTargetID);
-//      
-//      remotingConnection.sendOneWay(response);
-//   }
    
    public void handleReplicatedDeliveryResponse(final long messageID) throws Exception
    {
@@ -219,18 +175,6 @@ public class ServerConsumerImpl implements ServerConsumer
                    
          session.handleDelivery(ref, this);
          
-//         if (replicated)
-//         {
-//            //Replicate the delivery
-//            
-//          server  Packet packet = new ConsumerReplicateDeliveryMessage(message.getMessageID());
-//            
-//            packet.setTargetID(this.id);
-//            packet.setResponseTargetID(this.replicatedDeliveryResponseHandler.getID());
-//            
-//            //remotingConnection.replicatePacket(packet);
-//         }
-                  
          return HandleStatus.HANDLED;
       }
    }
@@ -242,14 +186,6 @@ public class ServerConsumerImpl implements ServerConsumer
       messageQueue.removeConsumer(this);
            
       session.removeConsumer(this);  
-        
-//      if (replicated)
-//      {
-//         PacketDispatcher replicatingDispatcher =
-//            remotingConnection.getReplicatingConnection().getPacketDispatcher();
-//         
-//         replicatingDispatcher.unregister(replicatedDeliveryResponseHandler.getID());
-//      }
    }
    
    public void setStarted(final boolean started)
@@ -299,33 +235,4 @@ public class ServerConsumerImpl implements ServerConsumer
    
    // Inner classes ------------------------------------------------------------------------
    
-//   private class ReplicatedDeliveryResponseHandler implements PacketHandler
-//   {
-//      ReplicatedDeliveryResponseHandler(final long id)
-//      {
-//         this.id = id;
-//      }
-//      
-//      private final long id;
-//
-//      public long getID()
-//      {
-//         return id;
-//      }
-//
-//      public void handle(final long connectionID, final Packet packet)
-//      {
-//         try
-//         {
-//            ConsumerReplicateDeliveryResponseMessage msg = (ConsumerReplicateDeliveryResponseMessage)packet;
-//            
-//            handleReplicatedDeliveryResponse(msg.getMessageID());
-//         }
-//         catch (Exception e)
-//         {
-//            log.error("Failed to handle replicate delivery response", e);
-//         }
-//      }
-//      
-//   }
 }

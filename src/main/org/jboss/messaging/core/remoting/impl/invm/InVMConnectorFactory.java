@@ -36,6 +36,8 @@ import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
  */
 public class InVMConnectorFactory implements ConnectorFactory
 {
+   private static final long serialVersionUID = 1398950653661802190L;
+
    public Connector createConnector(final Map<String, Object> configuration,
             final RemotingHandler handler, final ConnectionLifeCycleListener listener)
    {      

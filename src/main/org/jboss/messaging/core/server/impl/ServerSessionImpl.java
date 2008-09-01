@@ -140,8 +140,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private volatile boolean started = false;
    
-   private volatile boolean attached;
-      
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -264,14 +262,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       deliveries.add(delivery);      
 
-//      if (!defer)
-//      {
-         delivery.deliver();
-//      }
-//      else
-//      {
-//         //Actual delivery is deferred until the replicate delivery response comes back from the backup
-//      }
+      delivery.deliver();
    }
    
    public void deliverDeferredDelivery(final long messageID)
