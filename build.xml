@@ -173,6 +173,10 @@
       <ant antfile="build-messaging.xml" target="runServer"/>
    </target>
 
+   <target name="debugServer" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="debugServer"/>
+   </target>
+
    <!--example targets-->
    <target name="queueExample" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="queueExample"/>
