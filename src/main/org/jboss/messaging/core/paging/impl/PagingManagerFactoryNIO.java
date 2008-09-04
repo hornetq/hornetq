@@ -32,6 +32,7 @@ import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -58,7 +59,7 @@ public class PagingManagerFactoryNIO implements PagingStoreFactory
    public PagingManagerFactoryNIO(final String directory)
    {
       this.directory = directory;
-      this.executor = Executors.newSingleThreadExecutor();
+      this.executor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-depaging-threads"));
    }
    
    public PagingManagerFactoryNIO(final String directory, final Executor executor)
