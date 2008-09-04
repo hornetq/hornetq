@@ -24,7 +24,7 @@ test $libaio_fail == 1 && \
 gl_COMPILER_FLAGS(-Werror)
 #gl_COMPILER_FLAGS(-g) -- enable this for debug
 # Compile it with full optimizations
-gl_COMPILER_FLAGS(-O3) 
+#gl_COMPILER_FLAGS(-O3) -- enable this for full optimizations
 gl_COMPILER_FLAGS(-pedantic)
 gl_COMPILER_FLAGS(-Wall)
 gl_COMPILER_FLAGS(-Wextra)
