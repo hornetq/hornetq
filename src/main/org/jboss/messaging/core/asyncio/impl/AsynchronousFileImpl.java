@@ -310,8 +310,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	
 	private void startPoller()
 	{
-		checkOpened();
-		
 		writeLock.lock();
 		
 		try
