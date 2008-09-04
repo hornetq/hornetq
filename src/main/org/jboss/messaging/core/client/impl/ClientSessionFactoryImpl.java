@@ -28,21 +28,18 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.CommandManager;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.ConnectionRegistry;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.CommandManagerImpl;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
-import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.util.UUIDGenerator;
 import org.jboss.messaging.util.VersionLoader;
 
 
@@ -313,23 +310,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
       try
       {
          remotingConnection = connectionRegistry.getConnection(connectorFactory, transportParams,
-                  pingPeriod, callTimeout);
+                                                               pingPeriod, callTimeout);
 
-         PacketDispatcher dispatcher = remotingConnection.getPacketDispatcher();
-
-         long localCommandResponseTargetID = dispatcher.generateID();
-
-         String name = UUIDGenerator.getInstance().generateSimpleStringUUID().toString();
-         
          Packet request =
-            new CreateSessionMessage(name, clientVersion.getIncrementingVersion(),
+            new CreateSessionMessage(clientVersion.getIncrementingVersion(),
                                      username, password,
-                                     xa, autoCommitSends, autoCommitAcks,
-                                     localCommandResponseTargetID);
+                                     xa, autoCommitSends, autoCommitAcks);
          
-         Packet packet =
-            remotingConnection.sendBlocking(PacketDispatcherImpl.MAIN_SERVER_HANDLER_ID,
-                     PacketDispatcherImpl.MAIN_SERVER_HANDLER_ID, request, null);
+         Channel channel1 = remotingConnection.getChannel(1, false, -1);
+         
+         Packet packet = channel1.sendBlocking(request);
          
          if (packet.getType() == PacketImpl.EXCEPTION)
          {
@@ -337,18 +327,24 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
             
             throw mem.getException();
          }
-         
+                           
          CreateSessionResponseMessage response = (CreateSessionResponseMessage)packet;
          
-         CommandManager cm = new CommandManagerImpl(response.getPacketConfirmationBatchSize(),
-                  remotingConnection, dispatcher, response.getSessionID(),
-                  localCommandResponseTargetID, response.getCommandResponseTargetID());
-   
-         return new ClientSessionImpl(name, response.getSessionID(), xa, lazyAckBatchSize, cacheProducers,
+         long sessionID = response.getSessionID();
+         
+         Channel sessionChannel = remotingConnection.getChannel(sessionID, false, response.getPacketConfirmationBatchSize());
+         
+         ClientSessionInternal session = new ClientSessionImpl(sessionID, xa, lazyAckBatchSize, cacheProducers,
                   autoCommitSends, autoCommitAcks, blockOnAcknowledge,
-                  remotingConnection, this,
-                  dispatcher,
-                  response.getServerVersion(), cm);
+                  remotingConnection, this,                  
+                  response.getServerVersion(), sessionChannel);
+         
+         ChannelHandler handler = new ClientSessionPacketHandler(session);
+         
+         sessionChannel.setHandler(handler);
+         
+         return session;
+                  
       }
       catch (Throwable t)
       {

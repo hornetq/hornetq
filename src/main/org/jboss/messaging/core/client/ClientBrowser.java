@@ -32,6 +32,8 @@ import org.jboss.messaging.core.exception.MessagingException;
  */
 public interface ClientBrowser
 {
+   int getID();
+   
    void reset() throws MessagingException;
 
    ClientMessage nextMessage() throws MessagingException;

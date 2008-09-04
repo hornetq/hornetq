@@ -36,9 +36,7 @@ public class CreateSessionResponseMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private long sessionTargetID;
-   
-   private long commandResponseTargetID;
+   private long sessionID;
    
    private int serverVersion;
    
@@ -48,14 +46,11 @@ public class CreateSessionResponseMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public CreateSessionResponseMessage(final long sessionTargetID, final long commandResponseTargetID,
-                                       final int serverVersion, final int packetConfirmationBatchSize)
+   public CreateSessionResponseMessage(final long sessionID, final int serverVersion, final int packetConfirmationBatchSize)
    {
       super(CREATESESSION_RESP);
 
-      this.sessionTargetID = sessionTargetID;
-      
-      this.commandResponseTargetID = commandResponseTargetID;
+      this.sessionID = sessionID;
       
       this.serverVersion = serverVersion;
       
@@ -68,15 +63,15 @@ public class CreateSessionResponseMessage extends PacketImpl
    }
 
    // Public --------------------------------------------------------
-
+   
+   public boolean isResponse()
+   {
+      return true;
+   }
+ 
    public long getSessionID()
    {
-      return sessionTargetID;
-   }
-   
-   public long getCommandResponseTargetID()
-   {
-      return commandResponseTargetID;
+      return sessionID;
    }
    
    public int getServerVersion()
@@ -91,27 +86,18 @@ public class CreateSessionResponseMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(sessionTargetID);
-      buffer.putLong(commandResponseTargetID);
+      buffer.putLong(sessionID);
       buffer.putInt(serverVersion);      
       buffer.putInt(packetConfirmationBatchSize);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      sessionTargetID = buffer.getLong();
-      commandResponseTargetID = buffer.getLong();
+      sessionID = buffer.getLong();
       serverVersion = buffer.getInt();
       packetConfirmationBatchSize = buffer.getInt();
    }
 
-   @Override
-   public String toString()
-   {
-      return getParentString() + ", sessionTargetID=" + sessionTargetID
-            + "]";
-   }
-   
    public boolean equals(Object other)
    {
       if (other instanceof CreateSessionResponseMessage == false)
@@ -122,8 +108,7 @@ public class CreateSessionResponseMessage extends PacketImpl
       CreateSessionResponseMessage r = (CreateSessionResponseMessage)other;
       
       boolean matches = super.equals(other) &&
-                        this.sessionTargetID == r.sessionTargetID &&
-                        this.commandResponseTargetID == r.commandResponseTargetID &&
+                        this.sessionID == r.sessionID &&
                         this.packetConfirmationBatchSize == r.packetConfirmationBatchSize;
       
       return matches;

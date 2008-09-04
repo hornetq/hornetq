@@ -37,26 +37,35 @@ public class ProducerFlowCreditMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
+   private int producerID;
+   
    private int credits;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ProducerFlowCreditMessage(final int credits)
+   public ProducerFlowCreditMessage(final int producerID, final int credits)
    {
-      super(PROD_RECEIVETOKENS);
+      super(SESS_RECEIVETOKENS);
 
+      this.producerID = producerID;
+      
       this.credits = credits;
    }
    
    public ProducerFlowCreditMessage()
    {
-      super(PROD_RECEIVETOKENS);
+      super(SESS_RECEIVETOKENS);
    }
 
    // Public --------------------------------------------------------
 
+   public int getProducerID()
+   {
+      return producerID;
+   }
+   
    public int getTokens()
    {
       return credits;
@@ -64,11 +73,13 @@ public class ProducerFlowCreditMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
+      buffer.putInt(producerID);
       buffer.putInt(credits);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
+      producerID = buffer.getInt();
       credits = buffer.getInt();
    }
 
@@ -76,7 +87,7 @@ public class ProducerFlowCreditMessage extends PacketImpl
    public String toString()
    {
       StringBuffer buf = new StringBuffer(getParentString());
-      buf.append(", credits=" + credits);
+      buf.append(", producerID=" + producerID + ", credits=" + credits);
       buf.append("]");
       return buf.toString();
    }
@@ -90,7 +101,7 @@ public class ProducerFlowCreditMessage extends PacketImpl
             
       ProducerFlowCreditMessage r = (ProducerFlowCreditMessage)other;
       
-      return super.equals(other) && this.credits == r.credits;
+      return super.equals(other) && this.credits == r.credits && this.producerID == r.producerID;
    }
 
    // Package protected ---------------------------------------------

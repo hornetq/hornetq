@@ -3,8 +3,6 @@ package org.jboss.messaging.core.remoting.spi;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.jboss.messaging.core.remoting.RemotingHandler;
-
 /**
  * 
  * A ConnectorFactory
@@ -14,7 +12,6 @@ import org.jboss.messaging.core.remoting.RemotingHandler;
  */
 public interface ConnectorFactory extends Serializable
 {
-   Connector createConnector(Map<String, Object> configuration,
-                             RemotingHandler handler,
+   Connector createConnector(Map<String, Object> configuration, BufferHandler handler,                           
                              ConnectionLifeCycleListener listener);
 }

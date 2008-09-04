@@ -36,8 +36,6 @@ public class CreateSessionMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
    
-   private String name;
-   
    private int version;
    
    private String username;
@@ -50,19 +48,15 @@ public class CreateSessionMessage extends PacketImpl
    
    private boolean autoCommitAcks;
    
-   private long commandResponseTargetID;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public CreateSessionMessage(final String name, final int version, final String username, final String password,
+   public CreateSessionMessage(final int version, final String username, final String password,
                                final boolean xa, final boolean autoCommitSends,
-                               final boolean autoCommitAcks, final long commandResponseTargetID)
+                               final boolean autoCommitAcks)
    {
       super(CREATESESSION);
-      
-      this.name = name;
       
       this.version = version;
 
@@ -75,8 +69,6 @@ public class CreateSessionMessage extends PacketImpl
       this.autoCommitSends = autoCommitSends;
       
       this.autoCommitAcks = autoCommitAcks;
-      
-      this.commandResponseTargetID = commandResponseTargetID;
    }
    
    public CreateSessionMessage()
@@ -86,11 +78,6 @@ public class CreateSessionMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public String getName()
-   {
-      return name;
-   }
-   
    public int getVersion()
    {
       return version;
@@ -121,33 +108,24 @@ public class CreateSessionMessage extends PacketImpl
       return this.autoCommitAcks;
    }
    
-   public long getCommandResponseTargetID()
-   {
-      return commandResponseTargetID;
-   }
-   
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putString(name);
       buffer.putInt(version);
       buffer.putNullableString(username);
       buffer.putNullableString(password);
       buffer.putBoolean(xa);
       buffer.putBoolean(autoCommitSends);
       buffer.putBoolean(autoCommitAcks);
-      buffer.putLong(commandResponseTargetID);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      name = buffer.getString();
       version = buffer.getInt();
       username = buffer.getNullableString();
       password = buffer.getNullableString();
       xa = buffer.getBoolean();
       autoCommitSends = buffer.getBoolean();
       autoCommitAcks = buffer.getBoolean();
-      commandResponseTargetID = buffer.getLong();
    }
    
    public boolean equals(Object other)
@@ -160,12 +138,10 @@ public class CreateSessionMessage extends PacketImpl
       CreateSessionMessage r = (CreateSessionMessage)other;
       
       boolean matches = super.equals(other) &&
-                        this.name.equals(r.name) &&
                         this.version == r.version &&
                         this.xa == r.xa &&
                         this.autoCommitSends == r.autoCommitSends &&
                         this.autoCommitAcks == r.autoCommitAcks &&
-                        this.commandResponseTargetID == r.commandResponseTargetID &&
                         (this.username == null ? r.username == null : this.username.equals(r.username)) &&
                         (this.password == null ? r.password == null : this.password.equals(r.password));
          

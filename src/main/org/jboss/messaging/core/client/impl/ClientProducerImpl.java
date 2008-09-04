@@ -28,10 +28,9 @@ import org.jboss.messaging.core.client.AcknowledgementHandler;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.CommandManager;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.ProducerSendMessage;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.impl.wireformat.SendMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiter;
 
@@ -58,15 +57,11 @@ public class ClientProducerImpl implements ClientProducerInternal
    
    private final SimpleString address;
    
-   private final long serverTargetID;
-   
-   private final long clientTargetID;
+   private final int id;
    
    private final ClientSessionInternal session;
    
-   private final CommandManager commandManager;
-   
-   private final PacketDispatcher dispatcher;
+   private final Channel channel;
    
    private volatile boolean closed;
    
@@ -91,28 +86,22 @@ public class ClientProducerImpl implements ClientProducerInternal
    // Constructors ---------------------------------------------------------------------------------
       
    public ClientProducerImpl(final ClientSessionInternal session,                             
-                             final long serverTargetID,
-                             final long clientTargetID,
+                             final int id,          
    		                    final SimpleString address,   		                   
    		                    final TokenBucketLimiter rateLimiter,
    		                    final boolean blockOnNonPersistentSend,
    		                    final boolean blockOnPersistentSend,
-   		                    final int initialCredits,   		                   
-   		                    final PacketDispatcher dispatcher,
-   		                    final CommandManager commandManager)
+   		                    final int initialCredits,   		                      		                  
+   		                    final Channel channel)
    {   	
-      this.commandManager = commandManager;
+      this.channel = channel;
       
       this.session = session;
       
-      this.serverTargetID = serverTargetID;
-      
-      this.clientTargetID = clientTargetID;
+      this.id = id;
       
       this.address = address;
       
-      this.dispatcher = dispatcher;
-       
       this.rateLimiter = rateLimiter;
             
       this.blockOnNonPersistentSend = blockOnNonPersistentSend; 
@@ -166,7 +155,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       try
       {
-         commandManager.sendCommandBlocking(serverTargetID, new PacketImpl(PacketImpl.CLOSE));
+         channel.sendBlocking(new SessionProducerCloseMessage(id));
       }
       finally
       {      
@@ -211,6 +200,11 @@ public class ClientProducerImpl implements ClientProducerInternal
    
    // ClientProducerInternal implementation --------------------------------------------------------
    
+   public int getID()
+   {
+      return id;
+   }
+   
    public void receiveCredits(final int credits)
    {
       availableCredits.release(credits);
@@ -232,8 +226,6 @@ public class ClientProducerImpl implements ClientProducerInternal
    private void doCleanup()
    {
       session.removeProducer(this);
-
-      dispatcher.unregister(clientTargetID);
 
       closed = true;
    }
@@ -258,15 +250,15 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
       
-      ProducerSendMessage message = new ProducerSendMessage(msg);
+      SendMessage message = new SendMessage(id, msg, sendBlocking);
                
       if (sendBlocking)
       {        
-         commandManager.sendCommandBlocking(serverTargetID, message);
+         channel.sendBlocking(message);
       }
       else
       {
-         commandManager.sendCommandOneway(serverTargetID, message);
+         channel.send(message);
       }      
       
       //We only flow control with non-anonymous producers

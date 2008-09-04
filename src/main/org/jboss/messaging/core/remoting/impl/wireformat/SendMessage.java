@@ -20,76 +20,103 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */ 
 
-package org.jboss.messaging.core.remoting.impl.wireformat.cluster;
+package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 
 /**
- * 
- * A ConsumerReplicateDeliveryResponseMessage
- * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * 
+ * @version <tt>$Revision$</tt>
  */
-public class ConsumerReplicateDeliveryResponseMessage extends PacketImpl
+public class SendMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(SendMessage.class);
+   
    // Attributes ----------------------------------------------------
 
-   private long messageID;
+   private int producerID;
    
+   private ClientMessage clientMessage;
+   
+   private ServerMessage serverMessage;
+   
+   private boolean requiresResponse;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ConsumerReplicateDeliveryResponseMessage(final long messageID)
+   public SendMessage(final int producerID, final ClientMessage message, final boolean requiresResponse)
    {
-      super(REPLICATE_DELIVERY_RESPONSE);
+      super(SESS_SEND);
 
-      this.messageID = messageID;
+      this.producerID = producerID;
+      
+      this.clientMessage = message;
+      
+      this.requiresResponse = requiresResponse;
    }
-   
-   public ConsumerReplicateDeliveryResponseMessage()
+      
+   public SendMessage()
    {
-      super(REPLICATE_DELIVERY_RESPONSE);
+      super(SESS_SEND);
    }
 
    // Public --------------------------------------------------------
 
-   public long getMessageID()
+   public int getProducerID()
    {
-      return messageID;
+      return this.producerID;
+   }
+   
+   public ClientMessage getClientMessage()
+   {
+      return clientMessage;
+   }
+   
+   public ServerMessage getServerMessage()
+   {
+      return serverMessage;
+   }
+   
+   public boolean isRequiresResponse()
+   {
+      return requiresResponse;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(messageID);
+      buffer.putInt(producerID);      
+      
+      clientMessage.encode(buffer);    
+      
+      buffer.putBoolean(requiresResponse);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      messageID = buffer.getLong();
+      //TODO can be optimised
+      
+      producerID = buffer.getInt();
+                  
+      serverMessage = new ServerMessageImpl();
+      
+      serverMessage.decode(buffer);
+      
+      serverMessage.getBody().flip();
+      
+      requiresResponse = buffer.getBoolean();
    }
 
-   @Override
-   public String toString()
-   {
-      return getParentString() + ", messageID=" + messageID + "]";
-   }
-   
-   public boolean equals(Object other)
-   {
-      if (other instanceof ConsumerReplicateDeliveryResponseMessage == false)
-      {
-         return false;
-      }
-            
-      ConsumerReplicateDeliveryResponseMessage r = (ConsumerReplicateDeliveryResponseMessage)other;
-      
-      return super.equals(other) && this.messageID == r.messageID;
-   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

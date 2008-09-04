@@ -24,38 +24,23 @@ package org.jboss.messaging.core.remoting;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
-
-
 /**
  * 
  * A Packet
  * 
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public interface Packet
 {
-   // Public --------------------------------------------------------
+   void setChannelID(long channelID);
    
-   void setCommandID(int commandID);
+   long getChannelID();
    
-   int getCommandID();
+   boolean isResponse();
    
-   void setResponseTargetID(long responseTargetID);
-
-   long getResponseTargetID();
-
    byte getType();
 
-   long getTargetID();
-
-   void setTargetID(long targetID);
-
-   long getExecutorID();
-
-   void setExecutorID(long executorID);
-   
    void encode(MessagingBuffer buffer);
       
    void decode(MessagingBuffer buffer);

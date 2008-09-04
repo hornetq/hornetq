@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.remoting;
 
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
@@ -33,28 +34,21 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public interface RemotingConnection
+public interface RemotingConnection extends BufferHandler
 {
    Object getID();
-
-   Packet sendBlocking(long targetID, long executorID, Packet packet, CommandManager cm);
-
-   void sendOneWay(long targetID, long executorID, Packet packet);
-
-   // TODO this method is only used in tests so should be removed
-   Packet sendBlocking(Packet packet, CommandManager cm) throws MessagingException;
-
-   void sendOneWay(Packet packet);
+   
+   Channel getChannel(long channelID, boolean ordered, int packetConfirmationBatchSize);
 
    void addFailureListener(FailureListener listener);
 
    boolean removeFailureListener(FailureListener listener);
-
-   PacketDispatcher getPacketDispatcher();
 
    MessagingBuffer createBuffer(int size);
 
    void fail(MessagingException me);
 
    void destroy();      
+   
+   boolean isExpired(final long now);
 }

@@ -258,10 +258,10 @@ public class JBossSession implements Session, XASession, QueueSession,
       try
       {
          for (JBossMessageConsumer cons: new HashSet<JBossMessageConsumer>(consumers))
-         {
+         {            
             cons.close();
          }
-         
+ 
          session.close();
 
          connection.removeSession(this);

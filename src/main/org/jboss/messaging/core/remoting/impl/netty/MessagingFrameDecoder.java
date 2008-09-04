@@ -24,7 +24,8 @@ package org.jboss.messaging.core.remoting.impl.netty;
 
 import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
-import org.jboss.messaging.core.remoting.RemotingHandler;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -41,9 +42,12 @@ import org.jboss.netty.handler.codec.frame.FrameDecoder;
  */
 public class MessagingFrameDecoder extends FrameDecoder
 {
-   private final RemotingHandler handler;
+   private static final Logger log = Logger.getLogger(MessagingFrameDecoder.class);
 
-   public MessagingFrameDecoder(final RemotingHandler handler)
+   
+   private final BufferHandler handler;
+
+   public MessagingFrameDecoder(final BufferHandler handler)
    {
       this.handler = handler;
    }

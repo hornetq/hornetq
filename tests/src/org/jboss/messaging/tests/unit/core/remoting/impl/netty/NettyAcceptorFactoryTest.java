@@ -25,10 +25,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.easymock.EasyMock;
-import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.impl.netty.NettyAcceptor;
 import org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
+import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
@@ -46,7 +46,7 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
       NettyAcceptorFactory factory = new NettyAcceptorFactory();
 
       Map<String, Object> params = new HashMap<String, Object>();
-      RemotingHandler handler = EasyMock.createStrictMock(RemotingHandler.class);
+      BufferHandler handler = EasyMock.createStrictMock(BufferHandler.class);
       ConnectionLifeCycleListener listener = EasyMock.createStrictMock(ConnectionLifeCycleListener.class);
 
       Acceptor acceptor = factory.createAcceptor(params, handler, listener);

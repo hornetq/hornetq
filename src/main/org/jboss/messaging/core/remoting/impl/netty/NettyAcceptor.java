@@ -55,12 +55,13 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
+import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.util.ConfigurationHelper;
+import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
@@ -94,7 +95,7 @@ public class NettyAcceptor implements Acceptor
    private Channel serverChannel;
    private ServerBootstrap bootstrap;
 
-   private final RemotingHandler handler;
+   private final BufferHandler handler;
 
    private final ConnectionLifeCycleListener listener;
    
@@ -120,9 +121,9 @@ public class NettyAcceptor implements Acceptor
    
    private final int tcpReceiveBufferSize;
 
-   public NettyAcceptor(final Map<String, Object> configuration,  final RemotingHandler handler,
+   public NettyAcceptor(final Map<String, Object> configuration,  final BufferHandler handler,
                        final ConnectionLifeCycleListener listener)
-   {
+   {   
       this.handler = handler;
 
       this.listener = listener;
@@ -170,9 +171,9 @@ public class NettyAcceptor implements Acceptor
          //Already started
          return;
       }
-
-      bossExecutor = Executors.newCachedThreadPool();
-      workerExecutor = Executors.newCachedThreadPool();
+ 
+      bossExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-acceptor-boss-threads"));
+      workerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-acceptor-worker-threads"));
       if (useNio)
       {
          channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor);
@@ -272,7 +273,7 @@ public class NettyAcceptor implements Acceptor
    @ChannelPipelineCoverage("one")
    private final class MessagingServerChannelHandler extends MessagingChannelHandler
    {
-      MessagingServerChannelHandler(RemotingHandler handler, ConnectionLifeCycleListener listener)
+      MessagingServerChannelHandler(BufferHandler handler, ConnectionLifeCycleListener listener)
       {
          super(handler, listener);
       }

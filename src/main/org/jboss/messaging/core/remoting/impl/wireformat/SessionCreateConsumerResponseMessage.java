@@ -36,20 +36,16 @@ public class SessionCreateConsumerResponseMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private long consumerTargetID;
-   
    private int windowSize;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateConsumerResponseMessage(final long consumerID, final int windowSize)
+   public SessionCreateConsumerResponseMessage(final int windowSize)
    {
       super(SESS_CREATECONSUMER_RESP);
 
-      this.consumerTargetID = consumerID;
-      
       this.windowSize = windowSize;
    }
    
@@ -60,9 +56,9 @@ public class SessionCreateConsumerResponseMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public long getConsumerTargetID()
+   public boolean isResponse()
    {
-      return consumerTargetID;
+      return true;
    }
    
    public int getWindowSize()
@@ -72,13 +68,11 @@ public class SessionCreateConsumerResponseMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(consumerTargetID);
       buffer.putInt(windowSize);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      consumerTargetID = buffer.getLong();
       windowSize = buffer.getInt();
    }
 
@@ -86,7 +80,6 @@ public class SessionCreateConsumerResponseMessage extends PacketImpl
    public String toString()
    {
       StringBuffer buf = new StringBuffer(getParentString());
-      buf.append(", consumerTargetID=" + consumerTargetID);
       buf.append(", windowSize=" + windowSize);
       buf.append("]");
       return buf.toString();
@@ -101,7 +94,7 @@ public class SessionCreateConsumerResponseMessage extends PacketImpl
             
       SessionCreateConsumerResponseMessage r = (SessionCreateConsumerResponseMessage)other;
       
-      return super.equals(other) && this.consumerTargetID == r.consumerTargetID && this.windowSize == r.windowSize;        
+      return super.equals(other) && this.windowSize == r.windowSize;        
    }
 
    // Package protected ---------------------------------------------

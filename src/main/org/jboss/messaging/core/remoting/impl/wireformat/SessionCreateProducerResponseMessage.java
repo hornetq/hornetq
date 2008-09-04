@@ -35,8 +35,6 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private long producerTargetID;
-   
    private int initialCredits;
    
    private int maxRate;
@@ -45,12 +43,10 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateProducerResponseMessage(final long producerTargetID, final int initialCredits, final int maxRate)
+   public SessionCreateProducerResponseMessage(final int initialCredits, final int maxRate)
    {
       super(SESS_CREATEPRODUCER_RESP);
-
-      this.producerTargetID = producerTargetID;
-      
+ 
       this.initialCredits = initialCredits;
       
       this.maxRate = maxRate;
@@ -63,9 +59,9 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public long getProducerTargetID()
+   public boolean isResponse()
    {
-      return producerTargetID;
+      return true;
    }
    
    public int getInitialCredits()
@@ -80,14 +76,12 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(producerTargetID);
       buffer.putInt(initialCredits);
       buffer.putInt(maxRate);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
-   {
-      producerTargetID = buffer.getLong();      
+   {     
       initialCredits = buffer.getInt();
       maxRate = buffer.getInt();
    }
@@ -97,7 +91,6 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
    public String toString()
    {
       StringBuffer buf = new StringBuffer(getParentString());
-      buf.append(", producerTargetID=" + producerTargetID);
       buf.append(", initialCredits=" + initialCredits);
       buf.append(", maxRate=" + maxRate);
       buf.append("]");
@@ -113,7 +106,7 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
             
       SessionCreateProducerResponseMessage r = (SessionCreateProducerResponseMessage)other;
       
-      return super.equals(other) && this.producerTargetID == r.producerTargetID &&
+      return super.equals(other) &&
          this.initialCredits == r.initialCredits &&
          this.maxRate == r.maxRate;
       

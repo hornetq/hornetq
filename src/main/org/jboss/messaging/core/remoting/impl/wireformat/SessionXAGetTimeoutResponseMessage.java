@@ -58,6 +58,11 @@ public class SessionXAGetTimeoutResponseMessage extends PacketImpl
 
    // Public --------------------------------------------------------
    
+   public boolean isResponse()
+   {
+      return true;
+   }
+   
    public int getTimeoutSeconds()
    {
       return this.timeoutSeconds;

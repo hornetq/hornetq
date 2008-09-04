@@ -33,7 +33,7 @@ import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.apache.mina.filter.codec.ProtocolEncoder;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.RemotingHandler;
+import org.jboss.messaging.core.remoting.spi.BufferHandler;
 
 /**
  * A Mina ProtocolEncoder used to encode/decode messages.
@@ -46,9 +46,9 @@ public class MinaProtocolCodecFilter extends CumulativeProtocolDecoder
 {
    private static final Logger log = Logger.getLogger(MinaProtocolCodecFilter.class);
 
-   private final RemotingHandler handler;
+   private final BufferHandler handler;
 
-   public MinaProtocolCodecFilter(final RemotingHandler handler)
+   public MinaProtocolCodecFilter(final BufferHandler handler)
    {
       this.handler = handler;
    }

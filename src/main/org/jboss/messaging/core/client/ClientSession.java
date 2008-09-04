@@ -38,8 +38,6 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface ClientSession extends XAResource
 {   
-   String getName();
-   
    void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString,
                     boolean durable, boolean temporary) throws MessagingException;
    

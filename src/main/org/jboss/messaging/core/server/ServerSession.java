@@ -27,7 +27,6 @@ import java.util.List;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
@@ -44,8 +43,6 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface ServerSession
 {
-   String getName();
-   
 	long getID();
 	
 	String getUsername();
@@ -111,14 +108,30 @@ public interface ServerSession
 
    void deleteQueue(SimpleString queueName) throws Exception;
 
-   SessionCreateConsumerResponseMessage createConsumer(long clientTargetID, SimpleString queueName, SimpleString filterString,
+   SessionCreateConsumerResponseMessage createConsumer(SimpleString queueName, SimpleString filterString,
    		                                              int windowSize, int maxRate) throws Exception;
    
-   SessionCreateProducerResponseMessage createProducer(long clientTargetID, SimpleString address, int windowSize, int maxRate) throws Exception;   
+   SessionCreateProducerResponseMessage createProducer(SimpleString address, int windowSize, int maxRate) throws Exception;   
 
    SessionQueueQueryResponseMessage executeQueueQuery(SimpleString queueName) throws Exception;
 
    SessionBindingQueryResponseMessage executeBindingQuery(SimpleString address) throws Exception;
 
-   SessionCreateBrowserResponseMessage createBrowser(SimpleString queueName, SimpleString filterString) throws Exception;
+   void createBrowser(SimpleString queueName, SimpleString filterString) throws Exception;
+   
+   void closeConsumer(int consumerID) throws Exception;
+   
+   void closeProducer(int producerID) throws Exception;
+   
+   void closeBrowser(int browserID) throws Exception;
+   
+   void receiveConsumerCredits(int consumerID, int credits) throws Exception;
+   
+   void sendProducerMessage(int producerID, ServerMessage message) throws Exception;
+   
+   boolean browserHasNextMessage(int browserID) throws Exception;
+   
+   ServerMessage browserNextMessage(int browserID) throws Exception;
+   
+   void browserReset(int browserID) throws Exception;
 }

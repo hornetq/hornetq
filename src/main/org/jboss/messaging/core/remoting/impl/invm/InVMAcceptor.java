@@ -26,8 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
+import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.util.ConfigurationHelper;
@@ -42,7 +42,7 @@ public class InVMAcceptor implements Acceptor
 {   
    private final int id;
    
-   private final RemotingHandler handler;
+   private final BufferHandler handler;
    
    private final ConnectionLifeCycleListener listener;
    
@@ -50,9 +50,9 @@ public class InVMAcceptor implements Acceptor
    
    private volatile boolean started;
    
-   private volatile InVMConnector connector;
+  // private volatile InVMConnector connector;
       
-   public InVMAcceptor(final Map<String, Object> configuration, final RemotingHandler handler,
+   public InVMAcceptor(final Map<String, Object> configuration, final BufferHandler handler,
                        final ConnectionLifeCycleListener listener)
    {
       this.handler = handler;
@@ -95,7 +95,7 @@ public class InVMAcceptor implements Acceptor
       started = true;
    }
    
-   public RemotingHandler getHandler()
+   public BufferHandler getHandler()
    {
       if (!started)
       {
@@ -105,14 +105,12 @@ public class InVMAcceptor implements Acceptor
       return handler;
    }
    
-   public void connect(final String connectionID, final RemotingHandler remoteHandler)
+   public void connect(final String connectionID, final BufferHandler remoteHandler)
    {
       if (!started)
       {
          throw new IllegalStateException("Acceptor is not started");
       }
-      
-      connector = InVMRegistry.instance.getConnector(id);
       
       new InVMConnection(connectionID, remoteHandler, new Listener());               
    }
@@ -152,7 +150,7 @@ public class InVMAcceptor implements Acceptor
          }
          
          //Remove on the other side too
-         connector.disconnect((String)connectionID);
+         InVMRegistry.instance.getConnector(id).disconnect((String)connectionID);
          
          listener.connectionDestroyed(connectionID);
       }

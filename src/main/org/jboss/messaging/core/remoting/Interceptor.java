@@ -28,13 +28,20 @@ import org.jboss.messaging.core.exception.MessagingException;
  *
  * This is class is a simple way to intercepting server calls on JBoss Messaging.
  * 
- * To Add this interceptor, you have to modify jbm-configuration.xml, or call RemotingServiceImpl.addInterceptor manually.
+ * To Add this interceptor, you have to modify jbm-configuration.xml
  * 
- * If you deploy any Interceptor as a POJO on the Microcontainer, RemotingServiceImpl.addInterceptor is called automagically.
- *  
  * @author clebert.suconic@jboss.com
+ * @author tim.fox@jboss.com
  */
 public interface Interceptor
 {   
-   boolean intercept(Packet packet) throws MessagingException;
+   /**
+    * 
+    * @param packet
+    * @param connection
+    * @return true to process the next interceptor and handle the packet,
+    *         false to abort processing of the packet
+    * @throws MessagingException
+    */
+   boolean intercept(Packet packet, RemotingConnection connection) throws MessagingException;
 }

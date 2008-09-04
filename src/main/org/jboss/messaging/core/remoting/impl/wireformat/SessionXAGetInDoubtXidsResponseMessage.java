@@ -60,6 +60,11 @@ public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
    }
 
    // Public --------------------------------------------------------
+ 
+   public boolean isResponse()
+   {
+      return true;
+   }
    
    public List<Xid> getXids()
    {

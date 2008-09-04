@@ -27,8 +27,8 @@ import javax.net.ssl.SSLContext;
 import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.ssl.SslFilter;
-import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
+import org.jboss.messaging.core.remoting.spi.BufferHandler;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -52,7 +52,7 @@ public class FilterChainSupport
    // Public --------------------------------------------------------
 
    public static void addCodecFilter(final DefaultIoFilterChainBuilder filterChain,
-                                     final RemotingHandler handler)
+                                     final BufferHandler handler)
    {
       assert filterChain != null;
 

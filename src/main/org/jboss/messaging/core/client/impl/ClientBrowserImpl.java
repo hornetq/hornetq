@@ -24,10 +24,14 @@ package org.jboss.messaging.core.client.impl;
 import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.CommandManager;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.impl.wireformat.BrowseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserCloseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserResetMessage;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -45,11 +49,11 @@ public class ClientBrowserImpl implements ClientBrowser
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private final long serverTargetID;
+   private final int id;
    
 	private final ClientSessionInternal session;
 	
-	private final CommandManager commandManager;
+	private final Channel channel;
 	
 	private volatile boolean closed;
 	
@@ -58,17 +62,22 @@ public class ClientBrowserImpl implements ClientBrowser
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientBrowserImpl(final ClientSessionInternal session,                            
-                            final long serverTargetID,
-                            final CommandManager commandManager)
+                            final int id,
+                            final Channel channel)
    {
-      this.serverTargetID = serverTargetID;
+      this.id = id;
       
       this.session = session;
       
-      this.commandManager = commandManager;
+      this.channel = channel;
    }
 
    // ClientBrowser implementation -----------------------------------------------------------------
+   
+   public int getID()
+   {
+      return id;
+   }
    
    public synchronized void close() throws MessagingException
    {
@@ -79,7 +88,7 @@ public class ClientBrowserImpl implements ClientBrowser
       
       try
       {
-         commandManager.sendCommandBlocking(serverTargetID, new PacketImpl(PacketImpl.CLOSE));
+         channel.sendBlocking(new SessionBrowserCloseMessage(id));
       }
       finally
       {
@@ -105,7 +114,7 @@ public class ClientBrowserImpl implements ClientBrowser
    {
       checkClosed();
       
-      commandManager.sendCommandBlocking(serverTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_RESET));
+      channel.sendBlocking(new SessionBrowserResetMessage(id));
    }
 
    public boolean hasNextMessage() throws MessagingException
@@ -113,7 +122,8 @@ public class ClientBrowserImpl implements ClientBrowser
       checkClosed();
       
       SessionBrowserHasNextMessageResponseMessage response =
-         (SessionBrowserHasNextMessageResponseMessage)commandManager.sendCommandBlocking(serverTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_HASNEXTMESSAGE));
+         (SessionBrowserHasNextMessageResponseMessage)channel.sendBlocking(
+                  new SessionBrowserHasNextMessageMessage(id));
       
       return response.hasNext();
    }
@@ -122,8 +132,8 @@ public class ClientBrowserImpl implements ClientBrowser
    {
       checkClosed();
       
-      ReceiveMessage response =
-         (ReceiveMessage)commandManager.sendCommandBlocking(serverTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_NEXTMESSAGE));
+      BrowseMessage response =
+         (BrowseMessage)channel.sendBlocking(new SessionBrowserNextMessageMessage(id));
       
       return response.getClientMessage();
    }

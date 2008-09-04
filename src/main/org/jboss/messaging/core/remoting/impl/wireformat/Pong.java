@@ -58,6 +58,11 @@ public class Pong extends PacketImpl
 
    // Public --------------------------------------------------------
 
+   public boolean isResponse()
+   {
+      return true;
+   }
+   
    public long getNewPeriod()
    {
       return newPeriod;

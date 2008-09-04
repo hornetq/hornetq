@@ -51,12 +51,13 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
+import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
 import org.jboss.messaging.util.ConfigurationHelper;
+import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
@@ -88,7 +89,7 @@ public class NettyConnector implements Connector
    private ChannelFactory  channelFactory;
    private ClientBootstrap bootstrap;
 
-   private final RemotingHandler handler;
+   private final BufferHandler handler;
 
    private final ConnectionLifeCycleListener listener;
    
@@ -116,22 +117,23 @@ public class NettyConnector implements Connector
 
    // Public --------------------------------------------------------
 
-   public NettyConnector(final Map<String, Object> configuration,
-                        final RemotingHandler handler,
-                        final ConnectionLifeCycleListener listener)
+   public NettyConnector(final Map<String, Object> configuration,             
+                         final BufferHandler handler,
+                         final ConnectionLifeCycleListener listener)
    {
+      if (listener == null)
+      {
+         throw new IllegalArgumentException("Invalid argument null listener");
+      }
+      
       if (handler == null)
       {
          throw new IllegalArgumentException("Invalid argument null handler");
       }
 
-      if (listener == null)
-      {
-         throw new IllegalArgumentException("Invalid argument null listener");
-      }
-
-      this.handler = handler;
       this.listener = listener;
+      
+      this.handler = handler;
       
       this.sslEnabled =
          ConfigurationHelper.getBooleanProperty(SSL_ENABLED_PROP_NAME, DEFAULT_SSL_ENABLED, configuration);
@@ -170,10 +172,10 @@ public class NettyConnector implements Connector
          return;
       }
 
-      workerExecutor = Executors.newCachedThreadPool();
+      workerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-worker-threads"));
       if (useNio)
       {
-         bossExecutor = Executors.newCachedThreadPool();      
+         bossExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-boss-threads"));      
          channelFactory = new NioClientSocketChannelFactory(bossExecutor, workerExecutor);
       }
       else
@@ -229,7 +231,7 @@ public class NettyConnector implements Connector
          }
       });
    }
-
+   
    public synchronized void close()
    {
       if (channelFactory == null)
@@ -322,7 +324,7 @@ public class NettyConnector implements Connector
    @ChannelPipelineCoverage("one")
    private final class MessagingClientChannelHandler extends MessagingChannelHandler
    {
-      MessagingClientChannelHandler(RemotingHandler handler, ConnectionLifeCycleListener listener)
+      MessagingClientChannelHandler(BufferHandler handler, ConnectionLifeCycleListener listener)
       {
          super(handler, listener);
       }

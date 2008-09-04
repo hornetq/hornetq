@@ -58,6 +58,11 @@ public class MessagingExceptionMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
+   public boolean isResponse()
+   {
+      return true;
+   }
+   
    public MessagingException getException()
    {
       return exception;

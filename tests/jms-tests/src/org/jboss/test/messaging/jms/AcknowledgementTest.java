@@ -171,7 +171,6 @@ public class AcknowledgementTest extends JMSTestCase
          TopicSubscriber newcons = newsess.createSubscriber(topic1);
 
          Message m3 = newsess.createTextMessage("testing456");
-         log.info("Sending message");
          newpub.publish(m3);
          newsess.commit();
 
@@ -612,14 +611,16 @@ public class AcknowledgementTest extends JMSTestCase
       try
       {
          conn = cf.createConnection();
- 
-         Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = producerSess.createProducer(queue1);
 
+         Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+ 
+         MessageProducer producer = producerSess.createProducer(queue1);
+  
          Session consumerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
          MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
-
+         
          final int NUM_MESSAGES = 20;
 
          //Send some messages
@@ -631,7 +632,6 @@ public class AcknowledgementTest extends JMSTestCase
 
          assertRemainingMessages(NUM_MESSAGES);
 
-         log.trace("Sent messages");
 
          int count = 0;
 

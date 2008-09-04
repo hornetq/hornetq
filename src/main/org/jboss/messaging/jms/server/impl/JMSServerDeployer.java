@@ -39,10 +39,11 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
 public class JMSServerDeployer extends XmlDeployer 
 {
-   Logger log = Logger.getLogger(JMSServerManagerImpl.class);
+   Logger log = Logger.getLogger(JMSServerDeployer.class);
    
    public static final int DEFAULT_DUPS_OK_BATCH_SIZE = 1000;
 
@@ -181,8 +182,6 @@ public class JMSServerDeployer extends XmlDeployer
             }
             else if (CONNECTOR_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
-               log.info("Got CONNECTOR");
-               
                NodeList children2 = children.item(j).getChildNodes();
                                                          
                for (int l = 0; l < children2.getLength(); l++)
@@ -192,8 +191,6 @@ public class JMSServerDeployer extends XmlDeployer
                   if (FACTORY_CLASS_ELEMENT.equalsIgnoreCase(nodeName))
                   {                    
                      connectorFactoryClassName = children2.item(l).getTextContent();
-                     
-                     log.info("Got factory class " + connectorFactoryClassName);
                   }
                   else if (PARAMS_ELEMENT.equalsIgnoreCase(nodeName))
                   {                                                             
@@ -259,8 +256,6 @@ public class JMSServerDeployer extends XmlDeployer
                            {
                               throw new IllegalArgumentException("Invalid parameter type " + type);
                            }
-                           
-                           log.info("Got prop, key:" + key + " value:" + value);
                         }
                      }
                   }                                                                  

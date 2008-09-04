@@ -37,8 +37,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private long clientTargetID;
-   
    private SimpleString queueName;
    
    private SimpleString filterString;
@@ -51,12 +49,11 @@ public class SessionCreateConsumerMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateConsumerMessage(final long clientTargetID, final SimpleString queueName, final SimpleString filterString,   		                              
+   public SessionCreateConsumerMessage(final SimpleString queueName, final SimpleString filterString,   		                              
    		                              final int windowSize, final int maxRate)
    {
       super(SESS_CREATECONSUMER);
 
-      this.clientTargetID = clientTargetID;
       this.queueName = queueName;
       this.filterString = filterString;
       this.windowSize = windowSize;
@@ -82,11 +79,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
       return buff.toString();
    }
 
-   public long getClientTargetID()
-   {
-      return clientTargetID;
-   }
-   
    public SimpleString getQueueName()
    {
       return queueName;
@@ -109,7 +101,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(clientTargetID);
       buffer.putSimpleString(queueName);
       buffer.putNullableSimpleString(filterString);
       buffer.putInt(windowSize);
@@ -118,7 +109,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      clientTargetID = buffer.getLong();
       queueName = buffer.getSimpleString();
       filterString = buffer.getNullableSimpleString();
       windowSize = buffer.getInt();
@@ -134,7 +124,7 @@ public class SessionCreateConsumerMessage extends PacketImpl
             
       SessionCreateConsumerMessage r = (SessionCreateConsumerMessage)other;
       
-      return super.equals(other) && this.clientTargetID == r.clientTargetID &&
+      return super.equals(other) && 
              this.queueName.equals(r.queueName) &&
              this.filterString == null ? r.filterString == null : this.filterString.equals(r.filterString) &&
              this.windowSize == r.windowSize &&

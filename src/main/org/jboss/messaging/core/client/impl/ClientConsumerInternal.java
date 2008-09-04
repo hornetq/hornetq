@@ -35,7 +35,7 @@ import org.jboss.messaging.core.exception.MessagingException;
  */
 public interface ClientConsumerInternal extends ClientConsumer
 {   
-   long getClientTargetID();
+   int getID();
    
    void handleMessage(ClientMessage message) throws Exception;
    

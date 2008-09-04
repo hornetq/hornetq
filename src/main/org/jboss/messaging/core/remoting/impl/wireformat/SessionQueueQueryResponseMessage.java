@@ -80,6 +80,11 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       
       this.exists = exists;      
    }
+   
+   public boolean isResponse()
+   {
+      return true;
+   }
       
    public boolean isExists()
    {

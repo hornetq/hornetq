@@ -44,6 +44,8 @@ public class ReceiveMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
+   private int consumerID;
+   
    private ClientMessage clientMessage;
    
    private ServerMessage serverMessage;
@@ -56,9 +58,11 @@ public class ReceiveMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
    
-   public ReceiveMessage(final ServerMessage message, final int deliveryCount, final long deliveryID)
+   public ReceiveMessage(final int consumerID, final ServerMessage message, final int deliveryCount, final long deliveryID)
    {
-      super(RECEIVE_MSG);
+      super(SESS_RECEIVE_MSG);
+      
+      this.consumerID = consumerID;
 
       this.serverMessage = message;
       
@@ -69,20 +73,18 @@ public class ReceiveMessage extends PacketImpl
       this.deliveryID = deliveryID;
    }
    
-   public ReceiveMessage(final ClientMessage message)
-   {
-      super(RECEIVE_MSG);
-
-      this.clientMessage = message;
-   }
-   
    public ReceiveMessage()
    {
-      super(RECEIVE_MSG);
+      super(SESS_RECEIVE_MSG);
    }
 
    // Public --------------------------------------------------------
 
+   public int getConsumerID()
+   {
+      return consumerID;
+   }
+   
    public ClientMessage getClientMessage()
    {
       return clientMessage;
@@ -105,6 +107,7 @@ public class ReceiveMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
+      buffer.putInt(consumerID);
       buffer.putInt(deliveryCount);
       buffer.putLong(deliveryID);
       serverMessage.encode(buffer);
@@ -114,6 +117,7 @@ public class ReceiveMessage extends PacketImpl
    {
       //TODO can be optimised
       
+      consumerID = buffer.getInt();
       deliveryCount = buffer.getInt();
       deliveryID = buffer.getLong();
       

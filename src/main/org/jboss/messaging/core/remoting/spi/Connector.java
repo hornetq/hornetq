@@ -21,8 +21,6 @@
  */
 package org.jboss.messaging.core.remoting.spi;
 
-
-
 /**
  * 
  * A Connector
@@ -36,7 +34,5 @@ public interface Connector
    
    void close();
    
-   //Actually we should allow many connections to be created but in the case of our connection registry we register
-   //a callback which closes the connector - so it's actually one to one
    Connection createConnection();   
 }

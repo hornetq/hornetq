@@ -32,9 +32,7 @@ package org.jboss.messaging.core.server;
  */
 public interface ServerConsumer extends Consumer
 {
-	long getID();
-	
-	long getClientTargetID();
+	int getID();
 	
 	void close() throws Exception;
 	
@@ -43,9 +41,4 @@ public interface ServerConsumer extends Consumer
 	void receiveCredits(int credits) throws Exception;
 	
 	Queue getQueue();
-	
-//	void handleReplicatedDelivery(long messageID, long responseTargetID) throws Exception;
-	
-	//TODO - can we clean this up?
-//	void handleReplicatedDeliveryResponse(long messageID) throws Exception;
 }

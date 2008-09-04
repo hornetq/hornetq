@@ -23,7 +23,7 @@
 package org.jboss.messaging.core.server.impl;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.CommandManager;
+import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.core.server.Delivery;
 import org.jboss.messaging.core.server.MessageReference;
@@ -41,20 +41,20 @@ public class DeliveryImpl implements Delivery
    
    private final MessageReference reference;
    
-   private final long consumerID;
+   private final int consumerID;
    
    private final long deliveryID;
    
-   private final CommandManager commandManager;
+   private final Channel channel;
 
    public DeliveryImpl(final MessageReference reference, 
-                       final long consumerID,
-                       final long deliveryID, final CommandManager commandManager)
+                       final int consumerID,
+                       final long deliveryID, final Channel channel)
    {      
       this.reference = reference;
       this.consumerID = consumerID;
       this.deliveryID = deliveryID;
-      this.commandManager = commandManager;
+      this.channel = channel;
    }
 
    public MessageReference getReference()
@@ -69,8 +69,9 @@ public class DeliveryImpl implements Delivery
    
    public void deliver()
    {
-      ReceiveMessage message = new ReceiveMessage(reference.getMessage(), reference.getDeliveryCount() + 1, deliveryID);
+      ReceiveMessage message =
+         new ReceiveMessage(consumerID, reference.getMessage(), reference.getDeliveryCount() + 1, deliveryID);
       
-      commandManager.sendCommandOneway(consumerID, message);
+      channel.send(message);
    }
 }

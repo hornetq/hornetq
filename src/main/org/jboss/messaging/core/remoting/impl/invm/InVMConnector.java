@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.RemotingHandler;
+import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
@@ -45,7 +45,7 @@ public class InVMConnector implements Connector
 
    private final int id;
    
-   private final RemotingHandler handler;
+   private final BufferHandler handler;
    
    private final ConnectionLifeCycleListener listener;
    
@@ -55,14 +55,15 @@ public class InVMConnector implements Connector
    
    private volatile boolean started;
    
-   public InVMConnector(final Map<String, Object> configuration, final RemotingHandler handler,
+   public InVMConnector(final Map<String, Object> configuration,
+                        final BufferHandler handler,
                         final ConnectionLifeCycleListener listener)
    {
-      this.handler = handler;   
-      
       this.listener = listener;
       
       this.id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
+      
+      this.handler = handler;
       
       InVMRegistry registry = InVMRegistry.instance;
       
@@ -109,7 +110,7 @@ public class InVMConnector implements Connector
       started = true;
    }
    
-   public RemotingHandler getHandler()
+   public BufferHandler getHandler()
    {
       return handler;
    }

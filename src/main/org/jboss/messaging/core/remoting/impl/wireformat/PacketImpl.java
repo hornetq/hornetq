@@ -40,35 +40,26 @@ public class PacketImpl implements Packet
    
    private static final Logger log = Logger.getLogger(PacketImpl.class);
 
-   public static final long NO_ID_SET = -1L;
-   
    public static final int INITIAL_BUFFER_SIZE = 1024;
+   
+   private long channelID;
     
-   private int commandID;
-
-   private long responseTargetID = NO_ID_SET;
-
-   private long targetID = NO_ID_SET;
-
-   private long executorID = NO_ID_SET;
-
    private final byte type;
       
-   // The message types
+   // The packet types
    // -----------------------------------------------------------------------------------
-   
-   public static final byte NULL = 1;
-   public static final byte PING = 4;
-   public static final byte PONG = 5;
+      
+   public static final byte PING = 10;
+   public static final byte PONG = 11;
    
    // Miscellaneous   
-   public static final byte EXCEPTION = 10;
-   public static final byte CLOSE = 11;
+   public static final byte EXCEPTION = 20;   
    
    // Server
-   public static final byte CREATESESSION = 20;
-   public static final byte CREATESESSION_RESP = 21;
+   public static final byte CREATESESSION = 30;
+   public static final byte CREATESESSION_RESP = 31;
    
+      
    // Session   
    public static final byte SESS_CREATECONSUMER = 40;
    public static final byte SESS_CREATECONSUMER_RESP = 41;
@@ -89,45 +80,40 @@ public class PacketImpl implements Packet
    public static final byte SESS_REMOVE_DESTINATION = 56;
    public static final byte SESS_BINDINGQUERY = 57;
    public static final byte SESS_BINDINGQUERY_RESP = 58;
-   public static final byte SESS_BROWSER_RESET = 59;
-   public static final byte SESS_BROWSER_HASNEXTMESSAGE = 60;
-   public static final byte SESS_BROWSER_HASNEXTMESSAGE_RESP = 61;
-   public static final byte SESS_BROWSER_NEXTMESSAGE = 62; 
-   public static final byte SESS_XA_START = 63;
-   public static final byte SESS_XA_END = 64;
-   public static final byte SESS_XA_COMMIT = 65;
-   public static final byte SESS_XA_PREPARE = 66;
-   public static final byte SESS_XA_RESP = 67;
-   public static final byte SESS_XA_ROLLBACK = 68;
-   public static final byte SESS_XA_JOIN = 69;
-   public static final byte SESS_XA_SUSPEND = 70;
-   public static final byte SESS_XA_RESUME = 71;
-   public static final byte SESS_XA_FORGET = 72;
-   public static final byte SESS_XA_INDOUBT_XIDS = 73;
-   public static final byte SESS_XA_INDOUBT_XIDS_RESP = 74;
-   public static final byte SESS_XA_SET_TIMEOUT = 75;
-   public static final byte SESS_XA_SET_TIMEOUT_RESP = 76;
-   public static final byte SESS_XA_GET_TIMEOUT = 77;
-   public static final byte SESS_XA_GET_TIMEOUT_RESP = 78;
-   public static final byte SESS_START = 79;
-   public static final byte SESS_STOP = 80;
-       
-   // Consumer 
-   public static final byte CONS_FLOWTOKEN = 90;   
+   public static final byte SESS_BROWSER_MESSAGE = 59;
+   public static final byte SESS_BROWSER_RESET = 60;
+   public static final byte SESS_BROWSER_HASNEXTMESSAGE = 61;
+   public static final byte SESS_BROWSER_HASNEXTMESSAGE_RESP = 62;
+   public static final byte SESS_BROWSER_NEXTMESSAGE = 63; 
+   public static final byte SESS_XA_START = 64;
+   public static final byte SESS_XA_END = 65;
+   public static final byte SESS_XA_COMMIT = 66;
+   public static final byte SESS_XA_PREPARE = 67;
+   public static final byte SESS_XA_RESP = 68;
+   public static final byte SESS_XA_ROLLBACK = 69;
+   public static final byte SESS_XA_JOIN = 70;
+   public static final byte SESS_XA_SUSPEND = 71;
+   public static final byte SESS_XA_RESUME = 72;
+   public static final byte SESS_XA_FORGET = 73;
+   public static final byte SESS_XA_INDOUBT_XIDS = 74;
+   public static final byte SESS_XA_INDOUBT_XIDS_RESP = 75;
+   public static final byte SESS_XA_SET_TIMEOUT = 76;
+   public static final byte SESS_XA_SET_TIMEOUT_RESP = 77;
+   public static final byte SESS_XA_GET_TIMEOUT = 78;
+   public static final byte SESS_XA_GET_TIMEOUT_RESP = 79;
+   public static final byte SESS_START = 80;
+   public static final byte SESS_STOP = 81;
+   public static final byte SESS_FLOWTOKEN = 82;   
+   public static final byte SESS_SEND = 83;
+   public static final byte SESS_RECEIVETOKENS = 84;
+   public static final byte SESS_CLOSE = 85;
+   public static final byte SESS_CONSUMER_CLOSE = 86;
+   public static final byte SESS_PRODUCER_CLOSE = 87;
+   public static final byte SESS_BROWSER_CLOSE = 88;
+   public static final byte SESS_RECEIVE_MSG = 89;   
+   public static final byte SESS_PACKETS_CONFIRMED = 90;
+   public static final byte SESS_NULL_RESPONSE = 91;
    
-   //Producer
-   public static final byte PROD_SEND = 100;
-   public static final byte PROD_RECEIVETOKENS = 101;
-   
-   public static final byte RECEIVE_MSG = 110;
-   
-   public static final byte PACKETS_CONFIRMED = 111;
-   
-   //Replication
-   
-   public static final byte REPLICATE_DELIVERY = 112;
-   public static final byte REPLICATE_DELIVERY_RESPONSE = 113;
-
    // Static --------------------------------------------------------
 
    public PacketImpl(final byte type)
@@ -141,45 +127,15 @@ public class PacketImpl implements Packet
    {
       return type;
    }
-   
-   public void setCommandID(int commandID)
+     
+   public long getChannelID()
    {
-      this.commandID = commandID;
+      return channelID;
    }
 
-   public int getCommandID()
+   public void setChannelID(final long channelID)
    {
-      return commandID;
-   }
-
-   public void setResponseTargetID(long responseTargetID)
-   {
-      this.responseTargetID = responseTargetID;
-   }
-
-   public long getResponseTargetID()
-   {
-      return responseTargetID;
-   }
-
-   public long getTargetID()
-   {
-      return targetID;
-   }
-
-   public void setTargetID(long targetID)
-   {
-      this.targetID = targetID;
-   }
-
-   public long getExecutorID()
-   {
-      return executorID;
-   }
-
-   public void setExecutorID(long executorID)
-   {
-      this.executorID = executorID;
+      this.channelID = channelID;
    }
 
    public void encode(MessagingBuffer buffer)
@@ -187,10 +143,7 @@ public class PacketImpl implements Packet
       //The standard header fields
       buffer.putInt(0); //The length gets filled in at the end
       buffer.putByte(type); 
-      buffer.putInt(commandID);
-      buffer.putLong(responseTargetID);
-      buffer.putLong(targetID);
-      buffer.putLong(executorID);
+      buffer.putLong(channelID);
 
       encodeBody(buffer);
       
@@ -204,12 +157,14 @@ public class PacketImpl implements Packet
 
    public void decode(final MessagingBuffer buffer)
    {
-      commandID = buffer.getInt();      
-      responseTargetID = buffer.getLong();
-      targetID = buffer.getLong();
-      executorID = buffer.getLong();
-      
+      channelID = buffer.getLong();     
+
       decodeBody(buffer);
+   }
+   
+   public boolean isResponse()
+   {
+      return false;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
@@ -236,10 +191,7 @@ public class PacketImpl implements Packet
       PacketImpl r = (PacketImpl)other;
       
       return r.type == this.type &&
-             r.responseTargetID == this.responseTargetID &&
-             r.commandID == this.commandID &&
-             r.executorID == this.executorID &&
-             r.targetID == this.targetID;
+             r.channelID == this.channelID;
    }
    
    // Package protected ---------------------------------------------
@@ -247,8 +199,7 @@ public class PacketImpl implements Packet
    protected String getParentString()
    {
       return "PACKET[type=" + type
-      + ", responseTargetID=" + responseTargetID + ", targetID=" + targetID
-      + ", executorID=" + executorID;
+      + ", channelID=" + channelID + "]";
    }
 
    // Protected -----------------------------------------------------

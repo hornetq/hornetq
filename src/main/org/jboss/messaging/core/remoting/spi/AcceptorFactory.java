@@ -24,8 +24,6 @@ package org.jboss.messaging.core.remoting.spi;
 
 import java.util.Map;
 
-import org.jboss.messaging.core.remoting.RemotingHandler;
-
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -33,6 +31,6 @@ import org.jboss.messaging.core.remoting.RemotingHandler;
 public interface AcceptorFactory
 {
    Acceptor createAcceptor(final Map<String, Object> configuration,
-                           RemotingHandler handler,                         
+                           BufferHandler handler,                        
                            ConnectionLifeCycleListener listener);
 }

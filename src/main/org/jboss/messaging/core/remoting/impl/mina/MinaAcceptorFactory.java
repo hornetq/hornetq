@@ -24,9 +24,9 @@ package org.jboss.messaging.core.remoting.impl.mina;
 
 import java.util.Map;
 
-import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
+import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 
 /**
@@ -39,7 +39,7 @@ import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 public class MinaAcceptorFactory implements AcceptorFactory
 {
    public Acceptor createAcceptor(final Map<String, Object> configuration,
-                                  final RemotingHandler handler,                                 
+                                  final BufferHandler handler,                                 
                                   final ConnectionLifeCycleListener listener)
    {
       return new MinaAcceptor(configuration, handler, listener);   

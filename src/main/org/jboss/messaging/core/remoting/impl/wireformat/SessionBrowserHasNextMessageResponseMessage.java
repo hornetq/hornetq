@@ -57,6 +57,11 @@ public class SessionBrowserHasNextMessageResponseMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
+   public boolean isResponse()
+   {
+      return true;
+   }
+   
    public boolean hasNext()
    {
       return hasNext;

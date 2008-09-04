@@ -57,8 +57,8 @@ import org.apache.mina.transport.socket.SocketAcceptor;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
+import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.util.ConfigurationHelper;
@@ -81,7 +81,7 @@ public class MinaAcceptor implements Acceptor
 
    private IoServiceListener acceptorListener;
 
-   private final RemotingHandler handler;
+   private final BufferHandler handler;
 
    private final ConnectionLifeCycleListener listener;
    
@@ -105,7 +105,7 @@ public class MinaAcceptor implements Acceptor
    
    private final int tcpReceiveBufferSize;
 
-   public MinaAcceptor(final Map<String, Object> configuration, final RemotingHandler handler,
+   public MinaAcceptor(final Map<String, Object> configuration, final BufferHandler handler,
                        final ConnectionLifeCycleListener listener)
    {
       this.handler = handler;

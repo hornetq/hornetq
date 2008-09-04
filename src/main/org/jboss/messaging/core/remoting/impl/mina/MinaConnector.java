@@ -21,6 +21,23 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_HOST;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_KEYSTORE_PASSWORD;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_KEYSTORE_PATH;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_PORT;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_SSL_ENABLED;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_TCP_NODELAY;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.HOST_PROP_NAME;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.KEYSTORE_PASSWORD_PROP_NAME;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.KEYSTORE_PATH_PROP_NAME;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.PORT_PROP_NAME;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.SSL_ENABLED_PROP_NAME;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.TCP_NODELAY_PROPNAME;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME;
+import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME;
+
 import java.net.InetSocketAddress;
 import java.util.Map;
 
@@ -37,32 +54,11 @@ import org.apache.mina.transport.socket.SocketSessionConfig;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.RemotingHandler;
+import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
 import org.jboss.messaging.util.ConfigurationHelper;
-
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_HOST;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_KEYSTORE_PASSWORD;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_KEYSTORE_PATH;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_PORT;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_SSL_ENABLED;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_TCP_NODELAY;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.DEFAULT_TRUSTSTORE_PATH;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.HOST_PROP_NAME;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.KEYSTORE_PASSWORD_PROP_NAME;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.KEYSTORE_PATH_PROP_NAME;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.PORT_PROP_NAME;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.SSL_ENABLED_PROP_NAME;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.TCP_NODELAY_PROPNAME;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME;
-import static org.jboss.messaging.core.remoting.impl.mina.TransportConstants.TRUSTSTORE_PATH_PROP_NAME;
 /**
  *
  * A MinaConnector
@@ -80,7 +76,7 @@ public class MinaConnector implements Connector
 
    private SocketConnector connector;
 
-   private final RemotingHandler handler;
+   private final BufferHandler handler;
 
    private final ConnectionLifeCycleListener listener;
    
@@ -106,22 +102,23 @@ public class MinaConnector implements Connector
 
    // Public --------------------------------------------------------
 
-   public MinaConnector(final Map<String, Object> configuration,
-                        final RemotingHandler handler,
+   public MinaConnector(final Map<String, Object> configuration,                 
+                        final BufferHandler handler,
                         final ConnectionLifeCycleListener listener)
    {
+      if (listener == null)
+      {
+         throw new IllegalArgumentException("Invalid argument null listener");
+      }
+      
       if (handler == null)
       {
          throw new IllegalArgumentException("Invalid argument null handler");
       }
 
-      if (listener == null)
-      {
-         throw new IllegalArgumentException("Invalid argument null listener");
-      }
-
-      this.handler = handler;
       this.listener = listener;
+      
+      this.handler = handler;
       
       this.sslEnabled =
          ConfigurationHelper.getBooleanProperty(SSL_ENABLED_PROP_NAME, DEFAULT_SSL_ENABLED, configuration);
@@ -197,7 +194,7 @@ public class MinaConnector implements Connector
 
       connector.addListener(new ServiceListener());
    }
-
+   
    public synchronized void close()
    {
       if (connector != null)

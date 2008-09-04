@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.messaging.core.client.ClientBrowser;
+import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.util.SimpleString;
@@ -39,8 +40,6 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface ClientSessionInternal extends ClientSession
 {
-   long getServerTargetID();
-   
    void delivered(long deliveryID, boolean expired);
    
    void addConsumer(ClientConsumerInternal consumer);
@@ -64,4 +63,8 @@ public interface ClientSessionInternal extends ClientSession
    Map<SimpleString, ClientProducerInternal> getProducerCache();
    
    void cleanUp() throws Exception;
+   
+   void receiveProducerCredits(int producerID, int credits) throws Exception;
+            
+   void handleReceiveMessage(int consumerID, ClientMessage message) throws Exception;
 }

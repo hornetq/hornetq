@@ -74,17 +74,13 @@ public interface MessagingServer extends MessagingComponent
    
    Version getVersion();
   
-   CreateSessionResponseMessage createSession(final String name,
-                                              final String username, final String password,                                  
+   CreateSessionResponseMessage createSession(final String username, final String password,                                  
                                               final int incrementingVersion,
                                               final RemotingConnection remotingConnection,
                                               final boolean autoCommitSends,
                                               final boolean autoCommitAcks,
-                                              final boolean xa,
-                                              final long remoteCommandResponseTargetID) throws Exception;
-   
-   void removeSession(String name);
-        
+                                              final boolean xa) throws Exception;
+         
    boolean isStarted();
    
    MessagingServerControlMBean getServerManagement();  

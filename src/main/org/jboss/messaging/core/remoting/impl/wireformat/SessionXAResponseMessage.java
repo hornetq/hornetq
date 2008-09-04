@@ -64,6 +64,11 @@ public class SessionXAResponseMessage extends PacketImpl
 
    // Public --------------------------------------------------------
    
+   public boolean isResponse()
+   {
+      return true;
+   }
+   
    public boolean isError()
    {
       return error;

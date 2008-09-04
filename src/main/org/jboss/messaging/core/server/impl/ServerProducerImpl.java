@@ -26,9 +26,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.FlowController;
-import org.jboss.messaging.core.remoting.CommandManager;
+import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerProducer;
@@ -46,9 +45,7 @@ public class ServerProducerImpl implements ServerProducer
 {
 	private static final Logger log = Logger.getLogger(ServerProducerImpl.class);
 	
-	private final long id;
-	
-	private final long clientTargetID;
+	private final int id;
 	
 	private final ServerSession session;
 	
@@ -62,21 +59,18 @@ public class ServerProducerImpl implements ServerProducer
 	
    private AtomicInteger creditsToSend = new AtomicInteger(0);
    
-   private final CommandManager commandManager;
+   private final Channel channel;
      	
 	// Constructors ----------------------------------------------------------------
 	
-	public ServerProducerImpl(final ServerSession session, final long clientTargetID,
+	public ServerProducerImpl(final int id, final ServerSession session,
 	                          final SimpleString address, 
 			                    final FlowController flowController,
-			                    final int windowSize,
-			                    final PacketDispatcher dispatcher,
-			                    final CommandManager commandManager) throws Exception
-	{
-		this.id = dispatcher.generateID();
-		
-		this.clientTargetID = clientTargetID;
-      
+			                    final int windowSize,			                    
+			                    final Channel channel) throws Exception
+	{	
+	   this.id = id;
+	   
 		this.session = session;
 		
 		this.address = address;
@@ -85,12 +79,12 @@ public class ServerProducerImpl implements ServerProducer
 		
 		this.windowSize = windowSize;
 		
-		this.commandManager = commandManager;
+		this.channel = channel;
 	}
 	
 	// ServerProducer implementation --------------------------------------------
 	
-	public long getID()
+	public int getID()
 	{
 		return id;
 	}
@@ -132,9 +126,9 @@ public class ServerProducerImpl implements ServerProducer
 	{
 	   creditsToSend.addAndGet(-credits);
 	   
-		Packet packet = new ProducerFlowCreditMessage(credits);
+		Packet packet = new ProducerFlowCreditMessage(id, credits);
 		
-		commandManager.sendCommandOneway(clientTargetID, packet);	
+		channel.send( packet);	
 	}
 	
 	public void setWaiting(final boolean waiting)

@@ -28,7 +28,6 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
@@ -58,10 +57,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final boolean trace = log.isTraceEnabled();
 
-   private final long id;
+   private final int id;
    
-   private final long clientTargetID;
-
    private final Queue messageQueue;
    
    private final Filter filter;
@@ -82,16 +79,15 @@ public class ServerConsumerImpl implements ServerConsumer
    
    // Constructors ---------------------------------------------------------------------------------
  
-   public ServerConsumerImpl(final ServerSession session, final long clientTargetID,
+   public ServerConsumerImpl(final int id, final ServerSession session,
                       final Queue messageQueue, final Filter filter,
    		             final boolean enableFlowControl, final int maxRate, 
 					       final boolean started,					      
 					       final StorageManager storageManager,
 					       final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-					       final PostOffice postOffice,
-					       final PacketDispatcher dispatcher)
+					       final PostOffice postOffice)
    {
-   	this.clientTargetID = clientTargetID;
+      this.id = id;
       
       this.messageQueue = messageQueue;
       
@@ -115,22 +111,15 @@ public class ServerConsumerImpl implements ServerConsumer
       this.queueSettingsRepository = queueSettingsRepository;
       
       this.postOffice = postOffice;
-       
-      this.id = dispatcher.generateID();
-               
+                
       messageQueue.addConsumer(this);
    }
    
    // ServerConsumer implementation ----------------------------------------------------------------------
 
-   public long getID()
+   public int getID()
    {
    	return id;
-   }
-   
-   public long getClientTargetID()
-   {
-      return clientTargetID;
    }
    
    public void handleReplicatedDeliveryResponse(final long messageID) throws Exception

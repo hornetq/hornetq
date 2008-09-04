@@ -56,6 +56,11 @@ public class SessionXASetTimeoutResponseMessage extends PacketImpl
    
    // Public --------------------------------------------------------
    
+   public boolean isResponse()
+   {
+      return true;
+   }
+   
    public boolean isOK()
    {
       return ok;

@@ -24,7 +24,7 @@ package org.jboss.messaging.core.remoting.impl.netty;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.RemotingHandler;
+import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -43,11 +43,11 @@ class MessagingChannelHandler extends SimpleChannelHandler
 {
    private static final Logger log = Logger.getLogger(MessagingChannelHandler.class);
 
-   private final RemotingHandler handler;
+   private final BufferHandler handler;
    private final ConnectionLifeCycleListener listener;
    volatile boolean active;
 
-   MessagingChannelHandler(RemotingHandler handler, ConnectionLifeCycleListener listener)
+   MessagingChannelHandler(BufferHandler handler, ConnectionLifeCycleListener listener)
    {
       this.handler = handler;
       this.listener = listener;

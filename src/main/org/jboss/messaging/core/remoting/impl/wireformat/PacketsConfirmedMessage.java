@@ -45,14 +45,14 @@ public class PacketsConfirmedMessage extends PacketImpl
 
    public PacketsConfirmedMessage(final int commandID)
    {
-      super(PACKETS_CONFIRMED);
+      super(SESS_PACKETS_CONFIRMED);
 
       this.commandID = commandID;
    }
    
    public PacketsConfirmedMessage()
    {
-      super(PACKETS_CONFIRMED);
+      super(SESS_PACKETS_CONFIRMED);
    }
 
    // Public --------------------------------------------------------

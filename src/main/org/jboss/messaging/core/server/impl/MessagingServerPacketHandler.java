@@ -22,19 +22,15 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PING;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.remoting.impl.PacketDispatcherImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 import org.jboss.messaging.core.server.MessagingServer;
 
 /**
@@ -44,54 +40,45 @@ import org.jboss.messaging.core.server.MessagingServer;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class MessagingServerPacketHandler implements PacketHandler
+public class MessagingServerPacketHandler implements ChannelHandler
 {
    private static final Logger log = Logger.getLogger(MessagingServerPacketHandler.class);
 
    private final MessagingServer server;
 
-   private final RemotingService remotingService;
+   private final Channel channel1;
+   
+   private final RemotingConnection connection;
 
-   public MessagingServerPacketHandler(final MessagingServer server, final RemotingService remotingService)
+   public MessagingServerPacketHandler(final MessagingServer server, final Channel channel1,
+                                       final RemotingConnection connection)
    {
       this.server = server;
 
-      this.remotingService = remotingService;
+      this.channel1 = channel1;
+      
+      this.connection = connection;
    }
 
-   public long getID()
-   {
-      return PacketDispatcherImpl.MAIN_SERVER_HANDLER_ID;
-   }
-
-   public void handle(final Object connectionID, final Packet packet)
+   public void handlePacket(final Packet packet)
    {      
       Packet response = null;
 
-      RemotingConnection connection = remotingService.getConnection(connectionID);
-
       byte type = packet.getType();
-
+      
       try
       {
-         if (type == PING)
-         {
-            //The pong param is left as a placeholder
-            response = new Pong(-1);
-         }
-         else if (type == PacketImpl.CREATESESSION)
+         if (type == PacketImpl.CREATESESSION)
          {
             CreateSessionMessage request = (CreateSessionMessage) packet;
 
             response =
-               server.createSession(request.getName(),
-                                    request.getUsername(), request.getPassword(),
+               server.createSession(request.getUsername(), request.getPassword(),
                                     request.getVersion(),
                                     connection,
                                     request.isAutoCommitSends(),
                                     request.isAutoCommitAcks(),
-                                    request.isXA(),
-                                    request.getCommandResponseTargetID());                                                                
+                                    request.isXA());                                                                
          }
          else
          {
@@ -117,10 +104,6 @@ public class MessagingServerPacketHandler implements PacketHandler
          response = new MessagingExceptionMessage(me);
       }
 
-      response.setTargetID(packet.getResponseTargetID());
-         
-      connection.sendOneWay(response);                  
-
+      channel1.send(response);                  
    }
-
 }

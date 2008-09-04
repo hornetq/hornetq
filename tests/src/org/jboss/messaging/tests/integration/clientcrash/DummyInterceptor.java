@@ -28,6 +28,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
 import org.jboss.messaging.util.SimpleString;
 
@@ -52,7 +53,7 @@ public class DummyInterceptor implements Interceptor
       syncCounter.set(0);
    }
    
-   public boolean intercept(final Packet packet) throws MessagingException
+   public boolean intercept(final Packet packet, final RemotingConnection conn) throws MessagingException
    {
       log.debug("DummyFilter packet = " + packet.getClass().getName());
       syncCounter.addAndGet(1);

@@ -29,13 +29,12 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.ConnectionRegistry;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.JBMThreadFactory;
 
 /**
@@ -84,10 +83,8 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       }
       else
       {
-         PacketDispatcher dispatcher = new PacketDispatcherImpl(null);
-
-         RemotingHandler handler = new RemotingHandlerImpl(dispatcher, null);
-
+         DelegatingBufferHandler handler = new DelegatingBufferHandler();
+         
          Connector connector = connectorFactory.createConnector(params, handler, this);
          
          connector.start();
@@ -98,20 +95,12 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
          {
             throw new IllegalStateException("Failed to connect");
          }
-
-         RemotingConnection connection;
-
-         if (pingInterval != -1)
-         {
-            connection = new RemotingConnectionImpl(tc, dispatcher, 
-                     callTimeout, pingInterval, pingExecutor);
-         }
-         else
-         {
-            connection = new RemotingConnectionImpl(tc, dispatcher, 
-                     callTimeout);
-         }
          
+         RemotingConnectionImpl connection =
+            new RemotingConnectionImpl(tc, callTimeout, pingInterval, null, pingExecutor, null);
+         
+         handler.conn = connection;
+                 
          holder = new ConnectionHolder(connection, connector);
   
          connections.put(key, holder);
@@ -327,5 +316,15 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       {
          return connectorFactoryClassName.hashCode();
       }
+   }
+   
+   private class DelegatingBufferHandler extends AbstractBufferHandler
+   {
+      RemotingConnection conn;
+      
+      public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
+      {         
+         conn.bufferReceived(connectionID, buffer);
+      }            
    }
 }

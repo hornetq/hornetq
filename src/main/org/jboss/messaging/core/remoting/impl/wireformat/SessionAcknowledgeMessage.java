@@ -39,18 +39,23 @@ public class SessionAcknowledgeMessage extends PacketImpl
    private long deliveryID;
    
    private boolean allUpTo;
+   
+   private boolean requiresResponse;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionAcknowledgeMessage(final long deliveryID, final boolean allUpTo)
+   public SessionAcknowledgeMessage(final long deliveryID, final boolean allUpTo,
+                                    final boolean requiresResponse)
    {
       super(SESS_ACKNOWLEDGE);
       
       this.deliveryID = deliveryID;
       
       this.allUpTo = allUpTo;
+      
+      this.requiresResponse = requiresResponse;
    }
    
    public SessionAcknowledgeMessage()
@@ -60,6 +65,11 @@ public class SessionAcknowledgeMessage extends PacketImpl
 
    // Public --------------------------------------------------------
    
+   public boolean isRequiresResponse()
+   {
+      return requiresResponse;
+   }
+      
    public long getDeliveryID()
    {
       return deliveryID;
@@ -71,23 +81,19 @@ public class SessionAcknowledgeMessage extends PacketImpl
    }
    
    public void encodeBody(final MessagingBuffer buffer)
-   {
+   {      
       buffer.putLong(deliveryID);
       buffer.putBoolean(allUpTo);
+      buffer.putBoolean(requiresResponse);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
       deliveryID = buffer.getLong();
       allUpTo = buffer.getBoolean();
+      requiresResponse = buffer.getBoolean();
    }
 
-   @Override
-   public String toString()
-   {
-      return getParentString() + ", deliveryID=" + deliveryID + ", allUpTo=" + allUpTo + "]";
-   }
-   
    public boolean equals(Object other)
    {
       if (other instanceof SessionAcknowledgeMessage == false)
@@ -98,7 +104,7 @@ public class SessionAcknowledgeMessage extends PacketImpl
       SessionAcknowledgeMessage r = (SessionAcknowledgeMessage)other;
       
       return super.equals(other) && this.deliveryID == r.deliveryID &&
-             this.allUpTo == r.allUpTo;
+             this.allUpTo == r.allUpTo && this.requiresResponse == r.requiresResponse;
    }
 
    // Package protected ---------------------------------------------

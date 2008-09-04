@@ -32,10 +32,9 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.CommandManager;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.impl.wireformat.ConsumerFlowCreditMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionFlowCreditMessage;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -64,16 +63,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private final ClientSessionInternal session;
    
-   private final CommandManager commandManager;
+   private final Channel channel;
       
-   private final long targetID;
-   
-   private final long clientTargetID;
+   private final int id;
    
    private final Executor sessionExecutor;
    
-   private final PacketDispatcher dispatcher;
-
    private final int clientWindowSize;
    
    private final PriorityLinkedList<ClientMessage> buffer = new PriorityLinkedListImpl<ClientMessage>(10);
@@ -98,25 +93,20 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ClientConsumerImpl(final ClientSessionInternal session, final long targetID,
-                             final long clientTargetID,                                                   
+   public ClientConsumerImpl(final ClientSessionInternal session,
+                             final int id,                                                             
                              final int clientWindowSize,
                              final boolean direct,                             
-                             final PacketDispatcher dispatcher,
                              final Executor executor,
-                             final CommandManager commandManager)
+                             final Channel channel)
    {
-      this.targetID = targetID;
+      this.id = id;
       
-      this.clientTargetID = clientTargetID;
-      
-      this.commandManager = commandManager;
+      this.channel = channel;
       
       this.session = session;
       
       this.sessionExecutor = executor;
-      
-      this.dispatcher = dispatcher;
       
       this.clientWindowSize = clientWindowSize;
       
@@ -125,7 +115,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    // ClientConsumer implementation
    // -----------------------------------------------------------------
-
+      
    public synchronized ClientMessage receive(long timeout) throws MessagingException
    {
       checkClosed();
@@ -274,10 +264,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    // ClientConsumerInternal implementation
    // --------------------------------------------------------------
-
-   public long getClientTargetID()
+   
+   public int getID()
    {
-      return this.clientTargetID;
+      return id;
    }
 
    public void handleMessage(final ClientMessage message) throws Exception
@@ -309,9 +299,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          	throw new IllegalStateException("Invalid delivery id " + delID);
          }
       }
-      
-      
-      
+                  
       if (handler != null)
       {
          if (direct)
@@ -332,7 +320,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          else
          {
          	//Execute using executor
-         	
+            
          	synchronized (this)
          	{   
          		buffer.addLast(message, message.getPriority());         		
@@ -405,7 +393,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          
          if (creditsToSend >= clientWindowSize)
          {            
-            commandManager.sendCommandOneway(targetID, new ConsumerFlowCreditMessage(creditsToSend));
+            channel.send(new SessionFlowCreditMessage(id, creditsToSend));
             
             creditsToSend = 0;            
          }
@@ -502,7 +490,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          // Now we wait for any current handler runners to run.
          waitForOnMessageToComplete();
-         
+    
          closed = true;
 
          if (receiverThread != null)
@@ -520,10 +508,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          if (sendCloseMessage)
          {
-            commandManager.sendCommandBlocking(targetID, new PacketImpl(PacketImpl.CLOSE));          
+            channel.sendBlocking(new SessionConsumerCloseMessage(id));
          }
-
-         dispatcher.unregister(clientTargetID);
       }
       finally
       {

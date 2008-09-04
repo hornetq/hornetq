@@ -54,6 +54,11 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
    {
       super(SESS_BINDINGQUERY_RESP);
    }
+   
+   public boolean isResponse()
+   {
+      return true;
+   }
 
    public boolean isExists()
    {

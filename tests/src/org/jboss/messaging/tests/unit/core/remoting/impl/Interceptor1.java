@@ -24,6 +24,7 @@ package org.jboss.messaging.tests.unit.core.remoting.impl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.RemotingConnection;
 
 /**
  * 
@@ -34,7 +35,7 @@ import org.jboss.messaging.core.remoting.Packet;
  */
 public class Interceptor1 implements Interceptor
 {
-   public boolean intercept(Packet packet) throws MessagingException
+   public boolean intercept(Packet packet, RemotingConnection conn) throws MessagingException
    {
       return false;
    }

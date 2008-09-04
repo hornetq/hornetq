@@ -37,8 +37,6 @@ public class SessionCreateProducerMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private long clientTargetID;
-   
    private SimpleString address;
    
    private int windowSize;
@@ -49,12 +47,10 @@ public class SessionCreateProducerMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateProducerMessage(final long clientTargetID, final SimpleString address, final int windowSize, final int maxRate)
+   public SessionCreateProducerMessage(final SimpleString address, final int windowSize, final int maxRate)
    {
       super(SESS_CREATEPRODUCER);
-
-      this.clientTargetID = clientTargetID;
-      
+  
       this.address = address;
       
       this.windowSize = windowSize;
@@ -79,11 +75,6 @@ public class SessionCreateProducerMessage extends PacketImpl
       buff.append("]");
       return buff.toString();
    }
-   
-   public long getClientTargetID()
-   {
-      return clientTargetID;
-   }
 
    public SimpleString getAddress()
    {
@@ -102,7 +93,6 @@ public class SessionCreateProducerMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(clientTargetID);
       buffer.putNullableSimpleString(address);
       buffer.putInt(windowSize);
       buffer.putInt(maxRate);
@@ -110,7 +100,6 @@ public class SessionCreateProducerMessage extends PacketImpl
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      clientTargetID = buffer.getLong();      
       address = buffer.getNullableSimpleString();      
       windowSize = buffer.getInt();      
       maxRate = buffer.getInt();
@@ -125,7 +114,7 @@ public class SessionCreateProducerMessage extends PacketImpl
             
       SessionCreateProducerMessage r = (SessionCreateProducerMessage)other;
       
-      return super.equals(other) && this.clientTargetID == r.clientTargetID &&
+      return super.equals(other) &&
              this.address == null ? r.address == null : this.address.equals(r.address) &&
              this.windowSize == r.windowSize &&
              this.maxRate == r.maxRate;                  

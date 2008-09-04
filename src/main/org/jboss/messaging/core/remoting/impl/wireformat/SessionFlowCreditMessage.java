@@ -20,75 +20,85 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */ 
 
-package org.jboss.messaging.core.remoting.impl.wireformat.cluster;
+package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
- * 
- * A ConsumerReplicateDeliveryMessage
- * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * 
+ * @version <tt>$Revision$</tt>
  */
-public class ConsumerReplicateDeliveryMessage extends PacketImpl
+public class SessionFlowCreditMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private long messageID;
+   private int consumerID;
+   
+   private int credits;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ConsumerReplicateDeliveryMessage(final long messageID)
+   public SessionFlowCreditMessage(final int consumerID, final int credits)
    {
-      super(REPLICATE_DELIVERY);
+      super(SESS_FLOWTOKEN);
 
-      this.messageID = messageID;
+      this.consumerID = consumerID;
+      
+      this.credits = credits;
    }
    
-   public ConsumerReplicateDeliveryMessage()
+   public SessionFlowCreditMessage()
    {
-      super(REPLICATE_DELIVERY);
+      super(SESS_FLOWTOKEN);
    }
 
    // Public --------------------------------------------------------
 
-   public long getMessageID()
+   public int getConsumerID()
    {
-      return messageID;
+      return consumerID;
+   }
+   
+   public int getCredits()
+   {
+      return credits;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(messageID);
+      buffer.putInt(consumerID);
+      buffer.putInt(credits);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      messageID = buffer.getLong();
+      consumerID = buffer.getInt();
+      credits = buffer.getInt();
    }
 
    @Override
    public String toString()
    {
-      return getParentString() + ", messageID=" + messageID + "]";
+      return getParentString() + ", consumerID=" + consumerID + ", credits=" + credits + "]";
    }
    
    public boolean equals(Object other)
    {
-      if (other instanceof ConsumerReplicateDeliveryMessage == false)
+      if (other instanceof SessionFlowCreditMessage == false)
       {
          return false;
       }
             
-      ConsumerReplicateDeliveryMessage r = (ConsumerReplicateDeliveryMessage)other;
+      SessionFlowCreditMessage r = (SessionFlowCreditMessage)other;
       
-      return super.equals(other) && this.messageID == r.messageID;
+      return super.equals(other) && this.credits == r.credits
+       && this.consumerID == r.consumerID;
    }
    // Package protected ---------------------------------------------
 

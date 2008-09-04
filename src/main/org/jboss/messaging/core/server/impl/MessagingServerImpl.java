@@ -23,13 +23,11 @@
 package org.jboss.messaging.core.server.impl;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -44,13 +42,13 @@ import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
-import org.jboss.messaging.core.remoting.CommandManager;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.ConnectionRegistry;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.remoting.impl.CommandManagerImpl;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
+import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.security.JBMSecurityManager;
@@ -59,7 +57,6 @@ import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.QueueFactory;
-import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -70,7 +67,6 @@ import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.VersionLoader;
-
 
 /**
  * The messaging server implementation
@@ -106,12 +102,11 @@ public class MessagingServerImpl implements MessagingServer
    private PostOffice postOffice;
    private final ExecutorFactory executorFactory = new OrderedExecutorFactory(Executors.newCachedThreadPool(new JBMThreadFactory("JBM-async-session-delivery-threads")));
    private HierarchicalRepository<Set<Role>> securityRepository;
-   private ResourceManager resourceManager;   
-   private MessagingServerPacketHandler serverPacketHandler;
+   private ResourceManager resourceManager;     
    private MessagingServerControlMBean serverManagement;
-   private PacketDispatcher dispatcher;
    private RemotingConnection replicatingConnection;
-
+   private final AtomicInteger sessionIDSequence = new AtomicInteger(2);
+     
    // plugins
 
    private StorageManager storageManager;
@@ -119,9 +114,7 @@ public class MessagingServerImpl implements MessagingServer
    private JBMSecurityManager securityManager;  
    private Configuration configuration;
    private ManagementService managementService;
-   
-   private ConcurrentMap<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
-        
+         
    // Constructors ---------------------------------------------------------------------------------
    
    public MessagingServerImpl()
@@ -203,15 +196,13 @@ public class MessagingServerImpl implements MessagingServer
       securityStore.setSecurityRepository(securityRepository);
       securityStore.setSecurityManager(securityManager);                       
       resourceManager = new ResourceManagerImpl(0);                           
-      dispatcher = remotingService.getDispatcher();
       serverManagement = managementService.registerServer(postOffice, storageManager, configuration,
             securityRepository,
             queueSettingsRepository, this);
 
       postOffice.start();
       postOffice.setBackup(configuration.isBackup());
-      serverPacketHandler = new MessagingServerPacketHandler(this, remotingService); 
-      
+    
       TransportConfiguration backupConnector = configuration.getBackupConnectorConfiguration();
       
       if (backupConnector != null)
@@ -232,10 +223,9 @@ public class MessagingServerImpl implements MessagingServer
             throw new IllegalArgumentException("Error instantiating interceptor \"" + backupConnector.getFactoryClassName() + "\"", e);
          }  
       }
+      remotingService.setMessagingServer(this);
      
-      //Register the handler as the last thing - since after that users will be able to connect
-      started = true;
-      dispatcher.register(serverPacketHandler);      
+      started = true;    
    }
 
    public synchronized void stop() throws Exception
@@ -244,8 +234,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          return;
       }
-      
-      dispatcher.unregister(serverPacketHandler.getID());      
+          
       if (this.replicatingConnection != null)
       {
          ConnectionRegistryImpl.instance.returnConnection(replicatingConnection.getID());
@@ -259,7 +248,6 @@ public class MessagingServerImpl implements MessagingServer
       scheduledExecutor.shutdown();
       queueFactory = null;
       resourceManager = null;
-      serverPacketHandler = null;
       serverManagement = null;
 
       started = false;
@@ -363,15 +351,13 @@ public class MessagingServerImpl implements MessagingServer
    {
       return started;
    }
-
-   public CreateSessionResponseMessage createSession(final String name,
-                                                     final String username, final String password,                                  
+     
+   public CreateSessionResponseMessage createSession(final String username, final String password,                                  
                                                      final int incrementingVersion,
                                                      final RemotingConnection remotingConnection,
                                                      final boolean autoCommitSends,
                                                      final boolean autoCommitAcks,
-                                                     final boolean xa,
-                                                     final long remoteCommandResponseTargetID)
+                                                     final boolean xa)
            throws Exception
    {
       if (version.getIncrementingVersion() < incrementingVersion)
@@ -389,49 +375,31 @@ public class MessagingServerImpl implements MessagingServer
 
       securityStore.authenticate(username, password);
 
-      long localCommandResponseTargetID = dispatcher.generateID();
-                         
-      long sessionID = dispatcher.generateID();
+      long sessionID = this.generateSessionID();
       
-      CommandManager cm = new CommandManagerImpl(configuration.getPacketConfirmationBatchSize(),
-               remotingConnection, dispatcher, sessionID,
-               localCommandResponseTargetID,
-               remoteCommandResponseTargetID);
+      Channel channel =
+         remotingConnection.getChannel(sessionID, true, configuration.getPacketConfirmationBatchSize());
       
-      final ServerSessionImpl session = new ServerSessionImpl(sessionID, name, username, password,
+      final ServerSessionImpl session = new ServerSessionImpl(sessionID, username, password,
                                   autoCommitSends, autoCommitAcks, xa,
                                   remotingConnection, 
-                                  this, storageManager, postOffice,
+                                  storageManager, postOffice,
                                   queueSettingsRepository,
                                   resourceManager,
-                                  securityStore,
-                                  remotingConnection.getPacketDispatcher(),
+                                  securityStore,                                  
                                   executorFactory.getExecutor(),
-                                  cm);
+                                  channel);
       
+      ChannelHandler handler = new ServerSessionPacketHandler(session, channel);
       
-      dispatcher.register(new ServerSessionPacketHandler(session, cm));
-                        
-      if (sessions.putIfAbsent(name, session) != null)
-      {
-         throw new MessagingException(MessagingException.SESSION_EXISTS, "Session with name " + name + " already exists");
-      }
-      
+      channel.setHandler(handler);
+                         
       remotingConnection.addFailureListener(session);
                   
       return
-         new CreateSessionResponseMessage(session.getID(), localCommandResponseTargetID,
-                  version.getIncrementingVersion(), configuration.getPacketConfirmationBatchSize());
+         new CreateSessionResponseMessage(sessionID, version.getIncrementingVersion(), configuration.getPacketConfirmationBatchSize());
    }
-   
-   public void removeSession(final String name)
-   {
-      if (sessions.remove(name) == null)
-      {
-         throw new IllegalStateException("Cannot find session to remove " + name);
-      }
-   }
-         
+      
    public MessagingServerControlMBean getServerManagement()
    {
       return serverManagement;
@@ -454,16 +422,24 @@ public class MessagingServerImpl implements MessagingServer
 
    // Public ---------------------------------------------------------------------------------------
    
-   public Map<String, ServerSession> getSessions()
-   {
-      return sessions;
-   }
-
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
 
+   private int generateSessionID()
+   {
+      int id = sessionIDSequence.getAndIncrement();
+      
+      //Channel zero is reserved for pinging, channel 1 is reserved for messaging server
+      if (id == 0 || id == 1)
+      {
+         id = this.generateSessionID();
+      }
+      
+      return id;
+   }
+   
    // Inner classes --------------------------------------------------------------------------------
 }

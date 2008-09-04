@@ -250,7 +250,7 @@ public class PingTest extends TestCase
   {
      Interceptor noPongInterceptor = new Interceptor()
      {
-        public boolean intercept(Packet packet) throws MessagingException
+        public boolean intercept(Packet packet, RemotingConnection conn) throws MessagingException
         {
            if (packet.getType() == PacketImpl.PING)
            {
@@ -263,7 +263,7 @@ public class PingTest extends TestCase
         }
      };
      
-     messagingService.getServer().getRemotingService().getDispatcher().addInterceptor(noPongInterceptor);
+     messagingService.getServer().getRemotingService().addInterceptor(noPongInterceptor);
           
      ConnectorFactory cf = new NettyConnectorFactory();
      Map<String, Object> params = new HashMap<String, Object>();
@@ -301,7 +301,7 @@ public class PingTest extends TestCase
      RemotingConnection conn2 = registry.getConnection(cf, params, PING_INTERVAL, 5000);
      assertNotNull(conn2);        
 
-     messagingService.getServer().getRemotingService().getDispatcher().removeInterceptor(noPongInterceptor);
+     messagingService.getServer().getRemotingService().removeInterceptor(noPongInterceptor);
      
      registry.returnConnection(conn2.getID());
      

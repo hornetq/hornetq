@@ -2601,9 +2601,14 @@ public class MessageConsumerTest extends JMSTestCase
             queueProducer.send(producerSession.createTextMessage("Message #" + Integer.toString(i)));
          }
 
+         log.info("sent messages");
+         
          consumerConnection.stop();
 
+         log.info("Closing connection");
          consumerConnection.close();
+         log.info("Connection closed");
+         
 
          consumerConnection = null;
       }

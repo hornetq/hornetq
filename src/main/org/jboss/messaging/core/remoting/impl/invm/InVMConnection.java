@@ -24,8 +24,8 @@ package org.jboss.messaging.core.remoting.impl.invm;
 import java.nio.ByteBuffer;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
@@ -41,7 +41,7 @@ public class InVMConnection implements Connection
 {
    private static final Logger log = Logger.getLogger(InVMConnection.class);
    
-   private final RemotingHandler handler;
+   private final BufferHandler handler;
    
    private final ConnectionLifeCycleListener listener;
    
@@ -49,12 +49,12 @@ public class InVMConnection implements Connection
    
    private volatile boolean started;
    
-   public InVMConnection(final RemotingHandler handler, final ConnectionLifeCycleListener listener)
+   public InVMConnection(final BufferHandler handler, final ConnectionLifeCycleListener listener)
    {
       this (UUIDGenerator.getInstance().generateSimpleStringUUID().toString(), handler, listener);
    }
    
-   public InVMConnection(final String id, final RemotingHandler handler, final ConnectionLifeCycleListener listener)
+   public InVMConnection(final String id, final BufferHandler handler, final ConnectionLifeCycleListener listener)
    {
       this.handler = handler;
       

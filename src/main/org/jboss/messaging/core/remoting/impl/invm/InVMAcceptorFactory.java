@@ -23,9 +23,9 @@ package org.jboss.messaging.core.remoting.impl.invm;
 
 import java.util.Map;
 
-import org.jboss.messaging.core.remoting.RemotingHandler;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
+import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 
 /**
@@ -38,7 +38,7 @@ public class InVMAcceptorFactory implements AcceptorFactory
 {
 
    public Acceptor createAcceptor(final Map<String, Object> configuration,
-            final RemotingHandler handler, final ConnectionLifeCycleListener listener)
+            final BufferHandler handler, final ConnectionLifeCycleListener listener)
    {
       return new InVMAcceptor(configuration, handler, listener);
    }

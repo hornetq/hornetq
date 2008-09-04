@@ -25,7 +25,7 @@ package org.jboss.messaging.core.remoting.impl.netty;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
-import org.jboss.messaging.core.remoting.RemotingHandler;
+import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.handler.ssl.SslHandler;
 
@@ -54,7 +54,7 @@ public class ChannelPipelineSupport
    // Public --------------------------------------------------------
 
    public static void addCodecFilter(final ChannelPipeline pipeline,
-                                     final RemotingHandler handler)
+                                     final BufferHandler handler)
    {
       assert pipeline != null;
       pipeline.addLast("decoder", new MessagingFrameDecoder(handler));
