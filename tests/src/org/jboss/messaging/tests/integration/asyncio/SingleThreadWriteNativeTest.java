@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 
 import org.jboss.messaging.core.asyncio.AIOCallback;
+import org.jboss.messaging.core.asyncio.BufferCallback;
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.logging.Logger;
 
@@ -303,6 +304,156 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
       
    }
    
+   public void testBufferCallbackUniqueBuffers() throws Exception
+   {
+      boolean closed = false;
+      final AsynchronousFileImpl controller = new AsynchronousFileImpl();
+      try
+      {
+         final int NUMBER_LINES = 1000;
+         final int SIZE = 512;
+         
+         
+         controller.open(FILE_NAME, 1000);
+         
+         controller.fill(0, 1, NUMBER_LINES * SIZE, (byte) 'j');
+         
+         final ArrayList<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
+         
+         BufferCallback bufferCallback = new BufferCallback()
+         {
+            public void bufferDone(ByteBuffer buffer)
+            {
+               buffers.add(buffer);
+            }
+         };
+         
+         
+         controller.setBufferCallback(bufferCallback);
+
+         CountDownLatch latch = new CountDownLatch(NUMBER_LINES);
+         CountDownCallback aio = new CountDownCallback(latch);
+         for (int i = 0; i < NUMBER_LINES; i++)
+         {
+            ByteBuffer buffer = controller.newBuffer(SIZE);
+            buffer.rewind();
+            for (int j = 0; j < SIZE; j++)
+            {
+               buffer.put((byte)(j % Byte.MAX_VALUE));
+            }
+            controller.write(i * SIZE, SIZE, buffer, aio);
+         }
+         
+         // The buffer callback is only called after the complete callback was called.
+         // Because of that a race could happen on the assertions to buffers.size what would invalidate the test
+         // We close the file and that would guarantee the buffer callback was called for all the elements
+         controller.close();
+         closed = true;
+         
+         assertEquals(NUMBER_LINES, buffers.size());
+         
+         // Make sure all the buffers are unique
+         ByteBuffer lineOne = null;
+         for (ByteBuffer bufferTmp: buffers)
+         {
+            if (lineOne == null)
+            {
+               lineOne = bufferTmp;
+            }
+            else
+            {
+               assertTrue (lineOne != bufferTmp);
+            }
+         }
+         
+         buffers.clear();
+
+      }
+      finally
+      {
+         if (!closed)
+         {
+            controller.close();
+         }
+      }
+   }
+   
+   public void testBufferCallbackAwaysSameBuffer() throws Exception
+   {
+      boolean closed = false;
+      final AsynchronousFileImpl controller = new AsynchronousFileImpl();
+      try
+      {
+         final int NUMBER_LINES = 1000;
+         final int SIZE = 512;
+         
+         
+         controller.open(FILE_NAME, 1000);
+         
+         controller.fill(0, 1, NUMBER_LINES * SIZE, (byte) 'j');
+         
+         final ArrayList<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
+         
+         BufferCallback bufferCallback = new BufferCallback()
+         {
+            public void bufferDone(ByteBuffer buffer)
+            {
+               buffers.add(buffer);
+            }
+         };
+         
+         
+         controller.setBufferCallback(bufferCallback);
+
+         CountDownLatch latch = new CountDownLatch(NUMBER_LINES);
+         CountDownCallback aio = new CountDownCallback(latch);
+         
+         ByteBuffer buffer = controller.newBuffer(SIZE);
+         buffer.rewind();
+         for (int j = 0; j < SIZE; j++)
+         {
+            buffer.put((byte)(j % Byte.MAX_VALUE));
+         }
+
+         for (int i = 0; i < NUMBER_LINES; i++)
+         {
+            controller.write(i * SIZE, SIZE, buffer, aio);
+         }
+         
+         // The buffer callback is only called after the complete callback was called.
+         // Because of that a race could happen on the assertions to buffers.size what would invalidate the test
+         // We close the file and that would guarantee the buffer callback was called for all the elements
+         controller.close();
+         closed = true;
+         
+         assertEquals(NUMBER_LINES, buffers.size());
+         
+         // Make sure all the buffers are unique
+         ByteBuffer lineOne = null;
+         for (ByteBuffer bufferTmp: buffers)
+         {
+            if (lineOne == null)
+            {
+               lineOne = bufferTmp;
+            }
+            else
+            {
+               assertTrue (lineOne == bufferTmp);
+            }
+         }
+         
+         buffers.clear();
+
+      }
+      finally
+      {
+         if (!closed)
+         {
+            controller.close();
+         }
+      }
+   }
+   
    public void testRead() throws Exception
    {
       final AsynchronousFileImpl controller = new AsynchronousFileImpl();
@@ -316,7 +467,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          
          controller.fill(0, 1, NUMBER_LINES * SIZE, (byte) 'j');
          
-          {
+         {
          CountDownLatch latch = new CountDownLatch(NUMBER_LINES);
          CountDownCallback aio = new CountDownCallback(latch);
 
