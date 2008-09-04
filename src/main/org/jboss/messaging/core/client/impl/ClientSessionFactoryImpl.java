@@ -299,7 +299,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
 
    // Private --------------------------------------------------------------------------------------
    
-   private ClientSession createSessionInternal(final String username, final String password, final boolean xa,
+   //TODO for now needs to be synchronized since we can't currently cope with more than one
+   //concurrent blocking send on a particular channel.
+   private synchronized ClientSession createSessionInternal(final String username, final String password, final boolean xa,
             final boolean autoCommitSends, final boolean autoCommitAcks,
             int lazyAckBatchSize, boolean cacheProducers)                 
       throws MessagingException
