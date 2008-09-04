@@ -21,13 +21,15 @@
   */
 package org.jboss.messaging.core.server.impl;
 
-import java.lang.management.ManagementFactory;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.journal.Journal;
+import org.jboss.messaging.core.journal.impl.JournalImpl;
+import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;
 import org.jboss.messaging.core.persistence.impl.nullpm.NullStorageManager;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
@@ -35,6 +37,8 @@ import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.MessagingService;
+
+import java.lang.management.ManagementFactory;
 
 /**
  * 
@@ -71,6 +75,44 @@ public class MessagingServiceImpl implements MessagingService
       
       server.setManagementService(managementService);
       
+      return new MessagingServiceImpl(server, storageManager, remotingService);
+   }
+
+   public static MessagingServiceImpl newNioStorageMessagingServer(final Configuration config, String journalDir, String bindingsDir)
+   {
+      NIOSequentialFileFactory sequentialFileFactory = new NIOSequentialFileFactory(journalDir);
+      NIOSequentialFileFactory sequentialFileFactory2 = new NIOSequentialFileFactory(bindingsDir);
+      Journal msgs =
+         new JournalImpl(config.getJournalFileSize(),
+	   		config.getJournalMinFiles(), config.isJournalSyncTransactional(),
+	   		config.isJournalSyncNonTransactional(), sequentialFileFactory2,
+	   		"jbm-data", "jbm", config.getJournalMaxAIO(), 0);
+      Journal bindings =
+        new JournalImpl(config.getJournalFileSize(),
+	   		config.getJournalMinFiles(), config.isJournalSyncTransactional(),
+	   		config.isJournalSyncNonTransactional(), sequentialFileFactory,
+	   		"jbm-bindings", "jbm", config.getJournalMaxAIO(), 0);
+
+      StorageManager storageManager = new JournalStorageManager(msgs, bindings);
+
+      RemotingService remotingService = new RemotingServiceImpl(config);
+
+      JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
+
+      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), false);
+
+      MessagingServer server = new MessagingServerImpl();
+
+      server.setConfiguration(config);
+
+      server.setStorageManager(storageManager);
+
+      server.setRemotingService(remotingService);
+
+      server.setSecurityManager(securityManager);
+
+      server.setManagementService(managementService);
+
       return new MessagingServiceImpl(server, storageManager, remotingService);
    }
    

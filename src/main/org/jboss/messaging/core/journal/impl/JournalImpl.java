@@ -22,46 +22,21 @@
 
 package org.jboss.messaging.core.journal.impl;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.journal.BufferCallback;
-import org.jboss.messaging.core.journal.EncodingSupport;
-import org.jboss.messaging.core.journal.IOCallback;
-import org.jboss.messaging.core.journal.LoadManager;
-import org.jboss.messaging.core.journal.PreparedTransactionInfo;
-import org.jboss.messaging.core.journal.RecordInfo;
-import org.jboss.messaging.core.journal.SequentialFile;
-import org.jboss.messaging.core.journal.SequentialFileFactory;
-import org.jboss.messaging.core.journal.TestableJournal;
+import org.jboss.messaging.core.journal.*;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.core.remoting.impl.wireformat.XidCodecSupport;
+import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.VariableLatch;
+
+import javax.transaction.xa.Xid;
+import java.nio.ByteBuffer;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 
@@ -125,11 +100,11 @@ public class JournalImpl implements TestableJournal
    
    public static final int SIZE_COMPLETE_TRANSACTION_RECORD = BASIC_SIZE + SIZE_INT + SIZE_LONG; // + NumerOfElements*SIZE_INT*2
    
-   public static final int SIZE_PREPARE_RECORD = SIZE_COMPLETE_TRANSACTION_RECORD;
+   public static final int SIZE_PREPARE_RECORD = SIZE_COMPLETE_TRANSACTION_RECORD + SIZE_INT;
    
    public static final byte PREPARE_RECORD = 17;
    
-   public static final int SIZE_COMMIT_RECORD = SIZE_PREPARE_RECORD;
+   public static final int SIZE_COMMIT_RECORD = SIZE_COMPLETE_TRANSACTION_RECORD;
    
    public static final byte COMMIT_RECORD = 18;
    
@@ -652,7 +627,7 @@ public class JournalImpl implements TestableJournal
       }
    }  
    
-   public void appendPrepareRecord(final long txID) throws Exception
+   public void appendPrepareRecord(final long txID, Xid xid) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -666,7 +641,7 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Cannot find tx with id " + txID);
       }
       
-      ByteBuffer bb = writeTransaction(PREPARE_RECORD, txID, tx);
+      ByteBuffer bb = writePrepareTransaction(PREPARE_RECORD, txID, tx, xid);
       
       lock.acquire();
       
@@ -696,7 +671,7 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Cannot find tx with id " + txID);
       }
       
-      ByteBuffer bb = writeTransaction(COMMIT_RECORD, txID, tx);
+      ByteBuffer bb = writeCommitTransaction(COMMIT_RECORD, txID, tx);
       
       lock.acquire();
       
@@ -868,7 +843,7 @@ public class JournalImpl implements TestableJournal
                transactionID = bb.getLong();
                maxTransactionID = Math.max(maxTransactionID, transactionID); 
             }
-            
+
             long recordID = 0;
             if (!isCompleteTransaction(recordType))
             {
@@ -907,9 +882,13 @@ public class JournalImpl implements TestableJournal
             
             if (recordType == PREPARE_RECORD || recordType == COMMIT_RECORD)
             {
-               variableSize = bb.getInt() * SIZE_INT * 2;
+               if(recordType == PREPARE_RECORD)
+               {
+                  variableSize = bb.getInt();
+               }
+               variableSize += bb.getInt() * SIZE_INT * 2;
             }
-            
+
             int recordSize = getRecordSize(recordType);
             
             if (pos + recordSize + variableSize > fileSize)
@@ -1039,12 +1018,19 @@ public class JournalImpl implements TestableJournal
                   
                   // We need to read it even if transaction was not found, or the reading checks would fail
                   // Pair <OrderId, NumberOfElements>
-                  Pair<Integer, Integer>[] values = readReferencesOnTransaction(variableSize, bb);
+                  Xid xid = null;
+                  int formatID = bb.getInt();
+                  byte[] bq = new byte[bb.getInt()];
+                  bb.get(bq);
+                  byte[] gtxid = new byte[bb.getInt()];
+                  bb.get(gtxid);
+                  xid = new XidImpl(bq, formatID, gtxid);
+                  Pair<Integer, Integer>[] values = readReferencesOnTransaction(variableSize - XidCodecSupport.getXidEncodeLength(xid), bb);
 
                   if (tx != null)
                   {                     
                      tx.prepared = true;
-                     
+                     tx.xid = xid;
                      JournalTransaction journalTransaction = transactionInfos.get(transactionID);
                      
                      if (journalTransaction == null)
@@ -1241,7 +1227,7 @@ public class JournalImpl implements TestableJournal
          }
          else
          {
-            PreparedTransactionInfo info = new PreparedTransactionInfo(transaction.transactionID);
+            PreparedTransactionInfo info = new PreparedTransactionInfo(transaction.transactionID, transaction.xid);
             
             info.records.addAll(transaction.recordInfos);
             
@@ -1594,8 +1580,7 @@ public class JournalImpl implements TestableJournal
       return healthy;
    }
 
-   /** a method that shares the logic of writing a complete transaction between COMMIT and PREPARE */
-   private ByteBuffer writeTransaction(final byte recordType, final long txID, final JournalTransaction tx) throws Exception
+   private ByteBuffer writeCommitTransaction(final byte recordType, final long txID, final JournalTransaction tx) throws Exception
    {
       int size = SIZE_COMPLETE_TRANSACTION_RECORD + tx.getElementsSummary().size() * SIZE_INT * 2;
       
@@ -1604,9 +1589,9 @@ public class JournalImpl implements TestableJournal
       bb.put(recordType);    
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
       bb.putLong(txID);
-      
+
       bb.putInt(tx.getElementsSummary().size());
-      
+
       for (Map.Entry<Integer, AtomicInteger> entry: tx.getElementsSummary().entrySet())
       {
          bb.putInt(entry.getKey());
@@ -1618,13 +1603,39 @@ public class JournalImpl implements TestableJournal
       
       return bb;
    }
-   
+
+   private ByteBuffer writePrepareTransaction(final byte recordType, final long txID, final JournalTransaction tx, Xid xid) throws Exception
+   {
+      int xidSize = XidCodecSupport.getXidEncodeLength(xid);
+      int size = SIZE_COMPLETE_TRANSACTION_RECORD + tx.getElementsSummary().size() * SIZE_INT * 2 + xidSize + SIZE_INT;
+
+      ByteBuffer bb = fileFactory.newBuffer(size);
+
+      bb.put(recordType);
+      bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
+      bb.putLong(txID);
+      bb.putInt(xidSize);
+      bb.putInt(tx.getElementsSummary().size());
+      XidCodecSupport.encodeXid(xid, new ByteBufferWrapper(bb));
+
+      for (Map.Entry<Integer, AtomicInteger> entry: tx.getElementsSummary().entrySet())
+      {
+         bb.putInt(entry.getKey());
+         bb.putInt(entry.getValue().get());
+      }
+
+      bb.putInt(size);
+      bb.rewind();
+
+      return bb;
+   }
+
    private boolean isTransaction(final byte recordType)
    {
       return recordType == ADD_RECORD_TX || recordType == UPDATE_RECORD_TX || 
              recordType == DELETE_RECORD_TX || isCompleteTransaction(recordType);
    }
-   
+
    private boolean isCompleteTransaction(final byte recordType)
    {
       return recordType == COMMIT_RECORD || recordType == PREPARE_RECORD || recordType == ROLLBACK_RECORD;  

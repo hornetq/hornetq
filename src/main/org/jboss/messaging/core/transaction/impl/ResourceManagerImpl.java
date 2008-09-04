@@ -22,13 +22,14 @@
 
 package org.jboss.messaging.core.transaction.impl;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import javax.transaction.xa.Xid;
-
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
+
+import javax.transaction.xa.Xid;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * 
@@ -87,5 +88,18 @@ public class ResourceManagerImpl implements ResourceManager
       }      
       
       return true;
+   }
+
+   public List<Xid> getPreparedTransactions()
+   {
+      List<Xid> xids = new ArrayList<Xid>();
+      for (Xid xid : transactions.keySet())
+      {
+         if(transactions.get(xid).getState() == Transaction.State.PREPARED)
+         {
+            xids.add(xid);
+         }
+      }
+      return xids;
    }
 }

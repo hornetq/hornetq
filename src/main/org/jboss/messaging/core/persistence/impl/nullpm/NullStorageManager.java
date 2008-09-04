@@ -22,10 +22,6 @@
 
 package org.jboss.messaging.core.persistence.impl.nullpm;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -35,7 +31,13 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
+
+import javax.transaction.xa.Xid;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 
@@ -80,12 +82,12 @@ public class NullStorageManager implements StorageManager
 	{
 	}
 
-	public void loadMessages(PostOffice postOffice, Map<Long, Queue> queues)
+	public void loadMessages(PostOffice postOffice, Map<Long, Queue> queues, ResourceManager resourceManager)
 			throws Exception
 	{
 	}
 
-	public void prepare(long txID) throws Exception
+	public void prepare(long txID, Xid xid) throws Exception
 	{
 	}
 

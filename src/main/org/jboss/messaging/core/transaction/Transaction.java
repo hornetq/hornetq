@@ -22,13 +22,14 @@
 
 package org.jboss.messaging.core.transaction;
 
-import javax.transaction.xa.Xid;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+
+import javax.transaction.xa.Xid;
+import java.util.List;
 
 /**
  * A JBoss Messaging internal transaction
@@ -64,6 +65,8 @@ public interface Transaction
    boolean isContainsPersistent();
 
    void markAsRollbackOnly(MessagingException messagingException);
+
+   void replay(List<ServerMessage> messages, List<ServerMessage> acknowledgements, State prepared) throws Exception;
 
    static enum State
    {

@@ -22,10 +22,11 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import javax.transaction.xa.Xid;
-
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
+import org.jboss.messaging.util.DataConstants;
+
+import javax.transaction.xa.Xid;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -60,6 +61,13 @@ public class XidCodecSupport
       in.getBytes(gtxid);      
       Xid xid = new XidImpl(bq, formatID, gtxid);      
       return xid;
+   }
+
+   public static int getXidEncodeLength(final Xid xid)
+   {
+      return DataConstants.SIZE_INT * 3 +
+            xid.getBranchQualifier().length +
+            xid.getGlobalTransactionId().length;
    }
 
    // Constructors --------------------------------------------------

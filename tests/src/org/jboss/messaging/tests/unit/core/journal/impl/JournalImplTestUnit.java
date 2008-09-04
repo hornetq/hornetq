@@ -22,11 +22,13 @@
 
 package org.jboss.messaging.tests.unit.core.journal.impl;
 
-import java.util.List;
-
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.transaction.impl.XidImpl;
+
+import javax.transaction.xa.Xid;
+import java.util.List;
 
 /**
  * 
@@ -1597,8 +1599,9 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		assertEquals(0, journal.getFreeFilesCount());
 		assertEquals(1, journal.getOpenedFilesCount());
 		assertEquals(1, journal.getIDMapSize());
-		
-		prepare(1);          // in file 1
+
+		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
+		prepare(1, xid);          // in file 1
 		
 		List<String> files3 = fileFactory.listFiles(fileExtension);
 		
@@ -1736,8 +1739,9 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		assertEquals(1, journal.getDataFilesCount());
 		assertEquals(0, journal.getFreeFilesCount());
 		assertEquals(1, journal.getIDMapSize());
-      
-		prepare(1);          // in file 1
+
+		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
+		prepare(1, xid);          // in file 1
 		
 		List<String> files3 = fileFactory.listFiles(fileExtension);
 		
@@ -2616,8 +2620,10 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		load();     
 		addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);               
 		updateTx(1, 1, 2, 3, 4, 7, 8);
-		deleteTx(1, 1, 2, 3, 4, 5);   
-		prepare(1);
+		deleteTx(1, 1, 2, 3, 4, 5);
+
+		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
+      prepare(1, xid);
 		stopJournal();
 		createJournal();
 		startJournal();
@@ -2632,8 +2638,9 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		load();     
 		addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);               
 		updateTx(1, 1, 2,3, 4, 7, 8);
-		deleteTx(1, 1, 2, 3, 4, 5);   
-		prepare(1);
+		deleteTx(1, 1, 2, 3, 4, 5);
+		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
+		prepare(1, xid);
 		commit(1);
 		stopJournal();
 		createJournal();
@@ -2649,8 +2656,9 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		load();     
 		addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);               
 		updateTx(1, 1, 2,3, 4, 7, 8);
-		deleteTx(1, 1, 2, 3, 4, 5);   
-		prepare(1);
+		deleteTx(1, 1, 2, 3, 4, 5);
+		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
+      prepare(1, xid);
 		rollback(1);
 		stopJournal();
 		createJournal();
@@ -2683,8 +2691,9 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		add(1, 2, 3, 4, 5, 6);
 		addTx(1, 7, 8, 9, 10);              
 		updateTx(1, 1, 2, 3, 7, 8, 9);
-		deleteTx(1, 1, 2, 3, 4, 5);   
-		prepare(1);
+		deleteTx(1, 1, 2, 3, 4, 5);
+		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
+		prepare(1, xid);
 		stopJournal();
 		createJournal();
 		startJournal();
@@ -2700,8 +2709,9 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		add(1, 2, 3, 4, 5, 6);
 		addTx(1, 7, 8, 9, 10);              
 		updateTx(1, 1, 2, 3, 7, 8, 9);
-		deleteTx(1, 1, 2, 3, 4, 5);   
-		prepare(1);
+		deleteTx(1, 1, 2, 3, 4, 5);
+		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
+		prepare(1, xid);
 		rollback(1);
 		stopJournal();
 		createJournal();
@@ -2718,8 +2728,9 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		add(1, 2, 3, 4, 5, 6);
 		addTx(1, 7, 8, 9, 10);              
 		updateTx(1, 1, 2, 3, 7, 8, 9);
-		deleteTx(1, 1, 2, 3, 4, 5);   
-		prepare(1);
+		deleteTx(1, 1, 2, 3, 4, 5);
+		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
+		prepare(1, xid);
 		commit(1);
 		stopJournal();
 		createJournal();
@@ -2740,11 +2751,12 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		addTx(3, 28, 29, 30, 31, 32, 33, 34, 35);
 		updateTx(3, 7, 8, 9, 10);
 		deleteTx(2, 4, 5, 6, 23, 25, 27);
-		prepare(2);
+		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
+		prepare(2, xid);
 		deleteTx(1, 1, 2, 11, 14, 15);
-		prepare(1);
+		prepare(1, xid);
 		deleteTx(3, 28, 31, 32, 9);
-		prepare(3);
+		prepare(3, xid);
 		
 		commit(1);
 		rollback(2);

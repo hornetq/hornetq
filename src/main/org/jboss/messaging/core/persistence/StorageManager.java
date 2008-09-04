@@ -22,19 +22,17 @@
 
 package org.jboss.messaging.core.persistence;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.QueueFactory;
-import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.*;
+import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
+
+import javax.transaction.xa.Xid;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 
@@ -67,7 +65,7 @@ public interface StorageManager extends MessagingComponent
    void storeDeleteTransactional(long txID, long messageID) throws Exception;
       
       
-   void prepare(long txID) throws Exception;
+   void prepare(long txID, Xid xid) throws Exception;
    
    void commit(long txID) throws Exception;
    
@@ -82,7 +80,7 @@ public interface StorageManager extends MessagingComponent
    
    void updateDeliveryCount(MessageReference ref) throws Exception;     
    
-   void loadMessages(PostOffice postOffice, Map<Long, Queue> queues) throws Exception;
+   void loadMessages(PostOffice postOffice, Map<Long, Queue> queues, ResourceManager resourceManager) throws Exception;
    
    
    // Bindings related operations

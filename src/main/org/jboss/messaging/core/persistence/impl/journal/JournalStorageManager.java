@@ -22,27 +22,10 @@
 
 package org.jboss.messaging.core.persistence.impl.journal;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
-import org.jboss.messaging.core.journal.EncodingSupport;
-import org.jboss.messaging.core.journal.Journal;
-import org.jboss.messaging.core.journal.PreparedTransactionInfo;
-import org.jboss.messaging.core.journal.RecordInfo;
-import org.jboss.messaging.core.journal.SequentialFileFactory;
+import org.jboss.messaging.core.journal.*;
 import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
@@ -58,13 +41,22 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.BindingImpl;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.core.server.JournalType;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.QueueFactory;
-import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.*;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
+import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.SimpleString;
+
+import javax.transaction.xa.Xid;
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 
@@ -261,9 +253,9 @@ public class JournalStorageManager implements StorageManager
    	messageJournal.appendDeleteRecordTransactional(txID, messageID);	
    }
   
-   public void prepare(long txID) throws Exception
+   public void prepare(long txID, Xid xid) throws Exception
    {
-   	messageJournal.appendPrepareRecord(txID);
+   	messageJournal.appendPrepareRecord(txID, xid);
    }
    
    public void commit(long txID) throws Exception
@@ -293,7 +285,7 @@ public class JournalStorageManager implements StorageManager
 		messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(), UPDATE_DELIVERY_COUNT, bytes);
 	}
 
-	public void loadMessages(final PostOffice postOffice, final Map<Long, Queue> queues) throws Exception
+	public void loadMessages(final PostOffice postOffice, final Map<Long, Queue> queues, ResourceManager resourceManager) throws Exception
 	{
 		List<RecordInfo> records = new ArrayList<RecordInfo>();
 		
@@ -302,10 +294,64 @@ public class JournalStorageManager implements StorageManager
 		long maxMessageID = messageJournal.load(records, preparedTransactions);
 	
 		messageIDSequence.set(maxMessageID + 1);
-		
-		//TODO - recover prepared transactions
+
 		//TODO - Use load(ReloadManager) instead of Load(lists)
-      
+
+
+		//recover prepared transactions
+      for (PreparedTransactionInfo preparedTransaction : preparedTransactions)
+      {
+         log.trace(preparedTransaction);
+         Transaction tx = new TransactionImpl(preparedTransaction.id, preparedTransaction.xid, this, postOffice);
+         List<ServerMessage> messages = new ArrayList<ServerMessage>();
+         List<ServerMessage> messagesToDelete = new ArrayList<ServerMessage>();
+         //first get any sent messages for this tx and recreate
+         for (RecordInfo record : preparedTransaction.records)
+         {
+            byte[] data = record.data;
+
+			   ByteBuffer bb = ByteBuffer.wrap(data);
+
+            MessagingBuffer buff = new ByteBufferWrapper(bb);
+
+				ServerMessage message = new ServerMessageImpl(record.id);
+
+				message.decode(buff);
+
+            messages.add(message);
+         }
+         //ok now find if any records to be deleted which aren't necessarily with this tx
+         List<RecordInfo> recordsToDelete = new ArrayList<RecordInfo>();
+         for (RecordInfo record : records)
+         {
+            if(preparedTransaction.recordsToDelete.contains(record.id))
+            {
+               byte[] data = record.data;
+
+			      ByteBuffer bb = ByteBuffer.wrap(data);
+
+			      byte recordType = record.getUserRecordType();
+
+               MessagingBuffer buff = new ByteBufferWrapper(bb);
+
+					ServerMessage message = new ServerMessageImpl(record.id);
+
+					message.decode(buff);
+
+               messagesToDelete.add(message);
+
+               recordsToDelete.add(record);
+            }
+         }
+         //now we recreate the state of the tx and add to th erresource manager
+         tx.replay(messages, messagesToDelete, Transaction.State.PREPARED);
+         resourceManager.putTransaction(preparedTransaction.xid, tx);
+         //and finally since we've dealt with the records we don't need to process them.
+         for (RecordInfo recordInfo : recordsToDelete)
+         {
+            records.remove(recordInfo);
+         }
+      }
 		for (RecordInfo record: records)
 		{
 			byte[] data = record.data;
@@ -546,8 +592,8 @@ public class JournalStorageManager implements StorageManager
 			                   final List<Binding> bindings, final List<SimpleString> destinations) throws Exception
 	{
 		List<RecordInfo> records = new ArrayList<RecordInfo>();
-		
-		long maxID = bindingsJournal.load(records, null);
+		List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
+		long maxID = bindingsJournal.load(records, preparedTransactions);
 
 		for (RecordInfo record: records)
 		{		  

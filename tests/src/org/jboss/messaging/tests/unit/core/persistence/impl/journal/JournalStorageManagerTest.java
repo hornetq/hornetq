@@ -21,25 +21,13 @@
  */
 package org.jboss.messaging.tests.unit.core.persistence.impl.journal;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.easymock.IArgumentMatcher;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.journal.EncodingSupport;
-import org.jboss.messaging.core.journal.Journal;
-import org.jboss.messaging.core.journal.PreparedTransactionInfo;
-import org.jboss.messaging.core.journal.RecordInfo;
-import org.jboss.messaging.core.journal.TestableJournal;
+import org.jboss.messaging.core.journal.*;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -47,15 +35,21 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.BindingImpl;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.core.server.HandleStatus;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.QueueFactory;
-import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.*;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
+import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
+
+import javax.transaction.xa.Xid;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 
@@ -183,10 +177,11 @@ public class JournalStorageManagerTest extends UnitTestCase
       JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
       final long txID = 1209373;
-      
-      messageJournal.appendPrepareRecord(txID);
+
+		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
+      messageJournal.appendPrepareRecord(txID, xid);
       EasyMock.replay(messageJournal, bindingsJournal);      
-      jsm.prepare(txID);
+      jsm.prepare(txID, xid);
       EasyMock.verify(messageJournal, bindingsJournal);
    }
    
@@ -396,7 +391,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       EasyMock.replay(refs2.toArray());
       EasyMock.replay(queue1, queue2, queue3);
       
-      jsm.loadMessages(po, queues);
+      jsm.loadMessages(po, queues, null);
       
       EasyMock.verify(messageJournal, bindingsJournal, po);
       EasyMock.verify(refs1.toArray());

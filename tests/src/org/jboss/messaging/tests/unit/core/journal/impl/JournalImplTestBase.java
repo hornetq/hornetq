@@ -22,14 +22,6 @@
 
 package org.jboss.messaging.tests.unit.core.journal.impl;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
@@ -39,6 +31,9 @@ import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
+
+import javax.transaction.xa.Xid;
+import java.util.*;
 
 /**
  * 
@@ -183,7 +178,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		{
 			if (entry.getValue().prepared)
 			{
-				PreparedTransactionInfo info = new PreparedTransactionInfo(entry.getKey());
+				PreparedTransactionInfo info = new PreparedTransactionInfo(entry.getKey(), null);
 				
 				info.records.addAll(entry.getValue().records);
 				
@@ -293,7 +288,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       journal.debugWait();
 	}
 	
-	protected void prepare(long txID) throws Exception
+	protected void prepare(long txID, Xid xid) throws Exception
 	{
 		TransactionHolder tx = transactions.get(txID);
 		
@@ -306,8 +301,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		{
 			throw new IllegalStateException("Transaction is already prepared");
 		}
-		
-		journal.appendPrepareRecord(txID);
+		journal.appendPrepareRecord(txID, xid);
 		
 		tx.prepared = true;
 

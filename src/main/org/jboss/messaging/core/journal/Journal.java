@@ -22,10 +22,10 @@
 
 package org.jboss.messaging.core.journal;
 
-import java.util.List;
-
 import org.jboss.messaging.core.server.MessagingComponent;
 
+import javax.transaction.xa.Xid;
+import java.util.List;
 /**
  * 
  * A Journal
@@ -64,7 +64,7 @@ public interface Journal extends MessagingComponent
    
    void appendCommitRecord(long txID) throws Exception;
    
-   void appendPrepareRecord(long txID) throws Exception;
+   void appendPrepareRecord(long txID, Xid xid) throws Exception;
    
    void appendRollbackRecord(long txID) throws Exception;
    

@@ -3,17 +3,17 @@
  * Middleware LLC, and individual contributors by the @authors tag. See the
  * copyright.txt in the distribution for a full listing of individual
  * contributors.
- * 
+ *
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- * 
+ *
  * This software is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
@@ -21,21 +21,6 @@
  */
 
 package org.jboss.messaging.core.server.impl;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
@@ -49,26 +34,26 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.*;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.server.Delivery;
-import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.*;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.ServerConsumer;
-import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.server.ServerProducer;
-import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.SimpleString;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Session implementation
@@ -126,7 +111,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private final ResourceManager resourceManager;
 
    private final PostOffice postOffice;
-   
+
    private final PagingManager pager;
 
    private final SecurityStore securityStore;
@@ -134,9 +119,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private final Channel channel;
 
    private volatile boolean started = false;
-   
+
    private volatile int objectIDSequence;
-     
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -173,7 +158,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       this.postOffice = postOffice;
 
       this.pager = postOffice.getPagingManager();
-      
+
       this.queueSettingsRepository = queueSettingsRepository;
 
       this.resourceManager = resourceManager;
@@ -336,16 +321,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          if (!pager.page(msg))
          {
             // We only set the messageID after we are sure the message is not being paged
-            // Paged messages won't have an ID until they are depaged 
+            // Paged messages won't have an ID until they are depaged
             msg.setMessageID(storageManager.generateMessageID());
 
             List<MessageReference> refs = postOffice.route(msg);
-   
+
             if (msg.getDurableRefCount() != 0)
             {
                storageManager.storeMessage(msg);
             }
-            
+
             for (MessageReference ref : refs)
             {
                ref.getQueue().addLast(ref);
@@ -536,12 +521,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             cancelTx.rollback(queueSettingsRepository);
          }
          finally
-         {            
+         {
          }
          //finally (TODO: enable this back)
          {
             //Now unlock
-            
+
             for (Queue queue: locked)
             {
                queue.unlock();
@@ -865,8 +850,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public List<Xid> getInDoubtXids() throws Exception
    {
-      // TODO
-      return null;
+      return resourceManager.getPreparedTransactions();
    }
 
    public int getXATimeout()
@@ -1065,7 +1049,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                   .getFilterString();
 
          QueueSettings settings = queue.getSettings();
-         
+
          // TODO: Remove MAX-SIZE-BYTES from SessionQueueQueryResponse.
          response = new SessionQueueQueryResponseMessage(queue.isDurable(), settings.getMaxSizeBytes(),
                  queue.getConsumerCount(), queue.getMessageCount(),
@@ -1118,7 +1102,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                .getQueue(), filterString == null ? null : filterString
                .toString());
 
-      browsers.put(browser.getID(), browser);     
+      browsers.put(browser.getID(), browser);
    }
 
    /**
@@ -1166,7 +1150,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       return new SessionCreateProducerResponseMessage(initialCredits, maxRateToUse);
    }
-   
+
    public boolean browserHasNextMessage(final int browserID) throws Exception
    {
       return browsers.get(browserID).hasNextMessage();
@@ -1242,7 +1226,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       return objectIDSequence++;
    }
-   
+
    private void doAck(final MessageReference ref) throws Exception
    {
       ServerMessage message = ref.getMessage();
@@ -1253,7 +1237,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          pager.messageDone(message);
       }
-      
+
       if (message.isDurable() && queue.isDurable())
       {
          int count = message.decrementDurableRefCount();

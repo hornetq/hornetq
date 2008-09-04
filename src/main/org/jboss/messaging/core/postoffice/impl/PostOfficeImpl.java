@@ -22,17 +22,6 @@
 
 package org.jboss.messaging.core.postoffice.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
@@ -47,9 +36,15 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.ConcurrentSet;
 import org.jboss.messaging.util.SimpleString;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * 
@@ -85,18 +80,23 @@ public class PostOfficeImpl implements PostOffice
 
    private final ManagementService managementService;
    
+   private final ResourceManager resourceManager;
+
    public PostOfficeImpl(final StorageManager storageManager, final PagingManager pagingManager,
-   		                final QueueFactory queueFactory, final ManagementService managementService, final boolean checkAllowable)
+   		                final QueueFactory queueFactory, final ManagementService managementService, final boolean checkAllowable,
+                         final ResourceManager resourceManager)
    {
       this.storageManager = storageManager;
-      
+
       this.queueFactory = queueFactory;
-      
+
       this.managementService = managementService;
-      
+
       this.checkAllowable = checkAllowable;
-      
+
       this.pagingManager = pagingManager;
+
+      this.resourceManager = resourceManager;
    }
       
    // MessagingComponent implementation ---------------------------------------
@@ -432,7 +432,7 @@ public class PostOfficeImpl implements PostOffice
          queues.put(binding.getQueue().getPersistenceID(), binding.getQueue());
       }
                  
-      storageManager.loadMessages(this, queues);
+      storageManager.loadMessages(this, queues, resourceManager);
       
       for (SimpleString destination: dests)
       {

@@ -23,6 +23,15 @@
 
 package org.jboss.messaging.tests.unit.core.journal.impl;
 
+import org.jboss.messaging.core.journal.*;
+import org.jboss.messaging.core.journal.impl.JournalImpl;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.transaction.impl.XidImpl;
+import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
+import org.jboss.messaging.tests.unit.core.journal.impl.fakes.SimpleEncoding;
+import org.jboss.messaging.tests.util.UnitTestCase;
+
+import javax.transaction.xa.Xid;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
@@ -30,18 +39,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.jboss.messaging.core.journal.EncodingSupport;
-import org.jboss.messaging.core.journal.LoadManager;
-import org.jboss.messaging.core.journal.PreparedTransactionInfo;
-import org.jboss.messaging.core.journal.RecordInfo;
-import org.jboss.messaging.core.journal.SequentialFile;
-import org.jboss.messaging.core.journal.SequentialFileFactory;
-import org.jboss.messaging.core.journal.impl.JournalImpl;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
-import org.jboss.messaging.tests.unit.core.journal.impl.fakes.SimpleEncoding;
-import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * 
@@ -815,8 +812,9 @@ public class AlignedJournalImplTest extends UnitTestCase
       }
       
       journalImpl.forceMoveNextFile();
-      
-      journalImpl.appendPrepareRecord(1l);
+
+		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
+      journalImpl.appendPrepareRecord(1l, xid);
       journalImpl.appendCommitRecord(1l);
       
       for (int i=0;i<10;i++)
@@ -891,8 +889,9 @@ public class AlignedJournalImplTest extends UnitTestCase
       }
       
       journalImpl.debugWait();
-      
-      journalImpl.appendPrepareRecord(1l);
+
+		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
+      journalImpl.appendPrepareRecord(1l, xid);
 
       assertEquals(12, factory.listFiles("tt").size());
 
@@ -920,7 +919,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          journalImpl.appendDeleteRecordTransactional(2l, (long)i);
       }
       
-      journalImpl.appendPrepareRecord(2l);
+      journalImpl.appendPrepareRecord(2l, xid);
       
       setupJournal(JOURNAL_SIZE, 1);
       
@@ -959,7 +958,9 @@ public class AlignedJournalImplTest extends UnitTestCase
          journalImpl.appendAddRecordTransactional(1, i, (byte) 1, new SimpleEncoding(50,(byte) 1));
          journalImpl.forceMoveNextFile();
       }
-      journalImpl.appendPrepareRecord(1l);
+
+		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
+      journalImpl.appendPrepareRecord(1l, xid);
 
       setupJournal(JOURNAL_SIZE, 100);
       assertEquals(0, records.size());

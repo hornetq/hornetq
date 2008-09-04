@@ -22,13 +22,6 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -42,13 +35,8 @@ import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
-import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.ChannelHandler;
-import org.jboss.messaging.core.remoting.ConnectionRegistry;
-import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.remoting.*;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
-import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.security.JBMSecurityManager;
@@ -68,9 +56,16 @@ import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.VersionLoader;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * The messaging server implementation
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
  * @version <tt>$Revision: 3543 $</tt>
@@ -95,28 +90,28 @@ public class MessagingServerImpl implements MessagingServer
 
    private SecurityStore securityStore;
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
-   private ScheduledExecutorService scheduledExecutor;   
+   private ScheduledExecutorService scheduledExecutor;
    private QueueFactory queueFactory;
    private PagingStoreFactory storeFactory;
    private PagingManager pagingManager;
    private PostOffice postOffice;
    private final ExecutorFactory executorFactory = new OrderedExecutorFactory(Executors.newCachedThreadPool(new JBMThreadFactory("JBM-async-session-delivery-threads")));
    private HierarchicalRepository<Set<Role>> securityRepository;
-   private ResourceManager resourceManager;     
+   private ResourceManager resourceManager;
    private MessagingServerControlMBean serverManagement;
    private RemotingConnection replicatingConnection;
    private final AtomicInteger sessionIDSequence = new AtomicInteger(2);
-     
+
    // plugins
 
    private StorageManager storageManager;
    private RemotingService remotingService;
-   private JBMSecurityManager securityManager;  
+   private JBMSecurityManager securityManager;
    private Configuration configuration;
    private ManagementService managementService;
-         
+
    // Constructors ---------------------------------------------------------------------------------
-   
+
    public MessagingServerImpl()
    {
       //We need to hard code the version information into a source file
@@ -140,71 +135,71 @@ public class MessagingServerImpl implements MessagingServer
       It's up to the user to make sure the pluggable components are started - their
       lifecycle will not be controlled here
       */
-      
+
       //We make sure the pluggable components have been injected
       if (configuration == null)
       {
          throw new IllegalStateException("Must inject Configuration before starting MessagingServer");
       }
-      
+
       if (storageManager == null)
       {
          throw new IllegalStateException("Must inject StorageManager before starting MessagingServer");
       }
-      
+
       if (remotingService == null)
       {
          throw new IllegalStateException("Must inject RemotingService before starting MessagingServer");
       }
-      
+
       if (securityManager == null)
       {
          throw new IllegalStateException("Must inject SecurityManager before starting MessagingServer");
-      }      
-      
+      }
+
       if (managementService == null)
       {
          throw new IllegalStateException("Must inject ManagementRegistration before starting MessagingServer");
-      }   
-      
+      }
+
       if (!storageManager.isStarted())
       {
          throw new IllegalStateException("StorageManager must be started before MessagingServer is started");
       }
-      
+
       if (!remotingService.isStarted())
       {
          throw new IllegalStateException("RemotingService must be started before MessagingServer is started");
       }
-                 
+
       //The rest of the components are not pluggable and created and started here
 
-      securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval(), configuration.isSecurityEnabled());  
+      securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval(), configuration.isSecurityEnabled());
       queueSettingsRepository.setDefault(new QueueSettings());
-      scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(), new JBMThreadFactory("JBM-scheduled-threads"));                  
+      scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(), new JBMThreadFactory("JBM-scheduled-threads"));
       queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);
-      
-      
+
+
       PagingStoreFactory storeFactory = new PagingManagerFactoryNIO(configuration.getPagingDirectory());
-      
+
       pagingManager = new PagingManagerImpl(storeFactory, storageManager, queueSettingsRepository);
-         
-      postOffice = new PostOfficeImpl(storageManager, pagingManager, queueFactory, managementService, configuration.isRequireDestinations());
-                       
+
+      resourceManager = new ResourceManagerImpl(0);
+      postOffice = new PostOfficeImpl(storageManager, pagingManager, queueFactory, managementService, configuration.isRequireDestinations(), resourceManager);
+
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
       securityRepository.setDefault(new HashSet<Role>());
       securityStore.setSecurityRepository(securityRepository);
-      securityStore.setSecurityManager(securityManager);                       
-      resourceManager = new ResourceManagerImpl(0);                           
+      securityStore.setSecurityManager(securityManager);
       serverManagement = managementService.registerServer(postOffice, storageManager, configuration,
             securityRepository,
             queueSettingsRepository, this);
 
       postOffice.start();
       postOffice.setBackup(configuration.isBackup());
-    
+
       TransportConfiguration backupConnector = configuration.getBackupConnectorConfiguration();
-      
+
       if (backupConnector != null)
       {
          ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -221,11 +216,11 @@ public class MessagingServerImpl implements MessagingServer
          catch (Exception e)
          {
             throw new IllegalArgumentException("Error instantiating interceptor \"" + backupConnector.getFactoryClassName() + "\"", e);
-         }  
+         }
       }
       remotingService.setMessagingServer(this);
-     
-      started = true;    
+
+      started = true;
    }
 
    public synchronized void stop() throws Exception
@@ -234,7 +229,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          return;
       }
-          
+
       if (this.replicatingConnection != null)
       {
          ConnectionRegistryImpl.instance.returnConnection(replicatingConnection.getID());
@@ -255,7 +250,7 @@ public class MessagingServerImpl implements MessagingServer
 
    // MessagingServer implementation -----------------------------------------------------------
 
-   
+
    // The plugabble components
 
    public void setConfiguration(Configuration configuration)
@@ -264,15 +259,15 @@ public class MessagingServerImpl implements MessagingServer
       {
          throw new IllegalStateException("Cannot set configuration when started");
       }
-      
+
       this.configuration = configuration;
    }
-   
+
    public Configuration getConfiguration()
    {
       return configuration;
    }
-   
+
    public void setRemotingService(RemotingService remotingService)
    {
       if (started)
@@ -295,27 +290,27 @@ public class MessagingServerImpl implements MessagingServer
       }
       this.storageManager = storageManager;
    }
-   
+
    public StorageManager getStorageManager()
    {
       return storageManager;
    }
-   
+
    public void setSecurityManager(JBMSecurityManager securityManager)
    {
       if (started)
       {
          throw new IllegalStateException("Cannot set security Manager when started");
       }
-      
+
       this.securityManager = securityManager;
    }
-      
+
    public JBMSecurityManager getSecurityManager()
    {
       return securityManager;
    }
-   
+
    public void setManagementService(ManagementService managementService)
    {
       if (started)
@@ -324,18 +319,18 @@ public class MessagingServerImpl implements MessagingServer
       }
       this.managementService = managementService;
    }
-   
+
    public ManagementService getManagementService()
    {
       return managementService;
    }
-   
+
    //This is needed for the security deployer
    public HierarchicalRepository<Set<Role>> getSecurityRepository()
    {
       return securityRepository;
    }
-   
+
    //This is needed for the queue settings deployer
    public HierarchicalRepository<QueueSettings> getQueueSettingsRepository()
    {
@@ -346,13 +341,13 @@ public class MessagingServerImpl implements MessagingServer
    {
       return version;
    }
-   
+
    public boolean isStarted()
    {
       return started;
    }
-     
-   public CreateSessionResponseMessage createSession(final String username, final String password,                                  
+
+   public CreateSessionResponseMessage createSession(final String username, final String password,
                                                      final int incrementingVersion,
                                                      final RemotingConnection remotingConnection,
                                                      final boolean autoCommitSends,
@@ -365,9 +360,9 @@ public class MessagingServerImpl implements MessagingServer
          throw new MessagingException(MessagingException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
                  "client not compatible with version: " + version.getFullVersion());
       }
-      
+
       //Is this comment relevant any more ?
-      
+
       // Authenticate. Successful autentication will place a new SubjectContext on thread local,
       // which will be used in the authorization process. However, we need to make sure we clean
       // up thread local immediately after we used the information, otherwise some other people
@@ -376,52 +371,52 @@ public class MessagingServerImpl implements MessagingServer
       securityStore.authenticate(username, password);
 
       long sessionID = this.generateSessionID();
-      
+
       Channel channel =
          remotingConnection.getChannel(sessionID, true, configuration.getPacketConfirmationBatchSize());
-      
+
       final ServerSessionImpl session = new ServerSessionImpl(sessionID, username, password,
                                   autoCommitSends, autoCommitAcks, xa,
-                                  remotingConnection, 
+                                  remotingConnection,
                                   storageManager, postOffice,
                                   queueSettingsRepository,
                                   resourceManager,
-                                  securityStore,                                  
+                                  securityStore,
                                   executorFactory.getExecutor(),
                                   channel);
-      
+
       ChannelHandler handler = new ServerSessionPacketHandler(session, channel);
-      
+
       channel.setHandler(handler);
-                         
+
       remotingConnection.addFailureListener(session);
-                  
+
       return
          new CreateSessionResponseMessage(sessionID, version.getIncrementingVersion(), configuration.getPacketConfirmationBatchSize());
    }
-      
+
    public MessagingServerControlMBean getServerManagement()
    {
       return serverManagement;
    }
-   
+
    public int getConnectionCount()
    {
       return this.remotingService.getConnections().size();
    }
-   
+
    public PostOffice getPostOffice()
    {
       return postOffice;
    }
-   
+
    public RemotingConnection getReplicatingConnection()
    {
       return replicatingConnection;
    }
 
    // Public ---------------------------------------------------------------------------------------
-   
+
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
@@ -431,15 +426,15 @@ public class MessagingServerImpl implements MessagingServer
    private int generateSessionID()
    {
       int id = sessionIDSequence.getAndIncrement();
-      
+
       //Channel zero is reserved for pinging, channel 1 is reserved for messaging server
       if (id == 0 || id == 1)
       {
          id = this.generateSessionID();
       }
-      
+
       return id;
    }
-   
+
    // Inner classes --------------------------------------------------------------------------------
 }

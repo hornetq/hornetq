@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.transaction;
 
 import javax.transaction.xa.Xid;
+import java.util.List;
 
 
 /**
@@ -43,4 +44,6 @@ public interface ResourceManager
    int getTimeoutSeconds();
    
    boolean setTimeoutSeconds(int timeoutSeconds);
+
+   List<Xid> getPreparedTransactions();
 }
