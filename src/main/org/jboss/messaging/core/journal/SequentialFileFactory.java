@@ -48,4 +48,11 @@ public interface SequentialFileFactory
    
    int getAlignment();
    
+   int calculateBlockSize(int bytes);
+   
+   /** This method is not being used currently. 
+    *  The journal will complete the buffer when reusing the buffer.
+    *  Look at JournalImpl#newBuffer for more information about this */
+   void clearBuffer(ByteBuffer buffer);
+   
 }

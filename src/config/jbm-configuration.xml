@@ -106,6 +106,10 @@
 
       <journal-type>ASYNCIO</journal-type>
 
+      <!-- The journal will reuse any buffers where the size < journal-buffer-reuse-size on write operations
+           Set this to -1 to disable this feature -->
+      <journal-buffer-reuse-size>4096</journal-buffer-reuse-size>
+
       <!-- Does the journal sync to disk on each transaction commit, prepare or rollback? -->
       <journal-sync-transactional>true</journal-sync-transactional>
       

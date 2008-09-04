@@ -50,7 +50,7 @@ JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousF
 		std::string fileName = convertJavaString(env, jstrFileName);
 		
 		AIOController * controller = new AIOController(fileName, (int) maxIO);
-		controller->done = env->GetMethodID(clazz,"callbackDone","(Lorg/jboss/messaging/core/asyncio/AIOCallback;)V");
+		controller->done = env->GetMethodID(clazz,"callbackDone","(Lorg/jboss/messaging/core/asyncio/AIOCallback;Ljava/nio/ByteBuffer;)V");
 		if (!controller->done) return 0;
 		
 		controller->error = env->GetMethodID(clazz, "callbackError", "(Lorg/jboss/messaging/core/asyncio/AIOCallback;ILjava/lang/String;)V");
@@ -104,6 +104,23 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 		throwException(env, "java/lang/RuntimeException", e.what());
 	}
 }
+
+JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_resetBuffer
+  (JNIEnv *env, jclass, jobject jbuffer, jint size)
+{
+	void * buffer = env->GetDirectBufferAddress(jbuffer);
+	
+	if (buffer == 0)
+	{
+		throwException(env, "java/lang/IllegalStateException", "Invalid Direct Buffer used");
+		return;
+	}
+	
+	memset(buffer, 0, (size_t)size);
+	
+}
+
+
 
 JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_write
   (JNIEnv *env, jobject objThis, jlong controllerAddress, jlong position, jlong size, jobject jbuffer, jobject callback)
@@ -182,8 +199,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 		AIOController * controller = (AIOController *) controllerAddress;
 		
 		controller->fileOutput.preAllocate(env, position, blocks, size, fillChar);
-		
-		//controller->fileOutput.preAllocate(env, blocks, size);
+
 	}
 	catch (AIOException& e)
 	{

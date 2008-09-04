@@ -29,6 +29,7 @@ import org.jboss.messaging.core.message.Message;
  * A ServerMessage
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
 public interface ServerMessage extends Message
@@ -41,9 +42,13 @@ public interface ServerMessage extends Message
 
    int decrementDurableRefCount();
    
-   int incrementDurableRefCount();
+   int incrementReference(boolean durable);
    
    int getDurableRefCount();
+   
+   int decrementRefCount();
+   
+   int getRefCount();
    
    ServerMessage copy();
 }

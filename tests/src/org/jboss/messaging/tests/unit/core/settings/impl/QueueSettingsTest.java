@@ -42,6 +42,7 @@ public class QueueSettingsTest extends TestCase
       assertEquals(queueSettings.getExpiryQueue(), null);
       assertEquals(queueSettings.getMaxDeliveryAttempts(), QueueSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS);
       assertEquals(queueSettings.getMaxSizeBytes(), QueueSettings.DEFAULT_MAX_SIZE_BYTES);
+      assertEquals(queueSettings.getPageSizeBytes(), QueueSettings.DEFAULT_PAGE_SIZE_BYTES);
       assertEquals(queueSettings.getMessageCounterHistoryDayLimit(), QueueSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT);
       assertEquals(queueSettings.getRedeliveryDelay(), QueueSettings.DEFAULT_REDELIVER_DELAY);
 
@@ -57,9 +58,11 @@ public class QueueSettingsTest extends TestCase
       queueSettingsToMerge.setDLQ(DLQ);
       queueSettingsToMerge.setExpiryQueue(exp);
       queueSettingsToMerge.setMaxDeliveryAttempts(1000);
+      queueSettingsToMerge.setDropMessagesWhenFull(true);
       queueSettingsToMerge.setMaxSizeBytes(1001);
       queueSettingsToMerge.setMessageCounterHistoryDayLimit(1002);
       queueSettingsToMerge.setRedeliveryDelay((long)1003);
+      queueSettingsToMerge.setPageSizeBytes(1004);
       queueSettings.merge(queueSettingsToMerge);
       assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY.getClass());
       assertEquals(queueSettings.getDistributionPolicyClass(), null);
@@ -70,6 +73,8 @@ public class QueueSettingsTest extends TestCase
       assertEquals(queueSettings.getMaxSizeBytes(), Integer.valueOf(1001));
       assertEquals(queueSettings.getMessageCounterHistoryDayLimit(), Integer.valueOf(1002));
       assertEquals(queueSettings.getRedeliveryDelay(), Long.valueOf(1003));
+      assertEquals(queueSettings.getPageSizeBytes(), (Integer)1004);
+      assertTrue(queueSettings.isDropMessagesWhenFull());
    }
 
    public void testMultipleMerge()

@@ -13,6 +13,14 @@ extern "C" {
 /* Inaccessible static: EXPECTED_NATIVE_VERSION */
 /*
  * Class:     org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl
+ * Method:    resetBuffer
+ * Signature: (Ljava/nio/ByteBuffer;I)V
+ */
+JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_resetBuffer
+  (JNIEnv *, jclass, jobject, jint);
+
+/*
+ * Class:     org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl
  * Method:    init
  * Signature: (Ljava/lang/String;ILorg/jboss/messaging/core/logging/Logger;)J
  */

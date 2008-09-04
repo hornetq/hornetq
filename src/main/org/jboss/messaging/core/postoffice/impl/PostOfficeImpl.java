@@ -37,6 +37,8 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.paging.PagingManager;
+import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.FlowController;
@@ -75,13 +77,15 @@ public class PostOfficeImpl implements PostOffice
    
    private final StorageManager storageManager;
    
+   private final PagingManager pagingManager;
+   
    private volatile boolean started;
 
    private volatile boolean backup;
 
    private final ManagementService managementService;
-  
-   public PostOfficeImpl(final StorageManager storageManager,
+   
+   public PostOfficeImpl(final StorageManager storageManager, final PagingManager pagingManager,
    		                final QueueFactory queueFactory, final ManagementService managementService, final boolean checkAllowable)
    {
       this.storageManager = storageManager;
@@ -91,12 +95,21 @@ public class PostOfficeImpl implements PostOffice
       this.managementService = managementService;
       
       this.checkAllowable = checkAllowable;
+      
+      this.pagingManager = pagingManager;
    }
       
    // MessagingComponent implementation ---------------------------------------
    
    public void start() throws Exception
    {
+      if (pagingManager != null)
+      {
+         this.pagingManager.setPostOffice(this);
+   
+         pagingManager.start();
+      }
+      
       loadBindings();
       
       started = true;
@@ -104,6 +117,8 @@ public class PostOfficeImpl implements PostOffice
 
    public void stop() throws Exception
    {
+      pagingManager.stop();
+      
       mappings.clear();
       
       destinations.clear();
@@ -130,7 +145,7 @@ public class PostOfficeImpl implements PostOffice
       	{
       		storageManager.addDestination(address);     
       	}
-      	 
+      	
          flowControllers.put(address, new FlowControllerImpl(address, this));
          managementService.registerAddress(address);
    	}
@@ -213,42 +228,53 @@ public class PostOfficeImpl implements PostOffice
    {
       return nameMap.get(queueName);
    }
-         
+   
    public List<MessageReference> route(final ServerMessage message) throws Exception
    {
-      SimpleString address = message.getDestination();
-          
-      if (checkAllowable)
+      
+      long size = pagingManager.addSize(message);
+      
+      if (size < 0)
       {
-         if (!destinations.contains(address))
-         {
-            throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST,
-                                         "Cannot route to address " + address);
-         }
+         return new ArrayList<MessageReference>();
       }
-           
-      List<Binding> bindings = mappings.get(address);
-      
-      List<MessageReference> refs = new ArrayList<MessageReference>();
-      
-      if (bindings != null)
+      else
       {
-         for (Binding binding: bindings)
+         SimpleString address = message.getDestination();
+             
+         if (checkAllowable)
          {
-            Queue queue = binding.getQueue();
-            
-            Filter filter = queue.getFilter();
-            
-            if (filter == null || filter.match(message))
-            {                      
-               MessageReference reference = message.createReference(queue);              
-               
-               refs.add(reference);
+            if (!destinations.contains(address))
+            {
+               throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST,
+                                            "Cannot route to address " + address);
             }
          }
+              
+         List<Binding> bindings = mappings.get(address);
+         
+         List<MessageReference> refs = new ArrayList<MessageReference>();
+         
+         if (bindings != null)
+         {
+            for (Binding binding: bindings)
+            {
+               Queue queue = binding.getQueue();
+               
+               Filter filter = queue.getFilter();
+               
+               if (filter == null || filter.match(message))
+               {                      
+                  MessageReference reference = message.createReference(queue);              
+                  
+                  refs.add(reference);
+               }
+            }
+         }
+
+         return refs;
       }
          
-      return refs;
    }
    
 //   public void routeFromCluster(final String address, final Message message) throws Exception
@@ -272,6 +298,12 @@ public class PostOfficeImpl implements PostOffice
 //         }
 //      }
 //   }
+   
+   public PagingManager getPagingManager()
+   {
+      return this.pagingManager;
+   }
+
 
    public Map<SimpleString, List<Binding>> getMappings()
    {
@@ -292,7 +324,7 @@ public class PostOfficeImpl implements PostOffice
          binding.getQueue().setBackup(backup);
       }
    }
-
+   
    // Private -----------------------------------------------------------------
    
    private Binding createBinding(final SimpleString address, final SimpleString name, final Filter filter,
@@ -401,6 +433,12 @@ public class PostOfficeImpl implements PostOffice
       }
                  
       storageManager.loadMessages(this, queues);
+      
+      for (SimpleString destination: dests)
+      {
+         PagingStore store = pagingManager.getPageStore(destination);
+         store.startDepaging(pagingManager);
+      }
    }
 
 }

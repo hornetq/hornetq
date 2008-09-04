@@ -201,7 +201,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       Journal journal =
          new JournalImpl(10 * 1024 * 1024, 10, true, true, getFileFactory(),
-               "jbm-data", "jbm", 5000);
+               "jbm-data", "jbm", 5000, 0);
       
       journal.start();
       
@@ -263,7 +263,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       Journal journal =
          new JournalImpl(10 * 1024 * 1024,  numFiles, true, true, getFileFactory(),
-               "jbm-data", "jbm", 5000);
+               "jbm-data", "jbm", 5000, 0);
       
       journal.start();
       
@@ -289,7 +289,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       
       journal =
          new JournalImpl(10 * 1024 * 1024,  numFiles, true, true, getFileFactory(),
-               "jbm-data", "jbm", 5000);
+               "jbm-data", "jbm", 5000, 0);
       
       journal.start();
       journal.load(new ArrayList<RecordInfo>(), null);

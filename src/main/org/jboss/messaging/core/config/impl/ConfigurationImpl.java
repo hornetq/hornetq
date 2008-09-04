@@ -67,6 +67,8 @@ public class ConfigurationImpl implements Configuration
    
    public static final String DEFAULT_JOURNAL_DIR = "data/journal";
    
+   public static final String DEFAULT_PAGING_DIR = "data/paging";
+   
    public static final boolean DEFAULT_CREATE_JOURNAL_DIR = true;
    
    public static final JournalType DEFAULT_JOURNAL_TYPE = JournalType.ASYNCIO;
@@ -81,6 +83,7 @@ public class ConfigurationImpl implements Configuration
    
    public static final int DEFAULT_JOURNAL_MAX_AIO = 5000;
    
+   public static final int DEFAULT_JOURNAL_REUSE_BUFFER_SIZE = -1;   
    
    
    // Attributes -----------------------------------------------------------------------------
@@ -120,6 +123,8 @@ public class ConfigurationImpl implements Configuration
    
    protected String journalDirectory = DEFAULT_JOURNAL_DIR;
    
+   protected String pagingDirectory = DEFAULT_PAGING_DIR;
+   
    protected boolean createJournalDir = DEFAULT_CREATE_JOURNAL_DIR;
    
    public JournalType journalType = DEFAULT_JOURNAL_TYPE;
@@ -133,6 +138,8 @@ public class ConfigurationImpl implements Configuration
    protected int journalMinFiles = DEFAULT_JOURNAL_MIN_FILES;
    
    protected int journalMaxAIO = DEFAULT_JOURNAL_MAX_AIO;
+   
+   protected int journalBufferReuseSize = DEFAULT_JOURNAL_REUSE_BUFFER_SIZE;
    
    
    public boolean isClustered()
@@ -270,6 +277,17 @@ public class ConfigurationImpl implements Configuration
 		return journalType;
 	}
 	
+	
+	public void setPagingDirectory(String dir)
+	{
+	   this.pagingDirectory = dir;
+	}
+	
+	public String getPagingDirectory()
+	{
+	   return this.pagingDirectory;
+	}
+	
 	public void setJournalType(JournalType type)
    {
       this.journalType = type;
@@ -364,6 +382,16 @@ public class ConfigurationImpl implements Configuration
 	{
 	   this.jmxManagementEnabled = enabled;
 	}
+	
+   public void setJournalBufferReuseSize(int reuseSize)
+   {
+      this.journalBufferReuseSize = reuseSize;
+   }
+   
+   public int getJournalBufferReuseSize()
+   {
+      return this.journalBufferReuseSize;
+   }	
 	
    public boolean equals(Object other)
    {

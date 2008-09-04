@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -109,7 +110,6 @@ public class FakePostOffice implements PostOffice
    public boolean removeDestination(SimpleString address, boolean temporary)
          throws Exception
    {
-      // TODO Auto-generated method stub
       return false;
    }
 
@@ -128,15 +128,18 @@ public class FakePostOffice implements PostOffice
       return started;
    }
 
-   public List<org.jboss.messaging.core.server.MessageReference> route(
-         ServerMessage message) throws Exception
+   public List<org.jboss.messaging.core.server.MessageReference> route(ServerMessage message) throws Exception
    {
-      // TODO Auto-generated method stub
       return null;
    }
    
    public void setBackup(boolean backup)
    {
+   }
+
+   public PagingManager getPagingManager()
+   {
+      return null;
    }
 
    

@@ -29,6 +29,7 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.impl.QueueImpl;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -45,7 +46,7 @@ public class FakeQueueFactory implements QueueFactory
 	public Queue createQueue(long persistenceID, SimpleString name, Filter filter,
 			                   boolean durable)
 	{
-		return new QueueImpl(persistenceID, name, filter, false, durable, -1, scheduledExecutor);
+		return new QueueImpl(persistenceID, name, filter, false, durable, new QueueSettings(), scheduledExecutor);
 	}
 
 }

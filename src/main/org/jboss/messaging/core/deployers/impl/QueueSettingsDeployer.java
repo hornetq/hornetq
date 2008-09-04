@@ -45,6 +45,10 @@ public class QueueSettingsDeployer extends XmlDeployer
    
    private static final String MAX_SIZE_BYTES_NODE_NAME = "max-size-bytes";
    
+   private static final String DROP_MESSAGES_WHEN_FULL_NODE_NAME = "drop-messages-when-full";
+   
+   private static final String PAGE_SIZE_BYTES_NODE_NAME = "page-size-bytes";
+   
    private static final String DISTRIBUTION_POLICY_CLASS_NODE_NAME = "distribution-policy-class";
    
    private static final String MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME = "message-counter-history-day-limit";
@@ -105,6 +109,10 @@ public class QueueSettingsDeployer extends XmlDeployer
          {
             queueSettings.setMaxSizeBytes(Integer.valueOf(child.getTextContent()));   
          }
+         else if (PAGE_SIZE_BYTES_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         {
+            queueSettings.setPageSizeBytes(Integer.valueOf(child.getTextContent()));
+         }
          else if (DISTRIBUTION_POLICY_CLASS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             queueSettings.setDistributionPolicyClass(child.getTextContent());
@@ -112,6 +120,10 @@ public class QueueSettingsDeployer extends XmlDeployer
          else if (MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             queueSettings.setMessageCounterHistoryDayLimit(Integer.valueOf(child.getTextContent()));
+         }
+         else if (DROP_MESSAGES_WHEN_FULL_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         {
+            queueSettings.setDropMessagesWhenFull(Boolean.valueOf(child.getTextContent().trim()));
          }
       }
       

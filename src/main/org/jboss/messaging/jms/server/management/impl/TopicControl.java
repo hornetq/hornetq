@@ -41,6 +41,7 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.management.JMSMessageInfo;
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;
@@ -245,11 +246,13 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
             subName = pair.b;
          }
 
+         QueueSettings queueSettings = queue.getSettings();
+         
          String filter = queue.getFilter() != null ? queue.getFilter()
                .getFilterString().toString() : null;
          SubscriptionInfo info = new SubscriptionInfo(queue.getName().toString(),
                clientID, subName, queue.isDurable(), filter, queue
-                     .getMessageCount(), queue.getMaxSizeBytes());
+                     .getMessageCount(), queueSettings.getMaxSizeBytes());
          subInfos.add(info);
       }
       return (SubscriptionInfo[]) subInfos.toArray(new SubscriptionInfo[subInfos

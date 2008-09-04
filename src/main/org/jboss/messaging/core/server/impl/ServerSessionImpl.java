@@ -39,6 +39,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.FlowController;
@@ -131,6 +132,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private final ResourceManager resourceManager;
    
    private final PostOffice postOffice;
+   
+   private final PagingManager pager;
 
    private final SecurityStore securityStore;
    
@@ -180,6 +183,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       this.storageManager = storageManager;
       
       this.postOffice = postOffice;
+      
+      this.pager = postOffice.getPagingManager();
       
       this.queueSettingsRepository = queueSettingsRepository;
       
@@ -350,21 +355,26 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          }
          throw e;         
       }
-
-      msg.setMessageID(storageManager.generateMessageID());
       
       if (autoCommitSends)
       {
-         List<MessageReference> refs = postOffice.route(msg);
+         if (!pager.page(msg))
+         {
+            // We only set the messageID after we are sure the message is not being paged
+            // Paged messages won't have an ID until they are depaged 
+            msg.setMessageID(storageManager.generateMessageID());
 
-         if (msg.getDurableRefCount() != 0)
-         {
-            storageManager.storeMessage(msg);
-         }
-         
-         for (MessageReference ref : refs)
-         {
-            ref.getQueue().addLast(ref);
+            List<MessageReference> refs = postOffice.route(msg);
+   
+            if (msg.getDurableRefCount() != 0)
+            {
+               storageManager.storeMessage(msg);
+            }
+            
+            for (MessageReference ref : refs)
+            {
+               ref.getQueue().addLast(ref);
+            }
          }
       }
       else
@@ -543,6 +553,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             cancelTx.rollback(queueSettingsRepository);
          }
          finally
+         {
+            
+         }
+         //finally (TODO: enable this back)
          {
             //Now unlock
             
@@ -1079,7 +1093,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          SimpleString filterString = filter == null ? null : filter.getFilterString();
 
-         response = new SessionQueueQueryResponseMessage(queue.isDurable(), queue.getMaxSizeBytes(),
+         QueueSettings settings = queue.getSettings();
+         
+         // TODO: Remove MAX-SIZE-BYTES from SessionQueueQueryResponse.
+         response = new SessionQueueQueryResponseMessage(queue.isDurable(), settings.getMaxSizeBytes(),
                  queue.getConsumerCount(), queue.getMessageCount(),
                  filterString, binding.getAddress());
       }
@@ -1214,6 +1231,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       ServerMessage message = ref.getMessage();
 
       Queue queue = ref.getQueue();
+      
+      if (message.decrementRefCount() == 0)
+      {
+         pager.messageDone(message);
+      }
       
       if (message.isDurable() && queue.isDurable())
       {

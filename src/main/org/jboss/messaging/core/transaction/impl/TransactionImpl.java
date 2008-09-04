@@ -24,6 +24,7 @@ package org.jboss.messaging.core.transaction.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,8 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.paging.PagingManager;
+import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
@@ -40,6 +43,7 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A TransactionImpl
@@ -50,13 +54,20 @@ public class TransactionImpl implements Transaction
 {
    private static final Logger log = Logger.getLogger(TransactionImpl.class);
 
+   
    private final StorageManager storageManager;
 
    private final PostOffice postOffice;
+   
+   private final PagingManager pagingManager;
 
    private final List<MessageReference> refsToAdd = new ArrayList<MessageReference>();
 
    private final List<MessageReference> acknowledgements = new ArrayList<MessageReference>();
+   
+   private final List<ServerMessage> pagedMessages = new ArrayList<ServerMessage>();
+   
+   private PageTransactionInfoImpl pageTransaction;
 
    private final Xid xid;
 
@@ -72,8 +83,17 @@ public class TransactionImpl implements Transaction
                           final PostOffice postOffice)
    {
       this.storageManager = storageManager;
-
+      
       this.postOffice = postOffice;
+      
+      if (postOffice == null)
+      {
+         pagingManager = null;
+      }
+      else
+      {
+         this.pagingManager = postOffice.getPagingManager();
+      }
 
       this.xid = null;
 
@@ -86,6 +106,16 @@ public class TransactionImpl implements Transaction
       this.storageManager = storageManager;
 
       this.postOffice = postOffice;
+
+      if (postOffice == null)
+      {
+         pagingManager = null;
+      }
+      else
+      {
+         this.pagingManager = postOffice.getPagingManager();
+      }
+
 
       this.xid = xid;
 
@@ -106,16 +136,14 @@ public class TransactionImpl implements Transaction
       {
          throw new IllegalStateException("Transaction is in invalid state " + state);
       }
-
-      List<MessageReference> refs = postOffice.route(message);
-
-      refsToAdd.addAll(refs);
-
-      if (message.getDurableRefCount() != 0)
+      
+      if (pagingManager.isPaging(message.getDestination()))
       {
-         storageManager.storeMessageTransactional(id, message);
-
-         containsPersistent = true;
+         pagedMessages.add(message);
+      }
+      else
+      {
+         route(message);
       }
    }
 
@@ -130,6 +158,14 @@ public class TransactionImpl implements Transaction
       acknowledgements.add(acknowledgement);
 
       ServerMessage message = acknowledgement.getMessage();
+      
+      if (message.decrementRefCount() == 0)
+      {
+         if (pagingManager != null)
+         {
+            pagingManager.messageDone(message);
+         }
+      }
 
       if (message.isDurable())
       {
@@ -177,6 +213,8 @@ public class TransactionImpl implements Transaction
          throw new IllegalStateException("Cannot prepare non XA transaction");
       }
 
+      pageMessages();
+      
       if (containsPersistent)
       {
          storageManager.prepare(id);
@@ -213,6 +251,12 @@ public class TransactionImpl implements Transaction
             throw new IllegalStateException("Transaction is in invalid state " + state);
          }
       }
+      
+      
+      if (state != State.PREPARED)
+      {
+         pageMessages();
+      }
 
       if (containsPersistent)
       {
@@ -222,6 +266,13 @@ public class TransactionImpl implements Transaction
       for (MessageReference ref : refsToAdd)
       {
          ref.getQueue().addLast(ref);
+      }
+
+      // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the transaction until all the messages were added to the queue
+      // or else we could deliver the messages out of order
+      if (pageTransaction != null)
+      {
+         pageTransaction.complete();
       }
 
       for (MessageReference reference : acknowledgements)
@@ -255,7 +306,7 @@ public class TransactionImpl implements Transaction
       {
          storageManager.rollback(id);
       }
-
+      
       Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
 
       // We sort into lists - one for each queue involved.
@@ -268,10 +319,11 @@ public class TransactionImpl implements Transaction
 
          ServerMessage message = ref.getMessage();
 
-         if (message.isDurable() && queue.isDurable())
+         
+         // Putting back the size on pagingManager, and reverting the counters
+         if (message.incrementReference(message.isDurable() && queue.isDurable()) == 1)
          {
-            // Reverse the decrements we did in the tx
-            message.incrementDurableRefCount();
+            pagingManager.addSize(message);
          }
 
          LinkedList<MessageReference> list = queueMap.get(queue);
@@ -360,10 +412,83 @@ public class TransactionImpl implements Transaction
    // Private
    // -------------------------------------------------------------------
 
+   private void route(final ServerMessage message) throws Exception
+   {
+      // We only set the messageID after we are sure the message is not being paged
+      // Paged messages won't have an ID until they are depaged 
+      if (message.getMessageID() == 0l)
+      {
+         message.setMessageID(storageManager.generateMessageID());
+      }
+
+      List<MessageReference> refs = postOffice.route(message);
+
+      refsToAdd.addAll(refs);
+
+      if (message.getDurableRefCount() != 0)
+      {
+         storageManager.storeMessageTransactional(id, message);
+
+         containsPersistent = true;
+      }
+   }
+
+   private void pageMessages() throws Exception
+   {
+      HashSet<SimpleString> pagedDestinationsToSync = new HashSet<SimpleString>();
+
+      boolean pagingPersistent = false;
+
+      if (pagedMessages.size() != 0)
+      {
+         if (pageTransaction == null)
+         {
+            pageTransaction = new PageTransactionInfoImpl(this.id);
+            // To avoid a race condition where depage happens before the transaction is completed, we need to inform the pager about this transaction is being processed 
+            pagingManager.addTransaction(pageTransaction);
+         }
+      }
+
+      
+      for (ServerMessage message: pagedMessages)
+      {
+       
+         // http://wiki.jboss.org/auth/wiki/JBossMessaging2Paging
+         // Explained under Transaction On Paging. (This is the item B)
+         if (pagingManager.page(message, id))
+         {
+            if (message.isDurable())
+            {
+               // We only create pageTransactions if using persistent messages
+               pageTransaction.increment();
+               pagingPersistent = true;
+               pagedDestinationsToSync.add(message.getDestination());
+            }
+         }
+         else
+         {
+            // This could happen when the PageStore left the pageState 
+            route(message);
+         }
+      }
+      
+      if (pagingPersistent)
+      {
+         containsPersistent = true;
+         if (pagedDestinationsToSync.size() > 0)
+         {
+            pagingManager.sync(pagedDestinationsToSync);
+            storageManager.storePageTransaction(id, pageTransaction);
+         }
+      }
+   }
+
    private void clear()
    {
       refsToAdd.clear();
 
       acknowledgements.clear();
+      
+      pagedMessages.clear();
    }
 }

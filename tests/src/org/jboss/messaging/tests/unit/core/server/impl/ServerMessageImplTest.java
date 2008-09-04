@@ -134,10 +134,10 @@ public class ServerMessageImplTest extends MessageImplTestBase
       
       assertEquals(2, msg.getDurableRefCount());
       
-      msg.incrementDurableRefCount();
+      msg.incrementReference(true);
       assertEquals(3, msg.getDurableRefCount());
       
-      msg.incrementDurableRefCount();
+      msg.incrementReference(true);
       assertEquals(4, msg.getDurableRefCount());
       
       msg.decrementDurableRefCount();

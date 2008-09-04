@@ -1,7 +1,6 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.61)
 AC_INIT([jboss-messaging-native], [1.0.Alpha],[clebert.suconic@jboss.org])
 AC_CONFIG_AUX_DIR([build-aux])
 
@@ -23,7 +22,9 @@ test $libaio_fail == 1 && \
 	
 
 gl_COMPILER_FLAGS(-Werror)
-gl_COMPILER_FLAGS(-g)
+#gl_COMPILER_FLAGS(-g) -- enable this for debug
+# Compile it with full optimizations
+gl_COMPILER_FLAGS(-O3) 
 gl_COMPILER_FLAGS(-pedantic)
 gl_COMPILER_FLAGS(-Wall)
 gl_COMPILER_FLAGS(-Wextra)

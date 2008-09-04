@@ -47,6 +47,11 @@ import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.paging.LastPageRecord;
+import org.jboss.messaging.core.paging.PageTransactionInfo;
+import org.jboss.messaging.core.paging.PagingManager;
+import org.jboss.messaging.core.paging.impl.LastPageRecordImpl;
+import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -97,6 +102,10 @@ public class JournalStorageManager implements StorageManager
    
    public static final byte UPDATE_DELIVERY_COUNT = 33;
    
+   public static final byte PAGE_TRANSACTION = 34;
+   
+   public static final byte LAST_PAGE = 35;
+   
    public static final byte SET_SCHEDULED_DELIVERY_TIME = 44;
   	
 	private final AtomicLong messageIDSequence = new AtomicLong(0);
@@ -129,7 +138,7 @@ public class JournalStorageManager implements StorageManager
 			
 	   SequentialFileFactory bindingsFF = new NIOSequentialFileFactory(bindingsDir);
       
-	   bindingsJournal = new JournalImpl(1024 * 1024, 2, true, true, bindingsFF, "jbm-bindings", "bindings", 1);
+	   bindingsJournal = new JournalImpl(1024 * 1024, 2, true, true, bindingsFF, "jbm-bindings", "bindings", 1, -1);
 	      
 	   String journalDir = config.getJournalDirectory();
 	   
@@ -172,7 +181,7 @@ public class JournalStorageManager implements StorageManager
 	   messageJournal = new JournalImpl(config.getJournalFileSize(), 
 	   		config.getJournalMinFiles(), config.isJournalSyncTransactional(),
 	   		config.isJournalSyncNonTransactional(), journalFF,
-	   		"jbm-data", "jbm", config.getJournalMaxAIO());
+	   		"jbm-data", "jbm", config.getJournalMaxAIO(), config.getJournalBufferReuseSize());
 	}
 	
 	/* This constructor is only used for testing */
@@ -217,7 +226,29 @@ public class JournalStorageManager implements StorageManager
    {
       messageJournal.appendAddRecordTransactional(txID, message.getMessageID(), ADD_MESSAGE, message);
    }
+
+   public void storePageTransaction(long txID, PageTransactionInfo pageTransaction) throws Exception
+   {
+      if (pageTransaction.getRecordID() != 0)
+      {
+         // Instead of updating the record, we delete the old one as that is better for reclaiming
+         messageJournal.appendDeleteRecordTransactional(txID, pageTransaction.getRecordID());
+      }
+      pageTransaction.setRecordID(generateMessageID());
+      messageJournal.appendAddRecordTransactional(txID, pageTransaction.getRecordID(), PAGE_TRANSACTION, pageTransaction);
+   }
    
+   public void storeLastPage(long txID, LastPageRecord lastPage) throws Exception
+   {
+      if (lastPage.getRecordId() != 0)
+      {
+         // To avoid linked list effect on reclaiming, we delete and add a new record, instead of simply updating it
+         messageJournal.appendDeleteRecordTransactional(txID, lastPage.getRecordId());
+      }
+      lastPage.setRecordId(generateMessageID());
+      messageJournal.appendAddRecordTransactional(txID, lastPage.getRecordId(), LAST_PAGE, lastPage);
+   }
+
    public void storeAcknowledgeTransactional(long txID, long queueID, long messageID) throws Exception
    {
    	EncodingSupport record = ackBytes(queueID, messageID);
@@ -285,6 +316,38 @@ public class JournalStorageManager implements StorageManager
 			
 			switch (recordType)
 			{
+			   case PAGE_TRANSACTION:
+			   {
+               MessagingBuffer buff = new ByteBufferWrapper(bb);
+               
+               PageTransactionInfoImpl pageTransactionInfo = new PageTransactionInfoImpl();
+               
+               pageTransactionInfo.decode(buff);
+               
+               pageTransactionInfo.setRecordID(record.id);
+               
+               PagingManager pagingManager = postOffice.getPagingManager();
+               
+               pagingManager.addTransaction(pageTransactionInfo);
+
+               break;
+			   }
+			   case LAST_PAGE:
+			   {
+               MessagingBuffer buff = new ByteBufferWrapper(bb);
+               
+			      LastPageRecordImpl recordImpl = new LastPageRecordImpl();
+			      
+			      recordImpl.setRecordId(record.id);
+			      
+			      recordImpl.decode(buff);
+               
+               PagingManager pagingManager = postOffice.getPagingManager();
+               
+               pagingManager.loadLastPage(recordImpl);
+			      
+			      break;
+			   }
 				case ADD_MESSAGE:
 				{
 					MessagingBuffer buff = new ByteBufferWrapper(bb);

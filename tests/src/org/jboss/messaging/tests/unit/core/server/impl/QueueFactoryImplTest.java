@@ -55,7 +55,6 @@ public class QueueFactoryImplTest extends UnitTestCase
       EasyMock.verify(scheduledExecutor, queueSettingsRepository);
       assertEquals(queue.getDistributionPolicy().getClass(), RoundRobinDistributionPolicy.class);
       assertEquals(queue.isClustered(), true);
-      assertEquals(queue.getMaxSizeBytes(), 9999);
       assertEquals(queue.getName(), qName);
       assertEquals(queue.getPersistenceID(), 123);
       assertEquals(queue.getFilter(), filter);
@@ -79,7 +78,6 @@ public class QueueFactoryImplTest extends UnitTestCase
       EasyMock.verify(scheduledExecutor, queueSettingsRepository);
       assertEquals(queue.getDistributionPolicy().getClass(), RoundRobinDistributionPolicy.class);
       assertEquals(queue.isClustered(), false);
-      assertEquals(queue.getMaxSizeBytes(), 8888);
       assertEquals(queue.getName(), qName);
       assertEquals(queue.getPersistenceID(), 456);
       assertEquals(queue.getFilter(), null);

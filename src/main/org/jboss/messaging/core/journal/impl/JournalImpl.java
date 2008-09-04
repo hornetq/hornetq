@@ -49,6 +49,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.journal.BufferCallback;
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.LoadManager;
@@ -143,7 +144,7 @@ public class JournalImpl implements TestableJournal
    
    private boolean autoReclaim = true;
    
-   private AtomicInteger nextOrderingId = new AtomicInteger(0);
+   private final AtomicInteger nextOrderingId = new AtomicInteger(0);
    
    // used for Asynchronous IO only (ignored on NIO).
    private final int maxAIO;
@@ -175,6 +176,12 @@ public class JournalImpl implements TestableJournal
    private final ConcurrentMap<Long, TransactionCallback> transactionCallbacks = new ConcurrentHashMap<Long, TransactionCallback>();
    
    private ExecutorService filesExecutor = null;
+   
+   private final int reuseBufferSize;
+   
+   private final ConcurrentLinkedQueue<ByteBuffer> reuseBuffers = new ConcurrentLinkedQueue<ByteBuffer>();
+   
+   private final BufferCallback bufferCallback = new LocalBufferCallback();
    
    /*
     * We use a semaphore rather than synchronized since it performs better when
@@ -210,7 +217,9 @@ public class JournalImpl implements TestableJournal
    public JournalImpl(final int fileSize, final int minFiles,
                       final boolean syncTransactional, final boolean syncNonTransactional,
                       final SequentialFileFactory fileFactory, 
-                      final String filePrefix, final String fileExtension, final int maxAIO)
+                      final String filePrefix, final String fileExtension,
+                      final int maxAIO,
+                      final int reuseBufferSize)
    {
       if (fileSize < MIN_FILE_SIZE)
       {
@@ -240,6 +249,8 @@ public class JournalImpl implements TestableJournal
       {
          throw new IllegalStateException("maxAIO should aways be a positive number");
       }
+      
+      this.reuseBufferSize = fileFactory.calculateBlockSize(reuseBufferSize); 
       
       this.fileSize = fileSize;
       
@@ -271,7 +282,7 @@ public class JournalImpl implements TestableJournal
       
       int size = SIZE_ADD_RECORD + recordLength;
       
-      ByteBufferWrapper bb = new ByteBufferWrapper(fileFactory.newBuffer(size));
+      ByteBufferWrapper bb = new ByteBufferWrapper(newBuffer(size));
       
       bb.putByte(ADD_RECORD);     
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
@@ -305,7 +316,7 @@ public class JournalImpl implements TestableJournal
             
       int size = SIZE_ADD_RECORD + record.length;
       
-      ByteBuffer bb = fileFactory.newBuffer(size);
+      ByteBuffer bb = newBuffer(size);
       
       bb.put(ADD_RECORD);
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
@@ -347,7 +358,7 @@ public class JournalImpl implements TestableJournal
       
       int size = SIZE_UPDATE_RECORD + record.length;
       
-      ByteBuffer bb = fileFactory.newBuffer(size); 
+      ByteBuffer bb = newBuffer(size); 
       
       bb.put(UPDATE_RECORD);     
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
@@ -387,7 +398,7 @@ public class JournalImpl implements TestableJournal
       
       int size = SIZE_UPDATE_RECORD + record.getEncodeSize();
       
-      ByteBufferWrapper bb = new ByteBufferWrapper(fileFactory.newBuffer(size));
+      ByteBufferWrapper bb = new ByteBufferWrapper(newBuffer(size));
       
       bb.putByte(UPDATE_RECORD);     
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
@@ -428,7 +439,7 @@ public class JournalImpl implements TestableJournal
       
       int size = SIZE_DELETE_RECORD;
       
-      ByteBuffer bb = fileFactory.newBuffer(size); 
+      ByteBuffer bb = newBuffer(size); 
       
       bb.put(DELETE_RECORD);     
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
@@ -467,7 +478,7 @@ public class JournalImpl implements TestableJournal
       
       int size = SIZE_ADD_RECORD_TX + recordLength;
       
-      ByteBufferWrapper bb = new ByteBufferWrapper(fileFactory.newBuffer(size)); 
+      ByteBufferWrapper bb = new ByteBufferWrapper(newBuffer(size)); 
       
       bb.putByte(ADD_RECORD_TX);
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
@@ -504,7 +515,7 @@ public class JournalImpl implements TestableJournal
       
       int size = SIZE_ADD_RECORD_TX + record.length;
       
-      ByteBuffer bb = fileFactory.newBuffer(size); 
+      ByteBuffer bb = newBuffer(size); 
       
       bb.put(ADD_RECORD_TX);
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
@@ -541,7 +552,7 @@ public class JournalImpl implements TestableJournal
       
       int size = SIZE_UPDATE_RECORD_TX + record.length; 
       
-      ByteBuffer bb = fileFactory.newBuffer(size); 
+      ByteBuffer bb = newBuffer(size); 
       
       bb.put(UPDATE_RECORD_TX);     
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
@@ -569,6 +580,7 @@ public class JournalImpl implements TestableJournal
       }
    }
    
+   
    public void appendUpdateRecordTransactional(final long txID, final long id, byte recordType, EncodingSupport record) throws Exception
    {
       if (state != STATE_LOADED)
@@ -578,7 +590,7 @@ public class JournalImpl implements TestableJournal
       
       int size = SIZE_UPDATE_RECORD_TX + record.getEncodeSize(); 
       
-      ByteBufferWrapper bb = new ByteBufferWrapper(fileFactory.newBuffer(size)); 
+      ByteBufferWrapper bb = new ByteBufferWrapper(newBuffer(size)); 
             
       bb.putByte(UPDATE_RECORD_TX);     
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
@@ -605,7 +617,7 @@ public class JournalImpl implements TestableJournal
          lock.release();
       }
    }
-   
+
    public void appendDeleteRecordTransactional(final long txID, final long id) throws Exception
    {
       if (state != STATE_LOADED)
@@ -615,7 +627,7 @@ public class JournalImpl implements TestableJournal
       
       int size = SIZE_DELETE_RECORD_TX;
       
-      ByteBuffer bb = fileFactory.newBuffer(size); 
+      ByteBuffer bb = newBuffer(size); 
       
       bb.put(DELETE_RECORD_TX);     
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
@@ -718,7 +730,7 @@ public class JournalImpl implements TestableJournal
       
       int size = SIZE_ROLLBACK_RECORD;
       
-      ByteBuffer bb = fileFactory.newBuffer(size); 
+      ByteBuffer bb = newBuffer(size); 
       
       bb.put(ROLLBACK_RECORD);      
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
@@ -1191,6 +1203,11 @@ public class JournalImpl implements TestableJournal
       {     
          currentFile.getFile().open();
          
+         if (this.reuseBufferSize > 0)
+         {
+            currentFile.getFile().setBufferCallback(bufferCallback);
+         }
+         
          currentFile.getFile().position(currentFile.getFile().calculateBlockStart(lastDataPos));
          
          currentFile.setOffset(currentFile.getFile().position());
@@ -1582,7 +1599,7 @@ public class JournalImpl implements TestableJournal
    {
       int size = SIZE_COMPLETE_TRANSACTION_RECORD + tx.getElementsSummary().size() * SIZE_INT * 2;
       
-      ByteBuffer bb = fileFactory.newBuffer(size); 
+      ByteBuffer bb = newBuffer(size); 
       
       bb.put(recordType);    
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
@@ -1709,7 +1726,7 @@ public class JournalImpl implements TestableJournal
     * */
    private JournalFile appendRecord(final ByteBuffer bb, final boolean sync, final TransactionCallback callback) throws Exception
    {      
-      int size = bb.capacity();
+      int size = bb.limit();
       checkFile(size);
       bb.position(SIZE_BYTE);
       if (currentFile == null)
@@ -1733,6 +1750,7 @@ public class JournalImpl implements TestableJournal
       currentFile.extendOffset(size);
       return currentFile;
    }
+   
    
    private JournalFile createFile(final boolean keepOpened) throws Exception
    {
@@ -1773,6 +1791,10 @@ public class JournalImpl implements TestableJournal
       file.getFile().open();
       file.getFile().position(file.getFile().calculateBlockStart(SIZE_HEADER));
       file.setOffset(file.getFile().calculateBlockStart(SIZE_HEADER));
+      if (this.reuseBufferSize > 0)
+      {
+         file.getFile().setBufferCallback(bufferCallback);
+      }
    }
    
    private int generateOrderingID()
@@ -1944,6 +1966,66 @@ public class JournalImpl implements TestableJournal
          return null;
       }
    }
+   // -- Area reserved for the reuse buffer logic -----------------------------------------
+   
+   private volatile long bufferReuseLastTime = System.currentTimeMillis();
+   private ByteBuffer newBuffer(int size)
+   {
+      // if a new buffer wasn't requested in 10 seconds, we clear the queue
+      // This is being done this way as we don't need another Timeout Thread just to cleanup this
+      if (reuseBufferSize > 0 && System.currentTimeMillis() - bufferReuseLastTime > 10000)
+      {
+         log.debug("Clearing reuse buffers queue with " + reuseBuffers.size() + " elements");
+         bufferReuseLastTime = System.currentTimeMillis();
+         reuseBuffers.clear();
+      }
+      
+      if (reuseBufferSize <= 0 || size > reuseBufferSize)
+      {
+         return fileFactory.newBuffer(size);
+      }
+      else
+      {
+
+         int alignedSize = fileFactory.calculateBlockSize(size);
+      
+         ByteBuffer buffer = this.reuseBuffers.poll();
+         if (buffer == null)
+         {
+            buffer = fileFactory.newBuffer(reuseBufferSize);
+            buffer.limit(alignedSize);
+         }
+         else
+         {
+            buffer.limit(alignedSize);
+
+            // we could gain some little performance if we could avoid clearing the buffer.
+            // On AIO this is being done with just a memset, what should be fairly quick
+            fileFactory.clearBuffer(buffer);
+         }
+         
+         buffer.rewind();
+
+         return buffer;         
+      }
+   }
+   
+   private class LocalBufferCallback implements BufferCallback
+   {
+
+      public void bufferDone(ByteBuffer buffer)
+      {
+         bufferReuseLastTime = System.currentTimeMillis();
+         if (buffer.capacity() == reuseBufferSize)
+         {
+            reuseBuffers.offer(buffer);
+         }
+      }
+      
+   }
+   
+   // ------------------------------------------------------------------------------------
+   
    
    // Inner classes ---------------------------------------------------------------------------
    

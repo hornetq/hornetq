@@ -86,9 +86,8 @@ public class AddAndRemoveStressTest extends UnitTestCase
       file.mkdirs();
       
       SequentialFileFactory factory = new AIOSequentialFileFactory(journalDir);
-      JournalImpl impl = new JournalImpl(10*1024*1024, 60, true, false, factory, "jbm", "jbm", 1000);
+      JournalImpl impl = new JournalImpl(10*1024*1024, 60, true, false, factory, "jbm", "jbm", 1000, 0);
 
-      System.out.println("Starting journal");
       impl.start();
       
       impl.load(dummyLoader);
@@ -106,7 +105,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
       
       
       factory = new AIOSequentialFileFactory(journalDir);
-      impl = new JournalImpl(10*1024*1024, 60, true, false, factory, "jbm", "jbm", 1000);
+      impl = new JournalImpl(10*1024*1024, 60, true, false, factory, "jbm", "jbm", 1000, 0);
 
       impl.start();
       
@@ -125,7 +124,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
       impl.stop();
       
       factory = new AIOSequentialFileFactory(journalDir);
-      impl = new JournalImpl(10*1024*1024, 60, true, false, factory, "jbm", "jbm", 1000);
+      impl = new JournalImpl(10*1024*1024, 60, true, false, factory, "jbm", "jbm", 1000, 0);
 
       impl.start();
       
@@ -137,8 +136,6 @@ public class AddAndRemoveStressTest extends UnitTestCase
       impl.load(info, trans);
 
       
-      System.out.println("Info# - " + info.size());
-
       if (info.size() > 0)
       {
          System.out.println("Info ID: " + info.get(0).id);

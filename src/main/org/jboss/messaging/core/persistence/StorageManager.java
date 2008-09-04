@@ -25,6 +25,8 @@ package org.jboss.messaging.core.persistence;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.messaging.core.paging.LastPageRecord;
+import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
@@ -71,6 +73,12 @@ public interface StorageManager extends MessagingComponent
    
    void rollback(long txID) throws Exception;
       
+   
+   void storePageTransaction(long txID, PageTransactionInfo pageTransaction) throws Exception;
+
+   
+   void storeLastPage(long txID, LastPageRecord pageTransaction) throws Exception;
+   
    
    void updateDeliveryCount(MessageReference ref) throws Exception;     
    

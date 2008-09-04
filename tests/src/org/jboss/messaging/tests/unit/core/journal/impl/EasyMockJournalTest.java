@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.easymock.IArgumentMatcher;
+import org.jboss.messaging.core.journal.BufferCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
@@ -399,7 +400,7 @@ public class EasyMockJournalTest extends UnitTestCase
       JournalImpl journalImpl = new JournalImpl(100 * 1024, 2,
             true, true,
             mockFactory,
-            "tt", "tt", 1000);
+            "tt", "tt", 1000, 0);
       
       journalImpl.start();
       
@@ -456,52 +457,30 @@ public class EasyMockJournalTest extends UnitTestCase
             });
       
       
+      EasyMock.expect(mockFactory.calculateBlockSize(EasyMock.anyInt()))
+      .andStubAnswer(new IAnswer<Integer>()
+      {
+         
+         public Integer answer() throws Throwable
+         {
+            return (Integer) EasyMock.getCurrentArguments()[0];
+         }
+      });
+      
+      file1.setBufferCallback(EasyMock.isA(BufferCallback.class));
+      EasyMock.expectLastCall().anyTimes();
+      
+      file2.setBufferCallback(EasyMock.isA(BufferCallback.class));
+      EasyMock.expectLastCall().anyTimes();
+      
+      
+
       EasyMock.expect(file1.getAlignment()).andStubReturn(1);
       EasyMock.expect(file2.getAlignment()).andStubReturn(1);
       
    }
    
    
-   private ByteBuffer compareByteBuffer(final byte expectedArray[])
-   {
-      
-      EasyMock.reportMatcher(new IArgumentMatcher()
-      {
-
-         public void appendTo(StringBuffer buffer)
-         {
-            buffer.append("ByteArray");
-         }
-
-         public boolean matches(Object argument)
-         {
-            ByteBuffer buffer = (ByteBuffer) argument;
-            
-            buffer.rewind();
-            byte[] compareArray = new byte[buffer.limit()];
-            buffer.get(compareArray);
-            
-            if (compareArray.length != expectedArray.length)
-            {
-               return false;
-            }
-            
-            for (int i = 0; i < expectedArray.length; i++)
-            {
-               if (expectedArray[i] != compareArray[i])
-               {
-                  return false;
-               }
-            }
-            
-            return true;
-         }
-         
-      });
-      
-      return null;
-   }
-
    // Package protected ---------------------------------------------
    
    // Inner classes -------------------------------------------------

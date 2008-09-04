@@ -198,6 +198,7 @@ public class ServerConsumerImplTest extends UnitTestCase
    {
       MessageReference messageReference = createStrictMock(MessageReference.class);
       ServerMessage message = createStrictMock(ServerMessage.class);
+      expect(message.decrementRefCount()).andStubReturn(1);
       expect(messageReference.getMessage()).andStubReturn(message);
       MessageReference messageReference2 = createStrictMock(MessageReference.class);
       ServerMessage message2 = createStrictMock(ServerMessage.class);

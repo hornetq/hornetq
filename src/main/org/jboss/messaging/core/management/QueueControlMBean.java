@@ -52,8 +52,6 @@ public interface QueueControlMBean
 
    long getSizeBytes();
 
-   int getMaxSizeBytes();
-
    int getMessageCount();
 
    long getScheduledCount();

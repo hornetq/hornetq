@@ -311,6 +311,8 @@ public class FileConfiguration extends ConfigurationImpl
       createBindingsDir = getBoolean(e, "create-bindings-dir", createBindingsDir);
 
       journalDirectory = getString(e, "journal-directory", journalDirectory);
+      
+      pagingDirectory = getString(e, "paging-directory", pagingDirectory);
 
       createJournalDir = getBoolean(e, "create-journal-dir", createJournalDir);
 
@@ -339,6 +341,8 @@ public class FileConfiguration extends ConfigurationImpl
       journalSyncNonTransactional = getBoolean(e, "journal-sync-non-transactional", journalSyncNonTransactional);
 
       journalFileSize = getInteger(e, "journal-file-size", journalFileSize);
+      
+      journalBufferReuseSize = getInteger(e, "journal-buffer-reuse-size", journalBufferReuseSize);
 
       journalMinFiles = getInteger(e, "journal-min-files", journalMinFiles);
 

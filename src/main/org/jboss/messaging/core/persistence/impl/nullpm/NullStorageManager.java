@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.jboss.messaging.core.paging.LastPageRecord;
+import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -117,7 +119,15 @@ public class NullStorageManager implements StorageManager
 	{
 	}
 
-	public void updateDeliveryCount(MessageReference ref) throws Exception
+	public void storePageTransaction(long txID, PageTransactionInfo pageTransaction) throws Exception
+   {
+   }
+
+   public void updatePageTransaction(long txID, PageTransactionInfo pageTransaction) throws Exception
+   {
+   }
+
+   public void updateDeliveryCount(MessageReference ref) throws Exception
 	{
 	}
 
@@ -155,5 +165,10 @@ public class NullStorageManager implements StorageManager
 	{
 	   return started;
 	}
-  
+
+   public void storeLastPage(long txID, LastPageRecord pageTransaction) throws Exception
+   {
+   }
+
+
 }

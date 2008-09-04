@@ -58,6 +58,19 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
       return ByteBuffer.allocate(size);
    }
    
+   public void clearBuffer(final ByteBuffer buffer)
+   {
+      final int limit = buffer.limit();
+      buffer.rewind();
+      
+      for (int i = 0; i < limit; i++)
+      {
+         buffer.put((byte)0);
+      }
+
+      buffer.rewind();
+   }
+   
    public ByteBuffer wrapBuffer(final byte[] bytes)
    {
       return ByteBuffer.wrap(bytes);
@@ -66,6 +79,11 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
    public int getAlignment()
    {
       return 1;
+   }
+
+   public int calculateBlockSize(int bytes)
+   {
+      return bytes;
    }
    
    

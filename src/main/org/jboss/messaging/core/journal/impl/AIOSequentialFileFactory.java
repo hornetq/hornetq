@@ -65,6 +65,11 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       return ByteBuffer.allocateDirect(size);
    }
    
+   public void clearBuffer(ByteBuffer directByteBuffer)
+   {
+      AsynchronousFileImpl.resetBuffer(directByteBuffer, directByteBuffer.limit());
+   }
+   
    public int getAlignment()
    {
       return 512;
@@ -76,5 +81,14 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       ByteBuffer newbuffer = newBuffer(bytes.length);
       newbuffer.put(bytes);
       return newbuffer;
+   }
+
+   public int calculateBlockSize(int position)
+   {
+      int alignment = getAlignment();
+      
+      int pos = ((position / alignment) + (position % alignment != 0 ? 1 : 0)) * alignment;
+      
+      return pos;
    }
 }

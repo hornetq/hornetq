@@ -31,6 +31,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.messaging.core.asyncio.AIOCallback;
 import org.jboss.messaging.core.asyncio.AsynchronousFile;
+import org.jboss.messaging.core.asyncio.BufferCallback;
 import org.jboss.messaging.core.logging.Logger;
 
 
@@ -53,7 +54,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    
    private static boolean loaded = false;
    
-   private static int EXPECTED_NATIVE_VERSION = 10;
+   private static int EXPECTED_NATIVE_VERSION = 14;
       
    static void addMax(int io)
    {
@@ -84,7 +85,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       }
       catch (Throwable e)
       {
-         log.trace(name + " -> error loading it", e);
+         log.trace(name + " -> error loading the native library", e);
          return false;
       }
       
@@ -123,10 +124,11 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		
 	private boolean opened = false;
 	private String fileName;
-	private Thread poller;	
+	private volatile Thread poller;	
 	private int maxIO;	
 	private Lock writeLock = new ReentrantReadWriteLock().writeLock();
    private Semaphore writeSemaphore;   
+   private BufferCallback bufferCallback;
 	
 	/**
 	 *  Warning: Beware of the C++ pointer! It will bite you! :-)
@@ -156,7 +158,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
 			this.fileName=fileName;
 			handler = init (fileName, this.maxIO, log);
 			addMax(this.maxIO);
-			startPoller();
 		}
 		finally
 		{
@@ -178,9 +179,13 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	         log.warn("Couldn't acquire lock after 60 seconds on AIO", new Exception ("Warning: Couldn't acquire lock after 60 seconds on AIO"));
 	      }
 	      writeSemaphore = null;
-	      stopPoller(handler);
-	      // We need to make sure we won't call close until Poller is completely done, or we might get beautiful GPFs
-	      poller.join();
+	      if (poller != null)
+	      {
+	         Thread currentPoller = poller;
+   	      stopPoller(handler);
+   	      // We need to make sure we won't call close until Poller is completely done, or we might get beautiful GPFs
+   	      currentPoller.join();
+	      }
 
 	      closeInternal(handler);
 			addMax(maxIO * -1);
@@ -196,6 +201,10 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	public void write(final long position, final long size, final ByteBuffer directByteBuffer, final AIOCallback aioPackage)
 	{
 		checkOpened();
+		if (poller == null)
+		{
+		   startPoller();
+		}
       writeSemaphore.acquireUninterruptibly();
 		try
 		{
@@ -212,6 +221,10 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	public void read(final long position, final long size, final ByteBuffer directByteBuffer, final AIOCallback aioPackage)
 	{
 		checkOpened();
+      if (poller == null)
+      {
+         startPoller();
+      }
       writeSemaphore.acquireUninterruptibly();
 		try
 		{
@@ -257,16 +270,25 @@ public class AsynchronousFileImpl implements AsynchronousFile
       return ByteBuffer.allocateDirect((int)size);
    }
    
+   public void setBufferCallback(BufferCallback callback)
+   {
+      this.bufferCallback = callback;
+   }
+
       
 	// Private
 	// ---------------------------------------------------------------------------------
 	
-	/** The JNI layer will call this method, so we could use it to unlock readWriteLocks held in the java layer */
+   /** The JNI layer will call this method, so we could use it to unlock readWriteLocks held in the java layer */
 	@SuppressWarnings("unused") // Called by the JNI layer.. just ignore the warning
-	private void callbackDone(final AIOCallback callback)
+	private void callbackDone(final AIOCallback callback, final ByteBuffer buffer)
 	{
       writeSemaphore.release();
 		callback.done();
+		if (this.bufferCallback != null)
+		{
+		   this.bufferCallback.bufferDone(buffer);
+		}
 	}
 	
 	@SuppressWarnings("unused") // Called by the JNI layer.. just ignore the warning
@@ -286,18 +308,31 @@ public class AsynchronousFileImpl implements AsynchronousFile
 		internalPollEvents(handler);
 	}
 	
-	private synchronized void startPoller()
+	private void startPoller()
 	{
 		checkOpened();
 		
-		poller = new PollerThread(); 
+		writeLock.lock();
+		
 		try
 		{
-			poller.start();
+   		
+   		if (poller == null)
+   		{
+      		poller = new PollerThread(); 
+      		try
+      		{
+      			poller.start();
+      		}
+      		catch (Exception ex)
+      		{
+      			log.error(ex.getMessage(), ex);
+      		}
+   		}
 		}
-		catch (Exception ex)
+		finally
 		{
-			log.error(ex.getMessage(), ex);
+		   writeLock.unlock();
 		}
 	}
 	
@@ -311,6 +346,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
 	
 	// Native
 	// ------------------------------------------------------------------------------------------
+	
+	public static native void resetBuffer(ByteBuffer directByteBuffer, int size);
 	
 	private static native long init(String fileName, int maxIO, Logger logger);
 	
@@ -343,7 +380,16 @@ public class AsynchronousFileImpl implements AsynchronousFile
       }
       public void run()
       {
-         pollEvents();
+         try
+         {
+            pollEvents();
+         }
+         finally
+         {
+            // This gives us extra protection in cases of interruption
+            // Case the poller thread is interrupted, this will allow us to restart the thread when required
+            AsynchronousFileImpl.this.poller = null;
+         }
       }
    }	
 }

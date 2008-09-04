@@ -203,19 +203,6 @@ public class QueueControlTest extends TestCase
       verifyMockedAttributes();
    }
 
-   public void testGetMaxSizeBytes() throws Exception
-   {
-      int size = randomInt();
-      expect(queue.getMaxSizeBytes()).andReturn(size);
-
-      replayMockedAttributes();
-
-      QueueControlMBean control = createControl();
-      assertEquals(size, control.getMaxSizeBytes());
-
-      verifyMockedAttributes();
-   }
-
    public void testGetSizeBytes() throws Exception
    {
       int size = randomInt();

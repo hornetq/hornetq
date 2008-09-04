@@ -37,6 +37,7 @@ import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.QueueImpl;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
@@ -82,7 +83,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testScheduledNoConsumer() throws Exception
    {
-      Queue queue = new QueueImpl(1, new SimpleString("queue1"), null, false, true, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, new SimpleString("queue1"), null, false, true, new QueueSettings(), scheduledExecutor);
 
       //Send one scheduled
 
@@ -148,7 +149,7 @@ public class QueueImplTest extends UnitTestCase
 
    private void testScheduled(boolean direct)
    {
-      Queue queue = new QueueImpl(1, new SimpleString("queue1"), null, false, true, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, new SimpleString("queue1"), null, false, true, new QueueSettings(), scheduledExecutor);
 
       FakeConsumer consumer = null;
 
@@ -245,7 +246,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testDeleteAllReferences() throws Exception
    {
-      Queue queue = new QueueImpl(1, new SimpleString("queue1"), null, false, true, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, new SimpleString("queue1"), null, false, true, new QueueSettings(), scheduledExecutor);
 
       StorageManager storageManager = EasyMock.createStrictMock(StorageManager.class);
 
@@ -336,7 +337,7 @@ public class QueueImplTest extends UnitTestCase
    public void testDeliveryScheduled() throws Exception
    {
       Consumer consumer = EasyMock.createStrictMock(Consumer.class);
-      Queue queue = new QueueImpl(1, queue1, null, false, true, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, new QueueSettings(), scheduledExecutor);
       MessageReference messageReference = generateReference(queue, 1);
       final CountDownLatch countDownLatch = new CountDownLatch(1);
       EasyMock.expect(consumer.handle(messageReference)).andAnswer(new IAnswer<HandleStatus>()
@@ -361,7 +362,7 @@ public class QueueImplTest extends UnitTestCase
    public void testDeliveryScheduledBusyConsumer() throws Exception
    {
       Consumer consumer = EasyMock.createStrictMock(Consumer.class);
-      Queue queue = new QueueImpl(1, queue1, null, false, true, -1, scheduledExecutor);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, new QueueSettings(), scheduledExecutor);
       MessageReference messageReference = generateReference(queue, 1);
       final CountDownLatch countDownLatch = new CountDownLatch(1);
       EasyMock.expect(consumer.handle(messageReference)).andAnswer(new IAnswer<HandleStatus>()

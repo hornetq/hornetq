@@ -66,6 +66,7 @@ import org.jboss.messaging.util.SimpleString;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  * 
  */
 public class QueueImpl implements Queue
@@ -86,8 +87,6 @@ public class QueueImpl implements Queue
 
    private final boolean durable;
 
-   private final int maxSizeBytes;
-     
    private final ScheduledExecutorService scheduledExecutor;
 
    private final PriorityLinkedList<MessageReference> messageReferences =
@@ -119,11 +118,13 @@ public class QueueImpl implements Queue
    
    private final Lock lock = new ReentrantLock(false);
    
+   private final QueueSettings settings;
+   
    private volatile boolean backup;
          
    public QueueImpl(final long persistenceID, final SimpleString name,
          final Filter filter, final boolean clustered, final boolean durable,
-         final int maxSizeBytes,
+         final QueueSettings settings,
          final ScheduledExecutorService scheduledExecutor)
    {
       this.persistenceID = persistenceID;
@@ -136,15 +137,21 @@ public class QueueImpl implements Queue
 
       this.durable = durable;
 
-      this.maxSizeBytes = maxSizeBytes;
-
       this.scheduledExecutor = scheduledExecutor;
+      
+      this.settings = settings;
 
       direct = true;
    }
 
    // Queue implementation
    // -------------------------------------------------------------------
+
+
+   public QueueSettings getSettings()
+   {
+      return this.settings;
+   }
 
    public boolean isClustered()
    {
@@ -430,11 +437,6 @@ public class QueueImpl implements Queue
       deliveringCount.decrementAndGet();
    }
 
-   public int getMaxSizeBytes()
-   {
-      return maxSizeBytes;
-   }
-   
    public int getSizeBytes()
    {
       return sizeBytes.get();
@@ -669,11 +671,6 @@ public class QueueImpl implements Queue
 
    private synchronized HandleStatus add(final MessageReference ref, final boolean first)
    {
-      if (maxSizeBytes != -1 && sizeBytes.get() + ref.getMessage().getEncodeSize() >= maxSizeBytes)
-      {
-         return HandleStatus.BUSY;              
-      }
-      
       if (!first)
       {
          messagesAdded.incrementAndGet();

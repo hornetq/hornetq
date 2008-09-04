@@ -32,6 +32,8 @@ import org.easymock.IAnswer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.paging.PagingManager;
+import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.FlowController;
@@ -61,7 +63,10 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+      
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
+
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.replay(pm, qf);
@@ -75,7 +80,10 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
+      
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.replay(pm, qf);
@@ -103,7 +111,10 @@ public class PostOfficeImplTest extends UnitTestCase
       queue.setFlowController(null);
       EasyMock.expect(queue.getPersistenceID()).andStubReturn(1);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+      
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
+
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, null));
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
@@ -146,17 +157,18 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, null));
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
 
-      EasyMock.replay(pm, qf);
+      EasyMock.replay(pm, pgm, qf);
 
       postOffice.start();
 
-      EasyMock.verify(pm, qf);
+      EasyMock.verify(pm, pgm, qf);
 
       assertTrue(postOffice.isStarted());
       for (int i = 0; i < 100; i++)
@@ -188,11 +200,13 @@ public class PostOfficeImplTest extends UnitTestCase
       queue.setFlowController(null);
       EasyMock.expect(queue.getPersistenceID()).andStubReturn(1);
 
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+      
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, null));
 
-      EasyMock.replay(pm, qf, binding, binding2, queue);
+      EasyMock.replay(pm, pgm, qf, binding, binding2, queue);
 
       try
       {
@@ -203,7 +217,7 @@ public class PostOfficeImplTest extends UnitTestCase
       {
       }
 
-      EasyMock.verify(pm, qf, binding, binding2, queue);
+      EasyMock.verify(pm, pgm, qf, binding, binding2, queue);
 
       assertFalse(postOffice.isStarted());
    }
@@ -235,16 +249,18 @@ public class PostOfficeImplTest extends UnitTestCase
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, null));
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
 
-      EasyMock.replay(pm, qf);
+      EasyMock.replay(pm, pgm, qf);
 
       postOffice.start();
 
-      EasyMock.verify(pm, qf);
+      EasyMock.verify(pm, pgm, qf);
 
       assertTrue(postOffice.isStarted());
       for (int i = 0; i < 1000; i++)
@@ -274,17 +290,21 @@ public class PostOfficeImplTest extends UnitTestCase
       queue.setFlowController((FlowController) EasyMock.anyObject());
       EasyMock.expect(queue.getPersistenceID()).andStubReturn(1);
 
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+      PagingStore store = EasyMock.createNiceMock(PagingStore.class);
+      EasyMock.expect(pgm.getPageStore(address1)).andReturn(store);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, dests));
       EasyMock.expect(pm.addDestination(address1)).andReturn(true);
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
 
-      EasyMock.replay(pm, qf, binding, queue);
+      EasyMock.replay(pm, qf, binding, queue, pgm, store);
 
       postOffice.start();
 
-      EasyMock.verify(pm, qf, binding, queue);
+      EasyMock.verify(pm, qf, binding, queue, pgm, store);
 
       assertTrue(postOffice.isStarted());
       assertEquals(postOffice.getBinding(queueName), binding);
@@ -298,7 +318,12 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+      
+      PagingStore pgstore = EasyMock.createNiceMock(PagingStore.class);
+      
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       ArrayList<Binding> bindingArrayList = new ArrayList<Binding>();
       List<SimpleString> dests = new ArrayList<SimpleString>();
       Binding[] bindings = new Binding[100];
@@ -312,6 +337,9 @@ public class PostOfficeImplTest extends UnitTestCase
          queues[i] = EasyMock.createStrictMock(Queue.class);
          addresses[i] = new SimpleString("testAddress" + i);
          queueNames[i] = new SimpleString("testQueueName" + i);
+         
+         EasyMock.expect(pgm.getPageStore(addresses[i])).andReturn(pgstore);
+         
          EasyMock.expect(bindings[i].getAddress()).andStubReturn(addresses[i]);
          EasyMock.expect(bindings[i].getQueue()).andStubReturn(queues[i]);
          EasyMock.expect(queues[i].getName()).andStubReturn(queueNames[i]);
@@ -330,11 +358,11 @@ public class PostOfficeImplTest extends UnitTestCase
       }
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
 
-      EasyMock.replay(pm, qf);
+      EasyMock.replay(pm, qf, pgm, pgstore);
 
       postOffice.start();
 
-      EasyMock.verify(pm, qf);
+      EasyMock.verify(pm, qf, pgm, pgstore);
 
       assertTrue(postOffice.isStarted());
       for (int i = 0; i < 100; i++)
@@ -351,8 +379,11 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+      PagingStore pgstore = EasyMock.createNiceMock(PagingStore.class);
+      
 
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       ArrayList<Binding> bindingArrayList = new ArrayList<Binding>();
       List<SimpleString> dests = new ArrayList<SimpleString>();
       Binding[] bindings = new Binding[100];
@@ -366,6 +397,7 @@ public class PostOfficeImplTest extends UnitTestCase
          queues[i] = EasyMock.createStrictMock(Queue.class);
          addresses[i] = new SimpleString("testAddress" + i);
          queueNames[i] = new SimpleString("testQueueName" + i);
+         EasyMock.expect(pgm.getPageStore(addresses[i])).andReturn(pgstore);
          EasyMock.expect(bindings[i].getAddress()).andStubReturn(addresses[i]);
          EasyMock.expect(bindings[i].getQueue()).andStubReturn(queues[i]);
          EasyMock.expect(queues[i].getName()).andStubReturn(queueNames[i]);
@@ -384,11 +416,11 @@ public class PostOfficeImplTest extends UnitTestCase
       }
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
 
-      EasyMock.replay(pm, qf);
+      EasyMock.replay(pm, qf, pgm, pgstore);
 
       postOffice.start();
       postOffice.stop();
-      EasyMock.verify(pm, qf);
+      EasyMock.verify(pm, qf, pgm, pgstore);
 
       assertFalse(postOffice.isStarted());
       for (int i = 0; i < 100; i++)
@@ -405,8 +437,10 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+      PagingStore pgstore = EasyMock.createNiceMock(PagingStore.class);
 
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       ArrayList<Binding> bindingArrayList = new ArrayList<Binding>();
       List<SimpleString> dests = new ArrayList<SimpleString>();
       Binding[] bindings = new Binding[100];
@@ -420,6 +454,9 @@ public class PostOfficeImplTest extends UnitTestCase
          queues[i] = EasyMock.createStrictMock(Queue.class);
          addresses[i] = new SimpleString("testAddress" + i);
          queueNames[i] = new SimpleString("testQueueName" + i);
+         
+         EasyMock.expect(pgm.getPageStore(addresses[i])).andReturn(pgstore);
+         
          EasyMock.expect(bindings[i].getAddress()).andStubReturn(addresses[i]);
          EasyMock.expect(bindings[i].getQueue()).andStubReturn(queues[i]);
          EasyMock.expect(queues[i].getName()).andStubReturn(queueNames[i]);
@@ -438,11 +475,11 @@ public class PostOfficeImplTest extends UnitTestCase
       }
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
 
-      EasyMock.replay(pm, qf);
+      EasyMock.replay(pm, qf, pgm, pgstore);
 
       postOffice.start();
 
-      EasyMock.verify(pm, qf);
+      EasyMock.verify(pm, qf, pgm, pgstore);
 
       assertTrue(postOffice.isStarted());
       for (int i = 0; i < 100; i++)
@@ -458,8 +495,10 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+      PagingStore pgstore = EasyMock.createNiceMock(PagingStore.class);
 
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       ArrayList<Binding> bindingArrayList = new ArrayList<Binding>();
       List<SimpleString> dests = new ArrayList<SimpleString>();
       Binding[] bindings = new Binding[100];
@@ -473,6 +512,9 @@ public class PostOfficeImplTest extends UnitTestCase
          queues[i] = EasyMock.createStrictMock(Queue.class);
          addresses[i] = new SimpleString("testAddress" + i);
          queueNames[i] = new SimpleString("testQueueName" + i);
+         
+         EasyMock.expect(pgm.getPageStore(addresses[i])).andReturn(pgstore);
+         
          EasyMock.expect(bindings[i].getAddress()).andStubReturn(addresses[i]);
          EasyMock.expect(bindings[i].getQueue()).andStubReturn(queues[i]);
          EasyMock.expect(queues[i].getName()).andStubReturn(queueNames[i]);
@@ -491,11 +533,11 @@ public class PostOfficeImplTest extends UnitTestCase
       }
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
 
-      EasyMock.replay(pm, qf);
+      EasyMock.replay(pm, qf, pgm, pgstore);
 
       postOffice.start();
       Set<SimpleString> allDests = postOffice.listAllDestinations();
-      EasyMock.verify(pm, qf);
+      EasyMock.verify(pm, qf, pgm, pgstore);
 
       for (SimpleString dest : allDests)
       {
@@ -509,8 +551,9 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-
-      PostOffice po = new PostOfficeImpl(pm, qf, ms, false);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+ 
+      PostOffice po = new PostOfficeImpl(pm, pgm, qf, ms, false);
 
       final long id = 324;
       final SimpleString name = new SimpleString("wibb22");
@@ -550,8 +593,9 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 
-      PostOffice po = new PostOfficeImpl(pm, qf, ms, false);
+      PostOffice po = new PostOfficeImpl(pm, pgm, qf, ms, false);
 
       final long id = 324;
       final SimpleString name = new SimpleString("wibb22");
@@ -600,8 +644,9 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = new FakeQueueFactory();
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 
-      PostOffice po = new PostOfficeImpl(pm, qf, ms, false);
+      PostOffice po = new PostOfficeImpl(pm, pgm, qf, ms, false);
 
       final SimpleString condition1 = new SimpleString("queue.wibble");
 
@@ -687,7 +732,9 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.expect(pm.addDestination(address)).andReturn(true);
@@ -708,7 +755,9 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.expect(pm.addDestination(address)).andReturn(true);
@@ -735,7 +784,9 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.expect(pm.addDestination(address)).andReturn(true);
@@ -759,7 +810,9 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.expect(pm.addDestination(address)).andReturn(true);
@@ -798,7 +851,9 @@ public class PostOfficeImplTest extends UnitTestCase
       Filter filter = EasyMock.createStrictMock(Filter.class);
       Queue queue = EasyMock.createStrictMock(Queue.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.expect(qf.createQueue(-1, queueName, filter, true)).andReturn(queue);
@@ -826,7 +881,9 @@ public class PostOfficeImplTest extends UnitTestCase
       Queue queue2 = EasyMock.createStrictMock(Queue.class);
       Queue queue3 = EasyMock.createStrictMock(Queue.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.expect(qf.createQueue(-1, queueName, filter, true)).andReturn(queue);
@@ -864,7 +921,9 @@ public class PostOfficeImplTest extends UnitTestCase
       Filter filter = EasyMock.createStrictMock(Filter.class);
       Queue queue = EasyMock.createStrictMock(Queue.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.expect(qf.createQueue(-1, queueName, filter, false)).andReturn(queue);
@@ -891,7 +950,9 @@ public class PostOfficeImplTest extends UnitTestCase
       Queue queue2 = EasyMock.createStrictMock(Queue.class);
       Queue queue3 = EasyMock.createStrictMock(Queue.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.expect(qf.createQueue(-1, queueName, filter, false)).andReturn(queue);
@@ -926,7 +987,9 @@ public class PostOfficeImplTest extends UnitTestCase
       Filter filter = EasyMock.createStrictMock(Filter.class);
       Queue queue = EasyMock.createStrictMock(Queue.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.expect(qf.createQueue(-1, queueName, filter, true)).andReturn(queue);
@@ -961,7 +1024,9 @@ public class PostOfficeImplTest extends UnitTestCase
       Filter filter = EasyMock.createStrictMock(Filter.class);
       Queue queue = EasyMock.createStrictMock(Queue.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.expect(qf.createQueue(-1, queueName, filter, true)).andReturn(queue);
@@ -993,7 +1058,9 @@ public class PostOfficeImplTest extends UnitTestCase
       Queue queue2 = EasyMock.createStrictMock(Queue.class);
       Queue queue3 = EasyMock.createStrictMock(Queue.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.expect(qf.createQueue(-1, queueName, filter, true)).andReturn(queue);
@@ -1039,7 +1106,9 @@ public class PostOfficeImplTest extends UnitTestCase
       Filter filter = EasyMock.createStrictMock(Filter.class);
       Queue queue = EasyMock.createStrictMock(Queue.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.expect(qf.createQueue(-1, queueName, filter, false)).andReturn(queue);
@@ -1069,7 +1138,9 @@ public class PostOfficeImplTest extends UnitTestCase
       Queue queue2 = EasyMock.createStrictMock(Queue.class);
       Queue queue3 = EasyMock.createStrictMock(Queue.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.expect(qf.createQueue(-1, queueName, filter, false)).andReturn(queue);
@@ -1110,7 +1181,9 @@ public class PostOfficeImplTest extends UnitTestCase
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       Queue queue = EasyMock.createStrictMock(Queue.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
@@ -1137,7 +1210,9 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, true);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.expect(message.getDestination()).andStubReturn(new SimpleString("testtDestination"));
@@ -1163,13 +1238,17 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, false);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, false);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       EasyMock.expect(message.getDestination()).andStubReturn(new SimpleString("testtDestination"));
       EasyMock.replay(pm, qf, message);
+      
       postOffice.start();
       postOffice.route(message);
+      
       EasyMock.verify(pm, qf, message);
       assertTrue(postOffice.isStarted());
    }
@@ -1183,7 +1262,9 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, false);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, false);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       SimpleString address = new SimpleString("testtDestination");
@@ -1193,15 +1274,63 @@ public class PostOfficeImplTest extends UnitTestCase
       EasyMock.expect(queue.getFilter()).andStubReturn(null);
       queue.setBackup(false);
       queue.setFlowController((FlowController) EasyMock.anyObject());
+      
       EasyMock.expect(message.createReference(queue)).andReturn(messageReference);
+      
       EasyMock.replay(pm, qf, message, queue, messageReference);
+      
       postOffice.start();
       postOffice.addBinding(address, queueName, null, false);
+
       List<MessageReference> references = postOffice.route(message);
+      
       EasyMock.verify(pm, qf, message, queue, messageReference);
       assertTrue(postOffice.isStarted());
       assertEquals(1, references.size());
       assertEquals(messageReference, references.get(0));
+   }
+
+   public void testRouteAddressFull() throws Exception
+   {
+      SimpleString queueName = new SimpleString("testQueueName");
+      
+      ServerMessage message = EasyMock.createStrictMock(ServerMessage.class);
+      
+      Queue queue = EasyMock.createStrictMock(Queue.class);
+      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
+      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+      
+      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
+      
+      PagingManager pgm = EasyMock.createMock(PagingManager.class);
+      pgm.setPostOffice(EasyMock.isA(PostOffice.class));
+      pgm.start();
+
+      EasyMock.expect(pgm.addSize(EasyMock.isA(ServerMessage.class))).andReturn(-1l);
+      
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, false);
+      
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
+      
+      SimpleString address = new SimpleString("testtDestination");
+      EasyMock.expect(message.getDestination()).andStubReturn(address);
+      EasyMock.expect(qf.createQueue(-1, queueName, null, false)).andReturn(queue);
+      EasyMock.expect(queue.getName()).andStubReturn(queueName);
+      EasyMock.expect(queue.getFilter()).andStubReturn(null);
+      queue.setBackup(false);
+      queue.setFlowController((FlowController) EasyMock.anyObject());
+      
+      EasyMock.replay(pm, pgm, qf, message, queue);
+      
+      postOffice.start();
+      postOffice.addBinding(address, queueName, null, false);
+
+      List<MessageReference> references = postOffice.route(message);
+      
+      EasyMock.verify(pm, pgm, qf, message, queue);
+      assertTrue(postOffice.isStarted());
+      assertEquals(0, references.size());
    }
 
    public void testPostOfficeRouteToSingleQueueValidFilter() throws Exception
@@ -1214,7 +1343,9 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, false);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, false);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       SimpleString address = new SimpleString("testtDestination");
@@ -1246,7 +1377,9 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, false);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, false);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       SimpleString address = new SimpleString("testtDestination");
@@ -1281,7 +1414,9 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, false);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, false);
       pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
       pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
       SimpleString address = new SimpleString("testtDestination");
@@ -1335,7 +1470,9 @@ public class PostOfficeImplTest extends UnitTestCase
          StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
          QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
          ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-         PostOffice postOffice = new PostOfficeImpl(pm, qf, ms, false);
+         PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+
+         PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, false);
          pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
          pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject());
          SimpleString address = new SimpleString("testtDestination");

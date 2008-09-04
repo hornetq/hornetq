@@ -234,6 +234,48 @@ public class UnitTestCase extends TestCase
       return buffer.array();
    }
    
+   
+   protected ByteBuffer compareByteBuffer(final byte expectedArray[])
+   {
+      
+      EasyMock.reportMatcher(new IArgumentMatcher()
+      {
+
+         public void appendTo(StringBuffer buffer)
+         {
+            buffer.append("ByteArray");
+         }
+
+         public boolean matches(Object argument)
+         {
+            ByteBuffer buffer = (ByteBuffer) argument;
+            
+            buffer.rewind();
+            byte[] compareArray = new byte[buffer.limit()];
+            buffer.get(compareArray);
+            
+            if (compareArray.length != expectedArray.length)
+            {
+               return false;
+            }
+            
+            for (int i = 0; i < expectedArray.length; i++)
+            {
+               if (expectedArray[i] != compareArray[i])
+               {
+                  return false;
+               }
+            }
+            
+            return true;
+         }
+         
+      });
+      
+      return null;
+   }
+
+   
 
    protected boolean deleteDirectory(File directory)
    {

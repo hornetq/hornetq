@@ -25,6 +25,7 @@ import java.util.ArrayList;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -123,82 +124,145 @@ public class MessageReferenceImplTest extends UnitTestCase
       queueSettings.setMaxDeliveryAttempts(1);
       SimpleString dlqName = new SimpleString("testDLQ");
       queueSettings.setDLQ(dlqName);
+      
       Binding dlqBinding = EasyMock.createStrictMock(Binding.class);
       EasyMock.expect(dlqBinding.getAddress()).andReturn(dlqName);
+
       StorageManager sm = EasyMock.createNiceMock(StorageManager.class);
+      
       PostOffice po = EasyMock.createStrictMock(PostOffice.class);
+      PagingManager pm = EasyMock.createNiceMock(PagingManager.class);
+      EasyMock.expect(pm.page(EasyMock.isA(ServerMessage.class))).andStubReturn(false);
+      EasyMock.expect(po.getPagingManager()).andStubReturn(pm);
+      
+      
       HierarchicalRepository<QueueSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
-      ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
+      
+      ServerMessage serverMessage = EasyMock.createNiceMock(ServerMessage.class);
+      
       Queue queue = EasyMock.createStrictMock(Queue.class);
+      
       MessageReferenceImpl messageReference = new DummyMessageReference(serverMessage, queue);
       messageReference.setDeliveryCount(1);
+      
       SimpleString queueName = new SimpleString("queueName");
+      
       queue.referenceAcknowledged(messageReference);
+      
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
+      
       EasyMock.expect(repos.getMatch(queueName.toString())).andStubReturn(queueSettings);
+      
       EasyMock.expect(serverMessage.isDurable()).andStubReturn(true);
+      
       EasyMock.expect(serverMessage.getMessageID()).andStubReturn(999l);
+      
       EasyMock.expect(queue.isDurable()).andStubReturn(true);
+      
       sm.updateDeliveryCount(messageReference);
+      
       EasyMock.expect(po.getBinding(dlqName)).andReturn(dlqBinding);
+      
       EasyMock.expect(serverMessage.copy()).andReturn(serverMessage);
+      
       EasyMock.expect(sm.generateMessageID()).andReturn(2l);
+      
       serverMessage.setMessageID(2);
+      
       EasyMock.expect(serverMessage.getDestination()).andReturn(queueName);
+      
       serverMessage.putStringProperty(MessageImpl.HDR_ORIGIN_QUEUE, queueName);
       serverMessage.setExpiration(0);
       serverMessage.setDestination(dlqName);
+      
       EasyMock.expect(po.route(serverMessage)).andReturn(new ArrayList<MessageReference>());
+      
       EasyMock.expect(serverMessage.getDurableRefCount()).andReturn(0);
+      EasyMock.expect(serverMessage.decrementRefCount()).andReturn(1);
       EasyMock.expect(serverMessage.decrementDurableRefCount()).andReturn(0);
+      
       EasyMock.expect(sm.generateTransactionID()).andReturn(1l);
-      EasyMock.replay(sm, po, repos, serverMessage, queue, dlqBinding);
+      
+      EasyMock.replay(sm, po, repos, serverMessage, queue, dlqBinding, pm);
+      
+      
       assertFalse(messageReference.cancel(sm, po, repos));
-      EasyMock.verify(sm, po, repos, serverMessage, queue, dlqBinding);
+      EasyMock.verify(sm, po, repos, serverMessage, queue, dlqBinding, pm);
    }
 
    public void testCancelToDLQDoesntExist() throws Exception
    {
       QueueSettings queueSettings = new QueueSettings();
       queueSettings.setMaxDeliveryAttempts(1);
+
       SimpleString dlqName = new SimpleString("testDLQ");
+      
       queueSettings.setDLQ(dlqName);
+      
       Binding dlqBinding = EasyMock.createStrictMock(Binding.class);
+      
       EasyMock.expect(dlqBinding.getAddress()).andReturn(dlqName);
+      
       StorageManager sm = EasyMock.createNiceMock(StorageManager.class);
+      
       PostOffice po = EasyMock.createStrictMock(PostOffice.class);
+      PagingManager pm = EasyMock.createNiceMock(PagingManager.class);
+      EasyMock.expect(pm.page(EasyMock.isA(ServerMessage.class))).andStubReturn(false);
+      EasyMock.expect(po.getPagingManager()).andStubReturn(pm);
+      EasyMock.expect(pm.isPaging(EasyMock.isA(SimpleString.class))).andStubReturn(false);
+      pm.messageDone(EasyMock.isA(ServerMessage.class));
+      EasyMock.expectLastCall().anyTimes();
+      
       HierarchicalRepository<QueueSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
-      ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
+      
+      ServerMessage serverMessage = EasyMock.createNiceMock(ServerMessage.class);
+      
       Queue queue = EasyMock.createStrictMock(Queue.class);
+      
       MessageReferenceImpl messageReference = new DummyMessageReference(serverMessage, queue);
       messageReference.setDeliveryCount(1);
+      
       SimpleString queueName = new SimpleString("queueName");
+      
       queue.referenceAcknowledged(messageReference);
+      
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
+      
       EasyMock.expect(repos.getMatch(queueName.toString())).andStubReturn(queueSettings);
+      
       EasyMock.expect(serverMessage.isDurable()).andStubReturn(true);
       EasyMock.expect(serverMessage.getMessageID()).andStubReturn(999l);
+      
       EasyMock.expect(queue.isDurable()).andStubReturn(true);
+      
       sm.updateDeliveryCount(messageReference);
+      
       EasyMock.expect(po.getBinding(dlqName)).andReturn(null);
       EasyMock.expect(po.addBinding(dlqName, dlqName, null, true)).andReturn(dlqBinding);
+      
       EasyMock.expect(serverMessage.copy()).andReturn(serverMessage);
+      
       EasyMock.expect(sm.generateMessageID()).andReturn(2l);
+      
       serverMessage.setMessageID(2);
+      
       EasyMock.expect(serverMessage.getDestination()).andReturn(queueName);
       serverMessage.putStringProperty(MessageImpl.HDR_ORIGIN_QUEUE, queueName);
       serverMessage.setExpiration(0);
       serverMessage.setDestination(dlqName);
+      
       EasyMock.expect(po.route(serverMessage)).andReturn(new ArrayList<MessageReference>());
+      
       EasyMock.expect(serverMessage.getDurableRefCount()).andReturn(0);
       EasyMock.expect(serverMessage.decrementDurableRefCount()).andReturn(0);
+      
       EasyMock.expect(sm.generateTransactionID()).andReturn(1l);
       
-      EasyMock.replay(sm, po, repos, serverMessage, queue, dlqBinding);
+      EasyMock.replay(sm, po, repos, serverMessage, queue, dlqBinding, pm);
       
       assertFalse(messageReference.cancel(sm, po, repos));
       
-      EasyMock.verify(sm, po, repos, serverMessage, queue, dlqBinding);
+      EasyMock.verify(sm, po, repos, serverMessage, queue, dlqBinding, pm);
    }
 
    public void testExpire() throws Exception
@@ -208,7 +272,15 @@ public class MessageReferenceImplTest extends UnitTestCase
       SimpleString dlqName = new SimpleString("testDLQ");
       queueSettings.setDLQ(dlqName);
       StorageManager sm = EasyMock.createNiceMock(StorageManager.class);
+      
       PostOffice po = EasyMock.createStrictMock(PostOffice.class);
+      PagingManager pm = EasyMock.createNiceMock(PagingManager.class);
+      EasyMock.expect(pm.page(EasyMock.isA(ServerMessage.class))).andStubReturn(false);
+      EasyMock.expect(po.getPagingManager()).andStubReturn(pm);
+      EasyMock.expect(pm.isPaging(EasyMock.isA(SimpleString.class))).andStubReturn(false);
+      pm.messageDone(EasyMock.isA(ServerMessage.class));
+      EasyMock.expectLastCall().anyTimes();
+
       HierarchicalRepository<QueueSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
       ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
       Queue queue = EasyMock.createStrictMock(Queue.class);
@@ -220,13 +292,14 @@ public class MessageReferenceImplTest extends UnitTestCase
       EasyMock.expect(repos.getMatch(queueName.toString())).andStubReturn(queueSettings);
       EasyMock.expect(serverMessage.isDurable()).andStubReturn(true);
       EasyMock.expect(serverMessage.getMessageID()).andStubReturn(999l);
+      EasyMock.expect(serverMessage.decrementRefCount()).andReturn(1);
       EasyMock.expect(queue.isDurable()).andStubReturn(true);
       EasyMock.expect(serverMessage.decrementDurableRefCount()).andReturn(0);
       EasyMock.expect(sm.generateTransactionID()).andReturn(1l);
 
-      EasyMock.replay(sm, po, repos, serverMessage, queue);
+      EasyMock.replay(sm, po, repos, serverMessage, queue, pm);
       messageReference.expire(sm, po, repos);
-      EasyMock.verify(sm, po, repos, serverMessage, queue);
+      EasyMock.verify(sm, po, repos, serverMessage, queue, pm);
    }
 
    public void testExpireToQExists() throws Exception
@@ -237,9 +310,18 @@ public class MessageReferenceImplTest extends UnitTestCase
       Binding expQBinding = EasyMock.createStrictMock(Binding.class);
       queueSettings.setExpiryQueue(expQName);
       StorageManager sm = EasyMock.createNiceMock(StorageManager.class);
+
       PostOffice po = EasyMock.createStrictMock(PostOffice.class);
+      PagingManager pm = EasyMock.createNiceMock(PagingManager.class);
+      EasyMock.expect(pm.page(EasyMock.isA(ServerMessage.class))).andStubReturn(false);
+      EasyMock.expect(po.getPagingManager()).andStubReturn(pm);
+      EasyMock.expect(pm.isPaging(EasyMock.isA(SimpleString.class))).andStubReturn(false);
+      pm.messageDone(EasyMock.isA(ServerMessage.class));
+      EasyMock.expectLastCall().anyTimes();
+      
       HierarchicalRepository<QueueSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
-      ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
+      
+      ServerMessage serverMessage = EasyMock.createNiceMock(ServerMessage.class);
       Queue queue = EasyMock.createStrictMock(Queue.class);
       MessageReferenceImpl messageReference = new DummyMessageReference(serverMessage, queue);
       messageReference.setDeliveryCount(1);
@@ -265,11 +347,11 @@ public class MessageReferenceImplTest extends UnitTestCase
       EasyMock.expect(serverMessage.getDurableRefCount()).andReturn(0);
       EasyMock.expect(serverMessage.decrementDurableRefCount()).andReturn(0);
 
-      EasyMock.replay(sm, po, repos, serverMessage, queue, expQBinding);
+      EasyMock.replay(sm, po, repos, serverMessage, queue, expQBinding, pm);
       
       messageReference.expire(sm, po, repos);
 
-      EasyMock.verify(sm, po, repos, serverMessage, queue, expQBinding);
+      EasyMock.verify(sm, po, repos, serverMessage, queue, expQBinding, pm);
    }
 
    public void testExpireToQDoesntExist() throws Exception
@@ -280,9 +362,20 @@ public class MessageReferenceImplTest extends UnitTestCase
       Binding expQBinding = EasyMock.createStrictMock(Binding.class);
       queueSettings.setExpiryQueue(expQName);
       StorageManager sm = EasyMock.createNiceMock(StorageManager.class);
+      
       PostOffice po = EasyMock.createStrictMock(PostOffice.class);
+      
+      PagingManager pm = EasyMock.createNiceMock(PagingManager.class);
+      EasyMock.expect(pm.page(EasyMock.isA(ServerMessage.class))).andStubReturn(false);
+      EasyMock.expect(po.getPagingManager()).andStubReturn(pm);
+      EasyMock.expect(pm.isPaging(EasyMock.isA(SimpleString.class))).andStubReturn(false);
+      pm.messageDone(EasyMock.isA(ServerMessage.class));
+      EasyMock.expectLastCall().anyTimes();
+      
       HierarchicalRepository<QueueSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
-      ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
+      
+      ServerMessage serverMessage = EasyMock.createNiceMock(ServerMessage.class);
+      
       Queue queue = EasyMock.createStrictMock(Queue.class);
       MessageReferenceImpl messageReference = new DummyMessageReference(serverMessage, queue);
       messageReference.setDeliveryCount(1);
@@ -309,11 +402,11 @@ public class MessageReferenceImplTest extends UnitTestCase
       EasyMock.expect(serverMessage.getDurableRefCount()).andReturn(0);
       EasyMock.expect(serverMessage.decrementDurableRefCount()).andReturn(0);
 
-      EasyMock.replay(sm, po, repos, serverMessage, queue, expQBinding);
+      EasyMock.replay(sm, po, repos, serverMessage, queue, expQBinding, pm);
       
       messageReference.expire(sm, po, repos);
       
-      EasyMock.verify(sm, po, repos, serverMessage, queue, expQBinding);
+      EasyMock.verify(sm, po, repos, serverMessage, queue, expQBinding, pm);
    }
 
    public void testMove() throws Exception
@@ -328,10 +421,21 @@ public class MessageReferenceImplTest extends UnitTestCase
       Binding toBinding = EasyMock.createStrictMock(Binding.class);
       Queue toQueue = EasyMock.createStrictMock(Queue.class);
       PostOffice postOffice = EasyMock.createMock(PostOffice.class);
+      
+      
+      PagingManager pm = EasyMock.createNiceMock(PagingManager.class);
+      EasyMock.expect(pm.page(EasyMock.isA(ServerMessage.class))).andStubReturn(false);
+      EasyMock.expect(postOffice.getPagingManager()).andStubReturn(pm);
+      EasyMock.expect(pm.isPaging(EasyMock.isA(SimpleString.class))).andStubReturn(false);
+      pm.messageDone(EasyMock.isA(ServerMessage.class));
+      EasyMock.expectLastCall().anyTimes();
+      
       StorageManager persistenceManager = EasyMock.createMock(StorageManager.class);
-      ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
+      ServerMessage serverMessage = EasyMock.createNiceMock(ServerMessage.class);
+      EasyMock.expect(serverMessage.getMessageID()).andStubReturn(1l);
       MessageReferenceImpl messageReference = new DummyMessageReference(serverMessage, queue);
-      ServerMessage copyMessage = EasyMock.createStrictMock(ServerMessage.class);
+      ServerMessage copyMessage = EasyMock.createNiceMock(ServerMessage.class);
+      EasyMock.expect(copyMessage.getMessageID()).andStubReturn(1l);
 
       EasyMock.expect(persistenceManager.generateTransactionID()).andReturn(tid);
       EasyMock.expect(serverMessage.copy()).andReturn(copyMessage);
@@ -348,11 +452,11 @@ public class MessageReferenceImplTest extends UnitTestCase
       EasyMock.expect(serverMessage.getMessageID()).andReturn(messageID);
       queue.referenceAcknowledged(messageReference);
 
-      EasyMock.replay(queue, toBinding, toQueue, postOffice, persistenceManager, serverMessage, copyMessage);
+      EasyMock.replay(queue, toBinding, toQueue, postOffice, persistenceManager, serverMessage, copyMessage, pm);
       
       messageReference.move(toBinding, persistenceManager, postOffice);
       
-      EasyMock.verify(queue, toBinding, toQueue, postOffice, persistenceManager, serverMessage, copyMessage);
+      EasyMock.verify(queue, toBinding, toQueue, postOffice, persistenceManager, serverMessage, copyMessage, pm);
    }
    
    //we need to override the constructor for creation

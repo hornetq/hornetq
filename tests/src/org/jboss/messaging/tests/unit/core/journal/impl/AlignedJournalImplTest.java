@@ -162,7 +162,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          journalImpl = new JournalImpl(2000, 2,
             true, true,
             factory, 
-            "tt", "tt", 1000);
+            "tt", "tt", 1000, 0);
          fail ("Supposed to throw an exception");
       }
       catch (Exception ignored)
@@ -1163,7 +1163,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
 
       SequentialFileFactory factory = new FakeSequentialFileFactory(512, false);
-      JournalImpl impl = new JournalImpl(512 + 512 * 3, 20, true, false, factory, "jbm", "jbm", 1000);
+      JournalImpl impl = new JournalImpl(512 + 512 * 3, 20, true, false, factory, "jbm", "jbm", 1000, 0);
       
       impl.start();
       
@@ -1176,7 +1176,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       impl.stop();
 
-      impl = new JournalImpl(512 + 1024 + 512, 20, true, false, factory, "jbm", "jbm", 1000);
+      impl = new JournalImpl(512 + 1024 + 512, 20, true, false, factory, "jbm", "jbm", 1000, 0);
       impl.start();
       impl.load(dummyLoader);
       
@@ -1192,7 +1192,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       impl.stop();
       
       
-      impl = new JournalImpl(512 + 1024 + 512, 20, true, false, factory, "jbm", "jbm", 1000);
+      impl = new JournalImpl(512 + 1024 + 512, 20, true, false, factory, "jbm", "jbm", 1000, 0);
       impl.start();
       
       ArrayList<RecordInfo> info = new ArrayList<RecordInfo>();
@@ -1266,7 +1266,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       journalImpl = new JournalImpl(journalSize, numberOfMinimalFiles,
             true, true,
             factory, 
-            "tt", "tt", 1000);
+            "tt", "tt", 1000, 0);
       
       journalImpl.start();
       

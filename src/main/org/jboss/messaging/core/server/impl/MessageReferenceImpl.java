@@ -137,8 +137,7 @@ public class MessageReferenceImpl implements MessageReference
 
       if (maxDeliveries > 0 && deliveryCount >= maxDeliveries)
       {
-         log
-         .warn("Message has reached maximum delivery attempts, sending it to DLQ");
+         log.warn("Message has reached maximum delivery attempts, sending it to DLQ");
          sendToDLQ(persistenceManager, postOffice, queueSettingsRepository);
          
          return false;

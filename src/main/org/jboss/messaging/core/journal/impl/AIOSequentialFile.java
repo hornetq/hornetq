@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.jboss.messaging.core.asyncio.AsynchronousFile;
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.journal.BufferCallback;
 import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.logging.Logger;
@@ -181,6 +182,11 @@ public class AIOSequentialFile implements SequentialFile
       
    }
    
+   public void setBufferCallback(BufferCallback callback)
+   {
+      aioFile.setBufferCallback(callback);
+   }
+   
    public void position(final int pos) throws Exception
    {
       position.set(pos);		
@@ -245,6 +251,16 @@ public class AIOSequentialFile implements SequentialFile
       }		
    }
    
+   public void sync() throws Exception
+   {
+      throw new IllegalArgumentException("This method is not supported on AIO");
+   }
+
+   public long size() throws Exception
+   {
+      return aioFile.size();
+   }
+
    public String toString()
    {
       return "AIOSequentialFile:" + this.journalDir + "/" + this.fileName;

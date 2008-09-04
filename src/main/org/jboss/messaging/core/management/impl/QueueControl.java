@@ -129,11 +129,6 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
       return queue.getMessageCount();
    }
 
-   public int getMaxSizeBytes()
-   {
-      return queue.getMaxSizeBytes();
-   }
-
    public int getConsumerCount()
    {
       return queue.getConsumerCount();

@@ -100,7 +100,11 @@ public interface Configuration extends Serializable
    String getJournalDirectory();
    
    void setJournalDirectory(String dir);
-
+   
+   String getPagingDirectory();
+   
+   void setPagingDirectory(String dir);
+   
    JournalType getJournalType();
    
    void setJournalType(JournalType type);
@@ -124,6 +128,10 @@ public interface Configuration extends Serializable
    int getJournalMaxAIO();
    
    void setJournalMaxAIO(int maxAIO);
+   
+   void setJournalBufferReuseSize(int reuseSize);
+   
+   int getJournalBufferReuseSize();
    
    boolean isCreateBindingsDir();
    

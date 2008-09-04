@@ -21,10 +21,14 @@
   */
 package org.jboss.test.messaging.jms;
 
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
 import javax.jms.QueueConnection;
 import javax.jms.QueueReceiver;
 import javax.jms.QueueRequestor;
@@ -92,7 +96,8 @@ public class QueueRequestorTest extends JMSTestCase
 	     if (conn1 != null) conn1.close();
 	     if (conn2 != null) conn2.close();
       }      
-   }   
+   }  
+   
    
    // Package protected ---------------------------------------------
    

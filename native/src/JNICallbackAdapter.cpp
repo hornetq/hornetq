@@ -36,7 +36,7 @@ JNICallbackAdapter::~JNICallbackAdapter()
 
 void JNICallbackAdapter::done(THREAD_CONTEXT threadContext)
 {
-	JNI_ENV(threadContext)->CallVoidMethod(fileController, controller->done, callback); 
+	JNI_ENV(threadContext)->CallVoidMethod(fileController, controller->done, callback, bufferReference); 
 	return;
 }
 

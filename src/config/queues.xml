@@ -93,6 +93,12 @@
       <clustered>false</clustered>
    </queue-settings>
 
+   <queue-settings match="queuejms.MyQueue">
+      <max-size-bytes>104857600</max-size-bytes>
+      <page-size-bytes>10485760</page-size-bytes>
+      <drop-messages-when-full>false</drop-messages-when-full>
+   </queue-settings>
+
    <!--default for catch all-->
    <queue-settings match="*">
       <clustered>false</clustered>

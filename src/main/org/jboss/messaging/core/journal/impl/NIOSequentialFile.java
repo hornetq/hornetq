@@ -27,6 +27,7 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
+import org.jboss.messaging.core.journal.BufferCallback;
 import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.logging.Logger;
@@ -52,6 +53,8 @@ public class NIOSequentialFile implements SequentialFile
    private FileChannel channel;
    
    private RandomAccessFile rfile;
+   
+   BufferCallback bufferCallback;
    
    public NIOSequentialFile(final String journalDir, final String fileName)
    {
@@ -89,6 +92,13 @@ public class NIOSequentialFile implements SequentialFile
       open();
    }
    
+   
+   
+   public void setBufferCallback(BufferCallback callback)
+   {
+      this.bufferCallback = callback;
+   }
+
    public void fill(final int position, final int size, final byte fillCharacter) throws Exception
    {
       ByteBuffer bb = ByteBuffer.allocateDirect(size);
@@ -164,7 +174,12 @@ public class NIOSequentialFile implements SequentialFile
       
       if (sync)
       {
-         channel.force(false);
+         sync();
+      }
+      
+      if (bufferCallback != null)
+      {
+         bufferCallback.bufferDone(bytes);
       }
       
       return bytesRead;
@@ -180,6 +195,12 @@ public class NIOSequentialFile implements SequentialFile
          {
             callback.done();
          }
+
+         if (bufferCallback != null)
+         {
+            bufferCallback.bufferDone(bytes);
+         }
+         
          
          return bytesRead;
       }
@@ -189,6 +210,17 @@ public class NIOSequentialFile implements SequentialFile
          throw e;
       }
    }
+      
+   public void sync() throws Exception
+   {
+      channel.force(false);
+   }
+   
+   public long size() throws Exception
+   {
+      return channel.size();
+   }
+
    
    public void position(final int pos) throws Exception
    {

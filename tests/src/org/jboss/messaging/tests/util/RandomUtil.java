@@ -72,6 +72,12 @@ public class RandomUtil
       return random.nextInt();
    }
    
+   public static int randomPositiveInt()
+   {
+      final int value = randomInt();
+      return value >= 0 ? value : value * -1;
+   }
+   
    public static short randomShort()
    {
       return (short) random.nextInt(Short.MAX_VALUE);

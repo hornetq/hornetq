@@ -58,8 +58,7 @@ public class QueueFactoryImpl implements QueueFactory
    {
       QueueSettings queueSettings = queueSettingsRepository.getMatch(name.toString());
             
-      Queue queue = new QueueImpl(persistenceID, name, filter, queueSettings.isClustered(), durable,
-      		queueSettings.getMaxSizeBytes(), scheduledExecutor);
+      Queue queue = new QueueImpl(persistenceID, name, filter, queueSettings.isClustered(), durable, queueSettings, scheduledExecutor);
 
       queue.setDistributionPolicy(queueSettings.getDistributionPolicy());
 

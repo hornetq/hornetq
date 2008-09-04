@@ -42,6 +42,7 @@ import org.jboss.messaging.util.SimpleString;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
 public interface Queue
@@ -49,6 +50,8 @@ public interface Queue
    HandleStatus addLast(MessageReference ref);
    
    HandleStatus addFirst(MessageReference ref);
+   
+   QueueSettings getSettings();
    
    /**
     * This method is used to add a List of MessageReferences atomically at the head of the list.
@@ -84,8 +87,6 @@ public interface Queue
    void referenceCancelled();
    
    int getScheduledCount();
-          
-   int getMaxSizeBytes();
    
    int getSizeBytes();
    

@@ -47,6 +47,7 @@ import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.FlowController;
@@ -93,12 +94,14 @@ import org.jboss.messaging.util.SimpleString;
 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
+* @author <a href="mailto:ataylor@redhat.com">Clebert Suconic</a>
  */
 public class ServerSessionImplTest extends UnitTestCase
 {
    private RemotingConnection rc;
    private StorageManager sm;
    private PostOffice po;
+   private PagingManager pm;   
    private HierarchicalRepository<QueueSettings> qs;
    private ResourceManager rm;
    private SecurityStore ss;
@@ -132,6 +135,10 @@ public class ServerSessionImplTest extends UnitTestCase
       RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
+
+      PagingManager pm = createNiceMock(PagingManager.class);
+      expect(po.getPagingManager()).andStubReturn(pm);
+      
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);
       ResourceManager rm = createStrictMock(ResourceManager.class);
       SecurityStore ss = createStrictMock(SecurityStore.class);
@@ -150,7 +157,7 @@ public class ServerSessionImplTest extends UnitTestCase
       
       expectLastCall().andThrow(new MessagingException(MessagingException.SECURITY_EXCEPTION));
 
-      replay(returner, sm, po, qs, rm, ss, pd, executor, msg, server, cm);
+      replay(returner, sm, po, qs, rm, ss, pd, executor, msg, server, cm, pm);
 
       ServerSessionImpl session = new ServerSessionImpl(123, "blah", null, null, true, false, false,
               returner, server, sm, po, qs, rm, ss, pd, executor, cm);
@@ -165,7 +172,7 @@ public class ServerSessionImplTest extends UnitTestCase
          //Ok
       }
 
-      verify(returner, sm, po, qs, rm, ss, pd, executor, msg, server, cm);
+      verify(returner, sm, po, qs, rm, ss, pd, executor, msg, server, cm, pm);
    }
 
    public void testNotAutoCommitSendFailsSecurity() throws Exception
@@ -173,6 +180,10 @@ public class ServerSessionImplTest extends UnitTestCase
       RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
+
+      PagingManager pm = createNiceMock(PagingManager.class);
+      expect(po.getPagingManager()).andStubReturn(pm);
+      
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);
       ResourceManager rm = createStrictMock(ResourceManager.class);
       SecurityStore ss = createStrictMock(SecurityStore.class);
@@ -190,7 +201,7 @@ public class ServerSessionImplTest extends UnitTestCase
       expectLastCall().andThrow(new MessagingException(MessagingException.SECURITY_EXCEPTION));
 
 
-      replay(returner, sm, po, qs, rm, ss, pd, executor, msg, server, cm);
+      replay(returner, sm, po, qs, rm, ss, pd, executor, msg, server, cm, pm);
 
       ServerSessionImpl session = new ServerSessionImpl(123, "blah", null, null, false, false, false,
                returner, server, sm, po, qs, rm, ss, pd, executor, cm);
@@ -205,7 +216,7 @@ public class ServerSessionImplTest extends UnitTestCase
          //Ok
       }
 
-      verify(returner, sm, po, qs, rm, ss, pd, executor, msg, server, cm);
+      verify(returner, sm, po, qs, rm, ss, pd, executor, msg, server, cm, pm);
 
       assertEquals(Transaction.State.ROLLBACK_ONLY, session.getTransaction().getState());
    }
@@ -546,6 +557,8 @@ public class ServerSessionImplTest extends UnitTestCase
 
    public void testRollback() throws Exception
    {
+      ServerSessionImpl session = create(false);
+
       ServerConsumer consumer = createStrictMock(ServerConsumer.class);
       expect(consumer.getClientTargetID()).andStubReturn(999l);
       MessageReference[] references = new MessageReference[10];
@@ -556,6 +569,8 @@ public class ServerSessionImplTest extends UnitTestCase
       {
          references[i] = createStrictMock(MessageReference.class);
          messages[i] = createStrictMock(ServerMessage.class);
+         expect(messages[i].decrementRefCount()).andReturn(0);
+         pm.messageDone(messages[i]);
          expect(messages[i].isDurable()).andStubReturn(false);
          expect(references[i].getMessage()).andStubReturn(messages[i]);
          expect(references[i].getDeliveryCount()).andReturn(0);
@@ -563,7 +578,6 @@ public class ServerSessionImplTest extends UnitTestCase
       }
       QueueSettings queueSettings = new QueueSettings();
       SimpleString address = new SimpleString("qName");
-      ServerSessionImpl session = create(false);
       Binding binding = createStrictMock(Binding.class);
       expect(po.getBinding(address)).andStubReturn(binding);
       expect(binding.getAddress()).andStubReturn(address);
@@ -582,13 +596,15 @@ public class ServerSessionImplTest extends UnitTestCase
       queue.lock();
       for (int i = 0; i < 10; i++)
       {
+         expect(messages[i].incrementReference(false)).andReturn(1);
+         expect(pm.addSize(messages[i])).andReturn(1l);
          expect(references[i].cancel(sm, po, qs)).andReturn(true);
       }
       queue.addListFirst((LinkedList<MessageReference>) anyObject());
       queue.unlock();
 
       expect(sm.generateTransactionID()).andReturn(65l);
-      replay(rc, sm, po, qs, rm, ss, pd, cm, server, executor, binding, queue, consumer);
+      replay(rc, sm, po, qs, rm, ss, pd, cm, server, executor, binding, queue, consumer, pm);
       replay((Object[]) references);
       replay((Object[]) messages);
       //we need to create a consumer to verify things get rolled back
@@ -598,13 +614,15 @@ public class ServerSessionImplTest extends UnitTestCase
          session.handleDelivery(reference, consumer);
       }
       session.rollback();
-      verify(rc, sm, po, qs, rm, ss, pd, cm, server, executor, binding, queue, consumer);
+      verify(rc, sm, po, qs, rm, ss, pd, cm, server, executor, binding, queue, consumer, pm);
       verify((Object[]) references);
       verify((Object[]) messages);
    }
 
    public void testCancelAll() throws Exception
    {
+      ServerSessionImpl session = create(false);
+
       ServerConsumer consumer = createStrictMock(ServerConsumer.class);
       expect(consumer.getClientTargetID()).andStubReturn(999l);
       MessageReference[] references = new MessageReference[10];
@@ -615,6 +633,10 @@ public class ServerSessionImplTest extends UnitTestCase
       {
          references[i] = createStrictMock(MessageReference.class);
          messages[i] = createStrictMock(ServerMessage.class);
+         
+         expect(messages[i].decrementRefCount()).andReturn(0);
+         pm.messageDone(messages[i]);
+         
          expect(messages[i].isDurable()).andStubReturn(false);
          expect(references[i].getMessage()).andStubReturn(messages[i]);
          expect(references[i].getDeliveryCount()).andReturn(0);
@@ -622,7 +644,6 @@ public class ServerSessionImplTest extends UnitTestCase
       }
       QueueSettings queueSettings = new QueueSettings();
       SimpleString address = new SimpleString("qName");
-      ServerSessionImpl session = create(false);
       Binding binding = createStrictMock(Binding.class);
       expect(po.getBinding(address)).andStubReturn(binding);
       expect(binding.getAddress()).andStubReturn(address);
@@ -642,13 +663,15 @@ public class ServerSessionImplTest extends UnitTestCase
       queue.lock();
       for (int i = 0; i < 10; i++)
       {
+         expect(messages[i].incrementReference(false)).andReturn(1);
+         expect(pm.addSize(messages[i])).andReturn(1l);
          expect(references[i].cancel(sm, po, qs)).andReturn(true);
       }
       queue.addListFirst((LinkedList<MessageReference>) anyObject());
       queue.unlock();
 
       expect(sm.generateTransactionID()).andReturn(65l);
-      replay(rc, sm, po, qs, rm, ss, pd, cm, server, executor, binding, queue, consumer);
+      replay(rc, sm, po, qs, rm, ss, pd, cm, server, executor, binding, queue, consumer, pm);
       replay((Object[]) references);
       replay((Object[]) messages);
       //we need to create a consumer to verify things get rolled back
@@ -658,7 +681,7 @@ public class ServerSessionImplTest extends UnitTestCase
          session.handleDelivery(reference, consumer);
       }
       session.cancel(-1, false);
-      verify(rc, sm, po, qs, rm, ss, pd, cm, server, executor, binding, queue, consumer);
+      verify(rc, sm, po, qs, rm, ss, pd, cm, server, executor, binding, queue, consumer, pm);
       verify((Object[]) references);
       verify((Object[]) messages);
    }
@@ -717,6 +740,8 @@ public class ServerSessionImplTest extends UnitTestCase
 
    public void testCommit() throws Exception
    {
+      ServerSessionImpl session = create(false);
+
       ServerConsumer consumer = createStrictMock(ServerConsumer.class);
       expect(consumer.getClientTargetID()).andStubReturn(999l);
       MessageReference[] references = new MessageReference[10];
@@ -727,6 +752,10 @@ public class ServerSessionImplTest extends UnitTestCase
       {
          references[i] = createStrictMock(MessageReference.class);
          messages[i] = createStrictMock(ServerMessage.class);
+         
+         expect(messages[i].decrementRefCount()).andReturn(0);
+         pm.messageDone(messages[i]);
+         
          expect(messages[i].isDurable()).andStubReturn(false);
          expect(references[i].getMessage()).andStubReturn(messages[i]);
          expect(references[i].getDeliveryCount()).andReturn(0);
@@ -735,7 +764,6 @@ public class ServerSessionImplTest extends UnitTestCase
       }
       QueueSettings queueSettings = new QueueSettings();
       SimpleString address = new SimpleString("qName");
-      ServerSessionImpl session = create(false);
       Binding binding = createStrictMock(Binding.class);
       expect(po.getBinding(address)).andStubReturn(binding);
       expect(binding.getAddress()).andStubReturn(address);
@@ -754,7 +782,7 @@ public class ServerSessionImplTest extends UnitTestCase
       }
       expect(sm.generateTransactionID()).andReturn(10l);
 
-      replay(rc, sm, po, qs, rm, ss, pd, cm, server, executor, binding, queue, consumer);
+      replay(rc, sm, po, qs, rm, ss, pd, cm, server, executor, binding, queue, consumer, pm);
       replay((Object[]) references);
       replay((Object[]) messages);
       session.createConsumer(1, address, null, -1, 99);
@@ -764,7 +792,7 @@ public class ServerSessionImplTest extends UnitTestCase
       }
       session.acknowledge(10, true);
       session.commit();
-      verify(rc, sm, po, qs, rm, ss, pd, cm, server, executor, binding, queue, consumer);
+      verify(rc, sm, po, qs, rm, ss, pd, cm, server, executor, binding, queue, consumer, pm);
       verify((Object[]) references);
       verify((Object[]) messages);
    }
@@ -1486,12 +1514,17 @@ public class ServerSessionImplTest extends UnitTestCase
       ServerSessionImpl session = create(false);
       SimpleString address = new SimpleString("testQ");
       Binding binding = createStrictMock(Binding.class);
-      Queue queue = createStrictMock(Queue.class);
+      Queue queue = createMock(Queue.class);
+      
+      QueueSettings settings = new QueueSettings();
+      settings.setMaxSizeBytes(12345);
+      expect(queue.getSettings()).andReturn(settings);
+      
       expect(po.getBinding(address)).andReturn(binding);
+      
       expect(binding.getQueue()).andReturn(queue);
       expect(queue.getFilter()).andReturn(null);
       expect(queue.isDurable()).andReturn(true);     
-      expect(queue.getMaxSizeBytes()).andReturn(12345);
       expect(queue.getConsumerCount()).andReturn(2);
       expect(queue.getMessageCount()).andReturn(6789);
       expect(binding.getAddress()).andReturn(address);
@@ -1513,7 +1546,14 @@ public class ServerSessionImplTest extends UnitTestCase
       ServerSessionImpl session = create(false);
       SimpleString address = new SimpleString("testQ");
       Binding binding = createStrictMock(Binding.class);
-      Queue queue = createStrictMock(Queue.class);
+      Queue queue = createMock(Queue.class);
+
+      
+      QueueSettings settings = new QueueSettings();
+      settings.setMaxSizeBytes(12345);
+      expect(queue.getSettings()).andReturn(settings);
+
+      
       Filter filter = createStrictMock(Filter.class);
       expect(po.getBinding(address)).andReturn(binding);
       expect(binding.getQueue()).andReturn(queue);
@@ -1521,7 +1561,6 @@ public class ServerSessionImplTest extends UnitTestCase
       SimpleString filterString = new SimpleString("myprop = 'ddddd'");
       expect(filter.getFilterString()).andReturn(filterString);
       expect(queue.isDurable()).andReturn(true);      
-      expect(queue.getMaxSizeBytes()).andReturn(12345);
       expect(queue.getConsumerCount()).andReturn(2);
       expect(queue.getMessageCount()).andReturn(6789);
       expect(binding.getAddress()).andReturn(address);
@@ -1641,6 +1680,9 @@ public class ServerSessionImplTest extends UnitTestCase
       rc = createStrictMock(RemotingConnection.class);
       sm = createStrictMock(StorageManager.class);
       po = createStrictMock(PostOffice.class);
+      pm = createNiceMock(PagingManager.class);
+      expect(po.getPagingManager()).andStubReturn(pm);
+      
       qs = createStrictMock(HierarchicalRepository.class);
       rm = createStrictMock(ResourceManager.class);
       ss = createStrictMock(SecurityStore.class);
@@ -1652,11 +1694,12 @@ public class ServerSessionImplTest extends UnitTestCase
       {
          expect(sm.generateTransactionID()).andReturn(999l);
       }
-      replay(rc, sm, po, qs, rm, ss, pd, cm, server, executor);
+      replay(rc, sm, po, qs, rm, ss, pd, cm, server, executor, pm);
       ServerSessionImpl sess = new ServerSessionImpl(123, "blah", null, null, false, false, xa,
               rc, server, sm, po, qs, rm, ss, pd, executor, cm);
-      verify(rc, sm, po, qs, rm, ss, pd, cm, server, executor);
-      reset(rc, sm, po, qs, rm, ss, pd, cm, server, executor);
+      verify(rc, sm, po, qs, rm, ss, pd, cm, server, executor, pm);
+      reset(rc, sm, po, qs, rm, ss, pd, cm, server, executor, pm);
+      expect(po.getPagingManager()).andStubReturn(pm);
       return sess;
    }
 
@@ -1667,6 +1710,10 @@ public class ServerSessionImplTest extends UnitTestCase
       RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
+
+      PagingManager pm = createNiceMock(PagingManager.class);
+      expect(po.getPagingManager()).andStubReturn(pm);
+      
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);
       ResourceManager rm = createStrictMock(ResourceManager.class);
       SecurityStore ss = createStrictMock(SecurityStore.class);
@@ -1693,7 +1740,7 @@ public class ServerSessionImplTest extends UnitTestCase
          refs.add(ref);
       }
 
-      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, cm, server);
+      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, cm, server, pm);
       replay(refs.toArray());
 
       ServerSessionImpl session = new ServerSessionImpl(123, "blah", null, null, false, false, false,
@@ -1717,7 +1764,7 @@ public class ServerSessionImplTest extends UnitTestCase
 
       //Now ack half of them
 
-      reset(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm);
+      reset(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm, pm);
       reset(refs.toArray());
 
       Queue queue = createMock(Queue.class);
@@ -1727,6 +1774,8 @@ public class ServerSessionImplTest extends UnitTestCase
          ServerMessage msg = createMock(ServerMessage.class);
 
          expect(ref.getMessage()).andStubReturn(msg);
+         expect(msg.decrementRefCount()).andReturn(0);
+         pm.messageDone(msg);
          expect(ref.getQueue()).andStubReturn(queue);
          expect(msg.isDurable()).andStubReturn(durableMsg);
          if (durableMsg)
@@ -1749,7 +1798,7 @@ public class ServerSessionImplTest extends UnitTestCase
          }
       }
 
-      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm);
+      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm, pm);
       replay(refs.toArray());
 
       session.acknowledge(numRefs / 2 - 1, true);
@@ -1767,7 +1816,7 @@ public class ServerSessionImplTest extends UnitTestCase
 
       //Now ack the rest
 
-      reset(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm);
+      reset(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm, pm);
       reset(refs.toArray());
 
       for (i = numRefs / 2; i < numRefs; i++)
@@ -1775,6 +1824,9 @@ public class ServerSessionImplTest extends UnitTestCase
          MessageReference ref = refs.get(i);
          ServerMessage msg = createMock(ServerMessage.class);
 
+         expect(msg.decrementRefCount()).andReturn(0);
+         pm.messageDone(msg);
+         
          expect(ref.getMessage()).andStubReturn(msg);
          expect(ref.getQueue()).andStubReturn(queue);
          expect(msg.isDurable()).andStubReturn(true);
@@ -1792,12 +1844,12 @@ public class ServerSessionImplTest extends UnitTestCase
          }
       }
 
-      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm);
+      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm, pm);
       replay(refs.toArray());
 
       session.acknowledge(numRefs - 1, true);
 
-      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue);
+      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, pm);
       verify(refs.toArray());
 
       assertEquals(0, session.getDeliveries().size());
@@ -1809,6 +1861,10 @@ public class ServerSessionImplTest extends UnitTestCase
       RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
+
+      PagingManager pm = createNiceMock(PagingManager.class);
+      expect(po.getPagingManager()).andStubReturn(pm);
+      
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);
       ResourceManager rm = createStrictMock(ResourceManager.class);
       SecurityStore ss = createStrictMock(SecurityStore.class);
@@ -1835,7 +1891,7 @@ public class ServerSessionImplTest extends UnitTestCase
          refs.add(ref);
       }
 
-      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm);
+      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm, pm);
       replay(refs.toArray());
 
       ServerSessionImpl session = new ServerSessionImpl(123, "blah", null, null, false, false, false,
@@ -1846,7 +1902,7 @@ public class ServerSessionImplTest extends UnitTestCase
          session.handleDelivery(ref, consumer);
       }
 
-      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm);
+      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm, pm);
       verify(refs.toArray());
 
       assertEquals(numRefs, session.getDeliveries().size());
@@ -1859,7 +1915,7 @@ public class ServerSessionImplTest extends UnitTestCase
 
       //Now ack half of them
 
-      reset(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm);
+      reset(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm, pm);
       reset(refs.toArray());
 
       Queue queue = createMock(Queue.class);
@@ -1868,6 +1924,9 @@ public class ServerSessionImplTest extends UnitTestCase
          MessageReference ref = refs.get(i);
          ServerMessage msg = createMock(ServerMessage.class);
 
+         expect(msg.decrementRefCount()).andReturn(0);
+         pm.messageDone(msg);
+         
          expect(ref.getMessage()).andStubReturn(msg);
          expect(ref.getQueue()).andStubReturn(queue);
          expect(msg.isDurable()).andStubReturn(durableMsg);
@@ -1891,7 +1950,7 @@ public class ServerSessionImplTest extends UnitTestCase
          }
       }
 
-      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm);
+      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm, pm);
       replay(refs.toArray());
       for (i = 0; i < numRefs / 2; i++)
       {
@@ -1899,7 +1958,7 @@ public class ServerSessionImplTest extends UnitTestCase
       }
 
 
-      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm);
+      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm, pm);
       verify(refs.toArray());
 
       assertEquals(numRefs / 2, session.getDeliveries().size());
@@ -1912,7 +1971,7 @@ public class ServerSessionImplTest extends UnitTestCase
 
       //Now ack the rest
 
-      reset(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm);
+      reset(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm, pm);
       reset(refs.toArray());
 
       for (i = numRefs / 2; i < numRefs; i++)
@@ -1920,6 +1979,9 @@ public class ServerSessionImplTest extends UnitTestCase
          MessageReference ref = refs.get(i);
          ServerMessage msg = createMock(ServerMessage.class);
 
+         expect(msg.decrementRefCount()).andReturn(0);
+         pm.messageDone(msg);
+         
          expect(ref.getMessage()).andStubReturn(msg);
          expect(ref.getQueue()).andStubReturn(queue);
          expect(msg.isDurable()).andStubReturn(true);
@@ -1937,7 +1999,7 @@ public class ServerSessionImplTest extends UnitTestCase
          }
       }
 
-      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm);
+      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm, pm);
       replay(refs.toArray());
 
       for (i = numRefs / 2; i < numRefs; i++)
@@ -1945,7 +2007,7 @@ public class ServerSessionImplTest extends UnitTestCase
          session.acknowledge(i, false);
       }
 
-      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm);
+      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm, pm);
       verify(refs.toArray());
 
       assertEquals(0, session.getDeliveries().size());
@@ -1957,6 +2019,10 @@ public class ServerSessionImplTest extends UnitTestCase
       RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
+
+      PagingManager pm = createNiceMock(PagingManager.class);
+      expect(po.getPagingManager()).andStubReturn(pm);
+      
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);
       ResourceManager rm = createStrictMock(ResourceManager.class);
       SecurityStore ss = createStrictMock(SecurityStore.class);
@@ -1973,7 +2039,7 @@ public class ServerSessionImplTest extends UnitTestCase
       List<MessageReference> refs = new ArrayList<MessageReference>();
       for (int i = 0; i < numRefs; i++)
       {
-         MessageReference ref = createStrictMock(MessageReference.class);
+         MessageReference ref = createNiceMock(MessageReference.class);
 
          expect(consumer.getClientTargetID()).andReturn(76767L);
          expect(ref.getMessage()).andReturn(createMock(ServerMessage.class));
@@ -1982,7 +2048,7 @@ public class ServerSessionImplTest extends UnitTestCase
          refs.add(ref);
       }
 
-      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm);
+      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm, pm);
       replay(refs.toArray());
 
       ServerSessionImpl session = new ServerSessionImpl(123, "bah", null, null, false, true, false,
@@ -1993,7 +2059,7 @@ public class ServerSessionImplTest extends UnitTestCase
          session.handleDelivery(ref, consumer);
       }
 
-      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm);
+      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm, pm);
       verify(refs.toArray());
 
       assertEquals(numRefs, session.getDeliveries().size());
@@ -2006,19 +2072,21 @@ public class ServerSessionImplTest extends UnitTestCase
 
       //Now ack half of them
 
-      reset(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm);
+      reset(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm, pm);
       reset(refs.toArray());
 
       Queue queue = createMock(Queue.class);
       for (i = 0; i < numRefs / 2; i++)
       {
          MessageReference ref = refs.get(i);
-         ServerMessage msg = createMock(ServerMessage.class);
+         ServerMessage msg = createNiceMock(ServerMessage.class);
 
          expect(ref.getMessage()).andStubReturn(msg);
          expect(ref.getQueue()).andStubReturn(queue);
          expect(msg.isDurable()).andStubReturn(durableMsg);
          expect(queue.isDurable()).andStubReturn(durableQueue);
+         expect(msg.decrementRefCount()).andReturn(0);
+         pm.messageDone(msg);
          if (durableMsg && durableQueue)
          {
             expect(msg.decrementDurableRefCount()).andStubReturn(numRefs);
@@ -2035,12 +2103,12 @@ public class ServerSessionImplTest extends UnitTestCase
          }
       }
 
-      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm);
+      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm, pm);
       replay(refs.toArray());
 
       session.acknowledge(numRefs / 2 - 1, true);
 
-      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm);
+      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm, pm);
       verify(refs.toArray());
 
       assertEquals(numRefs / 2, session.getDeliveries().size());
@@ -2053,7 +2121,7 @@ public class ServerSessionImplTest extends UnitTestCase
 
       //Now ack the rest
 
-      reset(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm);
+      reset(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm, pm);
       reset(refs.toArray());
 
       for (i = numRefs / 2; i < numRefs; i++)
@@ -2064,6 +2132,8 @@ public class ServerSessionImplTest extends UnitTestCase
          expect(ref.getMessage()).andStubReturn(msg);
          expect(ref.getQueue()).andStubReturn(queue);
          expect(msg.isDurable()).andStubReturn(true);
+         expect(msg.decrementRefCount()).andReturn(0);
+         pm.messageDone(msg);
          expect(queue.isDurable()).andStubReturn(true);
          expect(msg.decrementDurableRefCount()).andStubReturn(numRefs);
          final long queueID = 1929012;
@@ -2078,12 +2148,12 @@ public class ServerSessionImplTest extends UnitTestCase
          }
       }
 
-      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm);
+      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm, pm);
       replay(refs.toArray());
 
       session.acknowledge(numRefs - 1, true);
 
-      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm);
+      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm, pm);
       verify(refs.toArray());
 
       assertEquals(0, session.getDeliveries().size());
@@ -2095,6 +2165,10 @@ public class ServerSessionImplTest extends UnitTestCase
       RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
+
+      PagingManager pm = createNiceMock(PagingManager.class);
+      expect(po.getPagingManager()).andStubReturn(pm);
+      
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);
       ResourceManager rm = createStrictMock(ResourceManager.class);
       SecurityStore ss = createStrictMock(SecurityStore.class);
@@ -2120,7 +2194,7 @@ public class ServerSessionImplTest extends UnitTestCase
          refs.add(ref);
       }
 
-      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm);
+      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm, pm);
       replay(refs.toArray());
 
       ServerSessionImpl session = new ServerSessionImpl(123, "blah", null, null, false, true, false,
@@ -2131,7 +2205,7 @@ public class ServerSessionImplTest extends UnitTestCase
          session.handleDelivery(ref, consumer);
       }
 
-      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm);
+      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm, pm);
       verify(refs.toArray());
 
       assertEquals(numRefs, session.getDeliveries().size());
@@ -2144,7 +2218,7 @@ public class ServerSessionImplTest extends UnitTestCase
 
       //Now ack half of them
 
-      reset(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm);
+      reset(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, server, cm, pm);
       reset(refs.toArray());
 
       Queue queue = createMock(Queue.class);
@@ -2153,6 +2227,9 @@ public class ServerSessionImplTest extends UnitTestCase
          MessageReference ref = refs.get(i);
          ServerMessage msg = createMock(ServerMessage.class);
 
+         expect(msg.decrementRefCount()).andReturn(0);
+         pm.messageDone(msg);
+         
          expect(ref.getMessage()).andStubReturn(msg);
          expect(ref.getQueue()).andStubReturn(queue);
          expect(msg.isDurable()).andStubReturn(durableMsg);
@@ -2173,7 +2250,7 @@ public class ServerSessionImplTest extends UnitTestCase
          }
       }
 
-      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm);
+      replay(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm, pm);
       replay(refs.toArray());
 
       for (i = 0; i < numRefs / 2; i++)
@@ -2181,7 +2258,7 @@ public class ServerSessionImplTest extends UnitTestCase
          session.acknowledge(i, false);
       }
 
-      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm);
+      verify(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm, pm);
       verify(refs.toArray());
 
       assertEquals(numRefs / 2, session.getDeliveries().size());
@@ -2194,7 +2271,7 @@ public class ServerSessionImplTest extends UnitTestCase
 
       //Now ack the rest
 
-      reset(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm);
+      reset(conn, returner, sm, po, qs, rm, ss, pd, executor, consumer, queue, server, cm, pm);
       reset(refs.toArray());
 
       for (i = numRefs / 2; i < numRefs; i++)
@@ -2202,6 +2279,9 @@ public class ServerSessionImplTest extends UnitTestCase
          MessageReference ref = refs.get(i);
          ServerMessage msg = createMock(ServerMessage.class);
 
+         expect(msg.decrementRefCount()).andReturn(0);
+         pm.messageDone(msg);
+         
          expect(ref.getMessage()).andStubReturn(msg);
          expect(ref.getQueue()).andStubReturn(queue);
          expect(msg.isDurable()).andStubReturn(true);
@@ -2238,6 +2318,10 @@ public class ServerSessionImplTest extends UnitTestCase
       RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
+
+      PagingManager pm = createNiceMock(PagingManager.class);
+      expect(po.getPagingManager()).andStubReturn(pm);
+      
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);
       ResourceManager rm = createStrictMock(ResourceManager.class);
       SecurityStore ss = createStrictMock(SecurityStore.class);
@@ -2281,14 +2365,14 @@ public class ServerSessionImplTest extends UnitTestCase
       expect(queue2.addLast(ref2)).andReturn(HandleStatus.HANDLED);
       expect(queue3.addLast(ref3)).andReturn(HandleStatus.HANDLED);
 
-      replay(returner, sm, po, qs, rm, ss, pd, executor, msg, ref1, ref2, ref3, queue1, queue2, queue3, server, cm);
+      replay(returner, sm, po, qs, rm, ss, pd, executor, msg, ref1, ref2, ref3, queue1, queue2, queue3, server, cm, pm);
 
       ServerSessionImpl session = new ServerSessionImpl(123, "blah", null, null, true, false, false,
               returner, server, sm, po, qs, rm, ss, pd, executor, cm);
 
       session.send(msg);
 
-      verify(returner, sm, po, qs, rm, ss, pd, executor, msg, ref1, ref2, ref3, queue1, queue2, queue3, server, cm);
+      verify(returner, sm, po, qs, rm, ss, pd, executor, msg, ref1, ref2, ref3, queue1, queue2, queue3, server, cm, pm);
    }
 
    private void testNotAutoCommitSend(final boolean persistent) throws Exception
@@ -2296,12 +2380,16 @@ public class ServerSessionImplTest extends UnitTestCase
       RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
+
+      PagingManager pm = createNiceMock(PagingManager.class);
+      expect(po.getPagingManager()).andStubReturn(pm);
+      
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);
       ResourceManager rm = createStrictMock(ResourceManager.class);
       SecurityStore ss = createStrictMock(SecurityStore.class);
       PacketDispatcher pd = createStrictMock(PacketDispatcher.class);
       Executor executor = createStrictMock(Executor.class);
-      ServerMessage msg = createStrictMock(ServerMessage.class);
+      ServerMessage msg = createNiceMock(ServerMessage.class);
       MessageReference ref1 = createStrictMock(MessageReference.class);
       MessageReference ref2 = createStrictMock(MessageReference.class);
       MessageReference ref3 = createStrictMock(MessageReference.class);
@@ -2330,14 +2418,14 @@ public class ServerSessionImplTest extends UnitTestCase
          sm.storeMessageTransactional(transactionID, msg);
       }
 
-      replay(returner, sm, po, qs, rm, ss, pd, executor, msg, ref1, ref2, ref3, server, cm);
+      replay(returner, sm, po, qs, rm, ss, pd, executor, msg, ref1, ref2, ref3, server, cm, pm);
 
       ServerSessionImpl session = new ServerSessionImpl(123, "blah", null, null, false, false, false,
               returner, server, sm, po, qs, rm, ss, pd, executor, cm);
 
       session.send(msg);
 
-      verify(returner, sm, po, qs, rm, ss, pd, executor, msg, ref1, ref2, ref3, server, cm);
+      verify(returner, sm, po, qs, rm, ss, pd, executor, msg, ref1, ref2, ref3, server, cm, pm);
    }
 
 
@@ -2346,6 +2434,10 @@ public class ServerSessionImplTest extends UnitTestCase
       RemotingConnection returner = createStrictMock(RemotingConnection.class);
       StorageManager sm = createStrictMock(StorageManager.class);
       PostOffice po = createStrictMock(PostOffice.class);
+
+      PagingManager pm = createNiceMock(PagingManager.class);
+      expect(po.getPagingManager()).andStubReturn(pm);
+      
       HierarchicalRepository<QueueSettings> qs = createStrictMock(HierarchicalRepository.class);
       ResourceManager rm = createStrictMock(ResourceManager.class);
       SecurityStore ss = createStrictMock(SecurityStore.class);
@@ -2361,13 +2453,13 @@ public class ServerSessionImplTest extends UnitTestCase
          expect(sm.generateTransactionID()).andReturn(71626L);
       }
 
-      replay(returner, sm, po, qs, rm, ss, pd, executor, server, cm);
+      replay(returner, sm, po, qs, rm, ss, pd, executor, server, cm, pm);
 
       ServerSession session = new ServerSessionImpl(id, "blah", null, null, true, false, xa,
                returner, server, sm, po, qs, rm, ss, pd, executor,
                cm);
 
-      verify(returner, sm, po, qs, rm, ss, pd, executor, server, cm);
+      verify(returner, sm, po, qs, rm, ss, pd, executor, server, cm, pm);
 
       assertEquals(id, session.getID());
    }

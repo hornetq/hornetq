@@ -43,6 +43,8 @@ public class QueueSettings implements Mergeable<QueueSettings>
    public static final DistributionPolicy DEFAULT_DISTRIBUTION_POLICY = new RoundRobinDistributionPolicy();
    public static final Boolean DEFAULT_CLUSTERED = false;
    public static final Integer DEFAULT_MAX_SIZE_BYTES = -1;
+   public static final Boolean DEFAULT_DROP_MESSAGES_WHEN_FULL = Boolean.FALSE;
+   public static final Integer DEFAULT_PAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10M Bytes
    public static final Integer DEFAULT_MAX_DELIVERY_ATTEMPTS = 10;
    public static final Integer DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT = 0;
    public static final Long DEFAULT_REDELIVER_DELAY = (long) 500;
@@ -50,6 +52,8 @@ public class QueueSettings implements Mergeable<QueueSettings>
 
    private Boolean clustered = null;
    private Integer maxSizeBytes = null;
+   private Integer pageSizeBytes = null;
+   private Boolean dropMessagesWhenFull = null;
    private String distributionPolicyClass = null;
    private Integer maxDeliveryAttempts = null;
    private Integer messageCounterHistoryDayLimit = null;
@@ -72,6 +76,27 @@ public class QueueSettings implements Mergeable<QueueSettings>
       this.clustered = clustered;
    }
 
+   public Integer getPageSizeBytes()
+   {
+      return pageSizeBytes != null ? pageSizeBytes : DEFAULT_PAGE_SIZE_BYTES;
+   }
+   
+   
+   public Boolean isDropMessagesWhenFull()
+   {
+      return dropMessagesWhenFull != null ? this.dropMessagesWhenFull : DEFAULT_DROP_MESSAGES_WHEN_FULL;
+   }
+   
+   public void setDropMessagesWhenFull(Boolean value)
+   {
+      this.dropMessagesWhenFull = value;
+   }
+   
+   public void setPageSizeBytes(Integer pageSize)
+   {
+      this.pageSizeBytes = pageSize;
+   }
+   
    public Integer getMaxSizeBytes()
    {
       return maxSizeBytes != null ? maxSizeBytes:DEFAULT_MAX_SIZE_BYTES;
@@ -213,9 +238,17 @@ public class QueueSettings implements Mergeable<QueueSettings>
       {
          maxDeliveryAttempts = merged.maxDeliveryAttempts;
       }
+      if (dropMessagesWhenFull == null)
+      {
+         dropMessagesWhenFull = merged.dropMessagesWhenFull;
+      }
       if(maxSizeBytes == null)
       {
          maxSizeBytes = merged.maxSizeBytes;
+      }
+      if (pageSizeBytes == null)
+      {
+         pageSizeBytes = merged.getPageSizeBytes();
       }
       if(messageCounterHistoryDayLimit == null)
       {

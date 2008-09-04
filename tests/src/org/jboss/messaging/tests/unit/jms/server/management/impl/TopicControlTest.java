@@ -41,6 +41,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.impl.TopicControl;
@@ -283,24 +284,26 @@ public class TopicControlTest extends TestCase
       JBossTopic topic = new JBossTopic(name);
       PostOffice postOffice = createMock(PostOffice.class);
       StorageManager storageManager = createMock(StorageManager.class);
+      
+      QueueSettings settings = new QueueSettings();
 
       Queue durableQueue = createMock(Queue.class);
+      expect(durableQueue.getSettings()).andStubReturn(settings);
       expect(durableQueue.getName()).andStubReturn(
             JBossTopic.createAddressFromName(randomString()));
       expect(durableQueue.getFilter()).andStubReturn(null);
       expect(durableQueue.isDurable()).andStubReturn(true);
       expect(durableQueue.getMessageCount()).andStubReturn(randomInt());
-      expect(durableQueue.getMaxSizeBytes()).andStubReturn(randomInt());
       Binding bindingForDurableQueue = createMock(Binding.class);
       expect(bindingForDurableQueue.getQueue()).andStubReturn(durableQueue);
 
       Queue nonDurableQueue = createMock(Queue.class);
+      expect(nonDurableQueue.getSettings()).andStubReturn(settings);
       expect(nonDurableQueue.getName()).andStubReturn(
             JBossTopic.createAddressFromName(randomString()));
       expect(nonDurableQueue.getFilter()).andStubReturn(null);
       expect(nonDurableQueue.isDurable()).andStubReturn(false);
       expect(nonDurableQueue.getMessageCount()).andStubReturn(randomInt());
-      expect(nonDurableQueue.getMaxSizeBytes()).andStubReturn(randomInt());
       Binding bindingForNonDurableQueue = createMock(Binding.class);
       expect(bindingForNonDurableQueue.getQueue()).andStubReturn(nonDurableQueue);
       List<Binding> bindings = new ArrayList<Binding>();
@@ -331,27 +334,30 @@ public class TopicControlTest extends TestCase
       String jndiBinding = randomString();
       String name = randomString();
 
+      
+      QueueSettings settings = new QueueSettings();
+
       JBossTopic topic = new JBossTopic(name);
       PostOffice postOffice = createMock(PostOffice.class);
       StorageManager storageManager = createMock(StorageManager.class);
 
       Queue durableQueue = createMock(Queue.class);
+      expect(durableQueue.getSettings()).andStubReturn(settings);
       expect(durableQueue.getName()).andStubReturn(
             JBossTopic.createAddressFromName(randomString()));
       expect(durableQueue.getFilter()).andStubReturn(null);
       expect(durableQueue.isDurable()).andStubReturn(true);
       expect(durableQueue.getMessageCount()).andStubReturn(randomInt());
-      expect(durableQueue.getMaxSizeBytes()).andStubReturn(randomInt());
       Binding bindingForDurableQueue = createMock(Binding.class);
       expect(bindingForDurableQueue.getQueue()).andStubReturn(durableQueue);
 
       Queue nonDurableQueue = createMock(Queue.class);
+      expect(nonDurableQueue.getSettings()).andStubReturn(settings);
       expect(nonDurableQueue.getName()).andStubReturn(
             JBossTopic.createAddressFromName(randomString()));
       expect(nonDurableQueue.getFilter()).andStubReturn(null);
       expect(nonDurableQueue.isDurable()).andStubReturn(false);
       expect(nonDurableQueue.getMessageCount()).andStubReturn(randomInt());
-      expect(nonDurableQueue.getMaxSizeBytes()).andStubReturn(randomInt());
       Binding bindingForNonDurableQueue = createMock(Binding.class);
       expect(bindingForNonDurableQueue.getQueue()).andStubReturn(nonDurableQueue);
 

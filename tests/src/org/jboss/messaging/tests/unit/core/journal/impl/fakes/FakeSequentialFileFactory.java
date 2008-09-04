@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jboss.messaging.core.journal.BufferCallback;
 import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
@@ -101,6 +102,19 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       return sf;
    }
 
+   public void clearBuffer(final ByteBuffer buffer)
+   {
+      final int limit = buffer.limit();
+      buffer.rewind();
+      
+      for (int i = 0; i < limit; i++)
+      {
+         buffer.put((byte)0);
+      }
+      
+      buffer.rewind();
+   }
+   
    public List<String> listFiles(final String extension)
    {
       List<String> files = new ArrayList<String>();
@@ -138,6 +152,15 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          size = (size / alignment + 1) * alignment;
       }
       return ByteBuffer.allocateDirect(size);
+   }
+   
+   public int calculateBlockSize(int position)
+   {
+      int alignment = getAlignment();
+      
+      int pos = ((position / alignment) + (position % alignment != 0 ? 1 : 0)) * alignment;
+      
+      return pos;
    }
    
    public ByteBuffer wrapBuffer(byte[] bytes)
@@ -220,7 +243,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       final IOCallback callback;
       volatile boolean sendError;
       
-      CallbackRunnable(FakeSequentialFile file, ByteBuffer bytes, IOCallback callback)
+      CallbackRunnable(final FakeSequentialFile file, final ByteBuffer bytes, final IOCallback callback)
       {
          this.file = file;
          this.bytes = bytes;
@@ -236,8 +259,21 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          }
          else
          {
-            file.data.put(bytes);
-            if (callback!=null) callback.done();
+            try
+            {
+               file.data.put(bytes);
+               if (callback!=null) callback.done();
+               
+               if (file.bufferCallback != null)
+               {
+                  file.bufferCallback.bufferDone(bytes);
+               }
+            }
+            catch (Throwable e)
+            {
+               e.printStackTrace();
+               callback.onError(-1, e.getMessage());
+            }
          }
       }
 
@@ -260,7 +296,9 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       private final String fileName;
       
       private ByteBuffer data;
-      
+
+      private BufferCallback bufferCallback;
+
       public ByteBuffer getData()
       {
          return data;
@@ -311,6 +349,12 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       public synchronized void open(int currentMaxIO) throws Exception
       {
          open = true;
+         checkAndResize(0);
+      }
+
+      public void setBufferCallback(BufferCallback callback)
+      {
+         this.bufferCallback = callback;
       }
 
       public void fill(final int pos, final int size, final byte fillCharacter) throws Exception
@@ -374,7 +418,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          return data.position();
       }
 
-      public int write(final ByteBuffer bytes, final IOCallback callback) throws Exception
+      public synchronized int write(final ByteBuffer bytes, final IOCallback callback) throws Exception
       {
          if (!open)
          {
@@ -387,7 +431,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          
          checkAlignment(bytes.limit());
          
-         checkAndResize(bytes.capacity() + position);
+         checkAndResize(bytes.limit() + position);
          
          CallbackRunnable action = new CallbackRunnable(this, bytes, callback);
          
@@ -408,6 +452,27 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          return bytes.limit();
          
       }
+      
+      public void sync() throws Exception
+      {
+         if (supportsCallback)
+         {
+            throw new IllegalStateException("sync is not supported when supportsCallback=true");
+         }
+      }
+      
+      public long size() throws Exception
+      {
+         if (data == null)
+         {
+            return 0;
+         }
+         else
+         {
+            return data.limit();
+         }
+      }
+      
       
       public int write(final ByteBuffer bytes, final boolean sync) throws Exception
       {
@@ -457,6 +522,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
             throw new IllegalStateException("Position is not aligned to " + alignment);
          }
       }
+
 
 
    }

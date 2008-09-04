@@ -25,6 +25,7 @@ package org.jboss.messaging.tests.unit.core.journal.impl;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
@@ -83,6 +84,7 @@ public class JournalAsyncTest extends UnitTestCase
             }
             catch (Exception e)
             {
+               e.printStackTrace();
                this.e = e;
             }
          }
@@ -90,8 +92,8 @@ public class JournalAsyncTest extends UnitTestCase
       
       LocalThread t = new LocalThread();
       t.start();
-      
-      latch.await();
+
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
       
       Thread.yield();
 
@@ -331,7 +333,7 @@ public class JournalAsyncTest extends UnitTestCase
       }
       
       journalImpl = new JournalImpl(journalSize, numberOfMinimalFiles, true,
-            true, factory, "tt", "tt", 1000);
+            true, factory, "tt", "tt", 1000, 0);
       
       journalImpl.start();
       

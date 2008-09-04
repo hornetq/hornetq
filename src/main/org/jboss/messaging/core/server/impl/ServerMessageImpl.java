@@ -36,6 +36,7 @@ import org.jboss.messaging.core.server.ServerMessage;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
 public class ServerMessageImpl extends MessageImpl implements ServerMessage
@@ -43,6 +44,9 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    private long messageID;
     
    private final AtomicInteger durableRefCount = new AtomicInteger(0);
+   
+   /** Global reference counts for paging control */
+   private final AtomicInteger refCount = new AtomicInteger(0);
               
    /*
     * Constructor for when reading from network
@@ -99,6 +103,8 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
          durableRefCount.incrementAndGet();
       }
       
+      refCount.incrementAndGet();
+      
       return ref;
    }
    
@@ -112,11 +118,26 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return durableRefCount.decrementAndGet();
    }
    
-   public int incrementDurableRefCount()
+   public int incrementReference(boolean durable)
    {
-      return durableRefCount.incrementAndGet();
+      if (durable)
+      {
+         durableRefCount.incrementAndGet();
+      }
+      
+      return refCount.incrementAndGet();
    }
      
+   public int decrementRefCount()
+   {
+      return refCount.decrementAndGet();
+   }
+
+   public int getRefCount()
+   {
+      return refCount.get();
+   }
+
    public ServerMessage copy()
    {
       return new ServerMessageImpl(this);

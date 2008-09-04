@@ -37,6 +37,10 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.paging.PagingManager;
+import org.jboss.messaging.core.paging.PagingStoreFactory;
+import org.jboss.messaging.core.paging.impl.PagingManagerFactoryNIO;
+import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
@@ -94,11 +98,13 @@ public class MessagingServerImpl implements MessagingServer
    // wired components
 
    private SecurityStore securityStore;
-   private HierarchicalRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
+   private final HierarchicalRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
    private ScheduledExecutorService scheduledExecutor;   
    private QueueFactory queueFactory;
+   private PagingStoreFactory storeFactory;
+   private PagingManager pagingManager;
    private PostOffice postOffice;
-   private ExecutorFactory executorFactory = new OrderedExecutorFactory(Executors.newCachedThreadPool(new JBMThreadFactory("JBM-async-session-delivery-threads")));
+   private final ExecutorFactory executorFactory = new OrderedExecutorFactory(Executors.newCachedThreadPool(new JBMThreadFactory("JBM-async-session-delivery-threads")));
    private HierarchicalRepository<Set<Role>> securityRepository;
    private ResourceManager resourceManager;   
    private MessagingServerPacketHandler serverPacketHandler;
@@ -183,9 +189,14 @@ public class MessagingServerImpl implements MessagingServer
       securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval(), configuration.isSecurityEnabled());  
       queueSettingsRepository.setDefault(new QueueSettings());
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(), new JBMThreadFactory("JBM-scheduled-threads"));                  
-      queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);     
+      queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);
+      
+      
+      PagingStoreFactory storeFactory = new PagingManagerFactoryNIO(configuration.getPagingDirectory());
+      
+      pagingManager = new PagingManagerImpl(storeFactory, storageManager, queueSettingsRepository);
          
-      postOffice = new PostOfficeImpl(storageManager, queueFactory, managementService, configuration.isRequireDestinations());
+      postOffice = new PostOfficeImpl(storageManager, pagingManager, queueFactory, managementService, configuration.isRequireDestinations());
                        
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
       securityRepository.setDefault(new HashSet<Role>());
