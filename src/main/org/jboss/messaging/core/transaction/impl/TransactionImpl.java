@@ -451,7 +451,7 @@ public class TransactionImpl implements Transaction
       // Paged messages won't have an ID until they are depaged
       if (message.getMessageID() == 0l)
       {
-         message.setMessageID(storageManager.generateMessageID());
+         message.setMessageID(storageManager.generateID());
       }
 
       List<MessageReference> refs = postOffice.route(message);

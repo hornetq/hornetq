@@ -1340,7 +1340,7 @@ public class QueueImplTest extends UnitTestCase
       MessageReference messageReference = generateReference(queue, messageID);
       StorageManager storageManager = EasyMock.createMock(StorageManager.class);
       EasyMock.expect(storageManager.generateTransactionID()).andReturn(randomLong());
-      EasyMock.expect(storageManager.generateMessageID()).andReturn(randomLong());
+      EasyMock.expect(storageManager.generateID()).andReturn(randomLong());
       storageManager.storeDeleteTransactional(EasyMock.anyLong(), EasyMock.eq(messageID));
       storageManager.commit(EasyMock.anyLong());
 
@@ -1398,7 +1398,7 @@ public class QueueImplTest extends UnitTestCase
       MessageReference messageReference = generateReference(queue, messageID);
       StorageManager storageManager = createMock(StorageManager.class);
       expect(storageManager.generateTransactionID()).andReturn(randomLong());
-      expect(storageManager.generateMessageID()).andReturn(randomLong());
+      expect(storageManager.generateID()).andReturn(randomLong());
       storageManager.storeDeleteTransactional(anyLong(), eq(messageID));
       storageManager.commit(anyLong());
       
@@ -1458,7 +1458,7 @@ public class QueueImplTest extends UnitTestCase
     
       MessageReference messageReference = generateReference(queue, messageID);
       StorageManager storageManager = EasyMock.createMock(StorageManager.class);
-      EasyMock.expect(storageManager.generateMessageID()).andReturn(newMessageID);
+      EasyMock.expect(storageManager.generateID()).andReturn(newMessageID);
       EasyMock.expect(storageManager.generateTransactionID()).andReturn(tid);
       storageManager.storeDeleteTransactional(EasyMock.anyLong(), EasyMock.eq(messageID));
       storageManager.commit(EasyMock.anyLong());

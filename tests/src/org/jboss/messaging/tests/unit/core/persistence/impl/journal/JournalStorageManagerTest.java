@@ -400,7 +400,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       EasyMock.verify(refs2.toArray());
       EasyMock.verify(queue1, queue2, queue3);
       
-      assertEquals(msg1ID + 1, jsm.generateMessageID());
+      assertEquals(msg1ID + 1, jsm.generateID());
    }
    
    public void testAddBindingWithFilter() throws Exception
@@ -776,11 +776,11 @@ public class JournalStorageManagerTest extends UnitTestCase
 
       JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
       
-      assertEquals(id++, jsm.generateMessageID());
-      assertEquals(id++, jsm.generateMessageID());
-      assertEquals(id++, jsm.generateMessageID());
-      assertEquals(id++, jsm.generateMessageID());
-      assertEquals(id++, jsm.generateMessageID());      
+      assertEquals(id++, jsm.generateID());
+      assertEquals(id++, jsm.generateID());
+      assertEquals(id++, jsm.generateID());
+      assertEquals(id++, jsm.generateID());
+      assertEquals(id++, jsm.generateID());      
    }
    
    public void testGenerateTransactionID()

@@ -210,7 +210,7 @@ public class PagingManagerImpl implements PagingManager
             }
          }
          
-         msg.getMessage().setMessageID(storageManager.generateMessageID());
+         msg.getMessage().setMessageID(storageManager.generateID());
 
          refsToAdd.addAll(postOffice.route(msg.getMessage()));
          

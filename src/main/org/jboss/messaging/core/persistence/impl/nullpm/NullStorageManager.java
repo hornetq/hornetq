@@ -133,7 +133,7 @@ public class NullStorageManager implements StorageManager
 	{
 	}
 
-	public long generateMessageID()
+	public long generateID()
 	{
 		return messageIDSequence.getAndIncrement();
 	}

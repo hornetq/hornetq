@@ -322,7 +322,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             // We only set the messageID after we are sure the message is not being paged
             // Paged messages won't have an ID until they are depaged
-            msg.setMessageID(storageManager.generateMessageID());
+            msg.setMessageID(storageManager.generateID());
 
             List<MessageReference> refs = postOffice.route(msg);
 

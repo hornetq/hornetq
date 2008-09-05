@@ -165,7 +165,7 @@ public class MessageReferenceImplTest extends UnitTestCase
       
       EasyMock.expect(serverMessage.copy()).andReturn(serverMessage);
       
-      EasyMock.expect(sm.generateMessageID()).andReturn(2l);
+      EasyMock.expect(sm.generateID()).andReturn(2l);
       
       serverMessage.setMessageID(2);
       
@@ -242,7 +242,7 @@ public class MessageReferenceImplTest extends UnitTestCase
       
       EasyMock.expect(serverMessage.copy()).andReturn(serverMessage);
       
-      EasyMock.expect(sm.generateMessageID()).andReturn(2l);
+      EasyMock.expect(sm.generateID()).andReturn(2l);
       
       serverMessage.setMessageID(2);
       
@@ -332,7 +332,7 @@ public class MessageReferenceImplTest extends UnitTestCase
       EasyMock.expect(serverMessage.isDurable()).andStubReturn(true);
       EasyMock.expect(serverMessage.getMessageID()).andStubReturn(999l);
       EasyMock.expect(queue.isDurable()).andStubReturn(true);
-      EasyMock.expect(sm.generateMessageID()).andReturn(2l);
+      EasyMock.expect(sm.generateID()).andReturn(2l);
       EasyMock.expect(sm.generateTransactionID()).andReturn(1l);
       EasyMock.expect(po.getBinding(expQName)).andReturn(expQBinding);
       EasyMock.expect(serverMessage.copy()).andReturn(serverMessage);
@@ -386,7 +386,7 @@ public class MessageReferenceImplTest extends UnitTestCase
       EasyMock.expect(serverMessage.isDurable()).andStubReturn(true);
       EasyMock.expect(serverMessage.getMessageID()).andStubReturn(999l);
       EasyMock.expect(queue.isDurable()).andStubReturn(true);
-      EasyMock.expect(sm.generateMessageID()).andReturn(2l);
+      EasyMock.expect(sm.generateID()).andReturn(2l);
       EasyMock.expect(sm.generateTransactionID()).andReturn(1l);
       EasyMock.expect(po.getBinding(expQName)).andReturn(null);
       EasyMock.expect(po.addBinding(expQName, expQName, null, true)).andReturn(expQBinding);
@@ -439,7 +439,7 @@ public class MessageReferenceImplTest extends UnitTestCase
 
       EasyMock.expect(persistenceManager.generateTransactionID()).andReturn(tid);
       EasyMock.expect(serverMessage.copy()).andReturn(copyMessage);
-      EasyMock.expect(persistenceManager.generateMessageID()).andReturn(newMessageID);
+      EasyMock.expect(persistenceManager.generateID()).andReturn(newMessageID);
       copyMessage.setMessageID(newMessageID);
       EasyMock.expect(copyMessage.getDestination()).andReturn(fromAddress);
       copyMessage.putStringProperty(MessageImpl.HDR_ORIGIN_QUEUE, fromAddress);

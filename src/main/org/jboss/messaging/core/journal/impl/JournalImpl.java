@@ -781,7 +781,7 @@ public class JournalImpl implements TestableJournal
       
       long maxTransactionID = -1;
       
-      long maxMessageID = -1;
+      long maxID = -1;
       
       for (JournalFile file: orderedFiles)
       {  
@@ -849,7 +849,7 @@ public class JournalImpl implements TestableJournal
                   continue;
                }
                recordID = bb.getLong();
-               maxMessageID = Math.max(maxMessageID, recordID);
+               maxID = Math.max(maxID, recordID);
             }
             
             // The variable record portion used on Updates and Appends
@@ -1237,7 +1237,7 @@ public class JournalImpl implements TestableJournal
       
       checkAndReclaimFiles();
       
-      return maxMessageID;
+      return maxID;
    }
 
    public int getAlignment() throws Exception

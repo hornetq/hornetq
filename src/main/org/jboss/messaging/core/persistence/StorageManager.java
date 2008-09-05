@@ -46,7 +46,7 @@ public interface StorageManager extends MessagingComponent
 
 	// Message related operations
 	
-   long generateMessageID();
+   long generateID();
    
    long generateTransactionID();
    

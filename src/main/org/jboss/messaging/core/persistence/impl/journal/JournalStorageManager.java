@@ -101,7 +101,7 @@ public class JournalStorageManager implements StorageManager
    
    public static final byte SET_SCHEDULED_DELIVERY_TIME = 44;
   	
-	private final AtomicLong messageIDSequence = new AtomicLong(0);
+	private final AtomicLong idSequence = new AtomicLong(0);
 	
 	private final AtomicLong bindingIDSequence = new AtomicLong(0);
 	
@@ -184,9 +184,9 @@ public class JournalStorageManager implements StorageManager
 	   this.bindingsJournal = bindingsJournal;
    }
 	
-	public long generateMessageID()
+	public long generateID()
 	{
-		return messageIDSequence.getAndIncrement();
+		return idSequence.getAndIncrement();
 	}
 	
 	public long generateTransactionID()
@@ -227,7 +227,7 @@ public class JournalStorageManager implements StorageManager
          // Instead of updating the record, we delete the old one as that is better for reclaiming
          messageJournal.appendDeleteRecordTransactional(txID, pageTransaction.getRecordID());
       }
-      pageTransaction.setRecordID(generateMessageID());
+      pageTransaction.setRecordID(generateID());
       messageJournal.appendAddRecordTransactional(txID, pageTransaction.getRecordID(), PAGE_TRANSACTION, pageTransaction);
    }
    
@@ -238,7 +238,7 @@ public class JournalStorageManager implements StorageManager
          // To avoid linked list effect on reclaiming, we delete and add a new record, instead of simply updating it
          messageJournal.appendDeleteRecordTransactional(txID, lastPage.getRecordId());
       }
-      lastPage.setRecordId(generateMessageID());
+      lastPage.setRecordId(generateID());
       messageJournal.appendAddRecordTransactional(txID, lastPage.getRecordId(), LAST_PAGE, lastPage);
    }
 
@@ -292,9 +292,9 @@ public class JournalStorageManager implements StorageManager
 		
 		List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 		
-		long maxMessageID = messageJournal.load(records, preparedTransactions);
+		long maxID = messageJournal.load(records, preparedTransactions);
 	
-		messageIDSequence.set(maxMessageID + 1);
+		idSequence.set(maxID + 1);
 
 		//TODO - Use load(ReloadManager) instead of Load(lists)
 
