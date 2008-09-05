@@ -64,7 +64,7 @@ public interface Journal extends MessagingComponent
    
    void appendCommitRecord(long txID) throws Exception;
    
-   void appendPrepareRecord(long txID, Xid xid) throws Exception;
+   void appendPrepareRecord(long txID, EncodingSupport transactionIdentifier) throws Exception;
    
    void appendRollbackRecord(long txID) throws Exception;
    

@@ -40,6 +40,7 @@ import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.BindingImpl;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.core.remoting.impl.wireformat.XidCodecSupport;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.*;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
@@ -255,7 +256,7 @@ public class JournalStorageManager implements StorageManager
   
    public void prepare(long txID, Xid xid) throws Exception
    {
-   	messageJournal.appendPrepareRecord(txID, xid);
+   	messageJournal.appendPrepareRecord(txID, new EncodingXid(xid));
    }
    
    public void commit(long txID) throws Exception
@@ -302,7 +303,10 @@ public class JournalStorageManager implements StorageManager
       for (PreparedTransactionInfo preparedTransaction : preparedTransactions)
       {
          log.trace(preparedTransaction);
-         Transaction tx = new TransactionImpl(preparedTransaction.id, preparedTransaction.xid, this, postOffice);
+         EncodingXid encodingXid = new EncodingXid(preparedTransaction.xidData);
+         Xid xid = encodingXid.xid;
+
+         Transaction tx = new TransactionImpl(preparedTransaction.id, xid, this, postOffice);
          List<ServerMessage> messages = new ArrayList<ServerMessage>();
          List<ServerMessage> messagesToDelete = new ArrayList<ServerMessage>();
          //first get any sent messages for this tx and recreate
@@ -345,7 +349,7 @@ public class JournalStorageManager implements StorageManager
          }
          //now we recreate the state of the tx and add to th erresource manager
          tx.replay(messages, messagesToDelete, Transaction.State.PREPARED);
-         resourceManager.putTransaction(preparedTransaction.xid, tx);
+         resourceManager.putTransaction(xid, tx);
          //and finally since we've dealt with the records we don't need to process them.
          for (RecordInfo recordInfo : recordsToDelete)
          {
@@ -765,5 +769,38 @@ public class JournalStorageManager implements StorageManager
 	}
 	
    // Inner Classes ----------------------------------------------------------------------------
+	
+	private static class EncodingXid implements EncodingSupport
+	{
+	   
+	   final Xid xid;
+	   
+	   EncodingXid(Xid xid)
+	   {
+	      this.xid = xid;
+	   }
+	   
+	   EncodingXid(byte[] data)
+	   {
+	      xid = XidCodecSupport.decodeXid(new ByteBufferWrapper(ByteBuffer.wrap(data)));
+	   }
+	   
+
+      public void decode(MessagingBuffer buffer)
+      {
+         throw new IllegalStateException("Non Supported Operation");
+      }
+
+      public void encode(MessagingBuffer buffer)
+      {
+         XidCodecSupport.encodeXid(xid, buffer);
+      }
+
+      public int getEncodeSize()
+      {
+         return XidCodecSupport.getXidEncodeLength(xid);
+      }
+	   
+	}
 
 }

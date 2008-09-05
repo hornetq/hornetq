@@ -23,7 +23,6 @@
 
 package org.jboss.messaging.core.journal;
 
-import javax.transaction.xa.Xid;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -39,15 +38,15 @@ import java.util.Set;
 public class PreparedTransactionInfo
 {
    public final long id;
-   public final Xid xid;
+   public final byte[] xidData;
    
    public final List<RecordInfo> records = new ArrayList<RecordInfo>();
    
    public final Set<Long> recordsToDelete = new HashSet<Long>();
 
-   public PreparedTransactionInfo(final long id, final Xid xid)
+   public PreparedTransactionInfo(final long id, final byte[] xidData)
    {
       this.id = id;
-      this.xid = xid;
+      this.xidData = xidData;
    }
 }

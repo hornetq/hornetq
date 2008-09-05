@@ -56,6 +56,6 @@ public class TransactionHolder
    
    public boolean invalid;
 
-   public Xid xid;
+   public byte[] xidData;
    
 }

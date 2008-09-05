@@ -23,6 +23,7 @@
 package org.jboss.messaging.tests.unit.core.journal.impl;
 
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
+import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
@@ -288,7 +289,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       journal.debugWait();
 	}
 	
-	protected void prepare(long txID, Xid xid) throws Exception
+	protected void prepare(long txID, EncodingSupport xid) throws Exception
 	{
 		TransactionHolder tx = transactions.get(txID);
 		

@@ -179,8 +179,10 @@ public class JournalStorageManagerTest extends UnitTestCase
       final long txID = 1209373;
 
 		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
-      messageJournal.appendPrepareRecord(txID, xid);
+		
+      messageJournal.appendPrepareRecord(EasyMock.eq(txID), EasyMock.isA(EncodingSupport.class));
       EasyMock.replay(messageJournal, bindingsJournal);      
+      
       jsm.prepare(txID, xid);
       EasyMock.verify(messageJournal, bindingsJournal);
    }

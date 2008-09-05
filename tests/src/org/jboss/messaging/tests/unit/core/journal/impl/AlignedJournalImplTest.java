@@ -812,9 +812,9 @@ public class AlignedJournalImplTest extends UnitTestCase
       }
       
       journalImpl.forceMoveNextFile();
-
-		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
-      journalImpl.appendPrepareRecord(1l, xid);
+		SimpleEncoding xidEncoding = new SimpleEncoding(10, (byte)'a');
+		
+      journalImpl.appendPrepareRecord(1l, xidEncoding);
       journalImpl.appendCommitRecord(1l);
       
       for (int i=0;i<10;i++)
@@ -872,6 +872,40 @@ public class AlignedJournalImplTest extends UnitTestCase
    }
    
    
+   public void testSimplePrepare() throws Exception
+   {
+      final int JOURNAL_SIZE = 3 * 1024;
+      
+      setupJournal(JOURNAL_SIZE, 1);
+      
+      assertEquals(0, records.size());
+      assertEquals(0, transactions.size());
+      
+      journalImpl.appendAddRecordTransactional(1, 1, (byte) 1, new SimpleEncoding(50,(byte) 1));
+
+      SimpleEncoding xid = new SimpleEncoding(10, (byte)1);
+      
+      journalImpl.appendPrepareRecord(1, xid);
+      
+      journalImpl.appendAddRecord(2l, (byte)1, new SimpleEncoding(10, (byte)1));
+      
+      journalImpl.debugWait();
+
+      setupJournal(JOURNAL_SIZE, 1);
+      
+      assertEquals(1, transactions.size());
+      assertEquals(1, records.size());
+      
+      assertEquals(10, transactions.get(0).xidData.length);
+      
+      for (int i = 0; i < 10; i++)
+      {
+         assertEquals((byte)1, transactions.get(0).xidData[i]);
+      }
+      
+      
+   }
+
    
    public void testReloadWithPreparedTransaction() throws Exception
    {
@@ -890,8 +924,9 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       journalImpl.debugWait();
 
-		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
-      journalImpl.appendPrepareRecord(1l, xid);
+      SimpleEncoding xid1 = new SimpleEncoding(10, (byte)1);
+
+      journalImpl.appendPrepareRecord(1l, xid1);
 
       assertEquals(12, factory.listFiles("tt").size());
 
@@ -899,6 +934,12 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       assertEquals(0, records.size());
       assertEquals(1, transactions.size());
+      
+      assertEquals(10, transactions.get(0).xidData.length);
+      for (int i = 0; i < 10; i++)
+      {
+         assertEquals((byte)1, transactions.get(0).xidData[i]);
+      }
       
       journalImpl.checkAndReclaimFiles();
       
@@ -919,10 +960,21 @@ public class AlignedJournalImplTest extends UnitTestCase
          journalImpl.appendDeleteRecordTransactional(2l, (long)i);
       }
       
-      journalImpl.appendPrepareRecord(2l, xid);
+      SimpleEncoding xid2 = new SimpleEncoding(15, (byte)2);
+
+      journalImpl.appendPrepareRecord(2l, xid2);
       
       setupJournal(JOURNAL_SIZE, 1);
       
+      assertEquals(1, transactions.size());
+      
+      assertEquals(15, transactions.get(0).xidData.length);
+      
+      for (int i = 0; i < transactions.get(0).xidData.length; i++)
+      {
+         assertEquals(2, transactions.get(0).xidData[i]);
+      }
+
       assertEquals(10, journalImpl.getDataFilesCount());
 
       assertEquals(12, factory.listFiles("tt").size());
@@ -959,8 +1011,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          journalImpl.forceMoveNextFile();
       }
 
-		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
-      journalImpl.appendPrepareRecord(1l, xid);
+      journalImpl.appendPrepareRecord(1l, new SimpleEncoding(13, (byte)0));
 
       setupJournal(JOURNAL_SIZE, 100);
       assertEquals(0, records.size());

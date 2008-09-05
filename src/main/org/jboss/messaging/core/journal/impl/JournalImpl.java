@@ -26,12 +26,9 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.journal.*;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
-import org.jboss.messaging.core.remoting.impl.wireformat.XidCodecSupport;
-import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.VariableLatch;
 
-import javax.transaction.xa.Xid;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.*;
@@ -627,7 +624,7 @@ public class JournalImpl implements TestableJournal
       }
    }  
    
-   public void appendPrepareRecord(final long txID, Xid xid) throws Exception
+   public void appendPrepareRecord(final long txID, EncodingSupport xid) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -857,6 +854,8 @@ public class JournalImpl implements TestableJournal
             
             // The variable record portion used on Updates and Appends
             int variableSize = 0;
+            // Used to hold XIDs on PrepareTransactions 
+            int preparedTransactionDataSize = 0;
             byte userRecordType = 0;
             byte record[] = null;
             
@@ -884,25 +883,25 @@ public class JournalImpl implements TestableJournal
             {
                if(recordType == PREPARE_RECORD)
                {
-                  variableSize = bb.getInt();
+                  preparedTransactionDataSize = bb.getInt();
                }
                variableSize += bb.getInt() * SIZE_INT * 2;
             }
 
             int recordSize = getRecordSize(recordType);
             
-            if (pos + recordSize + variableSize > fileSize)
+            if (pos + recordSize + variableSize  + preparedTransactionDataSize > fileSize)
             {
                continue;
             }
             
             int oldPos = bb.position();
             
-            bb.position(pos + variableSize + recordSize - SIZE_INT);
+            bb.position(pos + variableSize + recordSize  + preparedTransactionDataSize - SIZE_INT);
             
             int checkSize = bb.getInt();
             
-            if (checkSize != variableSize + recordSize)
+            if (checkSize != variableSize + recordSize  + preparedTransactionDataSize)
             {
                log.warn("Record at position " + pos + " file:" + file.getFile().getFileName() + " is corrupted and it is being ignored");
                // If a file has damaged records, we make it a dataFile, and the next reclaiming will fix it
@@ -1017,20 +1016,17 @@ public class JournalImpl implements TestableJournal
                   TransactionHolder tx = transactions.get(transactionID);
                   
                   // We need to read it even if transaction was not found, or the reading checks would fail
+
+                  byte xidData[] = new byte[preparedTransactionDataSize];
+                  bb.get(xidData);
+
                   // Pair <OrderId, NumberOfElements>
-                  Xid xid = null;
-                  int formatID = bb.getInt();
-                  byte[] bq = new byte[bb.getInt()];
-                  bb.get(bq);
-                  byte[] gtxid = new byte[bb.getInt()];
-                  bb.get(gtxid);
-                  xid = new XidImpl(bq, formatID, gtxid);
-                  Pair<Integer, Integer>[] values = readReferencesOnTransaction(variableSize - XidCodecSupport.getXidEncodeLength(xid), bb);
+                  Pair<Integer, Integer>[] values = readReferencesOnTransaction(variableSize, bb);
 
                   if (tx != null)
                   {                     
                      tx.prepared = true;
-                     tx.xid = xid;
+                     tx.xidData = xidData;
                      JournalTransaction journalTransaction = transactionInfos.get(transactionID);
                      
                      if (journalTransaction == null)
@@ -1134,7 +1130,7 @@ public class JournalImpl implements TestableJournal
             
             checkSize = bb.getInt();
             
-            if (checkSize != variableSize + recordSize)
+            if (checkSize != variableSize + recordSize  + preparedTransactionDataSize)
             {
                throw new IllegalStateException("Internal error on loading file. Position doesn't match with checkSize");
             }
@@ -1227,7 +1223,7 @@ public class JournalImpl implements TestableJournal
          }
          else
          {
-            PreparedTransactionInfo info = new PreparedTransactionInfo(transaction.transactionID, transaction.xid);
+            PreparedTransactionInfo info = new PreparedTransactionInfo(transaction.transactionID, transaction.xidData);
             
             info.records.addAll(transaction.recordInfos);
             
@@ -1604,9 +1600,9 @@ public class JournalImpl implements TestableJournal
       return bb;
    }
 
-   private ByteBuffer writePrepareTransaction(final byte recordType, final long txID, final JournalTransaction tx, Xid xid) throws Exception
+   private ByteBuffer writePrepareTransaction(final byte recordType, final long txID, final JournalTransaction tx, EncodingSupport xid) throws Exception
    {
-      int xidSize = XidCodecSupport.getXidEncodeLength(xid);
+      int xidSize = xid.getEncodeSize();
       int size = SIZE_COMPLETE_TRANSACTION_RECORD + tx.getElementsSummary().size() * SIZE_INT * 2 + xidSize + SIZE_INT;
 
       ByteBuffer bb = fileFactory.newBuffer(size);
@@ -1616,7 +1612,7 @@ public class JournalImpl implements TestableJournal
       bb.putLong(txID);
       bb.putInt(xidSize);
       bb.putInt(tx.getElementsSummary().size());
-      XidCodecSupport.encodeXid(xid, new ByteBufferWrapper(bb));
+      xid.encode(new ByteBufferWrapper(bb));
 
       for (Map.Entry<Integer, AtomicInteger> entry: tx.getElementsSummary().entrySet())
       {
