@@ -71,6 +71,8 @@ public class PagingStoreImpl implements TestSupportPageStore
    
    private boolean droppedMessages;
    
+   private final PagingManager pagingManager;
+   
    private final Executor executor;
    
    // Bytes consumed by the queue on the memory
@@ -96,7 +98,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    // Constructors --------------------------------------------------
    
    
-   public PagingStoreImpl(final SequentialFileFactory fileFactory, final SimpleString storeName, QueueSettings queueSettings, Executor executor) 
+   public PagingStoreImpl(final PagingManager pagingManager, final SequentialFileFactory fileFactory, final SimpleString storeName, QueueSettings queueSettings, Executor executor) 
    {
       this.fileFactory = fileFactory;
       this.storeName = storeName;
@@ -104,6 +106,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       this.pageSize = queueSettings.getPageSizeBytes();
       this.dropMessagesOnSize = queueSettings.isDropMessagesWhenFull();
       this.executor = executor;
+      this.pagingManager = pagingManager;
    }
    
    
@@ -172,6 +175,35 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       return storeName;
    }
+   
+   
+
+   /**
+    * Depage one page-file, read it and send it to the pagingManager
+    * @return
+    * @throws Exception
+    */
+   public boolean readPage() throws Exception
+   {
+      Page page = depage();
+      if (page == null)
+      {
+         if (lastPageRecord != null)
+         {
+            pagingManager.clearLastPageRecord(lastPageRecord);
+         }
+         lastPageRecord = null;
+         return false;
+      }
+      page.open();
+      PageMessage messages[] = page.read();
+      boolean needMorePages = pagingManager.onDepage(page.getPageId(), PagingStoreImpl.this.storeName, PagingStoreImpl.this, messages);
+      page.delete();
+      
+      return needMorePages;
+
+   }
+   
    
    /** 
     *  It returns a Page out of the Page System without reading it. 
@@ -331,7 +363,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
    
-   public boolean startDepaging(final PagingManager manager) throws Exception
+   public boolean startDepaging() throws Exception
    {
       lock.readLock().lock();
       try
@@ -346,7 +378,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             {
                if (this.dequeueThread == null)
                {
-                  this.dequeueThread = new DepageRunnable(manager);
+                  this.dequeueThread = new DepageRunnable();
                   executor.execute(this.dequeueThread);
                   return true;
                }
@@ -607,11 +639,8 @@ public class PagingStoreImpl implements TestSupportPageStore
    
    class DepageRunnable implements Runnable
    {
-      final PagingManager manager;
-      
-      public DepageRunnable(final PagingManager manager)
+      public DepageRunnable()
       {
-         this.manager = manager;
       }
       
       
@@ -622,20 +651,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             boolean needMorePages = false;
             do
             {
-               Page page = depage();
-               if (page == null)
-               {
-                  if (lastPageRecord != null)
-                  {
-                     manager.clearLastPageRecord(lastPageRecord);
-                  }
-                  lastPageRecord = null;
-                  break;
-               }
-               page.open();
-               PageMessage messages[] = page.read();
-               needMorePages = manager.onDepage(page.getPageId(), PagingStoreImpl.this.storeName, PagingStoreImpl.this, messages);
-               page.delete();
+               needMorePages = readPage();
             }
             while (needMorePages);
          }

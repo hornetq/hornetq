@@ -437,7 +437,7 @@ public class PostOfficeImpl implements PostOffice
       for (SimpleString destination: dests)
       {
          PagingStore store = pagingManager.getPageStore(destination);
-         store.startDepaging(pagingManager);
+         store.startDepaging();
       }
    }
 

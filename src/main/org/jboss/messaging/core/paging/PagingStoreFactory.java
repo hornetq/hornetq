@@ -38,4 +38,6 @@ public interface PagingStoreFactory
 
    PagingStore newStore(org.jboss.messaging.util.SimpleString destinationName, QueueSettings queueSettings);
    
+   void setPagingManager(PagingManager manager);
+   
 }

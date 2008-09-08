@@ -393,7 +393,7 @@ public class PagingManagerImpl implements PagingManager
          {
             if ( maxSize > 0 && addressSize < (maxSize - pageSize))
             {
-               if (store.startDepaging(this))
+               if (store.startDepaging())
                {
                   log.info("Starting depaging Thread, size = " + addressSize);
                }

@@ -129,7 +129,7 @@ public class PageManagerImplTest extends UnitTestCase
       
       EasyMock.expect(factory.listFiles(EasyMock.isA(String.class))).andStubReturn(new ArrayList<String>());
       
-      PagingStoreImpl storeImpl = new PagingStoreImpl(factory, destination, new QueueSettings(), Executors.newSingleThreadExecutor());
+      PagingStoreImpl storeImpl = new PagingStoreImpl(manager, factory, destination, new QueueSettings(), Executors.newSingleThreadExecutor());
       
       EasyMock.expect(spi.newStore(EasyMock.eq(destination), EasyMock.isA(QueueSettings.class))).andStubReturn(storeImpl);
       

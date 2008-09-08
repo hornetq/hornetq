@@ -66,6 +66,8 @@ public interface PagingStore extends MessagingComponent
    
    void sync() throws Exception;
    
+   public boolean readPage() throws Exception;
+   
    boolean page(PageMessage message) throws Exception;
    
    /** 
@@ -79,11 +81,10 @@ public interface PagingStore extends MessagingComponent
    
    /**
     * 
-    * @param postOffice
     * @return false if a thread was already started, or if not in page mode
     * @throws Exception 
     */
-   boolean startDepaging(PagingManager listener) throws Exception;
+   boolean startDepaging() throws Exception;
 
    LastPageRecord getLastRecord();
 

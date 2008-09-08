@@ -101,7 +101,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
       QueueSettings settings = new QueueSettings();
       settings.setPageSizeBytes(MAX_SIZE);
       
-      final TestSupportPageStore storeImpl = new PagingStoreImpl(factory, new SimpleString("test"), settings, executor);
+      final TestSupportPageStore storeImpl = new PagingStoreImpl(null, factory, new SimpleString("test"), settings, executor);
       
       storeImpl.start();
       
@@ -251,7 +251,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
          fileTmp.close();         
       }
       
-      TestSupportPageStore storeImpl2 = new PagingStoreImpl(factory, new SimpleString("test"), settings, executor);
+      TestSupportPageStore storeImpl2 = new PagingStoreImpl(null, factory, new SimpleString("test"), settings, executor);
       storeImpl2.start();
       
       int numberOfPages = storeImpl2.getNumberOfPages();

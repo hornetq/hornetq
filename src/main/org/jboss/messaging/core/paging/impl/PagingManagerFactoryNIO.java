@@ -29,6 +29,7 @@ import java.util.concurrent.Executors;
 
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
+import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -51,6 +52,8 @@ public class PagingManagerFactoryNIO implements PagingStoreFactory
    private final String directory;
    
    private final Executor executor;
+   
+   private PagingManager pagingManager;
    
    // Static --------------------------------------------------------
    
@@ -76,7 +79,12 @@ public class PagingManagerFactoryNIO implements PagingStoreFactory
       File destinationFile = new File(destinationDirectory);
       destinationFile.mkdirs();
       
-      return new PagingStoreImpl(newFileFactory(destinationDirectory), destinationName, settings, executor);
+      return new PagingStoreImpl(pagingManager, newFileFactory(destinationDirectory), destinationName, settings, executor);
+   }
+   
+   public void setPagingManager(PagingManager manager)
+   {
+      this.pagingManager = manager;
    }
 
    // Package protected ---------------------------------------------

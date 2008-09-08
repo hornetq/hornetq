@@ -189,6 +189,8 @@ public class MessagingServerImpl implements MessagingServer
       PagingStoreFactory storeFactory = new PagingManagerFactoryNIO(configuration.getPagingDirectory());
 
       pagingManager = new PagingManagerImpl(storeFactory, storageManager, queueSettingsRepository);
+      
+      storeFactory.setPagingManager(pagingManager);
 
       resourceManager = new ResourceManagerImpl(0);
       postOffice =
