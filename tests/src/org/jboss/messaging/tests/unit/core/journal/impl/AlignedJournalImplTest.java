@@ -23,15 +23,6 @@
 
 package org.jboss.messaging.tests.unit.core.journal.impl;
 
-import org.jboss.messaging.core.journal.*;
-import org.jboss.messaging.core.journal.impl.JournalImpl;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.transaction.impl.XidImpl;
-import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
-import org.jboss.messaging.tests.unit.core.journal.impl.fakes.SimpleEncoding;
-import org.jboss.messaging.tests.util.UnitTestCase;
-
-import javax.transaction.xa.Xid;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
@@ -39,6 +30,18 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.jboss.messaging.core.journal.EncodingSupport;
+import org.jboss.messaging.core.journal.LoadManager;
+import org.jboss.messaging.core.journal.PreparedTransactionInfo;
+import org.jboss.messaging.core.journal.RecordInfo;
+import org.jboss.messaging.core.journal.SequentialFile;
+import org.jboss.messaging.core.journal.SequentialFileFactory;
+import org.jboss.messaging.core.journal.impl.JournalImpl;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
+import org.jboss.messaging.tests.unit.core.journal.impl.fakes.SimpleEncoding;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * 

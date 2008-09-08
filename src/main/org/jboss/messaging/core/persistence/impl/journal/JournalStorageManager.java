@@ -296,9 +296,6 @@ public class JournalStorageManager implements StorageManager
 	
 		idSequence.set(maxID + 1);
 
-		//TODO - Use load(ReloadManager) instead of Load(lists)
-
-
 		//recover prepared transactions
       for (PreparedTransactionInfo preparedTransaction : preparedTransactions)
       {
