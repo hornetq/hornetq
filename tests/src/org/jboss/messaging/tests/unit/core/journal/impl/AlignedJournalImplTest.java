@@ -1125,6 +1125,51 @@ public class AlignedJournalImplTest extends UnitTestCase
       assertEquals(10, records.size());
    }
    
+   // It should be ok to write records on NIO, and later read then on AIO
+   public void testEmptyPrepare() throws Exception
+   {
+      final int JOURNAL_SIZE = 512 * 4;
+      
+      setupJournal(JOURNAL_SIZE, 1);
+
+      journalImpl.appendPrepareRecord(2l, new SimpleEncoding(10, (byte)'j'));
+      
+      journalImpl.forceMoveNextFile();
+      
+      journalImpl.appendAddRecord(1l, (byte)0, new SimpleEncoding(10, (byte)'k'));
+      
+      setupJournal(JOURNAL_SIZE, 1);
+      
+      assertEquals(1, journalImpl.getDataFilesCount());
+
+      assertEquals(1, transactions.size());
+      
+      journalImpl.forceMoveNextFile();
+
+      setupJournal(JOURNAL_SIZE, 1);
+   
+      assertEquals(1, journalImpl.getDataFilesCount());
+
+      assertEquals(1, transactions.size());
+      
+      journalImpl.appendCommitRecord(2l);
+      
+      journalImpl.appendDeleteRecord(1l);
+
+      journalImpl.forceMoveNextFile();
+
+      setupJournal(JOURNAL_SIZE, 0);
+      
+      journalImpl.forceMoveNextFile();
+      journalImpl.debugWait();
+      journalImpl.checkAndReclaimFiles();
+      
+      assertEquals(0, transactions.size());
+      assertEquals(0, journalImpl.getDataFilesCount());
+      
+   }
+   
+   
    
    public void testReclaimingAfterConcurrentAddsAndDeletes() throws Exception
    {

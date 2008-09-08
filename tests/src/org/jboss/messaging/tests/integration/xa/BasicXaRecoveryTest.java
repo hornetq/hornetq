@@ -219,7 +219,44 @@ public class BasicXaRecoveryTest extends UnitTestCase
    {
       testMultipleTxReceiveWithRollback(true);  
    }
+   
+   public void testNonPersistent() throws Exception
+   {
+      testNonPersistent(true);
+      testNonPersistent(false);
+   }
 
+
+   public void testNonPersistent(boolean commit) throws Exception
+   {
+      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+
+      ClientMessage m1 = createTextMessage("m1", false);
+      ClientMessage m2 = createTextMessage("m2", false);
+      ClientMessage m3 = createTextMessage("m3", false);
+      ClientMessage m4 = createTextMessage("m4", false);
+
+      clientSession.start(xid, XAResource.TMNOFLAGS);
+      clientProducer.send(m1);
+      clientProducer.send(m2);
+      clientProducer.send(m3);
+      clientProducer.send(m4);
+      clientSession.end(xid, XAResource.TMSUCCESS);
+      clientSession.prepare(xid);
+
+      stopAndRestartServer();
+
+      Xid[] xids = clientSession.recover(XAResource.TMSTARTRSCAN);
+
+      assertEquals(xids.length, 1);
+      assertEquals(xids[0].getFormatId(), xid.getFormatId());
+      assertEqualsByteArrays(xids[0].getBranchQualifier(), xid.getBranchQualifier());
+      assertEqualsByteArrays(xids[0].getGlobalTransactionId(), xid.getGlobalTransactionId());
+      xids = clientSession.recover(XAResource.TMENDRSCAN);
+      assertEquals(xids.length, 0);
+      clientSession.commit(xid, true);
+   }
+   
    public void testBasicSendWithCommit(boolean stopServer) throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
@@ -973,7 +1010,12 @@ public class BasicXaRecoveryTest extends UnitTestCase
 
    private ClientMessage createTextMessage(String s)
    {
-      ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte) 1);
+      return createTextMessage(s, true);
+   }
+
+   private ClientMessage createTextMessage(String s, boolean durable)
+   {
+      ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, durable, 0, System.currentTimeMillis(), (byte) 1);
       message.getBody().putString(s);
       message.getBody().flip();
       return message;

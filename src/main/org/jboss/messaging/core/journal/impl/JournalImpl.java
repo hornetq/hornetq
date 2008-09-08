@@ -143,7 +143,7 @@ public class JournalImpl implements TestableJournal
    
    private final Map<Long, PosFiles> posFilesMap = new ConcurrentHashMap<Long, PosFiles>();
    
-   private final Map<Long, JournalTransaction> transactionInfos = new ConcurrentHashMap<Long, JournalTransaction>();
+   private final ConcurrentMap<Long, JournalTransaction> transactionInfos = new ConcurrentHashMap<Long, JournalTransaction>();
    
    private final ConcurrentMap<Long, TransactionCallback> transactionCallbacks = new ConcurrentHashMap<Long, TransactionCallback>();
    
@@ -631,12 +631,7 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal must be loaded first");
       }
       
-      JournalTransaction tx = transactionInfos.get(txID);
-      
-      if (tx == null)
-      {
-         throw new IllegalStateException("Cannot find tx with id " + txID);
-      }
+      JournalTransaction tx = getTransactionInfo(txID);
       
       ByteBuffer bb = writePrepareTransaction(PREPARE_RECORD, txID, tx, xid);
       
@@ -1015,6 +1010,14 @@ public class JournalImpl implements TestableJournal
                {
                   TransactionHolder tx = transactions.get(transactionID);
                   
+                  
+                  if (tx == null)
+                  {
+                     tx = new TransactionHolder(transactionID);                        
+                     transactions.put(transactionID, tx);
+                  }
+                  
+                  
                   // We need to read it even if transaction was not found, or the reading checks would fail
 
                   byte xidData[] = new byte[preparedTransactionDataSize];
@@ -1029,11 +1032,14 @@ public class JournalImpl implements TestableJournal
                      tx.xidData = xidData;
                      JournalTransaction journalTransaction = transactionInfos.get(transactionID);
                      
+                     
                      if (journalTransaction == null)
                      {
-                        throw new IllegalStateException("Cannot find tx " + transactionID);
+                        journalTransaction = new JournalTransaction();
+                        
+                        transactionInfos.put(transactionID, journalTransaction);
                      }
-                                          
+                     
                      boolean healthy = checkTransactionHealth(journalTransaction, orderedFiles, values);
                      
                      if (healthy)
@@ -1942,7 +1948,11 @@ public class JournalImpl implements TestableJournal
       {
          tx = new JournalTransaction();
          
-         transactionInfos.put(txID, tx);
+         JournalTransaction trans = transactionInfos.putIfAbsent(txID, tx);
+         if (trans != null)
+         {
+            tx = trans;
+         }
       }
       
       return tx;
@@ -1957,7 +1967,11 @@ public class JournalImpl implements TestableJournal
          if (callback == null)
          {
             callback = new TransactionCallback();
-            transactionCallbacks.put(transactionId, callback);
+            TransactionCallback callbackCheck = transactionCallbacks.putIfAbsent(transactionId, callback);
+            if (callbackCheck != null)
+            {
+               callback = callbackCheck;
+            }
          }
          
          if (callback.errorMessage != null)

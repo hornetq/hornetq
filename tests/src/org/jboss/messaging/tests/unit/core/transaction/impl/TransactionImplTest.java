@@ -269,10 +269,17 @@ public class TransactionImplTest extends UnitTestCase
       }
       
       
-      tx = createTransactionXA();
-      
+      CreatedTrans resultTrans = createTransactionXA();
+      tx = resultTrans.tx;
       assertEquals(Transaction.State.ACTIVE, tx.getState());
       
+      EasyMock.reset(resultTrans.sm);
+      
+      resultTrans.sm.prepare(EasyMock.eq(resultTrans.txId), EasyMock.eq(resultTrans.xid));
+      resultTrans.sm.commit(resultTrans.txId);
+      
+      EasyMock.replay(resultTrans.sm);
+
       tx.prepare();
       
       tx.commit();
@@ -332,7 +339,19 @@ public class TransactionImplTest extends UnitTestCase
       	//OK
       }
       
-      tx = createTransactionXA();
+      EasyMock.verify(resultTrans.sm);
+
+      resultTrans =  createTransactionXA();
+      
+      tx = resultTrans.tx;
+      
+      
+      EasyMock.reset(resultTrans.sm);
+      
+      resultTrans.sm.prepare(resultTrans.txId, resultTrans.xid);
+      resultTrans.sm.rollback(resultTrans.txId);
+      
+      EasyMock.replay(resultTrans.sm);
       
       assertEquals(Transaction.State.ACTIVE, tx.getState());
       
@@ -393,7 +412,11 @@ public class TransactionImplTest extends UnitTestCase
       catch (IllegalStateException e)
       {
       	//OK
-      }         
+      }
+      
+      
+      EasyMock.verify(resultTrans.sm);
+      
    }
    
 //   public void testSendCommit() throws Exception
@@ -636,28 +659,44 @@ public class TransactionImplTest extends UnitTestCase
       return tx;
    }
    
-   private Transaction createTransactionXA()
+   private CreatedTrans createTransactionXA() throws Exception
    {
-   	StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
+      CreatedTrans trans = new CreatedTrans();
       
-      PostOffice po = EasyMock.createStrictMock(PostOffice.class);
+   	trans.sm = EasyMock.createStrictMock(StorageManager.class);
       
-      final long txID = 123L;
+      trans.po = EasyMock.createMock(PostOffice.class);
       
-      EasyMock.expect(sm.generateTransactionID()).andReturn(txID);
+      EasyMock.expect(trans.po.getPagingManager()).andStubReturn(null);
+      
+      trans.txId = 123L;
    	
-      EasyMock.replay(sm);
+      trans.xid = randomXid();
       
-      Xid xid = randomXid();
+      EasyMock.expect(trans.sm.generateTransactionID()).andReturn(trans.txId);
+
+      EasyMock.replay(trans.sm, trans.po);
+
+      trans.tx = new TransactionImpl(trans.xid, trans.sm, trans.po);
       
-      Transaction tx = new TransactionImpl(xid, sm, po);
+      EasyMock.verify(trans.sm, trans.po);
       
-      EasyMock.verify(sm);
+      EasyMock.reset(trans.sm, trans.po);
       
-      return tx;
+      return trans;
    }
   
    
    // Inner classes -----------------------------------------------------------------------
+   
+   
+   class CreatedTrans
+   {
+      TransactionImpl tx;
+      PostOffice po;
+      StorageManager sm;
+      Xid xid;
+      long txId;
+   }
 
 }

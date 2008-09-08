@@ -230,10 +230,7 @@ public class TransactionImpl implements Transaction
 
       pageMessages();
 
-      if (containsPersistent)
-      {
-         storageManager.prepare(id, xid);
-      }
+      storageManager.prepare(id, xid);
 
       state = State.PREPARED;
    }
@@ -273,7 +270,7 @@ public class TransactionImpl implements Transaction
          pageMessages();
       }
 
-      if (containsPersistent)
+      if (containsPersistent || xid != null)
       {
          storageManager.commit(id);
       }
@@ -317,7 +314,7 @@ public class TransactionImpl implements Transaction
          }
       }
 
-      if (containsPersistent)
+      if (containsPersistent || xid != null)
       {
          storageManager.rollback(id);
       }
