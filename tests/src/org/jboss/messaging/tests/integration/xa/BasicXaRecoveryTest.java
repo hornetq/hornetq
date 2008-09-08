@@ -70,13 +70,13 @@ public class BasicXaRecoveryTest extends UnitTestCase
       configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
-      TransportConfiguration transportConfig = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory");
+      TransportConfiguration transportConfig = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory");
       configuration.getAcceptorConfigurations().add(transportConfig);
       messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
       //start the server
       messagingService.start();
       //then we create a client as normal
-      sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.mina.MinaConnectorFactory"));
+      sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
       clientSession = sessionFactory.createSession(true, false, false, 1, false);
       clientSession.createQueue(atestq, atestq, null, true, true);
       clientProducer = clientSession.createProducer(atestq);
@@ -580,13 +580,14 @@ public class BasicXaRecoveryTest extends UnitTestCase
    {
       ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte) 1);
       message.getBody().putString(s);
+      message.getBody().flip();
       return message;
    }
 
    private void createClients()
          throws MessagingException
    {
-      sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.mina.MinaConnectorFactory"));
+      sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
       clientSession = sessionFactory.createSession(true, false, true, 1, false);
       clientProducer = clientSession.createProducer(atestq);
       clientConsumer = clientSession.createConsumer(atestq);

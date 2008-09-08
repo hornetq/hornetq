@@ -55,4 +55,6 @@ public interface RemotingConnection extends BufferHandler
    void destroy();      
    
    boolean isExpired(final long now);
+   
+   void startPinger();
 }

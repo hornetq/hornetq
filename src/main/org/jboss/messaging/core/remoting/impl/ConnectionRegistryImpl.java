@@ -96,10 +96,12 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
             throw new IllegalStateException("Failed to connect");
          }
          
-         RemotingConnectionImpl connection =
+         RemotingConnection connection =
             new RemotingConnectionImpl(tc, callTimeout, pingInterval, null, pingExecutor, null, null, true);
          
          handler.conn = connection;
+         
+         connection.startPinger();
                  
          holder = new ConnectionHolder(connection, connector);
   

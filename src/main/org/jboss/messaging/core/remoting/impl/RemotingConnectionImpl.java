@@ -183,7 +183,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    
    private final ExecutorFactory executorFactory;
 
-   private final Runnable pinger;
+   private Runnable pinger;
    
    private final List<Interceptor> interceptors;
    
@@ -214,6 +214,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    // Constructors
    // ---------------------------------------------------------------------------------
 
+   private final long pingPeriod;
+   
+   private final ScheduledExecutorService pingExecutor;
+   
    public RemotingConnectionImpl(final Connection transportConnection,               
                                  final long blockingCallTimeout, final long pingPeriod,
                                  final ExecutorService handlerExecutor,
@@ -243,14 +247,21 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       this.client = client;
       
       this.writePackets = client || !backup;
+      
+      this.pingPeriod = pingPeriod;
+      
+      this.pingExecutor = pingExecutor;     
                   
       //Channel zero is reserved for pinging
       pingChannel = getChannel(0, false, -1);
       
       ChannelHandler ppHandler = new PingPongHandler();
       
-      pingChannel.setHandler(ppHandler);
-      
+      pingChannel.setHandler(ppHandler);           
+   }
+   
+   public void startPinger()
+   {
       if (pingPeriod != -1)
       {   
          pinger = new Pinger();
@@ -265,7 +276,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          pinger = null;
       }
    }
-
+   
    // RemotingConnection implementation
    // ------------------------------------------------------------
 
