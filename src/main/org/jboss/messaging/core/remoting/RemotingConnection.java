@@ -40,6 +40,10 @@ public interface RemotingConnection extends BufferHandler
    
    Channel getChannel(long channelID, boolean ordered, int packetConfirmationBatchSize);
 
+   public void setBackup(final boolean backup);
+   
+   boolean isBackup();
+   
    void addFailureListener(FailureListener listener);
 
    boolean removeFailureListener(FailureListener listener);

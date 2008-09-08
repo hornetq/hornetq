@@ -27,9 +27,9 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
@@ -45,7 +45,8 @@ public class SimpleClient
       ClientSession clientSession = null;
       try
       {
-         ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new NettyConnectorFactory());           
+         ClientSessionFactory sessionFactory =
+            new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));          
          clientSession = sessionFactory.createSession(false, true, true, 1, false);
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);

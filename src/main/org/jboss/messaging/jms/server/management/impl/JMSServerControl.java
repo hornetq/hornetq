@@ -24,7 +24,6 @@ package org.jboss.messaging.jms.server.management.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.ListenerNotFoundException;
@@ -38,8 +37,8 @@ import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.StandardMBean;
 
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 
@@ -77,8 +76,7 @@ public class JMSServerControl extends StandardMBean implements
 
    // JMSServerControlMBean implementation --------------------------
 
-   public void createConnectionFactory(String name, ConnectorFactory connectorFactory,
-            Map<String, Object> transportParams,
+   public void createConnectionFactory(String name, TransportConfiguration connectorConfig,
             long pingPeriod, long callTimeout, String clientID,
          int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
          int producerWindowSize, int producerMaxRate,
@@ -89,7 +87,7 @@ public class JMSServerControl extends StandardMBean implements
       List<String> bindings = new ArrayList<String>();
       bindings.add(jndiBinding);
 
-      boolean created = server.createConnectionFactory(name, connectorFactory, transportParams,
+      boolean created = server.createConnectionFactory(name, connectorConfig,
                   pingPeriod, callTimeout, clientID, dupsOKBatchSize, 
                consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, 
                blockOnAcknowledge, blockOnNonPersistentSend, 

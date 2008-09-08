@@ -25,6 +25,7 @@ package org.jboss.messaging.jms.server;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 
 /**
@@ -35,7 +36,6 @@ import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
  */
 public interface JMSServerManager
 {
-
    String getVersion();
 
    /**
@@ -95,8 +95,7 @@ public interface JMSServerManager
     */
    boolean destroyTopic(String name) throws Exception;
 
-   boolean createConnectionFactory(String name, ConnectorFactory connectorFactory,
-            Map<String, Object> transportParams,
+   boolean createConnectionFactory(String name, TransportConfiguration connectorConfig,
             long pingPeriod, long callTimeout, String clientID,
          int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
          int producerWindowSize, int producerMaxRate,
@@ -106,8 +105,7 @@ public interface JMSServerManager
          throws Exception;
 
 
-   boolean createConnectionFactory(String name, ConnectorFactory connectorFactory,
-            Map<String, Object> transportParams,
+   boolean createConnectionFactory(String name, TransportConfiguration connectorConfig,
             long pingPeriod, long callTimeout, String clientID,
          int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
          int producerWindowSize, int producerMaxRate,

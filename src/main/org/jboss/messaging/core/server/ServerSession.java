@@ -134,4 +134,8 @@ public interface ServerSession
    ServerMessage browserNextMessage(int browserID) throws Exception;
    
    void browserReset(int browserID) throws Exception;
+   
+   void handleReplicateDelivery(long messageID, int consumerID) throws Exception;
+   
+   void handleDeferredDelivery();
 }

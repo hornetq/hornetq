@@ -105,7 +105,7 @@ public class PostOfficeImpl implements PostOffice
    {
       if (pagingManager != null)
       {
-         this.pagingManager.setPostOffice(this);
+         pagingManager.setPostOffice(this);
    
          pagingManager.start();
       }

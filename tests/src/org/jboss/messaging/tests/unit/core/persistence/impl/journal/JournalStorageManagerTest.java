@@ -381,9 +381,9 @@ public class JournalStorageManagerTest extends UnitTestCase
       queues.put(queue2ID, queue2);
       queues.put(queue3ID, queue3);
       
-      EasyMock.expect(queue1.removeReferenceWithID(msg1ID)).andReturn(true);
-      EasyMock.expect(queue2.removeReferenceWithID(msg1ID)).andReturn(true);
-      EasyMock.expect(queue3.removeReferenceWithID(msg2ID)).andReturn(true);
+      EasyMock.expect(queue1.removeReferenceWithID(msg1ID)).andReturn(ref1_1);
+      EasyMock.expect(queue2.removeReferenceWithID(msg1ID)).andReturn(ref1_2);
+      EasyMock.expect(queue3.removeReferenceWithID(msg2ID)).andReturn(ref2_3);
       
       EasyMock.expect(queue1.getReference(msg1ID)).andReturn(ref1_1);
       ref1_1.setDeliveryCount(deliveryCount);

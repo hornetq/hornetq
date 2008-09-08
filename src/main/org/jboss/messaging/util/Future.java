@@ -19,25 +19,50 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.remoting;
+package org.jboss.messaging.util;
 
-import org.jboss.messaging.core.exception.MessagingException;
 
 /**
- * A Channel
+ * A Future
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface Channel
+public class Future implements Runnable
 {
-   void send(Packet packet);
+   private boolean done;
    
-   Packet sendBlocking(Packet packet) throws MessagingException;
+   public synchronized boolean await(final long timeout)
+   {
+      long toWait = timeout;
       
-   void setHandler(ChannelHandler handler);
+      long start = System.currentTimeMillis();
+
+      while (!done && toWait > 0)
+      {
+         try
+         {
+            wait(toWait);
+         }
+         catch (InterruptedException e)
+         {
+         }
+
+         long now = System.currentTimeMillis();
+
+         toWait -= now - start;
+
+         start = now;
+      }
+      
+      return done;
+   }
    
-   void close();
+   public synchronized void run()
+   {
+      done = true;
+      
+      notify();
+   }
    
-   Channel getReplicatingChannel();
 }

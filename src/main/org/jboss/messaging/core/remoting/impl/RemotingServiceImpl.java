@@ -32,6 +32,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -90,6 +91,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    
    private final BufferHandler bufferHandler = new DelegatingBufferHandler();
    
+   private final boolean backup;
+   
    private volatile MessagingServer server;
 
    // Static --------------------------------------------------------
@@ -119,6 +122,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       this.callTimeout = config.getCallTimeout();
       
       this.connectionScanPeriod = config.getConnectionScanPeriod();
+      
+      this.backup = config.isBackup();
    }
 
    // RemotingService implementation -------------------------------
@@ -180,6 +185,20 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          acceptor.stop();
       }
+      
+      this.remotingExecutor.shutdown();
+      
+      try
+      {
+         if (!remotingExecutor.awaitTermination(10000, TimeUnit.MILLISECONDS))
+         {
+            log.warn("Timed out waiting for pool to terminate");
+         }
+      }
+      catch (InterruptedException e)
+      {
+         //Ignore
+      }
 
       started = false;
    }
@@ -213,25 +232,18 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public void connectionCreated(final Connection connection)
    {
-//      RemotingConnection backupConnection = null;
-//      
-//      if (config.isClustered())
-//      {
-//         Location backupLocation = new LocationImpl(config.getBackupTransport(), config.getBackupHost(),
-//                                                    config.getBackupPort());
-//         
-//         ConnectionRegistry reg = ConnectionRegistryLocator.getRegistry();
-//         
-//         backupConnection = reg.getConnection(backupLocation, config.getConnectionParams());
-//      }
-      
       if (server == null)
       {
          throw new IllegalStateException("Unable to create connection, server hasn't finished starting up");
       }
+      
+      RemotingConnection replicatingConnection = server.getReplicatingConnection();
   
       RemotingConnection rc =
-         new RemotingConnectionImpl(connection, callTimeout, -1, remotingExecutor, null, interceptors);
+         new RemotingConnectionImpl(connection, callTimeout, -1, remotingExecutor, null, interceptors,
+                                    replicatingConnection, false);
+      
+      rc.setBackup(backup);
             
       Channel channel1 = rc.getChannel(1, false, -1);
                   

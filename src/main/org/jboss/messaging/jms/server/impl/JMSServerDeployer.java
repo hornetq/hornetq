@@ -28,10 +28,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -268,22 +268,12 @@ public class JMSServerDeployer extends XmlDeployer
             throw new IllegalArgumentException("connector-factory-class-name must be specified in configuration");
          }
          
-         ConnectorFactory connectorFactory;
-         
-         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-         try
-         {
-            Class<?> clz = loader.loadClass(connectorFactoryClassName);
-            connectorFactory = (ConnectorFactory) clz.newInstance();
-         }
-         catch (Exception e)
-         {
-            throw new IllegalArgumentException("Error instantiating interceptor \"" + connectorFactoryClassName + "\"", e);
-         }         
+         TransportConfiguration connectorConfig =
+            new TransportConfiguration(connectorFactoryClassName, params);
                   
          String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
                   
-         jmsServerManager.createConnectionFactory(name, connectorFactory, params,
+         jmsServerManager.createConnectionFactory(name, connectorConfig,
                   pingPeriod, callTimeout, clientID, dupsOKBatchSize, 
                consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, 
                blockOnAcknowledge, blockOnNonPersistentSend, 

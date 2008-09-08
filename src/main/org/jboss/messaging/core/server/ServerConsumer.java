@@ -41,4 +41,6 @@ public interface ServerConsumer extends Consumer
 	void receiveCredits(int credits) throws Exception;
 	
 	Queue getQueue();
+	
+	void deliverMessage(long messageID) throws Exception;
 }

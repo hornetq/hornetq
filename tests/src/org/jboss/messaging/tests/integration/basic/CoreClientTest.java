@@ -30,14 +30,10 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
-import org.jboss.messaging.core.remoting.impl.mina.MinaConnectorFactory;
-import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -61,12 +57,12 @@ public class CoreClientTest extends TestCase
 
    public void testCoreClient() throws Exception
    {
-      testCoreClient("org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory", new MinaConnectorFactory());
-      testCoreClient("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory", new NettyConnectorFactory());
-      testCoreClient("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory", new InVMConnectorFactory());
+      testCoreClient("org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory", "org.jboss.messaging.core.remoting.impl.mina.MinaConnectorFactory");
+      testCoreClient("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory", "org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory");
+      testCoreClient("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory", "org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory");
    }
    
-   private void testCoreClient(final String acceptorFactoryClassName, final ConnectorFactory connectorFactory) throws Exception
+   private void testCoreClient(final String acceptorFactoryClassName, final String connectorFactoryClassName) throws Exception
    {             
       final SimpleString QUEUE = new SimpleString("CoreClientTestQueue");
       
@@ -80,7 +76,7 @@ public class CoreClientTest extends TestCase
            
       messagingService.start();
       
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(connectorFactory);
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(connectorFactoryClassName));
 
       ClientSession session = sf.createSession(false, true, true, -1, false);
       

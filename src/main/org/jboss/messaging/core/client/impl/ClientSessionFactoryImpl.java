@@ -26,11 +26,13 @@ import java.util.Map;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.ConnectionRegistry;
+import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
@@ -60,7 +62,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
    
    private static final Logger log = Logger.getLogger(ClientSessionFactoryImpl.class);
    
-   public static final long DEFAULT_PING_PERIOD = 5000;
+   public static final long DEFAULT_PING_PERIOD = 2000;
    
    public static final long DEFAULT_CALL_TIMEOUT = 30000;
    
@@ -110,11 +112,24 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
    
    // Constructors ---------------------------------------------------------------------------------
 
+   private void instantiateConnectorFactory(final String connectorFactoryClassName)
+   {
+      ClassLoader loader = Thread.currentThread().getContextClassLoader();
+      try
+      {
+         Class<?> clazz = loader.loadClass(connectorFactoryClassName);
+         connectorFactory = (ConnectorFactory)clazz.newInstance();
+      }
+      catch (Exception e)
+      {
+         log.warn("Error instantiating connector factory \"" + connectorFactoryClassName + "\"", e);
+      }      
+   }
+   
    /**
     * Create a ClientSessionFactoryImpl specifying all attributes
     */
-   public ClientSessionFactoryImpl(final ConnectorFactory connectorFactory,
-                                   final Map<String, Object> transportParams,
+   public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
                                    final long pingPeriod,
                                    final long callTimeout,
                                    final int consumerWindowSize, final int consumerMaxRate,
@@ -123,8 +138,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
                                    final boolean blockOnNonPersistentSend,
                                    final boolean blockOnPersistentSend)
    {      
-      this.connectorFactory = connectorFactory;
-      this.transportParams = transportParams;
+      instantiateConnectorFactory(connectorConfig.getFactoryClassName());
+      this.transportParams = connectorConfig.getParams();
       this.pingPeriod = pingPeriod;
       this.callTimeout = callTimeout;
       this.consumerWindowSize = consumerWindowSize;  
@@ -140,10 +155,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
    /**
     * Create a ClientSessionFactoryImpl specify transport type and using defaults
     */   
-   public ClientSessionFactoryImpl(final ConnectorFactory connectorFactory)
+   public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig)
    {
-      this.connectorFactory = connectorFactory;
-      this.transportParams = new HashMap<String, Object>();
+      instantiateConnectorFactory(connectorConfig.getFactoryClassName());
+      this.transportParams = connectorConfig.getParams();
       pingPeriod = DEFAULT_PING_PERIOD;
       callTimeout = DEFAULT_CALL_TIMEOUT;
       consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
@@ -333,7 +348,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
          CreateSessionResponseMessage response = (CreateSessionResponseMessage)packet;
          
          long sessionID = response.getSessionID();
-         
+                 
          Channel sessionChannel = remotingConnection.getChannel(sessionID, false, response.getPacketConfirmationBatchSize());
          
          ClientSessionInternal session = new ClientSessionImpl(sessionID, xa, lazyAckBatchSize, cacheProducers,

@@ -144,7 +144,7 @@ public class ClientCrashTest extends TestCase
       messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
       messagingService.start();
 
-      sf = new ClientSessionFactoryImpl(new NettyConnectorFactory());
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));
       sf.setPingPeriod(2000);
       
    }

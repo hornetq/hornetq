@@ -428,9 +428,9 @@ public class JournalStorageManager implements StorageManager
 						throw new IllegalStateException("Cannot find queue with id " + queueID);
 					}
 					
-					boolean removed = queue.removeReferenceWithID(messageID);
+					MessageReference removed = queue.removeReferenceWithID(messageID);
 					
-					if (!removed)
+					if (removed == null)
 					{
 						throw new IllegalStateException("Failed to remove reference for " + messageID);
 					}

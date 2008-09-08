@@ -353,11 +353,11 @@ public class QueueImpl implements Queue
       }
    }
 
-   public synchronized boolean removeReferenceWithID(final long id)
+   public synchronized MessageReference removeReferenceWithID(final long id)
    {
       Iterator<MessageReference> iterator = messageReferences.iterator();
 
-      boolean removed = false;
+      MessageReference removed = null;
 
       while (iterator.hasNext())
       {
@@ -367,7 +367,7 @@ public class QueueImpl implements Queue
          {
             iterator.remove();
 
-            removed = true;
+            removed = ref;
 
             break;
          }
@@ -384,7 +384,10 @@ public class QueueImpl implements Queue
       {
          MessageReference ref = iterator.next();
 
-         if (ref.getMessage().getMessageID() == id) { return ref; }
+         if (ref.getMessage().getMessageID() == id)
+         {
+            return ref;
+         }
       }
 
       return null;

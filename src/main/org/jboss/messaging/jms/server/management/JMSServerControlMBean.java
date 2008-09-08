@@ -24,11 +24,9 @@ package org.jboss.messaging.jms.server.management;
 
 import static javax.management.MBeanOperationInfo.ACTION;
 
-import java.util.Map;
-
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.Operation;
 import org.jboss.messaging.core.management.Parameter;
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -71,8 +69,7 @@ public interface JMSServerControlMBean
    @Operation(desc = "Create a JMS ConnectionFactory", impact = ACTION)
    void createConnectionFactory(
          @Parameter(name = "name", desc = "Name of the ConnectionFactory to create") String name,
-         @Parameter(name = "connectorFactory", desc = "The Remoting Connector Factory used by this connection factory") ConnectorFactory connectorFactory,
-         @Parameter(name = "transportParams", desc = "Parameters for the remoting transport") Map<String, Object> transportParams,
+         @Parameter(name = "transportConfiguration", desc = "The remoting connector configuration") TransportConfiguration connectorConfig,         
          @Parameter(name = "pingPeriod", desc = "The ping period in m") long pingPeriod,
          @Parameter(name = "callTimeout", desc = "The call timeout in m") long callTimeout,
          @Parameter(name = "clientID", desc = "ClientID for created connections") String clientID,

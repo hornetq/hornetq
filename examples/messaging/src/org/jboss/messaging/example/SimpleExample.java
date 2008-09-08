@@ -31,7 +31,6 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -60,7 +59,7 @@ public class SimpleExample
          messagingService.start();
 
          //then we create a client as normal       
-         ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new NettyConnectorFactory());
+         ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));
          clientSession = sessionFactory.createSession(false, true, true, 1, false);
          SimpleString atestq = new SimpleString("atestq");
          clientSession.createQueue(atestq, atestq, null, false, true);

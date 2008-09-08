@@ -97,7 +97,7 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
          }
          
          RemotingConnectionImpl connection =
-            new RemotingConnectionImpl(tc, callTimeout, pingInterval, null, pingExecutor, null);
+            new RemotingConnectionImpl(tc, callTimeout, pingInterval, null, pingExecutor, null, null, true);
          
          handler.conn = connection;
                  

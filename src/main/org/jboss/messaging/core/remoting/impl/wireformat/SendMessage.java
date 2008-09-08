@@ -96,7 +96,15 @@ public class SendMessage extends PacketImpl
    {
       buffer.putInt(producerID);      
       
-      clientMessage.encode(buffer);    
+      if (clientMessage != null)
+      {
+         clientMessage.encode(buffer);
+      }
+      else
+      {
+         //If we're replicating a buffer to a backup node then we encode the serverMessage not the clientMessage
+         serverMessage.encode(buffer);
+      }
       
       buffer.putBoolean(requiresResponse);
    }

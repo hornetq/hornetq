@@ -32,6 +32,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -69,7 +70,7 @@ public class CrashClient
 
          int numberOfConnections = Integer.parseInt(args[0]);
          
-         ClientSessionFactory sf = new ClientSessionFactoryImpl(new NettyConnectorFactory());
+         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));
          ClientSession session = sf.createSession(false, true, true, -1, false);
          ClientProducer producer = session.createProducer(QUEUE);
          ClientConsumer consumer = session.createConsumer(QUEUE);

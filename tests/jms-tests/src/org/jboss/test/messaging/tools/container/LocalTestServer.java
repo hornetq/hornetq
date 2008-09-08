@@ -42,6 +42,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
 import org.jboss.kernel.spi.deployment.KernelDeployment;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
@@ -528,7 +529,7 @@ public class LocalTestServer implements Server, Runnable
    {
       log.info("deploying connection factory with name: " + objectName + " and dupsok: " + dupsOkBatchSize);
       getJMSServerManager().createConnectionFactory(objectName,
-               new NettyConnectorFactory(), null, 5000, 5000,      
+               new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"), 5000, 5000,      
                clientId, dupsOkBatchSize,
       		prefetchSize, -1, 1000, -1, blockOnAcknowledge, true, true, jndiBindings);
    }

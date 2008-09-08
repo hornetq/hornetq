@@ -22,6 +22,15 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -35,7 +44,11 @@ import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
-import org.jboss.messaging.core.remoting.*;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.ChannelHandler;
+import org.jboss.messaging.core.remoting.ConnectionRegistry;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
@@ -55,13 +68,6 @@ import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.VersionLoader;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The messaging server implementation
@@ -92,10 +98,10 @@ public class MessagingServerImpl implements MessagingServer
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
    private ScheduledExecutorService scheduledExecutor;
    private QueueFactory queueFactory;
-   private PagingStoreFactory storeFactory;
    private PagingManager pagingManager;
    private PostOffice postOffice;
-   private final ExecutorFactory executorFactory = new OrderedExecutorFactory(Executors.newCachedThreadPool(new JBMThreadFactory("JBM-async-session-delivery-threads")));
+   private final ExecutorService asyncDeliveryPool = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-async-session-delivery-threads"));
+   private final ExecutorFactory executorFactory = new OrderedExecutorFactory(asyncDeliveryPool);
    private HierarchicalRepository<Set<Role>> securityRepository;
    private ResourceManager resourceManager;
    private MessagingServerControlMBean serverManagement;
@@ -185,7 +191,8 @@ public class MessagingServerImpl implements MessagingServer
       pagingManager = new PagingManagerImpl(storeFactory, storageManager, queueSettingsRepository);
 
       resourceManager = new ResourceManagerImpl(0);
-      postOffice = new PostOfficeImpl(storageManager, pagingManager, queueFactory, managementService, configuration.isRequireDestinations(), resourceManager);
+      postOffice =
+        new PostOfficeImpl(storageManager, pagingManager, queueFactory, managementService, configuration.isRequireDestinations(), resourceManager);
 
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
       securityRepository.setDefault(new HashSet<Role>());
@@ -209,9 +216,10 @@ public class MessagingServerImpl implements MessagingServer
             ConnectorFactory connectorFactory = (ConnectorFactory) clz.newInstance();
             ConnectionRegistry registry = ConnectionRegistryImpl.instance;
             //TODO don't hardcode ping interval and call timeout here
-            this.replicatingConnection =
+            replicatingConnection =
                registry.getConnection(connectorFactory, backupConnector.getParams(),
-                                      5000, 30000);
+                                      -1, 30000);
+            replicatingConnection.setBackup(true);
          }
          catch (Exception e)
          {
@@ -219,7 +227,7 @@ public class MessagingServerImpl implements MessagingServer
          }
       }
       remotingService.setMessagingServer(this);
-
+           
       started = true;
    }
 
@@ -244,6 +252,20 @@ public class MessagingServerImpl implements MessagingServer
       queueFactory = null;
       resourceManager = null;
       serverManagement = null;
+      
+      asyncDeliveryPool.shutdown();
+      
+      try
+      {
+         if (!asyncDeliveryPool.awaitTermination(10000, TimeUnit.MILLISECONDS))
+         {
+            log.warn("Timed out waiting for pool to terminate");
+         }
+      }
+      catch (InterruptedException e)
+      {
+         //Ignore
+      }
 
       started = false;
    }

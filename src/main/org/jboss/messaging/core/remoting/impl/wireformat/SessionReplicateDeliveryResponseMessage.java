@@ -22,78 +22,35 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+
 
 /**
- * 
- * A PacketsConfirmedMessage
- * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
+ * 
+ * @version <tt>$Revision$</tt>
  */
-public class PacketsConfirmedMessage extends PacketImpl
+public class SessionReplicateDeliveryResponseMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   private int commandID;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public PacketsConfirmedMessage(final int commandID)
+   public SessionReplicateDeliveryResponseMessage()
    {
-      super(SESS_PACKETS_CONFIRMED);
-
-      this.commandID = commandID;
-   }
-   
-   public PacketsConfirmedMessage()
-   {
-      super(SESS_PACKETS_CONFIRMED);
+      super(SESS_REPLICATE_DELIVERY_RESP);
    }
 
    // Public --------------------------------------------------------
-
-   public int getCommandID()
-   {
-      return this.commandID;
-   }
-   
-   public void encodeBody(final MessagingBuffer buffer)
-   {
-      buffer.putInt(commandID);
-   }
-   
-   public void decodeBody(final MessagingBuffer buffer)
-   {
-      commandID = buffer.getInt();
-   }
-   
+    
    public boolean isUsesConfirmations()
    {
-      return true;
+      return false;
    }
 
-   @Override
-   public String toString()
-   {
-      return getParentString() + ", commandID=" + commandID + "]";
-   }
-   
-   public boolean equals(Object other)
-   {
-      if (other instanceof PacketsConfirmedMessage == false)
-      {
-         return false;
-      }
-            
-      PacketsConfirmedMessage r = (PacketsConfirmedMessage)other;
-      
-      return super.equals(other) && this.commandID == r.commandID;
-   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -102,4 +59,5 @@ public class PacketsConfirmedMessage extends PacketImpl
 
    // Inner classes -------------------------------------------------
 }
+
 

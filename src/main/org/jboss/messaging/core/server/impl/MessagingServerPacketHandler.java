@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
@@ -68,7 +70,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
       
       try
       {
-         if (type == PacketImpl.CREATESESSION)
+         if (type == CREATESESSION)
          {
             CreateSessionMessage request = (CreateSessionMessage) packet;
 

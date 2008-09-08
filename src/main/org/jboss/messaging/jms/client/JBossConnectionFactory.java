@@ -23,7 +23,6 @@
 package org.jboss.messaging.jms.client;
 
 import java.io.Serializable;
-import java.util.Map;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -44,9 +43,9 @@ import javax.naming.Reference;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
 
@@ -74,9 +73,7 @@ public class JBossConnectionFactory implements
    
    private transient volatile ClientSessionFactory sessionFactory;
    
-   private final ConnectorFactory connectorFactory;
-   
-   private final Map<String, Object> transportParams;
+   private final TransportConfiguration connectorConfig;
    
    private final String clientID;
    
@@ -102,8 +99,7 @@ public class JBossConnectionFactory implements
 
    // Constructors ---------------------------------------------------------------------------------
    
-   public JBossConnectionFactory(final ConnectorFactory connectorFactory,
-                                 final Map<String, Object> transportParams,
+   public JBossConnectionFactory(final TransportConfiguration connectorConfig,
                                  final long pingPeriod,
                                  final long callTimeout,
                                  final String clientID,
@@ -116,8 +112,7 @@ public class JBossConnectionFactory implements
                                  final boolean blockOnNonPersistentSend,
                                  final boolean blockOnPersistentSend)
    {
-      this.connectorFactory = connectorFactory;
-      this.transportParams = transportParams;
+      this.connectorConfig = connectorConfig;
       this.clientID = clientID;
       this.dupsOKBatchSize = dupsOKBatchSize;
       this.pingPeriod = pingPeriod;
@@ -225,16 +220,11 @@ public class JBossConnectionFactory implements
    
    // Public ---------------------------------------------------------------------------------------
    
-   public ConnectorFactory getConnectorFactory()
+   public TransportConfiguration getConnectorFactory()
    {
-      return connectorFactory;
+      return connectorConfig;
    }
 
-   public Map<String, Object> getTransportParams()
-   {
-      return transportParams;
-   }
-   
    public long getPingPeriod()
    {
       return pingPeriod;
@@ -302,8 +292,7 @@ public class JBossConnectionFactory implements
       {
          //It doesn't matter if more than one is created due to a race
          sessionFactory = new ClientSessionFactoryImpl(
-               connectorFactory,
-               transportParams,
+               connectorConfig,
                pingPeriod,
                callTimeout,
                consumerWindowSize,

@@ -106,7 +106,7 @@ public interface Queue
    
    void setFlowController(FlowController flowController);
   
-   boolean removeReferenceWithID(long id);
+   MessageReference removeReferenceWithID(long id);
    
    MessageReference getReference(long id);
    

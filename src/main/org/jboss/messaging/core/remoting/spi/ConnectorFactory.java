@@ -1,6 +1,5 @@
 package org.jboss.messaging.core.remoting.spi;
 
-import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -10,7 +9,7 @@ import java.util.Map;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface ConnectorFactory extends Serializable
+public interface ConnectorFactory
 {
    Connector createConnector(Map<String, Object> configuration, BufferHandler handler,                           
                              ConnectionLifeCycleListener listener);

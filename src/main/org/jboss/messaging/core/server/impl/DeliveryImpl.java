@@ -67,6 +67,11 @@ public class DeliveryImpl implements Delivery
       return deliveryID;
    }
    
+   public int getConsumerID()
+   {
+      return consumerID;
+   }
+   
    public void deliver()
    {
       ReceiveMessage message =

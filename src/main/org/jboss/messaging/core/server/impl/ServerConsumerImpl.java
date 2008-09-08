@@ -213,6 +213,28 @@ public class ServerConsumerImpl implements ServerConsumer
       return messageQueue;
    }
 
+   public void deliverMessage(final long messageID) throws Exception
+   {
+      //Deliver a specific message from the queue - this is used when replicating delivery state
+      //We can't just deliver the next message since there may be multiple sessions on the same queue
+      //delivering concurrently
+      //and we could end up with different delivery state on backup compare to live
+      //So we need the message id so we can be sure the backup session has the same delivery state
+      MessageReference ref = messageQueue.removeReferenceWithID(messageID);
+      
+      if (ref == null)
+      {
+         throw new IllegalStateException("Cannot find reference " + messageID);
+      }
+      
+      HandleStatus handled = handle(ref);
+                  
+      if (handled != HandleStatus.HANDLED)
+      {
+         throw new IllegalStateException("Failed to handle replicated reference " + messageID);
+      }
+   }
+   
    // Public -----------------------------------------------------------------------------
      
    // Private --------------------------------------------------------------------------------------

@@ -22,6 +22,21 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicLong;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
@@ -33,27 +48,30 @@ import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.wireformat.*;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.server.*;
+import org.jboss.messaging.core.server.Delivery;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.ServerConsumer;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.ServerProducer;
+import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.SimpleString;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Session implementation
@@ -117,7 +135,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private final SecurityStore securityStore;
 
    private final Channel channel;
-
+   
+   private final Channel replicatingChannel;
+   
+   private final java.util.Queue<Delivery> deferredDeliveries = new ConcurrentLinkedQueue<Delivery>();
+   
    private volatile boolean started = false;
 
    private volatile int objectIDSequence;
@@ -173,6 +195,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
 
       this.channel = channel;
+      
+      this.replicatingChannel = channel.getReplicatingChannel();
    }
 
    // ServerSession implementation
@@ -228,10 +252,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       delivery = new DeliveryImpl(ref, consumer.getID(), nextID, channel);
 
       deliveries.add(delivery);
-
-      delivery.deliver();
+      
+      if (replicatingChannel != null)
+      {
+         deferredDeliveries.add(delivery);
+         
+         Packet msg = new SessionReplicateDeliveryMessage(ref.getMessage().getMessageID(), consumer.getID());
+       
+         replicatingChannel.send(msg);
+      }
+      else
+      {      
+         delivery.deliver();
+      }
    }
-
+   
    public void deliverDeferredDelivery(final long messageID)
    {
       for (Delivery del : deliveries)
@@ -1190,7 +1225,28 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       producers.get(producerID).send(message);
    }
-
+   
+   public void handleReplicateDelivery(long messageID, int consumerID) throws Exception
+   {
+      consumers.get(consumerID).deliverMessage(messageID);
+      
+      Packet response = new SessionReplicateDeliveryResponseMessage();
+      
+      channel.send(response);
+   }
+      
+   public void handleDeferredDelivery()
+   {  
+      Delivery delivery = deferredDeliveries.poll();
+      
+      if (delivery == null)
+      {
+         throw new IllegalStateException("Cannot find deferred delivery to deliver");
+      }
+      
+      delivery.deliver();
+   }
+   
    // FailureListener implementation
    // --------------------------------------------------------------------
 

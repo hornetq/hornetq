@@ -31,6 +31,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -187,8 +188,8 @@ public class JMSServerManagerImpl implements JMSServerManager
       return true;
    }
 
-   public boolean createConnectionFactory(String name, ConnectorFactory connectorFactory,
-                                          Map<String, Object> transportParams,
+   public boolean createConnectionFactory(String name,
+                                          TransportConfiguration connectorConfig,
                                           long pingPeriod, long callTimeout, String clientID,
                                           int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
                                           int producerWindowSize, int producerMaxRate,
@@ -200,7 +201,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(connectorFactory, transportParams,
+         cf = new JBossConnectionFactory(connectorConfig,
                                          pingPeriod, callTimeout,
                                          clientID, dupsOKBatchSize,
                                          consumerWindowSize, consumerMaxRate, producerWindowSize,
@@ -226,8 +227,8 @@ public class JMSServerManagerImpl implements JMSServerManager
       return true;
    }
 
-   public boolean createConnectionFactory(String name, ConnectorFactory connectorFactory,
-                                          Map<String, Object> transportParams,
+   public boolean createConnectionFactory(String name,
+                                          TransportConfiguration connectorConfig,
                                           long pingPeriod, long callTimeout, String clientID,
                                           int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
                                           int producerWindowSize, int producerMaxRate,
@@ -239,7 +240,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(connectorFactory, transportParams,
+         cf = new JBossConnectionFactory(connectorConfig,
                   pingPeriod, callTimeout,
                   clientID, dupsOKBatchSize,
                   consumerWindowSize, consumerMaxRate, producerWindowSize,

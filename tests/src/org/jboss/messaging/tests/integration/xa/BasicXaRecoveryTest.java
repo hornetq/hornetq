@@ -21,12 +21,21 @@
  */
 package org.jboss.messaging.tests.integration.xa;
 
-import org.jboss.messaging.core.client.*;
+import java.io.File;
+import java.util.Arrays;
+
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.impl.mina.MinaConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
@@ -34,11 +43,6 @@ import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.util.id.GUID;
-
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.io.File;
-import java.util.Arrays;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -72,7 +76,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       //start the server
       messagingService.start();
       //then we create a client as normal
-      sessionFactory = new ClientSessionFactoryImpl(new MinaConnectorFactory());
+      sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.mina.MinaConnectorFactory"));
       clientSession = sessionFactory.createSession(true, false, false, 1, false);
       clientSession.createQueue(atestq, atestq, null, true, true);
       clientProducer = clientSession.createProducer(atestq);
@@ -572,8 +576,6 @@ public class BasicXaRecoveryTest extends UnitTestCase
       createClients();
    }
 
-
-
    private ClientMessage createTextMessage(String s)
    {
       ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte) 1);
@@ -581,16 +583,15 @@ public class BasicXaRecoveryTest extends UnitTestCase
       return message;
    }
 
-
-
    private void createClients()
          throws MessagingException
    {
-      sessionFactory = new ClientSessionFactoryImpl(new MinaConnectorFactory());
+      sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.mina.MinaConnectorFactory"));
       clientSession = sessionFactory.createSession(true, false, true, 1, false);
       clientProducer = clientSession.createProducer(atestq);
       clientConsumer = clientSession.createConsumer(atestq);
    }
+   
    private void assertEqualXids(Xid[] xids, Xid... origXids)
    {
       assertEquals(xids.length, origXids.length);

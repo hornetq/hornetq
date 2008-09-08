@@ -22,9 +22,7 @@
 
 package org.jboss.messaging.core.client.impl;
 
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.MessageHandler;
@@ -35,6 +33,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionFlowCreditMessage;
+import org.jboss.messaging.util.Future;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -527,28 +526,4 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          callOnMessage();
       } 
    }
-   
-   private static class Future implements Runnable
-   {
-      private CountDownLatch latch = new CountDownLatch(1);
-      
-      public boolean await(long timeout)
-      {
-         try
-         {
-            return latch.await(timeout, TimeUnit.MILLISECONDS);
-         }
-         catch (Exception e)
-         {
-            return false;
-         }
-      }
-      
-      public void run()
-      {
-         latch.countDown();
-      }
-   }
-   
-
 }

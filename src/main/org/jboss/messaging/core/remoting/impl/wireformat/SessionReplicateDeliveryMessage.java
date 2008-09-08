@@ -24,76 +24,87 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
+
 /**
- * 
- * A PacketsConfirmedMessage
- * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
+ * 
+ * @version <tt>$Revision$</tt>
  */
-public class PacketsConfirmedMessage extends PacketImpl
+public class SessionReplicateDeliveryMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   private int commandID;
+   
+   private long messageID;
+   
+   private int consumerID;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public PacketsConfirmedMessage(final int commandID)
+   public SessionReplicateDeliveryMessage(final long messageID, final int consumerID)
    {
-      super(SESS_PACKETS_CONFIRMED);
-
-      this.commandID = commandID;
+      super(SESS_REPLICATE_DELIVERY);
+      
+      this.messageID = messageID;
+      
+      this.consumerID = consumerID;
    }
    
-   public PacketsConfirmedMessage()
+   public SessionReplicateDeliveryMessage()
    {
-      super(SESS_PACKETS_CONFIRMED);
+      super(SESS_REPLICATE_DELIVERY);
    }
 
    // Public --------------------------------------------------------
-
-   public int getCommandID()
+   
+   public long getMessageID()
    {
-      return this.commandID;
+      return messageID;
+   }
+   
+   public int getConsumerID()
+   {
+      return consumerID;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putInt(commandID);
+      buffer.putLong(messageID);
+      buffer.putInt(consumerID);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      commandID = buffer.getInt();
+      messageID = buffer.getLong();
+      consumerID = buffer.getInt();
    }
    
    public boolean isUsesConfirmations()
    {
-      return true;
+      return false;
    }
 
    @Override
    public String toString()
    {
-      return getParentString() + ", commandID=" + commandID + "]";
+      return getParentString() + ", messageID=" + messageID + ", consumerID=" + consumerID + "]";
    }
    
    public boolean equals(Object other)
    {
-      if (other instanceof PacketsConfirmedMessage == false)
+      if (other instanceof SessionReplicateDeliveryMessage == false)
       {
          return false;
       }
             
-      PacketsConfirmedMessage r = (PacketsConfirmedMessage)other;
+      SessionReplicateDeliveryMessage r = (SessionReplicateDeliveryMessage)other;
       
-      return super.equals(other) && this.commandID == r.commandID;
+      return super.equals(other) && this.messageID == r.messageID && this.consumerID == r.consumerID;
    }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

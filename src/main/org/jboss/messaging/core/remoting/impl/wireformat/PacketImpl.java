@@ -58,6 +58,8 @@ public class PacketImpl implements Packet
    // Server
    public static final byte CREATESESSION = 30;
    public static final byte CREATESESSION_RESP = 31;
+   public static final byte AUTHENTICATE = 32;
+   public static final byte AUTHENTICATE_RESP = 33;
    
       
    // Session   
@@ -113,6 +115,8 @@ public class PacketImpl implements Packet
    public static final byte SESS_RECEIVE_MSG = 89;   
    public static final byte SESS_PACKETS_CONFIRMED = 90;
    public static final byte SESS_NULL_RESPONSE = 91;
+   public static final byte SESS_REPLICATE_DELIVERY = 92;
+   public static final byte SESS_REPLICATE_DELIVERY_RESP = 93;
    
    // Static --------------------------------------------------------
 
@@ -165,6 +169,11 @@ public class PacketImpl implements Packet
    public boolean isResponse()
    {
       return false;
+   }
+   
+   public boolean isUsesConfirmations()
+   {
+      return true;
    }
    
    public void encodeBody(final MessagingBuffer buffer)

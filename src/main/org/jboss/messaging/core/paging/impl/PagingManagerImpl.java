@@ -313,8 +313,7 @@ public class PagingManagerImpl implements PagingManager
    
    public void start() throws Exception
    {
-      this.started = true;
-      
+      this.started = true;      
    }
    
    public void stop() throws Exception

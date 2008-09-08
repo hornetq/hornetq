@@ -25,6 +25,8 @@ package org.jboss.messaging.core.server.impl;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_HASNEXTMESSAGE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_NEXTMESSAGE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_RESET;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REPLICATE_DELIVERY;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REPLICATE_DELIVERY_RESP;
 
 import java.util.List;
 
@@ -59,6 +61,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionNullResponseMess
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
@@ -347,6 +350,17 @@ public class ServerSessionPacketHandler implements ChannelHandler
                SessionBrowserResetMessage message = (SessionBrowserResetMessage)packet;
                session.browserReset(message.getBrowserID());
                response = new SessionNullResponseMessage();
+               break;
+            }
+            case SESS_REPLICATE_DELIVERY:
+            {
+               SessionReplicateDeliveryMessage message = (SessionReplicateDeliveryMessage)packet;
+               session.handleReplicateDelivery(message.getMessageID(), message.getConsumerID());
+               break;
+            }
+            case SESS_REPLICATE_DELIVERY_RESP:
+            {
+               session.handleDeferredDelivery();
                break;
             }
             default:
