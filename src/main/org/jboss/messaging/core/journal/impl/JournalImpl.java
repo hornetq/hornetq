@@ -1605,7 +1605,7 @@ public class JournalImpl implements TestableJournal
       int xidSize = xid.getEncodeSize();
       int size = SIZE_COMPLETE_TRANSACTION_RECORD + tx.getElementsSummary().size() * SIZE_INT * 2 + xidSize + SIZE_INT;
 
-      ByteBuffer bb = fileFactory.newBuffer(size);
+      ByteBuffer bb = newBuffer(size);
 
       bb.put(recordType);
       bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
@@ -1987,7 +1987,7 @@ public class JournalImpl implements TestableJournal
          reuseBuffers.clear();
       }
       
-      if (reuseBufferSize <= 0 || size > reuseBufferSize)
+      if (size > reuseBufferSize)
       {
          return fileFactory.newBuffer(size);
       }
