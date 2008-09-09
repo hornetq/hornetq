@@ -88,12 +88,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       final long queueID = 1210981;
       final long messageID = 101921092;
       
-      byte[] record = new byte[16];      
-      ByteBuffer bb = ByteBuffer.wrap(record);      
-      bb.putLong(queueID);      
-      bb.putLong(messageID);
-      
-      messageJournal.appendUpdateRecord(EasyMock.eq(messageID), EasyMock.eq(JournalStorageManager.ACKNOWLEDGE_REF), encodingMatch(record));  
+      messageJournal.appendUpdateRecord(EasyMock.eq(messageID), EasyMock.eq(JournalStorageManager.ACKNOWLEDGE_REF), encodingMatch(autoEncode(queueID)));  
       EasyMock.replay(messageJournal, bindingsJournal);      
       jsm.storeAcknowledge(queueID, messageID);     
       EasyMock.verify(messageJournal, bindingsJournal);
@@ -141,13 +136,8 @@ public class JournalStorageManagerTest extends UnitTestCase
       final long queueID = 1210981;
       final long messageID = 101921092;
       
-      byte[] record = new byte[16];      
-      ByteBuffer bb = ByteBuffer.wrap(record);      
-      bb.putLong(queueID);      
-      bb.putLong(messageID);
-      
       final long txID = 12091921;
-      messageJournal.appendUpdateRecordTransactional(EasyMock.eq(txID), EasyMock.eq(messageID), EasyMock.eq(JournalStorageManager.ACKNOWLEDGE_REF), encodingMatch(record));  
+      messageJournal.appendUpdateRecordTransactional(EasyMock.eq(txID), EasyMock.eq(messageID), EasyMock.eq(JournalStorageManager.ACKNOWLEDGE_REF), encodingMatch(autoEncode(queueID)));  
       EasyMock.replay(messageJournal, bindingsJournal);      
       jsm.storeAcknowledgeTransactional(txID, queueID, messageID);     
       EasyMock.verify(messageJournal, bindingsJournal);
@@ -228,12 +218,6 @@ public class JournalStorageManagerTest extends UnitTestCase
       final long queueID = 1283743;
       final int deliveryCount = 4757;
       
-      byte[] bytes = new byte[21];      
-      ByteBuffer bb = ByteBuffer.wrap(bytes);      
-      bb.putLong(queueID);      
-      bb.putLong(msgID);      
-      bb.putInt(deliveryCount);
-      
       MessageReference ref = EasyMock.createStrictMock(MessageReference.class);
       ServerMessage msg = EasyMock.createStrictMock(ServerMessage.class);
       Queue queue = EasyMock.createStrictMock(Queue.class);
@@ -243,7 +227,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       EasyMock.expect(msg.getMessageID()).andStubReturn(msgID);
       EasyMock.expect(ref.getDeliveryCount()).andReturn(deliveryCount);
       
-      messageJournal.appendUpdateRecord(EasyMock.eq(msgID), EasyMock.eq(JournalStorageManager.UPDATE_DELIVERY_COUNT), EasyMock.aryEq(bytes));
+      messageJournal.appendUpdateRecord(EasyMock.eq(msgID), EasyMock.eq(JournalStorageManager.UPDATE_DELIVERY_COUNT), compareEncodingSupport(autoEncode(queueID, deliveryCount)));
       EasyMock.replay(messageJournal, bindingsJournal, ref, msg, queue);      
       jsm.updateDeliveryCount(ref);
       EasyMock.verify(messageJournal, bindingsJournal, ref, msg, queue);
@@ -319,10 +303,9 @@ public class JournalStorageManagerTest extends UnitTestCase
       RecordInfo record5 = new RecordInfo(msg2ID, JournalStorageManager.ACKNOWLEDGE_REF, ack3Bytes, true);
       
       final int deliveryCount = 4757;      
-      byte[] updateBytes = new byte[21];      
+      byte[] updateBytes = new byte[12];      
       ByteBuffer bb4 = ByteBuffer.wrap(updateBytes);      
       bb4.putLong(queue1ID);      
-      bb4.putLong(msg1ID);      
       bb4.putInt(deliveryCount);
       RecordInfo record6 = new RecordInfo(msg1ID, JournalStorageManager.UPDATE_DELIVERY_COUNT, updateBytes, true);
       
@@ -459,7 +442,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       log.debug("** data length is " + data.length);
       log.debug(UnitTestCase.dumpBytes(data));
        
-      bindingsJournal.appendAddRecord(EasyMock.eq(0L), EasyMock.eq(JournalStorageManager.BINDING_RECORD), EasyMock.aryEq(data));
+      bindingsJournal.appendAddRecord(EasyMock.eq(0L), EasyMock.eq(JournalStorageManager.BINDING_RECORD), compareEncodingSupport(data));
       
       if (useFilter)
       {
@@ -548,7 +531,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       daos.write(destBytes);      
       daos.flush();      
       byte[] data = baos.toByteArray();
-      bindingsJournal.appendAddRecord(EasyMock.eq(0L), EasyMock.eq(JournalStorageManager.DESTINATION_RECORD), EasyMock.aryEq(data));
+      bindingsJournal.appendAddRecord(EasyMock.eq(0L), EasyMock.eq(JournalStorageManager.DESTINATION_RECORD), compareEncodingSupport(data));
                   
       EasyMock.replay(messageJournal, bindingsJournal);
       
@@ -579,7 +562,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       daos.write(destBytes);      
       daos.flush();      
       data = baos.toByteArray();
-      bindingsJournal.appendAddRecord(EasyMock.eq(2L), EasyMock.eq(JournalStorageManager.DESTINATION_RECORD), EasyMock.aryEq(data));
+      bindingsJournal.appendAddRecord(EasyMock.eq(2L), EasyMock.eq(JournalStorageManager.DESTINATION_RECORD), compareEncodingSupport(data));
 
       EasyMock.replay(messageJournal, bindingsJournal);
       

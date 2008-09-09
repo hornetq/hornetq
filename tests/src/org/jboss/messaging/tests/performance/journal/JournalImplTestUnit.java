@@ -31,6 +31,7 @@ import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.unit.core.journal.impl.JournalImplTestBase;
+import org.jboss.messaging.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 
 /**
  * 
@@ -211,7 +212,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       {
          final int numMessages = 50050;
          
-         byte[] data = new byte[1024];
+         SimpleEncoding data = new SimpleEncoding(1024, (byte)'j');
          
          long start = System.currentTimeMillis();
          
@@ -270,7 +271,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       journal.load(new ArrayList<RecordInfo>(), null);
             
       log.debug("Adding data");
-      byte[] data = new byte[700];
+      SimpleEncoding data = new SimpleEncoding(700, (byte)'j');
       
       long start = System.currentTimeMillis();
       

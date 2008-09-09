@@ -22,10 +22,9 @@
 
 package org.jboss.messaging.core.journal;
 
-import org.jboss.messaging.core.server.MessagingComponent;
-
-import javax.transaction.xa.Xid;
 import java.util.List;
+
+import org.jboss.messaging.core.server.MessagingComponent;
 /**
  * 
  * A Journal
@@ -40,10 +39,6 @@ public interface Journal extends MessagingComponent
    
    void appendAddRecord(long id, byte recordType, EncodingSupport record) throws Exception;
    
-   void appendAddRecord(long id, byte recordType, byte[] record) throws Exception;
-   
-   void appendUpdateRecord(long id, byte recordType, byte[] record) throws Exception;
-   
    void appendUpdateRecord(long id, byte recordType, EncodingSupport record) throws Exception;
    
    void appendDeleteRecord(long id) throws Exception;
@@ -54,17 +49,24 @@ public interface Journal extends MessagingComponent
    
    void appendAddRecordTransactional(long txID, long id, byte recordType, EncodingSupport record) throws Exception;
    
-   void appendAddRecordTransactional(long txID, long id, byte recordType, byte[] record) throws Exception;
-   
-   void appendUpdateRecordTransactional(long txID, long id, byte recordType, byte[] record) throws Exception;
-   
    void appendUpdateRecordTransactional(long txID, long id, byte recordType, EncodingSupport record) throws Exception;
    
    void appendDeleteRecordTransactional(long txID, long id) throws Exception;
    
    void appendCommitRecord(long txID) throws Exception;
    
-   void appendPrepareRecord(long txID, EncodingSupport transactionIdentifier) throws Exception;
+   /** 
+    * 
+    * <p>If the system crashed after a prepare was called, it should store information that is required to bring the transaction 
+    *     back to a state it could be committed. </p>
+    * 
+    * <p> transactionData is usually a safe space you could use to store things like XIDs or any other supporting user-data required to replay the transaction </p>
+    * 
+    * @param txID
+    * @param transactionData Information to support the system replaying the transaction
+    * @throws Exception
+    */
+   void appendPrepareRecord(long txID, EncodingSupport transactionData) throws Exception;
    
    void appendRollbackRecord(long txID) throws Exception;
    

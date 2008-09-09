@@ -246,7 +246,7 @@ public class PagingManagerImpl implements PagingManager
       return pagingStore.getAddressSize() < pagingStore.getMaxSizeBytes(); 
    }
    
-   public void loadLastPage(LastPageRecord lastPage) throws Exception
+   public void setLastPage(LastPageRecord lastPage) throws Exception
    {
       System.out.println("LastPage loaded was " + lastPage.getLastId() + " recordID = " + lastPage.getRecordId());
       this.getPageStore(lastPage.getDestination()).setLastRecord(lastPage);

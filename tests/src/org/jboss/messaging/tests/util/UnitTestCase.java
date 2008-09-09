@@ -43,7 +43,9 @@ import junit.framework.TestCase;
 import org.easymock.EasyMock;
 import org.easymock.IArgumentMatcher;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -258,6 +260,50 @@ public class UnitTestCase extends TestCase
             {
                return false;
             }
+            
+            for (int i = 0; i < expectedArray.length; i++)
+            {
+               if (expectedArray[i] != compareArray[i])
+               {
+                  return false;
+               }
+            }
+            
+            return true;
+         }
+         
+      });
+      
+      return null;
+   }
+
+   protected EncodingSupport compareEncodingSupport(final byte expectedArray[])
+   {
+      
+      EasyMock.reportMatcher(new IArgumentMatcher()
+      {
+
+         public void appendTo(StringBuffer buffer)
+         {
+            buffer.append("EncodingSupport buffer didn't match");
+         }
+
+         public boolean matches(Object argument)
+         {
+            EncodingSupport encoding = (EncodingSupport) argument;
+
+            final int size = encoding.getEncodeSize();
+            
+            if (size != expectedArray.length)
+            {
+               System.out.println(size + " != " + expectedArray.length);
+               return false;
+            }
+            
+            byte[] compareArray = new byte[size];
+            
+            MessagingBuffer buffer = new ByteBufferWrapper(ByteBuffer.wrap(compareArray));
+            encoding.encode(buffer);
             
             for (int i = 0; i < expectedArray.length; i++)
             {

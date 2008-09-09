@@ -22,18 +22,47 @@
 
 package org.jboss.messaging.core.journal.impl;
 
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.journal.*;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.VariableLatch;
-
 import java.nio.ByteBuffer;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.journal.BufferCallback;
+import org.jboss.messaging.core.journal.EncodingSupport;
+import org.jboss.messaging.core.journal.IOCallback;
+import org.jboss.messaging.core.journal.LoadManager;
+import org.jboss.messaging.core.journal.PreparedTransactionInfo;
+import org.jboss.messaging.core.journal.RecordInfo;
+import org.jboss.messaging.core.journal.SequentialFile;
+import org.jboss.messaging.core.journal.SequentialFileFactory;
+import org.jboss.messaging.core.journal.TestableJournal;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.util.VariableLatch;
 
 /**
  * 
@@ -151,9 +180,8 @@ public class JournalImpl implements TestableJournal
    
    private final int reuseBufferSize;
    
-   private final ConcurrentLinkedQueue<ByteBuffer> reuseBuffers = new ConcurrentLinkedQueue<ByteBuffer>();
-   
-   private final BufferCallback bufferCallback = new LocalBufferCallback();
+   /** Object that will control buffer's callback and getting buffers from the queue */
+   private final ReuseBuffersController buffersControl = new ReuseBuffersController();
    
    /*
     * We use a semaphore rather than synchronized since it performs better when
@@ -272,81 +300,6 @@ public class JournalImpl implements TestableJournal
          JournalFile usedFile = appendRecord(bb.getBuffer(), syncNonTransactional, null);
          
          posFilesMap.put(id, new PosFiles(usedFile));
-      }
-      finally
-      {
-         lock.release();
-      }
-   }
-   
-   public void appendAddRecord(final long id, final byte recordType, final byte[] record) throws Exception
-   {
-      if (state != STATE_LOADED)
-      {
-         throw new IllegalStateException("Journal must be loaded first");
-      }
-            
-      int size = SIZE_ADD_RECORD + record.length;
-      
-      ByteBuffer bb = newBuffer(size);
-      
-      bb.put(ADD_RECORD);
-      bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
-      bb.putLong(id);
-      bb.putInt(record.length);     
-      bb.put(recordType);
-      bb.put(record);		
-      bb.putInt(size);			
-      bb.rewind();
-           
-      try
-      {                 
-         lock.acquire();
-
-         JournalFile usedFile = appendRecord(bb, syncNonTransactional, null);
-         
-         posFilesMap.put(id, new PosFiles(usedFile));
-      }
-      finally
-      {
-         lock.release();
-      }
-      
-   }
-   
-   public void appendUpdateRecord(final long id, final byte recordType, final byte[] record) throws Exception
-   {
-      if (state != STATE_LOADED)
-      {
-         throw new IllegalStateException("Journal must be loaded first");
-      }
-      
-      PosFiles posFiles = posFilesMap.get(id);
-      
-      if (posFiles == null)
-      {
-         throw new IllegalStateException("Cannot find add info " + id);
-      }
-      
-      int size = SIZE_UPDATE_RECORD + record.length;
-      
-      ByteBuffer bb = newBuffer(size); 
-      
-      bb.put(UPDATE_RECORD);     
-      bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
-      bb.putLong(id);      
-      bb.putInt(record.length);     
-      bb.put(recordType);
-      bb.put(record);      
-      bb.putInt(size);     
-      bb.rewind();
-      
-      lock.acquire();
-      try
-      {                          
-         JournalFile usedFile = appendRecord(bb, syncNonTransactional, null);
-         
-         posFiles.addUpdateFile(usedFile);
       }
       finally
       {
@@ -478,81 +431,6 @@ public class JournalImpl implements TestableJournal
       }
    }
    
-   public void appendAddRecordTransactional(final long txID, final long id, final byte recordType, final byte[] record) throws Exception
-   {
-      if (state != STATE_LOADED)
-      {
-         throw new IllegalStateException("Journal must be loaded first");
-      }
-      
-      int size = SIZE_ADD_RECORD_TX + record.length;
-      
-      ByteBuffer bb = newBuffer(size); 
-      
-      bb.put(ADD_RECORD_TX);
-      bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
-      bb.putLong(txID);
-      bb.putLong(id);
-      bb.putInt(record.length);
-      bb.put(recordType);
-      bb.put(record);
-      bb.putInt(size);
-      bb.rewind();
-      
-      lock.acquire();
-
-      try
-      {                          
-         JournalFile usedFile = appendRecord(bb, false, getTransactionCallback(txID));
-         
-         JournalTransaction tx = getTransactionInfo(txID);
-         
-         tx.addPositive(usedFile, id);
-      }
-      finally
-      {
-         lock.release();
-      }
-   }
-   
-   public void appendUpdateRecordTransactional(final long txID, final long id, byte recordType, final byte[] record) throws Exception
-   {
-      if (state != STATE_LOADED)
-      {
-         throw new IllegalStateException("Journal must be loaded first");
-      }
-      
-      int size = SIZE_UPDATE_RECORD_TX + record.length; 
-      
-      ByteBuffer bb = newBuffer(size); 
-      
-      bb.put(UPDATE_RECORD_TX);     
-      bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
-      bb.putLong(txID);
-      bb.putLong(id);      
-      bb.putInt(record.length);     
-      bb.put(recordType);
-      bb.put(record);
-      bb.putInt(size);     
-      bb.rewind();
-      
-      lock.acquire();
-      
-      try
-      {                          
-         JournalFile usedFile = appendRecord(bb, false, getTransactionCallback(txID));
-         
-         JournalTransaction tx = getTransactionInfo(txID);
-         
-         tx.addPositive(usedFile, id);
-      }
-      finally
-      {
-         lock.release();
-      }
-   }
-   
-   
    public void appendUpdateRecordTransactional(final long txID, final long id, byte recordType, EncodingSupport record) throws Exception
    {
       if (state != STATE_LOADED)
@@ -624,7 +502,18 @@ public class JournalImpl implements TestableJournal
       }
    }  
    
-   public void appendPrepareRecord(final long txID, EncodingSupport xid) throws Exception
+   /** 
+    * 
+    * <p>If the system crashed after a prepare was called, it should store information that is required to bring the transaction 
+    *     back to a state it could be committed. </p>
+    * 
+    * <p> transactionData is usually a safe space you could use to store things like XIDs or any other supporting user-data required to replay the transaction </p>
+    * 
+    * @param txID
+    * @param transactionData Information to support the system replaying the transaction
+    * @throws Exception
+    */
+   public void appendPrepareRecord(final long txID, EncodingSupport transactionData) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -633,7 +522,7 @@ public class JournalImpl implements TestableJournal
       
       JournalTransaction tx = getTransactionInfo(txID);
       
-      ByteBuffer bb = writePrepareTransaction(PREPARE_RECORD, txID, tx, xid);
+      ByteBuffer bb = writePrepareTransaction(PREPARE_RECORD, txID, tx, transactionData);
       
       lock.acquire();
       
@@ -804,16 +693,21 @@ public class JournalImpl implements TestableJournal
             byte recordType = bb.get();
             if (recordType < ADD_RECORD || recordType > ROLLBACK_RECORD)
             {
+               // I - We scan for any valid record on the file. If a hole happened on the middle of the file we keep looking until all the possibilities are gone
                continue;
             }
 
             if (bb.position() + SIZE_INT > fileSize)
             {
+               // II - Ignore this record, lets keep looking
                continue;
             }
 
+            // III - Every record has the file-id.
+            //       This is what supports us from not re-filling the whole file
             int readFileId = bb.getInt();
             
+            // IV - This record is from a previous file-usage. The file was reused and we need to ignore this record
             if (readFileId != file.getOrderingID())
             {
                // If a file has damaged records, we make it a dataFile, and the next reclaiming will fix it
@@ -825,7 +719,7 @@ public class JournalImpl implements TestableJournal
             }
             
             long transactionID = 0;
-            
+
             if (isTransaction(recordType))
             {
                if (bb.position() + SIZE_LONG > fileSize)
@@ -846,6 +740,10 @@ public class JournalImpl implements TestableJournal
                recordID = bb.getLong();
                maxID = Math.max(maxID, recordID);
             }
+
+            
+            // We use the size of the record to validate the health of the record.
+            // (V) We verify the size of the record
             
             // The variable record portion used on Updates and Appends
             int variableSize = 0;
@@ -884,9 +782,12 @@ public class JournalImpl implements TestableJournal
             }
 
             int recordSize = getRecordSize(recordType);
-            
+
+            // VI - this is completing V,  We will validate the size at the end of the record,
+            //      But we avoid buffer overflows by damaged data
             if (pos + recordSize + variableSize  + preparedTransactionDataSize > fileSize)
             {
+               // Avoid a buffer overflow caused by damaged data... continue scanning for more records...
                continue;
             }
             
@@ -896,6 +797,8 @@ public class JournalImpl implements TestableJournal
             
             int checkSize = bb.getInt();
             
+            // VII - The checkSize at the end has to match with the size informed at the beggining.
+            //       This is like testing a hash for the record. (We could replace the checkSize by some sort of calculated hash)
             if (checkSize != variableSize + recordSize  + preparedTransactionDataSize)
             {
                log.warn("Record at position " + pos + " file:" + file.getFile().getFileName() + " is corrupted and it is being ignored");
@@ -906,6 +809,9 @@ public class JournalImpl implements TestableJournal
             }
             
             bb.position(oldPos);
+            
+            
+            // At this point everything is already check. So relax and just load the data now.
             
             switch(recordType)
             {
@@ -1023,8 +929,8 @@ public class JournalImpl implements TestableJournal
                   byte xidData[] = new byte[preparedTransactionDataSize];
                   bb.get(xidData);
 
-                  // Pair <OrderId, NumberOfElements>
-                  Pair<Integer, Integer>[] values = readReferencesOnTransaction(variableSize, bb);
+                  // Pair <FileID, NumberOfElements>
+                  Pair<Integer, Integer>[] recordedSummary = readTransactionalElementsSummary(variableSize, bb);
 
                   if (tx != null)
                   {                     
@@ -1040,7 +946,7 @@ public class JournalImpl implements TestableJournal
                         transactionInfos.put(transactionID, journalTransaction);
                      }
                      
-                     boolean healthy = checkTransactionHealth(journalTransaction, orderedFiles, values);
+                     boolean healthy = checkTransactionHealth(journalTransaction, orderedFiles, recordedSummary);
                      
                      if (healthy)
                      {
@@ -1063,7 +969,7 @@ public class JournalImpl implements TestableJournal
                   
                   // We need to read it even if transaction was not found, or the reading checks would fail
                   // Pair <OrderId, NumberOfElements>
-                  Pair<Integer, Integer>[] values = readReferencesOnTransaction(variableSize, bb);
+                  Pair<Integer, Integer>[] recordedSummary = readTransactionalElementsSummary(variableSize, bb);
 
                   if (tx != null)
                   {                     
@@ -1074,7 +980,7 @@ public class JournalImpl implements TestableJournal
                         throw new IllegalStateException("Cannot find tx " + transactionID);
                      }
 
-                     boolean healthy = checkTransactionHealth(journalTransaction, orderedFiles, values);
+                     boolean healthy = checkTransactionHealth(journalTransaction, orderedFiles, recordedSummary);
                                           
                      if (healthy)
                      {
@@ -1109,6 +1015,7 @@ public class JournalImpl implements TestableJournal
                }
                case ROLLBACK_RECORD:
                {
+                  
                   TransactionHolder tx = transactions.remove(transactionID);
                   
                   if (tx != null)
@@ -1119,7 +1026,8 @@ public class JournalImpl implements TestableJournal
                      {
                         throw new IllegalStateException("Cannot find tx " + transactionID);
                      }
-                     
+
+                     // There is no need to validate summaries on Rollbacks.. We will ignore the data anyway.
                      tnp.rollback(file);  
                      
                      hasData = true;         
@@ -1136,6 +1044,8 @@ public class JournalImpl implements TestableJournal
             
             checkSize = bb.getInt();
             
+            // This is a sanity check about the loading code itself.
+            // If this checkSize doesn't match, it means the reading method is not doing what it was supposed to do
             if (checkSize != variableSize + recordSize  + preparedTransactionDataSize)
             {
                throw new IllegalStateException("Internal error on loading file. Position doesn't match with checkSize");
@@ -1193,7 +1103,7 @@ public class JournalImpl implements TestableJournal
          
          if (this.reuseBufferSize > 0)
          {
-            currentFile.getFile().setBufferCallback(bufferCallback);
+            currentFile.getFile().setBufferCallback(buffersControl.callback);
          }
          
          currentFile.getFile().position(currentFile.getFile().calculateBlockStart(lastDataPos));
@@ -1436,6 +1346,30 @@ public class JournalImpl implements TestableJournal
       debugWait();
    }
 
+   // Add/update methods only used on testcases (using a byte[]). Those methods are now part of the Test interface ------------------------
+   
+   
+   public void appendAddRecord(final long id, final byte recordType, final byte[] record) throws Exception
+   {
+      appendAddRecord(id, recordType, new ByteArrayEncoding(record));
+   }
+   
+   public void appendUpdateRecord(final long id, final byte recordType, final byte[] record) throws Exception
+   {
+      appendUpdateRecord(id, recordType, new ByteArrayEncoding(record));
+   }
+   
+   public void appendAddRecordTransactional(final long txID, final long id, final byte recordType, final byte[] record) throws Exception
+   {
+      appendAddRecordTransactional(txID, id, recordType, new ByteArrayEncoding(record));
+   }
+   
+   public void appendUpdateRecordTransactional(final long txID, final long id, byte recordType, final byte[] record) throws Exception
+   {
+      appendUpdateRecordTransactional(txID, id, recordType, new ByteArrayEncoding(record));
+   }
+   
+   
    // MessagingComponent implementation ---------------------------------------------------
    
    public synchronized boolean isStarted()
@@ -1526,10 +1460,15 @@ public class JournalImpl implements TestableJournal
       return jf;
    }
    
-   private Pair<Integer, Integer>[] readReferencesOnTransaction(final int variableSize, final ByteBuffer bb)
+   /** It will read the elements-summary back from the commit/prepare transaction 
+    *  Pair<FileID, Counter> */
+   @SuppressWarnings("unchecked") // See comment on the method body 
+   private Pair<Integer, Integer>[] readTransactionalElementsSummary(final int variableSize, final ByteBuffer bb)
    {
       int numberOfFiles = variableSize / (SIZE_INT * 2);
       
+      // This line aways throws a compilation-warning, even thought is a completely legal operation.
+      // We could remove the SuppressWarnings as soon as we find better expression on this line:
       Pair<Integer, Integer> values[] = (Pair<Integer, Integer> [])new Pair[numberOfFiles];
       
       for (int i = 0; i < numberOfFiles; i++)
@@ -1540,27 +1479,48 @@ public class JournalImpl implements TestableJournal
       return values;
    }
 
+   
+   /**
+    * <p>This method will validate if the transaction (PREPARE/COMMIT) is complete as stated on the COMMIT-RECORD.</p>
+    * <p> We record a summary about the records on the journal file on COMMIT and PREPARE. 
+    *     When we load the records we build a new summary and we check the original summary to the current summary.
+    *     This method is basically verifying if the entire transaction is being loaded </p> 
+    * @param journalTransaction
+    * @param orderedFiles
+    * @param recordedSummary
+    * @return
+    */
    private boolean checkTransactionHealth(final JournalTransaction journalTransaction,
                                           final List<JournalFile> orderedFiles,
-                                          final Pair<Integer, Integer>[] readReferences)
+                                          final Pair<Integer, Integer>[] recordedSummary)
    {
       boolean healthy = true;
       
-      Map<Integer, AtomicInteger> refMap = journalTransaction.getElementsSummary();
       
-      for (Pair<Integer, Integer> ref: readReferences)
+      // (I) First we get the summary of what we really have on the files now:
+      
+      // FileID, NumberOfElements
+      Map<Integer, AtomicInteger> currentSummary = journalTransaction.getElementsSummary();
+
+      // (II) We compare the recorded summary on the commit, against to the reality on the files
+      for (Pair<Integer, Integer> ref: recordedSummary)
       {
-         AtomicInteger counter = refMap.get(ref.a);
+         AtomicInteger counter = currentSummary.get(ref.a);
          
          if (counter == null)
          {
-            // Couldn't find the counter, but if part of the transaction was reclaimed it is ok!
+            // (III) One of the original files didn't show any record. This would still be okay if the file was reclaimed
             boolean found = false;
             
             for (JournalFile lookupFile: orderedFiles)
             {
                if (lookupFile.getOrderingID() == ref.a)
                {
+                  // (IV) oops, we were expecting at least one record on this file. 
+                  //      The file still exists and no records were found. 
+                  //      That means the transaction crashed before complete, 
+                  //      so this transaction is broken and needs to be ignored.
+                  //      This is probably a hole caused by a crash during commit.
                   found = true;
                }
             }
@@ -1572,6 +1532,8 @@ public class JournalImpl implements TestableJournal
          }
          else
          {
+            // (V) Missing a record... Transaction was not completed as stated. we will ignore the whole transaction
+            //      This is probably a hole caused by a crash during commit/prepare.
             if (counter.get() != ref.b)
             {
                healthy = false;
@@ -1582,6 +1544,29 @@ public class JournalImpl implements TestableJournal
       return healthy;
    }
 
+   /**
+    * 
+    * <p>A transaction record (Commit or Prepare), will hold the number of elements the transaction has on each file.</p>
+    * <p>For example, a transaction was spread along 3 journal files with 10 records on each file. 
+    *    (What could happen if there are too many records, or if an user event delayed records to come in time to a single file).</p>
+    * <p>The element-summary will then have</p>
+    * <p>FileID1, 10</p>
+    * <p>FileID2, 10</p>
+    * <p>FileID3, 10</p>
+    * 
+    * <br>
+    * <p> During the load the transaction needs to have 30 records, spread across the files as originally written.</p>
+    * <p> If for any reason there are missing records, that means the transaction was not completed and we should ignore the whole transaction </p>
+    * <p> We can't just use a global counter as reclaiming could delete files after the transaction was successfully committed. 
+    *     That also means not having a whole file on journal-reload doesn't mean we have to invalidate the transaction </p>
+    * 
+    * @param recordType
+    * @param txID
+    * @param tx
+    * @param transactionData
+    * @return
+    * @throws Exception
+    */
    private ByteBuffer writeCommitTransaction(final byte recordType, final long txID, final JournalTransaction tx) throws Exception
    {
       int size = SIZE_COMPLETE_TRANSACTION_RECORD + tx.getElementsSummary().size() * SIZE_INT * 2;
@@ -1606,9 +1591,13 @@ public class JournalImpl implements TestableJournal
       return bb;
    }
 
-   private ByteBuffer writePrepareTransaction(final byte recordType, final long txID, final JournalTransaction tx, EncodingSupport xid) throws Exception
+   /**
+    * TODO: Merge this method back into writeCommitTransaction (as it was done originally).
+    * For more explanations read the javadoc on writeCommitTransaction
+    */
+   private ByteBuffer writePrepareTransaction(final byte recordType, final long txID, final JournalTransaction tx, EncodingSupport transactionData) throws Exception
    {
-      int xidSize = xid.getEncodeSize();
+      int xidSize = transactionData.getEncodeSize();
       int size = SIZE_COMPLETE_TRANSACTION_RECORD + tx.getElementsSummary().size() * SIZE_INT * 2 + xidSize + SIZE_INT;
 
       ByteBuffer bb = newBuffer(size);
@@ -1618,7 +1607,7 @@ public class JournalImpl implements TestableJournal
       bb.putLong(txID);
       bb.putInt(xidSize);
       bb.putInt(tx.getElementsSummary().size());
-      xid.encode(new ByteBufferWrapper(bb));
+      transactionData.encode(new ByteBufferWrapper(bb));
 
       for (Map.Entry<Integer, AtomicInteger> entry: tx.getElementsSummary().entrySet())
       {
@@ -1765,6 +1754,12 @@ public class JournalImpl implements TestableJournal
    }
    
    
+   /**
+    * This method will create a new file on the file system, pre-fill it with FILL_CHARACTER
+    * @param keepOpened
+    * @return
+    * @throws Exception
+    */
    private JournalFile createFile(final boolean keepOpened) throws Exception
    {
       int orderingID = generateOrderingID();
@@ -1806,7 +1801,7 @@ public class JournalImpl implements TestableJournal
       file.setOffset(file.getFile().calculateBlockStart(SIZE_HEADER));
       if (this.reuseBufferSize > 0)
       {
-         file.getFile().setBufferCallback(bufferCallback);
+         file.getFile().setBufferCallback(buffersControl.callback);
       }
    }
    
@@ -1844,7 +1839,12 @@ public class JournalImpl implements TestableJournal
       currentFile = enqueueOpenFile();
    }
    
-   // You need to guarantee lock.acquire() before calling this method
+   /** 
+    * This method will immediatly return the opened file, and schedule opening and reclaiming.
+    * In case there are no cached opened files, this method will block until the file was opened. (what would happen only if the system is under load).
+    * 
+    * Warning: You need to guarantee lock.acquire() before calling this method
+    * */
    private JournalFile enqueueOpenFile() throws InterruptedException
    {
       if (trace) trace("enqueueOpenFile with openedFiles.size=" + openedFiles.size());
@@ -1987,69 +1987,20 @@ public class JournalImpl implements TestableJournal
          return null;
       }
    }
-   // -- Area reserved for the reuse buffer logic -----------------------------------------
    
-   private volatile long bufferReuseLastTime = System.currentTimeMillis();
-   private ByteBuffer newBuffer(int size)
+   public ByteBuffer newBuffer(int size)
    {
-      // if a new buffer wasn't requested in 10 seconds, we clear the queue
-      // This is being done this way as we don't need another Timeout Thread just to cleanup this
-      if (reuseBufferSize > 0 && System.currentTimeMillis() - bufferReuseLastTime > 10000)
-      {
-         log.debug("Clearing reuse buffers queue with " + reuseBuffers.size() + " elements");
-         bufferReuseLastTime = System.currentTimeMillis();
-         reuseBuffers.clear();
-      }
-      
-      if (size > reuseBufferSize)
-      {
-         return fileFactory.newBuffer(size);
-      }
-      else
-      {
-
-         int alignedSize = fileFactory.calculateBlockSize(size);
-      
-         ByteBuffer buffer = this.reuseBuffers.poll();
-         if (buffer == null)
-         {
-            buffer = fileFactory.newBuffer(reuseBufferSize);
-            buffer.limit(alignedSize);
-         }
-         else
-         {
-            buffer.limit(alignedSize);
-
-            // we could gain some little performance if we could avoid clearing the buffer.
-            // On AIO this is being done with just a memset, what should be fairly quick
-            fileFactory.clearBuffer(buffer);
-         }
-         
-         buffer.rewind();
-
-         return buffer;         
-      }
+      return this.buffersControl.newBuffer(size);
    }
-   
-   private class LocalBufferCallback implements BufferCallback
-   {
 
-      public void bufferDone(ByteBuffer buffer)
-      {
-         bufferReuseLastTime = System.currentTimeMillis();
-         if (buffer.capacity() == reuseBufferSize)
-         {
-            reuseBuffers.offer(buffer);
-         }
-      }
-      
-   }
-   
    // ------------------------------------------------------------------------------------
    
    
    // Inner classes ---------------------------------------------------------------------------
    
+   
+   // Just encapsulates the VariableLatch waiting for transaction completions
+   // Used if the SequentialFile supports Callbacks
    private static class TransactionCallback implements IOCallback
    {      
       private final VariableLatch countLatch = new VariableLatch();
@@ -2087,6 +2038,7 @@ public class JournalImpl implements TestableJournal
       
    }
    
+   /** Used on the ref-count for reclaiming */
    private static class PosFiles
    {
       private final JournalFile addFile;
@@ -2125,6 +2077,81 @@ public class JournalImpl implements TestableJournal
          }
       }
    }
+
+   
+   /** Class that will control buffer-reuse */
+   class ReuseBuffersController
+   {
+      private volatile long bufferReuseLastTime = System.currentTimeMillis();
+      
+      // This queue is feeded by LocalBufferCallback which is called directly by NIO or NIO.
+      // On the case of the AIO this is almost called by the native layer as soon as the buffer is not being used any more
+      // and ready to reuse or GC
+      private final ConcurrentLinkedQueue<ByteBuffer> reuseBuffers = new ConcurrentLinkedQueue<ByteBuffer>();
+      
+      final BufferCallback callback = new LocalBufferCallback();
+
+      public  ByteBuffer newBuffer(int size)
+      {
+         // if a new buffer wasn't requested in 10 seconds, we clear the queue
+         // This is being done this way as we don't need another Timeout Thread just to cleanup this
+         if (reuseBufferSize > 0 && System.currentTimeMillis() - bufferReuseLastTime > 10000)
+         {
+            log.debug("Clearing reuse buffers queue with " + reuseBuffers.size() + " elements");
+            bufferReuseLastTime = System.currentTimeMillis();
+            reuseBuffers.clear();
+         }
+         
+         // if a buffer is bigger than the configured-size, we just create a new buffer.
+         if (size > reuseBufferSize)
+         {
+            return fileFactory.newBuffer(size);
+         }
+         else
+         {
+
+            // We need to allocate buffers following the rules of the storage being used (AIO/NIO)
+            int alignedSize = fileFactory.calculateBlockSize(size);
+
+            // Try getting a buffer from the queue...
+            ByteBuffer buffer = this.reuseBuffers.poll();
+            if (buffer == null)
+            {
+               // if empty create a new one.
+               buffer = fileFactory.newBuffer(reuseBufferSize);
+               buffer.limit(alignedSize);
+            }
+            else
+            {
+               // set the limit of the buffer to the size being required 
+               buffer.limit(alignedSize);
+               fileFactory.clearBuffer(buffer);
+            }
+            
+            buffer.rewind();
+
+            return buffer;         
+         }
+      }
+      
+      private class LocalBufferCallback implements BufferCallback
+      {
+
+         public void bufferDone(ByteBuffer buffer)
+         {
+            bufferReuseLastTime = System.currentTimeMillis();
+            // If a buffer has any other than the configured size, the buffer will be just sent to GC
+            // This could happen if 
+            if (buffer.capacity() == reuseBufferSize)
+            {
+               reuseBuffers.offer(buffer);
+            }
+         }
+         
+      }
+      
+   }
+   
    
    private class JournalTransaction
    {
@@ -2275,4 +2302,34 @@ public class JournalImpl implements TestableJournal
       }
       
    }
+   
+   private static class ByteArrayEncoding implements EncodingSupport
+   {
+
+      final byte[] data;
+      
+      ByteArrayEncoding(final byte[] data)
+      {
+         this.data = data;
+      }
+      
+      public void decode(MessagingBuffer buffer)
+      {
+         throw new IllegalStateException("operation not supported");
+      }
+
+      public void encode(MessagingBuffer buffer)
+      {
+         buffer.putBytes(data);
+      }
+
+      public int getEncodeSize()
+      {
+         return data.length;
+      }
+      
+   }
+   
+
+   
 }

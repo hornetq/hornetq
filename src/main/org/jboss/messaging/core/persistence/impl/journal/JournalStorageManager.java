@@ -203,9 +203,7 @@ public class JournalStorageManager implements StorageManager
 
 	public void storeAcknowledge(final long queueID, final long messageID) throws Exception
 	{		
-	   EncodingSupport record = ackBytes(queueID, messageID);
-		
-		messageJournal.appendUpdateRecord(messageID, ACKNOWLEDGE_REF, record);					
+		messageJournal.appendUpdateRecord(messageID, ACKNOWLEDGE_REF, new ACKEncoding(queueID));					
 	}
 	
 	public void storeDelete(final long messageID) throws Exception
@@ -244,9 +242,7 @@ public class JournalStorageManager implements StorageManager
 
    public void storeAcknowledgeTransactional(long txID, long queueID, long messageID) throws Exception
    {
-   	EncodingSupport record = ackBytes(queueID, messageID);
-		
-		messageJournal.appendUpdateRecordTransactional(txID, messageID, ACKNOWLEDGE_REF, record);	
+		messageJournal.appendUpdateRecordTransactional(txID, messageID, ACKNOWLEDGE_REF, new ACKEncoding(queueID));	
    }
    
    public void storeDeleteTransactional(long txID, long messageID) throws Exception
@@ -273,19 +269,11 @@ public class JournalStorageManager implements StorageManager
    
 	public void updateDeliveryCount(final MessageReference ref) throws Exception
 	{
-		byte[] bytes = new byte[SIZE_BYTE + SIZE_LONG + SIZE_LONG + SIZE_INT];
+		DeliveryCountUpdateEncoding updateInfo = new DeliveryCountUpdateEncoding(ref.getQueue().getPersistenceID(), ref.getDeliveryCount());
 		
-		ByteBuffer bb = ByteBuffer.wrap(bytes);
-		
-		bb.putLong(ref.getQueue().getPersistenceID());
-		
-		bb.putLong(ref.getMessage().getMessageID());
-		
-		bb.putInt(ref.getDeliveryCount());
-		
-		messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(), UPDATE_DELIVERY_COUNT, bytes);
+		messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(), UPDATE_DELIVERY_COUNT, updateInfo);
 	}
-
+	
 	public void loadMessages(final PostOffice postOffice, final Map<Long, Queue> queues, ResourceManager resourceManager) throws Exception
 	{
 		List<RecordInfo> records = new ArrayList<RecordInfo>();
@@ -358,47 +346,15 @@ public class JournalStorageManager implements StorageManager
 			byte[] data = record.data;
 			
 			ByteBuffer bb = ByteBuffer.wrap(data);
+
+			MessagingBuffer buff = new ByteBufferWrapper(bb);
 			
 			byte recordType = record.getUserRecordType();
 			
 			switch (recordType)
 			{
-			   case PAGE_TRANSACTION:
-			   {
-               MessagingBuffer buff = new ByteBufferWrapper(bb);
-               
-               PageTransactionInfoImpl pageTransactionInfo = new PageTransactionInfoImpl();
-               
-               pageTransactionInfo.decode(buff);
-               
-               pageTransactionInfo.setRecordID(record.id);
-               
-               PagingManager pagingManager = postOffice.getPagingManager();
-               
-               pagingManager.addTransaction(pageTransactionInfo);
-
-               break;
-			   }
-			   case LAST_PAGE:
-			   {
-               MessagingBuffer buff = new ByteBufferWrapper(bb);
-               
-			      LastPageRecordImpl recordImpl = new LastPageRecordImpl();
-			      
-			      recordImpl.setRecordId(record.id);
-			      
-			      recordImpl.decode(buff);
-               
-               PagingManager pagingManager = postOffice.getPagingManager();
-               
-               pagingManager.loadLastPage(recordImpl);
-			      
-			      break;
-			   }
 				case ADD_MESSAGE:
 				{
-					MessagingBuffer buff = new ByteBufferWrapper(bb);
-
 					ServerMessage message = new ServerMessageImpl(record.id);
 					
 					message.decode(buff);
@@ -414,15 +370,17 @@ public class JournalStorageManager implements StorageManager
 				}
 				case ACKNOWLEDGE_REF:
 				{
-					long queueID = bb.getLong();
+               long messageID = record.id;
+
+               ACKEncoding encoding = new ACKEncoding();
+				   encoding.decode(buff);
+
 					
-					long messageID = bb.getLong();
-					
-					Queue queue = queues.get(queueID);
+					Queue queue = queues.get(encoding.queueID);
 					
 					if (queue == null)
 					{
-						throw new IllegalStateException("Cannot find queue with id " + queueID);
+						throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
 					}
 					
 					MessageReference removed = queue.removeReferenceWithID(messageID);
@@ -436,17 +394,17 @@ public class JournalStorageManager implements StorageManager
 				}
 				case UPDATE_DELIVERY_COUNT:
 				{
-					long queueID = bb.getLong();
+				   long messageID = record.id;
+				   
+				   DeliveryCountUpdateEncoding deliveryUpdate = new DeliveryCountUpdateEncoding();
+				   
+				   deliveryUpdate.decode(buff);
 					
-					long messageID = bb.getLong();
-					
-					int deliveryCount = bb.getInt();
-					
-					Queue queue = queues.get(queueID);
+					Queue queue = queues.get(deliveryUpdate.queueID);
 					
 					if (queue == null)
 					{
-						throw new IllegalStateException("Cannot find queue with id " + queueID);
+						throw new IllegalStateException("Cannot find queue with id " + deliveryUpdate.queueID);
 					}
 					
 					MessageReference reference = queue.getReference(messageID);
@@ -456,11 +414,40 @@ public class JournalStorageManager implements StorageManager
 						throw new IllegalStateException("Failed to find reference for " + messageID);
 					}
 					
-					reference.setDeliveryCount(deliveryCount);
+					reference.setDeliveryCount(deliveryUpdate.count);
 					
 					break;
 					
 				}
+            case PAGE_TRANSACTION:
+            {
+               
+               PageTransactionInfoImpl pageTransactionInfo = new PageTransactionInfoImpl();
+               
+               pageTransactionInfo.decode(buff);
+               
+               pageTransactionInfo.setRecordID(record.id);
+               
+               PagingManager pagingManager = postOffice.getPagingManager();
+               
+               pagingManager.addTransaction(pageTransactionInfo);
+
+               break;
+            }
+            case LAST_PAGE:
+            {
+               LastPageRecordImpl recordImpl = new LastPageRecordImpl();
+               
+               recordImpl.setRecordId(record.id);
+               
+               recordImpl.decode(buff);
+               
+               PagingManager pagingManager = postOffice.getPagingManager();
+               
+               pagingManager.setLastPage(recordImpl);
+               
+               break;
+            }
 				case SET_SCHEDULED_DELIVERY_TIME:
 				{
 					//TODO
@@ -477,19 +464,6 @@ public class JournalStorageManager implements StorageManager
 	
 	public void addBinding(Binding binding) throws Exception
 	{
-		 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	      
-		 DataOutputStream daos = new DataOutputStream(baos);
-
-		 /*
-	      We store:
-		  * 
-		  * Queue name
-		  * Address string
-		  * All nodes?
-		  * Filter string
-		  */
-
 		 Queue queue = binding.getQueue();
 
 		 //We generate the queue id here
@@ -497,39 +471,25 @@ public class JournalStorageManager implements StorageManager
 		 long queueID = bindingIDSequence.getAndIncrement();
 
 		 queue.setPersistenceID(queueID);
-
-		 byte[] nameBytes = queue.getName().getData();
 		 
-		 daos.writeInt(nameBytes.length);
+		 final SimpleString filterString;
 		 
-		 daos.write(nameBytes);
+		 final Filter filter = queue.getFilter();
 		 
-		 byte[] addressBytes = binding.getAddress().getData();
-
-		 daos.writeInt(addressBytes.length);
-		 
-		 daos.write(addressBytes);
-
-		 Filter filter = queue.getFilter();
-
-		 daos.writeBoolean(filter != null);
-
 		 if (filter != null)
 		 {
-			 byte[] filterBytes = queue.getFilter().getFilterString().getData();
-
-			 daos.writeInt(filterBytes.length);
-			 
-			 daos.write(filterBytes);
+		    filterString = filter.getFilterString();
 		 }
-
-		 daos.flush();
-
-		 byte[] data = baos.toByteArray();
+		 else
+		 {
+		    filterString = null;
+		 }
 		 
-		 bindingsJournal.appendAddRecord(queueID, BINDING_RECORD, data);
+		 BindingEncoding bindingEncoding = new BindingEncoding(binding.getQueue().getName(), binding.getAddress(), filterString);
+		 
+		 bindingsJournal.appendAddRecord(queueID, BINDING_RECORD, bindingEncoding);
 	}
-
+	
 	public void deleteBinding(Binding binding) throws Exception
 	{
 		long id = binding.getQueue().getPersistenceID();
@@ -553,21 +513,9 @@ public class JournalStorageManager implements StorageManager
 		}
 		else
 		{
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	      
-			DataOutputStream daos = new DataOutputStream(baos);
+			DestinationEncoding destinationEnc = new DestinationEncoding(destination);
 			
-			byte[] destBytes = destination.getData();
-			
-			daos.writeInt(destBytes.length);
-			
-			daos.write(destBytes);
-			
-			daos.flush();
-			
-			byte[] data = baos.toByteArray();
-			
-			bindingsJournal.appendAddRecord(destinationID, DESTINATION_RECORD, data);
+			bindingsJournal.appendAddRecord(destinationID, DESTINATION_RECORD, destinationEnc);
 			
 			return true;
 		}		
@@ -600,57 +548,38 @@ public class JournalStorageManager implements StorageManager
 		{		  
 			long id = record.id;
 			
-			byte[] data = record.data;
+         MessagingBuffer buffer = new ByteBufferWrapper(ByteBuffer.wrap(record.data));
 
-			ByteArrayInputStream bais = new ByteArrayInputStream(data);
-
-			DataInputStream dais = new DataInputStream(bais);
-			
 			byte rec = record.getUserRecordType();
 			
 			if (rec == BINDING_RECORD)
 			{
-				int len = dais.readInt();
-				byte[] queueNameBytes = new byte[len];
-				dais.read(queueNameBytes);
-				SimpleString queueName = new SimpleString(queueNameBytes);
-
-				len = dais.readInt();
-				byte[] addressBytes = new byte[len];
-				dais.read(addressBytes);
-				SimpleString address = new SimpleString(addressBytes);
-
-				Filter filter = null;
-
-				if (dais.readBoolean())
-				{
-					len = dais.readInt();
-					byte[] filterBytes = new byte[len];
-					dais.read(filterBytes);
-					SimpleString filterString = new SimpleString(filterBytes);
-										
-					filter = new FilterImpl(filterString);
-				}
-
-				Queue queue = queueFactory.createQueue(id, queueName, filter, true);
+			   
+			   BindingEncoding encodeBinding = new BindingEncoding();
+			   encodeBinding.decode(buffer);
+			   
+			   Filter filter = null;
+			   
+			   if (encodeBinding.filter != null)
+			   {
+			      filter = new FilterImpl(encodeBinding.filter);
+			   }
+			   
+				Queue queue = queueFactory.createQueue(id, encodeBinding.queueName, filter, true);
 			
-				Binding binding = new BindingImpl(address, queue);
+				Binding binding = new BindingImpl(encodeBinding.address, queue);
 				
 				bindings.add(binding);      
 			}
 			else if (rec == DESTINATION_RECORD)
 			{
-				int len = dais.readInt();
+			   
+			   DestinationEncoding destEnc = new DestinationEncoding();
+			   destEnc.decode(buffer);
+
+			   destinationIDMap.put(destEnc.destination, id);
 				
-				byte[] destData = new byte[len];
-				
-				dais.read(destData);
-				
-				SimpleString destinationName = new SimpleString(destData);
-				
-				destinationIDMap.put(destinationName, id);
-				
-				destinations.add(destinationName);
+				destinations.add(destEnc.destination);
 			}
 			else
 			{
@@ -660,6 +589,7 @@ public class JournalStorageManager implements StorageManager
 		
 		bindingIDSequence.set(maxID + 1);
 	}
+	
 	
 	// MessagingComponent implementation ------------------------------------------------------
 
@@ -710,30 +640,6 @@ public class JournalStorageManager implements StorageManager
 	
 	// Private ----------------------------------------------------------------------------------
 	
-	private EncodingSupport ackBytes(final long queueID, final long messageID)
-   {
-	   // Using an EncodingSupport, to avoid some byteArrayCopy
-      return new EncodingSupport()
-      {
-
-         public void decode(MessagingBuffer buffer)
-         {
-            throw new UnsupportedOperationException();
-         }
-
-         public void encode(MessagingBuffer buffer)
-         {
-            buffer.putLong(queueID);
-            buffer.putLong(messageID);
-         }
-
-         public int getEncodeSize()
-         {
-            return SIZE_LONG * 2;
-         }
-       
-      };
-   }
 	
 	private void checkAndCreateDir(String dir, boolean create)
 	{
@@ -800,4 +706,154 @@ public class JournalStorageManager implements StorageManager
 	   
 	}
 
+   private static class BindingEncoding implements EncodingSupport
+   {
+      
+      SimpleString queueName;
+      SimpleString address;
+      SimpleString filter;
+
+      public BindingEncoding()
+      {
+         
+      }
+      
+      public BindingEncoding(SimpleString queueName,
+            SimpleString address, SimpleString filter)
+      {
+         super();
+         this.queueName = queueName;
+         this.address = address;
+         this.filter = filter;
+      }
+
+      public void decode(MessagingBuffer buffer)
+      {
+         queueName = buffer.getSimpleString();
+         address = buffer.getSimpleString();
+         filter = buffer.getNullableSimpleString();
+         
+      }
+
+      public void encode(MessagingBuffer buffer)
+      {
+         buffer.putSimpleString(queueName);
+         buffer.putSimpleString(address);
+         buffer.putNullableSimpleString(filter);
+      }
+
+      public int getEncodeSize()
+      {
+         return SimpleString.sizeofString(queueName) +
+                SimpleString.sizeofString(address) +
+                1 + // HasFilter?
+                ((filter != null) ? SimpleString.sizeofString(filter) : 0);
+      }
+   }
+
+   private static class DestinationEncoding implements EncodingSupport
+   {
+
+      SimpleString destination;
+      
+      DestinationEncoding(SimpleString destination)
+      {
+         this.destination = destination;
+      }
+      
+      DestinationEncoding()
+      {
+      }
+      
+      public void decode(MessagingBuffer buffer)
+      {
+         this.destination = buffer.getSimpleString();
+      }
+
+      public void encode(MessagingBuffer buffer)
+      {
+         buffer.putSimpleString(destination);
+      }
+
+      public int getEncodeSize()
+      {
+         return SimpleString.sizeofString(destination);
+      }
+      
+   }
+   
+   private static class DeliveryCountUpdateEncoding implements EncodingSupport
+   {
+      long queueID;
+      int count;
+      
+      public DeliveryCountUpdateEncoding()
+      {
+         super();
+      }
+      
+      public DeliveryCountUpdateEncoding(long queueID, int count)
+      {
+         super();
+         this.queueID = queueID;
+         this.count = count;
+      }
+
+      public void decode(MessagingBuffer buffer)
+      {
+         queueID = buffer.getLong();
+         count = buffer.getInt();
+      }
+
+      public void encode(MessagingBuffer buffer)
+      {
+         buffer.putLong(queueID);
+         buffer.putInt(count);
+      }
+
+      public int getEncodeSize()
+      {
+         return 8 + 4;
+      }
+      
+   }
+   
+   
+   private class ACKEncoding implements EncodingSupport
+   {
+      long queueID;
+      
+      
+
+      public ACKEncoding(long queueID)
+      {
+         super();
+         this.queueID = queueID;
+      }
+
+      public ACKEncoding()
+      {
+         super();
+      }
+
+      public void decode(MessagingBuffer buffer)
+      {
+         this.queueID = buffer.getLong();
+      }
+
+      public void encode(MessagingBuffer buffer)
+      {
+         buffer.putLong(queueID);
+      }
+
+      public int getEncodeSize()
+      {
+         return 8;
+      }
+      
+   }
+   
+   
+
+   
 }

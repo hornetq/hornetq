@@ -71,4 +71,17 @@ public interface TestableJournal extends Journal
    void setAutoReclaim(boolean autoReclaim);
    
    boolean isAutoReclaim();
+   
+   
+   // These add methods are only used by testCases
+   
+   void appendAddRecord(long id, byte recordType, byte[] record) throws Exception;
+   
+   void appendUpdateRecord(long id, byte recordType, byte[] record) throws Exception;
+   
+   void appendAddRecordTransactional(long txID, long id, byte recordType, byte[] record) throws Exception;
+   
+   void appendUpdateRecordTransactional(long txID, long id, byte recordType, byte[] record) throws Exception;
+   
+   
 }

@@ -179,7 +179,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    
 
    /**
-    * Depage one page-file, read it and send it to the pagingManager
+    * Depage one page-file, read it and send it to the pagingManager / postoffice
     * @return
     * @throws Exception
     */
@@ -197,10 +197,10 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
       page.open();
       PageMessage messages[] = page.read();
-      boolean needMorePages = pagingManager.onDepage(page.getPageId(), PagingStoreImpl.this.storeName, PagingStoreImpl.this, messages);
+      boolean addressFull = pagingManager.onDepage(page.getPageId(), PagingStoreImpl.this.storeName, PagingStoreImpl.this, messages);
       page.delete();
       
-      return needMorePages;
+      return addressFull;
 
    }
    
