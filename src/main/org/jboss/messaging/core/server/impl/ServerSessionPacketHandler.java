@@ -105,7 +105,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
    {
       return session.getID();
    }
-
+   
    public void handlePacket(final Packet packet)
    {
       Packet response = null;

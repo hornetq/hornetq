@@ -58,9 +58,8 @@ public class PacketImpl implements Packet
    // Server
    public static final byte CREATESESSION = 30;
    public static final byte CREATESESSION_RESP = 31;
-   public static final byte AUTHENTICATE = 32;
-   public static final byte AUTHENTICATE_RESP = 33;
-   
+   public static final byte REATTACH_SESSION = 32;
+   public static final byte REATTACH_SESSION_RESP = 33;
       
    // Session   
    public static final byte SESS_CREATECONSUMER = 40;

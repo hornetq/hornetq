@@ -899,11 +899,11 @@ public class AlignedJournalImplTest extends UnitTestCase
       assertEquals(1, transactions.size());
       assertEquals(1, records.size());
       
-      assertEquals(10, transactions.get(0).xidData.length);
+      assertEquals(10, transactions.get(0).extraData.length);
       
       for (int i = 0; i < 10; i++)
       {
-         assertEquals((byte)1, transactions.get(0).xidData[i]);
+         assertEquals((byte)1, transactions.get(0).extraData[i]);
       }
       
       
@@ -938,10 +938,10 @@ public class AlignedJournalImplTest extends UnitTestCase
       assertEquals(0, records.size());
       assertEquals(1, transactions.size());
       
-      assertEquals(10, transactions.get(0).xidData.length);
+      assertEquals(10, transactions.get(0).extraData.length);
       for (int i = 0; i < 10; i++)
       {
-         assertEquals((byte)1, transactions.get(0).xidData[i]);
+         assertEquals((byte)1, transactions.get(0).extraData[i]);
       }
       
       journalImpl.checkAndReclaimFiles();
@@ -971,11 +971,11 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       assertEquals(1, transactions.size());
       
-      assertEquals(15, transactions.get(0).xidData.length);
+      assertEquals(15, transactions.get(0).extraData.length);
       
-      for (int i = 0; i < transactions.get(0).xidData.length; i++)
+      for (int i = 0; i < transactions.get(0).extraData.length; i++)
       {
-         assertEquals(2, transactions.get(0).xidData[i]);
+         assertEquals(2, transactions.get(0).extraData[i]);
       }
 
       assertEquals(10, journalImpl.getDataFilesCount());

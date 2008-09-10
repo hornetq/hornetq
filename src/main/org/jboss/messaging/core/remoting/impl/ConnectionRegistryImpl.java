@@ -287,7 +287,11 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
             }
             else
             {
-               if (this.params.size() == kother.params.size())
+               if (kother.params == null)
+               {
+                  return false;
+               }               
+               else if (this.params.size() == kother.params.size())
                {
                   for (Map.Entry<String, Object> entry: this.params.entrySet())
                   {

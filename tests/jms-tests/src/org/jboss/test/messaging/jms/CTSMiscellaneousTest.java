@@ -86,7 +86,7 @@ public class CTSMiscellaneousTest extends JBMServerTestCase
          bindings.add("StrictTCKConnectionFactory");
          
          getJmsServerManager().createConnectionFactory("StrictTCKConnectionFactory",
-                  new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"), 5000, 5000,                  
+                  new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"), null, 5000, 5000,                  
                   null,
                1000, 1024 * 1024, -1, 1000, -1, true, true, true, "/StrictTCKConnectionFactory");
                  

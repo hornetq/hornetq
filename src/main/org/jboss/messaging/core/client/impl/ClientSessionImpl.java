@@ -50,6 +50,8 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -122,7 +124,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    private final Executor executor;
 
-   private final RemotingConnection remotingConnection;
+   private volatile RemotingConnection remotingConnection;
 
    private final Map<Integer, ClientBrowser> browsers = new ConcurrentHashMap<Integer, ClientBrowser>();
 
@@ -166,18 +168,23 @@ public class ClientSessionImpl implements ClientSessionInternal
    
    // For testing only
    private boolean forceNotSameRM;
-
+   
+   private final FailureListener failoverListener = new FailoverListener();
+   
+   private volatile RemotingConnection backupConnection;
+   
    // Constructors
    // ---------------------------------------------------------------------------------
-
-   public ClientSessionImpl(final long serverTargetID,
+   
+   public ClientSessionImpl(
             final boolean xa, final int lazyAckBatchSize,
             final boolean cacheProducers, final boolean autoCommitSends,
             final boolean autoCommitAcks, final boolean blockOnAcknowledge,
             final RemotingConnection remotingConnection,
             final ClientSessionFactory connectionFactory,
             final int version,
-            final Channel channel)
+            final Channel channel,
+            final RemotingConnection backupConnection)
             throws MessagingException
    {
       if (lazyAckBatchSize < -1 || lazyAckBatchSize == 0)
@@ -217,6 +224,13 @@ public class ClientSessionImpl implements ClientSessionInternal
       this.version = version;
       
       this.connectionRegistry = ConnectionRegistryImpl.instance;
+      
+      this.backupConnection = backupConnection;
+      
+      if (backupConnection != null)
+      {
+         this.remotingConnection.addFailureListener(failoverListener);
+      }      
    }
 
    // ClientSession implementation
@@ -565,8 +579,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    public ClientMessage createClientMessage(byte type, boolean durable,
             long expiration, long timestamp, byte priority)
    {
-      MessagingBuffer body = remotingConnection
-               .createBuffer(INITIAL_MESSAGE_BODY_SIZE);
+      MessagingBuffer body = remotingConnection.createBuffer(INITIAL_MESSAGE_BODY_SIZE);
 
       return new ClientMessageImpl(type, durable, expiration, timestamp,
                priority, body);
@@ -574,16 +587,14 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    public ClientMessage createClientMessage(byte type, boolean durable)
    {
-      MessagingBuffer body = remotingConnection
-               .createBuffer(INITIAL_MESSAGE_BODY_SIZE);
+      MessagingBuffer body = remotingConnection.createBuffer(INITIAL_MESSAGE_BODY_SIZE);
 
       return new ClientMessageImpl(type, durable, body);
    }
 
    public ClientMessage createClientMessage(boolean durable)
    {
-      MessagingBuffer body = remotingConnection
-               .createBuffer(INITIAL_MESSAGE_BODY_SIZE);
+      MessagingBuffer body = remotingConnection.createBuffer(INITIAL_MESSAGE_BODY_SIZE);
 
       return new ClientMessageImpl(durable, body);
    }
@@ -1049,6 +1060,11 @@ public class ClientSessionImpl implements ClientSessionInternal
       this.connectionRegistry = registry;
    }
    
+   public RemotingConnection getConnection()
+   {
+      return remotingConnection;
+   }
+   
    // Protected
    // ------------------------------------------------------------------------------------
    
@@ -1057,9 +1073,43 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    // Private
    // --------------------------------------------------------------------------------------
-
-
-   
+ 
+   private void handleFailover(final MessagingException me)
+   {      
+      log.info("Failure has been detected, initiating failover");
+      
+      channel.lock();           
+      
+      try
+      {
+         Packet request = new ReattachSessionMessage(channel.getID(), channel.getLastReceivedCommandID());
+         
+         Channel channel1 = backupConnection.getChannel(1, false, -1);
+         
+         ReattachSessionResponseMessage response = (ReattachSessionResponseMessage)channel1.sendBlocking(request);             
+         
+         channel.transferConnection(backupConnection);
+         
+         remotingConnection.removeFailureListener(failoverListener);
+         
+         remotingConnection = backupConnection;
+         
+         remotingConnection.addFailureListener(failoverListener);
+         
+         backupConnection = null;
+         
+         channel.replayCommands(response.getLastReceivedCommandID());                     
+      }      
+      catch (Throwable t)
+      {
+         log.error("Failed to handle failover", t);
+      }
+      finally
+      {
+         channel.unlock();
+      }
+   }
+      
    private void checkXA() throws XAException
    {
       if (!xa)
@@ -1157,6 +1207,11 @@ public class ClientSessionImpl implements ClientSessionInternal
       channel.close();
             
       connectionRegistry.returnConnection(remotingConnection.getID());
+      
+      if (backupConnection != null)
+      {
+         remotingConnection.removeFailureListener(failoverListener);
+      }
 
       closed = true;
    }
@@ -1168,5 +1223,13 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    // Inner Classes
    // --------------------------------------------------------------------------------
+   
+   private class FailoverListener implements FailureListener
+   {
+      public void connectionFailed(final MessagingException me)
+      {
+         handleFailover(me);         
+      }      
+   }
 
 }

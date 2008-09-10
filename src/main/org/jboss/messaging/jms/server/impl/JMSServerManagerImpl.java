@@ -190,6 +190,7 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public boolean createConnectionFactory(String name,
                                           TransportConfiguration connectorConfig,
+                                          TransportConfiguration backupConnectorConfig,
                                           long pingPeriod, long callTimeout, String clientID,
                                           int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
                                           int producerWindowSize, int producerMaxRate,
@@ -202,6 +203,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       if (cf == null)
       {
          cf = new JBossConnectionFactory(connectorConfig,
+                                         backupConnectorConfig,
                                          pingPeriod, callTimeout,
                                          clientID, dupsOKBatchSize,
                                          consumerWindowSize, consumerMaxRate, producerWindowSize,
@@ -229,6 +231,7 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public boolean createConnectionFactory(String name,
                                           TransportConfiguration connectorConfig,
+                                          TransportConfiguration backupConnectorConfig,
                                           long pingPeriod, long callTimeout, String clientID,
                                           int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
                                           int producerWindowSize, int producerMaxRate,
@@ -241,6 +244,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       if (cf == null)
       {
          cf = new JBossConnectionFactory(connectorConfig,
+                  backupConnectorConfig,
                   pingPeriod, callTimeout,
                   clientID, dupsOKBatchSize,
                   consumerWindowSize, consumerMaxRate, producerWindowSize,

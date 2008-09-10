@@ -288,7 +288,7 @@ public class JournalStorageManager implements StorageManager
       for (PreparedTransactionInfo preparedTransaction : preparedTransactions)
       {
          log.trace(preparedTransaction);
-         EncodingXid encodingXid = new EncodingXid(preparedTransaction.xidData);
+         EncodingXid encodingXid = new EncodingXid(preparedTransaction.extraData);
          Xid xid = encodingXid.xid;
 
          Transaction tx = new TransactionImpl(preparedTransaction.id, xid, this, postOffice);

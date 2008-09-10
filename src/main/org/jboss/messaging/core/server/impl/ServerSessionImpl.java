@@ -61,6 +61,7 @@ import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.Delivery;
 import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -106,7 +107,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private final boolean autoCommitAcks;
 
-   private final RemotingConnection remotingConnection;
+   private volatile RemotingConnection remotingConnection;
 
    private final Map<Integer, ServerConsumer> consumers = new ConcurrentHashMap<Integer, ServerConsumer>();
 
@@ -140,10 +141,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    
    private final java.util.Queue<Delivery> deferredDeliveries = new ConcurrentLinkedQueue<Delivery>();
    
+   private final MessagingServer server;
+   
    private volatile boolean started = false;
 
    private volatile int objectIDSequence;
-
+   
+   private final List<Runnable> failureRunners = new ArrayList<Runnable>();
+   
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -161,7 +166,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             final ResourceManager resourceManager,
             final SecurityStore securityStore,
             final Executor executor,
-            final Channel channel) throws Exception
+            final Channel channel,
+            final MessagingServer server) throws Exception
    {
       this.id = id;
 
@@ -197,6 +203,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       this.channel = channel;
       
       this.replicatingChannel = channel.getReplicatingChannel();
+      
+      this.server = server;
    }
 
    // ServerSession implementation
@@ -328,6 +336,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       deliveries.clear();
 
       channel.close();
+      
+      server.removeSession(id);
    }
 
    public void promptDelivery(final Queue queue)
@@ -915,23 +925,25 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          // session is closed.
          // It is up to the user to delete the address when finished with it
 
-         remotingConnection.addFailureListener(new FailureListener()
-         {
-            public void connectionFailed(final MessagingException me)
-            {
-               try
-               {
-                  postOffice.removeDestination(address, durable);
-               }
-               catch (Exception e)
-               {
-                  log.error("Failed to remove temporary address " + address);
-               }
-            }
-         });
+        failureRunners.add(
+              new Runnable()
+              {
+                 public void run()
+                 {
+                    try
+                    {
+                       postOffice.removeDestination(address, durable);
+                    }
+                    catch (Exception e)
+                    {
+                       log.error("Failed to remove temporary address " + address);
+                    }
+                 }
+              }
+         );
       }
    }
-
+   
    public void removeDestination(final SimpleString address,
             final boolean durable) throws Exception
    {
@@ -977,22 +989,24 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          // It is up to the user to delete the queue when finished with it
 
          final Queue queue = binding.getQueue();
-
-         remotingConnection.addFailureListener(new FailureListener()
-         {
-            public void connectionFailed(final MessagingException me)
-            {
-               try
-               {
-                  postOffice.removeBinding(queue.getName());
-               }
-               catch (Exception e)
-               {
-                  log.error("Failed to remove temporary queue "
-                           + queue.getName());
-               }
-            }
-         });
+         
+         failureRunners.add(
+                  new Runnable()
+                  {
+                     public void run()
+                     {
+                        try
+                        {
+                           postOffice.removeBinding(queue.getName());
+                        }
+                        catch (Exception e)
+                        {
+                           log.error("Failed to remove temporary queue "
+                                    + queue.getName());
+                        }
+                     }
+                  }
+             );        
       }
    }
 
@@ -1247,6 +1261,22 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       delivery.deliver();
    }
    
+   public void transferConnection(final RemotingConnection newConnection)
+   {     
+      channel.transferConnection(newConnection);
+ 
+      remotingConnection.removeFailureListener(this);
+      
+      remotingConnection = newConnection;
+      
+      remotingConnection.addFailureListener(this);
+   }
+   
+   public int replayCommands(final int lastReceivedCommandID)
+   {    
+      return channel.replayCommands(lastReceivedCommandID);
+   }
+   
    // FailureListener implementation
    // --------------------------------------------------------------------
 
@@ -1254,6 +1284,18 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       try
       {
+         for (Runnable runner: failureRunners)
+         {
+            try
+            {
+               runner.run();
+            }
+            catch (Throwable t)
+            {
+               log.error("Failed to execute failure runner", t);
+            }
+         }
+         
          close();
       }
       catch (Throwable t)

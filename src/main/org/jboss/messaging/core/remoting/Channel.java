@@ -31,6 +31,8 @@ import org.jboss.messaging.core.exception.MessagingException;
  */
 public interface Channel
 {
+   long getID();
+   
    void send(Packet packet);
    
    Packet sendBlocking(Packet packet) throws MessagingException;
@@ -40,4 +42,14 @@ public interface Channel
    void close();
    
    Channel getReplicatingChannel();
+   
+   void transferConnection(RemotingConnection newConnection);
+   
+   int replayCommands(int lastReceivedCommandID);
+   
+   int getLastReceivedCommandID();
+   
+   void lock();
+   
+   void unlock();
 }

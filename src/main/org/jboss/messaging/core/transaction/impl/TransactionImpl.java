@@ -48,7 +48,6 @@ public class TransactionImpl implements Transaction
 {
    private static final Logger log = Logger.getLogger(TransactionImpl.class);
 
-
    private final StorageManager storageManager;
 
    private final PostOffice postOffice;

@@ -23,7 +23,9 @@
 package org.jboss.messaging.core.server.impl;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -51,6 +53,7 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
@@ -58,6 +61,7 @@ import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -107,6 +111,7 @@ public class MessagingServerImpl implements MessagingServer
    private MessagingServerControlMBean serverManagement;
    private RemotingConnection replicatingConnection;
    private final AtomicInteger sessionIDSequence = new AtomicInteger(2);
+   private final Map<Long, ServerSession> sessions = new ConcurrentHashMap<Long, ServerSession>();
 
    // plugins
 
@@ -370,6 +375,29 @@ public class MessagingServerImpl implements MessagingServer
    {
       return started;
    }
+   
+   public ReattachSessionResponseMessage reattachSession(final RemotingConnection connection,
+                                                         final long sessionID,
+                                                         final int lastReceivedCommandID)
+   {     
+      ServerSession session = sessions.get(sessionID);
+      
+      if (session == null)
+      {
+         throw new IllegalArgumentException("Cannot find session with id " + sessionID + " to reattach");
+      }
+      
+      postOffice.setBackup(false);
+      
+      //Reconnect the channel to the new connection
+      session.transferConnection(connection);
+      
+      int serverLastReceivedCommandID = session.replayCommands(lastReceivedCommandID);
+      
+      connection.setBackup(false);
+      
+      return new ReattachSessionResponseMessage(serverLastReceivedCommandID);            
+   }
 
    public CreateSessionResponseMessage createSession(final String username, final String password,
                                                      final int incrementingVersion,
@@ -407,7 +435,10 @@ public class MessagingServerImpl implements MessagingServer
                                   resourceManager,
                                   securityStore,
                                   executorFactory.getExecutor(),
-                                  channel);
+                                  channel,
+                                  this);
+      
+      sessions.put(sessionID, session);
 
       ChannelHandler handler = new ServerSessionPacketHandler(session, channel);
 
@@ -416,7 +447,16 @@ public class MessagingServerImpl implements MessagingServer
       remotingConnection.addFailureListener(session);
 
       return
-         new CreateSessionResponseMessage(sessionID, version.getIncrementingVersion(), configuration.getPacketConfirmationBatchSize());
+         new CreateSessionResponseMessage(sessionID, version.getIncrementingVersion(),
+                                          configuration.getPacketConfirmationBatchSize());
+   }
+   
+   public void removeSession(final long sessionID)
+   {
+      if (sessions.remove(sessionID) == null)
+      {
+         throw new IllegalArgumentException("Cannot find session with id " + sessionID + " to remove");
+      }
    }
 
    public MessagingServerControlMBean getServerManagement()

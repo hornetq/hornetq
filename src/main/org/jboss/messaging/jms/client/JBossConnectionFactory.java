@@ -75,6 +75,8 @@ public class JBossConnectionFactory implements
    
    private final TransportConfiguration connectorConfig;
    
+   private final TransportConfiguration backupConnectorConfig;
+   
    private final String clientID;
    
    private final int dupsOKBatchSize;
@@ -100,6 +102,7 @@ public class JBossConnectionFactory implements
    // Constructors ---------------------------------------------------------------------------------
    
    public JBossConnectionFactory(final TransportConfiguration connectorConfig,
+                                 final TransportConfiguration backupConnectorConfig,
                                  final long pingPeriod,
                                  final long callTimeout,
                                  final String clientID,
@@ -113,6 +116,7 @@ public class JBossConnectionFactory implements
                                  final boolean blockOnPersistentSend)
    {
       this.connectorConfig = connectorConfig;
+      this.backupConnectorConfig = backupConnectorConfig;
       this.clientID = clientID;
       this.dupsOKBatchSize = dupsOKBatchSize;
       this.pingPeriod = pingPeriod;
@@ -293,6 +297,7 @@ public class JBossConnectionFactory implements
          //It doesn't matter if more than one is created due to a race
          sessionFactory = new ClientSessionFactoryImpl(
                connectorConfig,
+               backupConnectorConfig,
                pingPeriod,
                callTimeout,
                consumerWindowSize,

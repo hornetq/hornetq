@@ -529,7 +529,7 @@ public class LocalTestServer implements Server, Runnable
    {
       log.info("deploying connection factory with name: " + objectName + " and dupsok: " + dupsOkBatchSize);
       getJMSServerManager().createConnectionFactory(objectName,
-               new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"), 5000, 5000,      
+               new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"), null, 5000, 5000,      
                clientId, dupsOkBatchSize,
       		prefetchSize, -1, 1000, -1, blockOnAcknowledge, true, true, jndiBindings);
    }

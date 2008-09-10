@@ -69,7 +69,8 @@ public interface JMSServerControlMBean
    @Operation(desc = "Create a JMS ConnectionFactory", impact = ACTION)
    void createConnectionFactory(
          @Parameter(name = "name", desc = "Name of the ConnectionFactory to create") String name,
-         @Parameter(name = "transportConfiguration", desc = "The remoting connector configuration") TransportConfiguration connectorConfig,         
+         @Parameter(name = "transportConfiguration", desc = "The remoting connector configuration") TransportConfiguration connectorConfig,
+         @Parameter(name = "backupTransportConfiguration", desc = "The backup remoting connector configuration") TransportConfiguration backupConnectorConfig,
          @Parameter(name = "pingPeriod", desc = "The ping period in m") long pingPeriod,
          @Parameter(name = "callTimeout", desc = "The call timeout in m") long callTimeout,
          @Parameter(name = "clientID", desc = "ClientID for created connections") String clientID,

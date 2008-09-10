@@ -22,32 +22,71 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * @version <tt>$Revision$</tt>
+ * A ReattachSessionResponseMessage
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ *
  */
-public class SessionReplicateDeliveryResponseMessage extends PacketImpl
+public class ReattachSessionResponseMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
+   private int lastReceivedCommandID;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionReplicateDeliveryResponseMessage()
+   public ReattachSessionResponseMessage(final int lastReceivedCommandID)
    {
-      super(SESS_REPLICATE_DELIVERY_RESP);
+      super(REATTACH_SESSION_RESP);
+
+      this.lastReceivedCommandID = lastReceivedCommandID;
+   }
+   
+   public ReattachSessionResponseMessage()
+   {
+      super(REATTACH_SESSION_RESP);
    }
 
    // Public --------------------------------------------------------
-    
-   public boolean isUsesConfirmations()
+
+   public int getLastReceivedCommandID()
    {
-      return false;
+      return lastReceivedCommandID;
+   }
+   
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putInt(lastReceivedCommandID);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      lastReceivedCommandID = buffer.getInt();
+   }
+   
+   public boolean isResponse()
+   {      
+      return true;
+   }
+
+   public boolean equals(Object other)
+   {
+      if (other instanceof ReattachSessionResponseMessage == false)
+      {
+         return false;
+      }
+            
+      ReattachSessionResponseMessage r = (ReattachSessionResponseMessage)other;
+      
+      return super.equals(other) && this.lastReceivedCommandID == r.lastReceivedCommandID;
    }
 
    // Package protected ---------------------------------------------
@@ -58,5 +97,4 @@ public class SessionReplicateDeliveryResponseMessage extends PacketImpl
 
    // Inner classes -------------------------------------------------
 }
-
 

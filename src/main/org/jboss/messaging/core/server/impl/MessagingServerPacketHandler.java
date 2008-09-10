@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.server.impl;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -32,7 +33,7 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.jboss.messaging.core.server.MessagingServer;
 
 /**
@@ -82,6 +83,13 @@ public class MessagingServerPacketHandler implements ChannelHandler
                                     request.isAutoCommitAcks(),
                                     request.isXA());                                                                
          }
+         else if (type == REATTACH_SESSION)
+         {
+            ReattachSessionMessage request = (ReattachSessionMessage)packet;
+            
+            response =
+               server.reattachSession(connection, request.getSessionID(), request.getLastReceivedCommandID());
+         }
          else
          {
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.UNSUPPORTED_PACKET,
@@ -105,7 +113,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
 
          response = new MessagingExceptionMessage(me);
       }
-
+    
       channel1.send(response);                  
    }
 }

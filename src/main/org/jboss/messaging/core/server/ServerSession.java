@@ -26,6 +26,7 @@ import java.util.List;
 
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
@@ -138,4 +139,8 @@ public interface ServerSession
    void handleReplicateDelivery(long messageID, int consumerID) throws Exception;
    
    void handleDeferredDelivery();
+   
+   void transferConnection(RemotingConnection newConnection);
+   
+   int replayCommands(int lastReceivedCommandID);
 }

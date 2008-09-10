@@ -61,6 +61,7 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String SEND_NP_MESSAGES_SYNCHRONOUSLY_ELEMENT = "send-np-messages-synchronously";
    private static final String SEND_P_MESSAGES_SYNCHRONOUSLY_ELEMENT = "send-p-messages-synchronously";
    private static final String CONNECTOR_ELEMENT = "connector";
+   private static final String BACKUP_CONNECTOR_ELEMENT = "backup-connector";
    private static final String FACTORY_CLASS_ELEMENT = "factory-class";
    private static final String PARAMS_ELEMENT = "params";
    private static final String PARAM_ELEMENT = "param";
@@ -128,6 +129,8 @@ public class JMSServerDeployer extends XmlDeployer
          List<String> jndiBindings = new ArrayList<String>();
          String connectorFactoryClassName = null;         
          Map<String, Object> params = new HashMap<String, Object>();
+         String backupConnectorFactoryClassName = null;         
+         Map<String, Object> backupParams = new HashMap<String, Object>();
          
          for (int j = 0; j < children.getLength(); j++)
          {
@@ -261,6 +264,87 @@ public class JMSServerDeployer extends XmlDeployer
                   }                                                                  
                }
             }
+            else if (BACKUP_CONNECTOR_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               NodeList children2 = children.item(j).getChildNodes();
+                                                         
+               for (int l = 0; l < children2.getLength(); l++)
+               {                                  
+                  String nodeName = children2.item(l).getNodeName();
+                  
+                  if (FACTORY_CLASS_ELEMENT.equalsIgnoreCase(nodeName))
+                  {                    
+                     backupConnectorFactoryClassName = children2.item(l).getTextContent();
+                  }
+                  else if (PARAMS_ELEMENT.equalsIgnoreCase(nodeName))
+                  {                                                             
+                     NodeList nlParams = children2.item(l).getChildNodes();
+                     
+                     for (int m = 0; m < nlParams.getLength(); m++)
+                     {
+                        if (PARAM_ELEMENT.equalsIgnoreCase(nlParams.item(m).getNodeName()))
+                        {
+                           Node paramNode = nlParams.item(m);
+                           
+                           NamedNodeMap attributes = paramNode.getAttributes();
+                           
+                           Node nkey = attributes.getNamedItem("key");
+                           
+                           String key = nkey.getTextContent();
+                           
+                           Node nValue = attributes.getNamedItem("value");
+                           
+                           String value = nValue.getTextContent();
+                           
+                           Node nType = attributes.getNamedItem("type");
+                           
+                           String type = nType.getTextContent();
+                           
+                           if (type.equalsIgnoreCase("Integer"))
+                           {
+                              try
+                              {
+                                 Integer iVal = Integer.parseInt(value);
+                                 
+                                 backupParams.put(key, iVal);
+                              }
+                              catch (NumberFormatException e2)
+                              {
+                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value + " is not a valid Integer");
+                              }
+                           }
+                           else if (type.equalsIgnoreCase("Long"))
+                           {
+                              try
+                              {
+                                 Long lVal = Long.parseLong(value);
+                                 
+                                 backupParams.put(key, lVal);
+                              }
+                              catch (NumberFormatException e2)
+                              {
+                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value + " is not a valid Long");
+                              }
+                           }
+                           else if (type.equalsIgnoreCase("String"))
+                           {
+                              backupParams.put(key, value);                             
+                           }
+                           else if (type.equalsIgnoreCase("Boolean"))
+                           {
+                              Boolean lVal = Boolean.parseBoolean(value);
+                                 
+                              backupParams.put(key, lVal);                              
+                           }
+                           else
+                           {
+                              throw new IllegalArgumentException("Invalid parameter type " + type);
+                           }
+                        }
+                     }
+                  }                                                                  
+               }
+            }
          }
          
          if (connectorFactoryClassName == null)
@@ -270,10 +354,17 @@ public class JMSServerDeployer extends XmlDeployer
          
          TransportConfiguration connectorConfig =
             new TransportConfiguration(connectorFactoryClassName, params);
+         
+         TransportConfiguration backupConnectorConfig = null;
+         
+         if (backupConnectorFactoryClassName != null)
+         {
+            backupConnectorConfig = new TransportConfiguration(backupConnectorFactoryClassName, backupParams);
+         }
                   
          String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
                   
-         jmsServerManager.createConnectionFactory(name, connectorConfig,
+         jmsServerManager.createConnectionFactory(name, connectorConfig, backupConnectorConfig,
                   pingPeriod, callTimeout, clientID, dupsOKBatchSize, 
                consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, 
                blockOnAcknowledge, blockOnNonPersistentSend, 

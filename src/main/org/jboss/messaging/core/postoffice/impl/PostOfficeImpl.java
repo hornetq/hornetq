@@ -317,11 +317,14 @@ public class PostOfficeImpl implements PostOffice
    
    public void setBackup(final boolean backup)
    {
-      this.backup = backup;
-      
-      for (Binding binding: nameMap.values())
+      if (this.backup != backup)
       {
-         binding.getQueue().setBackup(backup);
+         this.backup = backup;
+         
+         for (Binding binding: nameMap.values())
+         {
+            binding.getQueue().setBackup(backup);
+         }
       }
    }
    

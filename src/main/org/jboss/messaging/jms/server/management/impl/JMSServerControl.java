@@ -77,6 +77,7 @@ public class JMSServerControl extends StandardMBean implements
    // JMSServerControlMBean implementation --------------------------
 
    public void createConnectionFactory(String name, TransportConfiguration connectorConfig,
+            TransportConfiguration backupConnectorConfig,
             long pingPeriod, long callTimeout, String clientID,
          int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
          int producerWindowSize, int producerMaxRate,
@@ -88,6 +89,7 @@ public class JMSServerControl extends StandardMBean implements
       bindings.add(jndiBinding);
 
       boolean created = server.createConnectionFactory(name, connectorConfig,
+               backupConnectorConfig,
                   pingPeriod, callTimeout, clientID, dupsOKBatchSize, 
                consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, 
                blockOnAcknowledge, blockOnNonPersistentSend, 
