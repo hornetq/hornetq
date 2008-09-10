@@ -172,5 +172,10 @@ public class NullStorageManager implements StorageManager
    {
    }
 
+   public void storeDeleteMessageTransactional(long txID, long messageID,
+         long queueID) throws Exception
+   {
+   }
+
 
 }

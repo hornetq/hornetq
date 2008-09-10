@@ -40,7 +40,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  * $Id: Message.java 3341 2007-11-19 14:34:57Z timfox $
  */
-public interface Message extends EncodingSupport
+public interface Message
 {   
    SimpleString getDestination();
    

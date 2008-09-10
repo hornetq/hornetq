@@ -515,7 +515,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendDeleteRecordTransactional(2l, (long)i);
+         journalImpl.appendDeleteRecordTransactional(2l, (long)i, null);
          journalImpl.forceMoveNextFile();
       }
       
@@ -823,7 +823,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       for (int i=0;i<10;i++)
       {
-         journalImpl.appendDeleteRecordTransactional(2l, (long)i);
+         journalImpl.appendDeleteRecordTransactional(2l, (long)i, null);
       }
       
       journalImpl.appendCommitRecord(2l);
@@ -862,7 +862,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          {
             journalImpl.forceMoveNextFile();
          }
-         journalImpl.appendDeleteRecordTransactional(2l, (long)i);
+         journalImpl.appendDeleteRecordTransactional(2l, (long)i, null);
       }
       
       journalImpl.appendCommitRecord(2l);
@@ -884,21 +884,33 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
-      
-      journalImpl.appendAddRecordTransactional(1, 1, (byte) 1, new SimpleEncoding(50,(byte) 1));
 
       SimpleEncoding xid = new SimpleEncoding(10, (byte)1);
       
-      journalImpl.appendPrepareRecord(1, xid);
+      journalImpl.appendAddRecord(10l, (byte)0, new SimpleEncoding(10, (byte)0));
       
-      journalImpl.appendAddRecord(2l, (byte)1, new SimpleEncoding(10, (byte)1));
+      journalImpl.appendDeleteRecordTransactional(1l, 10l, new SimpleEncoding(100, (byte)'j'));
+
+      journalImpl.appendPrepareRecord(1, xid);
       
       journalImpl.debugWait();
 
       setupJournal(JOURNAL_SIZE, 1);
       
       assertEquals(1, transactions.size());
+      assertEquals(1, transactions.get(0).recordsToDelete.size());
       assertEquals(1, records.size());
+
+      for (RecordInfo record: transactions.get(0).recordsToDelete)
+      {
+         byte[] data = record.data;
+         assertEquals(100, data.length);
+         for (int i = 0; i < data.length; i++)
+         {
+            assertEquals((byte)'j', data[i]);
+         }
+      }
+      
       
       assertEquals(10, transactions.get(0).extraData.length);
       
@@ -906,6 +918,15 @@ public class AlignedJournalImplTest extends UnitTestCase
       {
          assertEquals((byte)1, transactions.get(0).extraData[i]);
       }
+      
+      journalImpl.appendCommitRecord(1l);
+
+      journalImpl.debugWait();
+      
+      setupJournal(JOURNAL_SIZE, 1);
+      
+      assertEquals(0, transactions.size());
+      assertEquals(0, records.size());
       
       
    }
@@ -961,7 +982,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendDeleteRecordTransactional(2l, (long)i);
+         journalImpl.appendDeleteRecordTransactional(2l, (long)i, null);
       }
       
       SimpleEncoding xid2 = new SimpleEncoding(15, (byte)2);
@@ -1126,7 +1147,6 @@ public class AlignedJournalImplTest extends UnitTestCase
       assertEquals(10, records.size());
    }
    
-   // It should be ok to write records on NIO, and later read then on AIO
    public void testEmptyPrepare() throws Exception
    {
       final int JOURNAL_SIZE = 512 * 4;

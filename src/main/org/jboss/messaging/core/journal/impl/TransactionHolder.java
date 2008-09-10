@@ -49,7 +49,7 @@ public class TransactionHolder
    
    public final List<RecordInfo> recordInfos = new ArrayList<RecordInfo>();
    
-   public final Set<Long> recordsToDelete = new HashSet<Long>();
+   public final Set<RecordInfo> recordsToDelete = new HashSet<RecordInfo>();
    
    public boolean prepared;
    

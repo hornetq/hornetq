@@ -132,13 +132,13 @@ public class JournalImpl implements TestableJournal
    
    public static final byte UPDATE_RECORD_TX = 14;
    
+   public static final int  SIZE_DELETE_RECORD_TX = BASIC_SIZE + SIZE_LONG + SIZE_LONG + SIZE_INT; // + record.length
+   
+   public static final byte DELETE_RECORD_TX = 15;
+   
    public static final int SIZE_DELETE_RECORD = BASIC_SIZE + SIZE_LONG;
    
-   public static final byte DELETE_RECORD = 15;
-   
-   public static final int  SIZE_DELETE_RECORD_TX = BASIC_SIZE + SIZE_LONG + SIZE_LONG;
-   
-   public static final byte DELETE_RECORD_TX = 16;
+   public static final byte DELETE_RECORD = 16;
    
    public static final int SIZE_COMPLETE_TRANSACTION_RECORD = BASIC_SIZE + SIZE_INT + SIZE_LONG; // + NumerOfElements*SIZE_INT*2
    
@@ -158,7 +158,7 @@ public class JournalImpl implements TestableJournal
       
    // Attributes ----------------------------------------------------
    
-   private volatile boolean autoReclaim = true;
+   private boolean autoReclaim = true;
    
    private final AtomicInteger nextOrderingId = new AtomicInteger(0);
    
@@ -460,28 +460,34 @@ public class JournalImpl implements TestableJournal
       }
    }
 
-   public void appendDeleteRecordTransactional(final long txID, final long id) throws Exception
+   public void appendDeleteRecordTransactional(final long txID, final long id, final EncodingSupport extraData) throws Exception
    {
       if (state != STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
       }
       
-      int size = SIZE_DELETE_RECORD_TX;
+      int size = SIZE_DELETE_RECORD_TX + (extraData != null? extraData.getEncodeSize():0);
       
-      ByteBuffer bb = newBuffer(size); 
+      ByteBufferWrapper bb = new ByteBufferWrapper(newBuffer(size));
       
-      bb.put(DELETE_RECORD_TX);     
-      bb.putInt(-1);
+      
+      bb.putByte(DELETE_RECORD_TX);     
+      bb.putInt(-1); // skip ID part
       bb.putLong(txID);    
-      bb.putLong(id);      
+      bb.putLong(id);
+      bb.putInt(extraData != null ? extraData.getEncodeSize() : 0);
+      if (extraData != null)
+      {
+         extraData.encode(bb);
+      }
       bb.putInt(size);     
       
       lock.acquire();
       
       try
       {                          
-         JournalFile usedFile = appendRecord(bb, false, getTransactionCallback(txID));
+         JournalFile usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
          
          JournalTransaction tx = getTransactionInfo(txID);
          
@@ -499,6 +505,8 @@ public class JournalImpl implements TestableJournal
     *     back to a state it could be committed. </p>
     * 
     * <p> transactionData allows you to store any other supporting user-data related to the transaction</p>
+    * 
+    * <p> This method also uses the same logic applied on {@link JournalImpl#appendCommitRecord(long)}
     * 
     * @param txID
     * @param transactionData - extra user data for the prepare
@@ -529,6 +537,23 @@ public class JournalImpl implements TestableJournal
       }
    }
 
+   /**
+    * <p>A transaction record (Commit or Prepare), will hold the number of elements the transaction has on each file.</p>
+    * <p>For example, a transaction was spread along 3 journal files with 10 records on each file. 
+    *    (What could happen if there are too many records, or if an user event delayed records to come in time to a single file).</p>
+    * <p>The element-summary will then have</p>
+    * <p>FileID1, 10</p>
+    * <p>FileID2, 10</p>
+    * <p>FileID3, 10</p>
+    * 
+    * <br>
+    * <p> During the load, the transaction needs to have 30 records spread across the files as originally written.</p>
+    * <p> If for any reason there are missing records, that means the transaction was not completed and we should ignore the whole transaction </p>
+    * <p> We can't just use a global counter as reclaiming could delete files after the transaction was successfully committed. 
+    *     That also means not having a whole file on journal-reload doesn't mean we have to invalidate the transaction </p>
+    *
+    * @see JournalImpl#writeTransaction(byte, long, org.jboss.messaging.core.journal.impl.JournalImpl.JournalTransaction, EncodingSupport)
+    */
    public void appendCommitRecord(final long txID) throws Exception
    {
       if (state != STATE_LOADED)
@@ -805,7 +830,10 @@ public class JournalImpl implements TestableJournal
                   continue;
                }
                
-               userRecordType = bb.get();
+               if (recordType != DELETE_RECORD_TX)
+               {
+                  userRecordType = bb.get();
+               }
                
                record = new byte[variableSize];
                
@@ -949,7 +977,7 @@ public class JournalImpl implements TestableJournal
                      transactions.put(transactionID, tx);
                   }
                   
-                  tx.recordsToDelete.add(recordID);                     
+                  tx.recordsToDelete.add(new RecordInfo(recordID, (byte)0, record, true));                     
                   
                   JournalTransaction tnp = transactionInfos.get(transactionID);
                   
@@ -1050,9 +1078,9 @@ public class JournalImpl implements TestableJournal
                            }
                         }
                         
-                        for (long deleteValue: tx.recordsToDelete)
+                        for (RecordInfo deleteValue: tx.recordsToDelete)
                         {
-                           loadManager.deleteRecord(deleteValue);
+                           loadManager.deleteRecord(deleteValue.id);
                         }
                         
                         journalTransaction.commit(file);       
@@ -1084,7 +1112,7 @@ public class JournalImpl implements TestableJournal
                         throw new IllegalStateException("Cannot find tx " + transactionID);
                      }
 
-                     // There is no need to validate summaries on Rollbacks.. We will ignore the data anyway.
+                     // There is no need to validate summaries/holes on Rollbacks.. We will ignore the data anyway.
                      tnp.rollback(file);  
                      
                      hasData = true;         
@@ -1514,12 +1542,13 @@ public class JournalImpl implements TestableJournal
 
    
    /**
+    * <p> Check for holes on the transaction (a commit written but with an incomplete transaction) </p>
     * <p>This method will validate if the transaction (PREPARE/COMMIT) is complete as stated on the COMMIT-RECORD.</p>
     * <p> We record a summary about the records on the journal file on COMMIT and PREPARE. 
     *     When we load the records we build a new summary and we check the original summary to the current summary.
     *     This method is basically verifying if the entire transaction is being loaded </p> 
     *     
-    * <p>Look at the javadoc on {@link JournalImpl#writeTransaction(byte, long, org.jboss.messaging.core.journal.impl.JournalImpl.JournalTransaction, EncodingSupport)} about how the transaction-summary is recorded</p> 
+    * <p>Look at the javadoc on {@link JournalImpl#appendCommitRecord(long)} about how the transaction-summary is recorded</p> 
     *     
     * @param journalTransaction
     * @param orderedFiles
@@ -1557,6 +1586,7 @@ public class JournalImpl implements TestableJournal
                   //      so this transaction is broken and needs to be ignored.
                   //      This is probably a hole caused by a crash during commit.
                   found = true;
+                  break;
                }
             }
             if (found)
@@ -1581,7 +1611,6 @@ public class JournalImpl implements TestableJournal
    }
 
    /**
-    * 
     * <p>A transaction record (Commit or Prepare), will hold the number of elements the transaction has on each file.</p>
     * <p>For example, a transaction was spread along 3 journal files with 10 records on each file. 
     *    (What could happen if there are too many records, or if an user event delayed records to come in time to a single file).</p>
@@ -1650,7 +1679,7 @@ public class JournalImpl implements TestableJournal
    
    private boolean isContainsBody(final byte recordType)
    {
-      return recordType >= ADD_RECORD && recordType <= UPDATE_RECORD_TX;
+      return recordType >= ADD_RECORD && recordType <= DELETE_RECORD_TX;
    }
    
    private int getRecordSize(final byte recordType)
@@ -2116,7 +2145,7 @@ public class JournalImpl implements TestableJournal
       
       /** This queue is fed by {@link JournalImpl.ReuseBuffersController.LocalBufferCallback}} which is called directly by NIO or NIO.
        * On the case of the AIO this is almost called by the native layer as soon as the buffer is not being used any more
-       * and ready to reused or GCed */
+       * and ready to be reused or GCed */
       private final ConcurrentLinkedQueue<ByteBuffer> reuseBuffers = new ConcurrentLinkedQueue<ByteBuffer>();
       
       final BufferCallback callback = new LocalBufferCallback();

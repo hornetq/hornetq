@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.server;
 
+import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.message.Message;
 
 /**
@@ -32,7 +33,7 @@ import org.jboss.messaging.core.message.Message;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public interface ServerMessage extends Message
+public interface ServerMessage extends Message, EncodingSupport
 {
    long getMessageID();
    

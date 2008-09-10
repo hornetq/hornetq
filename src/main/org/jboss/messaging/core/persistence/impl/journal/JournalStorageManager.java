@@ -223,7 +223,7 @@ public class JournalStorageManager implements StorageManager
       if (pageTransaction.getRecordID() != 0)
       {
          // Instead of updating the record, we delete the old one as that is better for reclaiming
-         messageJournal.appendDeleteRecordTransactional(txID, pageTransaction.getRecordID());
+         messageJournal.appendDeleteRecordTransactional(txID, pageTransaction.getRecordID(), null);
       }
       pageTransaction.setRecordID(generateID());
       messageJournal.appendAddRecordTransactional(txID, pageTransaction.getRecordID(), PAGE_TRANSACTION, pageTransaction);
@@ -234,7 +234,7 @@ public class JournalStorageManager implements StorageManager
       if (lastPage.getRecordId() != 0)
       {
          // To avoid linked list effect on reclaiming, we delete and add a new record, instead of simply updating it
-         messageJournal.appendDeleteRecordTransactional(txID, lastPage.getRecordId());
+         messageJournal.appendDeleteRecordTransactional(txID, lastPage.getRecordId(), null);
       }
       lastPage.setRecordId(generateID());
       messageJournal.appendAddRecordTransactional(txID, lastPage.getRecordId(), LAST_PAGE, lastPage);
@@ -245,9 +245,14 @@ public class JournalStorageManager implements StorageManager
 		messageJournal.appendUpdateRecordTransactional(txID, messageID, ACKNOWLEDGE_REF, new ACKEncoding(queueID));	
    }
    
-   public void storeDeleteTransactional(long txID, long messageID) throws Exception
+   public void storeDeleteTransactional(long txID, long recordID) throws Exception
    {
-   	messageJournal.appendDeleteRecordTransactional(txID, messageID);	
+   	messageJournal.appendDeleteRecordTransactional(txID, recordID, null);	
+   }
+   
+   public void storeDeleteMessageTransactional(long txID, long messageID, long queueID) throws Exception
+   {
+      messageJournal.appendDeleteRecordTransactional(txID, messageID, new DeleteEncoding(queueID));
    }
   
    public void prepare(long txID, Xid xid) throws Exception
@@ -818,20 +823,19 @@ public class JournalStorageManager implements StorageManager
       
    }
    
-   
-   private class ACKEncoding implements EncodingSupport
+   private class QueueEncoding implements EncodingSupport
    {
       long queueID;
       
       
 
-      public ACKEncoding(long queueID)
+      public QueueEncoding(long queueID)
       {
          super();
          this.queueID = queueID;
       }
 
-      public ACKEncoding()
+      public QueueEncoding()
       {
          super();
       }
@@ -853,7 +857,34 @@ public class JournalStorageManager implements StorageManager
       
    }
    
+   private class DeleteEncoding extends QueueEncoding
+   {
+
+      public DeleteEncoding()
+      {
+         super();
+      }
+
+      public DeleteEncoding(long queueID)
+      {
+         super(queueID);
+      }
+      
+   }
    
+   private class ACKEncoding extends QueueEncoding
+   {
+
+      public ACKEncoding()
+      {
+         super();
+      }
+
+      public ACKEncoding(long queueID)
+      {
+         super(queueID);
+      }
+   }
 
    
 }

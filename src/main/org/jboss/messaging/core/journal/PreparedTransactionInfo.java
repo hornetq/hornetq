@@ -43,7 +43,7 @@ public class PreparedTransactionInfo
    
    public final List<RecordInfo> records = new ArrayList<RecordInfo>();
    
-   public final Set<Long> recordsToDelete = new HashSet<Long>();
+   public final Set<RecordInfo> recordsToDelete = new HashSet<RecordInfo>();
 
    public PreparedTransactionInfo(final long id, final byte[] extraData)
    {

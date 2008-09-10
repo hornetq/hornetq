@@ -343,7 +343,7 @@ public abstract class MessageImplTestBase extends UnitTestCase
    
    // Private ----------------------------------------------------------------------------------
    
-   private void checkSizes(final EncodingSupport obj, final EncodingSupport newObject)
+   private void checkSizes(final Message obj, final EncodingSupport newObject)
    {
       ByteBuffer bf = ByteBuffer.allocateDirect(1024);
       ByteBufferWrapper buffer = new ByteBufferWrapper(bf);

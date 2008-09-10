@@ -280,9 +280,9 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		
 		for (int i = 0; i < arguments.length; i++)
 		{                 
-			journal.appendDeleteRecordTransactional(txID, arguments[i]);
+			journal.appendDeleteRecordTransactional(txID, arguments[i], null);
 			
-			tx.deletes.add(arguments[i]);       
+			tx.deletes.add(new RecordInfo(arguments[i], (byte)0, null, true));
 		}
 		
       journal.debugWait();
@@ -349,9 +349,9 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		
 		records.addAll(tx.records);
 		
-		for (Long l: tx.deletes)
+		for (RecordInfo l: tx.deletes)
 		{
-			removeRecordsForID(l);
+			removeRecordsForID(l.id);
 		}
 	}
 	
@@ -402,15 +402,15 @@ public abstract class JournalImplTestBase extends UnitTestCase
 			
 			assertEquals("deletes size not same", rexpected.recordsToDelete.size(), ractual.recordsToDelete.size());
 			
-			Iterator<Long> iterDeletesExpected = rexpected.recordsToDelete.iterator();
+			Iterator<RecordInfo> iterDeletesExpected = rexpected.recordsToDelete.iterator();
 			
-			Iterator<Long> iterDeletesActual = ractual.recordsToDelete.iterator();
+			Iterator<RecordInfo> iterDeletesActual = ractual.recordsToDelete.iterator();
 			
 			while (iterDeletesExpected.hasNext())
 			{
-				long lexpected = iterDeletesExpected.next();
+				long lexpected = iterDeletesExpected.next().id;
 				
-				long lactual = iterDeletesActual.next();
+				long lactual = iterDeletesActual.next().id;
 				
 				assertEquals("Delete ids not same", lexpected, lactual);
 			}
@@ -458,7 +458,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 	{
 		List<RecordInfo> records = new ArrayList<RecordInfo>();
 		
-		List<Long> deletes = new ArrayList<Long>();
+		List<RecordInfo> deletes = new ArrayList<RecordInfo>();
 		
 		boolean prepared;
 	}
