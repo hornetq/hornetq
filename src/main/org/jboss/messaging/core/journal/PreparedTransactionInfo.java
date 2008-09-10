@@ -38,15 +38,17 @@ import java.util.Set;
 public class PreparedTransactionInfo
 {
    public final long id;
-   public final byte[] xidData;
+   
+   public final byte[] extraData;
    
    public final List<RecordInfo> records = new ArrayList<RecordInfo>();
    
    public final Set<Long> recordsToDelete = new HashSet<Long>();
 
-   public PreparedTransactionInfo(final long id, final byte[] xidData)
+   public PreparedTransactionInfo(final long id, final byte[] extraData)
    {
       this.id = id;
-      this.xidData = xidData;
+      
+      this.extraData = extraData;
    }
 }

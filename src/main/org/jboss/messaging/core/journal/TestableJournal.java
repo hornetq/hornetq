@@ -75,6 +75,8 @@ public interface TestableJournal extends Journal
    
    // These add methods are only used by testCases
    
+   //FIXME: These methods should be removed - they are only used by tests
+   
    void appendAddRecord(long id, byte recordType, byte[] record) throws Exception;
    
    void appendUpdateRecord(long id, byte recordType, byte[] record) throws Exception;

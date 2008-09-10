@@ -22,13 +22,12 @@
 
 package org.jboss.messaging.core.journal.impl;
 
-import org.jboss.messaging.core.journal.RecordInfo;
-
-import javax.transaction.xa.Xid;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.jboss.messaging.core.journal.RecordInfo;
 
 /**
  * 
@@ -56,6 +55,6 @@ public class TransactionHolder
    
    public boolean invalid;
 
-   public byte[] xidData;
+   public byte[] extraData;
    
 }
