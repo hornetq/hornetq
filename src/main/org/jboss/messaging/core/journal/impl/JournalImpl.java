@@ -654,7 +654,7 @@ public class JournalImpl implements TestableJournal
     *   <tr><td>TransactionID <i>(if record is transactional)</i></td><td>Long (8 bytes)</td></tr>
     *   <tr><td>RecordID</td><td>Long (8 bytes)</td></tr>
     *   <tr><td>BodySize(only on Add and update)</td><td>Integer (4 bytes)</td></tr>
-    *   <tr><td>UserDefinedRecordType</td><td>Byte (1)</td</tr>
+    *   <tr><td>UserDefinedRecordType (If add/update only)</td><td>Byte (1)</td</tr>
     *   <tr><td>RecordBody</td><td>Byte Array (size=BodySize)</td></tr>
     *   <tr><td>Check Size</td><td>Integer (4 bytes)</td></tr>
     * </table>
