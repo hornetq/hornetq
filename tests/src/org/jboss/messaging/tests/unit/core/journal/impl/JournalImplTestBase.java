@@ -30,10 +30,9 @@ import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.TestableJournal;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.tests.unit.core.journal.impl.fakes.ByteArrayEncoding;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
-
-import javax.transaction.xa.Xid;
 import java.util.*;
 
 /**
@@ -208,7 +207,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		{     
 			byte[] record = generateRecord(size);
 			
-			journal.appendAddRecord(arguments[i], (byte)0, record);
+			journal.appendAddRecord(arguments[i], (byte)0, new ByteArrayEncoding(record));
 			
 			records.add(new RecordInfo(arguments[i], (byte)0, record, false));         
 		}
@@ -222,7 +221,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		{     
 			byte[] updateRecord = generateRecord(recordLength);
 			
-			journal.appendUpdateRecord(arguments[i], (byte)0, updateRecord);
+			journal.appendUpdateRecord(arguments[i], (byte)0, new ByteArrayEncoding(updateRecord));
 			
 			records.add(new RecordInfo(arguments[i], (byte)0, updateRecord, true)); 
 		}
@@ -251,7 +250,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 			// SIZE_BYTE + SIZE_LONG + SIZE_LONG + SIZE_INT + record.length + SIZE_BYTE
 			byte[] record = generateRecord(recordLength - JournalImpl.SIZE_ADD_RECORD_TX );
 			
-			journal.appendAddRecordTransactional(txID, arguments[i], (byte)0, record);
+			journal.appendAddRecordTransactional(txID, arguments[i], (byte)0, new ByteArrayEncoding(record));
 			
 			tx.records.add(new RecordInfo(arguments[i], (byte)0, record, false));
 			
@@ -268,7 +267,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 		{     
 			byte[] updateRecord = generateRecord(recordLength - JournalImpl.SIZE_UPDATE_RECORD_TX );
 			
-			journal.appendUpdateRecordTransactional(txID, arguments[i], (byte)0, updateRecord);
+			journal.appendUpdateRecordTransactional(txID, arguments[i], (byte)0, new ByteArrayEncoding(updateRecord));
 			
 			tx.records.add(new RecordInfo(arguments[i], (byte)0, updateRecord, true));
 		}     

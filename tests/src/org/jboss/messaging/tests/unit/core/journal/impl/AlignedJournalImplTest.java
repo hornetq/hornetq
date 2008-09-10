@@ -39,6 +39,7 @@ import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.tests.unit.core.journal.impl.fakes.ByteArrayEncoding;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -214,7 +215,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          {
             bytes[j] = (byte)i;
          }
-         journalImpl.appendAddRecord(i * 100l, (byte)i, bytes);
+         journalImpl.appendAddRecord(i * 100l, (byte)i, new ByteArrayEncoding(bytes));
       }
       
       for (int i = 25; i < 50; i++)
@@ -249,7 +250,7 @@ public class AlignedJournalImplTest extends UnitTestCase
             bytes[j] = (byte)'x';
          }
          
-         journalImpl.appendUpdateRecord(i * 100l, (byte)i, bytes);
+         journalImpl.appendUpdateRecord(i * 100l, (byte)i, new ByteArrayEncoding(bytes));
       }
       
       setupJournal(JOURNAL_SIZE, 1024);

@@ -60,7 +60,6 @@ import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.TestableJournal;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
-import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.VariableLatch;
 
@@ -69,6 +68,9 @@ import org.jboss.messaging.util.VariableLatch;
  * <p>A JournalImpl</p
  * 
  * <p>WIKI Page: <a href="http://wiki.jboss.org/auth/wiki/JBossMessaging2Journal"> http://wiki.jboss.org/auth/wiki/JBossMessaging2Journal</a></p>
+ * 
+ * 
+ * <p>Look at {@link JournalImpl#load(LoadManager)} for the file layout
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
@@ -280,14 +282,12 @@ public class JournalImpl implements TestableJournal
       ByteBufferWrapper bb = new ByteBufferWrapper(newBuffer(size));
       
       bb.putByte(ADD_RECORD);     
-      //bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
       bb.putInt(-1); // skip ID part
       bb.putLong(id);
       bb.putInt(recordLength);
       bb.putByte(recordType);
       record.encode(bb);
       bb.putInt(size);        
-      bb.rewind();  // TODO is rewind necessary?
       
       try
       {                 
@@ -322,14 +322,12 @@ public class JournalImpl implements TestableJournal
       ByteBufferWrapper bb = new ByteBufferWrapper(newBuffer(size));
       
       bb.putByte(UPDATE_RECORD);     
-    //  bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
       bb.putInt(-1); // skip ID part
       bb.putLong(id);      
       bb.putInt(record.getEncodeSize());
       bb.putByte(recordType);
       record.encode(bb);
       bb.putInt(size);     
-      bb.rewind(); //Is this necessary?
       
       lock.acquire();
 
@@ -364,11 +362,9 @@ public class JournalImpl implements TestableJournal
       ByteBuffer bb = newBuffer(size); 
       
       bb.put(DELETE_RECORD);     
-      //bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
       bb.putInt(-1); // skip ID part
       bb.putLong(id);      
       bb.putInt(size);     
-      bb.rewind();  //Is this necessary?
       
       lock.acquire();
       
@@ -404,7 +400,6 @@ public class JournalImpl implements TestableJournal
       ByteBufferWrapper bb = new ByteBufferWrapper(newBuffer(size)); 
       
       bb.putByte(ADD_RECORD_TX);
-     // bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
       bb.putInt(-1); // skip ID part
       bb.putLong(txID);
       bb.putLong(id);
@@ -412,7 +407,6 @@ public class JournalImpl implements TestableJournal
       bb.putByte(recordType);
       record.encode(bb);
       bb.putInt(size);     
-      bb.rewind();  //Is this necessary?
       
       lock.acquire();
       
@@ -442,7 +436,6 @@ public class JournalImpl implements TestableJournal
       ByteBufferWrapper bb = new ByteBufferWrapper(newBuffer(size)); 
             
       bb.putByte(UPDATE_RECORD_TX);     
-      //bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
       bb.putInt(-1); // skip ID part
       bb.putLong(txID);
       bb.putLong(id);      
@@ -450,7 +443,6 @@ public class JournalImpl implements TestableJournal
       bb.putByte(recordType);
       record.encode(bb);
       bb.putInt(size);     
-      bb.rewind(); //Is this necessary?
       
       lock.acquire();
       
@@ -480,12 +472,10 @@ public class JournalImpl implements TestableJournal
       ByteBuffer bb = newBuffer(size); 
       
       bb.put(DELETE_RECORD_TX);     
-      //bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
       bb.putInt(-1);
       bb.putLong(txID);    
       bb.putLong(id);      
       bb.putInt(size);     
-      bb.rewind(); //Is this necessary
       
       lock.acquire();
       
@@ -523,7 +513,7 @@ public class JournalImpl implements TestableJournal
       
       JournalTransaction tx = getTransactionInfo(txID);
       
-      ByteBuffer bb = writePrepareTransaction(PREPARE_RECORD, txID, tx, transactionData);
+      ByteBuffer bb = writeTransaction(PREPARE_RECORD, txID, tx, transactionData);
       
       lock.acquire();
       
@@ -553,7 +543,7 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Cannot find tx with id " + txID);
       }
       
-      ByteBuffer bb = writeCommitTransaction(COMMIT_RECORD, txID, tx);
+      ByteBuffer bb = writeTransaction(COMMIT_RECORD, txID, tx, null);
       
       lock.acquire();
       
@@ -590,11 +580,9 @@ public class JournalImpl implements TestableJournal
       ByteBuffer bb = newBuffer(size); 
       
       bb.put(ROLLBACK_RECORD);      
-      //bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
       bb.putInt(-1); // skip ID part
       bb.putLong(txID);
       bb.putInt(size);        
-      bb.rewind(); // Is this necessary?
       
       lock.acquire();
       
@@ -612,6 +600,9 @@ public class JournalImpl implements TestableJournal
       }
    }
    
+   /**
+    * @see JournalImpl#load(LoadManager)
+    */
    public synchronized long load(final List<RecordInfo> committedRecords,
                                  final List<PreparedTransactionInfo> preparedTransactions) throws Exception
    {      
@@ -651,7 +642,42 @@ public class JournalImpl implements TestableJournal
       
       return maxID;
    }
-      
+
+   /** 
+    * <p>Load data accordingly to the record layouts</p>
+    * 
+    * <p>Basic record laytout:</p>
+    * <table border=1>
+    *   <tr><td><b>Field Name</b></td><td><b>Size</b></td></tr>
+    *   <tr><td>RecordType</td><td>Byte (1)</td></tr>
+    *   <tr><td>FileID</td><td>Integer (4 bytes)</td></tr>
+    *   <tr><td>TransactionID <i>(if record is transactional)</i></td><td>Long (8 bytes)</td></tr>
+    *   <tr><td>RecordID</td><td>Long (8 bytes)</td></tr>
+    *   <tr><td>BodySize(only on Add and update)</td><td>Integer (4 bytes)</td></tr>
+    *   <tr><td>UserDefinedRecordType</td><td>Byte (1)</td</tr>
+    *   <tr><td>RecordBody</td><td>Byte Array (size=BodySize)</td></tr>
+    *   <tr><td>Check Size</td><td>Integer (4 bytes)</td></tr>
+    * </table>
+    * 
+    * <p> The check-size is used to validate if the record is valid and complete </p>
+    * 
+    * <p>Commit/Prepare record layout:</p>
+    * <table border=1>
+    *   <tr><td><b>Field Name</b></td><td><b>Size</b></td></tr>
+    *   <tr><td>RecordType</td><td>Byte (1)</td></tr>
+    *   <tr><td>FileID</td><td>Integer (4 bytes)</td></tr>
+    *   <tr><td>TransactionID <i>(if record is transactional)</i></td><td>Long (8 bytes)</td></tr>
+    *   <tr><td>ExtraDataLength (Prepares only)</td><td>Integer (4 bytes)</td></tr>
+    *   <tr><td>Number Of Files (N)</td><td>Integer (4 bytes)</td></tr>
+    *   <tr><td>ExtraDataBytes</td><td>Bytes (sized by ExtraDataLength)</td></tr>
+    *   <tr><td>* FileID(n)</td><td>Integer (4 bytes)</td></tr>
+    *   <tr><td>* NumberOfElements(n)</td><td>Integer (4 bytes)</td></tr>
+    *   <tr><td>CheckSize</td><td>Integer (4 bytes)</td</tr>
+    * </table>
+    * 
+    * <p> * FileID and NumberOfElements are the transaction summary, and they will be repeated (N)umberOfFiles times </p> 
+    * 
+    * */
    public synchronized long load(final LoadManager loadManager) throws Exception
    {      
       if (state != STATE_STARTED)
@@ -775,7 +801,7 @@ public class JournalImpl implements TestableJournal
                
                if (bb.position() + variableSize > fileSize)
                {
-                  //TODO - isn't this an error?
+                  log.warn("Record at position " + pos + " file:" + file.getFile().getFileName() + " is corrupted and it is being ignored");
                   continue;
                }
                
@@ -790,9 +816,10 @@ public class JournalImpl implements TestableJournal
             {
                if (recordType == PREPARE_RECORD)
                {
+                  // Add the variable size required for preparedTransactions 
                   preparedTransactionExtraDataSize = bb.getInt();
                }               
-               //Comment required: I'm guessing this is because commits and prepares also include the record ids?
+               //Both commit and record contain the recordSummary, and this is used to calculate the record-size on both record-types
                variableSize += bb.getInt() * SIZE_INT * 2;
             }
 
@@ -803,8 +830,9 @@ public class JournalImpl implements TestableJournal
             if (pos + recordSize + variableSize  + preparedTransactionExtraDataSize > fileSize)
             {
                // Avoid a buffer overflow caused by damaged data... continue scanning for more records...
-               
-               //TODO - isn't this an error?
+               log.warn("Record at position " + pos + " file:" + file.getFile().getFileName() + " is corrupted and it is being ignored");
+               // If a file has damaged records, we make it a dataFile, and the next reclaiming will fix it
+               hasData = true;
                
                continue;
             }
@@ -822,7 +850,6 @@ public class JournalImpl implements TestableJournal
                log.warn("Record at position " + pos + " file:" + file.getFile().getFileName() + " is corrupted and it is being ignored");
                
                // If a file has damaged records, we make it a dataFile, and the next reclaiming will fix it
-               
                hasData = true;
                
                bb.position(pos + SIZE_BYTE);
@@ -945,12 +972,11 @@ public class JournalImpl implements TestableJournal
                                     
                   if (tx == null)
                   {
+                     // The user could choose to prepare empty transactions
                      tx = new TransactionHolder(transactionID);  
                      
                      transactions.put(transactionID, tx);
                   }
-                                    
-                  // We need to read it even if transaction was not found, or the reading checks would fail
 
                   byte extraData[] = new byte[preparedTransactionExtraDataSize];
                   
@@ -996,6 +1022,9 @@ public class JournalImpl implements TestableJournal
                   // Pair <OrderId, NumberOfElements>
                   Pair<Integer, Integer>[] recordedSummary = readTransactionalElementsSummary(variableSize, bb);
 
+                  // The commit could be alone on its own journal-file and the whole transaction body was reclaimed but not the commit-record
+                  // So it is completely legal to not find a transaction at this point
+                  // If we can't find it, we assume the TX was reclaimed and we ignore this
                   if (tx != null)
                   {                     
                      JournalTransaction journalTransaction = transactionInfos.remove(transactionID);
@@ -1037,10 +1066,6 @@ public class JournalImpl implements TestableJournal
                      
                      hasData = true;         
                   }
-                  else
-                  {
-                     //TODO isn't this an error?
-                  }
                   
                   break;
                }
@@ -1048,6 +1073,8 @@ public class JournalImpl implements TestableJournal
                {                  
                   TransactionHolder tx = transactions.remove(transactionID);
                   
+                  // The rollback could be alone on its own journal-file and the whole transaction body was reclaimed but the commit-record
+                  // So it is completely legal to not find a transaction at this point
                   if (tx != null)
                   {                       
                      JournalTransaction tnp = transactionInfos.remove(transactionID);
@@ -1061,10 +1088,6 @@ public class JournalImpl implements TestableJournal
                      tnp.rollback(file);  
                      
                      hasData = true;         
-                  }
-                  else
-                  {
-                     //TODO is this an error?
                   }
                   
                   break;
@@ -1380,32 +1403,6 @@ public class JournalImpl implements TestableJournal
       debugWait();
    }
 
-   // Add/update methods only used on testcases (using a byte[]). Those methods are now part of the Test interface ------------------------
-   
-   //FIXME - why have these methods?? Why not just use the normal public interface methods
-   //They should be removed
-   
-   public void appendAddRecord(final long id, final byte recordType, final byte[] record) throws Exception
-   {
-      appendAddRecord(id, recordType, new ByteArrayEncoding(record));
-   }
-   
-   public void appendUpdateRecord(final long id, final byte recordType, final byte[] record) throws Exception
-   {
-      appendUpdateRecord(id, recordType, new ByteArrayEncoding(record));
-   }
-   
-   public void appendAddRecordTransactional(final long txID, final long id, final byte recordType, final byte[] record) throws Exception
-   {
-      appendAddRecordTransactional(txID, id, recordType, new ByteArrayEncoding(record));
-   }
-   
-   public void appendUpdateRecordTransactional(final long txID, final long id, byte recordType, final byte[] record) throws Exception
-   {
-      appendUpdateRecordTransactional(txID, id, recordType, new ByteArrayEncoding(record));
-   }
-   
-   
    // MessagingComponent implementation ---------------------------------------------------
    
    public synchronized boolean isStarted()
@@ -1504,11 +1501,7 @@ public class JournalImpl implements TestableJournal
    {
       int numberOfFiles = variableSize / (SIZE_INT * 2);
       
-      // This line aways throws a compilation-warning, even thought is a completely legal operation.
-      // We could remove the SuppressWarnings as soon as we find better expression on this line:
-      
-      //TODO sure - if something throws a warning doesn't mean it's illegal - if it were illegal it wouldn't compile!
-      
+      // This line aways show an annoying compilation-warning, the SupressWarning is to avoid a warning about this cast
       Pair<Integer, Integer> values[] = (Pair<Integer, Integer> [])new Pair[numberOfFiles];
       
       for (int i = 0; i < numberOfFiles; i++)
@@ -1526,7 +1519,7 @@ public class JournalImpl implements TestableJournal
     *     When we load the records we build a new summary and we check the original summary to the current summary.
     *     This method is basically verifying if the entire transaction is being loaded </p> 
     *     
-    *     Summary means what? More info please
+    * <p>Look at the javadoc on {@link JournalImpl#writeTransaction(byte, long, org.jboss.messaging.core.journal.impl.JournalImpl.JournalTransaction, EncodingSupport)} about how the transaction-summary is recorded</p> 
     *     
     * @param journalTransaction
     * @param orderedFiles
@@ -1598,7 +1591,7 @@ public class JournalImpl implements TestableJournal
     * <p>FileID3, 10</p>
     * 
     * <br>
-    * <p> During the load the transaction needs to have 30 records, spread across the files as originally written.</p>
+    * <p> During the load, the transaction needs to have 30 records spread across the files as originally written.</p>
     * <p> If for any reason there are missing records, that means the transaction was not completed and we should ignore the whole transaction </p>
     * <p> We can't just use a global counter as reclaiming could delete files after the transaction was successfully committed. 
     *     That also means not having a whole file on journal-reload doesn't mean we have to invalidate the transaction </p>
@@ -1610,18 +1603,28 @@ public class JournalImpl implements TestableJournal
     * @return
     * @throws Exception
     */
-   private ByteBuffer writeCommitTransaction(final byte recordType, final long txID, final JournalTransaction tx) throws Exception
+   private ByteBuffer writeTransaction(final byte recordType, final long txID, final JournalTransaction tx, EncodingSupport transactionData) throws Exception
    {
-      int size = SIZE_COMPLETE_TRANSACTION_RECORD + tx.getElementsSummary().size() * SIZE_INT * 2;
+      int size = SIZE_COMPLETE_TRANSACTION_RECORD + tx.getElementsSummary().size() * SIZE_INT * 2 +
+                  (transactionData != null ? transactionData.getEncodeSize() + SIZE_INT : 0);
       
       ByteBuffer bb = newBuffer(size); 
       
       bb.put(recordType);    
-     // bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
       bb.putInt(-1); // skip ID part
       bb.putLong(txID);
 
+      if (transactionData != null)
+      {
+         bb.putInt(transactionData.getEncodeSize());
+      }
+      
       bb.putInt(tx.getElementsSummary().size());
+      
+      if (transactionData != null)
+      {
+         transactionData.encode(new ByteBufferWrapper(bb));
+      }
 
       for (Map.Entry<Integer, AtomicInteger> entry: tx.getElementsSummary().entrySet())
       {
@@ -1630,39 +1633,7 @@ public class JournalImpl implements TestableJournal
       }
       
       bb.putInt(size);           
-      bb.rewind(); //Is this necessary?
-      
-      return bb;
-   }
-
-   /**
-    * TODO: Merge this method back into writeCommitTransaction (as it was done originally).
-    * For more explanations read the javadoc on writeCommitTransaction
-    */
-   private ByteBuffer writePrepareTransaction(final byte recordType, final long txID, final JournalTransaction tx, EncodingSupport transactionData) throws Exception
-   {
-      int xidSize = transactionData.getEncodeSize();
-      int size = SIZE_COMPLETE_TRANSACTION_RECORD + tx.getElementsSummary().size() * SIZE_INT * 2 + xidSize + SIZE_INT;
-
-      ByteBuffer bb = newBuffer(size);
-
-      bb.put(recordType);
-      //bb.position(SIZE_BYTE + SIZE_INT); // skip ID part
-      bb.putInt(-1); // skip ID part
-      bb.putLong(txID);
-      bb.putInt(xidSize);
-      bb.putInt(tx.getElementsSummary().size());
-      transactionData.encode(new ByteBufferWrapper(bb));
-
-      for (Map.Entry<Integer, AtomicInteger> entry: tx.getElementsSummary().entrySet())
-      {
-         bb.putInt(entry.getKey());
-         bb.putInt(entry.getValue().get());
-      }
-
-      bb.putInt(size);
-      bb.rewind();  //Is this necessary?
-
+       
       return bb;
    }
 
@@ -1898,7 +1869,7 @@ public class JournalImpl implements TestableJournal
    }
    
    /** 
-    * This method will immediatly return the opened file, and schedule opening and reclaiming.
+    * This method will instantly return the opened file, and schedule opening and reclaiming.
     * In case there are no cached opened files, this method will block until the file was opened. (what would happen only if the system is under load).
     * 
     * Warning: You need to guarantee lock.acquire() before calling this method
@@ -2143,9 +2114,9 @@ public class JournalImpl implements TestableJournal
    {
       private volatile long bufferReuseLastTime = System.currentTimeMillis();
       
-      // This queue is feeded by LocalBufferCallback which is called directly by NIO or NIO.
-      // On the case of the AIO this is almost called by the native layer as soon as the buffer is not being used any more
-      // and ready to reuse or GC
+      /** This queue is fed by {@link JournalImpl.ReuseBuffersController.LocalBufferCallback}} which is called directly by NIO or NIO.
+       * On the case of the AIO this is almost called by the native layer as soon as the buffer is not being used any more
+       * and ready to reused or GCed */
       private final ConcurrentLinkedQueue<ByteBuffer> reuseBuffers = new ConcurrentLinkedQueue<ByteBuffer>();
       
       final BufferCallback callback = new LocalBufferCallback();
@@ -2156,7 +2127,7 @@ public class JournalImpl implements TestableJournal
          // This is being done this way as we don't need another Timeout Thread just to cleanup this
          if (reuseBufferSize > 0 && System.currentTimeMillis() - bufferReuseLastTime > 10000)
          {
-            log.debug("Clearing reuse buffers queue with " + reuseBuffers.size() + " elements");
+            System.out.println("Clearing reuse buffers queue with " + reuseBuffers.size() + " elements");
             
             bufferReuseLastTime = System.currentTimeMillis();
             
@@ -2204,7 +2175,6 @@ public class JournalImpl implements TestableJournal
             bufferReuseLastTime = System.currentTimeMillis();
             
             // If a buffer has any other than the configured size, the buffer will be just sent to GC
-            // This could happen if 
             if (buffer.capacity() == reuseBufferSize)
             {
                reuseBuffers.offer(buffer);
@@ -2363,34 +2333,5 @@ public class JournalImpl implements TestableJournal
       
    }
    
-   
-   //FIXME: This class should be removed it is only used by methods called by tests - move it to the test not the core code !!
-   private static class ByteArrayEncoding implements EncodingSupport
-   {
-      final byte[] data;
-      
-      ByteArrayEncoding(final byte[] data)
-      {
-         this.data = data;
-      }
-      
-      public void decode(MessagingBuffer buffer)
-      {
-         throw new IllegalStateException("operation not supported");
-      }
-
-      public void encode(MessagingBuffer buffer)
-      {
-         buffer.putBytes(data);
-      }
-
-      public int getEncodeSize()
-      {
-         return data.length;
-      }
-      
-   }
-   
-
    
 }

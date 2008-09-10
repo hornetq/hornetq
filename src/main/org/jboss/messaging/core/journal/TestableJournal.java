@@ -60,7 +60,7 @@ public interface TestableJournal extends Journal
    
    int getMaxAIO();
    
-   /** This method could be promoted to Journal interface when we decide to use the loadManager 
+   /** This method could be promoted to {@link Journal} interface when we decide to use the loadManager 
     *  instead of load(List,List)
     */
    long load(LoadManager reloadManager) throws Exception;
@@ -71,19 +71,5 @@ public interface TestableJournal extends Journal
    void setAutoReclaim(boolean autoReclaim);
    
    boolean isAutoReclaim();
-   
-   
-   // These add methods are only used by testCases
-   
-   //FIXME: These methods should be removed - they are only used by tests
-   
-   void appendAddRecord(long id, byte recordType, byte[] record) throws Exception;
-   
-   void appendUpdateRecord(long id, byte recordType, byte[] record) throws Exception;
-   
-   void appendAddRecordTransactional(long txID, long id, byte recordType, byte[] record) throws Exception;
-   
-   void appendUpdateRecordTransactional(long txID, long id, byte recordType, byte[] record) throws Exception;
-   
    
 }

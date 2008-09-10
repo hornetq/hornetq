@@ -69,7 +69,7 @@ public class EasyMockJournalTest extends UnitTestCase
       
       EasyMock.replay(mockFactory, file1, file2);
       
-      journalImpl.appendAddRecord(14l, (byte) 33, new byte[]{ (byte) 10 });
+      journalImpl.appendAddRecord(14l, (byte) 33, new SimpleEncoding(1, (byte)10));
       
       EasyMock.verify(mockFactory, file1, file2);
 
@@ -112,7 +112,7 @@ public class EasyMockJournalTest extends UnitTestCase
 
       EasyMock.replay(mockFactory, file1, file2);
       
-      journalImpl.appendAddRecord(14l, (byte) 33, new byte[]{ (byte) 10 });
+      journalImpl.appendAddRecord(14l, (byte) 33, new SimpleEncoding(1, (byte)10));
       
       journalImpl.appendDeleteRecord(14l);
 
@@ -274,11 +274,11 @@ public class EasyMockJournalTest extends UnitTestCase
       
      EasyMock.replay(mockFactory, file1, file2);
       
-      journalImpl.appendAddRecord(15l, (byte) 33, new byte[]{ (byte) 10 });
+      journalImpl.appendAddRecord(15l, (byte) 33, new SimpleEncoding(1, (byte)10));
       
       journalImpl.appendUpdateRecord(15l, (byte)34, new SimpleEncoding(1, (byte)11));
       
-      journalImpl.appendUpdateRecord(15l, (byte)35, new byte[]{ (byte) 12});
+      journalImpl.appendUpdateRecord(15l, (byte)35, new SimpleEncoding(1, (byte)12));
       
       EasyMock.verify(mockFactory, file1, file2);
 

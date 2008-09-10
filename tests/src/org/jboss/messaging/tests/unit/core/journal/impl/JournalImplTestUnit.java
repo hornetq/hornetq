@@ -28,7 +28,7 @@ import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.SimpleEncoding;
-
+import org.jboss.messaging.tests.unit.core.journal.impl.fakes.ByteArrayEncoding;
 import javax.transaction.xa.Xid;
 import java.util.List;
 
@@ -120,7 +120,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       // Appending records after restart should be valid (not throwing any exceptions)
       for (int i = 0; i < 100; i++)
       {
-         journal.appendAddRecord(1, (byte)1, new byte[] {(byte)'a', (byte)'a'});
+         journal.appendAddRecord(1, (byte)1, new SimpleEncoding(2, (byte)'a'));
       }
       stopJournal();
 	}
@@ -2130,7 +2130,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		{
 			byte[] record = generateRecord(10 + (int)(1500 * Math.random()));
 			
-			journal.appendAddRecord(i, (byte)0, record);
+			journal.appendAddRecord(i, (byte)0, new ByteArrayEncoding(record));
 			
 			records.add(new RecordInfo(i, (byte)0, record, false));
 		}
@@ -2139,7 +2139,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 		{
 			byte[] record = generateRecord(10 + (int)(1024 * Math.random()));
 			
-			journal.appendUpdateRecord(i, (byte)0, record);
+			journal.appendUpdateRecord(i, (byte)0, new ByteArrayEncoding(record));
 			
 			records.add(new RecordInfo(i, (byte)0, record, true));
 		}

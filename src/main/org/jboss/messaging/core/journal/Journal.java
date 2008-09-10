@@ -60,10 +60,10 @@ public interface Journal extends MessagingComponent
     * <p>If the system crashed after a prepare was called, it should store information that is required to bring the transaction 
     *     back to a state it could be committed. </p>
     * 
-    * <p> transactionData is usually a safe space you could use to store things like XIDs or any other supporting user-data required to replay the transaction </p>
+    * <p> transactionData allows you to store any other supporting user-data related to the transaction</p>
     * 
     * @param txID
-    * @param transactionData Information to support the system replaying the transaction
+    * @param transactionData - extra user data for the prepare
     * @throws Exception
     */
    void appendPrepareRecord(long txID, EncodingSupport transactionData) throws Exception;
