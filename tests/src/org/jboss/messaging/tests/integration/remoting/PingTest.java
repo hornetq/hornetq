@@ -118,10 +118,21 @@ public class PingTest extends TestCase
       
       conn.addFailureListener(clientListener);
       
-      //It's async so need to wait a while
-      Thread.sleep(1000);
-      
-      RemotingConnection serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
+      RemotingConnection serverConn = null;
+      while (serverConn == null)
+      {
+         Set<RemotingConnection> conns = messagingService.getServer().getRemotingService().getConnections();
+         
+         if (!conns.isEmpty())
+         {            
+            serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
+         }
+         else
+         {
+            //It's async so need to wait a while
+            Thread.sleep(10);
+         }
+      }
       
       Listener serverListener = new Listener();
       
@@ -159,10 +170,21 @@ public class PingTest extends TestCase
       
       conn.addFailureListener(clientListener);
       
-      //It's async so need to wait a while
-      Thread.sleep(1000);
-      
-      RemotingConnection serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
+      RemotingConnection serverConn = null;
+      while (serverConn == null)
+      {
+         Set<RemotingConnection> conns = messagingService.getServer().getRemotingService().getConnections();
+         
+         if (!conns.isEmpty())
+         {            
+            serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
+         }
+         else
+         {
+            //It's async so need to wait a while
+            Thread.sleep(10);
+         }
+      }
       
       Listener serverListener = new Listener();
       
@@ -215,7 +237,7 @@ public class PingTest extends TestCase
          else
          {
             //It's async so need to wait a while
-            Thread.sleep(100);
+            Thread.sleep(10);
          }
       }
                   
@@ -252,6 +274,7 @@ public class PingTest extends TestCase
      {
         public boolean intercept(Packet packet, RemotingConnection conn) throws MessagingException
         {
+           log.info("In interceptor, packet is " + packet.getType());
            if (packet.getType() == PacketImpl.PING)
            {
               return false;
@@ -278,10 +301,21 @@ public class PingTest extends TestCase
      
      conn.addFailureListener(clientListener);
      
-     //It's async so need to wait a while
-     Thread.sleep(1000);
-           
-     RemotingConnection serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
+     RemotingConnection serverConn = null;
+     while (serverConn == null)
+     {
+        Set<RemotingConnection> conns = messagingService.getServer().getRemotingService().getConnections();
+        
+        if (!conns.isEmpty())
+        {            
+           serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
+        }
+        else
+        {
+           //It's async so need to wait a while
+           Thread.sleep(10);
+        }
+     }
      
      Listener serverListener = new Listener();
      

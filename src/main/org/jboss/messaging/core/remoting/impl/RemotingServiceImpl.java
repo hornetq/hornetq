@@ -236,7 +236,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    // ConnectionLifeCycleListener implementation -----------------------------------
 
    public void connectionCreated(final Connection connection)
-   {
+   {     
       if (server == null)
       {
          throw new IllegalStateException("Unable to create connection, server hasn't finished starting up");
@@ -257,8 +257,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       channel1.setHandler(handler);
           
       Object id = connection.getID();
-      
-      connections.put(id, rc);
+            
+      connections.put(id, rc);      
    }
 
    public void connectionDestroyed(Object connectionID)
