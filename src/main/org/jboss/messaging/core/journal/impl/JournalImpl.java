@@ -2161,7 +2161,7 @@ public class JournalImpl implements TestableJournal
          // This is being done this way as we don't need another Timeout Thread just to cleanup this
          if (reuseBufferSize > 0 && System.currentTimeMillis() - bufferReuseLastTime > 10000)
          {
-            System.out.println("Clearing reuse buffers queue with " + reuseBuffers.size() + " elements");
+            trace("Clearing reuse buffers queue with " + reuseBuffers.size() + " elements");
             
             bufferReuseLastTime = System.currentTimeMillis();
             
