@@ -26,6 +26,11 @@ package org.jboss.messaging.tests.unit.core.journal.impl.fakes;
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
+/**
+ * 
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ *
+ */
 public class ByteArrayEncoding implements EncodingSupport
 {
    
