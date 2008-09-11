@@ -47,7 +47,7 @@ public class TransactionHolder
    
    public final List<RecordInfo> recordInfos = new ArrayList<RecordInfo>();
    
-   public final ArrayList<RecordInfo> recordsToDelete = new ArrayList<RecordInfo>();
+   public final List<RecordInfo> recordsToDelete = new ArrayList<RecordInfo>();
    
    public boolean prepared;
    

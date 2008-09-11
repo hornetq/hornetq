@@ -676,7 +676,7 @@ public class JournalImpl implements TestableJournal
    /** 
     * <p>Load data accordingly to the record layouts</p>
     * 
-    * <p>Basic record laytout:</p>
+    * <p>Basic record layout:</p>
     * <table border=1>
     *   <tr><td><b>Field Name</b></td><td><b>Size</b></td></tr>
     *   <tr><td>RecordType</td><td>Byte (1)</td></tr>
