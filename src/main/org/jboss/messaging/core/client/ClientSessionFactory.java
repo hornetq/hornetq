@@ -89,4 +89,6 @@ public interface ClientSessionFactory
 
    void setCallTimeout(final long callTimeout);
    
+   boolean isFailedOver();
+   
 }

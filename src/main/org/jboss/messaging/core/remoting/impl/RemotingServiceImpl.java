@@ -91,7 +91,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    
    private final BufferHandler bufferHandler = new DelegatingBufferHandler();
    
-   private final boolean backup;
+   private volatile boolean backup;
    
    private volatile MessagingServer server;
 
@@ -226,6 +226,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    public void setMessagingServer(final MessagingServer server)
    {
       this.server = server;
+   }
+   
+   public void setBackup(final boolean backup)
+   {
+      this.backup = backup;
    }
 
    // ConnectionLifeCycleListener implementation -----------------------------------

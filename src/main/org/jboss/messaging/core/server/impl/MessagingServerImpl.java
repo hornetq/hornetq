@@ -387,7 +387,16 @@ public class MessagingServerImpl implements MessagingServer
          throw new IllegalArgumentException("Cannot find session with id " + sessionID + " to reattach");
       }
       
+      //This is necessary for invm since the replicating connection will be the same connection
+      //as the original replicating connection since the key is the same in the registry, and that connection
+      //won't have any resend buffer etc
+      connection.setBackup(false);
+      
       postOffice.setBackup(false);
+      
+      configuration.setBackup(false);
+      
+      remotingService.setBackup(false);
       
       //Reconnect the channel to the new connection
       session.transferConnection(connection);

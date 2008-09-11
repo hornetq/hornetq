@@ -1267,6 +1267,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
  
       remotingConnection.removeFailureListener(this);
       
+      //Destroy the old connection
+    //  remotingConnection.destroy();
+      
       remotingConnection = newConnection;
       
       remotingConnection.addFailureListener(this);

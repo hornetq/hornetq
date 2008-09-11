@@ -1076,13 +1076,18 @@ public class ClientSessionImpl implements ClientSessionInternal
  
    private void handleFailover(final MessagingException me)
    {      
-      log.info("Failure has been detected, initiating failover");
+      log.info("Session Failure has been detected, initiating failover");
       
       channel.lock();           
       
       try
       {
          Packet request = new ReattachSessionMessage(channel.getID(), channel.getLastReceivedCommandID());
+         
+         //This is necessary for invm since the replicating connection will be the same connection
+         //as the original replicating connection since the key is the same in the registry, and that connection
+         //won't have any resend buffer etc
+         backupConnection.setBackup(false);
          
          Channel channel1 = backupConnection.getChannel(1, false, -1);
          

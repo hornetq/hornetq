@@ -44,4 +44,6 @@ public interface RemotingService extends MessagingComponent
    void addInterceptor(Interceptor interceptor);
    
    boolean removeInterceptor(Interceptor interceptor);
+   
+   void setBackup(boolean backup);
 }

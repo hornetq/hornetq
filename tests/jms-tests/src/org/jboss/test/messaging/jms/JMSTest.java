@@ -325,7 +325,7 @@ public class JMSTest extends JMSTestCase
       {
 	      conn = cf.createConnection();
 
-	      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      final Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
 	      final MessageConsumer cons = session.createConsumer(queue1);
 
@@ -340,11 +340,14 @@ public class JMSTest extends JMSTestCase
 	         {
 	            try
 	            {
-	               Message m = cons.receive(5000);
-	               if (m != null)
+	               synchronized (session)
 	               {
-	                  message.set(m);
-	                  latch.countDown();
+   	               Message m = cons.receive(5000);
+   	               if (m != null)
+   	               {
+   	                  message.set(m);
+   	                  latch.countDown();
+   	               }
 	               }
 	            }
 	            catch(Exception e)
@@ -355,12 +358,15 @@ public class JMSTest extends JMSTestCase
 	         }
 	      }, "Receiving Thread").start();
 
-	      MessageProducer prod = session.createProducer(queue1);
-	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-
-	      TextMessage m = session.createTextMessage("message one");
-
-	      prod.send(m);
+         synchronized (session)
+         {
+   	      MessageProducer prod = session.createProducer(queue1);
+   	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+   
+   	      TextMessage m = session.createTextMessage("message one");
+   
+   	      prod.send(m);
+         }
 
 	      boolean gotMessage = latch.await(5000, TimeUnit.MILLISECONDS);
 	      assertTrue(gotMessage);

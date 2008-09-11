@@ -33,6 +33,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.ConnectionRegistry;
+import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
@@ -53,7 +54,7 @@ import org.jboss.messaging.util.VersionLoader;
  * @version <tt>$Revision: 3602 $</tt>
  *
  */
-public class ClientSessionFactoryImpl implements ClientSessionFactory
+public class ClientSessionFactoryImpl implements ClientSessionFactory, FailureListener
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -110,6 +111,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
    private volatile boolean blockOnPersistentSend;
    
    private volatile boolean blockOnNonPersistentSend;
+   
+   private volatile boolean failedOver;
         
    // Static ---------------------------------------------------------------------------------------
    
@@ -127,7 +130,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
                                    final boolean blockOnAcknowledge,
                                    final boolean blockOnNonPersistentSend,
                                    final boolean blockOnPersistentSend)
-   {      
+   {           
       this.connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
       this.transportParams = connectorConfig.getParams();
       if (backupConfig != null)
@@ -149,7 +152,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
    
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
                                    final TransportConfiguration backupConfig)
-   {      
+   {            
       this.connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
       this.transportParams = connectorConfig.getParams();
       if (backupConfig != null)
@@ -337,6 +340,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
    {
       this.callTimeout = callTimeout;
    }
+   
+   public boolean isFailedOver()
+   {
+      return failedOver;
+   }
             
    // Public ---------------------------------------------------------------------------------------
    
@@ -350,6 +358,21 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
    // Package Private ------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
+   
+   private void handleFailover(final MessagingException me)
+   {
+      log.info(this + " Factory Failure has been detected, initiating failover");
+      if (backupConnectorFactory == null)
+      {
+         throw new IllegalStateException("Cannot fail-over if backup connector factory is null");
+      }
+                  
+      this.connectorFactory = backupConnectorFactory;
+      this.transportParams = backupTransportParams;
+      
+      this.backupConnectorFactory = null;
+      this.backupTransportParams = null;               
+   }
    
    private ConnectorFactory instantiateConnectorFactory(final String connectorFactoryClassName)
    {
@@ -378,9 +401,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
       {
          remotingConnection = connectionRegistry.getConnection(connectorFactory, transportParams,
                                                                pingPeriod, callTimeout);
-         
+                           
          if (backupConnectorFactory != null)
          {
+            remotingConnection.addFailureListener(this);
+            
             backupConnection = connectionRegistry.getConnection(backupConnectorFactory, backupTransportParams,
                      pingPeriod, callTimeout);
          }
@@ -449,5 +474,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory
    }
 
    
-   // Inner Classes --------------------------------------------------------------------------------
+   public void connectionFailed(final MessagingException me)
+   {
+      handleFailover(me);
+   }
+   
 }

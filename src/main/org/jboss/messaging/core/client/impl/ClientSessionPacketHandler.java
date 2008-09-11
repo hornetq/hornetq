@@ -47,17 +47,14 @@ public class ClientSessionPacketHandler implements ChannelHandler
    private final ClientSessionInternal clientSession;
 
    public ClientSessionPacketHandler(final ClientSessionInternal clientSesssion)
-   {  
-     // log.info("creating clientsessionpacketHandler " + System.identityHashCode(this));
+   {     
       this.clientSession = clientSesssion;
    }
 
    public void handlePacket(final Packet packet)
    {
       byte type = packet.getType();
-      
-     // log.info(System.identityHashCode(this) + "handling packet");
-      
+       
       try
       {
          switch (type)
