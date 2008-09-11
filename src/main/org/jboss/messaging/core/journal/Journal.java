@@ -51,7 +51,7 @@ public interface Journal extends MessagingComponent
    
    void appendUpdateRecordTransactional(long txID, long id, byte recordType, EncodingSupport record) throws Exception;
    
-   void appendDeleteRecordTransactional(long txID, long id, EncodingSupport extraData) throws Exception;
+   void appendDeleteRecordTransactional(long txID, long id, EncodingSupport record) throws Exception;
    
    void appendCommitRecord(long txID) throws Exception;
    

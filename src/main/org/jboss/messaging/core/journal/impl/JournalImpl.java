@@ -465,14 +465,14 @@ public class JournalImpl implements TestableJournal
       }
    }
 
-   public void appendDeleteRecordTransactional(final long txID, final long id, final EncodingSupport extraData) throws Exception
+   public void appendDeleteRecordTransactional(final long txID, final long id, final EncodingSupport record) throws Exception
    {
       if (state != STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
       }
       
-      int size = SIZE_DELETE_RECORD_TX + (extraData != null? extraData.getEncodeSize():0);
+      int size = SIZE_DELETE_RECORD_TX + (record != null? record.getEncodeSize():0);
       
       ByteBufferWrapper bb = new ByteBufferWrapper(newBuffer(size));
       
@@ -481,10 +481,10 @@ public class JournalImpl implements TestableJournal
       bb.putInt(-1); // skip ID part
       bb.putLong(txID);    
       bb.putLong(id);
-      bb.putInt(extraData != null ? extraData.getEncodeSize() : 0);
-      if (extraData != null)
+      bb.putInt(record != null ? record.getEncodeSize() : 0);
+      if (record != null)
       {
-         extraData.encode(bb);
+         record.encode(bb);
       }
       bb.putInt(size);     
       
