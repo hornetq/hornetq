@@ -35,9 +35,11 @@ import org.jboss.messaging.core.journal.EncodingSupport;
 public interface PageTransactionInfo extends EncodingSupport
 {
 
-   void waitCompletion() throws InterruptedException;
+   boolean waitCompletion() throws Exception;
    
    void complete();
+   
+   void forget();
 
    long getRecordID();
 
@@ -50,5 +52,7 @@ public interface PageTransactionInfo extends EncodingSupport
    int decrement();
    
    int getNumberOfMessages();
+   
+   void markIncomplete();
 
 }

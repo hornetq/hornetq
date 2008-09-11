@@ -770,7 +770,7 @@ public class QueueImplTest extends UnitTestCase
       {
          if (i % 2 == 0)
          {
-            storageManager.storeDeleteTransactional(1, i);
+            storageManager.storeDeleteMessageTransactional(1, queue.getPersistenceID(), i);
          }
       }
 
@@ -778,7 +778,7 @@ public class QueueImplTest extends UnitTestCase
       {
          if (i % 2 == 0)
          {
-            storageManager.storeDeleteTransactional(1, i);
+            storageManager.storeDeleteMessageTransactional(1, queue.getPersistenceID(), i);
          }
       }
 
@@ -1341,7 +1341,7 @@ public class QueueImplTest extends UnitTestCase
       StorageManager storageManager = EasyMock.createMock(StorageManager.class);
       EasyMock.expect(storageManager.generateTransactionID()).andReturn(randomLong());
       EasyMock.expect(storageManager.generateID()).andReturn(randomLong());
-      storageManager.storeDeleteTransactional(EasyMock.anyLong(), EasyMock.eq(messageID));
+      storageManager.storeDeleteMessageTransactional(EasyMock.anyLong(), EasyMock.eq(queue.getPersistenceID()), EasyMock.eq(messageID));
       storageManager.commit(EasyMock.anyLong());
 
       PostOffice postOffice = createMock(PostOffice.class);
@@ -1399,7 +1399,7 @@ public class QueueImplTest extends UnitTestCase
       StorageManager storageManager = createMock(StorageManager.class);
       expect(storageManager.generateTransactionID()).andReturn(randomLong());
       expect(storageManager.generateID()).andReturn(randomLong());
-      storageManager.storeDeleteTransactional(anyLong(), eq(messageID));
+      storageManager.storeDeleteMessageTransactional(anyLong(), eq(queue.getPersistenceID()), eq(messageID));
       storageManager.commit(anyLong());
       
       PostOffice postOffice = createMock(PostOffice.class);
@@ -1460,7 +1460,7 @@ public class QueueImplTest extends UnitTestCase
       StorageManager storageManager = EasyMock.createMock(StorageManager.class);
       EasyMock.expect(storageManager.generateID()).andReturn(newMessageID);
       EasyMock.expect(storageManager.generateTransactionID()).andReturn(tid);
-      storageManager.storeDeleteTransactional(EasyMock.anyLong(), EasyMock.eq(messageID));
+      storageManager.storeDeleteMessageTransactional(EasyMock.anyLong(), EasyMock.eq(queue.getPersistenceID()), EasyMock.eq(messageID));
       storageManager.commit(EasyMock.anyLong());
       
       PostOffice postOffice = EasyMock.createMock(PostOffice.class);      

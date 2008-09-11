@@ -382,6 +382,11 @@ public class JournalImpl implements TestableJournal
    
    public long getTransactionID()
    {
+      if (state != STATE_LOADED)
+      {
+         throw new IllegalStateException("Journal must be loaded first");
+      }
+      
       return transactionIDSequence.getAndIncrement();
    }
    

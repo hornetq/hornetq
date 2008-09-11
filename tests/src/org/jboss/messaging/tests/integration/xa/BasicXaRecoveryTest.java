@@ -28,7 +28,9 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
+import org.jboss.messaging.jms.client.JBossBytesMessage;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
@@ -38,6 +40,8 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -46,9 +50,12 @@ public class BasicXaRecoveryTest extends UnitTestCase
 {
    private static final String ACCEPTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory";
    private static final String CONNECTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory";
+   
+   private Map<String, QueueSettings> queueSettings = new HashMap<String, QueueSettings>();
 
    private String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/xa-recovery-test/journal";
    private String bindingsDir = System.getProperty("java.io.tmpdir", "/tmp") + "/xa-recovery-test/bindings";
+   private String pageDir = System.getProperty("java.io.tmpdir", "/tmp") + "/xa-recovery-test/page";
    private MessagingService messagingService;
    private ClientSession clientSession;
    private ClientProducer clientProducer;
@@ -59,15 +66,20 @@ public class BasicXaRecoveryTest extends UnitTestCase
 
    protected void setUp() throws Exception
    {
+      queueSettings.clear();
       File file = new File(journalDir);
       File file2 = new File(bindingsDir);
+      File file3 = new File(pageDir);
       deleteDirectory(file);
       file.mkdirs();
       deleteDirectory(file2);
       file2.mkdirs();
+      deleteDirectory(file3);
+      file3.mkdirs();
       configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
+      configuration.setPagingDirectory(pageDir);
 
       TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
@@ -220,6 +232,142 @@ public class BasicXaRecoveryTest extends UnitTestCase
       testMultipleTxReceiveWithRollback(true);  
    }
    
+   
+   public void testPagingServerRestarted() throws Exception
+   {
+      testPaging(true);
+   }
+   
+   public void testPaging() throws Exception
+   {
+      testPaging(false);
+   }
+   
+   public void testPaging(boolean restartServer) throws Exception
+   {
+      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      
+      SimpleString pageQueue = new SimpleString("pagequeue");
+      
+      QueueSettings pageQueueSettings = new QueueSettings();
+      pageQueueSettings.setMaxSizeBytes(100*1024);
+      pageQueueSettings.setPageSizeBytes(10*1024);
+      
+      queueSettings.put(pageQueue.toString(), pageQueueSettings);
+
+      addSettings();
+      
+      clientSession.createQueue(pageQueue, pageQueue, null, true, true);
+      
+      clientSession.start(xid, XAResource.TMNOFLAGS);
+      
+      ClientProducer pageProducer = clientSession.createProducer(pageQueue);
+      
+      for (int i = 0; i < 1000; i++)
+      {
+         ClientMessage m = createBytesMessage(new byte[512], true);
+         pageProducer.send(m);
+      }
+      
+      pageProducer.close();
+
+      clientSession.end(xid, XAResource.TMSUCCESS);
+      clientSession.prepare(xid);
+      
+      if (restartServer)
+      {
+         stopAndRestartServer();
+      }
+      else
+      {
+         recreateClients();
+      }
+      
+      Xid[] xids = clientSession.recover(XAResource.TMSTARTRSCAN);
+      assertEquals(xids.length, 1);
+      assertEquals(xids[0].getFormatId(), xid.getFormatId());
+      assertEqualsByteArrays(xids[0].getBranchQualifier(), xid.getBranchQualifier());
+      assertEqualsByteArrays(xids[0].getGlobalTransactionId(), xid.getGlobalTransactionId());
+
+      clientSession.commit(xid, true);
+
+      clientSession.start();
+
+      ClientConsumer pageConsumer = clientSession.createConsumer(pageQueue);
+
+      for (int i = 0; i < 1000; i++)
+      {
+         ClientMessage m = pageConsumer.receive(10000);
+          assertNotNull(m);
+         clientSession.acknowledge();
+      }  
+      
+   }
+   
+   public void testRollbackPaging() throws Exception
+   {
+      testRollbackPaging(false);
+   }
+   
+   public void testRollbackPagingServerRestarted() throws Exception
+   {
+      testRollbackPaging(true);
+   }
+   
+   public void testRollbackPaging(boolean restartServer) throws Exception
+   {
+     Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      
+      SimpleString pageQueue = new SimpleString("pagequeue");
+      
+      QueueSettings pageQueueSettings = new QueueSettings();
+      pageQueueSettings.setMaxSizeBytes(100*1024);
+      pageQueueSettings.setPageSizeBytes(10*1024);
+      
+      queueSettings.put(pageQueue.toString(), pageQueueSettings);
+
+      addSettings();
+      
+      clientSession.createQueue(pageQueue, pageQueue, null, true, true);
+      
+      clientSession.start(xid, XAResource.TMNOFLAGS);
+      
+      ClientProducer pageProducer = clientSession.createProducer(pageQueue);
+      
+      for (int i = 0; i < 1000; i++)
+      {
+         ClientMessage m = createBytesMessage(new byte[512], true);
+         pageProducer.send(m);
+      }
+
+      clientSession.end(xid, XAResource.TMSUCCESS);
+      clientSession.prepare(xid);
+      
+      if (restartServer)
+      {
+         stopAndRestartServer();
+      }
+      else
+      {
+         recreateClients();
+      }
+      
+      Xid[] xids = clientSession.recover(XAResource.TMSTARTRSCAN);
+      assertEquals(1, xids.length);
+      assertEquals(xids[0].getFormatId(), xid.getFormatId());
+      assertEqualsByteArrays(xids[0].getBranchQualifier(), xid.getBranchQualifier());
+      assertEqualsByteArrays(xids[0].getGlobalTransactionId(), xid.getGlobalTransactionId());
+
+      clientSession.rollback(xid);
+
+      clientSession.start();
+
+      ClientConsumer pageConsumer = clientSession.createConsumer(pageQueue);
+
+      assertNull(pageConsumer.receive(100));
+      
+   }
+   
    public void testNonPersistent() throws Exception
    {
       testNonPersistent(true);
@@ -227,7 +375,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
    }
 
 
-   public void testNonPersistent(boolean commit) throws Exception
+   public void testNonPersistent(final boolean commit) throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
 
@@ -254,7 +402,50 @@ public class BasicXaRecoveryTest extends UnitTestCase
       assertEqualsByteArrays(xids[0].getGlobalTransactionId(), xid.getGlobalTransactionId());
       xids = clientSession.recover(XAResource.TMENDRSCAN);
       assertEquals(xids.length, 0);
-      clientSession.commit(xid, true);
+      if (commit)
+      {
+         clientSession.commit(xid, true);
+      }
+      else
+      {
+         clientSession.rollback(xid);
+      }
+   }
+   
+   public void testNonPersistentMultipleIDs() throws Exception
+   {
+      for (int i = 0; i < 10; i++)
+      {
+         Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+
+         ClientMessage m1 = createTextMessage("m1", false);
+         ClientMessage m2 = createTextMessage("m2", false);
+         ClientMessage m3 = createTextMessage("m3", false);
+         ClientMessage m4 = createTextMessage("m4", false);
+   
+         clientSession.start(xid, XAResource.TMNOFLAGS);
+         clientProducer.send(m1);
+         clientProducer.send(m2);
+         clientProducer.send(m3);
+         clientProducer.send(m4);
+         clientSession.end(xid, XAResource.TMSUCCESS);
+         clientSession.prepare(xid);
+         
+         if (i == 2)
+         {
+            clientSession.commit(xid, true);
+         }
+         
+         recreateClients();
+         
+         
+      }
+
+      stopAndRestartServer();
+
+      Xid[] xids = clientSession.recover(XAResource.TMSTARTRSCAN);
+
+      assertEquals(9, xids.length);
    }
    
    public void testBasicSendWithCommit(boolean stopServer) throws Exception
@@ -284,13 +475,14 @@ public class BasicXaRecoveryTest extends UnitTestCase
       }
 
       Xid[] xids = clientSession.recover(XAResource.TMSTARTRSCAN);
-
       assertEquals(xids.length, 1);
       assertEquals(xids[0].getFormatId(), xid.getFormatId());
       assertEqualsByteArrays(xids[0].getBranchQualifier(), xid.getBranchQualifier());
       assertEqualsByteArrays(xids[0].getGlobalTransactionId(), xid.getGlobalTransactionId());
+      
       xids = clientSession.recover(XAResource.TMENDRSCAN);
       assertEquals(xids.length, 0);
+      
       clientSession.commit(xid, true);
       clientSession.start();
       ClientMessage m = clientConsumer.receive(1000);
@@ -997,8 +1189,19 @@ public class BasicXaRecoveryTest extends UnitTestCase
       messagingService.stop();
       messagingService = null;
       messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
+      
+      addSettings();
+      
       messagingService.start();
       createClients();
+   }
+
+   private void addSettings()
+   {
+      for (Map.Entry<String, QueueSettings> setting: this.queueSettings.entrySet())
+      {
+         messagingService.getServer().getQueueSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+      }
    }
 
    protected void recreateClients() throws Exception
@@ -1017,6 +1220,14 @@ public class BasicXaRecoveryTest extends UnitTestCase
    {
       ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, durable, 0, System.currentTimeMillis(), (byte) 1);
       message.getBody().putString(s);
+      message.getBody().flip();
+      return message;
+   }
+
+   private ClientMessage createBytesMessage(byte[] b, boolean durable)
+   {
+      ClientMessage message = clientSession.createClientMessage(JBossBytesMessage.TYPE, durable, 0, System.currentTimeMillis(), (byte) 1);
+      message.getBody().putBytes(b);
       message.getBody().flip();
       return message;
    }

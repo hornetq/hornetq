@@ -62,7 +62,7 @@ public interface StorageManager extends MessagingComponent
    
    void storeAcknowledgeTransactional(long txID, long queueID, long messageiD) throws Exception;
    
-   void storeDeleteMessageTransactional(long txID, long messageID, long queueID) throws Exception;
+   void storeDeleteMessageTransactional(long txID, long queueID, long messageID) throws Exception;
    
    /** Used to delete non-messaging data (such as PageTransaction and LasPage) */
    void storeDeleteTransactional(long txID, long recordID) throws Exception;

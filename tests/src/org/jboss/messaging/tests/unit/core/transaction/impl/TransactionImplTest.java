@@ -585,7 +585,7 @@ public class TransactionImplTest extends UnitTestCase
       //Expect:
       
       sm.storeAcknowledgeTransactional(txID, queue1.getPersistenceID(), message1.getMessageID());
-      sm.storeDeleteTransactional(txID, message1.getMessageID());
+      sm.storeDeleteMessageTransactional(txID, queue2.getPersistenceID(), message1.getMessageID());
       
       EasyMock.replay(sm);
       

@@ -45,6 +45,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    private long transactionID;
    private long recordID;
    private CountDownLatch countDownCompleted;
+   private volatile boolean complete;
    
    final AtomicInteger numberOfMessages = new AtomicInteger(0);
    
@@ -108,7 +109,8 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    {
       this.transactionID = buffer.getLong();
       this.numberOfMessages.set(buffer.getInt());
-      this.countDownCompleted = null; // if it is being readed, certainly it was committed
+      this.countDownCompleted = null; // if it is being readed, probably it was committed
+      this.complete = true;           // Unless it is a incomplete prepare, which is marked by markIcomplete
    }
    
    public synchronized void encode(final MessagingBuffer buffer)
@@ -124,6 +126,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 
    public void complete()
    {
+      complete = true;
       /** 
        * this is to avoid a race condition where the transaction still being committed another thread is depaging messages
        */
@@ -133,12 +136,27 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    /** 
     * this is to avoid a race condition where the transaction still being committed another thread is depaging messages
     */
-   public void waitCompletion() throws InterruptedException
+   public boolean waitCompletion() throws InterruptedException
    {
       if (countDownCompleted != null)
       {
          countDownCompleted.await();
       }
+      
+      return complete;
+   }
+   
+   public void forget()
+   {
+      complete = false;
+
+      countDownCompleted.countDown();
+   }
+   
+   public void markIncomplete()
+   {
+      complete = false;
+      countDownCompleted = new CountDownLatch(1);
    }
    
    // Package protected ---------------------------------------------

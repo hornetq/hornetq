@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.transaction;
 
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -66,7 +67,7 @@ public interface Transaction
 
    void markAsRollbackOnly(MessagingException messagingException);
 
-   void replay(List<ServerMessage> messages, List<ServerMessage> acknowledgements, State prepared) throws Exception;
+   void replay(List<MessageReference> messages, List<MessageReference> acknowledgements, PageTransactionInfo pageTransaction, State prepared) throws Exception;
 
    static enum State
    {

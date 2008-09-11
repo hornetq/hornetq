@@ -250,7 +250,7 @@ public class JournalStorageManager implements StorageManager
    	messageJournal.appendDeleteRecordTransactional(txID, recordID, null);	
    }
    
-   public void storeDeleteMessageTransactional(long txID, long messageID, long queueID) throws Exception
+   public void storeDeleteMessageTransactional(long txID, long queueID, long messageID) throws Exception
    {
       messageJournal.appendDeleteRecordTransactional(txID, messageID, new DeleteEncoding(queueID));
    }
@@ -289,63 +289,6 @@ public class JournalStorageManager implements StorageManager
 	
 		idSequence.set(maxID + 1);
 
-		//recover prepared transactions
-      for (PreparedTransactionInfo preparedTransaction : preparedTransactions)
-      {
-         log.trace(preparedTransaction);
-         EncodingXid encodingXid = new EncodingXid(preparedTransaction.extraData);
-         Xid xid = encodingXid.xid;
-
-         Transaction tx = new TransactionImpl(preparedTransaction.id, xid, this, postOffice);
-         List<ServerMessage> messages = new ArrayList<ServerMessage>();
-         List<ServerMessage> messagesToDelete = new ArrayList<ServerMessage>();
-         //first get any sent messages for this tx and recreate
-         for (RecordInfo record : preparedTransaction.records)
-         {
-            byte[] data = record.data;
-
-			   ByteBuffer bb = ByteBuffer.wrap(data);
-
-            MessagingBuffer buff = new ByteBufferWrapper(bb);
-
-				ServerMessage message = new ServerMessageImpl(record.id);
-
-				message.decode(buff);
-
-            messages.add(message);
-         }
-         //ok now find if any records to be deleted which aren't necessarily with this tx
-         List<RecordInfo> recordsToDelete = new ArrayList<RecordInfo>();
-         for (RecordInfo record : records)
-         {
-            if(preparedTransaction.recordsToDelete.contains(record.id))
-            {
-               byte[] data = record.data;
-
-			      ByteBuffer bb = ByteBuffer.wrap(data);
-
-			      byte recordType = record.getUserRecordType();
-
-               MessagingBuffer buff = new ByteBufferWrapper(bb);
-
-					ServerMessage message = new ServerMessageImpl(record.id);
-
-					message.decode(buff);
-
-               messagesToDelete.add(message);
-
-               recordsToDelete.add(record);
-            }
-         }
-         //now we recreate the state of the tx and add to th erresource manager
-         tx.replay(messages, messagesToDelete, Transaction.State.PREPARED);
-         resourceManager.putTransaction(xid, tx);
-         //and finally since we've dealt with the records we don't need to process them.
-         for (RecordInfo recordInfo : recordsToDelete)
-         {
-            records.remove(recordInfo);
-         }
-      }
 		for (RecordInfo record: records)
 		{
 			byte[] data = record.data;
@@ -463,8 +406,11 @@ public class JournalStorageManager implements StorageManager
 				}				
 			}
 		}
-	}
-	
+		
+		loadPreparedTransactions(postOffice, queues, resourceManager,preparedTransactions);
+		
+   }
+
 	//Bindings operations
 	
 	public void addBinding(Binding binding) throws Exception
@@ -646,6 +592,118 @@ public class JournalStorageManager implements StorageManager
 	// Private ----------------------------------------------------------------------------------
 	
 	
+   private void loadPreparedTransactions(final PostOffice postOffice,
+         final Map<Long, Queue> queues, ResourceManager resourceManager,
+         List<PreparedTransactionInfo> preparedTransactions) throws Exception
+   {
+      //recover prepared transactions
+      for (PreparedTransactionInfo preparedTransaction : preparedTransactions)
+      {
+         log.trace(preparedTransaction);
+         EncodingXid encodingXid = new EncodingXid(preparedTransaction.extraData);
+         Xid xid = encodingXid.xid;
+
+         Transaction tx = new TransactionImpl(preparedTransaction.id, xid, this, postOffice);
+         List<MessageReference> messages = new ArrayList<MessageReference>();
+         List<MessageReference> messagesToAck = new ArrayList<MessageReference>();
+         
+         PageTransactionInfoImpl pageTransactionInfo = null;
+         
+         //first get any sent messages for this tx and recreate
+         for (RecordInfo record : preparedTransaction.records)
+         {
+            byte[] data = record.data;
+
+            ByteBuffer bb = ByteBuffer.wrap(data);
+
+            MessagingBuffer buff = new ByteBufferWrapper(bb);
+
+            byte recordType = record.getUserRecordType();
+
+            switch(recordType)
+            {
+               case ADD_MESSAGE:
+               {
+                  ServerMessage message = new ServerMessageImpl(record.id);
+
+                  message.decode(buff);
+
+                  List<MessageReference> refs = postOffice.route(message);
+                  messages.addAll(refs);
+                  break;
+               }
+               case ACKNOWLEDGE_REF:
+               {
+                  long messageID = record.id;
+
+                  ACKEncoding encoding = new ACKEncoding();
+                  encoding.decode(buff);
+
+
+                  Queue queue = queues.get(encoding.queueID);
+
+                  if (queue == null)
+                  {
+                     throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
+                  }
+
+                  MessageReference removed = queue.removeReferenceWithID(messageID);
+
+                  messagesToAck.add(removed);
+                  if (removed == null)
+                  {
+                     throw new IllegalStateException("Failed to remove reference for " + messageID);
+                  }
+                  break;
+               }
+               case PAGE_TRANSACTION:
+               {
+                  pageTransactionInfo = new PageTransactionInfoImpl();
+                  pageTransactionInfo.decode(buff);
+                  pageTransactionInfo.markIncomplete();
+                  break;
+               }
+               default:
+                  log.warn("InternalError: Record type " + recordType + " not recognized. Maybe you're using journal files created on a different version" );
+            }
+         }
+         
+         for (RecordInfo record : preparedTransaction.recordsToDelete)
+         {
+            byte[] data = record.data;
+
+            ByteBuffer bb = ByteBuffer.wrap(data);
+
+            MessagingBuffer buff = new ByteBufferWrapper(bb);
+
+            long messageID = record.id;
+
+            DeleteEncoding encoding = new DeleteEncoding();
+            encoding.decode(buff);
+
+
+            Queue queue = queues.get(encoding.queueID);
+
+            if (queue == null)
+            {
+               throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
+            }
+
+            MessageReference removed = queue.removeReferenceWithID(messageID);
+
+            messagesToAck.add(removed);
+            if (removed == null)
+            {
+               throw new IllegalStateException("Failed to remove reference for " + messageID);
+            }
+         }
+         
+         //now we recreate the state of the tx and add to the resource manager
+         tx.replay(messages, messagesToAck, pageTransactionInfo, Transaction.State.PREPARED);
+         resourceManager.putTransaction(xid, tx);
+      }
+   }
+   
 	private void checkAndCreateDir(String dir, boolean create)
 	{
 		File f = new File(dir);

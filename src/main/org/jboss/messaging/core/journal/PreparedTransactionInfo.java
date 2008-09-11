@@ -24,9 +24,7 @@
 package org.jboss.messaging.core.journal;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 
@@ -43,7 +41,7 @@ public class PreparedTransactionInfo
    
    public final List<RecordInfo> records = new ArrayList<RecordInfo>();
    
-   public final Set<RecordInfo> recordsToDelete = new HashSet<RecordInfo>();
+   public final List<RecordInfo> recordsToDelete = new ArrayList<RecordInfo>();
 
    public PreparedTransactionInfo(final long id, final byte[] extraData)
    {

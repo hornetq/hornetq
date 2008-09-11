@@ -24,6 +24,7 @@ package org.jboss.messaging.core.transaction.impl;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -60,7 +61,7 @@ public class TransactionImpl implements Transaction
 
    private final List<ServerMessage> pagedMessages = new ArrayList<ServerMessage>();
 
-   private PageTransactionInfoImpl pageTransaction;
+   private PageTransactionInfo pageTransaction;
 
    private final Xid xid;
 
@@ -200,13 +201,11 @@ public class TransactionImpl implements Transaction
 
                if (count == 0)
                {
-                  storageManager.storeDeleteTransactional(id, message
-                          .getMessageID());
+                  storageManager.storeDeleteMessageTransactional(id, queue.getPersistenceID(), message.getMessageID());
                }
                else
                {
-                  storageManager.storeAcknowledgeTransactional(id, queue
-                          .getPersistenceID(), message.getMessageID());
+                  storageManager.storeAcknowledgeTransactional(id, queue.getPersistenceID(), message.getMessageID());
                }
 
                containsPersistent = true;
@@ -317,6 +316,11 @@ public class TransactionImpl implements Transaction
       {
          storageManager.rollback(id);
       }
+      
+      if (state == State.PREPARED && pageTransaction != null)
+      {
+         pageTransaction.forget();
+      }
 
       Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
 
@@ -415,22 +419,19 @@ public class TransactionImpl implements Transaction
       this.messagingException = messagingException;
    }
 
-   public void replay(List<ServerMessage> messages, List<ServerMessage> acknowledgements, State prepared) throws Exception
+   public void replay(List<MessageReference> messages, List<MessageReference> acknowledgements, PageTransactionInfo pageTransaction, State prepared) throws Exception
    {
       containsPersistent = true;
-      //acknowledgements.add
-      for (ServerMessage message : messages)
+      refsToAdd.addAll(messages);
+      this.acknowledgements.addAll(acknowledgements);
+      this.pageTransaction = pageTransaction;
+      
+      if (this.pageTransaction != null)
       {
-         List<MessageReference> refs = postOffice.route(message);
-         refsToAdd.addAll(refs);
+         pagingManager.addTransaction(this.pageTransaction);
       }
-      for (ServerMessage message : acknowledgements)
-      {
-          List<MessageReference> refs = postOffice.route(message);
-         this.acknowledgements.addAll(refs);
-      }
-      state = prepared;
 
+      state = prepared;
    }
 
    public void setContainsPersistent(final boolean containsPersistent)

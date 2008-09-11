@@ -39,7 +39,6 @@ import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -79,7 +78,7 @@ public class PagingManagerImpl implements PagingManager
    
    // Static --------------------------------------------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
+   private static final Logger log = Logger.getLogger(PagingManagerImpl.class);
    
    //private static final boolean isTrace = log.isTraceEnabled();
    private static final boolean isTrace = true;
@@ -153,7 +152,7 @@ public class PagingManagerImpl implements PagingManager
     */
    public boolean onDepage(int pageId, final SimpleString destination, PagingStore pagingStore, final PageMessage[] data) throws Exception
    {
-      log.info("Depaging....");
+      trace("Depaging....");
       
       /// Depage has to be done atomically, in case of failure it should be back to where it was
       final long depageTransactionID = storageManager.generateTransactionID();
@@ -184,7 +183,7 @@ public class PagingManagerImpl implements PagingManager
       for (PageMessage msg: data)
       {
          final long transactionIdDuringPaging = msg.getTransactionID();
-         if (transactionIdDuringPaging > 0)
+         if (transactionIdDuringPaging >= 0)
          {
             final PageTransactionInfo pageTransactionInfo = transactions.get(transactionIdDuringPaging);
             
@@ -194,13 +193,17 @@ public class PagingManagerImpl implements PagingManager
             {
                if (isTrace)
                {
-                  trace("Transaction " + msg.getTransactionID() + " not found, ignoring message " + msg.getMessage().getMessageID());
+                  trace("Transaction " + msg.getTransactionID() + " not found, ignoring message " + msg.getMessage());
                }
                continue;
             }
             
             // This is to avoid a race condition where messages are depaged before the commit arrived
-            pageTransactionInfo.waitCompletion();
+            if (!pageTransactionInfo.waitCompletion())
+            {
+               trace("Rollback was called after prepare, ignoring message " + msg.getMessage());
+               continue;
+            }
 
             /// Update information about transactions
             if (msg.getMessage().isDurable())
@@ -248,7 +251,7 @@ public class PagingManagerImpl implements PagingManager
    
    public void setLastPage(LastPageRecord lastPage) throws Exception
    {
-      System.out.println("LastPage loaded was " + lastPage.getLastId() + " recordID = " + lastPage.getRecordId());
+      trace("LastPage loaded was " + lastPage.getLastId() + " recordID = " + lastPage.getRecordId());
       this.getPageStore(lastPage.getDestination()).setLastRecord(lastPage);
    }
 

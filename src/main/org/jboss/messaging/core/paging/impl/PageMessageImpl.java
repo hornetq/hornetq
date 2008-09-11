@@ -49,7 +49,7 @@ public class PageMessageImpl implements PageMessage
    // Public --------------------------------------------------------
 
    private final ServerMessage message;
-   private long transactionID;
+   private long transactionID = -1;
    
    public PageMessageImpl(final ServerMessage message, final long transactionID)
    {

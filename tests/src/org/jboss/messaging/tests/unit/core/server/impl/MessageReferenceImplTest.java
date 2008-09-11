@@ -142,6 +142,8 @@ public class MessageReferenceImplTest extends UnitTestCase
       
       Queue queue = EasyMock.createStrictMock(Queue.class);
       
+      EasyMock.expect(queue.getPersistenceID()).andStubReturn(1);
+      
       MessageReferenceImpl messageReference = new DummyMessageReference(serverMessage, queue);
       messageReference.setDeliveryCount(1);
       
@@ -219,6 +221,8 @@ public class MessageReferenceImplTest extends UnitTestCase
       
       Queue queue = EasyMock.createStrictMock(Queue.class);
       
+      EasyMock.expect(queue.getPersistenceID()).andStubReturn(1);
+
       MessageReferenceImpl messageReference = new DummyMessageReference(serverMessage, queue);
       messageReference.setDeliveryCount(1);
       
@@ -284,6 +288,9 @@ public class MessageReferenceImplTest extends UnitTestCase
       HierarchicalRepository<QueueSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
       ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
       Queue queue = EasyMock.createStrictMock(Queue.class);
+      
+      EasyMock.expect(queue.getPersistenceID()).andStubReturn(1);
+
       MessageReferenceImpl messageReference = new DummyMessageReference(serverMessage, queue);
       messageReference.setDeliveryCount(1);
       SimpleString queueName = new SimpleString("queueName");
@@ -323,6 +330,9 @@ public class MessageReferenceImplTest extends UnitTestCase
       
       ServerMessage serverMessage = EasyMock.createNiceMock(ServerMessage.class);
       Queue queue = EasyMock.createStrictMock(Queue.class);
+      
+      EasyMock.expect(queue.getPersistenceID()).andStubReturn(1);
+
       MessageReferenceImpl messageReference = new DummyMessageReference(serverMessage, queue);
       messageReference.setDeliveryCount(1);
       SimpleString queueName = new SimpleString("queueName");
@@ -377,6 +387,9 @@ public class MessageReferenceImplTest extends UnitTestCase
       ServerMessage serverMessage = EasyMock.createNiceMock(ServerMessage.class);
       
       Queue queue = EasyMock.createStrictMock(Queue.class);
+      
+      EasyMock.expect(queue.getPersistenceID()).andStubReturn(1);
+
       MessageReferenceImpl messageReference = new DummyMessageReference(serverMessage, queue);
       messageReference.setDeliveryCount(1);
       SimpleString queueName = new SimpleString("queueName");
