@@ -38,8 +38,6 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
    
    private boolean durable;
    
-   private int maxSize;
-   
    private int consumerCount;
    
    private int messageCount;
@@ -48,27 +46,25 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
    
    private SimpleString address;
    
-   public SessionQueueQueryResponseMessage(final boolean durable, final int maxSize, 
+   public SessionQueueQueryResponseMessage(final boolean durable, 
    		final int consumerCount, final int messageCount, final SimpleString filterString,
    		final SimpleString address)
    {
-   	this(durable, maxSize, consumerCount, messageCount, filterString, address, true);
+   	this(durable, consumerCount, messageCount, filterString, address, true);
    }
    
    public SessionQueueQueryResponseMessage()
    {
-      this(false, 0, 0, 0, null, null, false);
+      this(false, 0, 0, null, null, false);
    }
    
-   private SessionQueueQueryResponseMessage(final boolean durable, final int maxSize, 
+   private SessionQueueQueryResponseMessage(final boolean durable, 
    		final int consumerCount, final int messageCount, final SimpleString filterString, final SimpleString address,
    		final boolean exists)
    {
       super(SESS_QUEUEQUERY_RESP);
        
       this.durable = durable;
-      
-      this.maxSize = maxSize;
       
       this.consumerCount = consumerCount;
       
@@ -96,11 +92,6 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       return durable;
    }
    
-   public int getMaxSize()
-   {
-      return maxSize;
-   }
-   
    public int getConsumerCount()
    {
       return consumerCount;
@@ -125,7 +116,6 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
    {
       buffer.putBoolean(exists);
       buffer.putBoolean(durable);
-      buffer.putInt(maxSize);
       buffer.putInt(consumerCount);
       buffer.putInt(messageCount);
       buffer.putNullableSimpleString(filterString);
@@ -136,7 +126,6 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
    {
       exists = buffer.getBoolean();
       durable = buffer.getBoolean();
-      maxSize = buffer.getInt();
       consumerCount = buffer.getInt();
       messageCount = buffer.getInt();
       filterString  = buffer.getNullableSimpleString();
@@ -154,7 +143,6 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       
       return super.equals(other) && this.exists == r.exists &&
                this.durable == r.durable &&             
-               this.maxSize == r.maxSize &&
                this.consumerCount == r.consumerCount &&
                this.messageCount == r.messageCount &&
                this.filterString == null ? r.filterString == null : this.filterString.equals(r.filterString) &&

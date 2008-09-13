@@ -50,13 +50,13 @@ public class SubscriptionInfo
    private static final String SUBSCRIPTION_TYPE_NAME = "SubscriptionInfo";
    private static final String SUBSCRIPTION_TABULAR_TYPE_NAME = "SubscriptionTabularInfo";
    private static final String[] ITEM_NAMES = new String[] { "queueName", "clientID",
-         "name", "durable", "selector", "messageCount", "maxSizeBytes" };
+         "name", "durable", "selector", "messageCount" };
    private static final String[] ITEM_DESCRIPTIONS = new String[] {
          "ID of the subscription", "ClientID of the subscription",
          "name of the subscription", "Is the subscriber durable?", "Selector",
-         "Number of messages", "Maximum size in bytes" };
+         "Number of messages" };
    private static final OpenType[] ITEM_TYPES = new OpenType[] { STRING,
-         STRING, STRING, BOOLEAN, STRING, INTEGER, INTEGER };
+         STRING, STRING, BOOLEAN, STRING, INTEGER};
 
    static
    {
@@ -78,7 +78,6 @@ public class SubscriptionInfo
    private final boolean durable;
    private final String selector;
    private final int messageCount;
-   private final int maxSizeBytes;
 
    // Static --------------------------------------------------------
 
@@ -111,7 +110,7 @@ public class SubscriptionInfo
 
    public SubscriptionInfo(final String queueName, final String clientID,
          final String name, final boolean durable, final String selector,
-         final int messageCount, final int maxSizeBytes)
+         final int messageCount)
    {
       this.queueName = queueName;
       this.clientID = clientID;
@@ -119,7 +118,6 @@ public class SubscriptionInfo
       this.durable = durable;
       this.selector = selector;
       this.messageCount = messageCount;
-      this.maxSizeBytes = maxSizeBytes;
    }
 
    // Public --------------------------------------------------------
@@ -154,17 +152,12 @@ public class SubscriptionInfo
       return messageCount;
    }
 
-   public int getMaxSizeBytes()
-   {
-      return maxSizeBytes;
-   }
-
    public CompositeData toCompositeData()
    {
       try
       {
          return new CompositeDataSupport(TYPE, ITEM_NAMES, new Object[] { queueName,
-               clientID, name, durable, selector, messageCount, maxSizeBytes });
+               clientID, name, durable, selector, messageCount});
       } catch (OpenDataException e)
       {
          return null;

@@ -49,8 +49,6 @@ public class MessageReferenceImpl implements MessageReference
    private static final Logger log = Logger.getLogger(MessageReferenceImpl.class);
    
    // Attributes ----------------------------------------------------
-
-   private boolean trace = log.isTraceEnabled();
    
    private volatile int deliveryCount;   
    

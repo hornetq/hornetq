@@ -94,6 +94,12 @@
          </acceptor>
       </remoting-acceptors>
       
+      <!--  Paging configuration -->
+      
+      <paging-directory>data/paging</paging-directory>
+      
+      <max-global-size-bytes>104857600</max-global-size-bytes>
+      
       <!-- Storage configuration -->
 
       <bindings-directory>data/bindings</bindings-directory>

@@ -137,6 +137,16 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       return refCount.get();
    }
+   
+   public int getMemoryEstimate()
+   {
+      // This is just an estimate...
+      // due to memory alignments and JVM implementation this could be very different from reality
+      return getEncodeSize() +
+             (16 + 4) * 2 +// Each AtomicInteger consumes 16 bytes for the Object and ObjectReference + 4 bytes for the internal integer
+             8; // MessageID
+
+   }
 
    public ServerMessage copy()
    {

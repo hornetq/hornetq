@@ -313,6 +313,8 @@ public class FileConfiguration extends ConfigurationImpl
       journalDirectory = getString(e, "journal-directory", journalDirectory);
       
       pagingDirectory = getString(e, "paging-directory", pagingDirectory);
+      
+      maxGlobalSize = getLong(e, "max-global-size-bytes", maxGlobalSize);
 
       createJournalDir = getBoolean(e, "create-journal-dir", createJournalDir);
 

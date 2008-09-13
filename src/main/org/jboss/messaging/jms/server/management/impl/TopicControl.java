@@ -245,14 +245,12 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
             clientID = pair.a;
             subName = pair.b;
          }
-
-         QueueSettings queueSettings = queue.getSettings();
          
          String filter = queue.getFilter() != null ? queue.getFilter()
                .getFilterString().toString() : null;
          SubscriptionInfo info = new SubscriptionInfo(queue.getName().toString(),
                clientID, subName, queue.isDurable(), filter, queue
-                     .getMessageCount(), queueSettings.getMaxSizeBytes());
+                     .getMessageCount());
          subInfos.add(info);
       }
       return (SubscriptionInfo[]) subInfos.toArray(new SubscriptionInfo[subInfos

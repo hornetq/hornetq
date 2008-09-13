@@ -52,5 +52,7 @@ public interface ServerMessage extends Message, EncodingSupport
    int getRefCount();
    
    ServerMessage copy();
+   
+   int getMemoryEstimate();
 }
 

@@ -114,7 +114,12 @@ public class ConfigurationImpl implements Configuration
          
    protected TransportConfiguration backupConnectorConfig;
    
+   // Paging related attributes
+   
+   protected long maxGlobalSize = -1;
          
+   protected String pagingDirectory = DEFAULT_PAGING_DIR;
+
    // Journal related attributes
    
    protected String bindingsDirectory = DEFAULT_BINDINGS_DIRECTORY;
@@ -122,8 +127,6 @@ public class ConfigurationImpl implements Configuration
    protected boolean createBindingsDir = DEFAULT_CREATE_BINDINGS_DIR;
    
    protected String journalDirectory = DEFAULT_JOURNAL_DIR;
-   
-   protected String pagingDirectory = DEFAULT_PAGING_DIR;
    
    protected boolean createJournalDir = DEFAULT_CREATE_JOURNAL_DIR;
    
@@ -393,6 +396,18 @@ public class ConfigurationImpl implements Configuration
       return this.journalBufferReuseSize;
    }	
 	
+   
+   public long getMaxGlobalSizeBytes()
+   {
+      return this.maxGlobalSize;
+   }
+   
+   public void setMaxGlobalSizeBytes(long maxGlobalSize)
+   {
+      this.maxGlobalSize = maxGlobalSize;      
+   }
+
+   
    public boolean equals(Object other)
    {
       if (this == other)

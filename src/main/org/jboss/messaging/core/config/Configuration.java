@@ -140,5 +140,9 @@ public interface Configuration extends Serializable
    boolean isCreateJournalDir();
    
    void setCreateJournalDir(boolean create);
+   
+   long getMaxGlobalSizeBytes();
+   
+   void setMaxGlobalSizeBytes(long maxGlobalSize);
 
 }

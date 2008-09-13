@@ -51,8 +51,6 @@ public interface Queue
    
    HandleStatus addFirst(MessageReference ref);
    
-   QueueSettings getSettings();
-   
    /**
     * This method is used to add a List of MessageReferences atomically at the head of the list.
     * Useful when cancelling messages and guaranteeing ordering

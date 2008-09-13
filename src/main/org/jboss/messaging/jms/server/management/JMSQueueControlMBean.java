@@ -57,8 +57,6 @@ public interface JMSQueueControlMBean extends DestinationControlMBean
 
    long getSizeBytes();
 
-   int getMaxSizeBytes();
-
    int getMessageCount();
 
    long getScheduledCount();

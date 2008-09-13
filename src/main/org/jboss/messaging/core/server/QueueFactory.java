@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.server;
 
 import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -39,4 +40,10 @@ public interface QueueFactory
 {
    Queue createQueue(long persistenceID, SimpleString name, Filter filter,
                      boolean durable);
+   
+   /**
+    * This is required for delete-all-reference to work correctly with paging
+    * @param postOffice
+    */
+   void setPostOffice(PostOffice postOffice);
 }

@@ -88,6 +88,8 @@ public class QueueImpl implements Queue
    private final boolean durable;
 
    private final ScheduledExecutorService scheduledExecutor;
+   
+   private final PostOffice postOffice;
 
    private final PriorityLinkedList<MessageReference> messageReferences =
       new PriorityLinkedListImpl<MessageReference>(NUM_PRIORITIES);
@@ -118,14 +120,12 @@ public class QueueImpl implements Queue
    
    private final Lock lock = new ReentrantLock(false);
    
-   private final QueueSettings settings;
-   
    private volatile boolean backup;
          
    public QueueImpl(final long persistenceID, final SimpleString name,
          final Filter filter, final boolean clustered, final boolean durable,
-         final QueueSettings settings,
-         final ScheduledExecutorService scheduledExecutor)
+         final ScheduledExecutorService scheduledExecutor,
+         final PostOffice postOffice)
    {
       this.persistenceID = persistenceID;
 
@@ -139,7 +139,7 @@ public class QueueImpl implements Queue
 
       this.scheduledExecutor = scheduledExecutor;
       
-      this.settings = settings;
+      this.postOffice = postOffice;
 
       direct = true;
    }
@@ -147,11 +147,6 @@ public class QueueImpl implements Queue
    // Queue implementation
    // -------------------------------------------------------------------
 
-
-   public QueueSettings getSettings()
-   {
-      return this.settings;
-   }
 
    public boolean isClustered()
    {
@@ -472,7 +467,7 @@ public class QueueImpl implements Queue
 
    public synchronized void deleteAllReferences(final StorageManager storageManager) throws Exception
    {
-      Transaction tx = new TransactionImpl(storageManager, null);
+      Transaction tx = new TransactionImpl(storageManager, postOffice);
 
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -508,7 +503,7 @@ public class QueueImpl implements Queue
    {
       boolean deleted = false;
       
-      Transaction tx = new TransactionImpl(storageManager, null);
+      Transaction tx = new TransactionImpl(storageManager, postOffice);
 
       Iterator<MessageReference> iter = messageReferences.iterator();
 

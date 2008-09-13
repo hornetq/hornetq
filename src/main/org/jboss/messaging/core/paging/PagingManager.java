@@ -40,8 +40,11 @@ import org.jboss.messaging.util.SimpleString;
 public interface PagingManager extends MessagingComponent
 {
 
+   
+   boolean isGlobalPageMode();
+   
    /** To return the PageStore associated with the address */
-   public PagingStore getPageStore(SimpleString address) throws Exception;
+   PagingStore getPageStore(SimpleString address) throws Exception;
    
    /** An injection point for the PostOffice to inject itself */
    void setPostOffice(PostOffice postOffice);

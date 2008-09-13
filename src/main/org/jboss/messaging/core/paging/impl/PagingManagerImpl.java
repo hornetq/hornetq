@@ -29,6 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.LastPageRecord;
@@ -57,10 +59,20 @@ public class PagingManagerImpl implements PagingManager
 
    
    // Constants -----------------------------------------------------
+   private static final long WATERMARK_GLOBAL_PAGE = QueueSettings.DEFAULT_PAGE_SIZE_BYTES;
    
    // Attributes ----------------------------------------------------
    
+   
    private volatile boolean started = false;
+   
+   private final long maxGlobalSize;
+   
+   private final AtomicLong globalSize = new AtomicLong(0);
+   
+   private final AtomicBoolean globalMode = new AtomicBoolean(false);
+   
+   private final AtomicBoolean globalDepageRunning = new AtomicBoolean(false);
    
    private final ConcurrentMap<SimpleString, PagingStore> stores = new ConcurrentHashMap<SimpleString, PagingStore>();
    
@@ -95,16 +107,24 @@ public class PagingManagerImpl implements PagingManager
    // Constructors --------------------------------------------------------------------------------------------------------------------
    
    public PagingManagerImpl(final PagingStoreFactory pagingSPI, StorageManager storageManager, 
-                            final HierarchicalRepository<QueueSettings> queueSettingsRepository)
+                            final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                            final long maxGlobalSize)
    {
       this.pagingSPI = pagingSPI;
       this.queueSettingsRepository = queueSettingsRepository;
       this.storageManager = storageManager;
+      this.maxGlobalSize = maxGlobalSize;
    }
    
    // Public ---------------------------------------------------------------------------------------------------------------------------
    
    // PagingManager implementation -----------------------------------------------------------------------------------------------------
+   
+   
+   public boolean isGlobalPageMode()
+   {
+      return globalMode.get();
+   }
    
    public PagingStore getPageStore(final SimpleString storeName) throws Exception
    {
@@ -246,7 +266,18 @@ public class PagingManagerImpl implements PagingManager
          ref.getQueue().addLast(ref);
       }
       
-      return pagingStore.getAddressSize() < pagingStore.getMaxSizeBytes(); 
+      
+      if (globalMode.get())
+      {
+         return globalSize.get() < maxGlobalSize -  WATERMARK_GLOBAL_PAGE &&
+                pagingStore.getMaxSizeBytes() <= 0 || pagingStore.getAddressSize() < pagingStore.getMaxSizeBytes();
+      }
+      else
+      {
+         // If Max-size is not configured (-1) it will aways return true, as this method was probably called by global-depage
+         return pagingStore.getMaxSizeBytes() <= 0 || pagingStore.getAddressSize() < pagingStore.getMaxSizeBytes();
+      }
+
    }
    
    public void setLastPage(LastPageRecord lastPage) throws Exception
@@ -262,12 +293,12 @@ public class PagingManagerImpl implements PagingManager
    
    public void messageDone(ServerMessage message) throws Exception
    {
-      addSize(message.getDestination(), message.getEncodeSize() * -1);
+      addSize(message.getDestination(), message.getMemoryEstimate() * -1);
    }
    
    public long addSize(final ServerMessage message) throws Exception
    {
-      return addSize(message.getDestination(), message.getEncodeSize());      
+      return addSize(message.getDestination(), message.getMemoryEstimate());      
    }
    
    public boolean page(ServerMessage message, long transactionId)
@@ -358,9 +389,11 @@ public class PagingManagerImpl implements PagingManager
       
       final long pageSize = store.getPageSizeBytes();
 
+      
       if (store.isDropWhenMaxSize() && size > 0)
       {
-         if (store.getAddressSize() + size > maxSize)
+         // if destination configured to drop messages && size is over the limit, we return -1 what means drop the message
+         if ((store.getAddressSize() + size > maxSize) || (maxGlobalSize > 0 && (globalSize.get() + size > maxGlobalSize)))
          {
             if (!store.isDroppedMessage())
             {
@@ -377,11 +410,26 @@ public class PagingManagerImpl implements PagingManager
       }
       else
       {
+         
+         long currentGlobalSize = globalSize.addAndGet(size);
+         
          final long addressSize = store.addAddressSize(size);
 
          if (size > 0)
          {
-            if (maxSize > 0 && addressSize > maxSize)
+            if ((maxGlobalSize > 0 && (currentGlobalSize > maxGlobalSize)))
+            {
+               globalMode.set(true);
+               if (store.startPaging())
+               {
+                  if (isTrace)
+                  {
+                     trace("Starting paging on " + destination + ", size = " + addressSize + ", maxSize=" + maxSize);
+                  }
+               }
+            }
+            else
+            if ((maxSize > 0 && (addressSize > maxSize)))
             {
                if (store.startPaging())
                {
@@ -394,6 +442,12 @@ public class PagingManagerImpl implements PagingManager
          }
          else
          {
+            // When in Global mode, we use the default page size as the minimal watermark to start depage
+            if (globalMode.get() && currentGlobalSize < maxGlobalSize - QueueSettings.DEFAULT_PAGE_SIZE_BYTES)
+            {
+               startGlobalDepage();
+            }
+            else
             if ( maxSize > 0 && addressSize < (maxSize - pageSize))
             {
                if (store.startDepaging())
@@ -407,7 +461,71 @@ public class PagingManagerImpl implements PagingManager
       }
    }
 
+
+   private void startGlobalDepage()
+   {
+      if (globalDepageRunning.compareAndSet(false, true))
+      {
+         Runnable globalDepageRunnable = new GlobalDepager();
+         pagingSPI.getPagingExecutor().execute(globalDepageRunnable);
+      }
+   }
+
    
    // Inner classes -------------------------------------------------
+   
+   
+   class GlobalDepager implements Runnable
+   {
+      public void run()
+      {
+         try
+         {
+            while (globalSize.get() < maxGlobalSize)
+            {
+               boolean depaged = false;
+               // Round robin depaging one page at the time from each destination
+               for (PagingStore store : stores.values())
+               {
+                  if (globalSize.get() < maxGlobalSize)
+                  {
+                     if (store.isPaging())
+                     {
+                        depaged = true;
+                        try
+                        {
+                           store.readPage();
+                        }
+                        catch (Exception e)
+                        {
+                           log.error(e.getMessage(), e);
+                        }
+                     }
+                  }
+               }
+               if (!depaged)
+               {
+                  break;
+               }
+            }
+            
+            if (globalSize.get() < maxGlobalSize)
+            {
+               
+               globalMode.set(false);
+               // Clearing possible messages still in page-mode
+               for (PagingStore store : stores.values())
+               {
+                  store.startDepaging();
+               }
+            }
+         }
+         finally
+         {
+            PagingManagerImpl.this.globalDepageRunning.set(false);
+         }
+      }
+      
+   }
    
 }

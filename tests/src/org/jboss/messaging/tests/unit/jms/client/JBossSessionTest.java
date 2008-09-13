@@ -672,7 +672,7 @@ public class JBossSessionTest extends TestCase
 
       // isExists() will return true
       SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(
-            false, -1, 0, 1, null, destination.getSimpleAddress());
+            false, 0, 1, null, destination.getSimpleAddress());
       expect(mockClientSession.queueQuery(destination.getSimpleAddress()))
             .andReturn(resp);
       expect(
@@ -1032,7 +1032,7 @@ public class JBossSessionTest extends TestCase
             .andReturn(bindingResp);
       // already 1 durable subscriber
       SessionQueueQueryResponseMessage queryResp =
-         new SessionQueueQueryResponseMessage(true, -1, 1, 0, null, topic.getSimpleAddress());
+         new SessionQueueQueryResponseMessage(true, 1, 0, null, topic.getSimpleAddress());
       expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(queryResp);
 
       replay(sf, mockClientSession);
@@ -1109,7 +1109,7 @@ public class JBossSessionTest extends TestCase
             .andReturn(bindingResp);
       // isExists will return true
       SessionQueueQueryResponseMessage queryResp =
-         new SessionQueueQueryResponseMessage(true, -1, 0, 0, null, topic.getSimpleAddress());
+         new SessionQueueQueryResponseMessage(true, 0, 0, null, topic.getSimpleAddress());
       expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(queryResp);
       expect(
             mockClientSession.createConsumer(isA(SimpleString.class),
@@ -1148,7 +1148,7 @@ public class JBossSessionTest extends TestCase
             .andReturn(bindingResp);
       // isExists will return true
       SessionQueueQueryResponseMessage queryResp =
-         new SessionQueueQueryResponseMessage(true, -1, 0, 0, null, oldTopic.getSimpleAddress());
+         new SessionQueueQueryResponseMessage(true, 0, 0, null, oldTopic.getSimpleAddress());
       expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(queryResp);
       // queue address of the old topic
       mockClientSession.deleteQueue(isA(SimpleString.class));
@@ -1191,7 +1191,7 @@ public class JBossSessionTest extends TestCase
             .andReturn(bindingResp);
       // isExists will return true
       SessionQueueQueryResponseMessage queryResp =
-         new SessionQueueQueryResponseMessage(true, -1, 0, 0, oldSelector, topic.getSimpleAddress());
+         new SessionQueueQueryResponseMessage(true, 0, 0, oldSelector, topic.getSimpleAddress());
       expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(queryResp);
       // queue address of the old topic
       mockClientSession.deleteQueue(isA(SimpleString.class));
@@ -1377,7 +1377,7 @@ public class JBossSessionTest extends TestCase
 
       // isExists() will return true
       SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(
-            false, -1, -1, 1, null, queueAddress);
+            false, -1, 1, null, queueAddress);
       expect(mockClientSession.queueQuery(queueAddress)).andReturn(resp);
 
       replay(sf, mockClientSession);
@@ -1674,7 +1674,7 @@ public class JBossSessionTest extends TestCase
       
       // isExists() will return true
       SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(
-            false, -1, -1, 1, null, queueAddress);
+            false, -1, 1, null, queueAddress);
       expect(mockClientSession.queueQuery(queueAddress)).andReturn(resp);      
       mockClientSession.removeDestination(queueAddress, false);
       mockClientSession.deleteQueue(queueAddress);
@@ -1724,7 +1724,7 @@ public class JBossSessionTest extends TestCase
       
       
       SessionQueueQueryResponseMessage resp =
-         new SessionQueueQueryResponseMessage(false, 0, consumerCount, 0, null, queueAddress);
+         new SessionQueueQueryResponseMessage(false, consumerCount, 0, null, queueAddress);
       expect(mockClientSession.queueQuery(queueAddress)).andReturn(resp);
       replay(sf, mockClientSession);
 
@@ -1946,7 +1946,7 @@ public class JBossSessionTest extends TestCase
       String subName = randomString();
       String clientID = randomString();
       SimpleString queueAddres = new SimpleString(JBossTopic.createQueueNameForDurableSubscription(clientID, subName));      
-      SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(false, 0, 0, 0, null, queueAddres);
+      SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(false, 0, 0, null, queueAddres);
       expect(mockClientSession.queueQuery(queueAddres)).andReturn(resp );
       mockClientSession.deleteQueue(queueAddres);
       replay(sf, mockClientSession);
@@ -1991,7 +1991,7 @@ public class JBossSessionTest extends TestCase
       int consumerCount = 1;      
 
       SessionQueueQueryResponseMessage resp =
-         new SessionQueueQueryResponseMessage(true, 0, consumerCount, 0, null, queueAddres);
+         new SessionQueueQueryResponseMessage(true, consumerCount, 0, null, queueAddres);
       expect(mockClientSession.queueQuery(isA(SimpleString.class))).andReturn(resp );
       replay(sf, mockClientSession);
 
@@ -2083,7 +2083,7 @@ public class JBossSessionTest extends TestCase
 
       // isExists() will return true
       SessionQueueQueryResponseMessage resp = new SessionQueueQueryResponseMessage(
-            false, -1, 0, 1, null, destination.getSimpleAddress());
+            false, 0, 1, null, destination.getSimpleAddress());
       expect(mockClientSession.queueQuery(destination.getSimpleAddress()))
             .andReturn(resp);
       expect(

@@ -1096,11 +1096,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          SimpleString filterString = filter == null ? null : filter
                   .getFilterString();
-
-         QueueSettings settings = queue.getSettings();
-
          // TODO: Remove MAX-SIZE-BYTES from SessionQueueQueryResponse.
-         response = new SessionQueueQueryResponseMessage(queue.isDurable(), settings.getMaxSizeBytes(),
+         response = new SessionQueueQueryResponseMessage(queue.isDurable(), 
                  queue.getConsumerCount(), queue.getMessageCount(),
                  filterString, binding.getAddress());
       }

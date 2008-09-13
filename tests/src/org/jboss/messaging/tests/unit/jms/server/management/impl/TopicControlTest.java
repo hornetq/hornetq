@@ -284,11 +284,8 @@ public class TopicControlTest extends TestCase
       JBossTopic topic = new JBossTopic(name);
       PostOffice postOffice = createMock(PostOffice.class);
       StorageManager storageManager = createMock(StorageManager.class);
-      
-      QueueSettings settings = new QueueSettings();
 
       Queue durableQueue = createMock(Queue.class);
-      expect(durableQueue.getSettings()).andStubReturn(settings);
       expect(durableQueue.getName()).andStubReturn(
             JBossTopic.createAddressFromName(randomString()));
       expect(durableQueue.getFilter()).andStubReturn(null);
@@ -298,7 +295,6 @@ public class TopicControlTest extends TestCase
       expect(bindingForDurableQueue.getQueue()).andStubReturn(durableQueue);
 
       Queue nonDurableQueue = createMock(Queue.class);
-      expect(nonDurableQueue.getSettings()).andStubReturn(settings);
       expect(nonDurableQueue.getName()).andStubReturn(
             JBossTopic.createAddressFromName(randomString()));
       expect(nonDurableQueue.getFilter()).andStubReturn(null);
@@ -342,7 +338,6 @@ public class TopicControlTest extends TestCase
       StorageManager storageManager = createMock(StorageManager.class);
 
       Queue durableQueue = createMock(Queue.class);
-      expect(durableQueue.getSettings()).andStubReturn(settings);
       expect(durableQueue.getName()).andStubReturn(
             JBossTopic.createAddressFromName(randomString()));
       expect(durableQueue.getFilter()).andStubReturn(null);
@@ -352,7 +347,6 @@ public class TopicControlTest extends TestCase
       expect(bindingForDurableQueue.getQueue()).andStubReturn(durableQueue);
 
       Queue nonDurableQueue = createMock(Queue.class);
-      expect(nonDurableQueue.getSettings()).andStubReturn(settings);
       expect(nonDurableQueue.getName()).andStubReturn(
             JBossTopic.createAddressFromName(randomString()));
       expect(nonDurableQueue.getFilter()).andStubReturn(null);

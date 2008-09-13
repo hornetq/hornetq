@@ -69,7 +69,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
       
       
       PagingManagerImpl managerImpl = 
-         new PagingManagerImpl(new PagingManagerFactoryNIO(journalDir), null, queueSettings);
+         new PagingManagerImpl(new PagingManagerFactoryNIO(journalDir), null, queueSettings, -1);
       managerImpl.start();
       
       PagingStore store = managerImpl.getPageStore(new SimpleString("simple-test"));
@@ -108,12 +108,12 @@ public class PagingManagerIntegrationTest extends UnitTestCase
       
       QueueSettings simpleTestSettings = new QueueSettings();
       simpleTestSettings.setDropMessagesWhenFull(true);
-      simpleTestSettings.setMaxSizeBytes(150);
+      simpleTestSettings.setMaxSizeBytes(200);
       
       queueSettings.addMatch("simple-test", simpleTestSettings);
       
       PagingManagerImpl managerImpl = 
-         new PagingManagerImpl(new PagingManagerFactoryNIO(journalDir), null, queueSettings);
+         new PagingManagerImpl(new PagingManagerFactoryNIO(journalDir), null, queueSettings, -1);
       managerImpl.start();
       
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(100));

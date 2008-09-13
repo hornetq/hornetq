@@ -44,6 +44,8 @@ import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
+ * @see PagingStore
+ * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -197,10 +199,10 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
       page.open();
       PageMessage messages[] = page.read();
-      boolean addressFull = pagingManager.onDepage(page.getPageId(), PagingStoreImpl.this.storeName, PagingStoreImpl.this, messages);
+      boolean addressNotFull = pagingManager.onDepage(page.getPageId(), PagingStoreImpl.this.storeName, PagingStoreImpl.this, messages);
       page.delete();
       
-      return addressFull;
+      return addressNotFull;
 
    }
    
@@ -363,7 +365,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
    
-   public boolean startDepaging() throws Exception
+   public boolean startDepaging()
    {
       lock.readLock().lock();
       try

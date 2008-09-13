@@ -25,6 +25,7 @@ package org.jboss.messaging.core.server.impl;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -45,6 +46,9 @@ public class QueueFactoryImpl implements QueueFactory
 
    private final ScheduledExecutorService scheduledExecutor;
    
+   /** This is required for delete-all-reference to work correctly with paging, and controlling global-size */
+   private PostOffice postOffice;
+   
    public QueueFactoryImpl(final ScheduledExecutorService scheduledExecutor,
    	                   	final HierarchicalRepository<QueueSettings> queueSettingsRepository)
    {
@@ -53,12 +57,17 @@ public class QueueFactoryImpl implements QueueFactory
       this.scheduledExecutor = scheduledExecutor;
    }
    
+   public void setPostOffice(PostOffice postOffice)
+   {
+      this.postOffice = postOffice;
+   }
+   
    public Queue createQueue(final long persistenceID, final SimpleString name, final Filter filter,
                             final boolean durable)
    {
       QueueSettings queueSettings = queueSettingsRepository.getMatch(name.toString());
             
-      Queue queue = new QueueImpl(persistenceID, name, filter, queueSettings.isClustered(), durable, queueSettings, scheduledExecutor);
+      Queue queue = new QueueImpl(persistenceID, name, filter, queueSettings.isClustered(), durable, scheduledExecutor, postOffice);
 
       queue.setDistributionPolicy(queueSettings.getDistributionPolicy());
 

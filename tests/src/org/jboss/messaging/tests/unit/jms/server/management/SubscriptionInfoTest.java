@@ -58,7 +58,6 @@ public class SubscriptionInfoTest extends TestCase
       assertEquals(expected.isDurable(), actual.get("durable"));
       assertEquals(expected.getSelector(), actual.get("selector"));
       assertEquals(expected.getMessageCount(), actual.get("messageCount"));
-      assertEquals(expected.getMaxSizeBytes(), actual.get("maxSizeBytes"));
    }
 
    // Constructors --------------------------------------------------
@@ -68,8 +67,7 @@ public class SubscriptionInfoTest extends TestCase
    public void testToCompositeData() throws Exception
    {
       SubscriptionInfo info = new SubscriptionInfo(randomString(), randomString(),
-            randomString(), randomBoolean(), randomString(), randomInt(),
-            randomInt());
+            randomString(), randomBoolean(), randomString(), randomInt());
       CompositeData data = info.toCompositeData();
 
       assertEquals(info, data);
@@ -78,11 +76,9 @@ public class SubscriptionInfoTest extends TestCase
    public void testToTabularData() throws Exception
    {
       SubscriptionInfo info_1 = new SubscriptionInfo(randomString(), randomString(),
-            randomString(), randomBoolean(), randomString(), randomInt(),
-            randomInt());
+            randomString(), randomBoolean(), randomString(), randomInt());
       SubscriptionInfo info_2 = new SubscriptionInfo(randomString(), randomString(),
-            randomString(), randomBoolean(), randomString(), randomInt(),
-            randomInt());
+            randomString(), randomBoolean(), randomString(), randomInt());
       SubscriptionInfo[] infos = new SubscriptionInfo[] { info_1, info_2 };
 
       TabularData data = SubscriptionInfo.toTabularData(infos);

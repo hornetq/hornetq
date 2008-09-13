@@ -73,6 +73,11 @@ public class PagingManagerFactoryNIO implements PagingStoreFactory
    
    // Public --------------------------------------------------------
 
+   public Executor getPagingExecutor()
+   {
+      return this.executor;
+   }
+   
    public PagingStore newStore(final SimpleString destinationName, QueueSettings settings)
    {
       final String destinationDirectory = directory + "/" + destinationName.toString();

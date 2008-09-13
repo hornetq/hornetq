@@ -26,10 +26,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.impl.QueueImpl;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -42,11 +42,19 @@ import org.jboss.messaging.util.SimpleString;
 public class FakeQueueFactory implements QueueFactory
 {
 	private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+	
+	private PostOffice postOffice;
 
 	public Queue createQueue(long persistenceID, SimpleString name, Filter filter,
 			                   boolean durable)
 	{
-		return new QueueImpl(persistenceID, name, filter, false, durable, new QueueSettings(), scheduledExecutor);
+		return new QueueImpl(persistenceID, name, filter, false, durable, scheduledExecutor, postOffice);
 	}
+
+   public void setPostOffice(PostOffice postOffice)
+   {
+      this.postOffice = postOffice;
+      
+   }
 
 }

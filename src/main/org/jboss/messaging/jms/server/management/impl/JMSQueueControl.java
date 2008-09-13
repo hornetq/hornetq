@@ -149,11 +149,6 @@ public class JMSQueueControl extends StandardMBean implements
       return coreQueue.getDeliveringCount();
    }
 
-   public int getMaxSizeBytes()
-   {
-      return coreQueue.getSettings().getMaxSizeBytes();
-   }
-
    public long getScheduledCount()
    {
       return coreQueue.getScheduledCount();

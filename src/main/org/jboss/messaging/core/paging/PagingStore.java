@@ -84,7 +84,7 @@ public interface PagingStore extends MessagingComponent
     * @return false if a thread was already started, or if not in page mode
     * @throws Exception 
     */
-   boolean startDepaging() throws Exception;
+   boolean startDepaging();
 
    LastPageRecord getLastRecord();
 

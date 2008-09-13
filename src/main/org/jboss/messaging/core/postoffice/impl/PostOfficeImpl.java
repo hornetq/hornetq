@@ -110,6 +110,9 @@ public class PostOfficeImpl implements PostOffice
          pagingManager.start();
       }
       
+      // Injecting the postoffice (itself) on queueFactory for paging-control
+      queueFactory.setPostOffice(this);
+      
       loadBindings();
       
       started = true;
@@ -439,8 +442,11 @@ public class PostOfficeImpl implements PostOffice
       
       for (SimpleString destination: dests)
       {
-         PagingStore store = pagingManager.getPageStore(destination);
-         store.startDepaging();
+         if (!pagingManager.isGlobalPageMode())
+         {
+            PagingStore store = pagingManager.getPageStore(destination);
+            store.startDepaging();
+         }
       }
    }
 

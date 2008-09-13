@@ -535,13 +535,13 @@ public class TransactionImplTest extends UnitTestCase
    public void testAckCommit() throws Exception
    {
       //Durable queue
-      Queue queue1 = new QueueImpl(12, new SimpleString("queue1"), null, false, true, new QueueSettings(), scheduledExecutor);
+      Queue queue1 = new QueueImpl(12, new SimpleString("queue1"), null, false, true, scheduledExecutor, null);
       
       //Durable queue
-      Queue queue2 = new QueueImpl(34, new SimpleString("queue2"), null, false, true, new QueueSettings(), scheduledExecutor);
+      Queue queue2 = new QueueImpl(34, new SimpleString("queue2"), null, false, true, scheduledExecutor, null);
       
       //Non durable queue
-      Queue queue3 = new QueueImpl(65, new SimpleString("queue3"), null, false, false, new QueueSettings(), scheduledExecutor);
+      Queue queue3 = new QueueImpl(65, new SimpleString("queue3"), null, false, false, scheduledExecutor, null);
       
       //Some refs to ack
       

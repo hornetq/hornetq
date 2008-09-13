@@ -48,7 +48,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
@@ -62,7 +61,7 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class TypedProperties implements EncodingSupport
+public class TypedProperties
 {  
 	private static final Logger log = Logger.getLogger(TypedProperties.class);
 	

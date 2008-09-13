@@ -68,7 +68,7 @@ public class PageManagerImplTest extends UnitTestCase
       queueSettings.setDefault(new QueueSettings());
 
       PagingStoreFactory spi = EasyMock.createMock(PagingStoreFactory.class);
-      PagingManagerImpl manager = new PagingManagerImpl(spi, null, queueSettings);
+      PagingManagerImpl manager = new PagingManagerImpl(spi, null, queueSettings, -1);
       
       SimpleString destination = new SimpleString("some-destination");
 
@@ -121,7 +121,7 @@ public class PageManagerImplTest extends UnitTestCase
    public void testMultipleThreadsGetStore() throws Exception
    {
       PagingStoreFactory spi = EasyMock.createMock(PagingStoreFactory.class);
-      final PagingManagerImpl manager = new PagingManagerImpl(spi, null, repoSettings);
+      final PagingManagerImpl manager = new PagingManagerImpl(spi, null, repoSettings, -1);
       
       final SimpleString destination = new SimpleString("some-destination");
 

@@ -23,6 +23,8 @@
 
 package org.jboss.messaging.core.paging;
 
+import java.util.concurrent.Executor;
+
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 
 
@@ -37,6 +39,8 @@ public interface PagingStoreFactory
 {
 
    PagingStore newStore(org.jboss.messaging.util.SimpleString destinationName, QueueSettings queueSettings);
+   
+   Executor getPagingExecutor();
    
    void setPagingManager(PagingManager manager);
    
