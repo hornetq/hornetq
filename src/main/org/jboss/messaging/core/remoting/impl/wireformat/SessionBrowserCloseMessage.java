@@ -35,13 +35,13 @@ public class SessionBrowserCloseMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private int browserID;
+   private long browserID;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionBrowserCloseMessage(final int browserID)
+   public SessionBrowserCloseMessage(final long browserID)
    {
       super(SESS_BROWSER_CLOSE);
 
@@ -55,19 +55,19 @@ public class SessionBrowserCloseMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public int getBrowserID()
+   public long getBrowserID()
    {
       return browserID;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putInt(browserID);
+      buffer.putLong(browserID);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      browserID = buffer.getInt();
+      browserID = buffer.getLong();
    }
 
    @Override

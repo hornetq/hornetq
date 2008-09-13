@@ -57,7 +57,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    
    private final SimpleString address;
    
-   private final int id;
+   private final long id;
    
    private final ClientSessionInternal session;
    
@@ -86,7 +86,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    // Constructors ---------------------------------------------------------------------------------
       
    public ClientProducerImpl(final ClientSessionInternal session,                             
-                             final int id,          
+                             final long id,          
    		                    final SimpleString address,   		                   
    		                    final TokenBucketLimiter rateLimiter,
    		                    final boolean blockOnNonPersistentSend,
@@ -200,7 +200,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    
    // ClientProducerInternal implementation --------------------------------------------------------
    
-   public int getID()
+   public long getID()
    {
       return id;
    }

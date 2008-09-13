@@ -35,13 +35,13 @@ public class SessionConsumerCloseMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private int consumerID;
+   private long consumerID;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionConsumerCloseMessage(final int objectID)
+   public SessionConsumerCloseMessage(final long objectID)
    {
       super(SESS_CONSUMER_CLOSE);
 
@@ -55,19 +55,19 @@ public class SessionConsumerCloseMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public int getConsumerID()
+   public long getConsumerID()
    {
       return consumerID;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putInt(consumerID);
+      buffer.putLong(consumerID);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      consumerID = buffer.getInt();
+      consumerID = buffer.getLong();
    }
 
    @Override

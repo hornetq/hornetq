@@ -45,7 +45,7 @@ public class ServerProducerImpl implements ServerProducer
 {
 	private static final Logger log = Logger.getLogger(ServerProducerImpl.class);
 	
-	private final int id;
+	private final long id;
 	
 	private final ServerSession session;
 	
@@ -63,7 +63,7 @@ public class ServerProducerImpl implements ServerProducer
      	
 	// Constructors ----------------------------------------------------------------
 	
-	public ServerProducerImpl(final int id, final ServerSession session,
+	public ServerProducerImpl(final long id, final ServerSession session,
 	                          final SimpleString address, 
 			                    final FlowController flowController,
 			                    final int windowSize,			                    
@@ -84,7 +84,7 @@ public class ServerProducerImpl implements ServerProducer
 	
 	// ServerProducer implementation --------------------------------------------
 	
-	public int getID()
+	public long getID()
 	{
 		return id;
 	}

@@ -64,7 +64,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    
    private final Channel channel;
       
-   private final int id;
+   private final long id;
    
    private final Executor sessionExecutor;
    
@@ -93,7 +93,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // ---------------------------------------------------------------------------------
 
    public ClientConsumerImpl(final ClientSessionInternal session,
-                             final int id,                                                             
+                             final long id,                                                             
                              final int clientWindowSize,
                              final boolean direct,                             
                              final Executor executor,
@@ -264,7 +264,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // ClientConsumerInternal implementation
    // --------------------------------------------------------------
    
-   public int getID()
+   public long getID()
    {
       return id;
    }

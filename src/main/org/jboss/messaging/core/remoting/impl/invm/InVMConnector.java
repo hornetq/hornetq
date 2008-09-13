@@ -67,8 +67,6 @@ public class InVMConnector implements Connector
       
       InVMRegistry registry = InVMRegistry.instance;
       
-      registry.registerConnector(id, this);
-      
       acceptor = registry.getAcceptor(id);
       
       if (acceptor == null)
@@ -91,8 +89,6 @@ public class InVMConnector implements Connector
       
       connections.clear();
       
-      InVMRegistry.instance.unregisterConnector(id);        
-      
       started = false;
    }
 
@@ -100,7 +96,7 @@ public class InVMConnector implements Connector
    {
       Connection conn = new InVMConnection(acceptor.getHandler(), new Listener());
       
-      acceptor.connect((String)conn.getID(), handler);
+      acceptor.connect((String)conn.getID(), handler, this);
            
       return conn;
    }
@@ -144,15 +140,13 @@ public class InVMConnector implements Connector
 
       public void connectionDestroyed(final Object connectionID)
       {         
-         if (connections.remove(connectionID) == null)
-         {
-            throw new IllegalArgumentException("Cannot find connection with id " + connectionID + " to remove");
+         if (connections.remove(connectionID) != null)
+         {                     
+            //Close the correspond connection on the other side
+            acceptor.disconnect((String)connectionID);
+            
+            listener.connectionDestroyed(connectionID);
          }
-           
-         //Close the correspond connection on the other side
-         acceptor.disconnect((String)connectionID);
-         
-         listener.connectionDestroyed(connectionID);
       }
 
       public void connectionException(final Object connectionID, final MessagingException me)

@@ -32,7 +32,7 @@ package org.jboss.messaging.core.server;
  */
 public interface ServerProducer
 {
-	int getID();
+	long getID();
 	
 	void close() throws Exception;
 	

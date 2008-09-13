@@ -42,7 +42,7 @@ public class SendMessage extends PacketImpl
    
    // Attributes ----------------------------------------------------
 
-   private int producerID;
+   private long producerID;
    
    private ClientMessage clientMessage;
    
@@ -54,7 +54,7 @@ public class SendMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SendMessage(final int producerID, final ClientMessage message, final boolean requiresResponse)
+   public SendMessage(final long producerID, final ClientMessage message, final boolean requiresResponse)
    {
       super(SESS_SEND);
 
@@ -72,9 +72,9 @@ public class SendMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public int getProducerID()
+   public long getProducerID()
    {
-      return this.producerID;
+      return producerID;
    }
    
    public ClientMessage getClientMessage()
@@ -94,7 +94,7 @@ public class SendMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putInt(producerID);      
+      buffer.putLong(producerID);      
       
       if (clientMessage != null)
       {
@@ -113,7 +113,7 @@ public class SendMessage extends PacketImpl
    {
       //TODO can be optimised
       
-      producerID = buffer.getInt();
+      producerID = buffer.getLong();
                   
       serverMessage = new ServerMessageImpl();
       

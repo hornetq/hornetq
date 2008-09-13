@@ -72,6 +72,7 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
+import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -97,6 +98,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private final boolean trace = log.isTraceEnabled();
 
+   private final String name;
+   
    private final long id;
 
    private final String username;
@@ -109,11 +112,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private volatile RemotingConnection remotingConnection;
 
-   private final Map<Integer, ServerConsumer> consumers = new ConcurrentHashMap<Integer, ServerConsumer>();
+   private final Map<Long, ServerConsumer> consumers = new ConcurrentHashMap<Long, ServerConsumer>();
 
-   private final Map<Integer, ServerBrowserImpl> browsers = new ConcurrentHashMap<Integer, ServerBrowserImpl>();
+   private final Map<Long, ServerBrowserImpl> browsers = new ConcurrentHashMap<Long, ServerBrowserImpl>();
 
-   private final Map<Integer, ServerProducer> producers = new ConcurrentHashMap<Integer, ServerProducer>();
+   private final Map<Long, ServerProducer> producers = new ConcurrentHashMap<Long, ServerProducer>();
 
    private final java.util.Queue<Delivery> deliveries = new ConcurrentLinkedQueue<Delivery>();
 
@@ -145,14 +148,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    
    private volatile boolean started = false;
 
-   private volatile int objectIDSequence;
-   
    private final List<Runnable> failureRunners = new ArrayList<Runnable>();
+   
+   private final IDGenerator idGenerator = new IDGenerator(0);
    
    // Constructors
    // ---------------------------------------------------------------------------------
 
    public ServerSessionImpl(
+            final String name,
             final long id,
             final String username,
             final String password,
@@ -169,6 +173,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             final Channel channel,
             final MessagingServer server) throws Exception
    {
+      this.name = name;
+      
       this.id = id;
 
       this.username = username;
@@ -265,7 +271,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          deferredDeliveries.add(delivery);
          
-         Packet msg = new SessionReplicateDeliveryMessage(ref.getMessage().getMessageID(), consumer.getID());
+         Packet msg = new SessionReplicateDeliveryMessage(consumer.getID(), ref.getMessage().getMessageID());
        
          replicatingChannel.send(msg);
       }
@@ -337,7 +343,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       channel.close();
       
-      server.removeSession(id);
+      server.removeSession(name);
    }
 
    public void promptDelivery(final Queue queue)
@@ -1065,8 +1071,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                queueName.toString()).getConsumerMaxRate();
 
       maxRate = queueMaxRate != null ? queueMaxRate : maxRate;
-
-      ServerConsumer consumer = new ServerConsumerImpl(generateID(), this,
+      
+      ServerConsumer consumer = new ServerConsumerImpl(idGenerator.generateID(), this,
                binding.getQueue(), filter, windowSize != -1, maxRate, started,
                storageManager, queueSettingsRepository, postOffice);
 
@@ -1144,7 +1150,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       securityStore.check(binding.getAddress(), CheckType.READ, this);
 
-      ServerBrowserImpl browser = new ServerBrowserImpl(generateID(), this, binding
+      ServerBrowserImpl browser = new ServerBrowserImpl(idGenerator.generateID(), this, binding
                .getQueue(), filterString == null ? null : filterString
                .toString());
 
@@ -1182,7 +1188,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       final int serverWindowSize = windowToUse == -1 ? -1
                : (int) (windowToUse * 0.75);
 
-      ServerProducerImpl producer = new ServerProducerImpl(generateID(), this,
+      ServerProducerImpl producer = new ServerProducerImpl(idGenerator.generateID(), this,
                address, flowController, serverWindowSize,
                channel);
 
@@ -1197,47 +1203,47 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       return new SessionCreateProducerResponseMessage(initialCredits, maxRateToUse);
    }
 
-   public boolean browserHasNextMessage(final int browserID) throws Exception
+   public boolean browserHasNextMessage(final long browserID) throws Exception
    {
       return browsers.get(browserID).hasNextMessage();
    }
 
-   public ServerMessage browserNextMessage(int browserID) throws Exception
+   public ServerMessage browserNextMessage(final long browserID) throws Exception
    {
       return browsers.get(browserID).nextMessage();
    }
 
-   public void browserReset(int browserID) throws Exception
+   public void browserReset(final long browserID) throws Exception
    {
       browsers.get(browserID).reset();
    }
 
-   public void closeBrowser(int browserID) throws Exception
+   public void closeBrowser(final long browserID) throws Exception
    {
       browsers.get(browserID).close();
    }
 
-   public void closeConsumer(int consumerID) throws Exception
+   public void closeConsumer(final long consumerID) throws Exception
    {
       consumers.get(consumerID).close();
    }
 
-   public void closeProducer(int producerID) throws Exception
+   public void closeProducer(final long producerID) throws Exception
    {
       producers.get(producerID).close();
    }
 
-   public void receiveConsumerCredits(int consumerID, int credits) throws Exception
+   public void receiveConsumerCredits(final long consumerID, final int credits) throws Exception
    {
       consumers.get(consumerID).receiveCredits(credits);
    }
 
-   public void sendProducerMessage(int producerID, ServerMessage message) throws Exception
+   public void sendProducerMessage(final long producerID, final ServerMessage message) throws Exception
    {
       producers.get(producerID).send(message);
    }
    
-   public void handleReplicateDelivery(long messageID, int consumerID) throws Exception
+   public void handleReplicateDelivery(final long consumerID, final long messageID) throws Exception
    {
       consumers.get(consumerID).deliverMessage(messageID);
       
@@ -1259,17 +1265,17 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    }
    
    public void transferConnection(final RemotingConnection newConnection)
-   {     
-      channel.transferConnection(newConnection);
- 
+   {           
       remotingConnection.removeFailureListener(this);
       
+      channel.transferConnection(newConnection);            
+                        
       //Destroy the old connection
-    //  remotingConnection.destroy();
+      remotingConnection.destroy();
       
       remotingConnection = newConnection;
       
-      remotingConnection.addFailureListener(this);
+      remotingConnection.addFailureListener(this);      
    }
    
    public int replayCommands(final int lastReceivedCommandID)
@@ -1319,11 +1325,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    // Private
    // --------------------------------------------------------------------------------------------
-
-   private int generateID()
-   {
-      return objectIDSequence++;
-   }
 
    private void doAck(final MessageReference ref) throws Exception
    {

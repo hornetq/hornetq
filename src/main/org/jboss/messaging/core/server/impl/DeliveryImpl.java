@@ -41,14 +41,14 @@ public class DeliveryImpl implements Delivery
    
    private final MessageReference reference;
    
-   private final int consumerID;
+   private final long consumerID;
    
    private final long deliveryID;
    
    private final Channel channel;
 
    public DeliveryImpl(final MessageReference reference, 
-                       final int consumerID,
+                       final long consumerID,
                        final long deliveryID, final Channel channel)
    {      
       this.reference = reference;
@@ -67,7 +67,7 @@ public class DeliveryImpl implements Delivery
       return deliveryID;
    }
    
-   public int getConsumerID()
+   public long getConsumerID()
    {
       return consumerID;
    }

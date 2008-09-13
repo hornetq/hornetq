@@ -74,9 +74,11 @@ public class MessagingServerPacketHandler implements ChannelHandler
          if (type == CREATESESSION)
          {
             CreateSessionMessage request = (CreateSessionMessage) packet;
-
+                                    
             response =
-               server.createSession(request.getUsername(), request.getPassword(),
+               server.createSession(request.getName(),
+                                    request.getSessionChannelID(),
+                                    request.getUsername(), request.getPassword(),
                                     request.getVersion(),
                                     connection,
                                     request.isAutoCommitSends(),
@@ -88,7 +90,8 @@ public class MessagingServerPacketHandler implements ChannelHandler
             ReattachSessionMessage request = (ReattachSessionMessage)packet;
             
             response =
-               server.reattachSession(connection, request.getSessionID(), request.getLastReceivedCommandID());
+               server.reattachSession(connection, request.getName(),
+                                      request.getLastReceivedCommandID());
          }
          else
          {

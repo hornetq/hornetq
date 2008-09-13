@@ -37,7 +37,7 @@ public class ReattachSessionMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private long sessionID;
+   private String name;
    
    private int lastReceivedCommandID;
 
@@ -45,12 +45,12 @@ public class ReattachSessionMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public ReattachSessionMessage(final long sessionID, final int lastReceivedCommandID)
+   public ReattachSessionMessage(final String name, final int lastReceivedCommandID)
    {
       super(REATTACH_SESSION);
 
-      this.sessionID = sessionID;
-      
+      this.name = name;
+       
       this.lastReceivedCommandID = lastReceivedCommandID;
    }
    
@@ -61,9 +61,9 @@ public class ReattachSessionMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public long getSessionID()
+   public String getName()
    {
-      return sessionID;
+      return name;
    }
    
    public int getLastReceivedCommandID()
@@ -73,13 +73,13 @@ public class ReattachSessionMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(sessionID);
+      buffer.putString(name);
       buffer.putInt(lastReceivedCommandID);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      sessionID = buffer.getLong();
+      name = buffer.getString();
       lastReceivedCommandID = buffer.getInt();
    }
 
@@ -92,8 +92,8 @@ public class ReattachSessionMessage extends PacketImpl
             
       ReattachSessionMessage r = (ReattachSessionMessage)other;
       
-      return super.equals(other) && this.lastReceivedCommandID == r.lastReceivedCommandID &&
-         this.sessionID == r.sessionID;
+      return super.equals(other) && this.name.equals(r.name) &&
+             this.lastReceivedCommandID == r.lastReceivedCommandID;
    }
 
    // Package protected ---------------------------------------------

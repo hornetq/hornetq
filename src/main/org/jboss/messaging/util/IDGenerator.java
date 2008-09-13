@@ -19,46 +19,40 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.remoting.impl.invm;
-
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import org.jboss.messaging.core.logging.Logger;
+package org.jboss.messaging.util;
 
 /**
- * A InVMRegistry
+ * A IDGenerator
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class InVMRegistry
+public class IDGenerator
 {
-   private static final Logger log = Logger.getLogger(InVMRegistry.class);
+   private long idSequence;
    
-   public static final InVMRegistry instance = new InVMRegistry();
+   private boolean wrapped;
    
-   private ConcurrentMap<Integer, InVMAcceptor> acceptors =
-      new ConcurrentHashMap<Integer, InVMAcceptor>();
-   
-   public void registerAcceptor(final int id, final InVMAcceptor acceptor)
-   {      
-      if (acceptors.putIfAbsent(id, acceptor) != null)
-      {
-         throw new IllegalArgumentException("Acceptor with id " + id + " already registered");
-      }
-   }
-   
-   public void unregisterAcceptor(final int id)
-   {      
-      if (acceptors.remove(id) == null)
-      {
-         throw new IllegalArgumentException("Acceptor with id " + id + " not registered");
-      }
-   }
-    
-   public InVMAcceptor getAcceptor(final int id)
+   public IDGenerator(final long startID)
    {
-      return acceptors.get(id);
+      this.idSequence = startID;
+   }
+   
+   public synchronized long generateID()
+   {
+      long id = idSequence++;
+
+      if (idSequence == Long.MIN_VALUE)
+      {
+         wrapped = true;         
+      }      
+      
+      if (wrapped)
+      {
+         //Wrap - Very unlikely to happen
+         throw new IllegalStateException("Exhausted ids to use!");
+      }
+      
+      return id;
    }
 }

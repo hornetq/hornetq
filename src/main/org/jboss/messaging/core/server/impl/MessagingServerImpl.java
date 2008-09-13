@@ -26,12 +26,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -48,7 +48,6 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
-import org.jboss.messaging.core.remoting.ConnectionRegistry;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
@@ -109,9 +108,9 @@ public class MessagingServerImpl implements MessagingServer
    private HierarchicalRepository<Set<Role>> securityRepository;
    private ResourceManager resourceManager;
    private MessagingServerControlMBean serverManagement;
-   private RemotingConnection replicatingConnection;
-   private final AtomicInteger sessionIDSequence = new AtomicInteger(2);
-   private final Map<Long, ServerSession> sessions = new ConcurrentHashMap<Long, ServerSession>();
+   private final ConcurrentMap<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
+   private ConnectorFactory backupConnectorFactory;
+   private Map<String, Object> backupConnectorParams;
 
    // plugins
 
@@ -220,18 +219,13 @@ public class MessagingServerImpl implements MessagingServer
          try
          {
             Class<?> clz = loader.loadClass(backupConnector.getFactoryClassName());
-            ConnectorFactory connectorFactory = (ConnectorFactory) clz.newInstance();
-            ConnectionRegistry registry = ConnectionRegistryImpl.instance;
-            //TODO don't hardcode ping interval and call timeout here
-            replicatingConnection =
-               registry.getConnection(connectorFactory, backupConnector.getParams(),
-                                      -1, 30000);
-            replicatingConnection.setBackup(true);
+            this.backupConnectorFactory = (ConnectorFactory) clz.newInstance();            
          }
          catch (Exception e)
          {
             throw new IllegalArgumentException("Error instantiating interceptor \"" + backupConnector.getFactoryClassName() + "\"", e);
          }
+         this.backupConnectorParams = backupConnector.getParams();
       }
       remotingService.setMessagingServer(this);
            
@@ -245,10 +239,6 @@ public class MessagingServerImpl implements MessagingServer
          return;
       }
 
-      if (this.replicatingConnection != null)
-      {
-         ConnectionRegistryImpl.instance.returnConnection(replicatingConnection.getID());
-      }
       securityStore = null;
       postOffice.stop();
       postOffice = null;
@@ -377,15 +367,18 @@ public class MessagingServerImpl implements MessagingServer
    }
    
    public ReattachSessionResponseMessage reattachSession(final RemotingConnection connection,
-                                                         final long sessionID,
+                                                         final String name,                                                        
                                                          final int lastReceivedCommandID)
    {     
-      ServerSession session = sessions.get(sessionID);
+      ServerSession session = sessions.get(name);
       
       if (session == null)
       {
-         throw new IllegalArgumentException("Cannot find session with id " + sessionID + " to reattach");
-      }
+         throw new IllegalArgumentException("Cannot find session with name " + name + " to reattach");
+      }            
+      
+      //Reconnect the channel to the new connection
+      session.transferConnection(connection);
       
       //This is necessary for invm since the replicating connection will be the same connection
       //as the original replicating connection since the key is the same in the registry, and that connection
@@ -395,12 +388,9 @@ public class MessagingServerImpl implements MessagingServer
       postOffice.setBackup(false);
       
       configuration.setBackup(false);
-      
+                  
       remotingService.setBackup(false);
-      
-      //Reconnect the channel to the new connection
-      session.transferConnection(connection);
-      
+                  
       int serverLastReceivedCommandID = session.replayCommands(lastReceivedCommandID);
       
       connection.setBackup(false);
@@ -408,7 +398,9 @@ public class MessagingServerImpl implements MessagingServer
       return new ReattachSessionResponseMessage(serverLastReceivedCommandID);            
    }
 
-   public CreateSessionResponseMessage createSession(final String username, final String password,
+   public CreateSessionResponseMessage createSession(final String name,
+                                                     final long channelID,
+                                                     final String username, final String password,
                                                      final int incrementingVersion,
                                                      final RemotingConnection remotingConnection,
                                                      final boolean autoCommitSends,
@@ -429,14 +421,12 @@ public class MessagingServerImpl implements MessagingServer
       // up thread local immediately after we used the information, otherwise some other people
       // security my be screwed up, on account of thread local security stack being corrupted.
 
-      securityStore.authenticate(username, password);
-
-      long sessionID = this.generateSessionID();
-
+      securityStore.authenticate(username, password);            
+      
       Channel channel =
-         remotingConnection.getChannel(sessionID, true, configuration.getPacketConfirmationBatchSize());
+         remotingConnection.getChannel(channelID, true, configuration.getPacketConfirmationBatchSize());
 
-      final ServerSessionImpl session = new ServerSessionImpl(sessionID, username, password,
+      final ServerSessionImpl session = new ServerSessionImpl(name, channelID, username, password,
                                   autoCommitSends, autoCommitAcks, xa,
                                   remotingConnection,
                                   storageManager, postOffice,
@@ -447,7 +437,10 @@ public class MessagingServerImpl implements MessagingServer
                                   channel,
                                   this);
       
-      sessions.put(sessionID, session);
+      if (sessions.putIfAbsent(name, session) != null)
+      {
+         throw new IllegalArgumentException("Session with name " + name + " already exists");
+      }
 
       ChannelHandler handler = new ServerSessionPacketHandler(session, channel);
 
@@ -456,15 +449,37 @@ public class MessagingServerImpl implements MessagingServer
       remotingConnection.addFailureListener(session);
 
       return
-         new CreateSessionResponseMessage(sessionID, version.getIncrementingVersion(),
+         new CreateSessionResponseMessage(version.getIncrementingVersion(),
                                           configuration.getPacketConfirmationBatchSize());
    }
    
-   public void removeSession(final long sessionID)
+   public RemotingConnection getReplicatingConnection()
    {
-      if (sessions.remove(sessionID) == null)
+      //Note we must always get a new connection each time - since there must be a one to one correspondence
+      //between connections to clients and replicating connections, since we need to preserve channel ids
+      //before and after failover
+      
+      if (backupConnectorFactory != null)
       {
-         throw new IllegalArgumentException("Cannot find session with id " + sessionID + " to remove");
+         //TODO don't hardcode ping interval and code timeout
+         RemotingConnection replicatingConnection = 
+            ConnectionRegistryImpl.instance.getConnectionNoCache(backupConnectorFactory, backupConnectorParams, 5000, 30000);
+         
+         replicatingConnection.setBackup(true);
+         
+         return replicatingConnection;
+      }
+      else
+      {
+         return null;
+      }
+   }
+   
+   public void removeSession(final String name)
+   {
+      if (sessions.remove(name) == null)
+      {
+         throw new IllegalArgumentException("Cannot find session with name " + name + " to remove");
       }
    }
 
@@ -483,11 +498,6 @@ public class MessagingServerImpl implements MessagingServer
       return postOffice;
    }
 
-   public RemotingConnection getReplicatingConnection()
-   {
-      return replicatingConnection;
-   }
-
    // Public ---------------------------------------------------------------------------------------
 
    // Package protected ----------------------------------------------------------------------------
@@ -495,19 +505,6 @@ public class MessagingServerImpl implements MessagingServer
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-
-   private int generateSessionID()
-   {
-      int id = sessionIDSequence.getAndIncrement();
-
-      //Channel zero is reserved for pinging, channel 1 is reserved for messaging server
-      if (id == 0 || id == 1)
-      {
-         id = this.generateSessionID();
-      }
-
-      return id;
-   }
-
+    
    // Inner classes --------------------------------------------------------------------------------
 }

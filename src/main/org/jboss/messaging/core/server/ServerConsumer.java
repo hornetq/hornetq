@@ -32,7 +32,7 @@ package org.jboss.messaging.core.server;
  */
 public interface ServerConsumer extends Consumer
 {
-	int getID();
+	long getID();
 	
 	void close() throws Exception;
 	

@@ -38,7 +38,7 @@ public class ReattachSessionResponseMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private int lastReceivedCommandID;
-
+      
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -63,12 +63,12 @@ public class ReattachSessionResponseMessage extends PacketImpl
    }
    
    public void encodeBody(final MessagingBuffer buffer)
-   {
+   { 
       buffer.putInt(lastReceivedCommandID);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
-   {
+   { 
       lastReceivedCommandID = buffer.getInt();
    }
    

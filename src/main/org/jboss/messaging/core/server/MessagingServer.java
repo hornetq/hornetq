@@ -75,17 +75,19 @@ public interface MessagingServer extends MessagingComponent
    
    Version getVersion();
    
-   ReattachSessionResponseMessage reattachSession(RemotingConnection connection,
-                                                  long sessionID, int lastReceivedCommandID);
+   ReattachSessionResponseMessage reattachSession(RemotingConnection connection,                                                  
+                                                  String name,
+                                                  int lastReceivedCommandID);
   
-   CreateSessionResponseMessage createSession(String username, String password,                                  
+   CreateSessionResponseMessage createSession(String name, long channelID,
+                                              String username, String password,                                  
                                               int incrementingVersion,
                                               RemotingConnection remotingConnection,
                                               boolean autoCommitSends,
                                               boolean autoCommitAcks,
                                               boolean xa) throws Exception;
    
-   void removeSession(long sessionID);
+   void removeSession(String name);
          
    boolean isStarted();
    

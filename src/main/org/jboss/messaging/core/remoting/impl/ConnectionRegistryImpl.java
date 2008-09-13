@@ -112,6 +112,36 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
          return connection;
       }
    }
+   
+   public RemotingConnection getConnectionNoCache(ConnectorFactory connectorFactory, Map<String, Object> params,
+                                                  long pingInterval, long callTimeout)
+   {
+      DelegatingBufferHandler handler = new DelegatingBufferHandler();
+      
+      NoCacheConnectionLifeCycleListener listener = new NoCacheConnectionLifeCycleListener(); 
+      
+      Connector connector = connectorFactory.createConnector(params, handler, listener);
+      
+      connector.start();
+         
+      Connection tc = connector.createConnection();
+
+      if (tc == null)
+      {
+         throw new IllegalStateException("Failed to connect");
+      }
+      
+      RemotingConnection connection =
+         new RemotingConnectionImpl(tc, callTimeout, pingInterval, null, pingExecutor, null, null, true);
+      
+      handler.conn = connection;
+      
+      listener.conn = connection;
+      
+      connection.startPinger();
+              
+      return connection;
+   }
 
    public synchronized void returnConnection(final Object connectionID)
    {
@@ -119,9 +149,9 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       
       if (key == null)
       {
-         //This is ok and might happen if connection is returned after an error occurred on it in which
+         //This is ok and might happen if conn is returned after an error occurred on it in which
          //case it will have already automatically been closed and removed
-         log.warn("Connection not found when returning - probably connection has failed and been automatically removed");
+         log.warn("Connection not found when returning - probably conn has failed and been automatically removed");
          return;
       }
       
@@ -183,15 +213,12 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       if (key != null)
       {
          ConnectionHolder holder = connections.remove(key);
-         
-        
-         //If conn still exists here this means that the underlying transport connection has been closed from the server side without
-         //being returned from the client side so we need to fail the connection and call it's listeners
+                 
+         //If conn still exists here this means that the underlying transport conn has been closed from the server side without
+         //being returned from the client side so we need to fail the conn and call it's listeners
          MessagingException me = new MessagingException(MessagingException.OBJECT_CLOSED,
-                                                        "The connection has been closed.");
+                                                        "The conn has been closed.");
          holder.getConnection().fail(me);
-
-         holder.getConnector().close();
       }
    }
 
@@ -201,16 +228,14 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
 
       if (key == null)
       {
-         throw new IllegalStateException("Cannot find connection with id " + connectionID);
+         throw new IllegalStateException("Cannot find conn with id " + connectionID);
       }
 
       ConnectionHolder holder = connections.remove(key);
 
       holder.getConnection().fail(me);
-
-      holder.getConnector().close();
    }
-
+     
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -219,6 +244,31 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
 
    // Inner classes -------------------------------------------------
 
+   private static class NoCacheConnectionLifeCycleListener implements ConnectionLifeCycleListener
+   {
+      private RemotingConnection conn;
+      
+      public void connectionCreated(final Connection connection)
+      {
+      }
+
+      public void connectionDestroyed(final Object connectionID)
+      {  
+         if (conn != null)
+         {
+            conn.destroy();
+         }
+      }
+
+      public void connectionException(final Object connectionID, final MessagingException me)
+      {
+         if (conn != null)
+         {
+            conn.fail(me);
+         }
+      }      
+   }
+   
    private static class ConnectionHolder
    {
       private final RemotingConnection connection;

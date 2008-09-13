@@ -36,7 +36,7 @@ public class SessionFlowCreditMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private int consumerID;
+   private long consumerID;
    
    private int credits;
    
@@ -44,7 +44,7 @@ public class SessionFlowCreditMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionFlowCreditMessage(final int consumerID, final int credits)
+   public SessionFlowCreditMessage(final long consumerID, final int credits)
    {
       super(SESS_FLOWTOKEN);
 
@@ -60,7 +60,7 @@ public class SessionFlowCreditMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public int getConsumerID()
+   public long getConsumerID()
    {
       return consumerID;
    }
@@ -72,13 +72,13 @@ public class SessionFlowCreditMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putInt(consumerID);
+      buffer.putLong(consumerID);
       buffer.putInt(credits);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      consumerID = buffer.getInt();
+      consumerID = buffer.getLong();
       credits = buffer.getInt();
    }
 

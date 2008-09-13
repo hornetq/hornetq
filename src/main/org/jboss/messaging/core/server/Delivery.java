@@ -36,7 +36,7 @@ public interface Delivery
    
    long getDeliveryID();
    
-   int getConsumerID();
+   long getConsumerID();
    
    void deliver();
 }

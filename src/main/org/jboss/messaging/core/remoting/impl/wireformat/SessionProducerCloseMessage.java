@@ -35,13 +35,13 @@ public class SessionProducerCloseMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private int producerID;
+   private long producerID;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionProducerCloseMessage(final int producerID)
+   public SessionProducerCloseMessage(final long producerID)
    {
       super(SESS_PRODUCER_CLOSE);
 
@@ -55,19 +55,19 @@ public class SessionProducerCloseMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public int getProducerID()
+   public long getProducerID()
    {
       return producerID;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putInt(producerID);
+      buffer.putLong(producerID);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      producerID = buffer.getInt();
+      producerID = buffer.getLong();
    }
 
    @Override

@@ -32,7 +32,7 @@ import org.jboss.messaging.core.exception.MessagingException;
  */
 public interface ClientBrowser
 {
-   int getID();
+   long getID();
    
    void reset() throws MessagingException;
 

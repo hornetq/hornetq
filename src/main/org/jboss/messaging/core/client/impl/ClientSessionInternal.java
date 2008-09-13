@@ -29,6 +29,7 @@ import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -64,7 +65,9 @@ public interface ClientSessionInternal extends ClientSession
    
    void cleanUp() throws Exception;
    
-   void receiveProducerCredits(int producerID, int credits) throws Exception;
+   void receiveProducerCredits(long producerID, int credits) throws Exception;
             
-   void handleReceiveMessage(int consumerID, ClientMessage message) throws Exception;
+   void handleReceiveMessage(long consumerID, ClientMessage message) throws Exception;
+   
+   void handleFailover(final RemotingConnection backupConnection);
 }

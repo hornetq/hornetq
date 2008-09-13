@@ -37,13 +37,13 @@ public class SessionBrowserResetMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private int browserID;
+   private long browserID;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionBrowserResetMessage(final int browserID)
+   public SessionBrowserResetMessage(final long browserID)
    {
       super(SESS_BROWSER_RESET);
 
@@ -57,19 +57,19 @@ public class SessionBrowserResetMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public int getBrowserID()
+   public long getBrowserID()
    {
       return browserID;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putInt(browserID);
+      buffer.putLong(browserID);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      browserID = buffer.getInt();       
+      browserID = buffer.getLong();       
    }
 
    @Override

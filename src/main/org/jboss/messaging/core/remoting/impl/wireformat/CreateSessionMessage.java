@@ -36,6 +36,10 @@ public class CreateSessionMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
    
+   private String name;
+   
+   private long sessionChannelID;
+   
    private int version;
    
    private String username;
@@ -52,11 +56,16 @@ public class CreateSessionMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public CreateSessionMessage(final int version, final String username, final String password,
+   public CreateSessionMessage(final String name, final long sessionChannelID,
+                               final int version, final String username, final String password,
                                final boolean xa, final boolean autoCommitSends,
                                final boolean autoCommitAcks)
    {
       super(CREATESESSION);
+      
+      this.name = name;
+      
+      this.sessionChannelID = sessionChannelID;
       
       this.version = version;
 
@@ -78,6 +87,16 @@ public class CreateSessionMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
+   public String getName()
+   {
+      return name;
+   }
+   
+   public long getSessionChannelID()
+   {      
+      return sessionChannelID;
+   }
+   
    public int getVersion()
    {
       return version;
@@ -110,6 +129,8 @@ public class CreateSessionMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
+      buffer.putString(name);
+      buffer.putLong(sessionChannelID);
       buffer.putInt(version);
       buffer.putNullableString(username);
       buffer.putNullableString(password);
@@ -120,6 +141,8 @@ public class CreateSessionMessage extends PacketImpl
    
    public void decodeBody(final MessagingBuffer buffer)
    {
+      name = buffer.getString();
+      sessionChannelID = buffer.getLong();
       version = buffer.getInt();
       username = buffer.getNullableString();
       password = buffer.getNullableString();
@@ -138,6 +161,8 @@ public class CreateSessionMessage extends PacketImpl
       CreateSessionMessage r = (CreateSessionMessage)other;
       
       boolean matches = super.equals(other) &&
+                        this.name.equals(r.name) &&
+                        this.sessionChannelID == r.sessionChannelID &&
                         this.version == r.version &&
                         this.xa == r.xa &&
                         this.autoCommitSends == r.autoCommitSends &&

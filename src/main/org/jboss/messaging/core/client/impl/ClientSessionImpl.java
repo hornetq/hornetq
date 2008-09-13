@@ -83,6 +83,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResp
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.ExecutorFactory;
+import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.SimpleString;
@@ -110,11 +111,14 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    public static final int INITIAL_MESSAGE_BODY_SIZE = 1024;
 
-   private static final ExecutorFactory executorFactory = new OrderedExecutorFactory(
-            Executors.newCachedThreadPool(new JBMThreadFactory("jbm-client-session-threads")));
+   private static final ExecutorFactory executorFactory = new OrderedExecutorFactory(Executors.newCachedThreadPool(new JBMThreadFactory("jbm-client-session-threads")));
 
    // Attributes
    // -----------------------------------------------------------------------------------
+
+   private final ClientSessionFactoryInternal sessionFactory;
+
+   private final String name;
 
    private final boolean xa;
 
@@ -126,11 +130,11 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    private volatile RemotingConnection remotingConnection;
 
-   private final Map<Integer, ClientBrowser> browsers = new ConcurrentHashMap<Integer, ClientBrowser>();
+   private final Map<Long, ClientBrowser> browsers = new ConcurrentHashMap<Long, ClientBrowser>();
 
-   private final Map<Integer, ClientProducerInternal> producers = new ConcurrentHashMap<Integer, ClientProducerInternal>();
+   private final Map<Long, ClientProducerInternal> producers = new ConcurrentHashMap<Long, ClientProducerInternal>();
 
-   private final Map<Integer, ClientConsumerInternal> consumers = new ConcurrentHashMap<Integer, ClientConsumerInternal>();
+   private final Map<Long, ClientConsumerInternal> consumers = new ConcurrentHashMap<Long, ClientConsumerInternal>();
 
    private final Map<SimpleString, ClientProducerInternal> producerCache;
 
@@ -159,38 +163,40 @@ public class ClientSessionImpl implements ClientSessionInternal
    private final boolean blockOnAcknowledge;
 
    private final Channel channel;
-   
+
    private final int version;
-   
+
    private ConnectionRegistry connectionRegistry;
-   
-   private volatile int objectID;
-   
+
    // For testing only
    private boolean forceNotSameRM;
-   
-   private final FailureListener failoverListener = new FailoverListener();
-   
-   private volatile RemotingConnection backupConnection;
-   
+
+   private final IDGenerator idGenerator = new IDGenerator(0);
+
    // Constructors
    // ---------------------------------------------------------------------------------
-   
-   public ClientSessionImpl(
-            final boolean xa, final int lazyAckBatchSize,
-            final boolean cacheProducers, final boolean autoCommitSends,
-            final boolean autoCommitAcks, final boolean blockOnAcknowledge,
-            final RemotingConnection remotingConnection,
-            final ClientSessionFactory connectionFactory,
-            final int version,
-            final Channel channel,
-            final RemotingConnection backupConnection)
-            throws MessagingException
+
+   public ClientSessionImpl(final ClientSessionFactoryInternal sessionFactory,
+                            final String name,
+                            final boolean xa,
+                            final int lazyAckBatchSize,
+                            final boolean cacheProducers,
+                            final boolean autoCommitSends,
+                            final boolean autoCommitAcks,
+                            final boolean blockOnAcknowledge,
+                            final RemotingConnection remotingConnection,
+                            final ClientSessionFactory connectionFactory,
+                            final int version,
+                            final Channel channel) throws MessagingException
    {
       if (lazyAckBatchSize < -1 || lazyAckBatchSize == 0)
       {
          throw new IllegalArgumentException("Invalid lazyAckbatchSize, valid values are > 0 or -1 (infinite)");
       }
+
+      this.sessionFactory = sessionFactory;
+
+      this.name = name;
 
       this.remotingConnection = remotingConnection;
 
@@ -220,45 +226,36 @@ public class ClientSessionImpl implements ClientSessionInternal
       this.blockOnAcknowledge = blockOnAcknowledge;
 
       this.channel = channel;
-      
+
       this.version = version;
-      
+
       this.connectionRegistry = ConnectionRegistryImpl.instance;
-      
-      this.backupConnection = backupConnection;
-      
-      if (backupConnection != null)
-      {
-         this.remotingConnection.addFailureListener(failoverListener);
-      }      
    }
 
    // ClientSession implementation
    // -----------------------------------------------------------------
 
    public void createQueue(final SimpleString address,
-            final SimpleString queueName, final SimpleString filterString,
-            final boolean durable, final boolean temp)
-            throws MessagingException
+                           final SimpleString queueName,
+                           final SimpleString filterString,
+                           final boolean durable,
+                           final boolean temp) throws MessagingException
    {
       checkClosed();
 
-      SessionCreateQueueMessage request = new SessionCreateQueueMessage(
-               address, queueName, filterString, durable, temp);
+      SessionCreateQueueMessage request = new SessionCreateQueueMessage(address, queueName, filterString, durable, temp);
 
       channel.sendBlocking(request);
    }
 
-   public void deleteQueue(final SimpleString queueName)
-            throws MessagingException
+   public void deleteQueue(final SimpleString queueName) throws MessagingException
    {
       checkClosed();
 
       channel.sendBlocking(new SessionDeleteQueueMessage(queueName));
    }
 
-   public SessionQueueQueryResponseMessage queueQuery(
-            final SimpleString queueName) throws MessagingException
+   public SessionQueueQueryResponseMessage queueQuery(final SimpleString queueName) throws MessagingException
    {
       checkClosed();
 
@@ -269,44 +266,36 @@ public class ClientSessionImpl implements ClientSessionInternal
       return response;
    }
 
-   public SessionBindingQueryResponseMessage bindingQuery(
-            final SimpleString address) throws MessagingException
+   public SessionBindingQueryResponseMessage bindingQuery(final SimpleString address) throws MessagingException
    {
       checkClosed();
 
-      SessionBindingQueryMessage request = new SessionBindingQueryMessage(
-               address);
+      SessionBindingQueryMessage request = new SessionBindingQueryMessage(address);
 
       SessionBindingQueryResponseMessage response = (SessionBindingQueryResponseMessage) channel.sendBlocking(request);
 
       return response;
    }
 
-   public void addDestination(final SimpleString address,
-            final boolean durable, final boolean temp)
-            throws MessagingException
+   public void addDestination(final SimpleString address, final boolean durable, final boolean temp) throws MessagingException
    {
       checkClosed();
 
-      SessionAddDestinationMessage request = new SessionAddDestinationMessage(
-               address, durable, temp);
+      SessionAddDestinationMessage request = new SessionAddDestinationMessage(address, durable, temp);
 
       channel.sendBlocking(request);
    }
 
-   public void removeDestination(final SimpleString address,
-            final boolean durable) throws MessagingException
+   public void removeDestination(final SimpleString address, final boolean durable) throws MessagingException
    {
       checkClosed();
 
-      SessionRemoveDestinationMessage request = new SessionRemoveDestinationMessage(
-               address, durable);
+      SessionRemoveDestinationMessage request = new SessionRemoveDestinationMessage(address, durable);
 
       channel.sendBlocking(request);
    }
 
-   public ClientConsumer createConsumer(final SimpleString queueName)
-            throws MessagingException
+   public ClientConsumer createConsumer(final SimpleString queueName) throws MessagingException
    {
       checkClosed();
 
@@ -314,27 +303,32 @@ public class ClientSessionImpl implements ClientSessionInternal
    }
 
    public ClientConsumer createConsumer(final SimpleString queueName,
-            final SimpleString filterString, final boolean direct)
-            throws MessagingException
+                                        final SimpleString filterString,
+                                        final boolean direct) throws MessagingException
    {
       checkClosed();
 
-      return createConsumer(queueName, filterString, direct, connectionFactory
-               .getConsumerWindowSize(), connectionFactory
-               .getConsumerMaxRate());
+      return createConsumer(queueName,
+                            filterString,
+                            direct,
+                            connectionFactory.getConsumerWindowSize(),
+                            connectionFactory.getConsumerMaxRate());
    }
 
    public ClientConsumer createConsumer(final SimpleString queueName,
-            final SimpleString filterString, final boolean direct,
-            final int windowSize, final int maxRate) throws MessagingException
+                                        final SimpleString filterString,
+                                        final boolean direct,
+                                        final int windowSize,
+                                        final int maxRate) throws MessagingException
    {
       checkClosed();
 
-      SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(
-               queueName, filterString, windowSize, maxRate);
+      SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(queueName,
+                                                                              filterString,
+                                                                              windowSize,
+                                                                              maxRate);
 
-      SessionCreateConsumerResponseMessage response = (SessionCreateConsumerResponseMessage) channel.sendBlocking(
-               request);
+      SessionCreateConsumerResponseMessage response = (SessionCreateConsumerResponseMessage) channel.sendBlocking(request);
 
       // The actual windows size that gets used is determined by the user since
       // could be overridden on the queue settings
@@ -360,15 +354,17 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
       else
       {
-         throw new IllegalArgumentException("Invalid window size "
-                  + actualWindowSize);
+         throw new IllegalArgumentException("Invalid window size " + actualWindowSize);
       }
-      
-      int consumerID = generateID();
 
-      ClientConsumerInternal consumer = new ClientConsumerImpl(
-               this, consumerID,
-               clientWindowSize, direct, executor, channel);
+      long consumerID = idGenerator.generateID();
+
+      ClientConsumerInternal consumer = new ClientConsumerImpl(this,
+                                                               consumerID,
+                                                               clientWindowSize,
+                                                               direct,
+                                                               executor,
+                                                               channel);
 
       addConsumer(consumer);
 
@@ -381,8 +377,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       return consumer;
    }
 
-   public ClientBrowser createBrowser(final SimpleString queueName)
-            throws MessagingException
+   public ClientBrowser createBrowser(final SimpleString queueName) throws MessagingException
    {
       return createBrowser(queueName, null);
    }
@@ -395,51 +390,48 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       channel.sendBlocking(request);
 
-      ClientBrowser browser = new ClientBrowserImpl(this, generateID(), channel);
+      ClientBrowser browser = new ClientBrowserImpl(this, idGenerator.generateID(), channel);
 
       addBrowser(browser);
 
       return browser;
    }
-   
-   public ClientProducer createProducer(final SimpleString address)
-            throws MessagingException
+
+   public ClientProducer createProducer(final SimpleString address) throws MessagingException
    {
       checkClosed();
 
-      return createProducer(address, connectionFactory
-               .getProducerWindowSize(), connectionFactory
-               .getProducerMaxRate());
+      return createProducer(address, connectionFactory.getProducerWindowSize(), connectionFactory.getProducerMaxRate());
    }
 
-   public ClientProducer createRateLimitedProducer(SimpleString address,
-            int rate) throws MessagingException
+   public ClientProducer createRateLimitedProducer(SimpleString address, int rate) throws MessagingException
    {
       checkClosed();
 
       return createProducer(address, -1, rate);
    }
 
-   public ClientProducer createProducerWithWindowSize(SimpleString address,
-            int windowSize) throws MessagingException
+   public ClientProducer createProducerWithWindowSize(SimpleString address, int windowSize) throws MessagingException
    {
       checkClosed();
 
       return createProducer(address, windowSize, -1);
    }
 
-   private ClientProducer createProducer(final SimpleString address,
-            final int windowSize, final int maxRate) throws MessagingException
+   private ClientProducer createProducer(final SimpleString address, final int windowSize, final int maxRate) throws MessagingException
    {
-      return createProducer(address, windowSize, maxRate, connectionFactory
-               .isBlockOnNonPersistentSend(), connectionFactory
-               .isBlockOnPersistentSend());
+      return createProducer(address,
+                            windowSize,
+                            maxRate,
+                            connectionFactory.isBlockOnNonPersistentSend(),
+                            connectionFactory.isBlockOnPersistentSend());
    }
 
    public ClientProducer createProducer(final SimpleString address,
-            final int windowSize, final int maxRate,
-            final boolean blockOnNonPersistentSend,
-            final boolean blockOnPersistentSend) throws MessagingException
+                                        final int windowSize,
+                                        final int maxRate,
+                                        final boolean blockOnNonPersistentSend,
+                                        final boolean blockOnPersistentSend) throws MessagingException
    {
       checkClosed();
 
@@ -452,24 +444,26 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       if (producer == null)
       {
-         SessionCreateProducerMessage request = new SessionCreateProducerMessage(
-                  address, windowSize, maxRate);
+         SessionCreateProducerMessage request = new SessionCreateProducerMessage(address, windowSize, maxRate);
 
-         SessionCreateProducerResponseMessage response = (SessionCreateProducerResponseMessage) channel.sendBlocking(
-                  request);
+         SessionCreateProducerResponseMessage response = (SessionCreateProducerResponseMessage) channel.sendBlocking(request);
 
          // maxRate and windowSize can be overridden by the server
 
          // If the producer is not auto-commit sends then messages are never
          // sent blocking - there is no point
          // since commit, prepare or rollback will flush any messages sent.
-                  
-         producer = new ClientProducerImpl(this, generateID(), address, response
-                  .getMaxRate() == -1 ? null : new TokenBucketLimiterImpl(
-                  response.getMaxRate(), false), autoCommitSends
-                  && blockOnNonPersistentSend, autoCommitSends
-                  && blockOnPersistentSend, response.getInitialCredits(),
-                  channel);
+
+         producer = new ClientProducerImpl(this,
+                                           idGenerator.generateID(),
+                                           address,
+                                           response.getMaxRate() == -1 ? null
+                                                                      : new TokenBucketLimiterImpl(response.getMaxRate(),
+                                                                                                   false),
+                                           autoCommitSends && blockOnNonPersistentSend,
+                                           autoCommitSends && blockOnPersistentSend,
+                                           response.getInitialCredits(),
+                                           channel);
       }
 
       addProducer(producer);
@@ -498,8 +492,9 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       checkClosed();
 
-      // We tell each consumer to clear it's buffers and ignore any repeated deliveries
-      
+      // We tell each consumer to clear it's buffers and ignore any repeated
+      // deliveries
+
       if (autoCommitAcks)
       {
          lastCommittedID = lastID;
@@ -575,14 +570,12 @@ public class ClientSessionImpl implements ClientSessionInternal
          doCleanup();
       }
    }
-     
-   public ClientMessage createClientMessage(byte type, boolean durable,
-            long expiration, long timestamp, byte priority)
+
+   public ClientMessage createClientMessage(byte type, boolean durable, long expiration, long timestamp, byte priority)
    {
       MessagingBuffer body = remotingConnection.createBuffer(INITIAL_MESSAGE_BODY_SIZE);
 
-      return new ClientMessageImpl(type, durable, expiration, timestamp,
-               priority, body);
+      return new ClientMessageImpl(type, durable, expiration, timestamp, priority, body);
    }
 
    public ClientMessage createClientMessage(byte type, boolean durable)
@@ -662,7 +655,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       return version;
    }
-   
+
    // ClientSessionInternal implementation
    // ------------------------------------------------------------
 
@@ -738,7 +731,10 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    public synchronized void cleanUp() throws Exception
    {
-      if (closed) { return; }
+      if (closed)
+      {
+         return;
+      }
 
       try
       {
@@ -749,48 +745,75 @@ public class ClientSessionImpl implements ClientSessionInternal
          doCleanup();
       }
    }
-   
-   public void handleReceiveMessage(final int consumerID, final ClientMessage message) throws Exception
+
+   public void handleReceiveMessage(final long consumerID, final ClientMessage message) throws Exception
    {
       ClientConsumerInternal consumer = consumers.get(consumerID);
-      
+
       if (consumer == null)
       {
          throw new IllegalArgumentException("Cannot find consumer with id " + consumerID);
       }
-      
+
       consumer.handleMessage(message);
    }
 
-   public void receiveProducerCredits(final int producerID, final int credits) throws Exception
+   public void receiveProducerCredits(final long producerID, final int credits) throws Exception
    {
       ClientProducerInternal producer = producers.get(producerID);
-      
+
       if (producer == null)
       {
          throw new IllegalArgumentException("Cannot find producer with id " + producerID);
       }
-      
-      producer.receiveCredits(credits);      
+
+      producer.receiveCredits(credits);
    }
-   
+
+   public void handleFailover(final RemotingConnection backupConnection)
+   {
+      channel.lock();
+
+      try
+      {
+         channel.transferConnection(backupConnection);
+
+         remotingConnection = backupConnection;
+
+         Packet request = new ReattachSessionMessage(name, channel.getLastReceivedCommandID());
+
+         Channel channel1 = backupConnection.getChannel(1, false, -1);
+
+         ReattachSessionResponseMessage response = (ReattachSessionResponseMessage) channel1.sendBlocking(request);
+
+         channel.replayCommands(response.getLastReceivedCommandID());
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed to handle failover", t);
+      }
+      finally
+      {
+         channel.unlock();
+      }
+   }
+
    // XAResource implementation
    // --------------------------------------------------------------------
 
    public void commit(final Xid xid, final boolean onePhase) throws XAException
    {
       checkXA();
-      
+
       // Note - don't need to flush acks since the previous end would have
       // done this
-            
-      SessionXACommitMessage packet = new SessionXACommitMessage(xid,
-               onePhase);
+
+      SessionXACommitMessage packet = new SessionXACommitMessage(xid, onePhase);
 
       try
-      {      
+      {
          SessionXAResponseMessage response = (SessionXAResponseMessage) channel.sendBlocking(packet);
-   
+
          if (response.isError())
          {
             throw new XAException(response.getResponseCode());
@@ -798,7 +821,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
       catch (MessagingException e)
       {
-         //This should never occur
+         // This should never occur
          throw new XAException(XAException.XAER_RMERR);
       }
    }
@@ -870,17 +893,16 @@ public class ClientSessionImpl implements ClientSessionInternal
    public int getTransactionTimeout() throws XAException
    {
       checkXA();
-      
+
       try
       {
-         SessionXAGetTimeoutResponseMessage response =
-            (SessionXAGetTimeoutResponseMessage)channel.sendBlocking(new PacketImpl(PacketImpl.SESS_XA_GET_TIMEOUT));
-   
+         SessionXAGetTimeoutResponseMessage response = (SessionXAGetTimeoutResponseMessage) channel.sendBlocking(new PacketImpl(PacketImpl.SESS_XA_GET_TIMEOUT));
+
          return response.getTimeoutSeconds();
       }
       catch (MessagingException e)
       {
-         //This should never occur
+         // This should never occur
          throw new XAException(XAException.XAER_RMERR);
       }
    }
@@ -888,10 +910,16 @@ public class ClientSessionImpl implements ClientSessionInternal
    public boolean isSameRM(final XAResource xares) throws XAException
    {
       checkXA();
-      
-      if (!(xares instanceof ClientSessionImpl)) { return false; }
 
-      if (forceNotSameRM) { return false; }
+      if (!(xares instanceof ClientSessionImpl))
+      {
+         return false;
+      }
+
+      if (forceNotSameRM)
+      {
+         return false;
+      }
 
       ClientSessionImpl other = (ClientSessionImpl) xares;
 
@@ -910,7 +938,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       try
       {
          SessionXAResponseMessage response = (SessionXAResponseMessage) channel.sendBlocking(packet);
-   
+
          if (response.isError())
          {
             throw new XAException(response.getResponseCode());
@@ -922,7 +950,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
       catch (MessagingException e)
       {
-         //This should never occur
+         // This should never occur
          throw new XAException(XAException.XAER_RMERR);
       }
    }
@@ -935,18 +963,17 @@ public class ClientSessionImpl implements ClientSessionInternal
       {
          try
          {
-            SessionXAGetInDoubtXidsResponseMessage response =
-               (SessionXAGetInDoubtXidsResponseMessage) channel.sendBlocking(new PacketImpl(PacketImpl.SESS_XA_INDOUBT_XIDS));
-   
+            SessionXAGetInDoubtXidsResponseMessage response = (SessionXAGetInDoubtXidsResponseMessage) channel.sendBlocking(new PacketImpl(PacketImpl.SESS_XA_INDOUBT_XIDS));
+
             List<Xid> xids = response.getXids();
-   
+
             Xid[] xidArray = xids.toArray(new Xid[xids.size()]);
-   
+
             return xidArray;
          }
          catch (MessagingException e)
          {
-            //This should never occur
+            // This should never occur
             throw new XAException(XAException.XAER_RMERR);
          }
       }
@@ -968,7 +995,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       try
       {
          SessionXAResponseMessage response = (SessionXAResponseMessage) channel.sendBlocking(packet);
-   
+
          if (response.isError())
          {
             throw new XAException(response.getResponseCode());
@@ -976,7 +1003,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
       catch (MessagingException e)
       {
-         //This should never occur
+         // This should never occur
          throw new XAException(XAException.XAER_RMERR);
       }
    }
@@ -984,17 +1011,16 @@ public class ClientSessionImpl implements ClientSessionInternal
    public boolean setTransactionTimeout(final int seconds) throws XAException
    {
       checkXA();
-      
+
       try
       {
-         SessionXASetTimeoutResponseMessage response =
-            (SessionXASetTimeoutResponseMessage)channel.sendBlocking(new SessionXASetTimeoutMessage(seconds));
-   
+         SessionXASetTimeoutResponseMessage response = (SessionXASetTimeoutResponseMessage) channel.sendBlocking(new SessionXASetTimeoutMessage(seconds));
+
          return response.isOK();
       }
       catch (MessagingException e)
       {
-         //This should never occur
+         // This should never occur
          throw new XAException(XAException.XAER_RMERR);
       }
    }
@@ -1034,8 +1060,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
          if (response.isError())
          {
-            log.error("XA operation failed " + response.getMessage() + " code:"
-                     + response.getResponseCode());
+            log.error("XA operation failed " + response.getMessage() + " code:" + response.getResponseCode());
             throw new XAException(response.getResponseCode());
          }
       }
@@ -1059,62 +1084,21 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       this.connectionRegistry = registry;
    }
-   
+
    public RemotingConnection getConnection()
    {
       return remotingConnection;
    }
-   
+
    // Protected
    // ------------------------------------------------------------------------------------
-   
+
    // Package Private
    // ------------------------------------------------------------------------------
 
    // Private
    // --------------------------------------------------------------------------------------
- 
-   private void handleFailover(final MessagingException me)
-   {      
-      log.info("Session Failure has been detected, initiating failover");
-      
-      channel.lock();           
-      
-      try
-      {
-         Packet request = new ReattachSessionMessage(channel.getID(), channel.getLastReceivedCommandID());
-         
-         //This is necessary for invm since the replicating connection will be the same connection
-         //as the original replicating connection since the key is the same in the registry, and that connection
-         //won't have any resend buffer etc
-         backupConnection.setBackup(false);
-         
-         Channel channel1 = backupConnection.getChannel(1, false, -1);
-         
-         ReattachSessionResponseMessage response = (ReattachSessionResponseMessage)channel1.sendBlocking(request);             
-         
-         channel.transferConnection(backupConnection);
-         
-         remotingConnection.removeFailureListener(failoverListener);
-         
-         remotingConnection = backupConnection;
-         
-         remotingConnection.addFailureListener(failoverListener);
-         
-         backupConnection = null;
-         
-         channel.replayCommands(response.getLastReceivedCommandID());                     
-      }      
-      catch (Throwable t)
-      {
-         log.error("Failed to handle failover", t);
-      }
-      finally
-      {
-         channel.unlock();
-      }
-   }
-      
+
    private void checkXA() throws XAException
    {
       if (!xa)
@@ -1124,8 +1108,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
    }
 
-   private void acknowledgeInternal(final boolean block)
-            throws MessagingException
+   private void acknowledgeInternal(final boolean block) throws MessagingException
    {
       if (acked)
       {
@@ -1210,31 +1193,15 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
 
       channel.close();
-            
+
       connectionRegistry.returnConnection(remotingConnection.getID());
-      
-      if (backupConnection != null)
-      {
-         remotingConnection.removeFailureListener(failoverListener);
-      }
+
+      sessionFactory.removeSession(this);
 
       closed = true;
-   }
-   
-   private int generateID()
-   {
-      return objectID++;
    }
 
    // Inner Classes
    // --------------------------------------------------------------------------------
-   
-   private class FailoverListener implements FailureListener
-   {
-      public void connectionFailed(final MessagingException me)
-      {
-         handleFailover(me);         
-      }      
-   }
 
 }

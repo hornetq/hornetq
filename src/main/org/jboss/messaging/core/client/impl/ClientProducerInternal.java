@@ -33,7 +33,7 @@ import org.jboss.messaging.core.client.ClientProducer;
  */
 public interface ClientProducerInternal extends ClientProducer
 {
-   int getID();
+   long getID();
    
 	void receiveCredits(int credits) throws Exception;
 	

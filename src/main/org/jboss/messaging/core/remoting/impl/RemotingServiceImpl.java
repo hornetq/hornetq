@@ -246,7 +246,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
   
       RemotingConnection rc =
          new RemotingConnectionImpl(connection, callTimeout, -1, remotingExecutor, null, interceptors,
-                                    replicatingConnection, false);
+                                    replicatingConnection,
+                                    false);
       
       rc.setBackup(backup);
             

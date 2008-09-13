@@ -39,6 +39,8 @@ public interface RemotingConnection extends BufferHandler
    Object getID();
    
    Channel getChannel(long channelID, boolean ordered, int packetConfirmationBatchSize);
+   
+   long generateChannelID();
 
    public void setBackup(final boolean backup);
    

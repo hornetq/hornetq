@@ -1,29 +1,30 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat
+ * Middleware LLC, and individual contributors by the @authors tag. See the
+ * copyright.txt in the distribution for a full listing of individual
+ * contributors.
+ * 
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ * 
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
+ */
 package org.jboss.messaging.core.client.impl;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EXCEPTION;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
@@ -42,8 +43,9 @@ import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMe
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.util.ConcurrentHashSet;
+import org.jboss.messaging.util.UUIDGenerator;
 import org.jboss.messaging.util.VersionLoader;
-
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -54,69 +56,76 @@ import org.jboss.messaging.util.VersionLoader;
  * @version <tt>$Revision: 3602 $</tt>
  *
  */
-public class ClientSessionFactoryImpl implements ClientSessionFactory, FailureListener
+public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, FailureListener
 {
-   // Constants ------------------------------------------------------------------------------------
+   // Constants
+   // ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = 2512460695662741413L;
-   
+
    private static final Logger log = Logger.getLogger(ClientSessionFactoryImpl.class);
-   
+
    public static final long DEFAULT_PING_PERIOD = 2000;
-   
+
    public static final long DEFAULT_CALL_TIMEOUT = 30000;
-   
+
    public static final int DEFAULT_CONSUMER_WINDOW_SIZE = 1024 * 1024;
-   
+
    public static final int DEFAULT_CONSUMER_MAX_RATE = -1;
-   
+
    public static final int DEFAULT_PRODUCER_WINDOW_SIZE = 1024 * 1024;
-   
+
    public static final int DEFAULT_PRODUCER_MAX_RATE = -1;
-   
+
    public static final boolean DEFAULT_BLOCK_ON_ACKNOWLEDGE = false;
-   
+
    public static final boolean DEFAULT_BLOCK_ON_PERSISTENT_SEND = false;
-   
+
    public static final boolean DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND = false;
 
-   // Attributes -----------------------------------------------------------------------------------
-     
+   // Attributes
+   // -----------------------------------------------------------------------------------
+
    private ConnectionRegistry connectionRegistry;
-   
-   //These attributes are mutable and can be updated by different threads so must be volatile
+
+   // These attributes are mutable and can be updated by different threads so
+   // must be volatile
 
    private volatile ConnectorFactory connectorFactory;
-   
+
    private volatile Map<String, Object> transportParams;
-   
+
    private volatile ConnectorFactory backupConnectorFactory;
-   
+
    private volatile Map<String, Object> backupTransportParams;
-   
+
    private volatile long pingPeriod;
-   
+
    private volatile long callTimeout;
-   
+
    private volatile int consumerWindowSize;
-   
+
    private volatile int consumerMaxRate;
 
    private volatile int producerWindowSize;
-   
+
    private volatile int producerMaxRate;
-   
+
    private volatile boolean blockOnAcknowledge;
-   
+
    private volatile boolean blockOnPersistentSend;
-   
+
    private volatile boolean blockOnNonPersistentSend;
-   
+
    private volatile boolean failedOver;
-        
-   // Static ---------------------------------------------------------------------------------------
+
+   private final Set<ClientSessionInternal> sessions = new ConcurrentHashSet<ClientSessionInternal>();
    
-   // Constructors ---------------------------------------------------------------------------------
+   // Static
+   // ---------------------------------------------------------------------------------------
+
+   // Constructors
+   // ---------------------------------------------------------------------------------
 
    /**
     * Create a ClientSessionFactoryImpl specifying all attributes
@@ -125,12 +134,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory, FailureLi
                                    final TransportConfiguration backupConfig,
                                    final long pingPeriod,
                                    final long callTimeout,
-                                   final int consumerWindowSize, final int consumerMaxRate,
-                                   final int producerWindowSize, final int producerMaxRate,
+                                   final int consumerWindowSize,
+                                   final int consumerMaxRate,
+                                   final int producerWindowSize,
+                                   final int producerMaxRate,
                                    final boolean blockOnAcknowledge,
                                    final boolean blockOnNonPersistentSend,
                                    final boolean blockOnPersistentSend)
-   {           
+   {
       this.connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
       this.transportParams = connectorConfig.getParams();
       if (backupConfig != null)
@@ -140,7 +151,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory, FailureLi
       }
       this.pingPeriod = pingPeriod;
       this.callTimeout = callTimeout;
-      this.consumerWindowSize = consumerWindowSize;  
+      this.consumerWindowSize = consumerWindowSize;
       this.consumerMaxRate = consumerMaxRate;
       this.producerWindowSize = producerWindowSize;
       this.producerMaxRate = producerMaxRate;
@@ -149,10 +160,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory, FailureLi
       this.blockOnPersistentSend = blockOnPersistentSend;
       this.connectionRegistry = ConnectionRegistryImpl.instance;
    }
-   
+
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
                                    final TransportConfiguration backupConfig)
-   {            
+   {
       this.connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
       this.transportParams = connectorConfig.getParams();
       if (backupConfig != null)
@@ -168,13 +179,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory, FailureLi
       producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
       blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
       blockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-      blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;      
+      blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
       this.connectionRegistry = ConnectionRegistryImpl.instance;
    }
-   
+
    /**
     * Create a ClientSessionFactoryImpl specify transport type and using defaults
-    */   
+    */
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig)
    {
       this.connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
@@ -187,100 +198,109 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory, FailureLi
       producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
       blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
       blockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-      blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;      
+      blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
       this.connectionRegistry = ConnectionRegistryImpl.instance;
    }
-         
-   // ClientSessionFactory implementation ---------------------------------------------
 
-   public ClientSession createSession(final String username, final String password, final boolean xa,
-                                      final boolean autoCommitSends, final boolean autoCommitAcks,
-                                      int lazyAckBatchSize, boolean cacheProducers)                 
-      throws MessagingException
+   // ClientSessionFactory implementation
+   // ---------------------------------------------
+
+   public ClientSession createSession(final String username,
+                                      final String password,
+                                      final boolean xa,
+                                      final boolean autoCommitSends,
+                                      final boolean autoCommitAcks,
+                                      int lazyAckBatchSize,
+                                      boolean cacheProducers) throws MessagingException
    {
-      return createSessionInternal(username, password, xa, autoCommitSends, autoCommitAcks, lazyAckBatchSize,
+      return createSessionInternal(username,
+                                   password,
+                                   xa,
+                                   autoCommitSends,
+                                   autoCommitAcks,
+                                   lazyAckBatchSize,
                                    cacheProducers);
    }
-   
+
    public ClientSession createSession(final boolean xa,
-            final boolean autoCommitSends, final boolean autoCommitAcks,
-            int lazyAckBatchSize, boolean cacheProducers)                 
-      throws MessagingException
+                                      final boolean autoCommitSends,
+                                      final boolean autoCommitAcks,
+                                      int lazyAckBatchSize,
+                                      boolean cacheProducers) throws MessagingException
    {
-      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, lazyAckBatchSize,
-               cacheProducers);
-   }   
-   
-	public int getConsumerWindowSize()
-	{
-		return consumerWindowSize;
-	}
-	
-	public void setConsumerWindowSize(final int size)
+      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, lazyAckBatchSize, cacheProducers);
+   }
+
+   public int getConsumerWindowSize()
+   {
+      return consumerWindowSize;
+   }
+
+   public void setConsumerWindowSize(final int size)
    {
       consumerWindowSize = size;
    }
-	
-	public int getProducerWindowSize()
-	{
-		return producerWindowSize;
-	}
-				
-	public void setProducerWindowSize(final int size)
+
+   public int getProducerWindowSize()
+   {
+      return producerWindowSize;
+   }
+
+   public void setProducerWindowSize(final int size)
    {
       producerWindowSize = size;
    }
-	
-	public int getProducerMaxRate()
-	{
-		return producerMaxRate;
-	}
-		
-	public void setProducerMaxRate(final int rate)
-	{
-	   this.producerMaxRate = rate;
-	}
-		
-	public int getConsumerMaxRate()
+
+   public int getProducerMaxRate()
+   {
+      return producerMaxRate;
+   }
+
+   public void setProducerMaxRate(final int rate)
+   {
+      this.producerMaxRate = rate;
+   }
+
+   public int getConsumerMaxRate()
    {
       return consumerMaxRate;
    }
-   	
+
    public void setConsumerMaxRate(final int rate)
    {
       this.consumerMaxRate = rate;
    }
-   
+
    public boolean isBlockOnPersistentSend()
    {
       return blockOnPersistentSend;
    }
-   
+
    public void setBlockOnPersistentSend(final boolean blocking)
    {
       blockOnPersistentSend = blocking;
    }
-   
+
    public boolean isBlockOnNonPersistentSend()
    {
       return blockOnNonPersistentSend;
    }
-   
+
    public void setBlockOnNonPersistentSend(final boolean blocking)
    {
       blockOnNonPersistentSend = blocking;
    }
-   
+
    public boolean isBlockOnAcknowledge()
    {
       return this.blockOnAcknowledge;
    }
-   
+
    public void setBlockOnAcknowledge(final boolean blocking)
    {
       blockOnAcknowledge = blocking;
    }
-   
+
    public ConnectorFactory getConnectorFactory()
    {
       return connectorFactory;
@@ -300,7 +320,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory, FailureLi
    {
       this.transportParams = transportParams;
    }
-   
+
    public ConnectorFactory getBackupConnectorFactory()
    {
       return backupConnectorFactory;
@@ -340,110 +360,161 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory, FailureLi
    {
       this.callTimeout = callTimeout;
    }
-   
+
    public boolean isFailedOver()
    {
       return failedOver;
    }
-            
-   // Public ---------------------------------------------------------------------------------------
-   
+
+   // ClientSessionFactoryInternal implementation
+   // ------------------------------------------
+
+   public void removeSession(final ClientSessionInternal session)
+   {
+      sessions.remove(session);
+   }
+
+   // Public
+   // ---------------------------------------------------------------------------------------
+
    public void setConnectionRegistry(final ConnectionRegistry registry)
    {
       this.connectionRegistry = registry;
    }
-           
-   // Protected ------------------------------------------------------------------------------------
 
-   // Package Private ------------------------------------------------------------------------------
+   // Protected
+   // ------------------------------------------------------------------------------------
 
-   // Private --------------------------------------------------------------------------------------
-   
+   // Package Private
+   // ------------------------------------------------------------------------------
+
+   // Private
+   // --------------------------------------------------------------------------------------
+
    private void handleFailover(final MessagingException me)
    {
-      log.info(this + " Factory Failure has been detected, initiating failover");
+      log.info(this + " Connection failure has been detected, initiating failover");
+
       if (backupConnectorFactory == null)
       {
          throw new IllegalStateException("Cannot fail-over if backup connector factory is null");
       }
-                  
+
+      RemotingConnection liveConnection = connectionRegistry.getConnection(connectorFactory,
+                                                                           transportParams,
+                                                                           pingPeriod,
+                                                                           callTimeout);
+      
       this.connectorFactory = backupConnectorFactory;
       this.transportParams = backupTransportParams;
-      
+
       this.backupConnectorFactory = null;
-      this.backupTransportParams = null;               
+      this.backupTransportParams = null;
+
+      RemotingConnection backupConnection = connectionRegistry.getConnection(connectorFactory,
+                                                                             transportParams,
+                                                                             pingPeriod,
+                                                                             callTimeout);
+      
+      //log.info("*** Backup connection is " + System.identityHashCode(liveConnection));
+
+      for (ClientSessionInternal session : sessions)
+      {
+         session.handleFailover(backupConnection);
+      }
+
+      liveConnection.destroy();
    }
-   
+
    private ConnectorFactory instantiateConnectorFactory(final String connectorFactoryClassName)
    {
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
       try
       {
          Class<?> clazz = loader.loadClass(connectorFactoryClassName);
-         return (ConnectorFactory)clazz.newInstance();
+         return (ConnectorFactory) clazz.newInstance();
       }
       catch (Exception e)
       {
-         throw new IllegalArgumentException("Error instantiating connector factory \"" + connectorFactoryClassName + "\"", e);
-      }      
+         throw new IllegalArgumentException("Error instantiating connector factory \"" + connectorFactoryClassName +
+                                            "\"", e);
+      }
    }
-   
-   private ClientSession createSessionInternal(final String username, final String password, final boolean xa,
-            final boolean autoCommitSends, final boolean autoCommitAcks,
-            int lazyAckBatchSize, boolean cacheProducers)                 
-      throws MessagingException
+
+   private ClientSession createSessionInternal(final String username,
+                                               final String password,
+                                               final boolean xa,
+                                               final boolean autoCommitSends,
+                                               final boolean autoCommitAcks,
+                                               int lazyAckBatchSize,
+                                               boolean cacheProducers) throws MessagingException
    {
       Version clientVersion = VersionLoader.load();
 
       RemotingConnection remotingConnection = null;
-      RemotingConnection backupConnection = null;
       try
       {
-         remotingConnection = connectionRegistry.getConnection(connectorFactory, transportParams,
-                                                               pingPeriod, callTimeout);
-                           
+         remotingConnection = connectionRegistry.getConnection(connectorFactory,
+                                                               transportParams,
+                                                               pingPeriod,
+                                                               callTimeout);
+         
          if (backupConnectorFactory != null)
          {
             remotingConnection.addFailureListener(this);
-            
-            backupConnection = connectionRegistry.getConnection(backupConnectorFactory, backupTransportParams,
-                     pingPeriod, callTimeout);
          }
 
-         Packet request =
-            new CreateSessionMessage(clientVersion.getIncrementingVersion(),
-                                     username, password,
-                                     xa, autoCommitSends, autoCommitAcks);
-         
+         String name = UUIDGenerator.getInstance().generateSimpleStringUUID().toString();
+
+         long sessionChannelID = remotingConnection.generateChannelID();
+
+         Packet request = new CreateSessionMessage(name,
+                                                   sessionChannelID,
+                                                   clientVersion.getIncrementingVersion(),
+                                                   username,
+                                                   password,
+                                                   xa,
+                                                   autoCommitSends,
+                                                   autoCommitAcks);
+
          Channel channel1 = remotingConnection.getChannel(1, false, -1);
-         
+
          Packet packet = channel1.sendBlocking(request);
-         
+
          if (packet.getType() == EXCEPTION)
          {
-            MessagingExceptionMessage mem = (MessagingExceptionMessage)packet;
-            
+            MessagingExceptionMessage mem = (MessagingExceptionMessage) packet;
+
             throw mem.getException();
          }
-                           
-         CreateSessionResponseMessage response = (CreateSessionResponseMessage)packet;
-         
-         long sessionID = response.getSessionID();
-                 
-         Channel sessionChannel = remotingConnection.getChannel(sessionID, false, response.getPacketConfirmationBatchSize());
-         
-         ClientSessionInternal session = new ClientSessionImpl(xa, lazyAckBatchSize, cacheProducers,
-                  autoCommitSends, autoCommitAcks, blockOnAcknowledge,
-                  remotingConnection, this,                  
-                  response.getServerVersion(), sessionChannel,
-                  backupConnection);
-         
+
+         CreateSessionResponseMessage response = (CreateSessionResponseMessage) packet;
+
+         Channel sessionChannel = remotingConnection.getChannel(sessionChannelID,
+                                                                false,
+                                                                response.getPacketConfirmationBatchSize());
+
+         ClientSessionInternal session = new ClientSessionImpl(this,
+                                                               name,
+                                                               xa,
+                                                               lazyAckBatchSize,
+                                                               cacheProducers,
+                                                               autoCommitSends,
+                                                               autoCommitAcks,
+                                                               blockOnAcknowledge,
+                                                               remotingConnection,
+                                                               this,
+                                                               response.getServerVersion(),
+                                                               sessionChannel);
+
+         sessions.add(session);
+
          ChannelHandler handler = new ClientSessionPacketHandler(session);
-         
+
          sessionChannel.setHandler(handler);
-         
+
          return session;
-                  
+
       }
       catch (Throwable t)
       {
@@ -451,20 +522,21 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory, FailureLi
          {
             try
             {
-               connectionRegistry.returnConnection(remotingConnection.getID());  
+               connectionRegistry.returnConnection(remotingConnection.getID());
             }
             catch (Throwable ignore)
-            {               
+            {
             }
          }
 
          if (t instanceof MessagingException)
          {
-            throw (MessagingException)t;
+            throw (MessagingException) t;
          }
          else
          {
-            MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR, "Failed to start connection");
+            MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR,
+                                                           "Failed to start connection");
 
             me.initCause(t);
 
@@ -473,10 +545,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactory, FailureLi
       }
    }
 
-   
    public void connectionFailed(final MessagingException me)
    {
       handleFailover(me);
    }
-   
+
 }

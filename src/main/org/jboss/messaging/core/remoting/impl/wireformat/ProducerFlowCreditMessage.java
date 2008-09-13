@@ -37,7 +37,7 @@ public class ProducerFlowCreditMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private int producerID;
+   private long producerID;
    
    private int credits;
 
@@ -45,7 +45,7 @@ public class ProducerFlowCreditMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public ProducerFlowCreditMessage(final int producerID, final int credits)
+   public ProducerFlowCreditMessage(final long producerID, final int credits)
    {
       super(SESS_RECEIVETOKENS);
 
@@ -61,7 +61,7 @@ public class ProducerFlowCreditMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public int getProducerID()
+   public long getProducerID()
    {
       return producerID;
    }
@@ -73,13 +73,13 @@ public class ProducerFlowCreditMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putInt(producerID);
+      buffer.putLong(producerID);
       buffer.putInt(credits);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      producerID = buffer.getInt();
+      producerID = buffer.getLong();
       credits = buffer.getInt();
    }
 

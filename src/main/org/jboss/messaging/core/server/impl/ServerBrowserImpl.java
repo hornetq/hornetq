@@ -56,7 +56,7 @@ public class ServerBrowserImpl
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private final int id;
+   private final long id;
    private final ServerSession session;
    private final Queue destination;
    private final Filter filter;
@@ -64,7 +64,7 @@ public class ServerBrowserImpl
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ServerBrowserImpl(final int id, final ServerSession session,                            
+   public ServerBrowserImpl(final long id, final ServerSession session,                            
                             final Queue destination, final String messageFilter) throws MessagingException
    {
       this.id = id;
@@ -85,7 +85,7 @@ public class ServerBrowserImpl
 
    // BrowserEndpoint implementation ---------------------------------------------------------------
 
-   public int getID()
+   public long getID()
    {
    	return id;
    }

@@ -57,7 +57,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final boolean trace = log.isTraceEnabled();
 
-   private final int id;
+   private final long id;
    
    private final Queue messageQueue;
    
@@ -79,7 +79,7 @@ public class ServerConsumerImpl implements ServerConsumer
    
    // Constructors ---------------------------------------------------------------------------------
  
-   public ServerConsumerImpl(final int id, final ServerSession session,
+   public ServerConsumerImpl(final long id, final ServerSession session,
                       final Queue messageQueue, final Filter filter,
    		             final boolean enableFlowControl, final int maxRate, 
 					       final boolean started,					      
@@ -117,7 +117,7 @@ public class ServerConsumerImpl implements ServerConsumer
    
    // ServerConsumer implementation ----------------------------------------------------------------------
 
-   public int getID()
+   public long getID()
    {
    	return id;
    }

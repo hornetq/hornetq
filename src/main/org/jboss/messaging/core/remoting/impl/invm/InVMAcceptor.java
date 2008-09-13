@@ -50,8 +50,6 @@ public class InVMAcceptor implements Acceptor
    
    private volatile boolean started;
    
-  // private volatile InVMConnector connector;
-      
    public InVMAcceptor(final Map<String, Object> configuration, final BufferHandler handler,
                        final ConnectionLifeCycleListener listener)
    {
@@ -105,14 +103,15 @@ public class InVMAcceptor implements Acceptor
       return handler;
    }
    
-   public void connect(final String connectionID, final BufferHandler remoteHandler)
+   public void connect(final String connectionID, final BufferHandler remoteHandler,
+                       final InVMConnector connector)
    {
       if (!started)
       {
          throw new IllegalStateException("Acceptor is not started");
       }
       
-      new InVMConnection(connectionID, remoteHandler, new Listener());               
+      new InVMConnection(connectionID, remoteHandler, new Listener(connector));               
    }
    
    public void disconnect(final String connectionID)
@@ -132,6 +131,13 @@ public class InVMAcceptor implements Acceptor
    
    private class Listener implements ConnectionLifeCycleListener
    {
+      private final InVMConnector connector;
+      
+      Listener(final InVMConnector connector)
+      {
+         this.connector = connector;
+      }
+      
       public void connectionCreated(final Connection connection)
       {
          if (connections.putIfAbsent((String)connection.getID(), connection) != null)
@@ -150,7 +156,7 @@ public class InVMAcceptor implements Acceptor
          }
          
          //Remove on the other side too
-         InVMRegistry.instance.getConnector(id).disconnect((String)connectionID);
+         connector.disconnect((String)connectionID);
          
          listener.connectionDestroyed(connectionID);
       }

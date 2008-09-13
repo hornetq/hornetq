@@ -49,7 +49,7 @@ public class ClientBrowserImpl implements ClientBrowser
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private final int id;
+   private final long id;
    
 	private final ClientSessionInternal session;
 	
@@ -62,7 +62,7 @@ public class ClientBrowserImpl implements ClientBrowser
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientBrowserImpl(final ClientSessionInternal session,                            
-                            final int id,
+                            final long id,
                             final Channel channel)
    {
       this.id = id;
@@ -74,7 +74,7 @@ public class ClientBrowserImpl implements ClientBrowser
 
    // ClientBrowser implementation -----------------------------------------------------------------
    
-   public int getID()
+   public long getID()
    {
       return id;
    }

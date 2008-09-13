@@ -38,13 +38,13 @@ public class SessionReplicateDeliveryMessage extends PacketImpl
    
    private long messageID;
    
-   private int consumerID;
+   private long consumerID;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionReplicateDeliveryMessage(final long messageID, final int consumerID)
+   public SessionReplicateDeliveryMessage(final long consumerID, final long messageID)
    {
       super(SESS_REPLICATE_DELIVERY);
       
@@ -65,7 +65,7 @@ public class SessionReplicateDeliveryMessage extends PacketImpl
       return messageID;
    }
    
-   public int getConsumerID()
+   public long getConsumerID()
    {
       return consumerID;
    }
@@ -73,13 +73,13 @@ public class SessionReplicateDeliveryMessage extends PacketImpl
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putLong(messageID);
-      buffer.putInt(consumerID);
+      buffer.putLong(consumerID);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
       messageID = buffer.getLong();
-      consumerID = buffer.getInt();
+      consumerID = buffer.getLong();
    }
    
    public boolean isUsesConfirmations()

@@ -36,6 +36,9 @@ public interface ConnectionRegistry
    RemotingConnection getConnection(ConnectorFactory connectorFactory, Map<String, Object> params,
                                     long pingInterval, long callTimeout);
    
+   RemotingConnection getConnectionNoCache(ConnectorFactory connectorFactory, Map<String, Object> params,
+                                           long pingInterval, long callTimeout);
+   
    void returnConnection(Object connectionID);
    
    int size();

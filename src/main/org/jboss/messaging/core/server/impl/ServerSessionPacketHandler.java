@@ -355,7 +355,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             case SESS_REPLICATE_DELIVERY:
             {
                SessionReplicateDeliveryMessage message = (SessionReplicateDeliveryMessage)packet;
-               session.handleReplicateDelivery(message.getMessageID(), message.getConsumerID());
+               session.handleReplicateDelivery(message.getConsumerID(), message.getMessageID());
                break;
             }
             case SESS_REPLICATE_DELIVERY_RESP:

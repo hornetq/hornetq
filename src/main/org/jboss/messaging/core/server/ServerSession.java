@@ -120,23 +120,23 @@ public interface ServerSession
 
    void createBrowser(SimpleString queueName, SimpleString filterString) throws Exception;
    
-   void closeConsumer(int consumerID) throws Exception;
+   void closeConsumer(long consumerID) throws Exception;
    
-   void closeProducer(int producerID) throws Exception;
+   void closeProducer(long producerID) throws Exception;
    
-   void closeBrowser(int browserID) throws Exception;
+   void closeBrowser(long browserID) throws Exception;
    
-   void receiveConsumerCredits(int consumerID, int credits) throws Exception;
+   void receiveConsumerCredits(long consumerID, int credits) throws Exception;
    
-   void sendProducerMessage(int producerID, ServerMessage message) throws Exception;
+   void sendProducerMessage(long producerID, ServerMessage message) throws Exception;
    
-   boolean browserHasNextMessage(int browserID) throws Exception;
+   boolean browserHasNextMessage(long browserID) throws Exception;
    
-   ServerMessage browserNextMessage(int browserID) throws Exception;
+   ServerMessage browserNextMessage(long browserID) throws Exception;
    
-   void browserReset(int browserID) throws Exception;
+   void browserReset(long browserID) throws Exception;
    
-   void handleReplicateDelivery(long messageID, int consumerID) throws Exception;
+   void handleReplicateDelivery(long consumerID, long messageID) throws Exception;
    
    void handleDeferredDelivery();
    

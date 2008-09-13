@@ -36,7 +36,7 @@ import org.jboss.messaging.core.server.DistributionPolicy;
  */
 public class RoundRobinDistributionPolicy implements DistributionPolicy
 {   
-   public int select(List<Consumer> consumers, int pos)
+   public int select(final List<Consumer> consumers, int pos)
    {     
       if (pos == -1)
       {
@@ -52,6 +52,7 @@ public class RoundRobinDistributionPolicy implements DistributionPolicy
             pos = 0;
          }
       }
+      
       return pos;
    }
 }

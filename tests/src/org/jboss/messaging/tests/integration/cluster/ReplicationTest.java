@@ -121,13 +121,14 @@ public class ReplicationTest extends TestCase
       backupService.stop();
    }
    
+      
    public void testFailoverSameConnectionFactory() throws Exception
    {             
       final SimpleString QUEUE = new SimpleString("CoreClientTestQueue");
       
       Configuration backupConf = new ConfigurationImpl();      
       backupConf.setSecurityEnabled(false);        
-      backupConf.setPacketConfirmationBatchSize(10);
+      backupConf.setPacketConfirmationBatchSize(1);
       Map<String, Object> backupParams = new HashMap<String, Object>();
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       backupConf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory", backupParams));
@@ -137,7 +138,7 @@ public class ReplicationTest extends TestCase
             
       Configuration liveConf = new ConfigurationImpl();      
       liveConf.setSecurityEnabled(false);    
-      liveConf.setPacketConfirmationBatchSize(10);
+      liveConf.setPacketConfirmationBatchSize(1);
       liveConf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
       liveConf.setBackupConnectorConfiguration(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory", backupParams));
       MessagingService liveService = MessagingServiceImpl.newNullStorageMessagingServer(liveConf);              
@@ -163,6 +164,7 @@ public class ReplicationTest extends TestCase
          message.getBody().putString("testINVMCoreClient");
          message.getBody().flip();  
          producer.send(message);
+     //    log.info("sent " + i);
       }
       
       RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
@@ -206,7 +208,7 @@ public class ReplicationTest extends TestCase
          
          session.acknowledge();
          
-        // log.info("got message " + message2.getProperty(new SimpleString("blah")));
+        //log.info("got message " + message2.getProperty(new SimpleString("blah")));
       }
       
       ClientMessage message3 = consumer.receive(1000);
@@ -215,10 +217,7 @@ public class ReplicationTest extends TestCase
       
       liveService.stop();
       backupService.stop();
-      
-  //    todo - do we need to failover connection factories too?????
-               
-               
+         
    }
    
 //   public void testFailoverChangeConnectionFactory() throws Exception

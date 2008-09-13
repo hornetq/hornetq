@@ -36,8 +36,6 @@ public class CreateSessionResponseMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private long sessionID;
-   
    private int serverVersion;
    
    private int packetConfirmationBatchSize;
@@ -46,12 +44,10 @@ public class CreateSessionResponseMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public CreateSessionResponseMessage(final long sessionID, final int serverVersion, final int packetConfirmationBatchSize)
+   public CreateSessionResponseMessage(final int serverVersion, final int packetConfirmationBatchSize)
    {
       super(CREATESESSION_RESP);
 
-      this.sessionID = sessionID;
-      
       this.serverVersion = serverVersion;
       
       this.packetConfirmationBatchSize = packetConfirmationBatchSize;
@@ -69,11 +65,6 @@ public class CreateSessionResponseMessage extends PacketImpl
       return true;
    }
  
-   public long getSessionID()
-   {
-      return sessionID;
-   }
-   
    public int getServerVersion()
    {
       return serverVersion;
@@ -86,14 +77,12 @@ public class CreateSessionResponseMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(sessionID);
       buffer.putInt(serverVersion);      
       buffer.putInt(packetConfirmationBatchSize);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      sessionID = buffer.getLong();
       serverVersion = buffer.getInt();
       packetConfirmationBatchSize = buffer.getInt();
    }
@@ -107,8 +96,7 @@ public class CreateSessionResponseMessage extends PacketImpl
             
       CreateSessionResponseMessage r = (CreateSessionResponseMessage)other;
       
-      boolean matches = super.equals(other) &&
-                        this.sessionID == r.sessionID &&
+      boolean matches = super.equals(other) &&     
                         this.packetConfirmationBatchSize == r.packetConfirmationBatchSize;
       
       return matches;
