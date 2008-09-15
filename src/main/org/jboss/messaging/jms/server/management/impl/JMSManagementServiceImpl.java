@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.jms.server.management.impl;
 
+import static javax.management.ObjectName.quote;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,21 +75,21 @@ public class JMSManagementServiceImpl implements JMSManagementService
          throws Exception
    {
       return ObjectName.getInstance(ManagementServiceImpl.DOMAIN
-            + ":module=JMS,type=Queue,name=" + name.toString());
+            + ":module=JMS,type=Queue,name=" + quote(name.toString()));
    }
 
    public static ObjectName getJMSTopicObjectName(final String name)
          throws Exception
    {
       return ObjectName.getInstance(ManagementServiceImpl.DOMAIN
-            + ":module=JMS,type=Topic,name=" + name.toString());
+            + ":module=JMS,type=Topic,name=" + quote(name.toString()));
    }
 
    public static ObjectName getConnectionFactoryObjectName(final String name)
          throws Exception
    {
       return ObjectName.getInstance(ManagementServiceImpl.DOMAIN
-            + ":module=JMS,type=ConnectionFactory,name=" + name);
+            + ":module=JMS,type=ConnectionFactory,name=" + quote(name));
    }
 
    // Constructors --------------------------------------------------

@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.management.impl;
 
+import static javax.management.ObjectName.quote;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -91,15 +93,15 @@ public class ManagementServiceImpl implements ManagementService
          throws Exception
    {
       return ObjectName.getInstance(String.format(
-            "%s:module=Core,type=Address,name=%s", DOMAIN, address));
+            "%s:module=Core,type=Address,name=%s", DOMAIN, quote(address.toString())));
    }
 
    public static ObjectName getQueueObjectName(final SimpleString address,
          final SimpleString name) throws Exception
    {
       return ObjectName.getInstance(String.format(
-            "%s:module=Core,type=Queue,address=%s,name=%s", DOMAIN, address,
-            name));
+            "%s:module=Core,type=Queue,address=%s,name=%s", DOMAIN, quote(address.toString()),
+            quote(name.toString())));
    }
 
    // Constructors --------------------------------------------------
