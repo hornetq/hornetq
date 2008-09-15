@@ -684,8 +684,11 @@
              timeout="${junit.timeout}">
          <sysproperty key="user.home" value="${user.home}"/>
          <jvmarg value="-Djava.library.path=native/bin"/>
+         <jvmarg value="-Dmodule.output=${test.output.dir}"/>
+         <jvmarg value="-Dtest.logfile.suffix=unit"/>
+         <jvmarg value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.core.logging.JBMLoggerPlugin"/>
          <jvmarg value="-Xmx1024M"/>
-         <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
+         <jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>
          <!--<jvmarg value="-ea"/>-->
          <classpath refid="unit.test.execution.classpath"/>
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
@@ -731,6 +734,8 @@
 
          <jvmarg value="-Xmx1024M"/>
          <jvmarg value="-Djava.library.path=native/bin"/>
+         <jvmarg value="-Dmodule.output=${test.output.dir}"/>
+         <jvmarg value="-Dtest.logfile.suffix=jms"/>
          <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
          <!--<jvmarg value="-ea"/>-->
          <sysproperty key="jbm.remoting.disable.invm" value="${disable.invm}"/>
