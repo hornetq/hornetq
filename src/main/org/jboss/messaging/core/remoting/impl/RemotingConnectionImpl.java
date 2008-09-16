@@ -396,8 +396,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
 
          internalClose();
-         
-         log.info("Trace", new Exception("trace"));
 
          // TODO: https://jira.jboss.org/jira/browse/JBMESSAGING-1421
          //         This affects clustering, so I'm keeping this out for now
