@@ -22,32 +22,79 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.core.server.ServerMessage;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionReplicateDeliveryResponseMessage extends PacketImpl
+public class SessionBrowseMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(SessionReceiveMessage.class);
 
    // Attributes ----------------------------------------------------
+
+   private ClientMessage clientMessage;
    
+   private ServerMessage serverMessage;
+
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-
-   public SessionReplicateDeliveryResponseMessage()
+   
+   public SessionBrowseMessage(final ServerMessage message)
    {
-      super(SESS_REPLICATE_DELIVERY_RESP);
+      super(SESS_BROWSER_MESSAGE);
+      
+      this.serverMessage = message;
+      
+      this.clientMessage = null;
+   }
+   
+   public SessionBrowseMessage()
+   {
+      super(SESS_BROWSER_MESSAGE);
    }
 
    // Public --------------------------------------------------------
-    
-   public boolean isUsesConfirmations()
+
+   public boolean isResponse()
    {
-      return false;
+      return true;
+   }
+   
+   public ClientMessage getClientMessage()
+   {
+      return clientMessage;
+   }
+   
+   public ServerMessage getServerMessage()
+   {
+      return serverMessage;
+   }
+
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      serverMessage.encode(buffer);
+   }
+   
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      //TODO can be optimised
+      
+      clientMessage = new ClientMessageImpl();
+      
+      clientMessage.decode(buffer);
+      
+      clientMessage.getBody().flip();
    }
 
    // Package protected ---------------------------------------------
@@ -58,5 +105,3 @@ public class SessionReplicateDeliveryResponseMessage extends PacketImpl
 
    // Inner classes -------------------------------------------------
 }
-
-

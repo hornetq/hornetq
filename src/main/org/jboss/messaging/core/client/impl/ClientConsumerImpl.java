@@ -32,7 +32,7 @@ import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionFlowCreditMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.jboss.messaging.util.Future;
 
 /**
@@ -392,7 +392,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          
          if (creditsToSend >= clientWindowSize)
          {            
-            channel.send(new SessionFlowCreditMessage(id, creditsToSend));
+            channel.send(new SessionConsumerFlowCreditMessage(id, creditsToSend));
             
             creditsToSend = 0;            
          }

@@ -2344,7 +2344,7 @@ public class ClientSessionImplTest extends UnitTestCase
 //      pd.register(new ClientConsumerPacketHandler(null, clientTargetID, null));
 //      
 //      cm.sendCommandOneway(resp.getConsumerTargetID(), 
-//                    new SessionFlowCreditMessage(resp.getWindowSize()));
+//                    new SessionConsumerFlowCreditMessage(resp.getWindowSize()));
 //      
 //      EasyMock.replay(cf, rc, pd, cm);
 //      ClientSession session = new ClientSessionImpl("blah", sessionTargetID, false, -1, false, false, false, false,rc, cf, pd, 100, cm);
@@ -2398,7 +2398,7 @@ public class ClientSessionImplTest extends UnitTestCase
 //      pd.register(new ClientConsumerPacketHandler(null, clientTargetID, null));
 //      
 //      cm.sendCommandOneway(resp.getConsumerTargetID(), 
-//                    new SessionFlowCreditMessage(resp.getWindowSize()));
+//                    new SessionConsumerFlowCreditMessage(resp.getWindowSize()));
 //      
 //      EasyMock.replay(cf, rc, pd, cm);
 //      
@@ -2455,7 +2455,7 @@ public class ClientSessionImplTest extends UnitTestCase
 //      pd.register(new ClientConsumerPacketHandler(null, clientTargetID, null));
 //      
 //      cm.sendCommandOneway(resp.getConsumerTargetID(), 
-//                    new SessionFlowCreditMessage(resp.getWindowSize()));
+//                    new SessionConsumerFlowCreditMessage(resp.getWindowSize()));
 //      
 //      EasyMock.replay(cf, rc, pd, cm);
 //      

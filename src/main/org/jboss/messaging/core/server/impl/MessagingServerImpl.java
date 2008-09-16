@@ -1,24 +1,24 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat
+ * Middleware LLC, and individual contributors by the @authors tag. See the
+ * copyright.txt in the distribution for a full listing of individual
+ * contributors.
+ * 
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ * 
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
+ */
 
 package org.jboss.messaging.core.server.impl;
 
@@ -83,13 +83,16 @@ import org.jboss.messaging.util.VersionLoader;
  */
 public class MessagingServerImpl implements MessagingServer
 {
-   // Constants ------------------------------------------------------------------------------------
+   // Constants
+   // ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(MessagingServerImpl.class);
 
-   // Static ---------------------------------------------------------------------------------------
+   // Static
+   // ---------------------------------------------------------------------------------------
 
-   // Attributes -----------------------------------------------------------------------------------
+   // Attributes
+   // -----------------------------------------------------------------------------------
 
    private final Version version;
 
@@ -98,38 +101,57 @@ public class MessagingServerImpl implements MessagingServer
    // wired components
 
    private SecurityStore securityStore;
+
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
+
    private ScheduledExecutorService scheduledExecutor;
+
    private QueueFactory queueFactory;
+
    private PagingManager pagingManager;
+
    private PostOffice postOffice;
+
    private final ExecutorService asyncDeliveryPool = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-async-session-delivery-threads"));
+
    private final ExecutorFactory executorFactory = new OrderedExecutorFactory(asyncDeliveryPool);
+
    private HierarchicalRepository<Set<Role>> securityRepository;
+
    private ResourceManager resourceManager;
+
    private MessagingServerControlMBean serverManagement;
+
    private final ConcurrentMap<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
+
    private ConnectorFactory backupConnectorFactory;
+
    private Map<String, Object> backupConnectorParams;
 
    // plugins
 
    private StorageManager storageManager;
+
    private RemotingService remotingService;
+
    private JBMSecurityManager securityManager;
+
    private Configuration configuration;
+
    private ManagementService managementService;
 
-   // Constructors ---------------------------------------------------------------------------------
+   // Constructors
+   // ---------------------------------------------------------------------------------
 
    public MessagingServerImpl()
    {
-      //We need to hard code the version information into a source file
+      // We need to hard code the version information into a source file
 
       version = VersionLoader.load();
    }
-   
-   // lifecycle methods ----------------------------------------------------------------
+
+   // lifecycle methods
+   // ----------------------------------------------------------------
 
    public synchronized void start() throws Exception
    {
@@ -146,7 +168,7 @@ public class MessagingServerImpl implements MessagingServer
       lifecycle will not be controlled here
       */
 
-      //We make sure the pluggable components have been injected
+      // We make sure the pluggable components have been injected
       if (configuration == null)
       {
          throw new IllegalStateException("Must inject Configuration before starting MessagingServer");
@@ -182,31 +204,43 @@ public class MessagingServerImpl implements MessagingServer
          throw new IllegalStateException("RemotingService must be started before MessagingServer is started");
       }
 
-      //The rest of the components are not pluggable and created and started here
+      // The rest of the components are not pluggable and created and started
+      // here
 
-      securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval(), configuration.isSecurityEnabled());
+      securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval(),
+                                            configuration.isSecurityEnabled());
       queueSettingsRepository.setDefault(new QueueSettings());
-      scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(), new JBMThreadFactory("JBM-scheduled-threads"));
+      scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
+                                                          new JBMThreadFactory("JBM-scheduled-threads"));
       queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);
-
 
       PagingStoreFactory storeFactory = new PagingManagerFactoryNIO(configuration.getPagingDirectory());
 
-      pagingManager = new PagingManagerImpl(storeFactory, storageManager, queueSettingsRepository, configuration.getPagingMaxGlobalSizeBytes());
-      
+      pagingManager = new PagingManagerImpl(storeFactory,
+                                            storageManager,
+                                            queueSettingsRepository,
+                                            configuration.getPagingMaxGlobalSizeBytes());
+
       storeFactory.setPagingManager(pagingManager);
 
       resourceManager = new ResourceManagerImpl(0);
-      postOffice =
-        new PostOfficeImpl(storageManager, pagingManager, queueFactory, managementService, configuration.isRequireDestinations(), resourceManager);
+      postOffice = new PostOfficeImpl(storageManager,
+                                      pagingManager,
+                                      queueFactory,
+                                      managementService,
+                                      configuration.isRequireDestinations(),
+                                      resourceManager);
 
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
       securityRepository.setDefault(new HashSet<Role>());
       securityStore.setSecurityRepository(securityRepository);
       securityStore.setSecurityManager(securityManager);
-      serverManagement = managementService.registerServer(postOffice, storageManager, configuration,
-            securityRepository,
-            queueSettingsRepository, this);
+      serverManagement = managementService.registerServer(postOffice,
+                                                          storageManager,
+                                                          configuration,
+                                                          securityRepository,
+                                                          queueSettingsRepository,
+                                                          this);
 
       postOffice.start();
       postOffice.setBackup(configuration.isBackup());
@@ -219,16 +253,18 @@ public class MessagingServerImpl implements MessagingServer
          try
          {
             Class<?> clz = loader.loadClass(backupConnector.getFactoryClassName());
-            this.backupConnectorFactory = (ConnectorFactory) clz.newInstance();            
+            this.backupConnectorFactory = (ConnectorFactory)clz.newInstance();
          }
          catch (Exception e)
          {
-            throw new IllegalArgumentException("Error instantiating interceptor \"" + backupConnector.getFactoryClassName() + "\"", e);
+            throw new IllegalArgumentException("Error instantiating interceptor \"" + backupConnector.getFactoryClassName() +
+                                                        "\"",
+                                               e);
          }
          this.backupConnectorParams = backupConnector.getParams();
       }
       remotingService.setMessagingServer(this);
-           
+
       started = true;
    }
 
@@ -249,9 +285,9 @@ public class MessagingServerImpl implements MessagingServer
       queueFactory = null;
       resourceManager = null;
       serverManagement = null;
-      
+
       asyncDeliveryPool.shutdown();
-      
+
       try
       {
          if (!asyncDeliveryPool.awaitTermination(10000, TimeUnit.MILLISECONDS))
@@ -261,14 +297,14 @@ public class MessagingServerImpl implements MessagingServer
       }
       catch (InterruptedException e)
       {
-         //Ignore
+         // Ignore
       }
 
       started = false;
    }
 
-   // MessagingServer implementation -----------------------------------------------------------
-
+   // MessagingServer implementation
+   // -----------------------------------------------------------
 
    // The plugabble components
 
@@ -344,13 +380,13 @@ public class MessagingServerImpl implements MessagingServer
       return managementService;
    }
 
-   //This is needed for the security deployer
+   // This is needed for the security deployer
    public HierarchicalRepository<Set<Role>> getSecurityRepository()
    {
       return securityRepository;
    }
 
-   //This is needed for the queue settings deployer
+   // This is needed for the queue settings deployer
    public HierarchicalRepository<QueueSettings> getQueueSettingsRepository()
    {
       return queueSettingsRepository;
@@ -365,108 +401,125 @@ public class MessagingServerImpl implements MessagingServer
    {
       return started;
    }
-   
+
    public ReattachSessionResponseMessage reattachSession(final RemotingConnection connection,
-                                                         final String name,                                                        
-                                                         final int lastReceivedCommandID)
-   {     
+                                                         final String name,
+                                                         final int lastReceivedCommandID) throws Exception
+   {
       ServerSession session = sessions.get(name);
-      
+
       if (session == null)
       {
          throw new IllegalArgumentException("Cannot find session with name " + name + " to reattach");
-      }            
-      
-      //Reconnect the channel to the new connection
+      }
+
+      // Reconnect the channel to the new connection
       session.transferConnection(connection);
-      
-      //This is necessary for invm since the replicating connection will be the same connection
-      //as the original replicating connection since the key is the same in the registry, and that connection
-      //won't have any resend buffer etc
-      connection.setBackup(false);
-      
-      postOffice.setBackup(false);
-      
-      configuration.setBackup(false);
-                  
-      remotingService.setBackup(false);
-                  
+
+      // This is necessary for invm since the replicating connection will be the
+      // same connection
+      // as the original replicating connection since the key is the same in the
+      // registry, and that connection
+      // won't have any resend buffer etc
+      connection.setReplicating(false);
+
       int serverLastReceivedCommandID = session.replayCommands(lastReceivedCommandID);
-      
-      connection.setBackup(false);
-      
-      return new ReattachSessionResponseMessage(serverLastReceivedCommandID);            
+
+      postOffice.setBackup(false);
+
+      configuration.setBackup(false);
+
+      remotingService.setBackup(false);
+
+      connection.setReplicating(false);
+
+      // Re-prompt delivery
+      session.setStarted(true);
+
+      return new ReattachSessionResponseMessage(serverLastReceivedCommandID);
    }
 
    public CreateSessionResponseMessage createSession(final String name,
                                                      final long channelID,
-                                                     final String username, final String password,
+                                                     final String username,
+                                                     final String password,
                                                      final int incrementingVersion,
-                                                     final RemotingConnection remotingConnection,
+                                                     final RemotingConnection connection,
                                                      final boolean autoCommitSends,
                                                      final boolean autoCommitAcks,
-                                                     final boolean xa)
-           throws Exception
+                                                     final boolean xa) throws Exception
    {
       if (version.getIncrementingVersion() < incrementingVersion)
       {
          throw new MessagingException(MessagingException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
-                 "client not compatible with version: " + version.getFullVersion());
+                                      "client not compatible with version: " + version.getFullVersion());
       }
 
-      //Is this comment relevant any more ?
+      // Is this comment relevant any more ?
 
-      // Authenticate. Successful autentication will place a new SubjectContext on thread local,
-      // which will be used in the authorization process. However, we need to make sure we clean
-      // up thread local immediately after we used the information, otherwise some other people
-      // security my be screwed up, on account of thread local security stack being corrupted.
+      // Authenticate. Successful autentication will place a new SubjectContext
+      // on thread local,
+      // which will be used in the authorization process. However, we need to
+      // make sure we clean
+      // up thread local immediately after we used the information, otherwise
+      // some other people
+      // security my be screwed up, on account of thread local security stack
+      // being corrupted.
 
-      securityStore.authenticate(username, password);            
-      
-      Channel channel =
-         remotingConnection.getChannel(channelID, true, configuration.getPacketConfirmationBatchSize());
+      securityStore.authenticate(username, password);
 
-      final ServerSessionImpl session = new ServerSessionImpl(name, channelID, username, password,
-                                  autoCommitSends, autoCommitAcks, xa,
-                                  remotingConnection,
-                                  storageManager, postOffice,
-                                  queueSettingsRepository,
-                                  resourceManager,
-                                  securityStore,
-                                  executorFactory.getExecutor(),
-                                  channel,
-                                  this);
-      
+      Channel channel = connection.getChannel(channelID, true, configuration.getPacketConfirmationBatchSize());
+
+      final ServerSessionImpl session = new ServerSessionImpl(name,
+                                                              channelID,
+                                                              username,
+                                                              password,
+                                                              autoCommitSends,
+                                                              autoCommitAcks,
+                                                              xa,
+                                                              connection,
+                                                              storageManager,
+                                                              postOffice,
+                                                              queueSettingsRepository,
+                                                              resourceManager,
+                                                              securityStore,
+                                                              executorFactory.getExecutor(),
+                                                              channel,
+                                                              this);
+
       if (sessions.putIfAbsent(name, session) != null)
       {
          throw new IllegalArgumentException("Session with name " + name + " already exists");
       }
 
-      ChannelHandler handler = new ServerSessionPacketHandler(session, channel);
+      ChannelHandler handler = new ServerSessionPacketHandler(session, channel, storageManager);
 
       channel.setHandler(handler);
 
-      remotingConnection.addFailureListener(session);
+      connection.addFailureListener(session);
 
-      return
-         new CreateSessionResponseMessage(version.getIncrementingVersion(),
-                                          configuration.getPacketConfirmationBatchSize());
+      return new CreateSessionResponseMessage(version.getIncrementingVersion(),
+                                              configuration.getPacketConfirmationBatchSize());
    }
-   
+
    public RemotingConnection getReplicatingConnection()
    {
-      //Note we must always get a new connection each time - since there must be a one to one correspondence
-      //between connections to clients and replicating connections, since we need to preserve channel ids
-      //before and after failover
-      
+      // Note we must always get a new connection each time - since there must
+      // be a one to one correspondence
+      // between connections to clients and replicating connections, since we
+      // need to preserve channel ids
+      // before and after failover
+
       if (backupConnectorFactory != null)
       {
-         //TODO don't hardcode ping interval and code timeout
-         RemotingConnection replicatingConnection = 
-            ConnectionRegistryImpl.instance.getConnectionNoCache(backupConnectorFactory, backupConnectorParams, 5000, 30000);
-         
-         replicatingConnection.setBackup(true);
-         
+         // TODO don't hardcode ping interval and code timeout
+         RemotingConnection replicatingConnection = ConnectionRegistryImpl.instance.getConnectionNoCache(backupConnectorFactory,
+                                                                                                         backupConnectorParams,
+                                                                                                         -1,
+                                                                                                         30000);
+
+         replicatingConnection.setReplicating(true);
+
          return replicatingConnection;
       }
       else
@@ -474,7 +527,7 @@ public class MessagingServerImpl implements MessagingServer
          return null;
       }
    }
-   
+
    public void removeSession(final String name)
    {
       if (sessions.remove(name) == null)
@@ -498,13 +551,18 @@ public class MessagingServerImpl implements MessagingServer
       return postOffice;
    }
 
-   // Public ---------------------------------------------------------------------------------------
+   // Public
+   // ---------------------------------------------------------------------------------------
 
-   // Package protected ----------------------------------------------------------------------------
+   // Package protected
+   // ----------------------------------------------------------------------------
 
-   // Protected ------------------------------------------------------------------------------------
+   // Protected
+   // ------------------------------------------------------------------------------------
 
-   // Private --------------------------------------------------------------------------------------
-    
-   // Inner classes --------------------------------------------------------------------------------
+   // Private
+   // --------------------------------------------------------------------------------------
+
+   // Inner classes
+   // --------------------------------------------------------------------------------
 }

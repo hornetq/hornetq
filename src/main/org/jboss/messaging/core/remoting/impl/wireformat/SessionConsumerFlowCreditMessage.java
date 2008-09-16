@@ -22,59 +22,40 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.impl.ClientMessageImpl;
-import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.core.server.ServerMessage;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ReceiveMessage extends PacketImpl
+public class SessionConsumerFlowCreditMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(ReceiveMessage.class);
 
    // Attributes ----------------------------------------------------
 
    private long consumerID;
    
-   private ClientMessage clientMessage;
+   private int credits;
    
-   private ServerMessage serverMessage;
-   
-   private int deliveryCount;
-   
-   private long deliveryID;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   
-   public ReceiveMessage(final long consumerID, final ServerMessage message, final int deliveryCount, final long deliveryID)
-   {
-      super(SESS_RECEIVE_MSG);
-      
-      this.consumerID = consumerID;
 
-      this.serverMessage = message;
+   public SessionConsumerFlowCreditMessage(final long consumerID, final int credits)
+   {
+      super(SESS_FLOWTOKEN);
+
+      this.consumerID = consumerID;
       
-      this.clientMessage = null;
-      
-      this.deliveryCount = deliveryCount;
-      
-      this.deliveryID = deliveryID;
+      this.credits = credits;
    }
    
-   public ReceiveMessage()
+   public SessionConsumerFlowCreditMessage()
    {
-      super(SESS_RECEIVE_MSG);
+      super(SESS_FLOWTOKEN);
    }
 
    // Public --------------------------------------------------------
@@ -84,49 +65,41 @@ public class ReceiveMessage extends PacketImpl
       return consumerID;
    }
    
-   public ClientMessage getClientMessage()
+   public int getCredits()
    {
-      return clientMessage;
-   }
-   
-   public ServerMessage getServerMessage()
-   {
-      return serverMessage;
-   }
-
-   public int getDeliveryCount()
-   {
-      return deliveryCount;
-   }
-   
-   public long getDeliveryID()
-   {
-      return deliveryID;
+      return credits;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putLong(consumerID);
-      buffer.putInt(deliveryCount);
-      buffer.putLong(deliveryID);
-      serverMessage.encode(buffer);
+      buffer.putInt(credits);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      //TODO can be optimised
-      
       consumerID = buffer.getLong();
-      deliveryCount = buffer.getInt();
-      deliveryID = buffer.getLong();
-      
-      clientMessage = new ClientMessageImpl(deliveryCount, deliveryID);
-      
-      clientMessage.decode(buffer);
-      
-      clientMessage.getBody().flip();
+      credits = buffer.getInt();
    }
 
+   @Override
+   public String toString()
+   {
+      return getParentString() + ", consumerID=" + consumerID + ", credits=" + credits + "]";
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionConsumerFlowCreditMessage == false)
+      {
+         return false;
+      }
+            
+      SessionConsumerFlowCreditMessage r = (SessionConsumerFlowCreditMessage)other;
+      
+      return super.equals(other) && this.credits == r.credits
+       && this.consumerID == r.consumerID;
+   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

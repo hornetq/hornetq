@@ -29,7 +29,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -63,9 +63,9 @@ public class DummyInterceptor implements Interceptor
       }
       if (changeMessage)
       {
-         if (packet instanceof ReceiveMessage)
+         if (packet instanceof SessionReceiveMessage)
          {
-            ReceiveMessage deliver = (ReceiveMessage)packet;
+            SessionReceiveMessage deliver = (SessionReceiveMessage)packet;
             log.debug("msg = " + deliver.getServerMessage().getClass().getName());
             deliver.getServerMessage().putStringProperty(new SimpleString("DummyInterceptor"), new SimpleString("was here"));
          }

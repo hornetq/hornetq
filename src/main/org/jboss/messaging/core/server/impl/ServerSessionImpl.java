@@ -3,17 +3,17 @@
  * Middleware LLC, and individual contributors by the @authors tag. See the
  * copyright.txt in the distribution for a full listing of individual
  * contributors.
- *
+ * 
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- *
+ * 
  * This software is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
@@ -54,9 +54,9 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResp
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.cluster.SessionReplicateDeliveryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.cluster.SessionReplicateSendMessage;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.Delivery;
@@ -99,7 +99,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private final boolean trace = log.isTraceEnabled();
 
    private final String name;
-   
+
    private final long id;
 
    private final String username;
@@ -139,42 +139,39 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private final SecurityStore securityStore;
 
    private final Channel channel;
-   
-   private final Channel replicatingChannel;
-   
-   private final java.util.Queue<Delivery> deferredDeliveries = new ConcurrentLinkedQueue<Delivery>();
-   
+
+   // private final Channel replicatingChannel;
+
    private final MessagingServer server;
-   
+
    private volatile boolean started = false;
 
    private final List<Runnable> failureRunners = new ArrayList<Runnable>();
-   
+
    private final IDGenerator idGenerator = new IDGenerator(0);
-   
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ServerSessionImpl(
-            final String name,
-            final long id,
-            final String username,
-            final String password,
-            final boolean autoCommitSends,
-            final boolean autoCommitAcks,
-            final boolean xa,
-            final RemotingConnection remotingConnection,
-            final StorageManager storageManager,
-            final PostOffice postOffice,
-            final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-            final ResourceManager resourceManager,
-            final SecurityStore securityStore,
-            final Executor executor,
-            final Channel channel,
-            final MessagingServer server) throws Exception
+   public ServerSessionImpl(final String name,
+                            final long id,
+                            final String username,
+                            final String password,
+                            final boolean autoCommitSends,
+                            final boolean autoCommitAcks,
+                            final boolean xa,
+                            final RemotingConnection remotingConnection,
+                            final StorageManager storageManager,
+                            final PostOffice postOffice,
+                            final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                            final ResourceManager resourceManager,
+                            final SecurityStore securityStore,
+                            final Executor executor,
+                            final Channel channel,
+                            final MessagingServer server) throws Exception
    {
       this.name = name;
-      
+
       this.id = id;
 
       this.username = username;
@@ -207,9 +204,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
 
       this.channel = channel;
-      
-      this.replicatingChannel = channel.getReplicatingChannel();
-      
+
+      // this.replicatingChannel = channel.getReplicatingChannel();
+
       this.server = server;
    }
 
@@ -243,8 +240,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       if (consumers.remove(consumer.getID()) == null)
       {
-         throw new IllegalStateException("Cannot find consumer with id " + consumer.getID()
-                        + " to remove");
+         throw new IllegalStateException("Cannot find consumer with id " + consumer.getID() + " to remove");
       }
    }
 
@@ -252,47 +248,35 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       if (producers.remove(producer.getID()) == null)
       {
-         throw new IllegalStateException("Cannot find producer with id " + producer.getID()
-                        + " to remove");
+         throw new IllegalStateException("Cannot find producer with id " + producer.getID() + " to remove");
       }
    }
 
    public void handleDelivery(final MessageReference ref, final ServerConsumer consumer)
    {
-      Delivery delivery;
-
       long nextID = deliveryIDSequence.getAndIncrement();
 
-      delivery = new DeliveryImpl(ref, consumer.getID(), nextID, channel);
+      final Delivery delivery = new DeliveryImpl(ref, consumer.getID(), nextID, channel);
 
       deliveries.add(delivery);
-      
-      if (replicatingChannel != null)
+
+      if (channel.getReplicatingChannel() != null)
       {
-         deferredDeliveries.add(delivery);
-         
          Packet msg = new SessionReplicateDeliveryMessage(consumer.getID(), ref.getMessage().getMessageID());
-       
-         replicatingChannel.send(msg);
+
+         Runnable action = new Runnable()
+         {
+            public void run()
+            {
+               delivery.deliver();
+            }
+         };
+
+         channel.replicatePacket(msg, action);
       }
       else
-      {      
-         delivery.deliver();
-      }
-   }
-   
-   public void deliverDeferredDelivery(final long messageID)
-   {
-      for (Delivery del : deliveries)
       {
-         long id = del.getReference().getMessage().getMessageID();
-
-         if (id == messageID)
-         {
-            del.deliver();
-
-            break;
-         }
+         delivery.deliver();
       }
    }
 
@@ -342,7 +326,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       deliveries.clear();
 
       channel.close();
-      
+
       server.removeSession(name);
    }
 
@@ -350,6 +334,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       queue.deliverAsync(executor);
    }
+
+   // long idSequence;
 
    public void send(final ServerMessage msg) throws Exception
    {
@@ -371,9 +357,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          if (!pager.page(msg))
          {
-            // We only set the messageID after we are sure the message is not being paged
+            // We only set the messageID after we are sure the message is not
+            // being paged
             // Paged messages won't have an ID until they are depaged
-            msg.setMessageID(storageManager.generateID());
+            // WHY?
 
             List<MessageReference> refs = postOffice.route(msg);
 
@@ -394,8 +381,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void acknowledge(final long deliveryID, final boolean allUpTo)
-            throws Exception
+   public void acknowledge(final long deliveryID, final boolean allUpTo) throws Exception
    {
       /*
       Note that we do not consider it an error if the deliveries cannot be found to be acked.
@@ -537,8 +523,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       tx = new TransactionImpl(storageManager, postOffice);
    }
 
-   public void cancel(final long deliveryID, final boolean expired)
-            throws Exception
+   public void cancel(final long deliveryID, final boolean expired) throws Exception
    {
       if (deliveryID == -1)
       {
@@ -559,8 +544,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          try
          {
-            Transaction cancelTx = new TransactionImpl(storageManager,
-                     postOffice);
+            Transaction cancelTx = new TransactionImpl(storageManager, postOffice);
 
             for (Delivery del : deliveries)
             {
@@ -574,11 +558,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          finally
          {
          }
-         //finally (TODO: enable this back)
+         // finally (TODO: enable this back)
          {
-            //Now unlock
+            // Now unlock
 
-            for (Queue queue: locked)
+            for (Queue queue : locked)
             {
                queue.unlock();
             }
@@ -586,8 +570,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
       else if (expired)
       {
-         if (deliveryID == -1) { throw new IllegalArgumentException(
-                  "Invalid delivery id"); }
+         if (deliveryID == -1)
+         {
+            throw new IllegalArgumentException("Invalid delivery id");
+         }
 
          // Expire a single reference
 
@@ -597,8 +583,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
             if (delivery.getDeliveryID() == deliveryID)
             {
-               delivery.getReference().expire(storageManager, postOffice,
-                        queueSettingsRepository);
+               delivery.getReference().expire(storageManager, postOffice, queueSettingsRepository);
 
                iter.remove();
 
@@ -624,13 +609,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public SessionXAResponseMessage XACommit(final boolean onePhase,
-            final Xid xid) throws Exception
+   public SessionXAResponseMessage XACommit(final boolean onePhase, final Xid xid) throws Exception
    {
       if (tx != null)
       {
-         final String msg = "Cannot commit, session is currently doing work in transaction "
-                  + tx.getXid();
+         final String msg = "Cannot commit, session is currently doing work in transaction " + tx.getXid();
 
          return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
       }
@@ -644,9 +627,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
       }
 
-      if (theTx.getState() == Transaction.State.SUSPENDED) { return new SessionXAResponseMessage(
-               true, XAException.XAER_PROTO,
-               "Cannot commit transaction, it is suspended " + xid); }
+      if (theTx.getState() == Transaction.State.SUSPENDED)
+      {
+         return new SessionXAResponseMessage(true,
+                                             XAException.XAER_PROTO,
+                                             "Cannot commit transaction, it is suspended " + xid);
+      }
 
       theTx.commit();
 
@@ -662,8 +648,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
    }
 
-   public SessionXAResponseMessage XAEnd(final Xid xid, final boolean failed)
-            throws Exception
+   public SessionXAResponseMessage XAEnd(final Xid xid, final boolean failed) throws Exception
    {
       if (tx != null && tx.getXid().equals(xid))
       {
@@ -671,8 +656,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             final String msg = "Cannot end, transaction is suspended";
 
-            return new SessionXAResponseMessage(true, XAException.XAER_PROTO,
-                     msg);
+            return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
          }
 
          tx = null;
@@ -687,19 +671,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          if (theTx == null)
          {
-            final String msg = "Cannot find suspended transaction to end "
-                     + xid;
+            final String msg = "Cannot find suspended transaction to end " + xid;
 
-            return new SessionXAResponseMessage(true, XAException.XAER_NOTA,
-                     msg);
+            return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
          }
 
          if (theTx.getState() != Transaction.State.SUSPENDED)
          {
             final String msg = "Transaction is not suspended " + xid;
 
-            return new SessionXAResponseMessage(true, XAException.XAER_PROTO,
-                     msg);
+            return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
          }
 
          theTx.resume();
@@ -727,9 +708,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
       }
 
-      if (theTx.getState() == Transaction.State.SUSPENDED) { return new SessionXAResponseMessage(
-               true, XAException.XAER_PROTO, "Cannot join tx, it is suspended "
-                        + xid); }
+      if (theTx.getState() == Transaction.State.SUSPENDED)
+      {
+         return new SessionXAResponseMessage(true, XAException.XAER_PROTO, "Cannot join tx, it is suspended " + xid);
+      }
 
       tx = theTx;
 
@@ -740,8 +722,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       if (tx != null)
       {
-         final String msg = "Cannot commit, session is currently doing work in a transaction "
-                  + tx.getXid();
+         final String msg = "Cannot commit, session is currently doing work in a transaction " + tx.getXid();
 
          return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
       }
@@ -755,9 +736,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
       }
 
-      if (theTx.getState() == Transaction.State.SUSPENDED) { return new SessionXAResponseMessage(
-               true, XAException.XAER_PROTO,
-               "Cannot prepare transaction, it is suspended " + xid); }
+      if (theTx.getState() == Transaction.State.SUSPENDED)
+      {
+         return new SessionXAResponseMessage(true,
+                                             XAException.XAER_PROTO,
+                                             "Cannot prepare transaction, it is suspended " + xid);
+      }
 
       if (theTx.isEmpty())
       {
@@ -769,8 +753,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             final String msg = "Failed to remove transaction: " + xid;
 
-            return new SessionXAResponseMessage(true, XAException.XAER_PROTO,
-                     msg);
+            return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
          }
 
          return new SessionXAResponseMessage(false, XAResource.XA_RDONLY, null);
@@ -787,8 +770,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       if (tx != null)
       {
-         final String msg = "Cannot resume, session is currently doing work in a transaction "
-                  + tx.getXid();
+         final String msg = "Cannot resume, session is currently doing work in a transaction " + tx.getXid();
 
          return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
       }
@@ -802,9 +784,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
       }
 
-      if (theTx.getState() != Transaction.State.SUSPENDED) { return new SessionXAResponseMessage(
-               true, XAException.XAER_PROTO,
-               "Cannot resume transaction, it is not suspended " + xid); }
+      if (theTx.getState() != Transaction.State.SUSPENDED)
+      {
+         return new SessionXAResponseMessage(true,
+                                             XAException.XAER_PROTO,
+                                             "Cannot resume transaction, it is not suspended " + xid);
+      }
 
       tx = theTx;
 
@@ -817,8 +802,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       if (tx != null)
       {
-         final String msg = "Cannot roll back, session is currently doing work in a transaction "
-                  + tx.getXid();
+         final String msg = "Cannot roll back, session is currently doing work in a transaction " + tx.getXid();
 
          return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
       }
@@ -832,9 +816,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
       }
 
-      if (theTx.getState() == Transaction.State.SUSPENDED) { return new SessionXAResponseMessage(
-               true, XAException.XAER_PROTO,
-               "Cannot rollback transaction, it is suspended " + xid); }
+      if (theTx.getState() == Transaction.State.SUSPENDED)
+      {
+         return new SessionXAResponseMessage(true,
+                                             XAException.XAER_PROTO,
+                                             "Cannot rollback transaction, it is suspended " + xid);
+      }
 
       theTx.rollback(queueSettingsRepository);
 
@@ -854,8 +841,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       if (tx != null)
       {
-         final String msg = "Cannot start, session is already doing work in a transaction "
-                  + tx.getXid();
+         final String msg = "Cannot start, session is already doing work in a transaction " + tx.getXid();
 
          return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
       }
@@ -866,8 +852,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (!added)
       {
-         final String msg = "Cannot start, there is already a xid "
-                  + tx.getXid();
+         final String msg = "Cannot start, there is already a xid " + tx.getXid();
 
          return new SessionXAResponseMessage(true, XAException.XAER_DUPID, msg);
       }
@@ -886,8 +871,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (tx.getState() == Transaction.State.SUSPENDED)
       {
-         final String msg = "Cannot suspend, transaction is already suspended "
-                  + tx.getXid();
+         final String msg = "Cannot suspend, transaction is already suspended " + tx.getXid();
 
          return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
       }
@@ -914,14 +898,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       return resourceManager.setTimeoutSeconds(timeoutSeconds);
    }
 
-   public void addDestination(final SimpleString address,
-            final boolean durable, final boolean temporary) throws Exception
+   public void addDestination(final SimpleString address, final boolean durable, final boolean temporary) throws Exception
    {
       securityStore.check(address, CheckType.CREATE, this);
 
-      if (!postOffice.addDestination(address, durable)) { throw new MessagingException(
-               MessagingException.ADDRESS_EXISTS, "Address already exists: "
-                        + address); }
+      if (!postOffice.addDestination(address, durable))
+      {
+         throw new MessagingException(MessagingException.ADDRESS_EXISTS, "Address already exists: " + address);
+      }
 
       if (temporary)
       {
@@ -931,40 +915,38 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          // session is closed.
          // It is up to the user to delete the address when finished with it
 
-        failureRunners.add(
-              new Runnable()
-              {
-                 public void run()
-                 {
-                    try
-                    {
-                       postOffice.removeDestination(address, durable);
-                    }
-                    catch (Exception e)
-                    {
-                       log.error("Failed to remove temporary address " + address);
-                    }
-                 }
-              }
-         );
+         failureRunners.add(new Runnable()
+         {
+            public void run()
+            {
+               try
+               {
+                  postOffice.removeDestination(address, durable);
+               }
+               catch (Exception e)
+               {
+                  log.error("Failed to remove temporary address " + address);
+               }
+            }
+         });
       }
    }
-   
-   public void removeDestination(final SimpleString address,
-            final boolean durable) throws Exception
+
+   public void removeDestination(final SimpleString address, final boolean durable) throws Exception
    {
       securityStore.check(address, CheckType.CREATE, this);
 
       if (!postOffice.removeDestination(address, durable))
       {
-         throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST,
-               "Address does not exist: " + address);
+         throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST, "Address does not exist: " + address);
       }
    }
 
    public void createQueue(final SimpleString address,
-            final SimpleString queueName, final SimpleString filterString,
-            final boolean durable, final boolean temporary) throws Exception
+                           final SimpleString queueName,
+                           final SimpleString filterString,
+                           final boolean durable,
+                           final boolean temporary) throws Exception
    {
       // make sure the user has privileges to create this queue
       if (!postOffice.containsDestination(address))
@@ -974,8 +956,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       Binding binding = postOffice.getBinding(queueName);
 
-      if (binding != null) { throw new MessagingException(
-               MessagingException.QUEUE_EXISTS); }
+      if (binding != null)
+      {
+         throw new MessagingException(MessagingException.QUEUE_EXISTS);
+      }
 
       Filter filter = null;
 
@@ -995,24 +979,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          // It is up to the user to delete the queue when finished with it
 
          final Queue queue = binding.getQueue();
-         
-         failureRunners.add(
-                  new Runnable()
-                  {
-                     public void run()
-                     {
-                        try
-                        {
-                           postOffice.removeBinding(queue.getName());
-                        }
-                        catch (Exception e)
-                        {
-                           log.error("Failed to remove temporary queue "
-                                    + queue.getName());
-                        }
-                     }
-                  }
-             );        
+
+         failureRunners.add(new Runnable()
+         {
+            public void run()
+            {
+               try
+               {
+                  postOffice.removeBinding(queue.getName());
+               }
+               catch (Exception e)
+               {
+                  log.error("Failed to remove temporary queue " + queue.getName());
+               }
+            }
+         });
       }
    }
 
@@ -1027,9 +1008,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       Queue queue = binding.getQueue();
 
-      if (queue.getConsumerCount() != 0) { throw new MessagingException(
-               MessagingException.ILLEGAL_STATE,
-               "Cannot delete queue - it has consumers"); }
+      if (queue.getConsumerCount() != 0)
+      {
+         throw new MessagingException(MessagingException.ILLEGAL_STATE, "Cannot delete queue - it has consumers");
+      }
 
       if (queue.isDurable())
       {
@@ -1037,10 +1019,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public SessionCreateConsumerResponseMessage createConsumer(
-            final SimpleString queueName,
-            final SimpleString filterString, int windowSize, int maxRate)
-            throws Exception
+   public SessionCreateConsumerResponseMessage createConsumer(final SimpleString queueName,
+                                                              final SimpleString filterString,
+                                                              int windowSize,
+                                                              int maxRate) throws Exception
    {
       Binding binding = postOffice.getBinding(queueName);
 
@@ -1063,18 +1045,24 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       QueueSettings qs = queueSettingsRepository.getMatch(queueName.toString());
 
-      Integer queueWindowSize = (Integer) qs.getConsumerWindowSize();
+      Integer queueWindowSize = (Integer)qs.getConsumerWindowSize();
 
       windowSize = queueWindowSize != null ? queueWindowSize : windowSize;
 
-      Integer queueMaxRate = queueSettingsRepository.getMatch(
-               queueName.toString()).getConsumerMaxRate();
+      Integer queueMaxRate = queueSettingsRepository.getMatch(queueName.toString()).getConsumerMaxRate();
 
       maxRate = queueMaxRate != null ? queueMaxRate : maxRate;
-      
-      ServerConsumer consumer = new ServerConsumerImpl(idGenerator.generateID(), this,
-               binding.getQueue(), filter, windowSize != -1, maxRate, started,
-               storageManager, queueSettingsRepository, postOffice);
+
+      ServerConsumer consumer = new ServerConsumerImpl(idGenerator.generateID(),
+                                                       this,
+                                                       binding.getQueue(),
+                                                       filter,
+                                                       windowSize != -1,
+                                                       maxRate,
+                                                       started,
+                                                       storageManager,
+                                                       queueSettingsRepository,
+                                                       postOffice);
 
       SessionCreateConsumerResponseMessage response = new SessionCreateConsumerResponseMessage(windowSize);
 
@@ -1100,12 +1088,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          Filter filter = queue.getFilter();
 
-         SimpleString filterString = filter == null ? null : filter
-                  .getFilterString();
+         SimpleString filterString = filter == null ? null : filter.getFilterString();
          // TODO: Remove MAX-SIZE-BYTES from SessionQueueQueryResponse.
-         response = new SessionQueueQueryResponseMessage(queue.isDurable(), 
-                 queue.getConsumerCount(), queue.getMessageCount(),
-                 filterString, binding.getAddress());
+         response = new SessionQueueQueryResponseMessage(queue.isDurable(),
+                                                         queue.getConsumerCount(),
+                                                         queue.getMessageCount(),
+                                                         filterString,
+                                                         binding.getAddress());
       }
       else
       {
@@ -1115,11 +1104,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       return response;
    }
 
-   public SessionBindingQueryResponseMessage executeBindingQuery(
-            final SimpleString address) throws Exception
+   public SessionBindingQueryResponseMessage executeBindingQuery(final SimpleString address) throws Exception
    {
-      if (address == null) { throw new IllegalArgumentException(
-               "Address is null"); }
+      if (address == null)
+      {
+         throw new IllegalArgumentException("Address is null");
+      }
 
       boolean exists = postOffice.containsDestination(address);
 
@@ -1138,8 +1128,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       return new SessionBindingQueryResponseMessage(exists, queueNames);
    }
 
-   public void createBrowser(final SimpleString queueName, final SimpleString filterString)
-            throws Exception
+   public void createBrowser(final SimpleString queueName, final SimpleString filterString) throws Exception
    {
       Binding binding = postOffice.getBinding(queueName);
 
@@ -1150,9 +1139,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       securityStore.check(binding.getAddress(), CheckType.READ, this);
 
-      ServerBrowserImpl browser = new ServerBrowserImpl(idGenerator.generateID(), this, binding
-               .getQueue(), filterString == null ? null : filterString
-               .toString());
+      ServerBrowserImpl browser = new ServerBrowserImpl(idGenerator.generateID(),
+                                                        this,
+                                                        binding.getQueue(),
+                                                        filterString == null ? null : filterString.toString());
 
       browsers.put(browser.getID(), browser);
    }
@@ -1166,9 +1156,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
     *                   The actual window size used may be less than the specified window size if
     *                   it is overridden by any producer-window-size specified on the queue
     */
-   public SessionCreateProducerResponseMessage createProducer(
-            final SimpleString address,
-            final int windowSize, final int maxRate) throws Exception
+   public SessionCreateProducerResponseMessage createProducer(final SimpleString address,
+                                                              final int windowSize,
+                                                              final int maxRate) throws Exception
    {
       FlowController flowController = null;
 
@@ -1176,8 +1166,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (address != null)
       {
-         flowController = windowSize == -1 ? null : postOffice
-                  .getFlowController(address);
+         flowController = windowSize == -1 ? null : postOffice.getFlowController(address);
       }
 
       final int windowToUse = flowController == null ? -1 : windowSize;
@@ -1185,20 +1174,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       // Server window size is 0.75 client window size for producer flow control
       // (other way round to consumer flow control)
 
-      final int serverWindowSize = windowToUse == -1 ? -1
-               : (int) (windowToUse * 0.75);
+      final int serverWindowSize = windowToUse == -1 ? -1 : (int)(windowToUse * 0.75);
 
-      ServerProducerImpl producer = new ServerProducerImpl(idGenerator.generateID(), this,
-               address, flowController, serverWindowSize,
-               channel);
+      ServerProducerImpl producer = new ServerProducerImpl(idGenerator.generateID(),
+                                                           this,
+                                                           address,
+                                                           flowController,
+                                                           serverWindowSize,
+                                                           channel);
 
       producers.put(producer.getID(), producer);
 
       // Get some initial credits to send to the producer - we try for
       // windowToUse
 
-      int initialCredits = flowController == null ? -1 : flowController
-               .getInitialCredits(windowToUse, producer);
+      int initialCredits = flowController == null ? -1 : flowController.getInitialCredits(windowToUse, producer);
 
       return new SessionCreateProducerResponseMessage(initialCredits, maxRateToUse);
    }
@@ -1242,47 +1232,31 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       producers.get(producerID).send(message);
    }
-   
+
    public void handleReplicateDelivery(final long consumerID, final long messageID) throws Exception
    {
       consumers.get(consumerID).deliverMessage(messageID);
-      
-      Packet response = new SessionReplicateDeliveryResponseMessage();
-      
-      channel.send(response);
    }
-      
-   public void handleDeferredDelivery()
-   {  
-      Delivery delivery = deferredDeliveries.poll();
-      
-      if (delivery == null)
-      {
-         throw new IllegalStateException("Cannot find deferred delivery to deliver");
-      }
-      
-      delivery.deliver();
-   }
-   
+
    public void transferConnection(final RemotingConnection newConnection)
-   {           
+   {
       remotingConnection.removeFailureListener(this);
-      
-      channel.transferConnection(newConnection);            
-                        
-      //Destroy the old connection
+
+      channel.transferConnection(newConnection);
+
+      // Destroy the old connection
       remotingConnection.destroy();
-      
+
       remotingConnection = newConnection;
-      
-      remotingConnection.addFailureListener(this);      
+
+      remotingConnection.addFailureListener(this);
    }
-   
+
    public int replayCommands(final int lastReceivedCommandID)
-   {    
+   {
       return channel.replayCommands(lastReceivedCommandID);
    }
-   
+
    // FailureListener implementation
    // --------------------------------------------------------------------
 
@@ -1290,7 +1264,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       try
       {
-         for (Runnable runner: failureRunners)
+         for (Runnable runner : failureRunners)
          {
             try
             {
@@ -1301,7 +1275,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                log.error("Failed to execute failure runner", t);
             }
          }
-         
+
          close();
       }
       catch (Throwable t)
@@ -1347,8 +1321,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          }
          else
          {
-            storageManager.storeAcknowledge(queue.getPersistenceID(), message
-                     .getMessageID());
+            storageManager.storeAcknowledge(queue.getPersistenceID(), message.getMessageID());
          }
       }
 

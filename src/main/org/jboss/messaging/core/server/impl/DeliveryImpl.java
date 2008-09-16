@@ -24,7 +24,7 @@ package org.jboss.messaging.core.server.impl;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.server.Delivery;
 import org.jboss.messaging.core.server.MessageReference;
 
@@ -74,8 +74,8 @@ public class DeliveryImpl implements Delivery
    
    public void deliver()
    {
-      ReceiveMessage message =
-         new ReceiveMessage(consumerID, reference.getMessage(), reference.getDeliveryCount() + 1, deliveryID);
+      SessionReceiveMessage message =
+         new SessionReceiveMessage(consumerID, reference.getMessage(), reference.getDeliveryCount() + 1, deliveryID);
       
       channel.send(message);
    }

@@ -22,7 +22,9 @@
 
 package org.jboss.messaging.tests.integration.cluster;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
@@ -40,6 +42,8 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
+import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
@@ -54,6 +58,14 @@ public class ReplicationTest extends TestCase
   
    // Attributes ----------------------------------------------------
    
+   private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
+   
+   private MessagingService liveService;
+   
+   private MessagingService backupService;
+   
+   private Map<String, Object> backupParams = new HashMap<String, Object>();
+      
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -61,98 +73,70 @@ public class ReplicationTest extends TestCase
    // Public --------------------------------------------------------
 
    public void testReplication() throws Exception
-   {             
-      final SimpleString QUEUE = new SimpleString("CoreClientTestQueue");
-      
-      Configuration backupConf = new ConfigurationImpl();      
-      backupConf.setSecurityEnabled(false);        
-      backupConf.setPacketConfirmationBatchSize(1);
-      Map<String, Object> backupParams = new HashMap<String, Object>();
-      backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-      backupConf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory", backupParams));
-      backupConf.setBackup(true);                  
-      MessagingService backupService = MessagingServiceImpl.newNullStorageMessagingServer(backupConf);              
-      backupService.start();
-            
-      Configuration liveConf = new ConfigurationImpl();      
-      liveConf.setSecurityEnabled(false);    
-      liveConf.setPacketConfirmationBatchSize(1);
-      liveConf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      liveConf.setBackupConnectorConfiguration(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory", backupParams));
-      MessagingService liveService = MessagingServiceImpl.newNullStorageMessagingServer(liveConf);              
-      liveService.start();
-            
+   {                                     
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
       ClientSession session = sf.createSession(false, true, true, -1, false);
         
-      session.createQueue(QUEUE, QUEUE, null, false, false);
-      
-      
-      ClientProducer producer = session.createProducer(QUEUE);     
+      session.createQueue(ADDRESS, ADDRESS, null, false, false);
+            
+      ClientProducer producer = session.createProducer(ADDRESS);     
       
       final int numMessages = 1000;
+      
+      log.info("starting");
       
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
-               System.currentTimeMillis(), (byte) 1);         
-         message.getBody().putString("testINVMCoreClient");
+               System.currentTimeMillis(), (byte) 1);  
+         message.putIntProperty(new SimpleString("count"), i);
+         message.getBody().putString("aardvarks");
          message.getBody().flip();  
          producer.send(message);
       }
+      
+      log.info("Sent messages");
                                 
-      ClientConsumer consumer = session.createConsumer(QUEUE);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
       
       session.start();
        
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message2 = consumer.receive();
+         
+        // log.info("Got message " + message2);
 
-         assertEquals("testINVMCoreClient", message2.getBody().getString());
+         assertEquals("aardvarks", message2.getBody().getString());
+         assertEquals(i, message2.getProperty(new SimpleString("count")));
          
          session.acknowledge();
       }
       
-      session.close();
+      log.info("done");
       
-      liveService.stop();
-      backupService.stop();
+      ClientMessage message3 = consumer.receive(500);
+      
+      assertNull(message3);
+      
+      log.info("Got all messages");
+      
+      session.close();
    }
    
       
    public void testFailoverSameConnectionFactory() throws Exception
-   {             
-      final SimpleString QUEUE = new SimpleString("CoreClientTestQueue");
-      
-      Configuration backupConf = new ConfigurationImpl();      
-      backupConf.setSecurityEnabled(false);        
-      backupConf.setPacketConfirmationBatchSize(1);
-      Map<String, Object> backupParams = new HashMap<String, Object>();
-      backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-      backupConf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory", backupParams));
-      backupConf.setBackup(true);                  
-      MessagingService backupService = MessagingServiceImpl.newNullStorageMessagingServer(backupConf);              
-      backupService.start();
-            
-      Configuration liveConf = new ConfigurationImpl();      
-      liveConf.setSecurityEnabled(false);    
-      liveConf.setPacketConfirmationBatchSize(1);
-      liveConf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      liveConf.setBackupConnectorConfiguration(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory", backupParams));
-      MessagingService liveService = MessagingServiceImpl.newNullStorageMessagingServer(liveConf);              
-      liveService.start();
-            
+   {                              
       ClientSessionFactory sf =
          new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                   new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory", backupParams));
 
       ClientSession session = sf.createSession(false, true, true, -1, false);
                   
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(ADDRESS, ADDRESS, null, false, false);
        
-      ClientProducer producer = session.createProducer(QUEUE);     
+      ClientProducer producer = session.createProducer(ADDRESS);     
       
       final int numMessages = 1000;
       
@@ -160,8 +144,82 @@ public class ReplicationTest extends TestCase
       {
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);         
-         message.putIntProperty(new SimpleString("blah"), i);
-         message.getBody().putString("testINVMCoreClient");
+         message.putIntProperty(new SimpleString("count"), i);
+         message.getBody().putString("aardvarks");
+         message.getBody().flip();  
+         producer.send(message);
+      }
+      
+      RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+      
+      //Simulate failure on connection
+      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+                      
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
+      
+      session.start();
+      
+      for (int i = 0; i < numMessages / 2; i++)
+      {
+         ClientMessage message2 = consumer.receive();
+
+         assertEquals("aardvarks", message2.getBody().getString());
+         
+         assertEquals(i, message2.getProperty(new SimpleString("count")));
+         
+         session.acknowledge();
+         
+         //log.info("got message " + message2.getProperty(new SimpleString("blah")));
+      }
+
+      session.close();
+                  
+      session = sf.createSession(false, true, true, -1, false);
+      
+      consumer = session.createConsumer(ADDRESS);
+      
+      session.start();
+      
+      for (int i = numMessages / 2 ; i < numMessages; i++)
+      {
+         ClientMessage message2 = consumer.receive();
+
+         assertEquals("aardvarks", message2.getBody().getString());
+         
+         assertEquals(i, message2.getProperty(new SimpleString("count")));
+         
+         session.acknowledge();
+         
+        //log.info("got message " + message2.getProperty(new SimpleString("blah")));
+      }
+      
+      ClientMessage message3 = consumer.receive(500);
+      
+      session.close();
+      
+      assertNull(message3);
+   }
+   
+   public void testFailoverChangeConnectionFactory() throws Exception
+   {                                     
+      ClientSessionFactory sf =
+         new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                  new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory", backupParams));
+
+      ClientSession session = sf.createSession(false, true, true, -1, false);
+                  
+      session.createQueue(ADDRESS, ADDRESS, null, false, false);
+       
+      ClientProducer producer = session.createProducer(ADDRESS);     
+      
+      final int numMessages = 1000;
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
+               System.currentTimeMillis(), (byte) 1);         
+         message.putIntProperty(new SimpleString("count"), i);
+         message.getBody().putString("aardvarks");
          message.getBody().flip();  
          producer.send(message);
      //    log.info("sent " + i);
@@ -172,15 +230,17 @@ public class ReplicationTest extends TestCase
       //Simulate failure on connection
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
                       
-      ClientConsumer consumer = session.createConsumer(QUEUE);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
       
       session.start();
-      
+            
       for (int i = 0; i < numMessages / 2; i++)
       {
          ClientMessage message2 = consumer.receive();
 
-         assertEquals("testINVMCoreClient", message2.getBody().getString());
+         assertEquals("aardvarks", message2.getBody().getString());
+         
+         assertEquals(i, message2.getProperty(new SimpleString("count")));
          
          session.acknowledge();
          
@@ -189,240 +249,158 @@ public class ReplicationTest extends TestCase
 
       session.close();
                   
+      sf =
+         new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory", backupParams));                  
+      
       log.info("** creating new one");
       
-//      sf =
-//         new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory", backupParams));
-            
       session = sf.createSession(false, true, true, -1, false);
       
-      consumer = session.createConsumer(QUEUE);
+      consumer = session.createConsumer(ADDRESS);
       
       session.start();
       
-      for (int i = 0; i < numMessages / 2; i++)
+      for (int i = numMessages / 2 ; i < numMessages; i++)      
       {
          ClientMessage message2 = consumer.receive();
 
-         assertEquals("testINVMCoreClient", message2.getBody().getString());
+         assertEquals("aardvarks", message2.getBody().getString());
+         
+         assertEquals(i, message2.getProperty(new SimpleString("count")));
          
          session.acknowledge();
          
         //log.info("got message " + message2.getProperty(new SimpleString("blah")));
       }
       
-      ClientMessage message3 = consumer.receive(1000);
+      ClientMessage message3 = consumer.receive(500);
       
       assertNull(message3);
       
-      liveService.stop();
-      backupService.stop();
-         
+      session.close();      
    }
    
-//   public void testFailoverChangeConnectionFactory() throws Exception
-//   {             
-//      final SimpleString QUEUE = new SimpleString("CoreClientTestQueue");
-//      
-//      Configuration backupConf = new ConfigurationImpl();      
-//      backupConf.setSecurityEnabled(false);        
-//      backupConf.setPacketConfirmationBatchSize(1);
-//      Map<String, Object> backupParams = new HashMap<String, Object>();
-//      backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-//      backupConf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory", backupParams));
-//      backupConf.setBackup(true);                  
-//      MessagingService backupService = MessagingServiceImpl.newNullStorageMessagingServer(backupConf);              
-//      backupService.start();
-//            
-//      Configuration liveConf = new ConfigurationImpl();      
-//      liveConf.setSecurityEnabled(false);    
-//      liveConf.setPacketConfirmationBatchSize(1);
-//      liveConf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-//      liveConf.setBackupConnectorConfiguration(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory", backupParams));
-//      MessagingService liveService = MessagingServiceImpl.newNullStorageMessagingServer(liveConf);              
-//      liveService.start();
-//            
-//      ClientSessionFactory sf =
-//         new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-//                  new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory", backupParams));
-//
-//      ClientSession session = sf.createSession(false, true, true, -1, false);
-//                  
-//      session.createQueue(QUEUE, QUEUE, null, false, false);
-//       
-//      ClientProducer producer = session.createProducer(QUEUE);     
-//      
-//      final int numMessages = 10;
-//      
-//      for (int i = 0; i < numMessages; i++)
-//      {
-//         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
-//               System.currentTimeMillis(), (byte) 1);         
-//         message.putIntProperty(new SimpleString("blah"), i);
-//         message.getBody().putString("testINVMCoreClient");
-//         message.getBody().flip();  
-//         producer.send(message);
-//      }
-//      
-//      RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
-//      
-//      //Simulate failure on connection
-//      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
-//                      
-//      ClientConsumer consumer = session.createConsumer(QUEUE);
-//      
-//      session.start();
-//      
-//      for (int i = 0; i < numMessages / 2; i++)
-//      {
-//         ClientMessage message2 = consumer.receive();
-//
-//         assertEquals("testINVMCoreClient", message2.getBody().getString());
-//         
-//         session.acknowledge();
-//         
-//         log.info("got message " + message2.getProperty(new SimpleString("blah")));
-//      }
-//
-//      session.close();
-//                  
-//      log.info("** creating new one");
-//      
-//      sf =
-//         new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory", backupParams));
-//            
-//      session = sf.createSession(false, true, true, -1, false);
-//      
-//      consumer = session.createConsumer(QUEUE);
-//      
-//      session.start();
-//      
-//      for (int i = 0; i < numMessages / 2; i++)
-//      {
-//         ClientMessage message2 = consumer.receive();
-//
-//         assertEquals("testINVMCoreClient", message2.getBody().getString());
-//         
-//         session.acknowledge();
-//         
-//         log.info("got message " + message2.getProperty(new SimpleString("blah")));
-//      }
-//      
-//      ClientMessage message3 = consumer.receive(1000);
-//      
-//      assertNull(message3);
-//      
-//      liveService.stop();
-//      backupService.stop();
-//      
-//  //    todo - do we need to failover connection factories too?????
-//               
-//               
-//   }
-//   
-//   public void testFailoverNetty() throws Exception
-//   {             
-//      final SimpleString QUEUE = new SimpleString("CoreClientTestQueue");
-//      
-//      Configuration backupConf = new ConfigurationImpl();      
-//      backupConf.setSecurityEnabled(false);        
-//      backupConf.setPacketConfirmationBatchSize(1);
-//      Map<String, Object> backupParams = new HashMap<String, Object>();
-//      backupParams.put(org.jboss.messaging.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME, 7654);
-//      backupConf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory", backupParams));
-//      backupConf.setBackup(true);                  
-//      MessagingService backupService = MessagingServiceImpl.newNullStorageMessagingServer(backupConf);              
-//      backupService.start();
-//            
-//      Configuration liveConf = new ConfigurationImpl();      
-//      liveConf.setSecurityEnabled(false);    
-//      liveConf.setPacketConfirmationBatchSize(1);
-//      liveConf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory"));
-//      liveConf.setBackupConnectorConfiguration(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory", backupParams));
-//      MessagingService liveService = MessagingServiceImpl.newNullStorageMessagingServer(liveConf);              
-//      liveService.start();
-//            
-//      ClientSessionFactory sf =
-//         new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"),
-//                  new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory", backupParams));
-//
-//      ClientSession session = sf.createSession(false, true, true, -1, false);
-//                  
-//      session.createQueue(QUEUE, QUEUE, null, false, false);
-//       
-//      ClientProducer producer = session.createProducer(QUEUE);     
-//      
-//      final int numMessages = 10;
-//      
-//      for (int i = 0; i < numMessages; i++)
-//      {
-//         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
-//               System.currentTimeMillis(), (byte) 1);         
-//         message.putIntProperty(new SimpleString("blah"), i);
-//         message.getBody().putString("testINVMCoreClient");
-//         message.getBody().flip();  
-//         producer.send(message);
-//      }
-//      
-//      RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
-//      
-//      //Simulate failure on connection
-//      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
-//                      
-//      ClientConsumer consumer = session.createConsumer(QUEUE);
-//      
-//      session.start();
-//      
-//      for (int i = 0; i < numMessages / 2; i++)
-//      {
-//         ClientMessage message2 = consumer.receive();
-//
-//         assertEquals("testINVMCoreClient", message2.getBody().getString());
-//         
-//         session.acknowledge();
-//         
-//         log.info("got message " + message2.getProperty(new SimpleString("blah")));
-//      }
-//
-//      session.close();
-//                  
-//      log.info("** creating new one");
-//      
-//      sf =
-//         new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory", backupParams));
-//            
-//      session = sf.createSession(false, true, true, -1, false);
-//      
-//      consumer = session.createConsumer(QUEUE);
-//      
-//      session.start();
-//      
-//      for (int i = 0; i < numMessages / 2; i++)
-//      {
-//         ClientMessage message2 = consumer.receive();
-//
-//         assertEquals("testINVMCoreClient", message2.getBody().getString());
-//         
-//         session.acknowledge();
-//         
-//         log.info("got message " + message2.getProperty(new SimpleString("blah")));
-//      }
-//      
-//      ClientMessage message3 = consumer.receive(1000);
-//      
-//      assertNull(message3);
-//      
-//      liveService.stop();
-//      backupService.stop();
-//      
-//  //    todo - do we need to failover connection factories too?????
-//               
-//               
-//   }
+   public void testFailoverMultipleSessions() throws Exception
+   {                                     
+      ClientSessionFactory sf =
+         new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                  new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory", backupParams));
 
+      final int numSessions = 10;
+      
+      List<ClientSession> sessions = new ArrayList<ClientSession>();
+      
+      List<ClientConsumer> consumers = new ArrayList<ClientConsumer>();
+      
+      for (int i = 0; i < numSessions; i++)
+      {
+         ClientSession sess = sf.createSession(false, true, true, -1, false);
+         
+         SimpleString queueName = new SimpleString("subscription" + i);
+         
+         sess.createQueue(ADDRESS, queueName, null, false, false);
+         
+         ClientConsumer consumer = sess.createConsumer(queueName);
+                          
+         sess.start();
+         
+         sessions.add(sess);
+         
+         consumers.add(consumer);
+      }
+      
+      log.info("Created consumers");
+            
+      ClientSession session = sf.createSession(false, true, true, -1, false);
+                  
+      ClientProducer producer = session.createProducer(ADDRESS);     
+      
+      final int numMessages = 100;
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
+               System.currentTimeMillis(), (byte) 1);         
+         message.putIntProperty(new SimpleString("count"), i);
+         message.getBody().putString("aardvarks");
+         message.getBody().flip();  
+         producer.send(message);
+     //    log.info("sent " + i);
+      }
+                  
+      RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+      
+      //Simulate failure on connection
+      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      
+      for (int i = 0; i < numSessions; i++)
+      {      
+         ClientConsumer cons = consumers.get(i);
+         
+         ClientSession sess = sessions.get(i);
+         
+         for (int j = 0; j < numMessages; j++)
+         {
+            ClientMessage message2 = cons.receive();
+   
+            assertEquals("aardvarks", message2.getBody().getString());
+            
+            //log.info("got message " + i + ":" + message2.getProperty(new SimpleString("count")));
+            
+            assertEquals(j, message2.getProperty(new SimpleString("count")));
+            
+            sess.acknowledge();
+         }
+      }
+      
+      session.close();
+      
+      for (int i = 0; i < numSessions; i++)
+      {      
+         ClientSession sess = sessions.get(i);
+         
+         sess.close();
+      }
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+   
+   protected void setUp() throws Exception
+   {
+      Configuration backupConf = new ConfigurationImpl();      
+      backupConf.setSecurityEnabled(false);        
+      backupConf.setPacketConfirmationBatchSize(1);
+      backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
+      backupConf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory", backupParams));
+      backupConf.setBackup(true);                  
+      backupService = MessagingServiceImpl.newNullStorageMessagingServer(backupConf);              
+      backupService.start();
+            
+      Configuration liveConf = new ConfigurationImpl();      
+      liveConf.setSecurityEnabled(false);    
+      liveConf.setPacketConfirmationBatchSize(1);
+      liveConf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
+      liveConf.setBackupConnectorConfiguration(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory", backupParams));
+      liveService = MessagingServiceImpl.newNullStorageMessagingServer(liveConf);              
+      liveService.start();
+   }
+   
+   protected void tearDown() throws Exception
+   {                
+      assertEquals(0, ConnectionRegistryImpl.instance.size());
+      
+      assertEquals(0, backupService.getServer().getRemotingService().getConnections().size());
+      
+      backupService.stop();
+      
+      assertEquals(0, liveService.getServer().getRemotingService().getConnections().size());
+      
+      liveService.stop();
+      
+      assertEquals(0, InVMRegistry.instance.size());
+   }
 
    // Private -------------------------------------------------------
 

@@ -48,7 +48,7 @@ public class ServerConsumerPacketHandlerTest extends UnitTestCase
 //      ServerConsumer consumer = createStrictMock(ServerConsumer.class);
 //      CommandManager cm = createStrictMock(CommandManager.class);     
 //      ServerConsumerPacketHandler handler = new ServerConsumerPacketHandler(consumer, cm);
-//      SessionFlowCreditMessage message = new SessionFlowCreditMessage(100);
+//      SessionConsumerFlowCreditMessage message = new SessionConsumerFlowCreditMessage(100);
 //      consumer.receiveCredits(100);
 //      cm.packetProcessed(message);
 //      replay(consumer, cm);

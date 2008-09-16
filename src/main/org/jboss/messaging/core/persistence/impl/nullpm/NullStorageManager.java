@@ -138,6 +138,14 @@ public class NullStorageManager implements StorageManager
 		return messageIDSequence.getAndIncrement();
 	}
 	
+	public synchronized void setMaxID(final long id)
+   {
+      if (1 + id > messageIDSequence.get())
+      {
+         messageIDSequence.set(id + 1);
+      }
+   }
+	
 	public long generateTransactionID()
 	{
 		return transactionIDSequence.getAndIncrement();

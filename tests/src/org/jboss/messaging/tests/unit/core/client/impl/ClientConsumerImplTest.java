@@ -682,7 +682,7 @@ public class ClientConsumerImplTest extends UnitTestCase
 //      
 //      final long targetID = 120912;
 //
-//      cm.sendCommandOneway(targetID, new SessionFlowCreditMessage(clientWindowSize));
+//      cm.sendCommandOneway(targetID, new SessionConsumerFlowCreditMessage(clientWindowSize));
 //      EasyMock.expectLastCall().times(2);
 //      
 //      EasyMock.replay(session, cm, executor, pd);
@@ -741,7 +741,7 @@ public class ClientConsumerImplTest extends UnitTestCase
 //      
 //      final long targetID = 120912;
 //
-//      cm.sendCommandOneway(targetID, new SessionFlowCreditMessage(505));
+//      cm.sendCommandOneway(targetID, new SessionConsumerFlowCreditMessage(505));
 //      EasyMock.expectLastCall().times(2);
 //      
 //      EasyMock.replay(session, cm, executor, pd);

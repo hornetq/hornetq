@@ -30,8 +30,8 @@ import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerFlowCreditMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 
 /**
  *
@@ -61,7 +61,7 @@ public class ClientSessionPacketHandler implements ChannelHandler
          {
             case SESS_RECEIVETOKENS:
             {
-               ProducerFlowCreditMessage message = (ProducerFlowCreditMessage) packet;
+               SessionProducerFlowCreditMessage message = (SessionProducerFlowCreditMessage) packet;
    
                clientSession.receiveProducerCredits(message.getProducerID(), message.getTokens());
                
@@ -69,7 +69,7 @@ public class ClientSessionPacketHandler implements ChannelHandler
             }
             case SESS_RECEIVE_MSG:
             {
-               ReceiveMessage message = (ReceiveMessage) packet;
+               SessionReceiveMessage message = (SessionReceiveMessage) packet;
       
                clientSession.handleReceiveMessage(message.getConsumerID(), message.getClientMessage());
                

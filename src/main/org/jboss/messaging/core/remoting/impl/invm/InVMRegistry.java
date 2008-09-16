@@ -61,4 +61,14 @@ public class InVMRegistry
    {
       return acceptors.get(id);
    }
+   
+   public void clear()
+   {
+      this.acceptors.clear();
+   }
+   
+   public int size()
+   {
+      return this.acceptors.size();
+   }
 }

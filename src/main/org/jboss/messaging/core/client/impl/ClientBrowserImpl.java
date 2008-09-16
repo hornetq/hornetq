@@ -25,8 +25,8 @@ import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.impl.wireformat.BrowseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.ReceiveMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
@@ -132,8 +132,8 @@ public class ClientBrowserImpl implements ClientBrowser
    {
       checkClosed();
       
-      BrowseMessage response =
-         (BrowseMessage)channel.sendBlocking(new SessionBrowserNextMessageMessage(id));
+      SessionBrowseMessage response =
+         (SessionBrowseMessage)channel.sendBlocking(new SessionBrowserNextMessageMessage(id));
       
       return response.getClientMessage();
    }

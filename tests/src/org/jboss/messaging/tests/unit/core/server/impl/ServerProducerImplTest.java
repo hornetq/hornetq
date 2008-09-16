@@ -87,8 +87,8 @@ public class ServerProducerImplTest extends UnitTestCase
 //      {
 //         public Object answer() throws Throwable
 //         {
-//            assertEquals(ProducerFlowCreditMessage.class, getCurrentArguments()[1].getClass());
-//            ProducerFlowCreditMessage m = (ProducerFlowCreditMessage) getCurrentArguments()[1];
+//            assertEquals(SessionProducerFlowCreditMessage.class, getCurrentArguments()[1].getClass());
+//            SessionProducerFlowCreditMessage m = (SessionProducerFlowCreditMessage) getCurrentArguments()[1];
 //            assertEquals(m.getTokens(), 12345);
 //            return null;
 //         }

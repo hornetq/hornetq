@@ -1,24 +1,24 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat
+ * Middleware LLC, and individual contributors by the @authors tag. See the
+ * copyright.txt in the distribution for a full listing of individual
+ * contributors.
+ * 
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ * 
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
+ */
 
 package org.jboss.messaging.core.server;
 
@@ -52,54 +52,54 @@ import org.jboss.messaging.core.version.Version;
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public interface MessagingServer extends MessagingComponent
-{  
+{
    void setConfiguration(Configuration configuration);
-   
-   Configuration getConfiguration(); 
-   
+
+   Configuration getConfiguration();
+
    void setRemotingService(RemotingService remotingService);
-   
+
    RemotingService getRemotingService();
-   
+
    void setStorageManager(StorageManager storageManager);
-      
+
    StorageManager getStorageManager();
 
    JBMSecurityManager getSecurityManager();
-      
+
    void setSecurityManager(JBMSecurityManager securityManager);
 
    ManagementService getManagementService();
-  
+
    void setManagementService(ManagementService managementService);
-   
+
    Version getVersion();
-   
-   ReattachSessionResponseMessage reattachSession(RemotingConnection connection,                                                  
-                                                  String name,
-                                                  int lastReceivedCommandID);
-  
-   CreateSessionResponseMessage createSession(String name, long channelID,
-                                              String username, String password,                                  
+
+   ReattachSessionResponseMessage reattachSession(RemotingConnection connection, String name, int lastReceivedCommandID) throws Exception;
+
+   CreateSessionResponseMessage createSession(String name,
+                                              long channelID,
+                                              String username,
+                                              String password,
                                               int incrementingVersion,
                                               RemotingConnection remotingConnection,
                                               boolean autoCommitSends,
                                               boolean autoCommitAcks,
                                               boolean xa) throws Exception;
-   
+
    void removeSession(String name);
-         
+
    boolean isStarted();
-   
-   MessagingServerControlMBean getServerManagement();  
-   
+
+   MessagingServerControlMBean getServerManagement();
+
    HierarchicalRepository<Set<Role>> getSecurityRepository();
-   
+
    HierarchicalRepository<QueueSettings> getQueueSettingsRepository();
-   
+
    int getConnectionCount();
-   
+
    PostOffice getPostOffice();
-   
+
    RemotingConnection getReplicatingConnection();
 }

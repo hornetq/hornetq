@@ -48,7 +48,7 @@ public class DeliveryImplTest extends UnitTestCase
 //         {
 //            long targetID = (Long)EasyMock.getCurrentArguments()[0];
 //            assertEquals(consumerID, targetID);
-//            ReceiveMessage receiveMessage = (ReceiveMessage) EasyMock.getCurrentArguments()[1];            
+//            SessionReceiveMessage receiveMessage = (SessionReceiveMessage) EasyMock.getCurrentArguments()[1];            
 //            assertEquals(receiveMessage.getDeliveryCount(), deliveryCount + 1);
 //            return null;
 //         }

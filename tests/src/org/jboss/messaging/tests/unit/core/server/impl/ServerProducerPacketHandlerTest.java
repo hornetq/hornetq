@@ -49,7 +49,7 @@ public class ServerProducerPacketHandlerTest extends UnitTestCase
 //      ServerProducer producer = createStrictMock(ServerProducer.class);
 //      ServerProducerPacketHandler handler = new ServerProducerPacketHandler(producer, cm);
 //      producer.send(serverMessage);
-//      SendMessage message = new SendMessage(serverMessage);
+//      SessionSendMessage message = new SessionSendMessage(serverMessage);
 //      cm.packetProcessed(message);      
 //      replay(producer, cm, serverMessage);
 //      handler.handle(1212, message);

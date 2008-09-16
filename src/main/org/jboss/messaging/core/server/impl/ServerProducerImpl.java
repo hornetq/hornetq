@@ -28,7 +28,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.ProducerFlowCreditMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerFlowCreditMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerProducer;
 import org.jboss.messaging.core.server.ServerSession;
@@ -126,7 +126,7 @@ public class ServerProducerImpl implements ServerProducer
 	{
 	   creditsToSend.addAndGet(-credits);
 	   
-		Packet packet = new ProducerFlowCreditMessage(id, credits);
+		Packet packet = new SessionProducerFlowCreditMessage(id, credits);
 		
 		channel.send( packet);	
 	}

@@ -189,6 +189,17 @@ public class JournalStorageManager implements StorageManager
 		return idSequence.getAndIncrement();
 	}
 	
+	//Needed for replication
+	
+	//TODO can be optimised
+	public synchronized void setMaxID(final long id)
+	{
+	   if (1 + id > idSequence.get())
+	   {
+	      idSequence.set(id + 1);
+	   }
+	}
+	
 	public long generateTransactionID()
 	{
 		return messageJournal.getTransactionID();

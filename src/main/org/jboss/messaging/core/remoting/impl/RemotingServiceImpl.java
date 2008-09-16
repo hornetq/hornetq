@@ -249,7 +249,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                                     replicatingConnection,
                                     false);
       
-      rc.setBackup(backup);
+      rc.setReplicating(backup);
             
       Channel channel1 = rc.getChannel(1, false, -1);
                   
@@ -264,10 +264,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public void connectionDestroyed(Object connectionID)
    {
-      if (connections.remove(connectionID) == null)
+      RemotingConnection conn = connections.remove(connectionID);
+      
+      if (conn == null)
       {
          throw new IllegalStateException("Cannot find connection with id " + connectionID);
-      }
+      }            
+      
+      conn.destroy();
    }
 
    public void connectionException(Object connectionID, MessagingException me)
@@ -352,12 +356,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          RemotingConnection conn = connections.get(connectionID);
          
-         if (conn == null)
+         if (conn != null)
          {
-            throw new IllegalStateException("Cannot find connection with id " + connectionID);
+            conn.bufferReceived(connectionID, buffer);
          }
-         
-         conn.bufferReceived(connectionID, buffer);
       }
    }
 

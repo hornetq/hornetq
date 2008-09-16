@@ -36,6 +36,8 @@ public interface Channel
    void send(Packet packet);
    
    Packet sendBlocking(Packet packet) throws MessagingException;
+   
+   void replicatePacket(Packet packet, Runnable action);
       
    void setHandler(ChannelHandler handler);
    

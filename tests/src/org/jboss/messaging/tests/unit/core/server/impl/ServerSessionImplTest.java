@@ -1673,7 +1673,7 @@ public class ServerSessionImplTest extends UnitTestCase
 //         expect(consumer.getClientTargetID()).andReturn(76767L);
 //         expect(ref.getMessage()).andReturn(createMock(ServerMessage.class));
 //         expect(ref.getDeliveryCount()).andReturn(0);
-//         cm.sendCommandOneway(eq(76767L), isA(ReceiveMessage.class));
+//         cm.sendCommandOneway(eq(76767L), isA(SessionReceiveMessage.class));
 //         refs.add(ref);
 //      }
 //
@@ -1824,7 +1824,7 @@ public class ServerSessionImplTest extends UnitTestCase
 //         expect(consumer.getClientTargetID()).andReturn(76767L);
 //         expect(ref.getMessage()).andReturn(createMock(ServerMessage.class));
 //         expect(ref.getDeliveryCount()).andReturn(0);
-//         cm.sendCommandOneway(eq(76767L), isA(ReceiveMessage.class));
+//         cm.sendCommandOneway(eq(76767L), isA(SessionReceiveMessage.class));
 //         refs.add(ref);
 //      }
 //
@@ -1981,7 +1981,7 @@ public class ServerSessionImplTest extends UnitTestCase
 //         expect(consumer.getClientTargetID()).andReturn(76767L);
 //         expect(ref.getMessage()).andReturn(createMock(ServerMessage.class));
 //         expect(ref.getDeliveryCount()).andReturn(0);
-//         cm.sendCommandOneway(eq(76767L), isA(ReceiveMessage.class));
+//         cm.sendCommandOneway(eq(76767L), isA(SessionReceiveMessage.class));
 //         refs.add(ref);
 //      }
 //
@@ -2127,7 +2127,7 @@ public class ServerSessionImplTest extends UnitTestCase
 //         expect(consumer.getClientTargetID()).andReturn(76767L);
 //         expect(ref.getMessage()).andReturn(createMock(ServerMessage.class));
 //         expect(ref.getDeliveryCount()).andReturn(0);
-//         cm.sendCommandOneway(eq(76767L), isA(ReceiveMessage.class));
+//         cm.sendCommandOneway(eq(76767L), isA(SessionReceiveMessage.class));
 //         refs.add(ref);
 //      }
 //

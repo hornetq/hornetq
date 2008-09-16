@@ -281,11 +281,11 @@ public class ClientProducerImplTest extends UnitTestCase
 // 
 //      if (sendBlocking)
 //      {
-//         EasyMock.expect(cm.sendCommandBlocking(targetID, new SendMessage(message))).andReturn(null);
+//         EasyMock.expect(cm.sendCommandBlocking(targetID, new SessionSendMessage(message))).andReturn(null);
 //      }
 //      else
 //      {
-//         cm.sendCommandOneway(targetID, new SendMessage(message));
+//         cm.sendCommandOneway(targetID, new SessionSendMessage(message));
 //      }
 //      
 //      final int messageSize = 123;

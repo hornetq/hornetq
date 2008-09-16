@@ -23,58 +23,65 @@
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SendMessage extends PacketImpl
+public class SessionReceiveMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(SendMessage.class);
    
+   private static final Logger log = Logger.getLogger(SessionReceiveMessage.class);
+
    // Attributes ----------------------------------------------------
 
-   private long producerID;
+   private long consumerID;
    
    private ClientMessage clientMessage;
    
    private ServerMessage serverMessage;
    
-   private boolean requiresResponse;
+   private int deliveryCount;
+   
+   private long deliveryID;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-
-   public SendMessage(final long producerID, final ClientMessage message, final boolean requiresResponse)
+   
+   public SessionReceiveMessage(final long consumerID, final ServerMessage message, final int deliveryCount, final long deliveryID)
    {
-      super(SESS_SEND);
+      super(SESS_RECEIVE_MSG);
+      
+      this.consumerID = consumerID;
 
-      this.producerID = producerID;
+      this.serverMessage = message;
       
-      this.clientMessage = message;
+      this.clientMessage = null;
       
-      this.requiresResponse = requiresResponse;
+      this.deliveryCount = deliveryCount;
+      
+      this.deliveryID = deliveryID;
    }
-      
-   public SendMessage()
+   
+   public SessionReceiveMessage()
    {
-      super(SESS_SEND);
+      super(SESS_RECEIVE_MSG);
    }
 
    // Public --------------------------------------------------------
 
-   public long getProducerID()
+   public long getConsumerID()
    {
-      return producerID;
+      return consumerID;
    }
    
    public ClientMessage getClientMessage()
@@ -86,44 +93,39 @@ public class SendMessage extends PacketImpl
    {
       return serverMessage;
    }
-   
-   public boolean isRequiresResponse()
+
+   public int getDeliveryCount()
    {
-      return requiresResponse;
+      return deliveryCount;
+   }
+   
+   public long getDeliveryID()
+   {
+      return deliveryID;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(producerID);      
-      
-      if (clientMessage != null)
-      {
-         clientMessage.encode(buffer);
-      }
-      else
-      {
-         //If we're replicating a buffer to a backup node then we encode the serverMessage not the clientMessage
-         serverMessage.encode(buffer);
-      }
-      
-      buffer.putBoolean(requiresResponse);
+      buffer.putLong(consumerID);
+      buffer.putInt(deliveryCount);
+      buffer.putLong(deliveryID);
+      serverMessage.encode(buffer);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
       //TODO can be optimised
       
-      producerID = buffer.getLong();
-                  
-      serverMessage = new ServerMessageImpl();
+      consumerID = buffer.getLong();
+      deliveryCount = buffer.getInt();
+      deliveryID = buffer.getLong();
       
-      serverMessage.decode(buffer);
+      clientMessage = new ClientMessageImpl(deliveryCount, deliveryID);
       
-      serverMessage.getBody().flip();
+      clientMessage.decode(buffer);
       
-      requiresResponse = buffer.getBoolean();
+      clientMessage.getBody().flip();
    }
-
 
    // Package protected ---------------------------------------------
 

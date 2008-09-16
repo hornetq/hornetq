@@ -64,7 +64,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionFlowCreditMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
@@ -372,7 +372,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       // We even send it if windowSize == -1, since we need to start the
       // consumer
 
-      channel.send(new SessionFlowCreditMessage(consumerID, response.getWindowSize()));
+      channel.send(new SessionConsumerFlowCreditMessage(consumerID, response.getWindowSize()));
 
       return consumer;
    }

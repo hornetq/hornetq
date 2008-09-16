@@ -42,9 +42,9 @@ public interface RemotingConnection extends BufferHandler
    
    long generateChannelID();
 
-   public void setBackup(final boolean backup);
+   public void setReplicating(final boolean backup);
    
-   boolean isBackup();
+   boolean isReplicating();
    
    void addFailureListener(FailureListener listener);
 
@@ -58,5 +58,5 @@ public interface RemotingConnection extends BufferHandler
    
    boolean isExpired(final long now);
    
-   void startPinger();
+   void startPinger();      
 }

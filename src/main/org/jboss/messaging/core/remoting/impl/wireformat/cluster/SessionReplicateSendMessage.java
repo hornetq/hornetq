@@ -20,86 +20,88 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */ 
 
-package org.jboss.messaging.core.remoting.impl.wireformat;
+package org.jboss.messaging.core.remoting.impl.wireformat.cluster;
 
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionFlowCreditMessage extends PacketImpl
+public class SessionReplicateSendMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(SessionSendMessage.class);
+   
    // Attributes ----------------------------------------------------
 
-   private long consumerID;
+   private long producerID;
    
-   private int credits;
+   private ServerMessage serverMessage;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionFlowCreditMessage(final long consumerID, final int credits)
+   public SessionReplicateSendMessage(final long producerID, final ServerMessage message)
    {
-      super(SESS_FLOWTOKEN);
+      super(SESS_REPLICATE_SEND);
 
-      this.consumerID = consumerID;
+      this.producerID = producerID;
       
-      this.credits = credits;
+      this.serverMessage = message;
    }
-   
-   public SessionFlowCreditMessage()
+      
+   public SessionReplicateSendMessage()
    {
-      super(SESS_FLOWTOKEN);
+      super(SESS_REPLICATE_SEND);
    }
 
    // Public --------------------------------------------------------
 
-   public long getConsumerID()
+   public long getProducerID()
    {
-      return consumerID;
+      return producerID;
    }
    
-   public int getCredits()
+   public ServerMessage getServerMessage()
    {
-      return credits;
+      return serverMessage;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(consumerID);
-      buffer.putInt(credits);
+      buffer.putLong(producerID);      
+      
+      serverMessage.encode(buffer);
+      
+      buffer.putLong(serverMessage.getMessageID());
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      consumerID = buffer.getLong();
-      credits = buffer.getInt();
+      //TODO can be optimised
+      
+      producerID = buffer.getLong();
+                  
+      serverMessage = new ServerMessageImpl();
+      
+      serverMessage.decode(buffer);
+      
+      serverMessage.getBody().flip();   
+      
+      serverMessage.setMessageID(buffer.getLong());
    }
 
-   @Override
-   public String toString()
-   {
-      return getParentString() + ", consumerID=" + consumerID + ", credits=" + credits + "]";
-   }
-   
-   public boolean equals(Object other)
-   {
-      if (other instanceof SessionFlowCreditMessage == false)
-      {
-         return false;
-      }
-            
-      SessionFlowCreditMessage r = (SessionFlowCreditMessage)other;
-      
-      return super.equals(other) && this.credits == r.credits
-       && this.consumerID == r.consumerID;
-   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -108,3 +110,4 @@ public class SessionFlowCreditMessage extends PacketImpl
 
    // Inner classes -------------------------------------------------
 }
+

@@ -64,7 +64,7 @@ public class ClientBrowserImplTest extends UnitTestCase
 //            
 //      final long serverTargetID = 1209102;
 //   
-//      ReceiveMessage resp = new ReceiveMessage();
+//      SessionReceiveMessage resp = new SessionReceiveMessage();
 //      
 //      EasyMock.expect(cm.sendCommandBlocking(serverTargetID, new PacketImpl(PacketImpl.SESS_BROWSER_NEXTMESSAGE))).andReturn(resp);
 //      

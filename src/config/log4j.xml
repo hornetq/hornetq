@@ -22,7 +22,7 @@
            for each test. We need to append if we want to preserve a full testsuite run log.
            Make sure the build script clears this log at the beginning of each run.
       -->
-      <param name="Append" value="true"/>
+      <param name="Append" value="false"/>
       <param name="DatePattern" value="'.'yyyy-MM-dd"/>
 
       <param name="Threshold" value="INFO"/>

@@ -22,89 +22,109 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionReplicateDeliveryMessage extends PacketImpl
+public class SessionSendMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(SessionSendMessage.class);
+   
    // Attributes ----------------------------------------------------
+
+   private long producerID;
    
-   private long messageID;
+   private ClientMessage clientMessage;
    
-   private long consumerID;
+   private ServerMessage serverMessage;
    
+   private boolean requiresResponse;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionReplicateDeliveryMessage(final long consumerID, final long messageID)
+   public SessionSendMessage(final long producerID, final ClientMessage message, final boolean requiresResponse)
    {
-      super(SESS_REPLICATE_DELIVERY);
+      super(SESS_SEND);
+
+      this.producerID = producerID;
       
-      this.messageID = messageID;
+      this.clientMessage = message;
       
-      this.consumerID = consumerID;
+      this.requiresResponse = requiresResponse;
    }
-   
-   public SessionReplicateDeliveryMessage()
+      
+   public SessionSendMessage()
    {
-      super(SESS_REPLICATE_DELIVERY);
+      super(SESS_SEND);
    }
 
    // Public --------------------------------------------------------
-   
-   public long getMessageID()
+
+   public long getProducerID()
    {
-      return messageID;
+      return producerID;
    }
    
-   public long getConsumerID()
+   public ClientMessage getClientMessage()
    {
-      return consumerID;
+      return clientMessage;
+   }
+   
+   public ServerMessage getServerMessage()
+   {
+      return serverMessage;
+   }
+   
+   public boolean isRequiresResponse()
+   {
+      return requiresResponse;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(messageID);
-      buffer.putLong(consumerID);
+      buffer.putLong(producerID);      
+      
+      if (clientMessage != null)
+      {
+         clientMessage.encode(buffer);
+      }
+      else
+      {
+         //If we're replicating a buffer to a backup node then we encode the serverMessage not the clientMessage
+         serverMessage.encode(buffer);
+      }
+      
+      buffer.putBoolean(requiresResponse);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      messageID = buffer.getLong();
-      consumerID = buffer.getLong();
-   }
-   
-   public boolean isUsesConfirmations()
-   {
-      return false;
+      //TODO can be optimised
+      
+      producerID = buffer.getLong();
+                  
+      serverMessage = new ServerMessageImpl();
+      
+      serverMessage.decode(buffer);
+      
+      serverMessage.getBody().flip();
+      
+      requiresResponse = buffer.getBoolean();
    }
 
-   @Override
-   public String toString()
-   {
-      return getParentString() + ", messageID=" + messageID + ", consumerID=" + consumerID + "]";
-   }
-   
-   public boolean equals(Object other)
-   {
-      if (other instanceof SessionReplicateDeliveryMessage == false)
-      {
-         return false;
-      }
-            
-      SessionReplicateDeliveryMessage r = (SessionReplicateDeliveryMessage)other;
-      
-      return super.equals(other) && this.messageID == r.messageID && this.consumerID == r.consumerID;
-   }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -113,4 +133,3 @@ public class SessionReplicateDeliveryMessage extends PacketImpl
 
    // Inner classes -------------------------------------------------
 }
-

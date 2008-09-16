@@ -62,12 +62,10 @@ public interface ServerSession
 	
 	void handleDelivery(MessageReference reference, ServerConsumer consumer) throws Exception;
 	
-	void deliverDeferredDelivery(long messageID);
-	
 	void promptDelivery(Queue queue);
 	
 	void send(ServerMessage msg) throws Exception;
-
+		
    void acknowledge(long deliveryID, boolean allUpTo) throws Exception;
 
    void rollback() throws Exception;
@@ -137,8 +135,6 @@ public interface ServerSession
    void browserReset(long browserID) throws Exception;
    
    void handleReplicateDelivery(long consumerID, long messageID) throws Exception;
-   
-   void handleDeferredDelivery();
    
    void transferConnection(RemotingConnection newConnection);
    

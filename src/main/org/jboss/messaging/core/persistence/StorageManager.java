@@ -48,6 +48,8 @@ public interface StorageManager extends MessagingComponent
 	
    long generateID();
    
+   void setMaxID(long id);
+   
    long generateTransactionID();
    
       

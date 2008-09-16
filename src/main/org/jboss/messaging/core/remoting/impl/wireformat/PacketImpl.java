@@ -51,6 +51,7 @@ public class PacketImpl implements Packet
       
    public static final byte PING = 10;
    public static final byte PONG = 11;
+   public static final byte REPLICATION_RESP = 12;
    
    // Miscellaneous   
    public static final byte EXCEPTION = 20;   
@@ -114,8 +115,8 @@ public class PacketImpl implements Packet
    public static final byte SESS_RECEIVE_MSG = 89;   
    public static final byte SESS_PACKETS_CONFIRMED = 90;
    public static final byte SESS_NULL_RESPONSE = 91;
-   public static final byte SESS_REPLICATE_DELIVERY = 92;
-   public static final byte SESS_REPLICATE_DELIVERY_RESP = 93;
+   public static final byte SESS_REPLICATE_DELIVERY = 92;   
+   public static final byte SESS_REPLICATE_SEND = 93;
    
    // Static --------------------------------------------------------
 

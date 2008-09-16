@@ -62,8 +62,29 @@ public class MessagingServerPacketHandler implements ChannelHandler
       
       this.connection = connection;
    }
+   
 
    public void handlePacket(final Packet packet)
+   {   
+      if (channel1.getReplicatingChannel() != null)
+      {
+         Runnable action = new Runnable()
+         {
+            public void run()
+            {
+               doHandlePacket(packet);
+            }
+         };
+         
+         channel1.replicatePacket(packet, action);
+      }
+      else
+      {
+         doHandlePacket(packet);
+      }
+   }
+   
+   private void doHandlePacket(final Packet packet)
    {      
       Packet response = null;
 
@@ -72,7 +93,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
       try
       {
          if (type == CREATESESSION)
-         {
+         {                        
             CreateSessionMessage request = (CreateSessionMessage) packet;
                                     
             response =

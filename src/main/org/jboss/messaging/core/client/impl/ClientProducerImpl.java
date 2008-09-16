@@ -29,7 +29,7 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.impl.wireformat.SendMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiter;
@@ -250,7 +250,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
       
-      SendMessage message = new SendMessage(id, msg, sendBlocking);
+      SessionSendMessage message = new SessionSendMessage(id, msg, sendBlocking);
                
       if (sendBlocking)
       {        

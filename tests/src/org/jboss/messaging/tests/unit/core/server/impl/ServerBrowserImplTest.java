@@ -278,7 +278,7 @@ public class ServerBrowserImplTest extends UnitTestCase
 //         {
 //            long targetID = (Long)EasyMock.getCurrentArguments()[0];
 //            assertEquals(1, targetID);
-//            ReceiveMessage resp = (ReceiveMessage) EasyMock.getCurrentArguments()[1];
+//            SessionReceiveMessage resp = (SessionReceiveMessage) EasyMock.getCurrentArguments()[1];
 //            assertEquals(resp.getServerMessage(), refs.get(0).getMessage());
 //            return null;
 //         }
@@ -314,7 +314,7 @@ public class ServerBrowserImplTest extends UnitTestCase
 //         {
 //            long targetID = (Long)EasyMock.getCurrentArguments()[0];
 //            assertEquals(1, targetID);
-//            ReceiveMessage resp = (ReceiveMessage) EasyMock.getCurrentArguments()[1];
+//            SessionReceiveMessage resp = (SessionReceiveMessage) EasyMock.getCurrentArguments()[1];
 //            assertEquals(resp.getServerMessage(), refs.get(0).getMessage());
 //            return null;
 //         }
@@ -329,7 +329,7 @@ public class ServerBrowserImplTest extends UnitTestCase
 //         {
 //            long targetID = (Long)EasyMock.getCurrentArguments()[0];
 //            assertEquals(1, targetID);
-//            ReceiveMessage resp = (ReceiveMessage) EasyMock.getCurrentArguments()[1];
+//            SessionReceiveMessage resp = (SessionReceiveMessage) EasyMock.getCurrentArguments()[1];
 //            assertEquals(resp.getServerMessage(), refs.get(0).getMessage());
 //            return null;
 //         }

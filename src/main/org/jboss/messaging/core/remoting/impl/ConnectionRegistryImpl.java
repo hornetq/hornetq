@@ -195,6 +195,19 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
          return 0;
       }
    }
+   
+   public void clear()
+   {
+      connections.clear();
+   }
+   
+   public void dump()
+   {
+      for (ConnectionHolder holder: connections.values())
+      {
+         log.info("connection " + System.identityHashCode(holder.connection) + " count " + holder.count);
+      }
+   }
 
    // Constructors --------------------------------------------------
 

@@ -22,79 +22,86 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.impl.ClientMessageImpl;
-import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.core.server.ServerMessage;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * @version <tt>$Revision$</tt>
+ * A SessionProducerFlowCreditMessage
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ *
  */
-public class BrowseMessage extends PacketImpl
+public class SessionProducerFlowCreditMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(ReceiveMessage.class);
 
    // Attributes ----------------------------------------------------
 
-   private ClientMessage clientMessage;
+   private long producerID;
    
-   private ServerMessage serverMessage;
-
+   private int credits;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   
-   public BrowseMessage(final ServerMessage message)
+
+   public SessionProducerFlowCreditMessage(final long producerID, final int credits)
    {
-      super(SESS_BROWSER_MESSAGE);
+      super(SESS_RECEIVETOKENS);
+
+      this.producerID = producerID;
       
-      this.serverMessage = message;
-      
-      this.clientMessage = null;
+      this.credits = credits;
    }
    
-   public BrowseMessage()
+   public SessionProducerFlowCreditMessage()
    {
-      super(SESS_BROWSER_MESSAGE);
+      super(SESS_RECEIVETOKENS);
    }
 
    // Public --------------------------------------------------------
 
-   public boolean isResponse()
+   public long getProducerID()
    {
-      return true;
+      return producerID;
    }
    
-   public ClientMessage getClientMessage()
+   public int getTokens()
    {
-      return clientMessage;
+      return credits;
    }
    
-   public ServerMessage getServerMessage()
-   {
-      return serverMessage;
-   }
-
    public void encodeBody(final MessagingBuffer buffer)
    {
-      serverMessage.encode(buffer);
+      buffer.putLong(producerID);
+      buffer.putInt(credits);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      //TODO can be optimised
+      producerID = buffer.getLong();
+      credits = buffer.getInt();
+   }
+
+   @Override
+   public String toString()
+   {
+      StringBuffer buf = new StringBuffer(getParentString());
+      buf.append(", producerID=" + producerID + ", credits=" + credits);
+      buf.append("]");
+      return buf.toString();
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionProducerFlowCreditMessage == false)
+      {
+         return false;
+      }
+            
+      SessionProducerFlowCreditMessage r = (SessionProducerFlowCreditMessage)other;
       
-      clientMessage = new ClientMessageImpl();
-      
-      clientMessage.decode(buffer);
-      
-      clientMessage.getBody().flip();
+      return super.equals(other) && this.credits == r.credits && this.producerID == r.producerID;
    }
 
    // Package protected ---------------------------------------------

@@ -44,4 +44,8 @@ public interface ConnectionRegistry
    int size();
    
    int getCount(ConnectorFactory connectorFactory, Map<String, Object> params);
+   
+   void clear();
+   
+   void dump();
 }

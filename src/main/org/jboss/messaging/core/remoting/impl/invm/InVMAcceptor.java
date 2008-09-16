@@ -150,15 +150,13 @@ public class InVMAcceptor implements Acceptor
 
       public void connectionDestroyed(final Object connectionID)
       {
-         if (connections.remove(connectionID) == null)
-         {
-            throw new IllegalArgumentException("Cannot find connection with id " + connectionID + " to remove");
+         if (connections.remove(connectionID) != null)
+         {                    
+            //Remove on the other side too
+            connector.disconnect((String)connectionID);
+            
+            listener.connectionDestroyed(connectionID);
          }
-         
-         //Remove on the other side too
-         connector.disconnect((String)connectionID);
-         
-         listener.connectionDestroyed(connectionID);
       }
 
       public void connectionException(final Object connectionID, final MessagingException me)

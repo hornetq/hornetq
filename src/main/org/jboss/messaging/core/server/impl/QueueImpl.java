@@ -1,24 +1,24 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat
+ * Middleware LLC, and individual contributors by the @authors tag. See the
+ * copyright.txt in the distribution for a full listing of individual
+ * contributors.
+ * 
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ * 
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
+ */
 
 package org.jboss.messaging.core.server.impl;
 
@@ -74,9 +74,9 @@ public class QueueImpl implements Queue
    private static final Logger log = Logger.getLogger(QueueImpl.class);
 
    private static final boolean trace = log.isTraceEnabled();
-   
+
    public static final int NUM_PRIORITIES = 10;
-   
+
    private volatile long persistenceID = -1;
 
    private final SimpleString name;
@@ -88,11 +88,10 @@ public class QueueImpl implements Queue
    private final boolean durable;
 
    private final ScheduledExecutorService scheduledExecutor;
-   
+
    private final PostOffice postOffice;
 
-   private final PriorityLinkedList<MessageReference> messageReferences =
-      new PriorityLinkedListImpl<MessageReference>(NUM_PRIORITIES);
+   private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(NUM_PRIORITIES);
 
    private final List<Consumer> consumers = new ArrayList<Consumer>();
 
@@ -105,7 +104,7 @@ public class QueueImpl implements Queue
    private boolean promptDelivery;
 
    private int pos;
-   
+
    private AtomicInteger sizeBytes = new AtomicInteger(0);
 
    private AtomicInteger messagesAdded = new AtomicInteger(0);
@@ -113,19 +112,22 @@ public class QueueImpl implements Queue
    private AtomicInteger deliveringCount = new AtomicInteger(0);
 
    private volatile FlowController flowController;
-   
-   private AtomicBoolean waitingToDeliver = new AtomicBoolean(false);  
-   
+
+   private AtomicBoolean waitingToDeliver = new AtomicBoolean(false);
+
    private final Runnable deliverRunner = new DeliverRunner();
-   
+
    private final Lock lock = new ReentrantLock(false);
-   
+
    private volatile boolean backup;
-         
-   public QueueImpl(final long persistenceID, final SimpleString name,
-         final Filter filter, final boolean clustered, final boolean durable,
-         final ScheduledExecutorService scheduledExecutor,
-         final PostOffice postOffice)
+
+   public QueueImpl(final long persistenceID,
+                    final SimpleString name,
+                    final Filter filter,
+                    final boolean clustered,
+                    final boolean durable,
+                    final ScheduledExecutorService scheduledExecutor,
+                    final PostOffice postOffice)
    {
       this.persistenceID = persistenceID;
 
@@ -138,7 +140,7 @@ public class QueueImpl implements Queue
       this.durable = durable;
 
       this.scheduledExecutor = scheduledExecutor;
-      
+
       this.postOffice = postOffice;
 
       direct = true;
@@ -146,7 +148,6 @@ public class QueueImpl implements Queue
 
    // Queue implementation
    // -------------------------------------------------------------------
-
 
    public boolean isClustered()
    {
@@ -162,12 +163,12 @@ public class QueueImpl implements Queue
    {
       return name;
    }
-   
+
    public HandleStatus addLast(final MessageReference ref)
-   {     
+   {
       lock.lock();
       try
-      {         
+      {
          return add(ref, false);
       }
       finally
@@ -186,7 +187,7 @@ public class QueueImpl implements Queue
       }
       finally
       {
-         lock.unlock();       
+         lock.unlock();
       }
    }
 
@@ -203,40 +204,43 @@ public class QueueImpl implements Queue
 
       deliver();
    }
- 
+
    public void deliverAsync(final Executor executor)
    {
-      //Prevent too many executors running at once
-                  
+      // Prevent too many executors running at once
+
       if (waitingToDeliver.compareAndSet(false, true))
       {
          executor.execute(deliverRunner);
       }
    }
-      
+
    /*
     * Attempt to deliver all the messages in the queue
     */
    public void deliver()
    {
-      //We don't do actual delivery if the queue is on a backup node - this is because it's async and could get out of step
-      //with the live node. Instead, when we replicate the delivery we remove the ref from the queue
-       
+      // We don't do actual delivery if the queue is on a backup node - this is
+      // because it's async and could get out of step
+      // with the live node. Instead, when we replicate the delivery we remove
+      // the ref from the queue
+
       if (backup)
       {
          return;
       }
-      
-      //TODO - we need to lock during delivery since otherwise delivery could occur while we're rolling back a transaction
-      //which would mean messages got delivered in the wrong order
-      //We need to revise this for better concurrency
+
+      // TODO - we need to lock during delivery since otherwise delivery could
+      // occur while we're rolling back a transaction
+      // which would mean messages got delivered in the wrong order
+      // We need to revise this for better concurrency
       lock.lock();
       try
-      {  
+      {
          MessageReference reference;
-   
+
          Iterator<MessageReference> iterator = null;
-   
+
          while (true)
          {
             if (iterator == null)
@@ -254,26 +258,26 @@ public class QueueImpl implements Queue
                   reference = null;
                }
             }
-   
+
             if (reference == null)
             {
                if (iterator == null)
                {
                   // We delivered all the messages - go into direct delivery
                   direct = true;
-                  
+
                   promptDelivery = false;
                }
                return;
             }
-   
+
             HandleStatus status = deliver(reference);
-   
+
             if (status == HandleStatus.HANDLED)
             {
                if (iterator == null)
                {
-                  messageReferences.removeFirst();              
+                  messageReferences.removeFirst();
                }
                else
                {
@@ -287,7 +291,8 @@ public class QueueImpl implements Queue
             }
             else if (status == HandleStatus.NO_MATCH && iterator == null)
             {
-               // Consumers not all busy - but filter not accepting - iterate back
+               // Consumers not all busy - but filter not accepting - iterate
+               // back
                // through the queue
                iterator = messageReferences.iterator();
             }
@@ -307,12 +312,12 @@ public class QueueImpl implements Queue
    public synchronized boolean removeConsumer(final Consumer consumer) throws Exception
    {
       boolean removed = consumers.remove(consumer);
-      
+
       if (pos == consumers.size())
       {
          pos = 0;
       }
-      
+
       if (consumers.isEmpty())
       {
          promptDelivery = false;
@@ -404,7 +409,7 @@ public class QueueImpl implements Queue
    }
 
    public synchronized int getMessageCount()
-   {    
+   {
       return messageReferences.size() + getScheduledCount() + getDeliveringCount();
    }
 
@@ -421,13 +426,13 @@ public class QueueImpl implements Queue
    public void referenceAcknowledged(MessageReference ref) throws Exception
    {
       deliveringCount.decrementAndGet();
-      
+
       sizeBytes.addAndGet(-ref.getMessage().getEncodeSize());
 
-//      if (flowController != null)
-//      {
-//         flowController.messageAcknowledged();
-//      }
+      // if (flowController != null)
+      // {
+      // flowController.messageAcknowledged();
+      // }
    }
 
    public void referenceCancelled()
@@ -498,11 +503,11 @@ public class QueueImpl implements Queue
 
       tx.commit();
    }
-   
+
    public synchronized boolean deleteReference(final long messageID, final StorageManager storageManager) throws Exception
    {
       boolean deleted = false;
-      
+
       Transaction tx = new TransactionImpl(storageManager, postOffice);
 
       Iterator<MessageReference> iter = messageReferences.iterator();
@@ -511,7 +516,7 @@ public class QueueImpl implements Queue
       {
          MessageReference ref = iter.next();
          if (ref.getMessage().getMessageID() == messageID)
-         {        
+         {
             deliveringCount.incrementAndGet();
             tx.addAcknowledgement(ref);
             iter.remove();
@@ -521,14 +526,14 @@ public class QueueImpl implements Queue
       }
 
       tx.commit();
-      
+
       return deleted;
    }
-   
+
    public boolean expireMessage(final long messageID,
-         final StorageManager storageManager, final PostOffice postOffice,
-         final HierarchicalRepository<QueueSettings> queueSettingsRepository)
-         throws Exception
+                                final StorageManager storageManager,
+                                final PostOffice postOffice,
+                                final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -547,9 +552,9 @@ public class QueueImpl implements Queue
    }
 
    public boolean sendMessageToDLQ(final long messageID,
-         final StorageManager storageManager, final PostOffice postOffice,
-         final HierarchicalRepository<QueueSettings> queueSettingsRepository)
-         throws Exception
+                                   final StorageManager storageManager,
+                                   final PostOffice postOffice,
+                                   final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -568,8 +573,9 @@ public class QueueImpl implements Queue
    }
 
    public boolean moveMessage(final long messageID,
-         final Binding toBinding, final StorageManager storageManager,
-         final PostOffice postOffice) throws Exception
+                              final Binding toBinding,
+                              final StorageManager storageManager,
+                              final PostOffice postOffice) throws Exception
    {
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -586,11 +592,12 @@ public class QueueImpl implements Queue
       }
       return false;
    }
-   
-   public boolean changeMessagePriority(final long messageID, final byte newPriority,
-         final StorageManager storageManager, final PostOffice postOffice,
-         final HierarchicalRepository<QueueSettings> queueSettingsRepository)
-         throws Exception
+
+   public boolean changeMessagePriority(final long messageID,
+                                        final byte newPriority,
+                                        final StorageManager storageManager,
+                                        final PostOffice postOffice,
+                                        final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       List<MessageReference> refs = list(null);
       for (MessageReference ref : refs)
@@ -608,42 +615,42 @@ public class QueueImpl implements Queue
       }
       return false;
    }
-   
+
    public void lock()
    {
       lock.lock();
    }
-   
+
    public void unlock()
-   {            
-      lock.unlock();     
+   {
+      lock.unlock();
    }
 
    public boolean isBackup()
    {
       return backup;
    }
-   
+
    public void setBackup(final boolean backup)
    {
       this.backup = backup;
       
+      this.direct = false;
+
       if (!backup)
       {
-         for (ScheduledDeliveryRunnable runnable: scheduledRunnables)
+         for (ScheduledDeliveryRunnable runnable : scheduledRunnables)
          {
             scheduleDelivery(runnable, runnable.getReference().getScheduledDeliveryTime());
          }
       }
-      
-      //TODO - what about waiting for the deliverAsync executor to finish?
    }
-   
+
    public MessageReference removeFirst()
    {
       return messageReferences.removeFirst();
    }
-   
+
    // Public
    // -----------------------------------------------------------------------------
 
@@ -654,7 +661,7 @@ public class QueueImpl implements Queue
          return true;
       }
 
-      QueueImpl qother = (QueueImpl) other;
+      QueueImpl qother = (QueueImpl)other;
 
       return name.equals(qother.name);
    }
@@ -672,13 +679,13 @@ public class QueueImpl implements Queue
       if (!first)
       {
          messagesAdded.incrementAndGet();
-         
+
          sizeBytes.addAndGet(ref.getMessage().getEncodeSize());
       }
-      
+
       if (checkAndSchedule(ref))
       {
-         return HandleStatus.HANDLED;         
+         return HandleStatus.HANDLED;
       }
 
       boolean add = false;
@@ -733,7 +740,7 @@ public class QueueImpl implements Queue
             // message
             deliver();
          }
-      }     
+      }
 
       return HandleStatus.HANDLED;
    }
@@ -741,32 +748,32 @@ public class QueueImpl implements Queue
    private boolean checkAndSchedule(final MessageReference ref)
    {
       long deliveryTime = ref.getScheduledDeliveryTime();
-      
+
       if (deliveryTime != 0 && scheduledExecutor != null)
-      {                     
+      {
          if (trace)
          {
-            log.trace("Scheduling delivery for " + ref + " to occur at "  + deliveryTime);
+            log.trace("Scheduling delivery for " + ref + " to occur at " + deliveryTime);
          }
-         
+
          ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(ref);
 
          scheduledRunnables.add(runnable);
-         
+
          if (!backup)
-         {            
+         {
             scheduleDelivery(runnable, deliveryTime);
          }
 
-         return true;         
+         return true;
       }
-      return false;      
+      return false;
    }
-   
+
    private void scheduleDelivery(final ScheduledDeliveryRunnable runnable, final long deliveryTime)
    {
       long now = System.currentTimeMillis();
-      
+
       long delay = deliveryTime - now;
 
       Future<?> future = scheduledExecutor.schedule(runnable, delay, TimeUnit.MILLISECONDS);
@@ -788,7 +795,7 @@ public class QueueImpl implements Queue
       while (true)
       {
          Consumer consumer = consumers.get(pos);
-         
+
          pos = distributionPolicy.select(consumers, pos);
 
          HandleStatus status;
@@ -799,8 +806,10 @@ public class QueueImpl implements Queue
          }
          catch (Throwable t)
          {
-            log.warn("removing consumer which did not handle a message, " +
-                  "consumer=" + consumer + ", message=" + reference, t);
+            log.warn("removing consumer which did not handle a message, " + "consumer=" +
+                     consumer +
+                     ", message=" +
+                     reference, t);
 
             // If the consumer throws an exception we remove the consumer
             try
@@ -856,13 +865,13 @@ public class QueueImpl implements Queue
    {
       public void run()
       {
-         //Must be set to false *before* executing to avoid race
+         // Must be set to false *before* executing to avoid race
          waitingToDeliver.set(false);
-         
+
          deliver();
       }
-   }   
-   
+   }
+
    private class ScheduledDeliveryRunnable implements Runnable
    {
       private final MessageReference ref;
@@ -930,8 +939,9 @@ public class QueueImpl implements Queue
          {
             // Add back to the front of the queue
 
-            //TODO - need to replicate this so backup node also adds back to front of queue
-            
+            // TODO - need to replicate this so backup node also adds back to
+            // front of queue
+
             addFirst(ref);
          }
       }

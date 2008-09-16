@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -120,7 +119,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    private volatile boolean failedOver;
 
    private final Set<ClientSessionInternal> sessions = new ConcurrentHashSet<ClientSessionInternal>();
-   
+
+   private volatile boolean sessionsCreated;
+
    // Static
    // ---------------------------------------------------------------------------------------
 
@@ -308,6 +309,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
    public void setConnectorFactory(final ConnectorFactory connectorFactory)
    {
+      if (sessionsCreated)
+      {
+         throw new IllegalStateException("Cannot set connector factory after connections have been created");
+      }
+
       this.connectorFactory = connectorFactory;
    }
 
@@ -318,6 +324,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
    public void setTransportParams(final Map<String, Object> transportParams)
    {
+      if (sessionsCreated)
+      {
+         throw new IllegalStateException("Cannot set transport params after connections have been created");
+      }
+
       this.transportParams = transportParams;
    }
 
@@ -326,8 +337,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       return backupConnectorFactory;
    }
 
-   public void setBqackupConnectorFactory(final ConnectorFactory connectorFactory)
+   public void setBackupConnectorFactory(final ConnectorFactory connectorFactory)
    {
+      if (sessionsCreated)
+      {
+         throw new IllegalStateException("Cannot set backup connector factory after connections have been created");
+      }
+
       this.backupConnectorFactory = connectorFactory;
    }
 
@@ -338,6 +354,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
    public void setBackupTransportParams(final Map<String, Object> transportParams)
    {
+      if (sessionsCreated)
+      {
+         throw new IllegalStateException("Cannot set backup transport params after connections have been created");
+      }
+
       this.backupTransportParams = transportParams;
    }
 
@@ -393,37 +414,34 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
    private void handleFailover(final MessagingException me)
    {
-      log.info(this + " Connection failure has been detected, initiating failover");
+      log.info("Connection failure has been detected, initiating failover");
 
       if (backupConnectorFactory == null)
       {
          throw new IllegalStateException("Cannot fail-over if backup connector factory is null");
       }
 
-      RemotingConnection liveConnection = connectionRegistry.getConnection(connectorFactory,
-                                                                           transportParams,
-                                                                           pingPeriod,
-                                                                           callTimeout);
-      
+      for (ClientSessionInternal session : sessions)
+      {
+         // Need to get it once for each session to ensure ref count in
+         // holder is
+         // incremented properly
+         RemotingConnection backupConnection = connectionRegistry.getConnection(backupConnectorFactory,
+                                                                                backupTransportParams,
+                                                                                pingPeriod,
+                                                                                callTimeout);
+         session.handleFailover(backupConnection);
+      }
+
       this.connectorFactory = backupConnectorFactory;
       this.transportParams = backupTransportParams;
 
       this.backupConnectorFactory = null;
       this.backupTransportParams = null;
 
-      RemotingConnection backupConnection = connectionRegistry.getConnection(connectorFactory,
-                                                                             transportParams,
-                                                                             pingPeriod,
-                                                                             callTimeout);
-      
-      //log.info("*** Backup connection is " + System.identityHashCode(liveConnection));
+      failedOver = true;
 
-      for (ClientSessionInternal session : sessions)
-      {
-         session.handleFailover(backupConnection);
-      }
-
-      liveConnection.destroy();
+      log.info("Failover complete");
    }
 
    private ConnectorFactory instantiateConnectorFactory(final String connectorFactoryClassName)
@@ -451,22 +469,19 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    {
       Version clientVersion = VersionLoader.load();
 
-      RemotingConnection remotingConnection = null;
+      RemotingConnection connection = null;
       try
       {
-         remotingConnection = connectionRegistry.getConnection(connectorFactory,
-                                                               transportParams,
-                                                               pingPeriod,
-                                                               callTimeout);
-         
+         connection = connectionRegistry.getConnection(connectorFactory, transportParams, pingPeriod, callTimeout);
+
          if (backupConnectorFactory != null)
          {
-            remotingConnection.addFailureListener(this);
+            connection.addFailureListener(this);
          }
 
          String name = UUIDGenerator.getInstance().generateSimpleStringUUID().toString();
 
-         long sessionChannelID = remotingConnection.generateChannelID();
+         long sessionChannelID = connection.generateChannelID();
 
          Packet request = new CreateSessionMessage(name,
                                                    sessionChannelID,
@@ -477,7 +492,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                    autoCommitSends,
                                                    autoCommitAcks);
 
-         Channel channel1 = remotingConnection.getChannel(1, false, -1);
+         Channel channel1 = connection.getChannel(1, false, -1);
 
          Packet packet = channel1.sendBlocking(request);
 
@@ -490,9 +505,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
          CreateSessionResponseMessage response = (CreateSessionResponseMessage) packet;
 
-         Channel sessionChannel = remotingConnection.getChannel(sessionChannelID,
-                                                                false,
-                                                                response.getPacketConfirmationBatchSize());
+         Channel sessionChannel = connection.getChannel(sessionChannelID,
+                                                        false,
+                                                        response.getPacketConfirmationBatchSize());
 
          ClientSessionInternal session = new ClientSessionImpl(this,
                                                                name,
@@ -502,7 +517,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                                autoCommitSends,
                                                                autoCommitAcks,
                                                                blockOnAcknowledge,
-                                                               remotingConnection,
+                                                               connection,
                                                                this,
                                                                response.getServerVersion(),
                                                                sessionChannel);
@@ -513,16 +528,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
          sessionChannel.setHandler(handler);
 
-         return session;
+         sessionsCreated = true;
 
+         return session;
       }
       catch (Throwable t)
       {
-         if (remotingConnection != null)
+         if (connection != null)
          {
             try
             {
-               connectionRegistry.returnConnection(remotingConnection.getID());
+               connectionRegistry.returnConnection(connection.getID());
             }
             catch (Throwable ignore)
             {

@@ -20,90 +20,92 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */ 
 
-package org.jboss.messaging.core.remoting.impl.wireformat;
+package org.jboss.messaging.core.remoting.impl.wireformat.cluster;
 
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
+
 /**
- * 
- * A ProducerFlowCreditMessage
- * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
+ * 
+ * @version <tt>$Revision$</tt>
  */
-public class ProducerFlowCreditMessage extends PacketImpl
+public class SessionReplicateDeliveryMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   private long producerID;
    
-   private int credits;
-
+   private long messageID;
+   
+   private long consumerID;
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ProducerFlowCreditMessage(final long producerID, final int credits)
+   public SessionReplicateDeliveryMessage(final long consumerID, final long messageID)
    {
-      super(SESS_RECEIVETOKENS);
-
-      this.producerID = producerID;
+      super(SESS_REPLICATE_DELIVERY);
       
-      this.credits = credits;
+      this.messageID = messageID;
+      
+      this.consumerID = consumerID;
    }
    
-   public ProducerFlowCreditMessage()
+   public SessionReplicateDeliveryMessage()
    {
-      super(SESS_RECEIVETOKENS);
+      super(SESS_REPLICATE_DELIVERY);
    }
 
    // Public --------------------------------------------------------
-
-   public long getProducerID()
+   
+   public long getMessageID()
    {
-      return producerID;
+      return messageID;
    }
    
-   public int getTokens()
+   public long getConsumerID()
    {
-      return credits;
+      return consumerID;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(producerID);
-      buffer.putInt(credits);
+      buffer.putLong(messageID);
+      buffer.putLong(consumerID);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      producerID = buffer.getLong();
-      credits = buffer.getInt();
+      messageID = buffer.getLong();
+      consumerID = buffer.getLong();
+   }
+   
+   public boolean isUsesConfirmations()
+   {
+      return false;
    }
 
    @Override
    public String toString()
    {
-      StringBuffer buf = new StringBuffer(getParentString());
-      buf.append(", producerID=" + producerID + ", credits=" + credits);
-      buf.append("]");
-      return buf.toString();
+      return getParentString() + ", messageID=" + messageID + ", consumerID=" + consumerID + "]";
    }
    
    public boolean equals(Object other)
    {
-      if (other instanceof ProducerFlowCreditMessage == false)
+      if (other instanceof SessionReplicateDeliveryMessage == false)
       {
          return false;
       }
             
-      ProducerFlowCreditMessage r = (ProducerFlowCreditMessage)other;
+      SessionReplicateDeliveryMessage r = (SessionReplicateDeliveryMessage)other;
       
-      return super.equals(other) && this.credits == r.credits && this.producerID == r.producerID;
+      return super.equals(other) && this.messageID == r.messageID && this.consumerID == r.consumerID;
    }
-
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -112,3 +114,4 @@ public class ProducerFlowCreditMessage extends PacketImpl
 
    // Inner classes -------------------------------------------------
 }
+
