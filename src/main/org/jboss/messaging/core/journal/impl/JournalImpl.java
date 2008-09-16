@@ -548,15 +548,23 @@ public class JournalImpl implements TestableJournal
 
       lock.acquire();
 
+      TransactionCallback callback = getTransactionCallback(txID);
+      
       try
       {
-         JournalFile usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));
+         JournalFile usedFile = appendRecord(bb, syncTransactional, callback);
 
          tx.prepare(usedFile);
       }
       finally
       {
          lock.release();
+      }
+      
+      // We should wait this outside of the lock, to increase throuput
+      if (callback != null)
+      {
+         callback.waitCompletion();
       }
    }
 
@@ -595,9 +603,11 @@ public class JournalImpl implements TestableJournal
 
       lock.acquire();
 
+      TransactionCallback callback = getTransactionCallback(txID);
+      
       try
       {
-         JournalFile usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));
+         JournalFile usedFile = appendRecord(bb, syncTransactional, callback);
 
          transactionCallbacks.remove(txID);
 
@@ -607,6 +617,13 @@ public class JournalImpl implements TestableJournal
       {
          lock.release();
       }
+      
+      // We should wait this outside of the lock, to increase throuput
+      if (callback != null)
+      {
+         callback.waitCompletion();
+      }
+      
    }
 
    public void appendRollbackRecord(final long txID) throws Exception
@@ -634,9 +651,12 @@ public class JournalImpl implements TestableJournal
 
       lock.acquire();
 
+      TransactionCallback callback = getTransactionCallback(txID);
+      
+
       try
       {
-         JournalFile usedFile = appendRecord(bb, syncTransactional, getTransactionCallback(txID));
+         JournalFile usedFile = appendRecord(bb, syncTransactional, callback);
 
          transactionCallbacks.remove(txID);
 
@@ -646,6 +666,14 @@ public class JournalImpl implements TestableJournal
       {
          lock.release();
       }
+      
+      // We should wait this outside of the lock, to increase throuput
+      if (callback != null)
+      {
+         callback.waitCompletion();
+      }
+      
+      
    }
 
    /**
@@ -701,7 +729,7 @@ public class JournalImpl implements TestableJournal
     *   <tr><td>FileID</td><td>Integer (4 bytes)</td></tr>
     *   <tr><td>TransactionID <i>(if record is transactional)</i></td><td>Long (8 bytes)</td></tr>
     *   <tr><td>RecordID</td><td>Long (8 bytes)</td></tr>
-    *   <tr><td>BodySize(only on Add and update)</td><td>Integer (4 bytes)</td></tr>
+    *   <tr><td>BodySize(Add, update and delete)</td><td>Integer (4 bytes)</td></tr>
     *   <tr><td>UserDefinedRecordType (If add/update only)</td><td>Byte (1)</td</tr>
     *   <tr><td>RecordBody</td><td>Byte Array (size=BodySize)</td></tr>
     *   <tr><td>Check Size</td><td>Integer (4 bytes)</td></tr>
@@ -1877,11 +1905,6 @@ public class JournalImpl implements TestableJournal
       if (callback != null)
       {
          currentFile.getFile().write(bb, callback);
-
-         if (sync)
-         {
-            callback.waitCompletion();
-         }
       }
       else
       {
