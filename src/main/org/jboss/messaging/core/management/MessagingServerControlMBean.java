@@ -85,6 +85,20 @@ public interface MessagingServerControlMBean
 
    void setMessageCounterSamplePeriod(long newPeriod);
    
+   public boolean isBackup();
+
+   public long getCallTimeout();
+
+   public long getConnectionScanPeriod();
+
+   public int getJournalBufferReuseSize();
+
+   public long getMaxGlobalSizeBytes();
+
+   public int getPacketConfirmationBatchSize();
+
+   public String getPagingDirectory();
+
    // Operations ----------------------------------------------------
 
    @Operation(desc = "Create a queue with the specified address", impact = ACTION)

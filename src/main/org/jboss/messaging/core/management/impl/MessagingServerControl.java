@@ -206,9 +206,24 @@ public class MessagingServerControl extends StandardMBean implements
       return server.getVersion().getFullVersion();
    }
 
+   public boolean isBackup()
+   {
+      return configuration.isBackup();
+   }
+      
    public String getBindingsDirectory()
    {
       return configuration.getBindingsDirectory();
+   }
+
+   public long getCallTimeout()
+   {
+      return configuration.getCallTimeout();      
+   }
+   
+   public long getConnectionScanPeriod()
+   {
+      return configuration.getConnectionScanPeriod();      
    }
 
    public List<String> getInterceptorClassNames()
@@ -216,6 +231,11 @@ public class MessagingServerControl extends StandardMBean implements
       return configuration.getInterceptorClassNames();
    }
 
+   public int getJournalBufferReuseSize()
+   {
+      return configuration.getJournalBufferReuseSize();
+   }
+   
    public String getJournalDirectory()
    {
       return configuration.getJournalDirectory();
@@ -241,6 +261,21 @@ public class MessagingServerControl extends StandardMBean implements
       return configuration.getJournalType().toString();
    }
 
+   public long getMaxGlobalSizeBytes()
+   {   
+      return configuration.getMaxGlobalSizeBytes();
+   }
+   
+   public int getPacketConfirmationBatchSize()
+   {
+      return configuration.getPacketConfirmationBatchSize();
+   }
+
+   public String getPagingDirectory()
+   {      
+      return configuration.getPagingDirectory();
+   }
+   
    public int getScheduledThreadPoolMaxSize()
    {
       return configuration.getScheduledThreadPoolMaxSize();
