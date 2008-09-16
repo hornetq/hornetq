@@ -264,7 +264,7 @@ public class PingTest extends TestCase
       
       registry.returnConnection(conn2.getID());    
    }
-   
+
    /*
    * Test the client triggering failure due to no pong received in time
    */

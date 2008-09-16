@@ -379,25 +379,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
          log.warn(me.getMessage());
 
-         destroy();
+         internalClose();
 
          // Then call the listeners
-         final Set<FailureListener> listenersClone = new HashSet<FailureListener>(failureListeners);
-
-         for (final FailureListener listener : listenersClone)
-         {
-            try
-            {
-               listener.connectionFailed(me);
-            }
-            catch (final Throwable t)
-            {
-               // Failure of one listener to execute shouldn't prevent others
-               // from
-               // executing
-               log.error("Failed to execute failure listener", t);
-            }
-         }
+         callListeners(me);
       }
    }
 
@@ -410,22 +395,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             return;
          }
 
-         if (future != null)
-         {
-            future.cancel(false);
-         }
+         internalClose();
 
-         pingChannel.close();
-
-         destroyed = true;
-
-         // We close the underlying transport connection
-         transportConnection.close();
-
-         if (replicatingConnection != null)
-         {
-            replicatingConnection.destroy();
-         }
+         // We need to inform Listeners about the connection being closed
+         callListeners(null);
       }
    }
 
@@ -444,7 +417,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    {
       stopPinging = true;
    }
-
+   
    // Buffer Handler implementation
    // ----------------------------------------------------
 
@@ -470,6 +443,46 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    // Private
    // --------------------------------------------------------------------------------------
+
+   private void callListeners(final MessagingException me)
+   {
+      final Set<FailureListener> listenersClone = new HashSet<FailureListener>(failureListeners);
+
+      for (final FailureListener listener : listenersClone)
+      {
+         try
+         {
+            listener.connectionFailed(me);
+         }
+         catch (final Throwable t)
+         {
+            // Failure of one listener to execute shouldn't prevent others
+            // from
+            // executing
+            log.error("Failed to execute failure listener", t);
+         }
+      }
+   }
+
+   private void internalClose()
+   {
+      if (future != null)
+      {
+         future.cancel(false);
+      }
+
+      pingChannel.close();
+
+      destroyed = true;
+
+      // We close the underlying transport connection
+      transportConnection.close();
+
+      if (replicatingConnection != null)
+      {
+         replicatingConnection.destroy();
+      }
+   }
 
    private void doWrite(final Packet packet)
    {

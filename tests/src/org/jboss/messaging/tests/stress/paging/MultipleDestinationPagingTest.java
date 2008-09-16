@@ -92,10 +92,10 @@ public class MultipleDestinationPagingTest extends IntegrationTestBase
          settings.put("page-adr", setting);
       }
       
-      service = createService(config, settings);
+      service = createService(true, false, config, settings);
       service.start();
 
-      ClientSessionFactory factory = createFactory();
+      ClientSessionFactory factory = createInVMFactory();
       ClientSession session = null;
       
       try

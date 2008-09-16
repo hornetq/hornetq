@@ -34,6 +34,10 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
+import org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory;
+import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -55,8 +59,11 @@ public class IntegrationTestBase extends UnitTestCase
    
    // Attributes ----------------------------------------------------
    
-   protected static final String ACCEPTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory";
-   protected static final String CONNECTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory";
+   protected static final String INVM_ACCEPTOR_FACTORY = InVMAcceptorFactory.class.getCanonicalName();
+   protected static final String INVM_CONNECTOR_FACTORY = InVMConnectorFactory.class.getCanonicalName();
+   
+   protected static final String NETTY_ACCEPTOR_FACTORY = NettyAcceptorFactory.class.getCanonicalName();
+   protected static final String NETTY_CONNECTOR_FACTORY = NettyConnectorFactory.class.getCanonicalName();
    
    protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/integration-test/journal";
    protected String bindingsDir = System.getProperty("java.io.tmpdir", "/tmp") + "/integration-test/bindings";
@@ -88,11 +95,27 @@ public class IntegrationTestBase extends UnitTestCase
    }
 
 
-   protected MessagingService createService(Configuration configuration, Map<String, QueueSettings> settings)
+   protected MessagingService createService(boolean realFiles, boolean netty, Configuration configuration, Map<String, QueueSettings> settings)
    {
-      TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
+      TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      MessagingService service = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
+      
+      if (netty)
+      {
+         configuration.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY));
+      }
+      
+      MessagingService service;
+      
+      if (realFiles)
+      {
+         service = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
+      }
+      else
+      {
+         service = MessagingServiceImpl.newNullStorageMessagingServer(configuration);
+      }
+         
       
       for (Map.Entry<String, QueueSettings> setting: settings.entrySet())
       {
@@ -103,9 +126,9 @@ public class IntegrationTestBase extends UnitTestCase
       return service;
    }
 
-   protected MessagingService createService()
+   protected MessagingService createService(boolean realFiles)
    {
-      return createService(createDefaultConfig(), new HashMap<String, QueueSettings>());
+      return createService(realFiles, false, createDefaultConfig(), new HashMap<String, QueueSettings>());
    }
 
 
@@ -120,9 +143,14 @@ public class IntegrationTestBase extends UnitTestCase
    }
 
 
-   protected ClientSessionFactory createFactory()
+   protected ClientSessionFactory createInVMFactory()
    {
-      return new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
+      return new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+   }
+   
+   protected ClientSessionFactory createNettyFactory()
+   {
+      return new ClientSessionFactoryImpl(new TransportConfiguration(NETTY_CONNECTOR_FACTORY));
    }
    
    protected ClientMessage createTextMessage(ClientSession session, String s)
