@@ -80,9 +80,13 @@ public class MultipleDestinationPagingTest extends IntegrationTestBase
       if (globalPage)
       {
          config.setPagingMaxGlobalSizeBytes(20*1024*1024);
+         QueueSettings setting = new QueueSettings();
+         setting.setMaxSizeBytes(-1);
+         settings.put("page-adr", setting);
       }
       else
       {
+         config.setPagingMaxGlobalSizeBytes(-1);
          QueueSettings setting = new QueueSettings();
          setting.setMaxSizeBytes(20*1024*1024);
          settings.put("page-adr", setting);
@@ -132,7 +136,7 @@ public class MultipleDestinationPagingTest extends IntegrationTestBase
             int msgs1 = readMessages(session, consumers[0], queue[0]);
             if (reads ++ == 0)
             {
-               assertTrue(reads > 0 && reads < NUMBER_OF_MESSAGES);
+               assertTrue(msgs1 > 0 && msgs1 < NUMBER_OF_MESSAGES);
             }
             int msgs2 = readMessages(session, consumers[1], queue[1]);
             counters[0] += msgs1;
