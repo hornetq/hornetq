@@ -98,7 +98,7 @@ public interface MessagingServerControlMBean
 
    public int getJournalBufferReuseSize();
 
-   public long getMaxGlobalSizeBytes();
+   public long getPagingMaxGlobalSizeBytes();
 
    public int getPacketConfirmationBatchSize();
 

@@ -314,7 +314,7 @@ public class FileConfiguration extends ConfigurationImpl
       
       pagingDirectory = getString(e, "paging-directory", pagingDirectory);
       
-      maxGlobalSize = getLong(e, "max-global-size-bytes", maxGlobalSize);
+      pagingMaxGlobalSize = getLong(e, "paging-max-global-size-bytes", pagingMaxGlobalSize);
 
       createJournalDir = getBoolean(e, "create-journal-dir", createJournalDir);
 

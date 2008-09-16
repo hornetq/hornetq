@@ -98,7 +98,7 @@
       
       <paging-directory>data/paging</paging-directory>
       
-      <max-global-size-bytes>104857600</max-global-size-bytes>
+      <paging-max-global-size-bytes>104857600</paging-max-global-size-bytes>
       
       <!-- Storage configuration -->
 

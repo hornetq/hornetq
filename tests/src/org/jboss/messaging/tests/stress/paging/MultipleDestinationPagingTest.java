@@ -39,8 +39,8 @@ import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
- * TODO: This is an integration-tests that will take some time to run.
- * Maybe it should be placed on stress-tests?
+ * This is an integration-tests that will take some time to run.
+ * TODO: Maybe this test belongs somewhere else?
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -79,7 +79,7 @@ public class MultipleDestinationPagingTest extends IntegrationTestBase
       
       if (globalPage)
       {
-         config.setMaxGlobalSizeBytes(20*1024*1024);
+         config.setPagingMaxGlobalSizeBytes(20*1024*1024);
       }
       else
       {

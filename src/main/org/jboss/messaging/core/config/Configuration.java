@@ -141,8 +141,8 @@ public interface Configuration extends Serializable
    
    void setCreateJournalDir(boolean create);
    
-   long getMaxGlobalSizeBytes();
+   long getPagingMaxGlobalSizeBytes();
    
-   void setMaxGlobalSizeBytes(long maxGlobalSize);
+   void setPagingMaxGlobalSizeBytes(long maxGlobalSize);
 
 }

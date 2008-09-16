@@ -192,7 +192,7 @@ public class MessagingServerImpl implements MessagingServer
 
       PagingStoreFactory storeFactory = new PagingManagerFactoryNIO(configuration.getPagingDirectory());
 
-      pagingManager = new PagingManagerImpl(storeFactory, storageManager, queueSettingsRepository, configuration.getMaxGlobalSizeBytes());
+      pagingManager = new PagingManagerImpl(storeFactory, storageManager, queueSettingsRepository, configuration.getPagingMaxGlobalSizeBytes());
       
       storeFactory.setPagingManager(pagingManager);
 

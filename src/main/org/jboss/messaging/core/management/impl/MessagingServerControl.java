@@ -290,9 +290,9 @@ public class MessagingServerControl extends StandardMBean implements
       return configuration.getJournalType().toString();
    }
 
-   public long getMaxGlobalSizeBytes()
+   public long getPagingMaxGlobalSizeBytes()
    {   
-      return configuration.getMaxGlobalSizeBytes();
+      return configuration.getPagingMaxGlobalSizeBytes();
    }
    
    public int getPacketConfirmationBatchSize()

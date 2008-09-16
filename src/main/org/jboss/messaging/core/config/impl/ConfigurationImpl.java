@@ -116,7 +116,7 @@ public class ConfigurationImpl implements Configuration
    
    // Paging related attributes
    
-   protected long maxGlobalSize = -1;
+   protected long pagingMaxGlobalSize = -1;
          
    protected String pagingDirectory = DEFAULT_PAGING_DIR;
 
@@ -397,14 +397,14 @@ public class ConfigurationImpl implements Configuration
    }	
 	
    
-   public long getMaxGlobalSizeBytes()
+   public long getPagingMaxGlobalSizeBytes()
    {
-      return this.maxGlobalSize;
+      return this.pagingMaxGlobalSize;
    }
    
-   public void setMaxGlobalSizeBytes(long maxGlobalSize)
+   public void setPagingMaxGlobalSizeBytes(long maxGlobalSize)
    {
-      this.maxGlobalSize = maxGlobalSize;      
+      this.pagingMaxGlobalSize = maxGlobalSize;      
    }
 
    
