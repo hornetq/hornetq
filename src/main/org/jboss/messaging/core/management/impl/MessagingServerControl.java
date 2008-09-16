@@ -22,7 +22,10 @@
 
 package org.jboss.messaging.core.management.impl;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.management.ListenerNotFoundException;
@@ -35,6 +38,7 @@ import javax.management.NotificationListener;
 import javax.management.StandardMBean;
 
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
@@ -196,6 +200,31 @@ public class MessagingServerControl extends StandardMBean implements
 
    // MessagingServerControlMBean implementation --------------------
 
+   public Map<String, Object> getBackupConnectorConfiguration()
+   {
+      TransportConfiguration backupConf = configuration.getBackupConnectorConfiguration();
+      if (backupConf != null)
+      {
+         return backupConf.getParams();
+      } else
+      {
+         return Collections.emptyMap();
+      }
+   }
+   
+   public Map<String, Map<String, Object>> getAcceptorConfigurations()
+   {
+      Map<String, Map<String, Object>> result = new HashMap<String, Map<String,Object>>();
+      Set<TransportConfiguration> acceptorConfs = configuration.getAcceptorConfigurations();
+      
+      for (TransportConfiguration acceptorConf : acceptorConfs)
+      {
+         result.put(acceptorConf.getFactoryClassName(), acceptorConf.getParams());
+      }
+      return result;
+   }
+
+   
    public boolean isStarted()
    {
       return server.isStarted();

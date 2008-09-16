@@ -25,6 +25,7 @@ package org.jboss.messaging.core.management;
 import static javax.management.MBeanOperationInfo.ACTION;
 
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.messaging.core.config.Configuration;
 
@@ -34,6 +35,10 @@ import org.jboss.messaging.core.config.Configuration;
 public interface MessagingServerControlMBean
 {
    // Attributes ----------------------------------------------------
+
+   public Map<String, Object> getBackupConnectorConfiguration();
+
+   public Map<String, Map<String, Object>> getAcceptorConfigurations();
 
    String getVersion();
 
