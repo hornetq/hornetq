@@ -54,7 +54,7 @@ public class DurableSubscriberExample
          session.createDurableSubscriber(topic, "myuniqueid");
          connection.close();
 
-         connection = cf.createConnection();
+         connection = cf.createConnection();         
          connection.setClientID("myclientid");
          session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer messageProducer = session.createProducer(topic);
