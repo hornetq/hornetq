@@ -24,6 +24,7 @@ package org.jboss.messaging.core.paging;
 
 import java.util.Collection;
 
+import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -32,6 +33,22 @@ import org.jboss.messaging.util.SimpleString;
 /**
  * 
  * <p>Look at the <a href="http://wiki.jboss.org/auth/wiki/JBossMessaging2Paging">WIKI</a> for more information.</p>
+ * 
+<PRE>
+
++------------+      1  +-------------+       N +------------+       N +-------+       1 +----------------+
+| {@link PostOffice} |-------&gt; |PagingManager|-------&gt; |{@link PagingStore} | ------&gt; | {@link Page}  | ------&gt; | {@link SequentialFile} |
++------------+         +-------------+         +------------+         +-------+         +----------------+
+                              |                       1 ^
+                              |                         |
+                              |                         |
+                              |                         | 1
+                              |        N +-------------------+
+                              +--------&gt; | DestinationAdress |
+                                         +-------------------+   
+
+</PRE>
+
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
