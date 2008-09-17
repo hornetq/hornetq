@@ -86,6 +86,8 @@ public interface Queue
    
    int getScheduledCount();
    
+   List<MessageReference> getScheduledMessages();
+
    int getSizeBytes();
    
    DistributionPolicy getDistributionPolicy();
@@ -140,4 +142,5 @@ public interface Queue
    boolean isBackup();
    
    MessageReference removeFirst();
+
 }

@@ -70,6 +70,9 @@ public interface QueueControlMBean
 
    // Operations ----------------------------------------------------
 
+   @Operation(desc = "List the messages scheduled for delivery", impact = INFO)
+   public TabularData listScheduledMessages() throws Exception;
+
    @Operation(desc = "List all the messages in the queue", impact = INFO)
    TabularData listAllMessages() throws Exception;
 

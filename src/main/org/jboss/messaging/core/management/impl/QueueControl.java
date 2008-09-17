@@ -175,6 +175,30 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
       return listMessages(null);
    }
 
+   public TabularData listScheduledMessages() throws Exception
+   {
+      List<MessageReference> refs = queue.getScheduledMessages();
+      MessageInfo[] infos = new MessageInfo[refs.size()];
+      for (int i = 0; i < refs.size(); i++)
+      {
+         MessageReference ref = refs.get(i);
+         ServerMessage message = ref.getMessage();
+         MessageInfo info = new MessageInfo(message.getMessageID(), message
+                                            .getDestination().toString(), message.isDurable(), message
+                                            .getTimestamp(), message.getType(), message.getEncodeSize(),
+                                            message.getPriority(), message.isExpired(), message
+                                            .getExpiration());
+         for (SimpleString key : message.getPropertyNames())
+         {
+            Object value = message.getProperty(key);
+            String valueStr = value == null ? null : value.toString();
+            info.putProperty(key.toString(), valueStr);
+         }
+         infos[i] = info;
+      }
+      return MessageInfo.toTabularData(infos);
+   }
+   
    public TabularData listMessages(final String filterStr) throws Exception
    {
       try

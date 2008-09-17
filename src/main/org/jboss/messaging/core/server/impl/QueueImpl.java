@@ -418,6 +418,16 @@ public class QueueImpl implements Queue
       return scheduledRunnables.size();
    }
 
+   public synchronized List<MessageReference> getScheduledMessages()
+   {
+      List<MessageReference> refs = new ArrayList<MessageReference>();
+      for (ScheduledDeliveryRunnable runnable : scheduledRunnables)
+      {
+         refs.add(runnable.getReference());
+      }
+      return refs;
+   }
+
    public int getDeliveringCount()
    {
       return deliveringCount.get();
