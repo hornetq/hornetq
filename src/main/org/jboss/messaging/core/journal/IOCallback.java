@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.journal;
 
@@ -34,5 +34,5 @@ import org.jboss.messaging.core.asyncio.AIOCallback;
  */
 public interface IOCallback extends AIOCallback
 {
-	
+
 }

@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.paging.impl;
 
 import java.util.concurrent.CountDownLatch;
@@ -39,25 +38,27 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 {
 
    // Constants -----------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    private long transactionID;
+
    private long recordID;
+
    private CountDownLatch countDownCompleted;
+
    private volatile boolean complete;
-   
+
    final AtomicInteger numberOfMessages = new AtomicInteger(0);
-   
-   
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    public PageTransactionInfoImpl(final long transactionID)
    {
       this.transactionID = transactionID;
-      this.countDownCompleted = new CountDownLatch(1);
+      countDownCompleted = new CountDownLatch(1);
    }
 
    public PageTransactionInfoImpl()
@@ -66,27 +67,26 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 
    // Public --------------------------------------------------------
 
-   
    public long getRecordID()
    {
       return recordID;
    }
-   
-   public void setRecordID(long recordID)
+
+   public void setRecordID(final long recordID)
    {
       this.recordID = recordID;
    }
-   
+
    public long getTransactionID()
    {
       return transactionID;
    }
-   
+
    public int increment()
    {
       return numberOfMessages.incrementAndGet();
    }
-   
+
    public int decrement()
    {
       final int value = numberOfMessages.decrementAndGet();
@@ -94,34 +94,36 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       {
          throw new IllegalStateException("Internal error Negative value on Paging transactions!");
       }
-      
+
       return value;
    }
-   
+
    public int getNumberOfMessages()
    {
       return numberOfMessages.get();
    }
-   
-   // EncodingSupport implementation 
-   
+
+   // EncodingSupport implementation
+
    public synchronized void decode(final MessagingBuffer buffer)
    {
-      this.transactionID = buffer.getLong();
-      this.numberOfMessages.set(buffer.getInt());
-      this.countDownCompleted = null; // if it is being readed, probably it was committed
-      this.complete = true;           // Unless it is a incomplete prepare, which is marked by markIcomplete
+      transactionID = buffer.getLong();
+      numberOfMessages.set(buffer.getInt());
+      countDownCompleted = null; // if it is being readed, probably it was
+                                 // committed
+      complete = true; // Unless it is a incomplete prepare, which is marked by
+                        // markIcomplete
    }
-   
+
    public synchronized void encode(final MessagingBuffer buffer)
    {
-      buffer.putLong(this.transactionID);
-      buffer.putInt(this.numberOfMessages.get());
+      buffer.putLong(transactionID);
+      buffer.putInt(numberOfMessages.get());
    }
 
    public synchronized int getEncodeSize()
    {
-      return 8 /* long */ + 4 /* int */;
+      return 8 /* long */+ 4 /* int */;
    }
 
    public void complete()
@@ -132,7 +134,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
        */
       countDownCompleted.countDown();
    }
-   
+
    /** 
     * this is to avoid a race condition where the transaction still being committed another thread is depaging messages
     */
@@ -142,29 +144,29 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       {
          countDownCompleted.await();
       }
-      
+
       return complete;
    }
-   
+
    public void forget()
    {
       complete = false;
 
       countDownCompleted.countDown();
    }
-   
+
    public void markIncomplete()
    {
       complete = false;
       countDownCompleted = new CountDownLatch(1);
    }
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
+
 }

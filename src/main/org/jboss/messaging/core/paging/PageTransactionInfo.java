@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.paging;
 
 import org.jboss.messaging.core.journal.EncodingSupport;
@@ -36,9 +35,9 @@ public interface PageTransactionInfo extends EncodingSupport
 {
 
    boolean waitCompletion() throws Exception;
-   
+
    void complete();
-   
+
    void forget();
 
    long getRecordID();
@@ -46,13 +45,13 @@ public interface PageTransactionInfo extends EncodingSupport
    void setRecordID(long id);
 
    long getTransactionID();
-   
+
    int increment();
-   
+
    int decrement();
-   
+
    int getNumberOfMessages();
-   
+
    void markIncomplete();
 
 }

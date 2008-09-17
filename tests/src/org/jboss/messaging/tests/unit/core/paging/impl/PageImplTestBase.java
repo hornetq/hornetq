@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.tests.unit.core.paging.impl;
 
 import java.nio.ByteBuffer;
@@ -45,93 +44,96 @@ import org.jboss.messaging.util.SimpleString;
  */
 public abstract class PageImplTestBase extends UnitTestCase
 {
-   
+
    // Constants -----------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    /** Validate if everything we add is recovered */
-   protected void testAdd(SequentialFileFactory factory, int numberOfElements) throws Exception
+   protected void testAdd(final SequentialFileFactory factory, final int numberOfElements) throws Exception
    {
-      
+
       SequentialFile file = factory.createSequentialFile("00010.page", 1);
-      
+
       PageImpl impl = new PageImpl(factory, file, 10);
-      
+
       assertEquals(10, impl.getPageId());
-      
+
       impl.open();
 
       assertEquals(1, factory.listFiles("page").size());
 
       ArrayList<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
-      
+
       SimpleString simpleDestination = new SimpleString("Test");
-      
+
       for (int i = 0; i < numberOfElements; i++)
       {
          ByteBuffer buffer = ByteBuffer.allocate(10);
-         
+
          for (int j = 0; j < buffer.limit(); j++)
          {
             buffer.put(RandomUtil.randomByte());
          }
-         
+
          buffers.add(buffer);
 
-         ServerMessage msg = new ServerMessageImpl((byte)1, true, 0,
-               System.currentTimeMillis(), (byte)0, new ByteBufferWrapper(buffer));
-         
-         msg.setMessageID((long)i);
-         
+         ServerMessage msg = new ServerMessageImpl((byte)1,
+                                                   true,
+                                                   0,
+                                                   System.currentTimeMillis(),
+                                                   (byte)0,
+                                                   new ByteBufferWrapper(buffer));
+
+         msg.setMessageID(i);
+
          msg.setDestination(simpleDestination);
-         
+
          impl.write(new PageMessageImpl(msg));
-         
+
          assertEquals(i + 1, impl.getNumberOfMessages());
       }
-      
+
       impl.sync();
       impl.close();
-      
+
       file = factory.createSequentialFile("00010.page", 1);
       file.open();
       impl = new PageImpl(factory, file, 10);
-      
+
       PageMessage msgs[] = impl.read();
-      
+
       assertEquals(numberOfElements, msgs.length);
 
       assertEquals(numberOfElements, impl.getNumberOfMessages());
-      
+
       for (int i = 0; i < msgs.length; i++)
       {
-         assertEquals((long)0, msgs[i].getMessage().getMessageID());
-         
+         assertEquals(0, msgs[i].getMessage().getMessageID());
+
          assertEquals(simpleDestination, msgs[i].getMessage().getDestination());
-         
+
          assertEqualsByteArrays(buffers.get(i).array(), msgs[i].getMessage().getBody().array());
       }
 
       impl.delete();
-      
-      
+
       assertEquals(0, factory.listFiles(".page").size());
-      
+
    }
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
+
 }

@@ -20,14 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.paging;
 
 import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.settings.impl.QueueSettings;
-
-
 
 /**
  * The integration point between the PagingManger and the File System (aka SequentialFiles)
@@ -39,9 +36,9 @@ public interface PagingStoreFactory
 {
 
    PagingStore newStore(org.jboss.messaging.util.SimpleString destinationName, QueueSettings queueSettings);
-   
+
    Executor getPagingExecutor();
-   
+
    void setPagingManager(PagingManager manager);
-   
+
 }

@@ -18,8 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
-
+ */
 
 package org.jboss.messaging.core.journal;
 
@@ -36,17 +35,17 @@ import java.util.List;
 public class PreparedTransactionInfo
 {
    public final long id;
-   
+
    public final byte[] extraData;
-   
+
    public final List<RecordInfo> records = new ArrayList<RecordInfo>();
-   
+
    public final List<RecordInfo> recordsToDelete = new ArrayList<RecordInfo>();
 
    public PreparedTransactionInfo(final long id, final byte[] extraData)
    {
       this.id = id;
-      
+
       this.extraData = extraData;
    }
 }

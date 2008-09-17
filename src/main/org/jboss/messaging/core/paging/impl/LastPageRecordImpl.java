@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.paging.impl;
 
 import org.jboss.messaging.core.paging.LastPageRecord;
@@ -34,22 +33,21 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class LastPageRecordImpl implements LastPageRecord
 {
-   
-    // Constants -----------------------------------------------------
-   
+
+   // Constants -----------------------------------------------------
+
    // Attributes ----------------------------------------------------
-   
-   
+
    private long recordId = 0;
+
    private SimpleString destination;
+
    private long lastId;
-   
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
-   
-   
+
    // Public --------------------------------------------------------
 
    public LastPageRecordImpl(final long lastId, final SimpleString destination)
@@ -93,32 +91,30 @@ public class LastPageRecordImpl implements LastPageRecord
    {
       this.lastId = lastId;
    }
-   
-   
+
    public void decode(final MessagingBuffer buffer)
    {
       lastId = buffer.getLong();
       destination = buffer.getSimpleString();
    }
-   
+
    public void encode(final MessagingBuffer buffer)
    {
       buffer.putLong(lastId);
       buffer.putSimpleString(destination);
    }
-   
+
    public int getEncodeSize()
    {
-      return 8  + SimpleString.sizeofString(destination);
+      return 8 + SimpleString.sizeofString(destination);
    }
 
-
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
+
 }

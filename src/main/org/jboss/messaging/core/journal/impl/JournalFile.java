@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.journal.impl;
 
@@ -36,26 +36,26 @@ import org.jboss.messaging.core.journal.SequentialFile;
 public interface JournalFile
 {
    int getNegCount(JournalFile file);
-   
+
    void incNegCount(JournalFile file);
-   
+
    int getPosCount();
-   
+
    void incPosCount();
-   
+
    void decPosCount();
-   
+
    void setCanReclaim(boolean canDelete);
-   
+
    boolean isCanReclaim();
-   
+
    void extendOffset(final int delta);
-   
+
    int getOffset();
-   
+
    int getOrderingID();
-   
+
    void setOffset(final int offset);
-   
+
    SequentialFile getFile();
 }

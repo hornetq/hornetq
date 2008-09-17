@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.tests.unit.core.paging.impl;
 
 import java.nio.ByteBuffer;
@@ -56,74 +55,78 @@ import org.jboss.messaging.util.SimpleString;
 public abstract class PagingStoreTestBase extends UnitTestCase
 {
    // Constants -----------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
    protected ExecutorService executor;
-   
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
       executor = Executors.newSingleThreadExecutor();
    }
-   
+
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
       executor.shutdown();
    }
-   
-   protected void testConcurrentPaging(SequentialFileFactory factory, final int numberOfThreads) throws Exception,
-         InterruptedException
+
+   protected void testConcurrentPaging(final SequentialFileFactory factory, final int numberOfThreads) throws Exception,
+                                                                                                      InterruptedException
    {
-      
+
       final int MAX_SIZE = 1024 * 10;
-      
+
       final AtomicLong messageIdGenerator = new AtomicLong(0);
-      
+
       final AtomicInteger aliveProducers = new AtomicInteger(numberOfThreads);
-      
+
       final CountDownLatch latchStart = new CountDownLatch(numberOfThreads);
-      
+
       final ConcurrentHashMap<Long, PageMessageImpl> buffers = new ConcurrentHashMap<Long, PageMessageImpl>();
-      
+
       final ArrayList<Page> readPages = new ArrayList<Page>();
-      
+
       QueueSettings settings = new QueueSettings();
       settings.setPageSizeBytes(MAX_SIZE);
-      
-      final TestSupportPageStore storeImpl = new PagingStoreImpl(null, factory, new SimpleString("test"), settings, executor);
-      
+
+      final TestSupportPageStore storeImpl = new PagingStoreImpl(null,
+                                                                 factory,
+                                                                 new SimpleString("test"),
+                                                                 settings,
+                                                                 executor);
+
       storeImpl.start();
-      
+
       assertEquals(0, storeImpl.getNumberOfPages());
-      
+
       storeImpl.startPaging();
-      
+
       assertEquals(1, storeImpl.getNumberOfPages());
-      
-      
-   
-      
+
       final SimpleString destination = new SimpleString("test");
-      
+
       class ProducerThread extends Thread
       {
-         
+
          Exception e;
-         
+
+         @Override
          public void run()
          {
-            
+
             try
             {
                boolean firstTime = true;
@@ -139,7 +142,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
                   {
                      break;
                   }
-                  
+
                   if (firstTime)
                   {
                      latchStart.countDown();
@@ -158,11 +161,12 @@ public abstract class PagingStoreTestBase extends UnitTestCase
             }
          }
       }
-      
+
       class ConsumerThread extends Thread
       {
          Exception e;
-         
+
+         @Override
          public void run()
          {
             try
@@ -185,18 +189,18 @@ public abstract class PagingStoreTestBase extends UnitTestCase
             }
          }
       }
-      
+
       ProducerThread producerThread[] = new ProducerThread[numberOfThreads];
-      
+
       for (int i = 0; i < numberOfThreads; i++)
       {
          producerThread[i] = new ProducerThread();
          producerThread[i].start();
       }
-      
+
       ConsumerThread consumer = new ConsumerThread();
       consumer.start();
-      
+
       for (int i = 0; i < numberOfThreads; i++)
       {
          producerThread[i].join();
@@ -205,73 +209,70 @@ public abstract class PagingStoreTestBase extends UnitTestCase
             throw producerThread[i].e;
          }
       }
-      
+
       consumer.join();
-      
+
       if (consumer.e != null)
       {
          throw consumer.e;
       }
-   
+
       System.out.println("Reading " + buffers.size() + " messages, " + readPages.size() + " pages");
-      
+
       final ConcurrentHashMap<Long, PageMessage> buffers2 = new ConcurrentHashMap<Long, PageMessage>();
-      
-      for (Page page: readPages)
+
+      for (Page page : readPages)
       {
          page.open();
          PageMessage msgs[] = page.read();
          page.close();
-         
+
          for (PageMessage msg : msgs)
          {
             msg.getMessage().getBody().rewind();
             long id = msg.getMessage().getBody().getLong();
             msg.getMessage().getBody().rewind();
-            
+
             PageMessageImpl msgWritten = buffers.remove(id);
             buffers2.put(id, msg);
             assertNotNull(msgWritten);
-            assertEquals (msg.getMessage().getDestination(), msgWritten.getMessage().getDestination());
+            assertEquals(msg.getMessage().getDestination(), msgWritten.getMessage().getDestination());
             assertEqualsByteArrays(msgWritten.getMessage().getBody().array(), msg.getMessage().getBody().array());
          }
       }
-      
-      assertEquals (0, buffers.size());
-      
+
+      assertEquals(0, buffers.size());
+
       List<String> files = factory.listFiles("page");
-      
+
       assertTrue(files.size() != 0);
-      
-      for (String file: files)
+
+      for (String file : files)
       {
          SequentialFile fileTmp = factory.createSequentialFile(file, 1);
          fileTmp.open();
-         assertTrue (fileTmp.size() + " <= " + MAX_SIZE, fileTmp.size() <= MAX_SIZE);
-         fileTmp.close();         
+         assertTrue(fileTmp.size() + " <= " + MAX_SIZE, fileTmp.size() <= MAX_SIZE);
+         fileTmp.close();
       }
-      
+
       TestSupportPageStore storeImpl2 = new PagingStoreImpl(null, factory, new SimpleString("test"), settings, executor);
       storeImpl2.start();
-      
+
       int numberOfPages = storeImpl2.getNumberOfPages();
       assertTrue(numberOfPages != 0);
-      
-      storeImpl2.startPaging();
-      
 
-      
       storeImpl2.startPaging();
 
-      
+      storeImpl2.startPaging();
+
       assertEquals(numberOfPages, storeImpl2.getNumberOfPages());
-      
+
       long lastMessageId = messageIdGenerator.incrementAndGet();
       PageMessage lastMsg = createMessage(destination, createRandomBuffer(lastMessageId, 5));
-      
+
       storeImpl2.page(lastMsg);
       buffers2.put(lastMessageId, lastMsg);
-      
+
       Page lastPage = null;
       while (true)
       {
@@ -280,66 +281,68 @@ public abstract class PagingStoreTestBase extends UnitTestCase
          {
             break;
          }
-         
+
          lastPage = page;
-         
+
          page.open();
-         
+
          PageMessage[] msgs = page.read();
-         
+
          page.close();
 
-         for (PageMessage msg: msgs)
+         for (PageMessage msg : msgs)
          {
-            
+
             msg.getMessage().getBody().rewind();
             long id = msg.getMessage().getBody().getLong();
             PageMessage msgWritten = buffers2.remove(id);
             assertNotNull(msgWritten);
-            assertEquals (msg.getMessage().getDestination(), msgWritten.getMessage().getDestination());
+            assertEquals(msg.getMessage().getDestination(), msgWritten.getMessage().getDestination());
             assertEqualsByteArrays(msgWritten.getMessage().getBody().array(), msg.getMessage().getBody().array());
          }
       }
-      
-      
+
       lastPage.open();
       PageMessage lastMessages[] = lastPage.read();
       lastPage.close();
       assertEquals(1, lastMessages.length);
-      
+
       lastMessages[0].getMessage().getBody().rewind();
       assertEquals(lastMessages[0].getMessage().getBody().getLong(), lastMessageId);
       assertEqualsByteArrays(lastMessages[0].getMessage().getBody().array(), lastMsg.getMessage().getBody().array());
-      
+
       assertEquals(0, buffers2.size());
-      
-      
+
    }
 
-   protected PageMessageImpl createMessage(SimpleString destination, ByteBuffer buffer)
+   protected PageMessageImpl createMessage(final SimpleString destination, final ByteBuffer buffer)
    {
-      ServerMessage msg = new ServerMessageImpl((byte)1, true, 0,
-            System.currentTimeMillis(), (byte)0, new ByteBufferWrapper(buffer));
-      
+      ServerMessage msg = new ServerMessageImpl((byte)1,
+                                                true,
+                                                0,
+                                                System.currentTimeMillis(),
+                                                (byte)0,
+                                                new ByteBufferWrapper(buffer));
+
       msg.setDestination(destination);
       return new PageMessageImpl(msg);
    }
 
-   protected ByteBuffer createRandomBuffer(long id, int size)
+   protected ByteBuffer createRandomBuffer(final long id, final int size)
    {
       ByteBuffer buffer = ByteBuffer.allocate(size + 8);
-      
+
       buffer.putLong(id);
-      
+
       for (int j = 8; j < buffer.limit(); j++)
       {
          buffer.put(RandomUtil.randomByte());
       }
       return buffer;
    }
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
+
 }

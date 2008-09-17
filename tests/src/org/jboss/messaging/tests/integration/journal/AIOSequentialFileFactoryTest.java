@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.integration.journal;
 
@@ -45,26 +45,28 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
 {
 
    protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
-   
+
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
 
       if (!AsynchronousFileImpl.isLoaded())
       {
-         fail(String.format("libAIO is not loaded on %s %s %s", 
-               System.getProperty("os.name"), 
-               System.getProperty("os.arch"), 
-               System.getProperty("os.version")));
+         fail(String.format("libAIO is not loaded on %s %s %s",
+                            System.getProperty("os.name"),
+                            System.getProperty("os.arch"),
+                            System.getProperty("os.version")));
       }
-      
+
       File file = new File(journalDir);
-      
+
       deleteDirectory(file);
-      
-      file.mkdir();     
+
+      file.mkdir();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
@@ -72,11 +74,12 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
       deleteDirectory(new File(journalDir));
    }
 
+   @Override
    protected SequentialFileFactory createFactory()
    {
       return new AIOSequentialFileFactory(journalDir);
    }
-   
+
    public void testBuffer() throws Exception
    {
       SequentialFile file = factory.createSequentialFile("filtetmp.log", 10);
@@ -85,27 +88,29 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
       assertEquals(512, buff.limit());
       file.close();
    }
-   
+
    public void testBlockCallback() throws Exception
    {
       class BlockCallback implements IOCallback
-      {         
+      {
          AtomicInteger countDone = new AtomicInteger(0);
+
          AtomicInteger countError = new AtomicInteger(0);
+
          CountDownLatch blockLatch;
 
          BlockCallback()
          {
-            this.blockLatch = new CountDownLatch(1);
+            blockLatch = new CountDownLatch(1);
          }
-         
+
          public void release()
          {
             blockLatch.countDown();
          }
-         
+
          public void done()
-         {            
+         {
             try
             {
                blockLatch.await();
@@ -118,7 +123,7 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
             countDone.incrementAndGet();
          }
 
-         public void onError(int errorCode, String errorMessage)
+         public void onError(final int errorCode, final String errorMessage)
          {
             try
             {
@@ -128,64 +133,60 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
             {
                e.printStackTrace();
             }
-            
+
             countError.incrementAndGet();
          }
       }
-      
+
       BlockCallback callback = new BlockCallback();
-      
+
       final int NUMBER_OF_RECORDS = 10000;
-      
+
       SequentialFile file = factory.createSequentialFile("callbackBlock.log", 1000);
       file.open();
       file.fill(0, 512 * NUMBER_OF_RECORDS, (byte)'a');
 
-      
-      for (int i=0; i<NUMBER_OF_RECORDS; i++)
+      for (int i = 0; i < NUMBER_OF_RECORDS; i++)
       {
          ByteBuffer buffer = factory.newBuffer(512);
-         
+
          buffer.putInt(i + 10);
-         
-         for (int j=buffer.position(); j<buffer.limit(); j++)
+
+         for (int j = buffer.position(); j < buffer.limit(); j++)
          {
             buffer.put((byte)'b');
          }
-         
+
          file.write(buffer, callback);
       }
-      
-      
+
       callback.release();
       file.close();
       assertEquals(NUMBER_OF_RECORDS, callback.countDone.get());
       assertEquals(0, callback.countError.get());
-      
+
       file.open();
-      
+
       ByteBuffer buffer = factory.newBuffer(512);
 
-      for (int i=0; i<NUMBER_OF_RECORDS; i++)
+      for (int i = 0; i < NUMBER_OF_RECORDS; i++)
       {
-         
+
          file.read(buffer);
          buffer.rewind();
-         
+
          int recordRead = buffer.getInt();
-         
+
          assertEquals(i + 10, recordRead);
-         
-         for (int j=buffer.position(); j<buffer.limit(); j++)
+
+         for (int j = buffer.position(); j < buffer.limit(); j++)
          {
             assertEquals((byte)'b', buffer.get());
          }
-         
-       }
-      
-      
+
+      }
+
       file.close();
    }
-   
 
 }

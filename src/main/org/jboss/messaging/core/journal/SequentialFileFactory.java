@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.journal;
 
@@ -36,23 +36,23 @@ import java.util.List;
 public interface SequentialFileFactory
 {
    SequentialFile createSequentialFile(String fileName, int maxIO) throws Exception;
-   
+
    List<String> listFiles(String extension) throws Exception;
-   
+
    boolean isSupportsCallbacks();
-   
+
    ByteBuffer newBuffer(int size);
-   
-   // Avoid using this method in production as it creates an unecessary copy 
+
+   // Avoid using this method in production as it creates an unecessary copy
    ByteBuffer wrapBuffer(byte[] bytes);
-   
+
    int getAlignment();
-   
+
    int calculateBlockSize(int bytes);
-   
+
    /** This method is not being used currently. 
     *  The journal will complete the buffer when reusing the buffer.
     *  Look at JournalImpl#newBuffer for more information about this */
    void clearBuffer(ByteBuffer buffer);
-   
+
 }

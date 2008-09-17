@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.tests.unit.core.journal.impl.fakes;
 
 import org.jboss.messaging.core.journal.EncodingSupport;
@@ -33,23 +32,21 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
  */
 public class ByteArrayEncoding implements EncodingSupport
 {
-   
+
    // Constants -----------------------------------------------------
    final byte[] data;
-   
-  
+
    // Attributes ----------------------------------------------------
-   
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
 
    public ByteArrayEncoding(final byte[] data)
    {
       this.data = data;
    }
-   
-  
+
    // Public --------------------------------------------------------
 
    public void decode(final MessagingBuffer buffer)
@@ -66,14 +63,13 @@ public class ByteArrayEncoding implements EncodingSupport
    {
       return data.length;
    }
-   
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
+
 }

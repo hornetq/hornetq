@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.unit.core.journal.impl.fakes;
 
@@ -45,27 +45,27 @@ import org.jboss.messaging.core.logging.Logger;
 public class FakeSequentialFileFactory implements SequentialFileFactory
 {
    private static final Logger log = Logger.getLogger(FakeSequentialFileFactory.class);
-      
+
    // Constants -----------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    private final Map<String, FakeSequentialFile> fileMap = new ConcurrentHashMap<String, FakeSequentialFile>();
-   
+
    private final int alignment;
-   
-   private final boolean supportsCallback; 
-   
+
+   private final boolean supportsCallback;
+
    private volatile boolean holdCallbacks;
-   
+
    private volatile boolean generateErrors;
-   
+
    private final List<CallbackRunnable> callbacksInHold;
-   
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    public FakeSequentialFileFactory(final int alignment, final boolean supportsCallback)
    {
       this.alignment = alignment;
@@ -78,27 +78,25 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       this(1, false);
    }
 
-   
-   
    // Public --------------------------------------------------------
-   
+
    public SequentialFile createSequentialFile(final String fileName, final int maxAIO) throws Exception
    {
       FakeSequentialFile sf = fileMap.get(fileName);
-      
+
       if (sf == null)
-      {                 
+      {
          sf = newSequentialFile(fileName);
-         
+
          fileMap.put(fileName, sf);
       }
       else
-      { 
-          sf.getData().position(0);
-         
-         //log.debug("positioning data to 0");
+      {
+         sf.getData().position(0);
+
+         // log.debug("positioning data to 0");
       }
-                  
+
       return sf;
    }
 
@@ -106,45 +104,45 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    {
       final int limit = buffer.limit();
       buffer.rewind();
-      
+
       for (int i = 0; i < limit; i++)
       {
          buffer.put((byte)0);
       }
-      
+
       buffer.rewind();
    }
-   
+
    public List<String> listFiles(final String extension)
    {
       List<String> files = new ArrayList<String>();
-      
-      for (String s: fileMap.keySet())
+
+      for (String s : fileMap.keySet())
       {
          if (s.endsWith("." + extension))
          {
             files.add(s);
          }
       }
-      
+
       return files;
    }
-   
+
    public Map<String, FakeSequentialFile> getFileMap()
    {
       return fileMap;
    }
-   
+
    public void clear()
    {
       fileMap.clear();
    }
-   
+
    public boolean isSupportsCallbacks()
    {
       return supportsCallback;
    }
-   
+
    public ByteBuffer newBuffer(int size)
    {
       if (size % alignment != 0)
@@ -153,37 +151,37 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       }
       return ByteBuffer.allocateDirect(size);
    }
-   
-   public int calculateBlockSize(int position)
+
+   public int calculateBlockSize(final int position)
    {
       int alignment = getAlignment();
-      
-      int pos = ((position / alignment) + (position % alignment != 0 ? 1 : 0)) * alignment;
-      
+
+      int pos = (position / alignment + (position % alignment != 0 ? 1 : 0)) * alignment;
+
       return pos;
    }
-   
-   public ByteBuffer wrapBuffer(byte[] bytes)
+
+   public ByteBuffer wrapBuffer(final byte[] bytes)
    {
       return ByteBuffer.wrap(bytes);
    }
-   
+
    public boolean isHoldCallbacks()
    {
       return holdCallbacks;
    }
 
-   public void setHoldCallbacks(boolean holdCallbacks)
+   public void setHoldCallbacks(final boolean holdCallbacks)
    {
       this.holdCallbacks = holdCallbacks;
    }
-   
+
    public boolean isGenerateErrors()
    {
       return generateErrors;
    }
 
-   public void setGenerateErrors(boolean generateErrors)
+   public void setGenerateErrors(final boolean generateErrors)
    {
       this.generateErrors = generateErrors;
    }
@@ -194,55 +192,56 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       {
          action.run();
       }
-      
+
       callbacksInHold.clear();
    }
 
-   public void flushCallback(int position)
+   public void flushCallback(final int position)
    {
       Runnable run = callbacksInHold.get(position);
       run.run();
       callbacksInHold.remove(run);
    }
-   
-   public void setCallbackAsError(int position)
+
+   public void setCallbackAsError(final int position)
    {
       callbacksInHold.get(position).setSendError(true);
    }
-   
+
    public int getNumberOfCallbacks()
    {
       return callbacksInHold.size();
    }
-   
+
    public int getAlignment()
    {
       return alignment;
    }
-   
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
 
    protected FakeSequentialFile newSequentialFile(final String fileName)
    {
       return new FakeSequentialFile(fileName);
    }
-   
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 
    private class CallbackRunnable implements Runnable
    {
-      
+
       final FakeSequentialFile file;
+
       final ByteBuffer bytes;
+
       final IOCallback callback;
+
       volatile boolean sendError;
-      
+
       CallbackRunnable(final FakeSequentialFile file, final ByteBuffer bytes, final IOCallback callback)
       {
          this.file = file;
@@ -252,7 +251,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
       public void run()
       {
-         
+
          if (sendError)
          {
             callback.onError(1, "Fake aio error");
@@ -262,8 +261,11 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
             try
             {
                file.data.put(bytes);
-               if (callback!=null) callback.done();
-               
+               if (callback != null)
+               {
+                  callback.done();
+               }
+
                if (file.bufferCallback != null)
                {
                   file.bufferCallback.bufferDone(bytes);
@@ -282,19 +284,18 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          return sendError;
       }
 
-      public void setSendError(boolean sendError)
+      public void setSendError(final boolean sendError)
       {
          this.sendError = sendError;
       }
    }
-   
-   
+
    public class FakeSequentialFile implements SequentialFile
    {
       private volatile boolean open;
-      
+
       private final String fileName;
-      
+
       private ByteBuffer data;
 
       private BufferCallback bufferCallback;
@@ -303,22 +304,23 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       {
          return data;
       }
-      
+
       public boolean isOpen()
       {
-         //log.debug("is open" + System.identityHashCode(this) +" open is now " + open);
+         // log.debug("is open" + System.identityHashCode(this) +" open is now "
+         // + open);
          return open;
       }
-      
+
       public FakeSequentialFile(final String fileName)
       {
-         this.fileName = fileName;   
+         this.fileName = fileName;
       }
 
       public void close() throws Exception
       {
          open = false;
-         
+
          if (data != null)
          {
             data.position(0);
@@ -332,7 +334,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
             throw new IllegalStateException("Is closed");
          }
          close();
-         
+
          fileMap.remove(fileName);
       }
 
@@ -343,61 +345,64 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
       public void open() throws Exception
       {
-        open(0);
+         open(0);
       }
-      
-      public synchronized void open(int currentMaxIO) throws Exception
+
+      public synchronized void open(final int currentMaxIO) throws Exception
       {
          open = true;
          checkAndResize(0);
       }
 
-      public void setBufferCallback(BufferCallback callback)
+      public void setBufferCallback(final BufferCallback callback)
       {
-         this.bufferCallback = callback;
+         bufferCallback = callback;
       }
 
       public void fill(final int pos, final int size, final byte fillCharacter) throws Exception
-      {     
+      {
          if (!open)
          {
             throw new IllegalStateException("Is closed");
          }
-         
+
          checkAndResize(pos + size);
-         
-         //log.debug("size is " + size + " pos is " + pos);
-         
+
+         // log.debug("size is " + size + " pos is " + pos);
+
          for (int i = pos; i < size + pos; i++)
          {
             data.array()[i] = fillCharacter;
-            
-            //log.debug("Filling " + pos + " with char " + fillCharacter);
-         }                 
+
+            // log.debug("Filling " + pos + " with char " + fillCharacter);
+         }
       }
-      
+
       public int read(final ByteBuffer bytes) throws Exception
       {
          return read(bytes, null);
       }
-      
+
       public int read(final ByteBuffer bytes, final IOCallback callback) throws Exception
       {
          if (!open)
          {
             throw new IllegalStateException("Is closed");
          }
-         
+
          byte[] bytesRead = new byte[bytes.limit()];
-         
+
          data.get(bytesRead);
-         
+
          bytes.put(bytesRead);
-         
+
          bytes.rewind();
-         
-         if (callback != null) callback.done();
-         
+
+         if (callback != null)
+         {
+            callback.done();
+         }
+
          return bytesRead.length;
       }
 
@@ -407,12 +412,12 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          {
             throw new IllegalStateException("Is closed");
          }
-         
+
          checkAlignment(pos);
-         
+
          data.position(pos);
       }
-      
+
       public int position() throws Exception
       {
          return data.position();
@@ -424,17 +429,17 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          {
             throw new IllegalStateException("Is closed");
          }
-         
+
          final int position = data == null ? 0 : data.position();
-         
+
          checkAlignment(position);
-         
+
          checkAlignment(bytes.limit());
-         
+
          checkAndResize(bytes.limit() + position);
-         
+
          CallbackRunnable action = new CallbackRunnable(this, bytes, callback);
-         
+
          if (generateErrors)
          {
             action.setSendError(true);
@@ -442,17 +447,17 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
          if (holdCallbacks)
          {
-            FakeSequentialFileFactory.this.callbacksInHold.add(action);
+            callbacksInHold.add(action);
          }
          else
          {
             action.run();
          }
-         
+
          return bytes.limit();
-         
+
       }
-      
+
       public void sync() throws Exception
       {
          if (supportsCallback)
@@ -460,7 +465,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
             throw new IllegalStateException("sync is not supported when supportsCallback=true");
          }
       }
-      
+
       public long size() throws Exception
       {
          if (data == null)
@@ -472,28 +477,27 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
             return data.limit();
          }
       }
-      
-      
+
       public int write(final ByteBuffer bytes, final boolean sync) throws Exception
       {
          return write(bytes, null);
       }
-      
+
       private void checkAndResize(final int size)
       {
          int oldpos = data == null ? 0 : data.position();
-         
+
          if (data == null || data.array().length < size)
          {
             byte[] newBytes = new byte[size];
-            
+
             if (data != null)
             {
                System.arraycopy(data.array(), 0, newBytes, 0, data.array().length);
             }
-            
+
             data = ByteBuffer.wrap(newBytes);
-            
+
             data.position(oldpos);
          }
       }
@@ -505,25 +509,24 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
       public int calculateBlockStart(final int position) throws Exception
       {
-         int pos = ((position / alignment) + (position % alignment != 0 ? 1 : 0)) * alignment;
-         
+         int pos = (position / alignment + (position % alignment != 0 ? 1 : 0)) * alignment;
+
          return pos;
       }
-      
+
+      @Override
       public String toString()
       {
-         return "FakeSequentialFile:" + this.fileName;
+         return "FakeSequentialFile:" + fileName;
       }
-      
-      private void checkAlignment (final int position)
+
+      private void checkAlignment(final int position)
       {
-         if ( position % alignment != 0)
+         if (position % alignment != 0)
          {
             throw new IllegalStateException("Position is not aligned to " + alignment);
          }
       }
-
-
 
    }
 

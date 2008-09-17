@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.integration.journal;
 
@@ -36,23 +36,25 @@ import org.jboss.messaging.tests.unit.core.journal.impl.SequentialFileFactoryTes
  *
  */
 public class NIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
-{		
-	protected String journalDir = System.getProperty("user.home") + "/journal-test";
-		
-	protected void setUp() throws Exception
-	{
-		super.setUp();
-		
-		File file = new File(journalDir);
-		
-		deleteDirectory(file);
-		
-		file.mkdir();		
-	}
+{
+   protected String journalDir = System.getProperty("user.home") + "/journal-test";
 
-	protected SequentialFileFactory createFactory()
-	{
-		return new NIOSequentialFileFactory(journalDir);
-	}
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      File file = new File(journalDir);
+
+      deleteDirectory(file);
+
+      file.mkdir();
+   }
+
+   @Override
+   protected SequentialFileFactory createFactory()
+   {
+      return new NIOSequentialFileFactory(journalDir);
+   }
 
 }

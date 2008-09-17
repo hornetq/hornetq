@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.tests.integration.paging;
 
 import java.io.File;
@@ -49,97 +48,100 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class PagingManagerIntegrationTest extends UnitTestCase
 {
-   
+
    // Constants -----------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
-   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") +  "/journal-test";
-  
+   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
-   
+
    public void testPagingManagerNIO() throws Exception
    {
       HierarchicalRepository<QueueSettings> queueSettings = new HierarchicalObjectRepository<QueueSettings>();
       queueSettings.setDefault(new QueueSettings());
-      
-      
-      PagingManagerImpl managerImpl = 
-         new PagingManagerImpl(new PagingManagerFactoryNIO(journalDir), null, queueSettings, -1);
+
+      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingManagerFactoryNIO(journalDir),
+                                                            null,
+                                                            queueSettings,
+                                                            -1);
       managerImpl.start();
-      
+
       PagingStore store = managerImpl.getPageStore(new SimpleString("simple-test"));
-      
+
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(10));
-      
+
       assertFalse(store.page(new PageMessageImpl(msg)));
-      
+
       store.startPaging();
-      
+
       assertTrue(store.page(new PageMessageImpl(msg)));
-      
+
       Page page = store.depage();
-      
+
       page.open();
-      
+
       PageMessage msgs[] = page.read();
-      
+
       page.close();
-      
+
       assertEquals(1, msgs.length);
-      
+
       assertEqualsByteArrays(msg.getBody().array(), msgs[0].getMessage().getBody().array());
-      
+
       assertTrue(store.isPaging());
-      
+
       assertNull(store.depage());
-      
+
       assertFalse(store.page(new PageMessageImpl(msg)));
    }
-   
+
    public void testPagingManagerAddressFull() throws Exception
    {
       HierarchicalRepository<QueueSettings> queueSettings = new HierarchicalObjectRepository<QueueSettings>();
       queueSettings.setDefault(new QueueSettings());
-      
+
       QueueSettings simpleTestSettings = new QueueSettings();
       simpleTestSettings.setDropMessagesWhenFull(true);
       simpleTestSettings.setMaxSizeBytes(200);
-      
+
       queueSettings.addMatch("simple-test", simpleTestSettings);
-      
-      PagingManagerImpl managerImpl = 
-         new PagingManagerImpl(new PagingManagerFactoryNIO(journalDir), null, queueSettings, -1);
+
+      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingManagerFactoryNIO(journalDir),
+                                                            null,
+                                                            queueSettings,
+                                                            -1);
       managerImpl.start();
-      
+
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(100));
-      
+
       long currentSize = managerImpl.addSize(msg);
-      
+
       assertTrue(currentSize > 0);
-      
+
       assertEquals(currentSize, managerImpl.getPageStore(new SimpleString("simple-test")).getAddressSize());
-      
+
       for (int i = 0; i < 10; i++)
       {
          assertTrue(managerImpl.addSize(msg) < 0);
-         
+
          assertEquals(currentSize, managerImpl.getPageStore(new SimpleString("simple-test")).getAddressSize());
       }
-      
+
       managerImpl.messageDone(msg);
-      
+
       assertTrue(managerImpl.addSize(msg) > 0);
-      
+
       managerImpl.stop();
    }
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
    @Override
    protected void setUp() throws Exception
@@ -148,34 +150,39 @@ public class PagingManagerIntegrationTest extends UnitTestCase
       recreateDirectory();
    }
 
-   protected ServerMessage createMessage(long messageId, SimpleString destination, ByteBuffer buffer)
+   protected ServerMessage createMessage(final long messageId, final SimpleString destination, final ByteBuffer buffer)
    {
-      ServerMessage msg = new ServerMessageImpl((byte)1, true, 0,
-            System.currentTimeMillis(), (byte)0, new ByteBufferWrapper(buffer));
-      
-      msg.setMessageID((long)messageId);
-      
+      ServerMessage msg = new ServerMessageImpl((byte)1,
+                                                true,
+                                                0,
+                                                System.currentTimeMillis(),
+                                                (byte)0,
+                                                new ByteBufferWrapper(buffer));
+
+      msg.setMessageID(messageId);
+
       msg.setDestination(destination);
       return msg;
    }
 
-   protected ByteBuffer createRandomBuffer(int size)
+   protected ByteBuffer createRandomBuffer(final int size)
    {
       ByteBuffer buffer = ByteBuffer.allocate(size);
-      
+
       for (int j = 0; j < buffer.limit(); j++)
       {
          buffer.put(RandomUtil.randomByte());
       }
       return buffer;
    }
-   
+
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
-      //deleteDirectory(new File(journalDir));
+      // deleteDirectory(new File(journalDir));
    }
-   
+
    // Private -------------------------------------------------------
 
    private void recreateDirectory()
@@ -185,7 +192,6 @@ public class PagingManagerIntegrationTest extends UnitTestCase
       fileJournalDir.mkdirs();
    }
 
-   
    // Inner classes -------------------------------------------------
-   
+
 }

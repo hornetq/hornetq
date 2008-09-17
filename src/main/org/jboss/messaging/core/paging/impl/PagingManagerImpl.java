@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.paging.impl;
 
 import java.util.ArrayList;
@@ -57,56 +56,55 @@ import org.jboss.messaging.util.SimpleString;
 public class PagingManagerImpl implements PagingManager
 {
 
-   
    // Constants -----------------------------------------------------
    private static final long WATERMARK_GLOBAL_PAGE = QueueSettings.DEFAULT_PAGE_SIZE_BYTES;
-   
+
    // Attributes ----------------------------------------------------
-   
-   
+
    private volatile boolean started = false;
-   
+
    private final long maxGlobalSize;
-   
+
    private final AtomicLong globalSize = new AtomicLong(0);
-   
+
    private final AtomicBoolean globalMode = new AtomicBoolean(false);
-   
+
    private final AtomicBoolean globalDepageRunning = new AtomicBoolean(false);
-   
+
    private final ConcurrentMap<SimpleString, PagingStore> stores = new ConcurrentHashMap<SimpleString, PagingStore>();
-   
+
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
-   
+
    private final PagingStoreFactory pagingSPI;
-   
+
    private final StorageManager storageManager;
 
    private PostOffice postOffice;
-   
-   private final ConcurrentMap</*TransactionID*/ Long , PageTransactionInfo> transactions = new ConcurrentHashMap<Long, PageTransactionInfo>();
-   
 
-   
-   // Static --------------------------------------------------------------------------------------------------------------------------
+   private final ConcurrentMap</*TransactionID*/Long, PageTransactionInfo> transactions = new ConcurrentHashMap<Long, PageTransactionInfo>();
+
+   // Static
+   // --------------------------------------------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(PagingManagerImpl.class);
-   
-   //private static final boolean isTrace = log.isTraceEnabled();
+
+   // private static final boolean isTrace = log.isTraceEnabled();
    private static final boolean isTrace = true;
-   
+
    // This is just a debug tool method.
-   // During debugs you could make log.trace as log.info, and change the variable isTrace above
-   private static void trace(String message)
+   // During debugs you could make log.trace as log.info, and change the
+   // variable isTrace above
+   private static void trace(final String message)
    {
-      //log.trace(message);
+      // log.trace(message);
       log.info(message);
    }
-   
-   
-   // Constructors --------------------------------------------------------------------------------------------------------------------
-   
-   public PagingManagerImpl(final PagingStoreFactory pagingSPI, StorageManager storageManager, 
+
+   // Constructors
+   // --------------------------------------------------------------------------------------------------------------------
+
+   public PagingManagerImpl(final PagingStoreFactory pagingSPI,
+                            final StorageManager storageManager,
                             final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                             final long maxGlobalSize)
    {
@@ -115,70 +113,75 @@ public class PagingManagerImpl implements PagingManager
       this.storageManager = storageManager;
       this.maxGlobalSize = maxGlobalSize;
    }
-   
-   // Public ---------------------------------------------------------------------------------------------------------------------------
-   
-   // PagingManager implementation -----------------------------------------------------------------------------------------------------
-   
-   
+
+   // Public
+   // ---------------------------------------------------------------------------------------------------------------------------
+
+   // PagingManager implementation
+   // -----------------------------------------------------------------------------------------------------
+
    public boolean isGlobalPageMode()
    {
       return globalMode.get();
    }
-   
+
    public PagingStore getPageStore(final SimpleString storeName) throws Exception
    {
       validateStarted();
-      
+
       PagingStore store = stores.get(storeName);
       if (store == null)
       {
-         
+
          store = newStore(storeName);
-         
+
          PagingStore oldStore = stores.putIfAbsent(storeName, store);
-         
+
          if (oldStore != null)
          {
             store = oldStore;
          }
-         
+
          store.start();
       }
 
       return store;
-      
+
    }
-   
+
    /** this will be set by the postOffice itself.
     *  There is no way to set this on the constructor as the PagingManager is constructed before the postOffice.
     *  (There is a one-to-one relationship here) */
-   public void setPostOffice(PostOffice postOffice)
+   public void setPostOffice(final PostOffice postOffice)
    {
       this.postOffice = postOffice;
    }
 
-   public void clearLastPageRecord(LastPageRecord lastRecord) throws Exception
+   public void clearLastPageRecord(final LastPageRecord lastRecord) throws Exception
    {
       trace("Clearing lastRecord information " + lastRecord.getLastId());
       storageManager.storeDelete(lastRecord.getRecordId());
    }
-   
+
    /**
     * This method will remove files from the page system and add them into the journal, doing it transactionally
     * 
     * A Transaction will be opened only if persistent messages are used.
     * If persistent messages are also used, it will update eventual PageTransactions
     */
-   public boolean onDepage(int pageId, final SimpleString destination, PagingStore pagingStore, final PageMessage[] data) throws Exception
+   public boolean onDepage(final int pageId,
+                           final SimpleString destination,
+                           final PagingStore pagingStore,
+                           final PageMessage[] data) throws Exception
    {
       trace("Depaging....");
-      
-      /// Depage has to be done atomically, in case of failure it should be back to where it was
+
+      // / Depage has to be done atomically, in case of failure it should be
+      // back to where it was
       final long depageTransactionID = storageManager.generateTransactionID();
-      
-      LastPageRecord lastPage = pagingStore.getLastRecord(); 
-      
+
+      LastPageRecord lastPage = pagingStore.getLastRecord();
+
       if (lastPage == null)
       {
          lastPage = new LastPageRecordImpl(pageId, destination);
@@ -195,20 +198,21 @@ public class PagingManagerImpl implements PagingManager
 
       lastPage.setLastId(pageId);
       storageManager.storeLastPage(depageTransactionID, lastPage);
-      
+
       HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
 
       final List<MessageReference> refsToAdd = new ArrayList<MessageReference>();
-      
-      for (PageMessage msg: data)
+
+      for (PageMessage msg : data)
       {
          final long transactionIdDuringPaging = msg.getTransactionID();
          if (transactionIdDuringPaging >= 0)
          {
             final PageTransactionInfo pageTransactionInfo = transactions.get(transactionIdDuringPaging);
-            
+
             // http://wiki.jboss.org/auth/wiki/JBossMessaging2Paging
-            // This is the Step D described on the "Transactions on Paging" section
+            // This is the Step D described on the "Transactions on Paging"
+            // section
             if (pageTransactionInfo == null)
             {
                if (isTrace)
@@ -217,161 +221,159 @@ public class PagingManagerImpl implements PagingManager
                }
                continue;
             }
-            
-            // This is to avoid a race condition where messages are depaged before the commit arrived
+
+            // This is to avoid a race condition where messages are depaged
+            // before the commit arrived
             if (!pageTransactionInfo.waitCompletion())
             {
                trace("Rollback was called after prepare, ignoring message " + msg.getMessage());
                continue;
             }
 
-            /// Update information about transactions
+            // / Update information about transactions
             if (msg.getMessage().isDurable())
             {
                pageTransactionInfo.decrement();
                pageTransactionsToUpdate.add(pageTransactionInfo);
             }
          }
-         
+
          msg.getMessage().setMessageID(storageManager.generateID());
 
          refsToAdd.addAll(postOffice.route(msg.getMessage()));
-         
+
          if (msg.getMessage().getDurableRefCount() != 0)
          {
             storageManager.storeMessageTransactional(depageTransactionID, msg.getMessage());
          }
       }
-      
-      
-      for (PageTransactionInfo pageWithTransaction: pageTransactionsToUpdate)
+
+      for (PageTransactionInfo pageWithTransaction : pageTransactionsToUpdate)
       {
          if (pageWithTransaction.getNumberOfMessages() == 0)
-         { 
+         {
             // http://wiki.jboss.org/auth/wiki/JBossMessaging2Paging
             // numberOfReads==numberOfWrites -> We delete the record
             storageManager.storeDeleteTransactional(depageTransactionID, pageWithTransaction.getRecordID());
-            this.transactions.remove(pageWithTransaction.getTransactionID());
+            transactions.remove(pageWithTransaction.getTransactionID());
          }
          else
          {
             storageManager.storePageTransaction(depageTransactionID, pageWithTransaction);
          }
       }
-      
+
       storageManager.commit(depageTransactionID);
 
       for (MessageReference ref : refsToAdd)
       {
          ref.getQueue().addLast(ref);
       }
-      
-      
+
       if (globalMode.get())
       {
-         return globalSize.get() < maxGlobalSize -  WATERMARK_GLOBAL_PAGE &&
-                pagingStore.getMaxSizeBytes() <= 0 || pagingStore.getAddressSize() < pagingStore.getMaxSizeBytes();
+         return globalSize.get() < maxGlobalSize - WATERMARK_GLOBAL_PAGE && pagingStore.getMaxSizeBytes() <= 0 ||
+                pagingStore.getAddressSize() < pagingStore.getMaxSizeBytes();
       }
       else
       {
-         // If Max-size is not configured (-1) it will aways return true, as this method was probably called by global-depage
+         // If Max-size is not configured (-1) it will aways return true, as
+         // this method was probably called by global-depage
          return pagingStore.getMaxSizeBytes() <= 0 || pagingStore.getAddressSize() < pagingStore.getMaxSizeBytes();
       }
 
    }
-   
-   public void setLastPage(LastPageRecord lastPage) throws Exception
+
+   public void setLastPage(final LastPageRecord lastPage) throws Exception
    {
       trace("LastPage loaded was " + lastPage.getLastId() + " recordID = " + lastPage.getRecordId());
-      this.getPageStore(lastPage.getDestination()).setLastRecord(lastPage);
+      getPageStore(lastPage.getDestination()).setLastRecord(lastPage);
    }
 
-   public boolean isPaging(SimpleString destination) throws Exception
+   public boolean isPaging(final SimpleString destination) throws Exception
    {
-      return this.getPageStore(destination).isPaging();
+      return getPageStore(destination).isPaging();
    }
-   
-   public void messageDone(ServerMessage message) throws Exception
+
+   public void messageDone(final ServerMessage message) throws Exception
    {
       addSize(message.getDestination(), message.getMemoryEstimate() * -1);
    }
-   
+
    public long addSize(final ServerMessage message) throws Exception
    {
-      return addSize(message.getDestination(), message.getMemoryEstimate());      
-   }
-   
-   public boolean page(ServerMessage message, long transactionId)
-         throws Exception
-   {
-      return this.getPageStore(message.getDestination()).page(new PageMessageImpl(message, transactionId));
+      return addSize(message.getDestination(), message.getMemoryEstimate());
    }
 
-
-   public boolean page(ServerMessage message) throws Exception
+   public boolean page(final ServerMessage message, final long transactionId) throws Exception
    {
-      return this.getPageStore(message.getDestination()).page(new PageMessageImpl(message));
+      return getPageStore(message.getDestination()).page(new PageMessageImpl(message, transactionId));
    }
 
-   
-   public void addTransaction(PageTransactionInfo pageTransaction)
+   public boolean page(final ServerMessage message) throws Exception
    {
-      this.transactions.put(pageTransaction.getTransactionID(), pageTransaction);
+      return getPageStore(message.getDestination()).page(new PageMessageImpl(message));
    }
 
-   public void completeTransaction(long transactionId)
+   public void addTransaction(final PageTransactionInfo pageTransaction)
    {
-      PageTransactionInfo pageTrans = this.transactions.get(transactionId);
-      
-      // If nothing was paged.. we just remove the information to avoid memory leaks
+      transactions.put(pageTransaction.getTransactionID(), pageTransaction);
+   }
+
+   public void completeTransaction(final long transactionId)
+   {
+      PageTransactionInfo pageTrans = transactions.get(transactionId);
+
+      // If nothing was paged.. we just remove the information to avoid memory
+      // leaks
       if (pageTrans.getNumberOfMessages() == 0)
       {
-         this.transactions.remove(pageTrans);
+         transactions.remove(pageTrans);
       }
    }
-   
-   public void sync(Collection<SimpleString> destinationsToSync) throws Exception
+
+   public void sync(final Collection<SimpleString> destinationsToSync) throws Exception
    {
-      for (SimpleString destination: destinationsToSync)
+      for (SimpleString destination : destinationsToSync)
       {
-         this.getPageStore(destination).sync();
+         getPageStore(destination).sync();
       }
    }
-   
-   // MessagingComponent implementation ------------------------------------------------------------------------------------------------
-   
+
+   // MessagingComponent implementation
+   // ------------------------------------------------------------------------------------------------
+
    public boolean isStarted()
    {
       return started;
    }
-   
+
    public void start() throws Exception
    {
-      this.started = true;      
+      started = true;
    }
-   
+
    public void stop() throws Exception
    {
-      this.started = false;
-      
-      for (PagingStore store: stores.values())
+      started = false;
+
+      for (PagingStore store : stores.values())
       {
          store.stop();
       }
    }
-   
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    private PagingStore newStore(final SimpleString destinationName)
    {
-      return pagingSPI.newStore(destinationName, this.queueSettingsRepository.getMatch(destinationName.toString()));
+      return pagingSPI.newStore(destinationName, queueSettingsRepository.getMatch(destinationName.toString()));
    }
-   
+
    private void validateStarted()
    {
       if (!started)
@@ -380,27 +382,26 @@ public class PagingManagerImpl implements PagingManager
       }
    }
 
-   
    private long addSize(final SimpleString destination, final long size) throws Exception
    {
-      final PagingStore store = this.getPageStore(destination);
-      
+      final PagingStore store = getPageStore(destination);
+
       final long maxSize = store.getMaxSizeBytes();
-      
+
       final long pageSize = store.getPageSizeBytes();
 
-      
       if (store.isDropWhenMaxSize() && size > 0)
       {
-         // if destination configured to drop messages && size is over the limit, we return -1 what means drop the message
-         if ((store.getAddressSize() + size > maxSize) || (maxGlobalSize > 0 && (globalSize.get() + size > maxGlobalSize)))
+         // if destination configured to drop messages && size is over the
+         // limit, we return -1 what means drop the message
+         if (store.getAddressSize() + size > maxSize || maxGlobalSize > 0 && globalSize.get() + size > maxGlobalSize)
          {
             if (!store.isDroppedMessage())
             {
                store.setDroppedMessage(true);
                log.warn("Messages are being dropped on adress " + store.getStoreName());
             }
-            
+
             return -1l;
          }
          else
@@ -410,14 +411,14 @@ public class PagingManagerImpl implements PagingManager
       }
       else
       {
-         
+
          long currentGlobalSize = globalSize.addAndGet(size);
-         
+
          final long addressSize = store.addAddressSize(size);
 
          if (size > 0)
          {
-            if ((maxGlobalSize > 0 && (currentGlobalSize > maxGlobalSize)))
+            if (maxGlobalSize > 0 && currentGlobalSize > maxGlobalSize)
             {
                globalMode.set(true);
                if (store.startPaging())
@@ -428,8 +429,7 @@ public class PagingManagerImpl implements PagingManager
                   }
                }
             }
-            else
-            if ((maxSize > 0 && (addressSize > maxSize)))
+            else if (maxSize > 0 && addressSize > maxSize)
             {
                if (store.startPaging())
                {
@@ -442,13 +442,13 @@ public class PagingManagerImpl implements PagingManager
          }
          else
          {
-            // When in Global mode, we use the default page size as the minimal watermark to start depage
+            // When in Global mode, we use the default page size as the minimal
+            // watermark to start depage
             if (globalMode.get() && currentGlobalSize < maxGlobalSize - QueueSettings.DEFAULT_PAGE_SIZE_BYTES)
             {
                startGlobalDepage();
             }
-            else
-            if ( maxSize > 0 && addressSize < (maxSize - pageSize))
+            else if (maxSize > 0 && addressSize < maxSize - pageSize)
             {
                if (store.startDepaging())
                {
@@ -456,11 +456,10 @@ public class PagingManagerImpl implements PagingManager
                }
             }
          }
-         
+
          return addressSize;
       }
    }
-
 
    private void startGlobalDepage()
    {
@@ -471,10 +470,8 @@ public class PagingManagerImpl implements PagingManager
       }
    }
 
-   
    // Inner classes -------------------------------------------------
-   
-   
+
    class GlobalDepager implements Runnable
    {
       public void run()
@@ -484,7 +481,8 @@ public class PagingManagerImpl implements PagingManager
             while (globalSize.get() < maxGlobalSize)
             {
                boolean depaged = false;
-               // Round robin depaging one page at the time from each destination
+               // Round robin depaging one page at the time from each
+               // destination
                for (PagingStore store : stores.values())
                {
                   if (globalSize.get() < maxGlobalSize)
@@ -508,10 +506,10 @@ public class PagingManagerImpl implements PagingManager
                   break;
                }
             }
-            
+
             if (globalSize.get() < maxGlobalSize)
             {
-               
+
                globalMode.set(false);
                // Clearing possible messages still in page-mode
                for (PagingStore store : stores.values())
@@ -522,10 +520,10 @@ public class PagingManagerImpl implements PagingManager
          }
          finally
          {
-            PagingManagerImpl.this.globalDepageRunning.set(false);
+            globalDepageRunning.set(false);
          }
       }
-      
+
    }
-   
+
 }

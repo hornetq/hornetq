@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.paging;
 
 import org.jboss.messaging.core.server.MessagingComponent;
@@ -39,37 +38,37 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface PagingStore extends MessagingComponent
 {
-   
+
    int getNumberOfPages();
-   
+
    SimpleString getStoreName();
-   
-   /** Maximum number of bytes allowed in memory */ 
+
+   /** Maximum number of bytes allowed in memory */
    long getMaxSizeBytes();
-   
+
    boolean isDroppedMessage();
-   
+
    void setDroppedMessage(boolean droppedMessages);
-   
+
    boolean isDropWhenMaxSize();
-   
+
    long getPageSizeBytes();
-   
+
    long getAddressSize();
-   
+
    long addAddressSize(long add);
-   
+
    /** @return true if paging was started, or false if paging was already started before this call */
    boolean startPaging() throws Exception;
-   
+
    boolean isPaging();
-   
+
    void sync() throws Exception;
-   
+
    public boolean readPage() throws Exception;
-   
+
    boolean page(PageMessage message) throws Exception;
-   
+
    /** 
     * Remove the first page from the Writing Queue.
     * The file will still exist until Page.delete is called, 
@@ -78,7 +77,7 @@ public interface PagingStore extends MessagingComponent
     * @throws Exception 
     */
    Page depage() throws Exception;
-   
+
    /**
     * 
     * @return false if a thread was already started, or if not in page mode

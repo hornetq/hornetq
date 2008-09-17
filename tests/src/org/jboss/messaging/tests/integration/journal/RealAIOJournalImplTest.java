@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.integration.journal;
 
@@ -46,43 +46,46 @@ import org.jboss.messaging.tests.unit.core.journal.impl.JournalImplTestUnit;
 public class RealAIOJournalImplTest extends JournalImplTestUnit
 {
    private static final Logger log = Logger.getLogger(RealAIOJournalImplTest.class);
-   
+
    // Need to run the test over a local disk (no NFS)
-   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") +  "/journal-test";
-     
+   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
+
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
       if (!AsynchronousFileImpl.isLoaded())
       {
-         fail(String.format("libAIO is not loaded on %s %s %s", 
-               System.getProperty("os.name"), 
-               System.getProperty("os.arch"), 
-               System.getProperty("os.version")));
+         fail(String.format("libAIO is not loaded on %s %s %s",
+                            System.getProperty("os.name"),
+                            System.getProperty("os.arch"),
+                            System.getProperty("os.version")));
       }
    }
-   
+
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
       deleteDirectory(new File(journalDir));
    }
-   
+
+   @Override
    protected SequentialFileFactory getFileFactory() throws Exception
    {
       File file = new File(journalDir);
-      
-      deleteDirectory(file);
-      
-      file.mkdir();     
-      
-      return new AIOSequentialFileFactory(journalDir);
-   }  
 
+      deleteDirectory(file);
+
+      file.mkdir();
+
+      return new AIOSequentialFileFactory(journalDir);
+   }
+
+   @Override
    protected int getAlignment()
    {
       return 512;
    }
-   
+
 }

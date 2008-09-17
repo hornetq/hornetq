@@ -20,11 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.tests.unit.core.paging.impl;
 
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
-
 
 /**
  * 
@@ -33,37 +31,33 @@ import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFile
  */
 public class PageImplTest extends PageImplTestBase
 {
-   
+
    // Constants -----------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
-   
+
    public void testPageFakeWithCallbacks() throws Exception
    {
       testAdd(new FakeSequentialFileFactory(512, true), 10);
    }
-   
+
    public void testPageFakeWithoutCallbacks() throws Exception
    {
       testAdd(new FakeSequentialFileFactory(1, false), 10);
    }
-   
-   
-   
-    
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
+
 }

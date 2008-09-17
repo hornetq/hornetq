@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.paging;
 
 import org.jboss.messaging.core.journal.EncodingSupport;
@@ -35,17 +34,17 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface LastPageRecord extends EncodingSupport
 {
-   
+
    // Constants -----------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
-   
+
    /** Internal field with the primary key, used on the journal/database */
    long getRecordId();
 
@@ -61,13 +60,13 @@ public interface LastPageRecord extends EncodingSupport
 
    /** Last Page ID*/
    void setLastId(long lastId);
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
+
 }

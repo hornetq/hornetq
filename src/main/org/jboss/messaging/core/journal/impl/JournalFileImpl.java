@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.journal.impl;
 
@@ -39,52 +39,52 @@ import org.jboss.messaging.core.logging.Logger;
  *
  */
 public class JournalFileImpl implements JournalFile
-{			
+{
    private static final Logger log = Logger.getLogger(JournalFileImpl.class);
-   
+
    private final SequentialFile file;
-   
+
    private final int orderingID;
-   
+
    private int offset;
-   
+
    private final AtomicInteger posCount = new AtomicInteger(0);
-   
+
    private boolean canReclaim;
-   
-   private Map<JournalFile, AtomicInteger> negCounts = new ConcurrentHashMap<JournalFile, AtomicInteger>();
-   
+
+   private final Map<JournalFile, AtomicInteger> negCounts = new ConcurrentHashMap<JournalFile, AtomicInteger>();
+
    public JournalFileImpl(final SequentialFile file, final int orderingID)
    {
       this.file = file;
-      
+
       this.orderingID = orderingID;
    }
-   
+
    public int getPosCount()
    {
       return posCount.intValue();
    }
-   
+
    public boolean isCanReclaim()
    {
       return canReclaim;
    }
-   
+
    public void setCanReclaim(final boolean canReclaim)
    {
       this.canReclaim = canReclaim;
    }
-   
+
    public void incNegCount(final JournalFile file)
    {
       getOrCreateNegCount(file).incrementAndGet();
    }
-   
+
    public int getNegCount(final JournalFile file)
-   {		
-      AtomicInteger count =  negCounts.get(file);
-      
+   {
+      AtomicInteger count = negCounts.get(file);
+
       if (count == null)
       {
          return 0;
@@ -94,42 +94,43 @@ public class JournalFileImpl implements JournalFile
          return count.intValue();
       }
    }
-   
+
    public void incPosCount()
    {
       posCount.incrementAndGet();
    }
-   
+
    public void decPosCount()
    {
       posCount.decrementAndGet();
    }
-   
+
    public void extendOffset(final int delta)
    {
       offset += delta;
    }
-   
+
    public int getOffset()
    {
       return offset;
    }
-   
+
    public int getOrderingID()
    {
       return orderingID;
    }
-   
+
    public void setOffset(final int offset)
    {
       this.offset = offset;
    }
-   
+
    public SequentialFile getFile()
    {
       return file;
-   }	
-   
+   }
+
+   @Override
    public String toString()
    {
       try
@@ -142,33 +143,31 @@ public class JournalFileImpl implements JournalFile
          return "Error:" + e.toString();
       }
    }
-   
+
    /** Receive debug information about the journal */
    public String debug()
    {
       StringBuilder builder = new StringBuilder();
-      
-      for (Entry<JournalFile, AtomicInteger> entry: negCounts.entrySet())
+
+      for (Entry<JournalFile, AtomicInteger> entry : negCounts.entrySet())
       {
          builder.append(" file = " + entry.getKey() + " negcount value = " + entry.getValue() + "\n");
       }
-      
+
       return builder.toString();
    }
 
-   
    private synchronized AtomicInteger getOrCreateNegCount(final JournalFile file)
    {
       AtomicInteger count = negCounts.get(file);
-      
+
       if (count == null)
       {
          count = new AtomicInteger();
          negCounts.put(file, count);
       }
-      
+
       return count;
    }
-   
-   
+
 }

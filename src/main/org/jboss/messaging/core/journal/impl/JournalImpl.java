@@ -96,7 +96,7 @@ public class JournalImpl implements TestableJournal
    // This method exists just to make debug easier.
    // I could replace log.trace by log.info temporarily while I was debugging
    // Journal
-   private static final void trace(String message)
+   private static final void trace(final String message)
    {
       log.trace(message);
    }
@@ -118,27 +118,32 @@ public class JournalImpl implements TestableJournal
    public static final int BASIC_SIZE = SIZE_BYTE + SIZE_INT + SIZE_INT;
 
    public static final int SIZE_ADD_RECORD = BASIC_SIZE + SIZE_LONG + SIZE_BYTE + SIZE_INT; // +
-                                                                                             // record.length
+
+   // record.length
 
    public static final byte ADD_RECORD = 11;
 
    public static final byte SIZE_UPDATE_RECORD = BASIC_SIZE + SIZE_LONG + SIZE_BYTE + SIZE_INT; // +
-                                                                                                // record.length;
+
+   // record.length;
 
    public static final byte UPDATE_RECORD = 12;
 
    public static final int SIZE_ADD_RECORD_TX = BASIC_SIZE + SIZE_LONG + SIZE_BYTE + SIZE_LONG + SIZE_INT; // +
-                                                                                                            // record.length
+
+   // record.length
 
    public static final byte ADD_RECORD_TX = 13;
 
    public static final int SIZE_UPDATE_RECORD_TX = BASIC_SIZE + SIZE_LONG + SIZE_BYTE + SIZE_LONG + SIZE_INT; // +
-                                                                                                               // record.length
+
+   // record.length
 
    public static final byte UPDATE_RECORD_TX = 14;
 
    public static final int SIZE_DELETE_RECORD_TX = BASIC_SIZE + SIZE_LONG + SIZE_LONG + SIZE_INT; // +
-                                                                                                   // record.length
+
+   // record.length
 
    public static final byte DELETE_RECORD_TX = 15;
 
@@ -147,7 +152,8 @@ public class JournalImpl implements TestableJournal
    public static final byte DELETE_RECORD = 16;
 
    public static final int SIZE_COMPLETE_TRANSACTION_RECORD = BASIC_SIZE + SIZE_INT + SIZE_LONG; // +
-                                                                                                   // NumerOfElements*SIZE_INT*2
+
+   // NumerOfElements*SIZE_INT*2
 
    public static final int SIZE_PREPARE_RECORD = SIZE_COMPLETE_TRANSACTION_RECORD + SIZE_INT;
 
@@ -447,7 +453,7 @@ public class JournalImpl implements TestableJournal
 
    public void appendUpdateRecordTransactional(final long txID,
                                                final long id,
-                                               byte recordType,
+                                               final byte recordType,
                                                final EncodingSupport record) throws Exception
    {
       if (state != STATE_LOADED)
@@ -549,7 +555,7 @@ public class JournalImpl implements TestableJournal
       lock.acquire();
 
       TransactionCallback callback = getTransactionCallback(txID);
-      
+
       try
       {
          JournalFile usedFile = appendRecord(bb, syncTransactional, callback);
@@ -560,7 +566,7 @@ public class JournalImpl implements TestableJournal
       {
          lock.release();
       }
-      
+
       // We should wait this outside of the lock, to increase throuput
       if (callback != null)
       {
@@ -604,7 +610,7 @@ public class JournalImpl implements TestableJournal
       lock.acquire();
 
       TransactionCallback callback = getTransactionCallback(txID);
-      
+
       try
       {
          JournalFile usedFile = appendRecord(bb, syncTransactional, callback);
@@ -617,13 +623,13 @@ public class JournalImpl implements TestableJournal
       {
          lock.release();
       }
-      
+
       // We should wait this outside of the lock, to increase throuput
       if (callback != null)
       {
          callback.waitCompletion();
       }
-      
+
    }
 
    public void appendRollbackRecord(final long txID) throws Exception
@@ -652,7 +658,6 @@ public class JournalImpl implements TestableJournal
       lock.acquire();
 
       TransactionCallback callback = getTransactionCallback(txID);
-      
 
       try
       {
@@ -666,14 +671,13 @@ public class JournalImpl implements TestableJournal
       {
          lock.release();
       }
-      
+
       // We should wait this outside of the lock, to increase throuput
       if (callback != null)
       {
          callback.waitCompletion();
       }
-      
-      
+
    }
 
    /**
@@ -1055,7 +1059,7 @@ public class JournalImpl implements TestableJournal
                      transactions.put(transactionID, tx);
                   }
 
-                  tx.recordsToDelete.add(new RecordInfo(recordID, (byte) 0, record, true));
+                  tx.recordsToDelete.add(new RecordInfo(recordID, (byte)0, record, true));
 
                   JournalTransaction tnp = transactionInfos.get(transactionID);
 
@@ -1275,7 +1279,7 @@ public class JournalImpl implements TestableJournal
       {
          currentFile.getFile().open();
 
-         if (this.reuseBufferSize > 0)
+         if (reuseBufferSize > 0)
          {
             currentFile.getFile().setBufferCallback(buffersControl.callback);
          }
@@ -1333,7 +1337,7 @@ public class JournalImpl implements TestableJournal
 
    public int getAlignment() throws Exception
    {
-      return this.fileFactory.getAlignment();
+      return fileFactory.getAlignment();
    }
 
    // TestableJournal implementation
@@ -1346,12 +1350,12 @@ public class JournalImpl implements TestableJournal
 
    public boolean isAutoReclaim()
    {
-      return this.autoReclaim;
+      return autoReclaim;
    }
 
    public String debug() throws Exception
    {
-      this.checkReclaimStatus();
+      checkReclaimStatus();
 
       StringBuilder builder = new StringBuilder();
 
@@ -1365,7 +1369,7 @@ public class JournalImpl implements TestableJournal
                         "\n");
          if (file instanceof JournalFileImpl)
          {
-            builder.append(((JournalFileImpl) file).debug());
+            builder.append(((JournalFileImpl)file).debug());
 
          }
       }
@@ -1381,7 +1385,7 @@ public class JournalImpl implements TestableJournal
 
          if (currentFile instanceof JournalFileImpl)
          {
-            builder.append(((JournalFileImpl) currentFile).debug());
+            builder.append(((JournalFileImpl)currentFile).debug());
          }
       }
       else
@@ -1389,7 +1393,7 @@ public class JournalImpl implements TestableJournal
          builder.append("CurrentFile: No current file at this point!");
       }
 
-      builder.append("#Opened Files:" + this.openedFiles.size());
+      builder.append("#Opened Files:" + openedFiles.size());
 
       return builder.toString();
    }
@@ -1409,7 +1413,7 @@ public class JournalImpl implements TestableJournal
          // until its end
          final CountDownLatch latch = new CountDownLatch(1);
 
-         this.filesExecutor.execute(new Runnable()
+         filesExecutor.execute(new Runnable()
          {
             public void run()
             {
@@ -1433,7 +1437,9 @@ public class JournalImpl implements TestableJournal
             // File can be reclaimed or deleted
 
             if (trace)
+            {
                trace("Reclaiming file " + file);
+            }
 
             dataFiles.remove(file);
 
@@ -1632,7 +1638,7 @@ public class JournalImpl implements TestableJournal
 
       // This line aways show an annoying compilation-warning, the
       // SupressWarning is to avoid a warning about this cast
-      Pair<Integer, Integer> values[] = (Pair<Integer, Integer>[]) new Pair[numberOfFiles];
+      Pair<Integer, Integer> values[] = new Pair[numberOfFiles];
 
       for (int i = 0; i < numberOfFiles; i++)
       {
@@ -1740,7 +1746,7 @@ public class JournalImpl implements TestableJournal
    private ByteBuffer writeTransaction(final byte recordType,
                                        final long txID,
                                        final JournalTransaction tx,
-                                       EncodingSupport transactionData) throws Exception
+                                       final EncodingSupport transactionData) throws Exception
    {
       int size = SIZE_COMPLETE_TRANSACTION_RECORD + tx.getElementsSummary().size() *
                  SIZE_INT *
@@ -1868,12 +1874,12 @@ public class JournalImpl implements TestableJournal
 
       class JournalFileComparator implements Comparator<JournalFile>
       {
-         public int compare(JournalFile f1, JournalFile f2)
+         public int compare(final JournalFile f1, final JournalFile f2)
          {
             int id1 = f1.getOrderingID();
             int id2 = f2.getOrderingID();
 
-            return (id1 < id2 ? -1 : (id1 == id2 ? 0 : 1));
+            return id1 < id2 ? -1 : id1 == id2 ? 0 : 1;
          }
       }
 
@@ -1967,7 +1973,7 @@ public class JournalImpl implements TestableJournal
 
       file.setOffset(file.getFile().calculateBlockStart(SIZE_HEADER));
 
-      if (this.reuseBufferSize > 0)
+      if (reuseBufferSize > 0)
       {
          file.getFile().setBufferCallback(buffersControl.callback);
       }
@@ -2018,7 +2024,9 @@ public class JournalImpl implements TestableJournal
    private JournalFile enqueueOpenFile() throws InterruptedException
    {
       if (trace)
+      {
          trace("enqueueOpenFile with openedFiles.size=" + openedFiles.size());
+      }
 
       filesExecutor.execute(new Runnable()
       {
@@ -2136,7 +2144,7 @@ public class JournalImpl implements TestableJournal
    {
       if (fileFactory.isSupportsCallbacks() && syncTransactional)
       {
-         TransactionCallback callback = this.transactionCallbacks.get(transactionId);
+         TransactionCallback callback = transactionCallbacks.get(transactionId);
 
          if (callback == null)
          {
@@ -2293,7 +2301,7 @@ public class JournalImpl implements TestableJournal
             int alignedSize = fileFactory.calculateBlockSize(size);
 
             // Try getting a buffer from the queue...
-            ByteBuffer buffer = this.reuseBuffers.poll();
+            ByteBuffer buffer = reuseBuffers.poll();
 
             if (buffer == null)
             {
@@ -2318,7 +2326,7 @@ public class JournalImpl implements TestableJournal
 
       private class LocalBufferCallback implements BufferCallback
       {
-         public void bufferDone(ByteBuffer buffer)
+         public void bufferDone(final ByteBuffer buffer)
          {
             bufferReuseLastTime = System.currentTimeMillis();
 

@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.journal;
 
 /**
@@ -32,5 +31,5 @@ package org.jboss.messaging.core.journal;
  */
 public interface BufferCallback extends org.jboss.messaging.core.asyncio.BufferCallback
 {
-   
+
 }

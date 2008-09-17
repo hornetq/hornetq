@@ -18,12 +18,11 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.journal.impl;
 
 import org.jboss.messaging.core.logging.Logger;
-
 
 /**
  * 
@@ -50,24 +49,24 @@ import org.jboss.messaging.core.logging.Logger;
 public class Reclaimer
 {
    private static final Logger log = Logger.getLogger(Reclaimer.class);
-   
+
    private static boolean trace = log.isTraceEnabled();
-   
-   private static void trace(String message)
+
+   private static void trace(final String message)
    {
       log.trace(message);
    }
-   
+
    public void scan(final JournalFile[] files)
    {
       for (int i = 0; i < files.length; i++)
       {
-         //First we evaluate criterion 1)
-         
+         // First we evaluate criterion 1)
+
          JournalFile currentFile = files[i];
-         
+
          int posCount = currentFile.getPosCount();
-         
+
          int totNeg = 0;
 
          if (trace)
@@ -84,27 +83,27 @@ public class Reclaimer
                   trace("Negative from " + files[j] + " = " + files[j].getNegCount(currentFile));
                }
             }
-            
+
             totNeg += files[j].getNegCount(currentFile);
          }
-         
+
          currentFile.setCanReclaim(true);
-         
+
          if (posCount <= totNeg)
-         {   		
-            //Now we evaluate criterion 2)
-            
+         {
+            // Now we evaluate criterion 2)
+
             for (int j = 0; j <= i; j++)
             {
                JournalFile file = files[j];
-               
+
                int negCount = currentFile.getNegCount(file);
-               
+
                if (negCount != 0)
                {
                   if (file.isCanReclaim())
                   {
-                     //Ok
+                     // Ok
                   }
                   else
                   {
@@ -112,18 +111,18 @@ public class Reclaimer
                      {
                         trace(currentFile + " Can't be reclaimed because " + file + " has negative values");
                      }
-                     
+
                      currentFile.setCanReclaim(false);
-                     
+
                      break;
                   }
                }
-            }   		
+            }
          }
          else
          {
             currentFile.setCanReclaim(false);
-         }			
-      }			
+         }
+      }
    }
 }

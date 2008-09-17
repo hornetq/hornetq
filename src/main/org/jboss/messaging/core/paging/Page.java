@@ -20,9 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.paging;
-
 
 /**
  * 
@@ -33,23 +31,23 @@ package org.jboss.messaging.core.paging;
  */
 public interface Page
 {
-   
+
    int getPageId();
-   
+
    void write(PageMessage message) throws Exception;
-   
+
    PageMessage[] read() throws Exception;
-   
+
    int getSize();
-   
+
    int getNumberOfMessages();
-   
+
    void sync() throws Exception;
-   
+
    void open() throws Exception;
-   
+
    void close() throws Exception;
-   
+
    void delete() throws Exception;
-   
+
 }

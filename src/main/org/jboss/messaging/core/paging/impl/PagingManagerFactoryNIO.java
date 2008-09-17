@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.paging.impl;
 
 import java.io.File;
@@ -44,65 +43,69 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class PagingManagerFactoryNIO implements PagingStoreFactory
 {
-   
+
    // Constants -----------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    private final String directory;
-   
+
    private final Executor executor;
-   
+
    private PagingManager pagingManager;
-   
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    public PagingManagerFactoryNIO(final String directory)
    {
       this.directory = directory;
-      this.executor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-depaging-threads"));
+      executor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-depaging-threads"));
    }
-   
+
    public PagingManagerFactoryNIO(final String directory, final Executor executor)
    {
       this.directory = directory;
       this.executor = executor;
    }
-   
+
    // Public --------------------------------------------------------
 
    public Executor getPagingExecutor()
    {
-      return this.executor;
+      return executor;
    }
-   
-   public PagingStore newStore(final SimpleString destinationName, QueueSettings settings)
+
+   public PagingStore newStore(final SimpleString destinationName, final QueueSettings settings)
    {
       final String destinationDirectory = directory + "/" + destinationName.toString();
       File destinationFile = new File(destinationDirectory);
       destinationFile.mkdirs();
-      
-      return new PagingStoreImpl(pagingManager, newFileFactory(destinationDirectory), destinationName, settings, executor);
+
+      return new PagingStoreImpl(pagingManager,
+                                 newFileFactory(destinationDirectory),
+                                 destinationName,
+                                 settings,
+                                 executor);
    }
-   
-   public void setPagingManager(PagingManager manager)
+
+   public void setPagingManager(final PagingManager manager)
    {
-      this.pagingManager = manager;
+      pagingManager = manager;
    }
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    protected SequentialFileFactory newFileFactory(final String destinationDirectory)
    {
       return new NIOSequentialFileFactory(destinationDirectory);
    }
 
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
+
 }

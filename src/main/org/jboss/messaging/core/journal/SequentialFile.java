@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.journal;
 
@@ -38,42 +38,42 @@ public interface SequentialFile
     * Creates the file if it doesn't already exist, then opens it
     */
    void open() throws Exception;
-   
+
    /**
     * For certain operations (like loading) we don't need open the file with full maxIO
     * @param maxIO
     * @throws Exception
     */
    void open(int maxIO) throws Exception;
-   
-   void setBufferCallback(BufferCallback callback);   
-   
+
+   void setBufferCallback(BufferCallback callback);
+
    int getAlignment() throws Exception;
-   
+
    int calculateBlockStart(int position) throws Exception;
-   
+
    String getFileName();
-   
+
    void fill(int position, int size, byte fillCharacter) throws Exception;
-   
+
    void delete() throws Exception;
-   
+
    int write(ByteBuffer bytes, IOCallback callback) throws Exception;
-   
+
    int write(ByteBuffer bytes, boolean sync) throws Exception;
-   
+
    int read(ByteBuffer bytes, IOCallback callback) throws Exception;
-   
+
    int read(ByteBuffer bytes) throws Exception;
-   
+
    void position(int pos) throws Exception;
-   
+
    int position() throws Exception;
-   
+
    void close() throws Exception;
-   
+
    void sync() throws Exception;
-   
+
    long size() throws Exception;
-   
+
 }

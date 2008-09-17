@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.paging.impl;
 
 import java.nio.ByteBuffer;
@@ -42,36 +41,42 @@ import org.jboss.messaging.util.VariableLatch;
  */
 public class PageImpl implements Page
 {
-   
+
    // Constants -----------------------------------------------------
-   
+
    private static final int SIZE_INTEGER = 4;
-   
+
    private static final int SIZE_BYTE = 1;
-   
-   public static final int SIZE_RECORD = SIZE_BYTE + SIZE_INTEGER + SIZE_BYTE; 
-   
-   public static final byte START_BYTE= (byte)'{';
-   public static final byte END_BYTE= (byte)'}';
-   
+
+   public static final int SIZE_RECORD = SIZE_BYTE + SIZE_INTEGER + SIZE_BYTE;
+
+   public static final byte START_BYTE = (byte)'{';
+
+   public static final byte END_BYTE = (byte)'}';
+
    // Attributes ----------------------------------------------------
-   
+
    private final int pageId;
+
    private final AtomicInteger numberOfMessages = new AtomicInteger(0);
+
    private final SequentialFile file;
+
    private final SequentialFileFactory fileFactory;
+
    private final PagingCallback callback;
+
    private final AtomicInteger size = new AtomicInteger(0);
-   
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
-   public PageImpl(final SequentialFileFactory factory, final SequentialFile file,final int pageId) throws Exception
+
+   public PageImpl(final SequentialFileFactory factory, final SequentialFile file, final int pageId) throws Exception
    {
       this.pageId = pageId;
       this.file = file;
-      this.fileFactory = factory;
+      fileFactory = factory;
       if (factory.isSupportsCallbacks())
       {
          callback = new PagingCallback();
@@ -81,36 +86,33 @@ public class PageImpl implements Page
          callback = null;
       }
    }
-   
-   
+
    // Public --------------------------------------------------------
 
-   
    // PagingFile implementation
-   
-   
+
    public int getPageId()
    {
       return pageId;
    }
-   
+
    public PageMessage[] read() throws Exception
    {
-      
+
       ArrayList<PageMessage> messages = new ArrayList<PageMessage>();
 
       ByteBuffer buffer = fileFactory.newBuffer((int)file.size());
       file.position(0);
       file.read(buffer);
-      
+
       ByteBufferWrapper messageBuffer = new ByteBufferWrapper(buffer);
-      
+
       while (buffer.hasRemaining())
       {
          final int position = buffer.position();
-         
+
          byte byteRead = buffer.get();
-         
+
          if (byteRead == START_BYTE)
          {
             if (buffer.position() + SIZE_INTEGER < buffer.limit())
@@ -125,21 +127,21 @@ public class PageImpl implements Page
                }
                else
                {
-                  buffer.position(position + 1); 
+                  buffer.position(position + 1);
                }
             }
          }
          else
          {
-            buffer.position(position + 1); 
+            buffer.position(position + 1);
          }
       }
-      
+
       numberOfMessages.set(messages.size());
-      
+
       return messages.toArray(instantiateArray(messages.size()));
    }
-   
+
    public void write(final PageMessage message) throws Exception
    {
       ByteBuffer buffer = fileFactory.newBuffer(message.getEncodeSize() + SIZE_RECORD);
@@ -158,12 +160,12 @@ public class PageImpl implements Page
       {
          file.write(buffer, false);
       }
-      
+
       numberOfMessages.incrementAndGet();
       size.addAndGet(buffer.limit());
-      
+
    }
-   
+
    public void sync() throws Exception
    {
       if (callback != null)
@@ -175,89 +177,87 @@ public class PageImpl implements Page
          file.sync();
       }
    }
-   
+
    public void open() throws Exception
    {
       file.open();
-      this.size.set((int)file.size());
+      size.set((int)file.size());
       file.position(0);
    }
-   
+
    public void close() throws Exception
    {
       file.close();
    }
-   
+
    public void delete() throws Exception
    {
       file.delete();
    }
-   
+
    public int getNumberOfMessages()
    {
       return numberOfMessages.intValue();
    }
-   
+
    public int getSize()
    {
-      return this.size.intValue();
+      return size.intValue();
    }
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
-   protected  PageMessage instantiateObject()
+
+   protected PageMessage instantiateObject()
    {
       return new PageMessageImpl();
    }
 
-   
    protected PageMessage[] instantiateArray(final int size)
    {
       return new PageMessage[size];
    }
-   
+
    // Private -------------------------------------------------------
-   
-   
+
    // Inner classes -------------------------------------------------
 
    private static class PagingCallback implements IOCallback
-   {      
+   {
       private final VariableLatch countLatch = new VariableLatch();
-      
+
       private volatile String errorMessage = null;
-      
+
       private volatile int errorCode = 0;
-      
+
       public void countUp()
       {
          countLatch.up();
       }
-      
+
       public void done()
       {
          countLatch.down();
       }
-      
+
       public void waitCompletion() throws InterruptedException
       {
          countLatch.waitCompletion();
-         
+
          if (errorMessage != null)
          {
             throw new IllegalStateException("Error on Callback: " + errorCode + " - " + errorMessage);
          }
       }
-      
+
       public void onError(final int errorCode, final String errorMessage)
       {
          this.errorMessage = errorMessage;
          this.errorCode = errorCode;
          countLatch.down();
       }
-      
+
    }
-   
+
 }

@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.paging;
 
@@ -40,21 +40,20 @@ import org.jboss.messaging.util.SimpleString;
 public interface PagingManager extends MessagingComponent
 {
 
-   
    boolean isGlobalPageMode();
-   
+
    /** To return the PageStore associated with the address */
    PagingStore getPageStore(SimpleString address) throws Exception;
-   
+
    /** An injection point for the PostOffice to inject itself */
    void setPostOffice(PostOffice postOffice);
-   
+
    /**
     * @param pagingStoreImpl 
     * @return false if the listener can't handle more pages
     */
    boolean onDepage(int pageId, SimpleString destination, PagingStore pagingStoreImpl, PageMessage[] data) throws Exception;
-   
+
    /**
     * To be used by transactions only.
     * If you're sure you will page if isPaging, just call the method page and look at its return. 
@@ -62,47 +61,45 @@ public interface PagingManager extends MessagingComponent
     * @return
     */
    boolean isPaging(SimpleString destination) throws Exception;
-   
+
    /**
     * Page, only if destination is in page mode.
     * @param message
     * @return false if destination is not on page mode
     */
    boolean page(ServerMessage message) throws Exception;
-   
+
    /**
     * Page, only if destination is in page mode.
     * @param message
     * @return false if destination is not on page mode
     */
    boolean page(ServerMessage message, long transactionId) throws Exception;
-   
+
    /**
     * Point to inform/restoring Transactions used when the messages were added into paging
     * */
    void addTransaction(PageTransactionInfo pageTransaction);
-   
-   
+
    /**
     * Use this method to inform when a transaction was completed.
     * @param transactionId
     */
    void completeTransaction(long transactionId);
-   
-   
+
    /**
     * 
     * Duplication detection for paging processing
     *  */
    void setLastPage(LastPageRecord lastPage) throws Exception;
-   
+
    /** 
     * 
     * To be called when there are no more references to the message
     * @param message
     */
    void messageDone(ServerMessage message) throws Exception;
-   
+
    /** To be called when an message is being added to the address.
     *  @return the current size of the queue, or -1 if the queue is full and it should drop the message */
    long addSize(ServerMessage message) throws Exception;
@@ -116,7 +113,5 @@ public interface PagingManager extends MessagingComponent
     * @throws Exception 
     * */
    void clearLastPageRecord(LastPageRecord lastRecord) throws Exception;
-   
-   
-   
+
 }

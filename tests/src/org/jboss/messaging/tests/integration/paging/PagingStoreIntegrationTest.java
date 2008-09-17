@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.tests.integration.paging;
 
 import java.io.File;
@@ -33,29 +32,29 @@ import org.jboss.messaging.tests.unit.core.paging.impl.PagingStoreTestBase;
 public class PagingStoreIntegrationTest extends PagingStoreTestBase
 {
    // Constants -----------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
-   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") +  "/journal-test";
-   
+   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
-   
+
    public void testPageStoreWithAIO() throws Exception
    {
       if (!AsynchronousFileImpl.isLoaded())
       {
-         fail(String.format("libAIO is not loaded on %s %s %s", 
-               System.getProperty("os.name"), 
-               System.getProperty("os.arch"), 
-               System.getProperty("os.version")));
+         fail(String.format("libAIO is not loaded on %s %s %s",
+                            System.getProperty("os.name"),
+                            System.getProperty("os.arch"),
+                            System.getProperty("os.version")));
       }
       testConcurrentPaging(new AIOSequentialFileFactory(journalDir), 10);
    }
-   
+
    public void testPageWithNIO() throws Exception
    {
       // This integration test could fail 1 in 100 due to race conditions.
@@ -66,11 +65,11 @@ public class PagingStoreIntegrationTest extends PagingStoreTestBase
          testConcurrentPaging(new NIOSequentialFileFactory(journalDir), 1);
       }
    }
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    @Override
    protected void setUp() throws Exception
    {
@@ -78,11 +77,11 @@ public class PagingStoreIntegrationTest extends PagingStoreTestBase
       recreateDirectory();
    }
 
-   
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
-      //deleteDirectory(new File(journalDir));
+      // deleteDirectory(new File(journalDir));
    }
 
    // Private -------------------------------------------------------
@@ -95,6 +94,5 @@ public class PagingStoreIntegrationTest extends PagingStoreTestBase
    }
 
    // Inner classes -------------------------------------------------
-   
-   
+
 }

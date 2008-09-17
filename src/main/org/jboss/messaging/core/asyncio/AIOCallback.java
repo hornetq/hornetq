@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.asyncio;
 
@@ -29,9 +29,9 @@ package org.jboss.messaging.core.asyncio;
  */
 public interface AIOCallback
 {
-    /** Leave this method as soon as possible, or you would be blocking the whole notification thread */
-    void done();
+   /** Leave this method as soon as possible, or you would be blocking the whole notification thread */
+   void done();
 
-    /** Observation: The whole file will be probably failing if this happens. Like, if you delete the file, you will start to get errors for these operations*/
-    void onError(int errorCode, String errorMessage);
+   /** Observation: The whole file will be probably failing if this happens. Like, if you delete the file, you will start to get errors for these operations*/
+   void onError(int errorCode, String errorMessage);
 }

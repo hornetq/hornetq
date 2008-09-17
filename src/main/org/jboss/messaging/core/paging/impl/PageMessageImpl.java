@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.paging.impl;
 
 import org.jboss.messaging.core.paging.PageMessage;
@@ -37,36 +36,37 @@ import org.jboss.messaging.core.server.impl.ServerMessageImpl;
  */
 public class PageMessageImpl implements PageMessage
 {
-   
+
    // Constants -----------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
 
    private final ServerMessage message;
+
    private long transactionID = -1;
-   
+
    public PageMessageImpl(final ServerMessage message, final long transactionID)
    {
       this.message = message;
       this.transactionID = transactionID;
    }
-   
+
    public PageMessageImpl(final ServerMessage message)
    {
       this.message = message;
    }
-   
+
    public PageMessageImpl()
    {
       this(new ServerMessageImpl());
    }
-   
+
    public ServerMessage getMessage()
    {
       return message;
@@ -76,8 +76,7 @@ public class PageMessageImpl implements PageMessage
    {
       return transactionID;
    }
-   
-   
+
    // EncodingSupport implementation --------------------------------
 
    public void decode(final MessagingBuffer buffer)
@@ -94,16 +93,16 @@ public class PageMessageImpl implements PageMessage
 
    public int getEncodeSize()
    {
-      
+
       return 8 + message.getEncodeSize();
    }
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
+
 }

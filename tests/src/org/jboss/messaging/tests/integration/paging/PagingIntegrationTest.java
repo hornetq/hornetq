@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.tests.integration.paging;
 
 import java.io.File;
@@ -32,40 +31,40 @@ import org.jboss.messaging.tests.unit.core.paging.impl.PageImplTestBase;
 
 public class PagingIntegrationTest extends PageImplTestBase
 {
-   
+
    // Constants -----------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
-   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") +  "/journal-test";
-   
+   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
-   
+
    public void testPageWithAIO() throws Exception
    {
       if (!AsynchronousFileImpl.isLoaded())
       {
-         fail(String.format("libAIO is not loaded on %s %s %s", 
-               System.getProperty("os.name"), 
-               System.getProperty("os.arch"), 
-               System.getProperty("os.version")));
+         fail(String.format("libAIO is not loaded on %s %s %s",
+                            System.getProperty("os.name"),
+                            System.getProperty("os.arch"),
+                            System.getProperty("os.version")));
       }
       testAdd(new AIOSequentialFileFactory(journalDir), 1000);
    }
-   
+
    public void testPageWithNIO() throws Exception
    {
       testAdd(new NIOSequentialFileFactory(journalDir), 1000);
    }
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    @Override
    protected void setUp() throws Exception
    {
@@ -74,7 +73,8 @@ public class PagingIntegrationTest extends PageImplTestBase
       deleteDirectory(fileJournalDir);
       fileJournalDir.mkdirs();
    }
-   
+
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
@@ -82,7 +82,7 @@ public class PagingIntegrationTest extends PageImplTestBase
    }
 
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
+
 }

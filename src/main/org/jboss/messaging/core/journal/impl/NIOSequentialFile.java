@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.journal.impl;
 
@@ -43,36 +43,36 @@ import org.jboss.messaging.core.logging.Logger;
 public class NIOSequentialFile implements SequentialFile
 {
    private static final Logger log = Logger.getLogger(NIOSequentialFile.class);
-   
-   private String journalDir;
-   
-   private String fileName;
-   
+
+   private final String journalDir;
+
+   private final String fileName;
+
    private File file;
-   
+
    private FileChannel channel;
-   
+
    private RandomAccessFile rfile;
-   
+
    BufferCallback bufferCallback;
-   
+
    public NIOSequentialFile(final String journalDir, final String fileName)
    {
       this.journalDir = journalDir;
-      
-      this.fileName = fileName;   
+
+      this.fileName = fileName;
    }
-   
+
    public int getAlignment()
    {
       return 1;
    }
-   
+
    public int calculateBlockStart(final int position) throws Exception
    {
       return position;
-   }	
-   
+   }
+
    public String getFileName()
    {
       return fileName;
@@ -81,69 +81,67 @@ public class NIOSequentialFile implements SequentialFile
    public synchronized void open() throws Exception
    {
       file = new File(journalDir + "/" + fileName);
-      
+
       rfile = new RandomAccessFile(file, "rw");
-      
-      channel = rfile.getChannel();    
+
+      channel = rfile.getChannel();
    }
-   
-   public void open(int currentMaxIO) throws Exception
+
+   public void open(final int currentMaxIO) throws Exception
    {
       open();
    }
-   
-   
-   
-   public void setBufferCallback(BufferCallback callback)
+
+   public void setBufferCallback(final BufferCallback callback)
    {
-      this.bufferCallback = callback;
+      bufferCallback = callback;
    }
 
    public void fill(final int position, final int size, final byte fillCharacter) throws Exception
    {
       ByteBuffer bb = ByteBuffer.allocateDirect(size);
-      
+
       for (int i = 0; i < size; i++)
       {
-         bb.put(fillCharacter);        
+         bb.put(fillCharacter);
       }
-      
+
       bb.flip();
-      
+
       channel.position(position);
-      
+
       channel.write(bb);
-      
-      channel.force(false);   
-      
+
+      channel.force(false);
+
       channel.position(0);
    }
-   
+
    public void close() throws Exception
    {
       channel.close();
-      
+
       rfile.close();
-      
+
       channel = null;
-      
+
       rfile = null;
-      
+
       file = null;
    }
-   
+
    public void delete() throws Exception
-   {     
+   {
       file.delete();
-      
-      close();    
+
+      close();
    }
-   
+
    public int read(final ByteBuffer bytes) throws Exception
    {
       return read(bytes, null);
    }
-   
+
    public int read(final ByteBuffer bytes, final IOCallback callback) throws Exception
    {
       try
@@ -162,35 +160,35 @@ public class NIOSequentialFile implements SequentialFile
          {
             callback.onError(-1, e.getLocalizedMessage());
          }
-         
+
          throw e;
       }
-      
+
    }
-   
+
    public int write(final ByteBuffer bytes, final boolean sync) throws Exception
    {
       int bytesRead = channel.write(bytes);
-      
+
       if (sync)
       {
          sync();
       }
-      
+
       if (bufferCallback != null)
       {
          bufferCallback.bufferDone(bytes);
       }
-      
+
       return bytesRead;
    }
-   
+
    public int write(final ByteBuffer bytes, final IOCallback callback) throws Exception
    {
       try
       {
          int bytesRead = channel.write(bytes);
-         
+
          if (callback != null)
          {
             callback.done();
@@ -200,8 +198,7 @@ public class NIOSequentialFile implements SequentialFile
          {
             bufferCallback.bufferDone(bytes);
          }
-         
-         
+
          return bytesRead;
       }
       catch (Exception e)
@@ -210,26 +207,25 @@ public class NIOSequentialFile implements SequentialFile
          throw e;
       }
    }
-      
+
    public void sync() throws Exception
    {
       channel.force(false);
    }
-   
+
    public long size() throws Exception
    {
       return channel.size();
    }
 
-   
    public void position(final int pos) throws Exception
    {
       channel.position(pos);
    }
-   
+
    public int position() throws Exception
    {
-      return (int) channel.position();
+      return (int)channel.position();
    }
-   
+
 }

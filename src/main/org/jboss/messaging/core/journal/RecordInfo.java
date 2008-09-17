@@ -18,10 +18,9 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.journal;
-
 
 /**
  * 
@@ -33,40 +32,42 @@ package org.jboss.messaging.core.journal;
  */
 public class RecordInfo
 {
-   public RecordInfo(final long id, byte userRecordType, final byte[] data, final boolean isUpdate)
+   public RecordInfo(final long id, final byte userRecordType, final byte[] data, final boolean isUpdate)
    {
       this.id = id;
-      
+
       this.userRecordType = userRecordType;
-      
+
       this.data = data;
-      
+
       this.isUpdate = isUpdate;
    }
-   
+
    public final long id;
-   
+
    public final byte userRecordType;
-   
+
    public final byte[] data;
-   
+
    public boolean isUpdate;
-   
+
    public byte getUserRecordType()
    {
       return userRecordType;
    }
-   
+
+   @Override
    public int hashCode()
    {
-      return (int)((id >>> 32) ^ id);
+      return (int)(id >>> 32 ^ id);
    }
-   
-   public boolean equals(Object other)
+
+   @Override
+   public boolean equals(final Object other)
    {
       RecordInfo r = (RecordInfo)other;
-      
-      return r.id == this.id;		
+
+      return r.id == id;
    }
-   
+
 }

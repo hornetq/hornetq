@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.integration.asyncio;
 
@@ -48,222 +48,255 @@ public class MultiThreadWriteNativeTest extends AIOTestBase
 {
 
    static Logger log = Logger.getLogger(MultiThreadWriteNativeTest.class);
-   
+
    AtomicInteger position = new AtomicInteger(0);
-   
+
    static final int SIZE = 1024;
+
    static final int NUMBER_OF_THREADS = 10;
+
    static final int NUMBER_OF_LINES = 1000;
-   
-   //   Executor exec
-   
+
+   // Executor exec
+
    Executor executor = Executors.newSingleThreadExecutor();
-   
+
+   @Override
    protected void setUp() throws Exception
    {
-       super.setUp();
-       position.set(0);
+      super.setUp();
+      position.set(0);
    }
-   
+
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
    }
-   
+
    public void testMultipleASynchronousWrites() throws Throwable
    {
-       executeTest(false);
+      executeTest(false);
    }
-   
+
    public void testMultipleSynchronousWrites() throws Throwable
    {
-       executeTest(true);
+      executeTest(true);
    }
-   
-   private void executeTest(boolean sync) throws Throwable
+
+   private void executeTest(final boolean sync) throws Throwable
    {
-       log.debug(sync?"Sync test:":"Async test");
-       AsynchronousFileImpl jlibAIO = new AsynchronousFileImpl();
-       jlibAIO.open(FILE_NAME, 21000);
-       try
-       {
-          log.debug("Preallocating file");
-         
-          jlibAIO.fill(0l, NUMBER_OF_THREADS,  SIZE * NUMBER_OF_LINES, (byte)0);
-          log.debug("Done Preallocating file");
-          
-          CountDownLatch latchStart = new CountDownLatch (NUMBER_OF_THREADS + 1);
-          
-          ArrayList<ThreadProducer> list = new ArrayList<ThreadProducer>(NUMBER_OF_THREADS);
-          for(int i=0;i<NUMBER_OF_THREADS;i++)
-          {
-              ThreadProducer producer = new ThreadProducer("Thread " + i, latchStart, jlibAIO, sync);
-              list.add(producer);
-              producer.start();
-          }
-          
-          latchStart.countDown();
-          latchStart.await();
-          
-          
-          long startTime = System.currentTimeMillis();
-          
-   
-          
-          for (ThreadProducer producer: list)
-          {
-              producer.join();
-              if (producer.failed != null)
-              {
-                  throw producer.failed;
-              }
-          }
-          long endTime = System.currentTimeMillis();
-          
-          log.debug((sync?"Sync result:":"Async result:") + " Records/Second = " + (NUMBER_OF_THREADS * NUMBER_OF_LINES * 1000 / (endTime - startTime)) + " total time = " + (endTime - startTime) + " total number of records = " + (NUMBER_OF_THREADS * NUMBER_OF_LINES));
-       }
-       finally
-       {
-          jlibAIO.close();
-       }
-       
+      log.debug(sync ? "Sync test:" : "Async test");
+      AsynchronousFileImpl jlibAIO = new AsynchronousFileImpl();
+      jlibAIO.open(FILE_NAME, 21000);
+      try
+      {
+         log.debug("Preallocating file");
+
+         jlibAIO.fill(0l, NUMBER_OF_THREADS, SIZE * NUMBER_OF_LINES, (byte)0);
+         log.debug("Done Preallocating file");
+
+         CountDownLatch latchStart = new CountDownLatch(NUMBER_OF_THREADS + 1);
+
+         ArrayList<ThreadProducer> list = new ArrayList<ThreadProducer>(NUMBER_OF_THREADS);
+         for (int i = 0; i < NUMBER_OF_THREADS; i++)
+         {
+            ThreadProducer producer = new ThreadProducer("Thread " + i, latchStart, jlibAIO, sync);
+            list.add(producer);
+            producer.start();
+         }
+
+         latchStart.countDown();
+         latchStart.await();
+
+         long startTime = System.currentTimeMillis();
+
+         for (ThreadProducer producer : list)
+         {
+            producer.join();
+            if (producer.failed != null)
+            {
+               throw producer.failed;
+            }
+         }
+         long endTime = System.currentTimeMillis();
+
+         log.debug((sync ? "Sync result:" : "Async result:") + " Records/Second = " +
+                   NUMBER_OF_THREADS *
+                   NUMBER_OF_LINES *
+                   1000 /
+                   (endTime - startTime) +
+                   " total time = " +
+                   (endTime - startTime) +
+                   " total number of records = " +
+                   NUMBER_OF_THREADS *
+                   NUMBER_OF_LINES);
+      }
+      finally
+      {
+         jlibAIO.close();
+      }
+
    }
-   
+
    private int getNewPosition()
    {
-       return position.addAndGet(1);
+      return position.addAndGet(1);
    }
-   
+
    class ThreadProducer extends Thread
    {
-       Throwable failed = null;
-       CountDownLatch latchStart;
-       boolean sync;
-       AsynchronousFileImpl libaio;
+      Throwable failed = null;
 
-       public ThreadProducer(String name, CountDownLatch latchStart, AsynchronousFileImpl libaio, boolean sync)
-       {
-           super(name);
-           this.latchStart = latchStart;
-           this.libaio = libaio;
-           this.sync = sync;
-       }
-       
-       public void run()
-       {
-           super.run();
-           
-           
-           try
-           {
-               
-               ByteBuffer buffer = libaio.newBuffer(SIZE);
+      CountDownLatch latchStart;
 
-               // I'm aways reusing the same buffer, as I don't want any noise from malloc on the measurement
-               // Encoding buffer
-               addString ("Thread name=" + Thread.currentThread().getName() + ";" + "\n", buffer);
-               for (int local = buffer.position(); local < buffer.capacity() - 1; local++)
+      boolean sync;
+
+      AsynchronousFileImpl libaio;
+
+      public ThreadProducer(final String name,
+                            final CountDownLatch latchStart,
+                            final AsynchronousFileImpl libaio,
+                            final boolean sync)
+      {
+         super(name);
+         this.latchStart = latchStart;
+         this.libaio = libaio;
+         this.sync = sync;
+      }
+
+      @Override
+      public void run()
+      {
+         super.run();
+
+         try
+         {
+
+            ByteBuffer buffer = libaio.newBuffer(SIZE);
+
+            // I'm aways reusing the same buffer, as I don't want any noise from
+            // malloc on the measurement
+            // Encoding buffer
+            addString("Thread name=" + Thread.currentThread().getName() + ";" + "\n", buffer);
+            for (int local = buffer.position(); local < buffer.capacity() - 1; local++)
+            {
+               buffer.put((byte)' ');
+            }
+            buffer.put((byte)'\n');
+
+            latchStart.countDown();
+            latchStart.await();
+
+            long startTime = System.currentTimeMillis();
+
+            CountDownLatch latchFinishThread = null;
+
+            if (!sync)
+            {
+               latchFinishThread = new CountDownLatch(NUMBER_OF_LINES);
+            }
+
+            LinkedList<CountDownCallback> list = new LinkedList<CountDownCallback>();
+
+            for (int i = 0; i < NUMBER_OF_LINES; i++)
+            {
+
+               if (sync)
                {
-                   buffer.put((byte)' ');
+                  latchFinishThread = new CountDownLatch(1);
                }
-               buffer.put((byte)'\n');
-
-
-               latchStart.countDown();
-               latchStart.await();
-               
-               long startTime = System.currentTimeMillis();
-               
-               
-               CountDownLatch latchFinishThread = null;
-               
-               if (!sync) latchFinishThread = new CountDownLatch(NUMBER_OF_LINES);
-
-               LinkedList<CountDownCallback> list = new LinkedList<CountDownCallback>();
-               
-               for (int i=0;i<NUMBER_OF_LINES;i++)
+               CountDownCallback callback = new CountDownCallback(latchFinishThread);
+               if (!sync)
                {
-                
-                   if (sync) latchFinishThread = new CountDownLatch(1);
-                   CountDownCallback callback = new CountDownCallback(latchFinishThread);
-                   if (!sync) list.add(callback);
-                   addData(libaio, buffer,callback);
-                   if (sync)
-                   {
-                       latchFinishThread.await();
-                       assertTrue(callback.doneCalled);
-                       assertFalse(callback.errorCalled);
-                   }
+                  list.add(callback);
                }
-               if (!sync) latchFinishThread.await();
-               for (CountDownCallback callback: list)
+               addData(libaio, buffer, callback);
+               if (sync)
                {
-                   assertTrue (callback.doneCalled);
-                   assertFalse (callback.errorCalled);
+                  latchFinishThread.await();
+                  assertTrue(callback.doneCalled);
+                  assertFalse(callback.errorCalled);
                }
-               
-               long endtime = System.currentTimeMillis();
-               
-               log.debug(Thread.currentThread().getName() + " Rec/Sec= " + (NUMBER_OF_LINES * 1000 / (endtime-startTime)) + " total time = " + (endtime-startTime) + " number of lines=" + NUMBER_OF_LINES);
-               
-               for (CountDownCallback callback: list)
-               {
-                   assertTrue (callback.doneCalled);
-                   assertFalse (callback.errorCalled);
-               }
-               
-           }
-           catch (Throwable e)
-           {
-               e.printStackTrace();
-               failed = e;
-           }
-           
-       }
+            }
+            if (!sync)
+            {
+               latchFinishThread.await();
+            }
+            for (CountDownCallback callback : list)
+            {
+               assertTrue(callback.doneCalled);
+               assertFalse(callback.errorCalled);
+            }
+
+            long endtime = System.currentTimeMillis();
+
+            log.debug(Thread.currentThread().getName() + " Rec/Sec= " +
+                      NUMBER_OF_LINES *
+                      1000 /
+                      (endtime - startTime) +
+                      " total time = " +
+                      (endtime - startTime) +
+                      " number of lines=" +
+                      NUMBER_OF_LINES);
+
+            for (CountDownCallback callback : list)
+            {
+               assertTrue(callback.doneCalled);
+               assertFalse(callback.errorCalled);
+            }
+
+         }
+         catch (Throwable e)
+         {
+            e.printStackTrace();
+            failed = e;
+         }
+
+      }
    }
-   
-   private static void addString(String str, ByteBuffer buffer)
+
+   private static void addString(final String str, final ByteBuffer buffer)
    {
-       byte bytes[] = str.getBytes();
-       buffer.put(bytes);
+      byte bytes[] = str.getBytes();
+      buffer.put(bytes);
    }
-   
-   private void addData(AsynchronousFileImpl aio, ByteBuffer buffer, AIOCallback callback) throws Exception
+
+   private void addData(final AsynchronousFileImpl aio, final ByteBuffer buffer, final AIOCallback callback) throws Exception
    {
-       executor.execute(new WriteRunnable(aio, buffer, callback));
+      executor.execute(new WriteRunnable(aio, buffer, callback));
    }
-   
+
    private class WriteRunnable implements Runnable
    {
-       
-       AsynchronousFileImpl aio;
-       ByteBuffer buffer;
-       AIOCallback callback;
-       
-       
-       public WriteRunnable(AsynchronousFileImpl aio, ByteBuffer buffer, AIOCallback callback)
-       {
-           this.aio = aio;
-           this.buffer = buffer;
-           this.callback = callback;
-       }
 
-       public void run()
-       {
-           try
-           {
-               aio.write(getNewPosition()*SIZE, SIZE, buffer, callback);
-               
-           }
-           catch (Exception e)
-           {
-               callback.onError(-1, e.toString());
-               e.printStackTrace();
-           }
-       }
-       
+      AsynchronousFileImpl aio;
+
+      ByteBuffer buffer;
+
+      AIOCallback callback;
+
+      public WriteRunnable(final AsynchronousFileImpl aio, final ByteBuffer buffer, final AIOCallback callback)
+      {
+         this.aio = aio;
+         this.buffer = buffer;
+         this.callback = callback;
+      }
+
+      public void run()
+      {
+         try
+         {
+            aio.write(getNewPosition() * SIZE, SIZE, buffer, callback);
+
+         }
+         catch (Exception e)
+         {
+            callback.onError(-1, e.toString());
+            e.printStackTrace();
+         }
+      }
+
    }
 
-   
-   
 }

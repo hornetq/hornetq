@@ -32,33 +32,32 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
  */
 public class SimpleEncoding implements EncodingSupport
 {
-   
+
    // Constants -----------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
    private final int size;
+
    private final byte bytetosend;
-   
-   
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
 
-   public SimpleEncoding(int size, byte bytetosend)
+   public SimpleEncoding(final int size, final byte bytetosend)
    {
       this.size = size;
       this.bytetosend = bytetosend;
    }
-   
 
    // Public --------------------------------------------------------
-   public void decode(MessagingBuffer buffer)
+   public void decode(final MessagingBuffer buffer)
    {
       throw new UnsupportedOperationException();
-      
+
    }
 
-   public void encode(MessagingBuffer buffer)
+   public void encode(final MessagingBuffer buffer)
    {
       for (int i = 0; i < size; i++)
       {
@@ -70,14 +69,13 @@ public class SimpleEncoding implements EncodingSupport
    {
       return size;
    }
-   
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
+
 }

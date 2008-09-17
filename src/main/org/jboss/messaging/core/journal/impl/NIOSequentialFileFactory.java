@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.journal.impl;
 
@@ -35,34 +35,34 @@ import org.jboss.messaging.core.journal.SequentialFileFactory;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class NIOSequentialFileFactory extends AbstractSequentialFactory implements SequentialFileFactory 
+public class NIOSequentialFileFactory extends AbstractSequentialFactory implements SequentialFileFactory
 {
    public NIOSequentialFileFactory(final String journalDir)
    {
       super(journalDir);
-   }	
-   
+   }
+
    // maxIO is ignored on NIO
    public SequentialFile createSequentialFile(final String fileName, final int maxIO)
    {
       return new NIOSequentialFile(journalDir, fileName);
    }
-   
+
    public boolean isSupportsCallbacks()
    {
       return false;
    }
-   
+
    public ByteBuffer newBuffer(final int size)
    {
       return ByteBuffer.allocate(size);
    }
-   
+
    public void clearBuffer(final ByteBuffer buffer)
    {
       final int limit = buffer.limit();
       buffer.rewind();
-      
+
       for (int i = 0; i < limit; i++)
       {
          buffer.put((byte)0);
@@ -70,21 +70,20 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
 
       buffer.rewind();
    }
-   
+
    public ByteBuffer wrapBuffer(final byte[] bytes)
    {
       return ByteBuffer.wrap(bytes);
    }
-   
+
    public int getAlignment()
    {
       return 1;
    }
 
-   public int calculateBlockSize(int bytes)
+   public int calculateBlockSize(final int bytes)
    {
       return bytes;
    }
-   
-   
+
 }

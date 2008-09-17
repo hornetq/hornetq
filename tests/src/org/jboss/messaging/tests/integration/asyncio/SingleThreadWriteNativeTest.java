@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.integration.asyncio;
 
@@ -46,31 +46,30 @@ import org.jboss.messaging.core.logging.Logger;
  *   */
 public class SingleThreadWriteNativeTest extends AIOTestBase
 {
-   
-   private static final Logger log = Logger
-         .getLogger(SingleThreadWriteNativeTest.class);
-   
-   private static CharsetEncoder UTF_8_ENCODER = Charset.forName("UTF-8")
-         .newEncoder();
-   
+
+   private static final Logger log = Logger.getLogger(SingleThreadWriteNativeTest.class);
+
+   private static CharsetEncoder UTF_8_ENCODER = Charset.forName("UTF-8").newEncoder();
+
    byte commonBuffer[] = null;
-   
-   private static void debug(String msg)
+
+   private static void debug(final String msg)
    {
       log.debug(msg);
    }
-   
+
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
    }
-   
+
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
    }
-   
+
    /** 
     * Opening and closing a file immediately can lead to races on the native layer,
     * creating crash conditions.
@@ -82,10 +81,10 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
       {
          controller.open(FILE_NAME, 10000);
          controller.close();
-         
+
       }
    }
-   
+
    /**
     * This test is validating if the AIO layer can open two different
     * simultaneous files without loose any callbacks. This test made the native
@@ -97,213 +96,233 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
       final AsynchronousFileImpl controller2 = new AsynchronousFileImpl();
       controller.open(FILE_NAME + ".1", 10000);
       controller2.open(FILE_NAME + ".2", 10000);
-      
+
       int numberOfLines = 1000;
       int size = 1024;
-      
+
       try
       {
          CountDownLatch latchDone = new CountDownLatch(numberOfLines);
          CountDownLatch latchDone2 = new CountDownLatch(numberOfLines);
-         
+
          ByteBuffer block = controller.newBuffer(size);
          encodeBufer(block);
-         
+
          preAlloc(controller, numberOfLines * size);
          preAlloc(controller2, numberOfLines * size);
-         
+
          ArrayList<CountDownCallback> list = new ArrayList<CountDownCallback>();
          ArrayList<CountDownCallback> list2 = new ArrayList<CountDownCallback>();
-         
+
          for (int i = 0; i < numberOfLines; i++)
          {
             list.add(new CountDownCallback(latchDone));
             list2.add(new CountDownCallback(latchDone2));
          }
-         
+
          long valueInitial = System.currentTimeMillis();
-         
+
          long lastTime = System.currentTimeMillis();
          int counter = 0;
          Iterator<CountDownCallback> iter2 = list2.iterator();
-         
+
          for (CountDownCallback tmp : list)
          {
             CountDownCallback tmp2 = iter2.next();
-            
+
             controller.write(counter * size, size, block, tmp);
             controller.write(counter * size, size, block, tmp2);
             if (++counter % 5000 == 0)
             {
-               debug(5000 * 1000 / (System.currentTimeMillis() - lastTime)
-                     + " rec/sec (Async)");
+               debug(5000 * 1000 / (System.currentTimeMillis() - lastTime) + " rec/sec (Async)");
                lastTime = System.currentTimeMillis();
             }
-            
+
          }
-         
+
          long timeTotal = System.currentTimeMillis() - valueInitial;
-         
-         debug("Asynchronous time = " + timeTotal + " for " + numberOfLines
-               + " registers " + " size each line = " + size + " Records/Sec="
-               + (numberOfLines * 1000 / timeTotal) + " (Assynchronous)");
-         
+
+         debug("Asynchronous time = " + timeTotal +
+               " for " +
+               numberOfLines +
+               " registers " +
+               " size each line = " +
+               size +
+               " Records/Sec=" +
+               numberOfLines *
+               1000 /
+               timeTotal +
+               " (Assynchronous)");
+
          latchDone.await();
          latchDone2.await();
-         
+
          timeTotal = System.currentTimeMillis() - valueInitial;
-         debug("After completions time = " + timeTotal + " for "
-               + numberOfLines + " registers " + " size each line = " + size
-               + " Records/Sec=" + (numberOfLines * 1000 / timeTotal)
-               + " (Assynchronous)");
-         
+         debug("After completions time = " + timeTotal +
+               " for " +
+               numberOfLines +
+               " registers " +
+               " size each line = " +
+               size +
+               " Records/Sec=" +
+               numberOfLines *
+               1000 /
+               timeTotal +
+               " (Assynchronous)");
+
          for (CountDownCallback callback : list)
          {
             assertEquals(1, callback.timesDoneCalled.get());
             assertTrue(callback.doneCalled);
             assertFalse(callback.errorCalled);
          }
-         
+
          for (CountDownCallback callback : list2)
          {
             assertEquals(1, callback.timesDoneCalled.get());
             assertTrue(callback.doneCalled);
             assertFalse(callback.errorCalled);
          }
-         
+
          controller.close();
-      } finally
+      }
+      finally
       {
          try
          {
             controller.close();
-         } catch (Exception ignored)
+         }
+         catch (Exception ignored)
          {
          }
          try
          {
             controller2.close();
-         } catch (Exception ignored)
+         }
+         catch (Exception ignored)
          {
          }
       }
    }
-   
+
    public void testAddBeyongSimultaneousLimit() throws Exception
    {
       asyncData(3000, 1024, 10);
    }
-   
+
    public void testAddAsyncData() throws Exception
    {
       asyncData(10000, 1024, 30000);
    }
-   
+
    public void testInvalidReads() throws Exception
    {
       class LocalCallback implements AIOCallback
-      {         
-         private CountDownLatch latch = new CountDownLatch(1);
-         
+      {
+         private final CountDownLatch latch = new CountDownLatch(1);
+
          volatile boolean error;
-         
+
          public void done()
          {
             latch.countDown();
          }
-         
+
          public void onError(final int errorCode, final String errorMessage)
          {
-            this.error = true;
+            error = true;
             latch.countDown();
          }
       }
-      
+
       AsynchronousFileImpl controller = new AsynchronousFileImpl();
       try
       {
-         
+
          final int SIZE = 512;
-         
+
          controller.open(FILE_NAME, 10);
          controller.close();
-         
+
          controller = new AsynchronousFileImpl();
-         
+
          controller.open(FILE_NAME, 10);
-         
-         controller.fill(0, 1, 512, (byte) 'j');
-         
+
+         controller.fill(0, 1, 512, (byte)'j');
+
          ByteBuffer buffer = controller.newBuffer(SIZE);
-         
+
          buffer.clear();
-         
+
          for (int i = 0; i < SIZE; i++)
          {
-            buffer.put((byte) (i % 100));
+            buffer.put((byte)(i % 100));
          }
-         
+
          LocalCallback callbackLocal = new LocalCallback();
-         
+
          controller.write(0, 512, buffer, callbackLocal);
-         
+
          callbackLocal.latch.await();
-         
+
          ByteBuffer newBuffer = ByteBuffer.allocateDirect(50);
-         
+
          callbackLocal = new LocalCallback();
-         
+
          controller.read(0, 50, newBuffer, callbackLocal);
-         
+
          callbackLocal.latch.await();
-         
-         //assertTrue(callbackLocal.error);
-         
+
+         // assertTrue(callbackLocal.error);
+
          callbackLocal = new LocalCallback();
-         
+
          byte bytes[] = new byte[512];
-         
+
          try
          {
             newBuffer = ByteBuffer.wrap(bytes);
-            
+
             controller.read(0, 512, newBuffer, callbackLocal);
-            
+
             fail("An exception was supposed to be thrown");
-         } catch (Exception ignored)
+         }
+         catch (Exception ignored)
          {
          }
-         
-         //newBuffer = ByteBuffer.allocateDirect(512);
+
+         // newBuffer = ByteBuffer.allocateDirect(512);
          newBuffer = controller.newBuffer(512);
          callbackLocal = new LocalCallback();
          controller.read(0, 512, newBuffer, callbackLocal);
          callbackLocal.latch.await();
          assertFalse(callbackLocal.error);
-         
+
          newBuffer.rewind();
-         
+
          byte[] bytesRead = new byte[SIZE];
-         
+
          newBuffer.get(bytesRead);
-         
+
          for (int i = 0; i < SIZE; i++)
          {
-            assertEquals((byte) (i % 100), bytesRead[i]);
+            assertEquals((byte)(i % 100), bytesRead[i]);
          }
-      } finally
+      }
+      finally
       {
          try
          {
             controller.close();
-         } catch (Throwable ignored)
+         }
+         catch (Throwable ignored)
          {
          }
-         
+
       }
-      
+
    }
-   
+
    public void testBufferCallbackUniqueBuffers() throws Exception
    {
       boolean closed = false;
@@ -312,14 +331,13 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
       {
          final int NUMBER_LINES = 1000;
          final int SIZE = 512;
-         
-         
+
          controller.open(FILE_NAME, 1000);
-         
-         controller.fill(0, 1, NUMBER_LINES * SIZE, (byte) 'j');
-         
+
+         controller.fill(0, 1, NUMBER_LINES * SIZE, (byte)'j');
+
          final ArrayList<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
-         
+
          BufferCallback bufferCallback = new BufferCallback()
          {
             public void bufferDone(ByteBuffer buffer)
@@ -327,8 +345,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
                buffers.add(buffer);
             }
          };
-         
-         
+
          controller.setBufferCallback(bufferCallback);
 
          CountDownLatch latch = new CountDownLatch(NUMBER_LINES);
@@ -343,18 +360,21 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
             }
             controller.write(i * SIZE, SIZE, buffer, aio);
          }
-         
-         // The buffer callback is only called after the complete callback was called.
-         // Because of that a race could happen on the assertions to buffers.size what would invalidate the test
-         // We close the file and that would guarantee the buffer callback was called for all the elements
+
+         // The buffer callback is only called after the complete callback was
+         // called.
+         // Because of that a race could happen on the assertions to
+         // buffers.size what would invalidate the test
+         // We close the file and that would guarantee the buffer callback was
+         // called for all the elements
          controller.close();
          closed = true;
-         
+
          assertEquals(NUMBER_LINES, buffers.size());
-         
+
          // Make sure all the buffers are unique
          ByteBuffer lineOne = null;
-         for (ByteBuffer bufferTmp: buffers)
+         for (ByteBuffer bufferTmp : buffers)
          {
             if (lineOne == null)
             {
@@ -362,10 +382,10 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
             }
             else
             {
-               assertTrue (lineOne != bufferTmp);
+               assertTrue(lineOne != bufferTmp);
             }
          }
-         
+
          buffers.clear();
 
       }
@@ -377,7 +397,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          }
       }
    }
-   
+
    public void testBufferCallbackAwaysSameBuffer() throws Exception
    {
       boolean closed = false;
@@ -386,14 +406,13 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
       {
          final int NUMBER_LINES = 1000;
          final int SIZE = 512;
-         
-         
+
          controller.open(FILE_NAME, 1000);
-         
-         controller.fill(0, 1, NUMBER_LINES * SIZE, (byte) 'j');
-         
+
+         controller.fill(0, 1, NUMBER_LINES * SIZE, (byte)'j');
+
          final ArrayList<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
-         
+
          BufferCallback bufferCallback = new BufferCallback()
          {
             public void bufferDone(ByteBuffer buffer)
@@ -401,13 +420,12 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
                buffers.add(buffer);
             }
          };
-         
-         
+
          controller.setBufferCallback(bufferCallback);
 
          CountDownLatch latch = new CountDownLatch(NUMBER_LINES);
          CountDownCallback aio = new CountDownCallback(latch);
-         
+
          ByteBuffer buffer = controller.newBuffer(SIZE);
          buffer.rewind();
          for (int j = 0; j < SIZE; j++)
@@ -419,18 +437,21 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          {
             controller.write(i * SIZE, SIZE, buffer, aio);
          }
-         
-         // The buffer callback is only called after the complete callback was called.
-         // Because of that a race could happen on the assertions to buffers.size what would invalidate the test
-         // We close the file and that would guarantee the buffer callback was called for all the elements
+
+         // The buffer callback is only called after the complete callback was
+         // called.
+         // Because of that a race could happen on the assertions to
+         // buffers.size what would invalidate the test
+         // We close the file and that would guarantee the buffer callback was
+         // called for all the elements
          controller.close();
          closed = true;
-         
+
          assertEquals(NUMBER_LINES, buffers.size());
-         
+
          // Make sure all the buffers are unique
          ByteBuffer lineOne = null;
-         for (ByteBuffer bufferTmp: buffers)
+         for (ByteBuffer bufferTmp : buffers)
          {
             if (lineOne == null)
             {
@@ -438,10 +459,10 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
             }
             else
             {
-               assertTrue (lineOne == bufferTmp);
+               assertTrue(lineOne == bufferTmp);
             }
          }
-         
+
          buffers.clear();
 
       }
@@ -453,97 +474,99 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          }
       }
    }
-   
+
    public void testRead() throws Exception
    {
       final AsynchronousFileImpl controller = new AsynchronousFileImpl();
       try
       {
-         
+
          final int NUMBER_LINES = 5000;
          final int SIZE = 1024;
-         
-         controller.open(FILE_NAME, 1000);
-         
-         controller.fill(0, 1, NUMBER_LINES * SIZE, (byte) 'j');
-         
-         {
-         CountDownLatch latch = new CountDownLatch(NUMBER_LINES);
-         CountDownCallback aio = new CountDownCallback(latch);
 
-         for (int i = 0; i < NUMBER_LINES; i++)
+         controller.open(FILE_NAME, 1000);
+
+         controller.fill(0, 1, NUMBER_LINES * SIZE, (byte)'j');
+
          {
-            ByteBuffer buffer = ByteBuffer.allocateDirect(SIZE);
-            addString("Str value " + i + "\n", buffer);
-            for (int j = buffer.position(); j < buffer.capacity() - 1; j++)
+            CountDownLatch latch = new CountDownLatch(NUMBER_LINES);
+            CountDownCallback aio = new CountDownCallback(latch);
+
+            for (int i = 0; i < NUMBER_LINES; i++)
             {
-               buffer.put((byte) ' ');
+               ByteBuffer buffer = ByteBuffer.allocateDirect(SIZE);
+               addString("Str value " + i + "\n", buffer);
+               for (int j = buffer.position(); j < buffer.capacity() - 1; j++)
+               {
+                  buffer.put((byte)' ');
+               }
+               buffer.put((byte)'\n');
+
+               controller.write(i * SIZE, SIZE, buffer, aio);
             }
-            buffer.put((byte) '\n');
-            
-            controller.write(i * SIZE, SIZE, buffer, aio);
+
+            latch.await();
+            assertFalse(aio.errorCalled);
+            assertEquals(NUMBER_LINES, aio.timesDoneCalled.get());
          }
-         
-         latch.await();
-         assertFalse(aio.errorCalled);
-         assertEquals(NUMBER_LINES, aio.timesDoneCalled.get());
-         }
- 
-         // If you call close you're supposed to wait events to finish before closing it
+
+         // If you call close you're supposed to wait events to finish before
+         // closing it
          controller.close();
          controller.open(FILE_NAME, 10);
-         
+
          ByteBuffer newBuffer = ByteBuffer.allocateDirect(SIZE);
-         
+
          for (int i = 0; i < NUMBER_LINES; i++)
          {
             newBuffer.clear();
             addString("Str value " + i + "\n", newBuffer);
             for (int j = newBuffer.position(); j < newBuffer.capacity() - 1; j++)
             {
-               newBuffer.put((byte) ' ');
+               newBuffer.put((byte)' ');
             }
-            newBuffer.put((byte) '\n');
-            
+            newBuffer.put((byte)'\n');
+
             CountDownLatch latch = new CountDownLatch(1);
             CountDownCallback aio = new CountDownCallback(latch);
-            
+
             ByteBuffer buffer = ByteBuffer.allocateDirect(SIZE);
-            
+
             controller.read(i * SIZE, SIZE, buffer, aio);
             latch.await();
             assertFalse(aio.errorCalled);
             assertTrue(aio.doneCalled);
-            
+
             byte bytesRead[] = new byte[SIZE];
             byte bytesCompare[] = new byte[SIZE];
-            
+
             newBuffer.rewind();
             newBuffer.get(bytesCompare);
             buffer.rewind();
             buffer.get(bytesRead);
-            
+
             for (int count = 0; count < SIZE; count++)
             {
-               assertEquals("byte position " + count + " differs on line " + i,
-                     bytesCompare[count], bytesRead[count]);
+               assertEquals("byte position " + count + " differs on line " + i, bytesCompare[count], bytesRead[count]);
             }
-            
+
             assertTrue(buffer.equals(newBuffer));
          }
-      } finally
+      }
+      finally
       {
          try
          {
             controller.close();
-         } catch (Throwable ignored)
+         }
+         catch (Throwable ignored)
          {
          }
-         
+
       }
-      
+
    }
-   
+
    /** 
     *  This test will call file.close() when there are still callbacks being processed. 
     *  This could cause a crash or callbacks missing and this test is validating both situations.
@@ -553,27 +576,27 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
       final AsynchronousFileImpl controller = new AsynchronousFileImpl();
       try
       {
-         
+
          final int NUMBER_LINES = 1000;
          CountDownLatch readLatch = new CountDownLatch(NUMBER_LINES);
          final int SIZE = 1024;
-         
+
          controller.open(FILE_NAME, 10000);
-         
-         controller.fill(0, 1, NUMBER_LINES * SIZE, (byte) 'j');
-         
+
+         controller.fill(0, 1, NUMBER_LINES * SIZE, (byte)'j');
+
          for (int i = 0; i < NUMBER_LINES; i++)
          {
             ByteBuffer buffer = ByteBuffer.allocateDirect(SIZE);
-            
+
             buffer.clear();
             addString("Str value " + i + "\n", buffer);
             for (int j = buffer.position(); j < buffer.capacity() - 1; j++)
             {
-               buffer.put((byte) ' ');
+               buffer.put((byte)' ');
             }
-            buffer.put((byte) '\n');
-            
+            buffer.put((byte)'\n');
+
             CountDownCallback aio = new CountDownCallback(readLatch);
             controller.write(i * SIZE, SIZE, buffer, aio);
          }
@@ -581,85 +604,85 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          // If you call close you're supposed to wait events to finish before
          // closing it
          controller.close();
-         
+
          assertEquals(0, readLatch.getCount());
          readLatch.await();
          controller.open(FILE_NAME, 10);
-         
+
          ByteBuffer newBuffer = ByteBuffer.allocateDirect(SIZE);
-         
+
          ByteBuffer buffer = ByteBuffer.allocateDirect(SIZE);
-         
+
          for (int i = 0; i < NUMBER_LINES; i++)
          {
             newBuffer.clear();
             addString("Str value " + i + "\n", newBuffer);
             for (int j = newBuffer.position(); j < newBuffer.capacity() - 1; j++)
             {
-               newBuffer.put((byte) ' ');
+               newBuffer.put((byte)' ');
             }
-            newBuffer.put((byte) '\n');
-            
+            newBuffer.put((byte)'\n');
+
             CountDownLatch latch = new CountDownLatch(1);
             CountDownCallback aio = new CountDownCallback(latch);
             controller.read(i * SIZE, SIZE, buffer, aio);
             latch.await();
             assertFalse(aio.errorCalled);
             assertTrue(aio.doneCalled);
-            
+
             byte bytesRead[] = new byte[SIZE];
             byte bytesCompare[] = new byte[SIZE];
-            
+
             newBuffer.rewind();
             newBuffer.get(bytesCompare);
             buffer.rewind();
             buffer.get(bytesRead);
-            
+
             for (int count = 0; count < SIZE; count++)
             {
-               assertEquals("byte position " + count + " differs on line " + i,
-                     bytesCompare[count], bytesRead[count]);
+               assertEquals("byte position " + count + " differs on line " + i, bytesCompare[count], bytesRead[count]);
             }
-            
+
             assertTrue(buffer.equals(newBuffer));
          }
-         
-      } finally
+
+      }
+      finally
       {
          try
          {
             controller.close();
-         } catch (Throwable ignored)
+         }
+         catch (Throwable ignored)
          {
          }
-         
+
       }
    }
-   
-   private void asyncData(int numberOfLines, int size, int aioLimit)
-         throws Exception
+
+   private void asyncData(final int numberOfLines, final int size, final int aioLimit) throws Exception
    {
       final AsynchronousFileImpl controller = new AsynchronousFileImpl();
       controller.open(FILE_NAME, aioLimit);
-      
+
       try
       {
          CountDownLatch latchDone = new CountDownLatch(numberOfLines);
-         
+
          ByteBuffer block = controller.newBuffer(size);
          encodeBufer(block);
-         
+
          preAlloc(controller, numberOfLines * size);
-         
+
          ArrayList<CountDownCallback> list = new ArrayList<CountDownCallback>();
-         
+
          for (int i = 0; i < numberOfLines; i++)
          {
             list.add(new CountDownCallback(latchDone));
          }
-         
+
          long valueInitial = System.currentTimeMillis();
-         
+
          long lastTime = System.currentTimeMillis();
          int counter = 0;
          for (CountDownCallback tmp : list)
@@ -667,58 +690,66 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
             controller.write(counter * size, size, block, tmp);
             if (++counter % 20000 == 0)
             {
-               debug(20000 * 1000 / (System.currentTimeMillis() - lastTime)
-                     + " rec/sec (Async)");
+               debug(20000 * 1000 / (System.currentTimeMillis() - lastTime) + " rec/sec (Async)");
                lastTime = System.currentTimeMillis();
             }
-            
+
          }
-         
+
          latchDone.await();
-         
+
          long timeTotal = System.currentTimeMillis() - valueInitial;
-         debug("After completions time = " + timeTotal + " for "
-               + numberOfLines + " registers " + " size each line = " + size
-               + ", Records/Sec=" + (numberOfLines * 1000 / timeTotal)
-               + " (Assynchronous)");
-         
+         debug("After completions time = " + timeTotal +
+               " for " +
+               numberOfLines +
+               " registers " +
+               " size each line = " +
+               size +
+               ", Records/Sec=" +
+               numberOfLines *
+               1000 /
+               timeTotal +
+               " (Assynchronous)");
+
          for (CountDownCallback tmp : list)
          {
             assertEquals(1, tmp.timesDoneCalled.get());
             assertTrue(tmp.doneCalled);
             assertFalse(tmp.errorCalled);
          }
-         
+
          controller.close();
-      } finally
+      }
+      finally
       {
          try
          {
             controller.close();
-         } catch (Exception ignored)
+         }
+         catch (Exception ignored)
          {
          }
       }
-      
+
    }
-   
+
    public void testDirectSynchronous() throws Exception
    {
       try
       {
          final int NUMBER_LINES = 3000;
          final int SIZE = 1024;
-         
+
          final AsynchronousFileImpl controller = new AsynchronousFileImpl();
          controller.open(FILE_NAME, 2000);
-         
+
          ByteBuffer block = ByteBuffer.allocateDirect(SIZE);
          encodeBufer(block);
-         
+
          preAlloc(controller, NUMBER_LINES * SIZE);
-         
+
          long startTime = System.currentTimeMillis();
-         
+
          for (int i = 0; i < NUMBER_LINES; i++)
          {
             CountDownLatch latchDone = new CountDownLatch(1);
@@ -728,54 +759,65 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
             assertTrue(aioBlock.doneCalled);
             assertFalse(aioBlock.errorCalled);
          }
-         
+
          long timeTotal = System.currentTimeMillis() - startTime;
-         debug("time = " + timeTotal + " for " + NUMBER_LINES
-               + " registers " + " size each line = " + SIZE + " Records/Sec="
-               + (NUMBER_LINES * 1000 / timeTotal) + " Synchronous");
-         
+         debug("time = " + timeTotal +
+               " for " +
+               NUMBER_LINES +
+               " registers " +
+               " size each line = " +
+               SIZE +
+               " Records/Sec=" +
+               NUMBER_LINES *
+               1000 /
+               timeTotal +
+               " Synchronous");
+
          controller.close();
-      } catch (Exception e)
+      }
+      catch (Exception e)
       {
          throw e;
       }
-      
+
    }
- 
+
    public void testInvalidWrite() throws Exception
    {
       final AsynchronousFileImpl controller = new AsynchronousFileImpl();
       controller.open(FILE_NAME, 2000);
-      
+
       try
-      {         
+      {
          final int SIZE = 512;
-         
+
          ByteBuffer block = controller.newBuffer(SIZE);
          encodeBufer(block);
-         
+
          preAlloc(controller, 10 * 512);
-         
+
          CountDownLatch latchDone = new CountDownLatch(1);
-         
+
          CountDownCallback aioBlock = new CountDownCallback(latchDone);
          controller.write(11, 512, block, aioBlock);
-         
+
          latchDone.await();
-         
+
          assertTrue(aioBlock.errorCalled);
          assertFalse(aioBlock.doneCalled);
 
-      } catch (Exception e)
+      }
+      catch (Exception e)
       {
          throw e;
-      } finally
+      }
+      finally
       {
          controller.close();
       }
-      
+
    }
-   
+
    public void testInvalidAlloc() throws Exception
    {
       AsynchronousFileImpl controller = new AsynchronousFileImpl();
@@ -783,35 +825,35 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
       {
          ByteBuffer buffer = controller.newBuffer(300);
          fail("Exception expected");
-      } catch (Exception ignored)
+      }
+      catch (Exception ignored)
       {
       }
-      
+
    }
-   
+
    public void testSize() throws Exception
    {
       final AsynchronousFileImpl controller = new AsynchronousFileImpl();
-      
+
       final int NUMBER_LINES = 10;
       final int SIZE = 1024;
-      
+
       controller.open(FILE_NAME, 1);
-      
-      controller.fill(0, 1, NUMBER_LINES * SIZE, (byte) 'j');
-      
-      assertEquals (NUMBER_LINES * SIZE, controller.size());
-      
+
+      controller.fill(0, 1, NUMBER_LINES * SIZE, (byte)'j');
+
+      assertEquals(NUMBER_LINES * SIZE, controller.size());
+
       controller.close();
-      
+
    }
-   
-   
-   private void addString(String str, ByteBuffer buffer)
+
+   private void addString(final String str, final ByteBuffer buffer)
    {
       CharBuffer charBuffer = CharBuffer.wrap(str);
       UTF_8_ENCODER.encode(charBuffer, buffer, true);
-      
+
    }
-   
+
 }

@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.integration.journal;
 
@@ -28,7 +28,6 @@ import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.unit.core.journal.impl.JournalImplTestUnit;
-
 
 /**
  * 
@@ -40,26 +39,27 @@ import org.jboss.messaging.tests.unit.core.journal.impl.JournalImplTestUnit;
 public class RealNIOJournalImplTest extends JournalImplTestUnit
 {
    private static final Logger log = Logger.getLogger(RealNIOJournalImplTest.class);
-   
+
    protected String journalDir = System.getProperty("user.home") + "/journal-test";
-      
+
+   @Override
    protected SequentialFileFactory getFileFactory() throws Exception
    {
       File file = new File(journalDir);
-      
+
       log.debug("deleting directory " + journalDir);
-      
+
       deleteDirectory(file);
-      
-      file.mkdir();     
-      
+
+      file.mkdir();
+
       return new NIOSequentialFileFactory(journalDir);
    }
-   
+
+   @Override
    protected int getAlignment()
    {
       return 1;
    }
-   
-   
+
 }

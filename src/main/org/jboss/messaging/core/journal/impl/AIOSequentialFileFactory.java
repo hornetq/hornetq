@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.journal.impl;
 
@@ -35,27 +35,27 @@ import org.jboss.messaging.core.journal.SequentialFile;
  *
  */
 public class AIOSequentialFileFactory extends AbstractSequentialFactory
-{	
+{
    public AIOSequentialFileFactory(final String journalDir)
    {
       super(journalDir);
    }
-   
+
    public SequentialFile createSequentialFile(final String fileName, final int maxIO) throws Exception
    {
       return new AIOSequentialFile(journalDir, fileName, maxIO);
    }
-   
+
    public boolean isSupportsCallbacks()
    {
       return true;
    }
-   
+
    public static boolean isSupported()
    {
       return AsynchronousFileImpl.isLoaded();
    }
-   
+
    public ByteBuffer newBuffer(int size)
    {
       if (size % 512 != 0)
@@ -64,17 +64,17 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       }
       return ByteBuffer.allocateDirect(size);
    }
-   
-   public void clearBuffer(ByteBuffer directByteBuffer)
+
+   public void clearBuffer(final ByteBuffer directByteBuffer)
    {
       AsynchronousFileImpl.resetBuffer(directByteBuffer, directByteBuffer.limit());
    }
-   
+
    public int getAlignment()
    {
       return 512;
    }
-   
+
    // For tests only
    public ByteBuffer wrapBuffer(final byte[] bytes)
    {
@@ -83,12 +83,12 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       return newbuffer;
    }
 
-   public int calculateBlockSize(int position)
+   public int calculateBlockSize(final int position)
    {
       int alignment = getAlignment();
-      
-      int pos = ((position / alignment) + (position % alignment != 0 ? 1 : 0)) * alignment;
-      
+
+      int pos = (position / alignment + (position % alignment != 0 ? 1 : 0)) * alignment;
+
       return pos;
    }
 }

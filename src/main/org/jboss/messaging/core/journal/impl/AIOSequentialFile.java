@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.journal.impl;
 
@@ -48,62 +48,64 @@ import org.jboss.messaging.core.logging.Logger;
 public class AIOSequentialFile implements SequentialFile
 {
    private static final Logger log = Logger.getLogger(AIOSequentialFile.class);
-   
+
    private final String journalDir;
-   
+
    private final String fileName;
-   
+
    private boolean opened = false;
-   
+
    private final int maxIO;
-   
+
    private AsynchronousFile aioFile;
-   
-   private AtomicLong position = new AtomicLong(0);
-   
-   // A context switch on AIO would make it to synchronize the disk before switching to the new thread, what would cause
-   // serious performance problems. Because of that we make all the writes on AIO using a single thread.
+
+   private final AtomicLong position = new AtomicLong(0);
+
+   // A context switch on AIO would make it to synchronize the disk before
+   // switching to the new thread, what would cause
+   // serious performance problems. Because of that we make all the writes on
+   // AIO using a single thread.
    private ExecutorService executor;
-   
+
    public AIOSequentialFile(final String journalDir, final String fileName, final int maxIO) throws Exception
    {
-      this.journalDir = journalDir;		
+      this.journalDir = journalDir;
       this.fileName = fileName;
       this.maxIO = maxIO;
    }
-   
+
    public int getAlignment() throws Exception
    {
       checkOpened();
-      
+
       return aioFile.getBlockSize();
    }
-   
-   public int calculateBlockStart(int position) throws Exception
+
+   public int calculateBlockStart(final int position) throws Exception
    {
       int alignment = getAlignment();
-      
-      int pos = ((position / alignment) + (position % alignment != 0 ? 1 : 0)) * alignment;
-      
+
+      int pos = (position / alignment + (position % alignment != 0 ? 1 : 0)) * alignment;
+
       return pos;
    }
-   
+
    public synchronized void close() throws Exception
    {
       checkOpened();
       opened = false;
       executor.shutdown();
-      
+
       while (!executor.awaitTermination(60, TimeUnit.SECONDS))
       {
-         log.warn("Executor on file " + this.fileName + " couldn't complete its tasks in 60 seconds.",
-               new Exception ("Warning: Executor on file " + this.fileName + " couldn't complete its tasks in 60 seconds.") );
+         log.warn("Executor on file " + fileName + " couldn't complete its tasks in 60 seconds.",
+                  new Exception("Warning: Executor on file " + fileName + " couldn't complete its tasks in 60 seconds."));
       }
-      
+
       aioFile.close();
-      aioFile = null;		
+      aioFile = null;
    }
-   
+
    public void delete() throws Exception
    {
       if (aioFile != null)
@@ -111,146 +113,145 @@ public class AIOSequentialFile implements SequentialFile
          aioFile.close();
          aioFile = null;
       }
-      
-      File file = new File(journalDir + "/" +  fileName);
+
+      File file = new File(journalDir + "/" + fileName);
       file.delete();
    }
-   
+
    public void fill(final int position, final int size, final byte fillCharacter) throws Exception
    {
       checkOpened();
-      
+
       int fileblockSize = aioFile.getBlockSize();
-      
+
       int blockSize = fileblockSize;
-      
-      if (size % (100*1024*1024) == 0)
+
+      if (size % (100 * 1024 * 1024) == 0)
       {
-         blockSize = 100*1024*1024;
+         blockSize = 100 * 1024 * 1024;
       }
-      else if (size % (10*1024*1024) == 0)
+      else if (size % (10 * 1024 * 1024) == 0)
       {
-         blockSize = 10*1024*1024;
+         blockSize = 10 * 1024 * 1024;
       }
-      else if (size % (1024*1024) == 0)
+      else if (size % (1024 * 1024) == 0)
       {
-         blockSize = 1024*1024;
+         blockSize = 1024 * 1024;
       }
-      else if (size % (10*1024) == 0)
+      else if (size % (10 * 1024) == 0)
       {
-         blockSize = 10*1024;
+         blockSize = 10 * 1024;
       }
       else
       {
          blockSize = fileblockSize;
       }
-      
+
       int blocks = size / blockSize;
-      
+
       if (size % blockSize != 0)
       {
          blocks++;
       }
-      
+
       int filePosition = position;
-      
+
       if (position % fileblockSize != 0)
       {
-         filePosition = ((position / fileblockSize) + 1) * fileblockSize;
+         filePosition = (position / fileblockSize + 1) * fileblockSize;
       }
-      
-      aioFile.fill((long)filePosition, blocks, blockSize, (byte)fillCharacter);		
+
+      aioFile.fill(filePosition, blocks, blockSize, fillCharacter);
    }
-   
+
    public String getFileName()
    {
       return fileName;
    }
-   
+
    public void open() throws Exception
    {
-     open(maxIO);
+      open(maxIO);
    }
-   
-   public synchronized void open(int currentMaxIO) throws Exception
+
+   public synchronized void open(final int currentMaxIO) throws Exception
    {
       opened = true;
       executor = Executors.newSingleThreadExecutor();
       aioFile = newFile();
       aioFile.open(journalDir + "/" + fileName, currentMaxIO);
       position.set(0);
-      
+
    }
-   
-   public void setBufferCallback(BufferCallback callback)
+
+   public void setBufferCallback(final BufferCallback callback)
    {
       aioFile.setBufferCallback(callback);
    }
-   
+
    public void position(final int pos) throws Exception
    {
-      position.set(pos);		
+      position.set(pos);
    }
-   
+
    public int position() throws Exception
    {
       return (int)position.get();
    }
-   
+
    public int read(final ByteBuffer bytes, final IOCallback callback) throws Exception
    {
       int bytesToRead = bytes.limit();
-      
+
       long positionToRead = position.getAndAdd(bytesToRead);
-      
+
       bytes.rewind();
-      
+
       aioFile.read(positionToRead, bytesToRead, bytes, callback);
-      
+
       return bytesToRead;
    }
-   
+
    public int read(final ByteBuffer bytes) throws Exception
    {
       WaitCompletion waitCompletion = new WaitCompletion();
-      
-      int bytesRead = read (bytes, waitCompletion);
-      
+
+      int bytesRead = read(bytes, waitCompletion);
+
       waitCompletion.waitLatch();
-      
+
       return bytesRead;
    }
-   
-   
+
    public int write(final ByteBuffer bytes, final IOCallback callback) throws Exception
    {
       final int bytesToWrite = bytes.limit();
-      
+
       final long positionToWrite = position.getAndAdd(bytesToWrite);
-      
+
       execWrite(bytes, callback, bytesToWrite, positionToWrite);
-      
+
       return bytesToWrite;
    }
-   
+
    public int write(final ByteBuffer bytes, final boolean sync) throws Exception
    {
       if (sync)
       {
          WaitCompletion completion = new WaitCompletion();
-         
+
          int bytesWritten = write(bytes, completion);
-         
+
          completion.waitLatch();
-         
+
          return bytesWritten;
       }
       else
       {
-         return write (bytes, DummyCallback.instance);
-      }		
+         return write(bytes, DummyCallback.instance);
+      }
    }
-   
+
    public void sync() throws Exception
    {
       throw new IllegalArgumentException("This method is not supported on AIO");
@@ -261,9 +262,10 @@ public class AIOSequentialFile implements SequentialFile
       return aioFile.size();
    }
 
+   @Override
    public String toString()
    {
-      return "AIOSequentialFile:" + this.journalDir + "/" + this.fileName;
+      return "AIOSequentialFile:" + journalDir + "/" + fileName;
    }
 
    // Protected methods
@@ -276,12 +278,14 @@ public class AIOSequentialFile implements SequentialFile
    {
       return new AsynchronousFileImpl();
    }
-   
+
    // Private methods
    // -----------------------------------------------------------------------------------------------------
-   
-   private void execWrite(final ByteBuffer bytes, final IOCallback callback,
-         final int bytesToWrite, final long positionToWrite)
+
+   private void execWrite(final ByteBuffer bytes,
+                          final IOCallback callback,
+                          final int bytesToWrite,
+                          final long positionToWrite)
    {
       executor.execute(new Runnable()
       {
@@ -290,7 +294,8 @@ public class AIOSequentialFile implements SequentialFile
             try
             {
                aioFile.write(positionToWrite, bytesToWrite, bytes, callback);
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                log.warn(e.getMessage(), e);
                if (callback != null)
@@ -301,54 +306,53 @@ public class AIOSequentialFile implements SequentialFile
          }
       });
    }
-   
-   
+
    private void checkOpened() throws Exception
    {
       if (aioFile == null || !opened)
       {
-         throw new IllegalStateException ("File not opened");
+         throw new IllegalStateException("File not opened");
       }
    }
-   
+
    private static class DummyCallback implements IOCallback
-   {	   
+   {
       static DummyCallback instance = new DummyCallback();
-      
+
       public void done()
       {
       }
-      
-      public void onError(int errorCode, String errorMessage)
+
+      public void onError(final int errorCode, final String errorMessage)
       {
-         log.warn("Error on writing data!" + errorMessage + " code - " + errorCode, new Exception (errorMessage));
-      }	   
+         log.warn("Error on writing data!" + errorMessage + " code - " + errorCode, new Exception(errorMessage));
+      }
    }
-   
+
    private static class WaitCompletion implements IOCallback
-   {		
+   {
       private final CountDownLatch latch = new CountDownLatch(1);
-      
+
       private volatile String errorMessage;
-      
+
       private volatile int errorCode = 0;
-      
+
       public void done()
       {
          latch.countDown();
       }
-      
+
       public void onError(final int errorCode, final String errorMessage)
       {
          this.errorCode = errorCode;
-         
+
          this.errorMessage = errorMessage;
-         
+
          log.warn("Error Message " + errorMessage);
-         
-         latch.countDown();			
+
+         latch.countDown();
       }
-      
+
       public void waitLatch() throws Exception
       {
          latch.await();
@@ -357,6 +361,6 @@ public class AIOSequentialFile implements SequentialFile
             throw new MessagingException(errorCode, errorMessage);
          }
          return;
-      }		
-   }	
+      }
+   }
 }

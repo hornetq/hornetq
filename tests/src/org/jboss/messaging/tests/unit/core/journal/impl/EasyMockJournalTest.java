@@ -1,27 +1,29 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat
+ * Middleware LLC, and individual contributors by the @authors tag. See the
+ * copyright.txt in the distribution for a full listing of individual
+ * contributors.
+ * 
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ * 
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.tests.unit.core.journal.impl;
+
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
@@ -33,459 +35,445 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-
 public class EasyMockJournalTest extends UnitTestCase
 {
-   
+
    // Constants -----------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    SequentialFileFactory mockFactory = null;
+
    SequentialFile file1 = null;
+
    SequentialFile file2 = null;
+
    JournalImpl journalImpl = null;
-   
+
    // Static --------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(EasyMockJournalTest.class);
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
 
    public void testAppendRecord() throws Exception
    {
-      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD, 
-                                               /*FileID*/1, 
-                                               /* ID */14l, 
-                                               /*RecordLength*/1, 
-                                               /*RecordType*/(byte)33, 
-                                               /* body */(byte)10, 
-                                               JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
+      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD,
+              /*FileID*/1,
+              /* ID */14l,
+              /*RecordLength*/1,
+              /*RecordType*/(byte)33,
+              /* body */(byte)10, JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true)))
+              .andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
 
-      
       EasyMock.replay(mockFactory, file1, file2);
-      
-      journalImpl.appendAddRecord(14l, (byte) 33, new SimpleEncoding(1, (byte)10));
-      
+
+      journalImpl.appendAddRecord(14l, (byte)33, new SimpleEncoding(1, (byte)10));
+
       EasyMock.verify(mockFactory, file1, file2);
 
       EasyMock.reset(mockFactory, file1, file2);
-      
+
       stubValues();
 
-      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD, 
-            /*FileID*/1, 
-            /* ID */14l, 
-            /*RecordLength*/1, 
-            /*RecordType*/(byte)33, 
-            /* body */(byte)10, 
-            JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
-      
+      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD,
+              /*FileID*/1,
+              /* ID */14l,
+              /*RecordLength*/1,
+              /*RecordType*/(byte)33,
+              /* body */(byte)10, JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true)))
+              .andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
+
       EasyMock.replay(mockFactory, file1, file2);
-      
-      journalImpl.appendAddRecord(14l, (byte)33, new SimpleEncoding(1,(byte)10));
+
+      journalImpl.appendAddRecord(14l, (byte)33, new SimpleEncoding(1, (byte)10));
 
       EasyMock.verify(mockFactory, file1, file2);
 
    }
 
-
    public void testDeleteRecord() throws Exception
    {
-      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD, 
-                                               /*FileID*/1, 
-                                               /* ID */14l, 
-                                               /*RecordLength*/1, 
-                                               /*RecordType*/(byte)33, 
-                                               /* body */(byte)10, 
-                                               JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
+      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD,
+              /*FileID*/1,
+              /* ID */14l,
+              /*RecordLength*/1,
+              /*RecordType*/(byte)33,
+              /* body */(byte)10, JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true)))
+              .andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
 
-      
-      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.DELETE_RECORD, 
-            /*FileID*/1, 
-            /* ID */14l, 
-            JournalImpl.SIZE_DELETE_RECORD)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_DELETE_RECORD);
+      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.DELETE_RECORD,
+      /*FileID*/1,
+      /* ID */14l, JournalImpl.SIZE_DELETE_RECORD)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_DELETE_RECORD);
 
       EasyMock.replay(mockFactory, file1, file2);
-      
-      journalImpl.appendAddRecord(14l, (byte) 33, new SimpleEncoding(1, (byte)10));
-      
+
+      journalImpl.appendAddRecord(14l, (byte)33, new SimpleEncoding(1, (byte)10));
+
       journalImpl.appendDeleteRecord(14l);
 
       EasyMock.verify(mockFactory, file1, file2);
    }
-   //todo fix tests
+
+   // todo fix tests
    /*public void testDeleteTransRecord() throws Exception
    {
       EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD, 
             *//*FileID*//*1,
-            *//* ID *//*15l,
-            *//*RecordLength*//*1,
-            *//*RecordType*//*(byte)33,
-            *//* body *//*(byte)10,
-            JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
+                  *//* ID *//*15l,
+                  *//*RecordLength*//*1,
+                  *//*RecordType*//*(byte)33,
+                  *//* body *//*(byte)10,
+                  JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
 
-      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.DELETE_RECORD_TX, 
-            *//*FileID*//*1,
-            *//* Transaction ID*//* 100l,
-            *//* ID *//*15l,
-            JournalImpl.SIZE_DELETE_RECORD_TX)), EasyMock.eq(false))).andReturn(JournalImpl.SIZE_DELETE_RECORD_TX);
-      
-      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.PREPARE_RECORD, 
-            *//*FileID*//*1,
-            *//* Transaction ID*//* 100l,
-            *//* Number of Elements *//* 1,
-            *//* Number of Elements *//* 1,
-            *//* Number of Elements *//* 1,
-            JournalImpl.SIZE_PREPARE_RECORD + 8)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_PREPARE_RECORD);
-      
-      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.COMMIT_RECORD, 
-            *//*FileID*//*1,
-            *//* Transaction ID*//* 100l,
-            *//* Number of Elements *//* 1,
-            *//* Number of Elements *//* 1,
-            *//* Number of Elements *//* 1,
-            JournalImpl.SIZE_COMMIT_RECORD + 8)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_COMMIT_RECORD);
-      
-      EasyMock.replay(mockFactory, file1, file2);
-      
-      journalImpl.appendAddRecord(15l, (byte) 33, new byte[]{ (byte) 10 });
-      
-      journalImpl.appendDeleteRecordTransactional(100l, 15l);
+            EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.DELETE_RECORD_TX, 
+                  *//*FileID*//*1,
+                  *//* Transaction ID*//* 100l,
+                  *//* ID *//*15l,
+                  JournalImpl.SIZE_DELETE_RECORD_TX)), EasyMock.eq(false))).andReturn(JournalImpl.SIZE_DELETE_RECORD_TX);
+            
+            EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.PREPARE_RECORD, 
+                  *//*FileID*//*1,
+                  *//* Transaction ID*//* 100l,
+                  *//* Number of Elements *//* 1,
+                  *//* Number of Elements *//* 1,
+                  *//* Number of Elements *//* 1,
+                  JournalImpl.SIZE_PREPARE_RECORD + 8)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_PREPARE_RECORD);
+            
+            EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.COMMIT_RECORD, 
+                  *//*FileID*//*1,
+                  *//* Transaction ID*//* 100l,
+                  *//* Number of Elements *//* 1,
+                  *//* Number of Elements *//* 1,
+                  *//* Number of Elements *//* 1,
+                  JournalImpl.SIZE_COMMIT_RECORD + 8)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_COMMIT_RECORD);
+            
+            EasyMock.replay(mockFactory, file1, file2);
+            
+            journalImpl.appendAddRecord(15l, (byte) 33, new byte[]{ (byte) 10 });
+            
+            journalImpl.appendDeleteRecordTransactional(100l, 15l);
 
-		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
-      journalImpl.appendPrepareRecord(100l, xid);
-      
-      journalImpl.appendCommitRecord(100l);
-      
-      EasyMock.verify(mockFactory, file1, file2);
-   }*/
+      		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
+            journalImpl.appendPrepareRecord(100l, xid);
+            
+            journalImpl.appendCommitRecord(100l);
+            
+            EasyMock.verify(mockFactory, file1, file2);
+         }*/
 
    /*public void testAppendAndCommitRecord() throws Exception
    {
       EasyMock.expect(
             file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD_TX,
             *//* FileID *//*1,
-            *//* TXID *//*3l,
-            *//* ID *//*14l,
-            *//* RecordLength *//*1,
-            *//* RecordType *//*(byte) 33,
-            *//* body *//*(byte) 10, JournalImpl.SIZE_ADD_RECORD_TX + 1)),
-                  EasyMock.eq(false))).andReturn(
-            JournalImpl.SIZE_ADD_RECORD_TX + 1);
-      
-      EasyMock.expect(
-            file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD_TX,
-            *//* FileID *//*1,
-            *//* TXID *//*3l,
-            *//* ID *//*15l,
-            *//* RecordLength *//*1,
-            *//* RecordType *//*(byte) 33,
-            *//* body *//*(byte) 10, JournalImpl.SIZE_ADD_RECORD_TX + 1)),
-                  EasyMock.eq(false))).andReturn(
-            JournalImpl.SIZE_ADD_RECORD_TX + 1);
+                  *//* TXID *//*3l,
+                  *//* ID *//*14l,
+                  *//* RecordLength *//*1,
+                  *//* RecordType *//*(byte) 33,
+                  *//* body *//*(byte) 10, JournalImpl.SIZE_ADD_RECORD_TX + 1)),
+                        EasyMock.eq(false))).andReturn(
+                  JournalImpl.SIZE_ADD_RECORD_TX + 1);
+            
+            EasyMock.expect(
+                  file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD_TX,
+                  *//* FileID *//*1,
+                  *//* TXID *//*3l,
+                  *//* ID *//*15l,
+                  *//* RecordLength *//*1,
+                  *//* RecordType *//*(byte) 33,
+                  *//* body *//*(byte) 10, JournalImpl.SIZE_ADD_RECORD_TX + 1)),
+                        EasyMock.eq(false))).andReturn(
+                  JournalImpl.SIZE_ADD_RECORD_TX + 1);
 
-      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.PREPARE_RECORD, 
-            *//*FileID*//*1,
-            *//* TXID *//* 3l,
-            *//* Number of Elements *//* 1,
-            *//* Number of Elements *//* 1,
-            *//* Number of Elements *//* 2,
-            JournalImpl.SIZE_COMMIT_RECORD + 8)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_PREPARE_RECORD + 8);
-      
-      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.COMMIT_RECORD, 
-            *//*FileID*//*1,
-            *//* TXID *//* 3l,
-            *//* Number of Elements *//* 1,
-            *//* Number of Elements *//* 1,
-            *//* Number of Elements *//* 2,
-            JournalImpl.SIZE_COMMIT_RECORD + 8)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_COMMIT_RECORD + 8);
+            EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.PREPARE_RECORD, 
+                  *//*FileID*//*1,
+                  *//* TXID *//* 3l,
+                  *//* Number of Elements *//* 1,
+                  *//* Number of Elements *//* 1,
+                  *//* Number of Elements *//* 2,
+                  JournalImpl.SIZE_COMMIT_RECORD + 8)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_PREPARE_RECORD + 8);
+            
+            EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.COMMIT_RECORD, 
+                  *//*FileID*//*1,
+                  *//* TXID *//* 3l,
+                  *//* Number of Elements *//* 1,
+                  *//* Number of Elements *//* 1,
+                  *//* Number of Elements *//* 2,
+                  JournalImpl.SIZE_COMMIT_RECORD + 8)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_COMMIT_RECORD + 8);
 
-      EasyMock.replay(mockFactory, file1, file2);
-      
-      journalImpl.appendAddRecordTransactional(3, 14l, (byte)33, new SimpleEncoding(1,(byte)10));
-      
-      journalImpl.appendAddRecordTransactional(3, 15l, (byte) 33, new byte[]{ (byte) 10 });
+            EasyMock.replay(mockFactory, file1, file2);
+            
+            journalImpl.appendAddRecordTransactional(3, 14l, (byte)33, new SimpleEncoding(1,(byte)10));
+            
+            journalImpl.appendAddRecordTransactional(3, 15l, (byte) 33, new byte[]{ (byte) 10 });
 
-		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
-      journalImpl.appendPrepareRecord(3l, xid);
-      
-      journalImpl.appendCommitRecord(3l);
-      
-      EasyMock.verify(mockFactory, file1, file2);
-   }*/
+      		Xid xid = new XidImpl("branch".getBytes(), 1, "globalid".getBytes());
+            journalImpl.appendPrepareRecord(3l, xid);
+            
+            journalImpl.appendCommitRecord(3l);
+            
+            EasyMock.verify(mockFactory, file1, file2);
+         }*/
 
    public void testAppendAndRollbacktRecord() throws Exception
    {
-      EasyMock.expect(
-            file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD_TX,
-            /* FileID */1,
-            /* TXID */3l,
-            /* ID */14l,
-            /* RecordLength */1,
-            /* RecordType */(byte) 33,
-            /* body */(byte) 10, JournalImpl.SIZE_ADD_RECORD_TX + 1)),
-                  EasyMock.eq(false))).andReturn(
-            JournalImpl.SIZE_ADD_RECORD_TX + 1);
-      
-      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ROLLBACK_RECORD, 
-            /*FileID*/1, 
-            /* TXID */ 3l,
-            JournalImpl.SIZE_ROLLBACK_RECORD)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_ROLLBACK_RECORD);
+      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD_TX,
+              /* FileID */1,
+              /* TXID */3l,
+              /* ID */14l,
+              /* RecordLength */1,
+              /* RecordType */(byte)33,
+              /* body */(byte)10, JournalImpl.SIZE_ADD_RECORD_TX + 1)), EasyMock.eq(false)))
+              .andReturn(JournalImpl.SIZE_ADD_RECORD_TX + 1);
+
+      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ROLLBACK_RECORD,
+              /*FileID*/1,
+              /* TXID */3l, JournalImpl.SIZE_ROLLBACK_RECORD)), EasyMock.eq(true)))
+              .andReturn(JournalImpl.SIZE_ROLLBACK_RECORD);
 
       EasyMock.replay(mockFactory, file1, file2);
-      
-      journalImpl.appendAddRecordTransactional(3, 14l, (byte)33, new SimpleEncoding(1,(byte)10));
-      
+
+      journalImpl.appendAddRecordTransactional(3, 14l, (byte)33, new SimpleEncoding(1, (byte)10));
+
       journalImpl.appendRollbackRecord(3l);
-      
+
       EasyMock.verify(mockFactory, file1, file2);
    }
-   
+
    public void testupdateRecordNonTrans() throws Exception
    {
-      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD, 
-            /* FileID */1, 
-            /* ID */15l, 
-            /* RecordLength */1, 
-            /* RecordType */(byte)33, 
-            /* body */(byte)10, 
-            JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
+      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD,
+              /* FileID */1,
+              /* ID */15l,
+              /* RecordLength */1,
+              /* RecordType */(byte)33,
+              /* body */(byte)10, JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true)))
+              .andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
 
-      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.UPDATE_RECORD, 
-            /* FileID */1, 
-            /* ID */15l, 
-            /* RecordLength */1, 
-            /* RecordType */(byte)34, 
-            /* body */(byte)11, 
-            JournalImpl.SIZE_UPDATE_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_UPDATE_RECORD + 1);
-      
-      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.UPDATE_RECORD, 
-            /* FileID */1, 
-            /* ID */15l, 
-            /* RecordLength */1, 
-            /* RecordType */(byte)35, 
-            /* body */(byte)12, 
-            JournalImpl.SIZE_UPDATE_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_UPDATE_RECORD + 1);
-      
-     EasyMock.replay(mockFactory, file1, file2);
-      
-      journalImpl.appendAddRecord(15l, (byte) 33, new SimpleEncoding(1, (byte)10));
-      
+      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.UPDATE_RECORD,
+              /* FileID */1,
+              /* ID */15l,
+              /* RecordLength */1,
+              /* RecordType */(byte)34,
+              /* body */(byte)11, JournalImpl.SIZE_UPDATE_RECORD + 1)), EasyMock.eq(true)))
+              .andReturn(JournalImpl.SIZE_UPDATE_RECORD + 1);
+
+      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.UPDATE_RECORD,
+              /* FileID */1,
+              /* ID */15l,
+              /* RecordLength */1,
+              /* RecordType */(byte)35,
+              /* body */(byte)12, JournalImpl.SIZE_UPDATE_RECORD + 1)), EasyMock.eq(true)))
+              .andReturn(JournalImpl.SIZE_UPDATE_RECORD + 1);
+
+      EasyMock.replay(mockFactory, file1, file2);
+
+      journalImpl.appendAddRecord(15l, (byte)33, new SimpleEncoding(1, (byte)10));
+
       journalImpl.appendUpdateRecord(15l, (byte)34, new SimpleEncoding(1, (byte)11));
-      
+
       journalImpl.appendUpdateRecord(15l, (byte)35, new SimpleEncoding(1, (byte)12));
-      
+
       EasyMock.verify(mockFactory, file1, file2);
 
    }
 
-   
    /*public void testupdateRecordTrans() throws Exception
    {
       EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.ADD_RECORD, 
             *//* FileID *//*1,
-            *//* ID *//*15l,
-            *//* RecordLength *//*1,
-            *//* RecordType *//*(byte)33,
-            *//* body *//*(byte)10,
-            JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
+                  *//* ID *//*15l,
+                  *//* RecordLength *//*1,
+                  *//* RecordType *//*(byte)33,
+                  *//* body *//*(byte)10,
+                  JournalImpl.SIZE_ADD_RECORD + 1)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_ADD_RECORD + 1);
 
-      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.UPDATE_RECORD_TX, 
-            *//* FileID *//*1,
-            *//* TransactionID *//*33l,
-            *//* ID *//*15l,
-            *//* RecordLength *//*1,
-            *//* RecordType *//* (byte)34,
-            *//* body *//*(byte)11,
-            JournalImpl.SIZE_UPDATE_RECORD_TX + 1)), EasyMock.eq(false))).andReturn(JournalImpl.SIZE_UPDATE_RECORD_TX + 1);
-      
-      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.UPDATE_RECORD_TX, 
-            *//* FileID *//*1,
-            *//* TransactionID *//*33l,
-            *//* ID *//*15l,
-            *//* RecordLength *//*1,
-            *//* RecordType *//* (byte)35,
-            *//* body *//*(byte)12,
-            JournalImpl.SIZE_UPDATE_RECORD_TX + 1)), EasyMock.eq(false))).andReturn(JournalImpl.SIZE_UPDATE_RECORD_TX + 1);
-      
-      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.COMMIT_RECORD, 
-            *//*FileID*//*1,
-            *//* Transaction ID*//* 33l,
-            *//* Number of Elements *//* 1,
-            *//* Number of Elements *//* 1,
-            *//* Number of Elements *//* 2,
-            JournalImpl.SIZE_COMMIT_RECORD + 8)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_COMMIT_RECORD);
-      
-      EasyMock.replay(mockFactory, file1, file2);
-      
-      journalImpl.appendAddRecord(15l, (byte) 33, new byte[]{ (byte) 10 });
-      
-      journalImpl.appendUpdateRecordTransactional(33l, 15l, (byte)34, new SimpleEncoding(1, (byte)11));
-      
-      journalImpl.appendUpdateRecordTransactional(33l, 15l, (byte)35, new byte[]{ (byte) 12});
-      
-      journalImpl.appendCommitRecord(33l);
-      
-      EasyMock.verify(mockFactory, file1, file2);
+            EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.UPDATE_RECORD_TX, 
+                  *//* FileID *//*1,
+                  *//* TransactionID *//*33l,
+                  *//* ID *//*15l,
+                  *//* RecordLength *//*1,
+                  *//* RecordType *//* (byte)34,
+                  *//* body *//*(byte)11,
+                  JournalImpl.SIZE_UPDATE_RECORD_TX + 1)), EasyMock.eq(false))).andReturn(JournalImpl.SIZE_UPDATE_RECORD_TX + 1);
+            
+            EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.UPDATE_RECORD_TX, 
+                  *//* FileID *//*1,
+                  *//* TransactionID *//*33l,
+                  *//* ID *//*15l,
+                  *//* RecordLength *//*1,
+                  *//* RecordType *//* (byte)35,
+                  *//* body *//*(byte)12,
+                  JournalImpl.SIZE_UPDATE_RECORD_TX + 1)), EasyMock.eq(false))).andReturn(JournalImpl.SIZE_UPDATE_RECORD_TX + 1);
+            
+            EasyMock.expect(file1.write(compareByteBuffer(autoEncode(JournalImpl.COMMIT_RECORD, 
+                  *//*FileID*//*1,
+                  *//* Transaction ID*//* 33l,
+                  *//* Number of Elements *//* 1,
+                  *//* Number of Elements *//* 1,
+                  *//* Number of Elements *//* 2,
+                  JournalImpl.SIZE_COMMIT_RECORD + 8)), EasyMock.eq(true))).andReturn(JournalImpl.SIZE_COMMIT_RECORD);
+            
+            EasyMock.replay(mockFactory, file1, file2);
+            
+            journalImpl.appendAddRecord(15l, (byte) 33, new byte[]{ (byte) 10 });
+            
+            journalImpl.appendUpdateRecordTransactional(33l, 15l, (byte)34, new SimpleEncoding(1, (byte)11));
+            
+            journalImpl.appendUpdateRecordTransactional(33l, 15l, (byte)35, new byte[]{ (byte) 12});
+            
+            journalImpl.appendCommitRecord(33l);
+            
+            EasyMock.verify(mockFactory, file1, file2);
 
-   }*/
+         }*/
 
    // Protected -----------------------------------------------------
-   
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
-      
+
       if (journalImpl != null)
       {
          EasyMock.reset(mockFactory, file1, file2);
          stubValues();
-         try {journalImpl.stop();} catch (Throwable ignored) {}
+         try
+         {
+            journalImpl.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
       }
-      
+
    }
-   
+
+   @Override
    protected void setUp() throws Exception
    {
       journalImpl = newJournal();
    }
-   
+
    // Private -------------------------------------------------------
-   
+
    private JournalImpl newJournal() throws Exception
    {
       mockFactory = EasyMock.createMock(SequentialFileFactory.class);
       file1 = EasyMock.createMock(SequentialFile.class);
       file2 = EasyMock.createMock(SequentialFile.class);
-      
+
       stubValues();
-      
+
       EasyMock.expect(mockFactory.createSequentialFile(EasyMock.isA(String.class), EasyMock.anyInt())).andReturn(file1);
-      
+
       EasyMock.expect(mockFactory.createSequentialFile(EasyMock.isA(String.class), EasyMock.anyInt())).andReturn(file2);
-      
+
       file1.open();
-      
+
       EasyMock.expectLastCall().anyTimes();
-      
+
       file2.open();
-      
+
       EasyMock.expectLastCall().anyTimes();
-      
+
       file1.close();
-      
+
       EasyMock.expectLastCall().anyTimes();
-      
+
       file2.close();
-      
+
       EasyMock.expectLastCall().anyTimes();
-      
-      file1.fill(0, 100 * 1024, (byte) 'J');
-      
-      file2.fill(0, 100 * 1024, (byte) 'J');
-      
-      EasyMock.expect(file1.write(compareByteBuffer(autoEncode((int)1)), EasyMock.eq(true))).andReturn(4);
-      EasyMock.expect(file2.write(compareByteBuffer(autoEncode((int)2)), EasyMock.eq(true))).andReturn(4);
-      
+
+      file1.fill(0, 100 * 1024, (byte)'J');
+
+      file2.fill(0, 100 * 1024, (byte)'J');
+
+      EasyMock.expect(file1.write(compareByteBuffer(autoEncode(1)), EasyMock.eq(true))).andReturn(4);
+      EasyMock.expect(file2.write(compareByteBuffer(autoEncode(2)), EasyMock.eq(true))).andReturn(4);
+
       file1.position(4);
-      
+
       file2.position(4);
-      
+
       EasyMock.replay(mockFactory, file1, file2);
-      
-      JournalImpl journalImpl = new JournalImpl(100 * 1024, 2,
-            true, true,
-            mockFactory,
-            "tt", "tt", 1000, 0);
-      
+
+      JournalImpl journalImpl = new JournalImpl(100 * 1024, 2, true, true, mockFactory, "tt", "tt", 1000, 0);
+
       journalImpl.start();
-      
+
       journalImpl.load(new ArrayList(), new ArrayList());
-      
+
       EasyMock.verify(mockFactory, file1, file2);
-      
+
       EasyMock.reset(mockFactory, file1, file2);
-      
+
       stubValues();
-      
+
       return journalImpl;
    }
-
 
    private void stubValues() throws Exception
    {
       EasyMock.expect(mockFactory.getAlignment()).andStubReturn(1);
       EasyMock.expect(mockFactory.isSupportsCallbacks()).andStubReturn(false);
 
-      EasyMock.expect(mockFactory.listFiles("tt")).andStubReturn(
-            new ArrayList<String>());
-      
-      EasyMock.expect(mockFactory.newBuffer(EasyMock.anyInt())).andStubAnswer(
-            new IAnswer<ByteBuffer>()
-            {
-               
-               public ByteBuffer answer() throws Throwable
-               {
-                  Integer valueInt = (Integer) EasyMock.getCurrentArguments()[0];
-                  
-                  return ByteBuffer.allocateDirect(valueInt);
-               }
-            });
-      
-      EasyMock.expect(file1.calculateBlockStart(EasyMock.anyInt()))
-            .andStubAnswer(new IAnswer<Integer>()
-            {
-               
-               public Integer answer() throws Throwable
-               {
-                  return (Integer) EasyMock.getCurrentArguments()[0];
-               }
-            });
-      
-      EasyMock.expect(file2.calculateBlockStart(EasyMock.anyInt()))
-            .andStubAnswer(new IAnswer<Integer>()
-            {
-               
-               public Integer answer() throws Throwable
-               {
-                  return (Integer) EasyMock.getCurrentArguments()[0];
-               }
-            });
-      
-      
-      EasyMock.expect(mockFactory.calculateBlockSize(EasyMock.anyInt()))
-      .andStubAnswer(new IAnswer<Integer>()
+      EasyMock.expect(mockFactory.listFiles("tt")).andStubReturn(new ArrayList<String>());
+
+      EasyMock.expect(mockFactory.newBuffer(EasyMock.anyInt())).andStubAnswer(new IAnswer<ByteBuffer>()
       {
-         
-         public Integer answer() throws Throwable
+
+         public ByteBuffer answer() throws Throwable
          {
-            return (Integer) EasyMock.getCurrentArguments()[0];
+            Integer valueInt = (Integer)EasyMock.getCurrentArguments()[0];
+
+            return ByteBuffer.allocateDirect(valueInt);
          }
       });
-      
+
+      EasyMock.expect(file1.calculateBlockStart(EasyMock.anyInt())).andStubAnswer(new IAnswer<Integer>()
+      {
+
+         public Integer answer() throws Throwable
+         {
+            return (Integer)EasyMock.getCurrentArguments()[0];
+         }
+      });
+
+      EasyMock.expect(file2.calculateBlockStart(EasyMock.anyInt())).andStubAnswer(new IAnswer<Integer>()
+      {
+
+         public Integer answer() throws Throwable
+         {
+            return (Integer)EasyMock.getCurrentArguments()[0];
+         }
+      });
+
+      EasyMock.expect(mockFactory.calculateBlockSize(EasyMock.anyInt())).andStubAnswer(new IAnswer<Integer>()
+      {
+
+         public Integer answer() throws Throwable
+         {
+            return (Integer)EasyMock.getCurrentArguments()[0];
+         }
+      });
+
       file1.setBufferCallback(EasyMock.isA(BufferCallback.class));
       EasyMock.expectLastCall().anyTimes();
-      
+
       file2.setBufferCallback(EasyMock.isA(BufferCallback.class));
       EasyMock.expectLastCall().anyTimes();
-      
-      
 
       EasyMock.expect(file1.getAlignment()).andStubReturn(1);
       EasyMock.expect(file2.getAlignment()).andStubReturn(1);
-      
+
    }
-   
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
-   
-   
+
 }

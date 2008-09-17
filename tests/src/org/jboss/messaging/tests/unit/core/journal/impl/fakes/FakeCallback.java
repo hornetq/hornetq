@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.unit.core.journal.impl.fakes;
 
@@ -34,18 +34,19 @@ import org.jboss.messaging.core.journal.IOCallback;
 public class FakeCallback implements IOCallback
 {
    volatile String msg;
+
    final CountDownLatch latch;
-   
+
    public FakeCallback(final CountDownLatch latch)
    {
       this.latch = latch;
    }
-   
+
    public FakeCallback()
    {
-      this.latch = new CountDownLatch(1);
+      latch = new CountDownLatch(1);
    }
-   
+
    public void done()
    {
       latch.countDown();
@@ -54,13 +55,12 @@ public class FakeCallback implements IOCallback
    public void onError(final int errorCode, final String errorMessage)
    {
       latch.countDown();
-      this.msg = errorMessage;
+      msg = errorMessage;
    }
-   
+
    public void waitComplete() throws Exception
    {
       latch.await();
    }
-   
-}
 
+}

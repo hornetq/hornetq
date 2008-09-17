@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.journal;
 
@@ -33,43 +33,42 @@ package org.jboss.messaging.core.journal;
 public interface TestableJournal extends Journal
 {
    void checkAndReclaimFiles() throws Exception;
-   
+
    int getDataFilesCount();
-   
+
    int getFreeFilesCount();
-   
+
    int getOpenedFilesCount();
-   
+
    int getIDMapSize();
-   
+
    String debug() throws Exception;
-   
+
    void debugWait() throws Exception;
-   
+
    int getFileSize();
-   
+
    int getMinFiles();
-   
+
    boolean isSyncTransactional();
-   
+
    boolean isSyncNonTransactional();
-   
+
    String getFilePrefix();
-   
+
    String getFileExtension();
-   
+
    int getMaxAIO();
-   
+
    /** This method could be promoted to {@link Journal} interface when we decide to use the loadManager 
     *  instead of load(List,List)
     */
    long load(LoadManager reloadManager) throws Exception;
-   
-   
+
    void forceMoveNextFile() throws Exception;
-   
+
    void setAutoReclaim(boolean autoReclaim);
-   
+
    boolean isAutoReclaim();
-   
+
 }

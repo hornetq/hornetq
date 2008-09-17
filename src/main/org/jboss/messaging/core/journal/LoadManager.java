@@ -30,10 +30,10 @@ package org.jboss.messaging.core.journal;
 public interface LoadManager
 {
    void addRecord(RecordInfo info);
-   
+
    void deleteRecord(long id);
-   
+
    void updateRecord(RecordInfo info);
-   
+
    void addPreparedTransaction(PreparedTransactionInfo preparedTransaction);
 }
