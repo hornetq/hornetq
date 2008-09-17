@@ -120,8 +120,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
    private final Set<ClientSessionInternal> sessions = new ConcurrentHashSet<ClientSessionInternal>();
 
-   private volatile boolean sessionsCreated;
-
    // Static
    // ---------------------------------------------------------------------------------------
 
@@ -309,7 +307,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
    public void setConnectorFactory(final ConnectorFactory connectorFactory)
    {
-      if (sessionsCreated)
+      if (!sessions.isEmpty())
       {
          throw new IllegalStateException("Cannot set connector factory after connections have been created");
       }
@@ -324,7 +322,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
    public void setTransportParams(final Map<String, Object> transportParams)
    {
-      if (sessionsCreated)
+      if (!sessions.isEmpty())
       {
          throw new IllegalStateException("Cannot set transport params after connections have been created");
       }
@@ -339,7 +337,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
    public void setBackupConnectorFactory(final ConnectorFactory connectorFactory)
    {
-      if (sessionsCreated)
+      if (!sessions.isEmpty())
       {
          throw new IllegalStateException("Cannot set backup connector factory after connections have been created");
       }
@@ -354,7 +352,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
    public void setBackupTransportParams(final Map<String, Object> transportParams)
    {
-      if (sessionsCreated)
+      if (!sessions.isEmpty())
       {
          throw new IllegalStateException("Cannot set backup transport params after connections have been created");
       }
@@ -527,8 +525,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
          ChannelHandler handler = new ClientSessionPacketHandler(session);
 
          sessionChannel.setHandler(handler);
-
-         sessionsCreated = true;
 
          return session;
       }

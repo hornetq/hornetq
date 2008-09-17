@@ -1,24 +1,24 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat
+ * Middleware LLC, and individual contributors by the @authors tag. See the
+ * copyright.txt in the distribution for a full listing of individual
+ * contributors.
+ * 
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ * 
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
+ */
 
 package org.jboss.messaging.jms.server.impl;
 
@@ -41,34 +41,52 @@ import org.w3c.dom.NodeList;
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public class JMSServerDeployer extends XmlDeployer 
+public class JMSServerDeployer extends XmlDeployer
 {
    Logger log = Logger.getLogger(JMSServerDeployer.class);
-   
+
    public static final int DEFAULT_DUPS_OK_BATCH_SIZE = 1000;
 
    private JMSServerManager jmsServerManager;
 
    private static final String CLIENTID_ELEMENT = "client-id";
+
    private static final String PING_PERIOD_ELEMENT = "ping-period";
+
    private static final String CALL_TIMEOUT_ELEMENT = "call-timeout";
+
    private static final String DUPS_OK_BATCH_SIZE_ELEMENT = "dups-ok-batch-size";
+
    private static final String CONSUMER_WINDOW_SIZE_ELEMENT = "consumer-window-size";
+
    private static final String CONSUMER_MAX_RATE_ELEMENT = "consumer-max-rate";
+
    private static final String PRODUCER_WINDOW_SIZE_ELEMENT = "producer-window-size";
+
    private static final String PRODUCER_MAX_RATE_ELEMENT = "producer-max-rate";
+
    private static final String BLOCK_ON_ACKNOWLEDGE_ELEMENT = "block-on-acknowledge";
+
    private static final String SEND_NP_MESSAGES_SYNCHRONOUSLY_ELEMENT = "send-np-messages-synchronously";
+
    private static final String SEND_P_MESSAGES_SYNCHRONOUSLY_ELEMENT = "send-p-messages-synchronously";
+
    private static final String CONNECTOR_ELEMENT = "connector";
+
    private static final String BACKUP_CONNECTOR_ELEMENT = "backup-connector";
+
    private static final String FACTORY_CLASS_ELEMENT = "factory-class";
+
    private static final String PARAMS_ELEMENT = "params";
+
    private static final String PARAM_ELEMENT = "param";
-   
+
    private static final String ENTRY_NODE_NAME = "entry";
+
    private static final String CONNECTION_FACTORY_NODE_NAME = "connection-factory";
+
    private static final String QUEUE_NODE_NAME = "queue";
+
    private static final String TOPIC_NODE_NAME = "topic";
 
    public JMSServerDeployer(DeploymentManager deploymentManager)
@@ -88,7 +106,7 @@ public class JMSServerDeployer extends XmlDeployer
     */
    public String[] getElementTagName()
    {
-      return new String[]{QUEUE_NODE_NAME, TOPIC_NODE_NAME, CONNECTION_FACTORY_NODE_NAME};
+      return new String[] { QUEUE_NODE_NAME, TOPIC_NODE_NAME, CONNECTION_FACTORY_NODE_NAME };
    }
 
    /**
@@ -113,7 +131,7 @@ public class JMSServerDeployer extends XmlDeployer
       if (node.getNodeName().equals(CONNECTION_FACTORY_NODE_NAME))
       {
          NodeList children = node.getChildNodes();
-         
+
          long pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
          long callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
          String clientID = null;
@@ -125,13 +143,13 @@ public class JMSServerDeployer extends XmlDeployer
          boolean blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
          boolean blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
          boolean blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-         
+
          List<String> jndiBindings = new ArrayList<String>();
-         String connectorFactoryClassName = null;         
+         String connectorFactoryClassName = null;
          Map<String, Object> params = new HashMap<String, Object>();
-         String backupConnectorFactoryClassName = null;         
+         String backupConnectorFactoryClassName = null;
          Map<String, Object> backupParams = new HashMap<String, Object>();
-         
+
          for (int j = 0; j < children.getLength(); j++)
          {
             if (PING_PERIOD_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
@@ -186,50 +204,51 @@ public class JMSServerDeployer extends XmlDeployer
             else if (CONNECTOR_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
                NodeList children2 = children.item(j).getChildNodes();
-                                                         
+
                for (int l = 0; l < children2.getLength(); l++)
-               {                                  
+               {
                   String nodeName = children2.item(l).getNodeName();
-                  
+
                   if (FACTORY_CLASS_ELEMENT.equalsIgnoreCase(nodeName))
-                  {                    
+                  {
                      connectorFactoryClassName = children2.item(l).getTextContent();
                   }
                   else if (PARAMS_ELEMENT.equalsIgnoreCase(nodeName))
-                  {                                                             
+                  {
                      NodeList nlParams = children2.item(l).getChildNodes();
-                     
+
                      for (int m = 0; m < nlParams.getLength(); m++)
                      {
                         if (PARAM_ELEMENT.equalsIgnoreCase(nlParams.item(m).getNodeName()))
                         {
                            Node paramNode = nlParams.item(m);
-                           
+
                            NamedNodeMap attributes = paramNode.getAttributes();
-                           
+
                            Node nkey = attributes.getNamedItem("key");
-                           
+
                            String key = nkey.getTextContent();
-                           
+
                            Node nValue = attributes.getNamedItem("value");
-                           
+
                            String value = nValue.getTextContent();
-                           
+
                            Node nType = attributes.getNamedItem("type");
-                           
+
                            String type = nType.getTextContent();
-                           
+
                            if (type.equalsIgnoreCase("Integer"))
                            {
                               try
                               {
                                  Integer iVal = Integer.parseInt(value);
-                                 
+
                                  params.put(key, iVal);
                               }
                               catch (NumberFormatException e2)
                               {
-                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value + " is not a valid Integer");
+                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value +
+                                                                    " is not a valid Integer");
                               }
                            }
                            else if (type.equalsIgnoreCase("Long"))
@@ -237,23 +256,24 @@ public class JMSServerDeployer extends XmlDeployer
                               try
                               {
                                  Long lVal = Long.parseLong(value);
-                                 
+
                                  params.put(key, lVal);
                               }
                               catch (NumberFormatException e2)
                               {
-                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value + " is not a valid Long");
+                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value +
+                                                                    " is not a valid Long");
                               }
                            }
                            else if (type.equalsIgnoreCase("String"))
                            {
-                              params.put(key, value);                             
+                              params.put(key, value);
                            }
                            else if (type.equalsIgnoreCase("Boolean"))
                            {
                               Boolean lVal = Boolean.parseBoolean(value);
-                                 
-                              params.put(key, lVal);                              
+
+                              params.put(key, lVal);
                            }
                            else
                            {
@@ -261,56 +281,57 @@ public class JMSServerDeployer extends XmlDeployer
                            }
                         }
                      }
-                  }                                                                  
+                  }
                }
             }
             else if (BACKUP_CONNECTOR_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
                NodeList children2 = children.item(j).getChildNodes();
-                                                         
+
                for (int l = 0; l < children2.getLength(); l++)
-               {                                  
+               {
                   String nodeName = children2.item(l).getNodeName();
-                  
+
                   if (FACTORY_CLASS_ELEMENT.equalsIgnoreCase(nodeName))
-                  {                    
+                  {
                      backupConnectorFactoryClassName = children2.item(l).getTextContent();
                   }
                   else if (PARAMS_ELEMENT.equalsIgnoreCase(nodeName))
-                  {                                                             
+                  {
                      NodeList nlParams = children2.item(l).getChildNodes();
-                     
+
                      for (int m = 0; m < nlParams.getLength(); m++)
                      {
                         if (PARAM_ELEMENT.equalsIgnoreCase(nlParams.item(m).getNodeName()))
                         {
                            Node paramNode = nlParams.item(m);
-                           
+
                            NamedNodeMap attributes = paramNode.getAttributes();
-                           
+
                            Node nkey = attributes.getNamedItem("key");
-                           
+
                            String key = nkey.getTextContent();
-                           
+
                            Node nValue = attributes.getNamedItem("value");
-                           
+
                            String value = nValue.getTextContent();
-                           
+
                            Node nType = attributes.getNamedItem("type");
-                           
+
                            String type = nType.getTextContent();
-                           
+
                            if (type.equalsIgnoreCase("Integer"))
                            {
                               try
                               {
                                  Integer iVal = Integer.parseInt(value);
-                                 
+
                                  backupParams.put(key, iVal);
                               }
                               catch (NumberFormatException e2)
                               {
-                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value + " is not a valid Integer");
+                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value +
+                                                                    " is not a valid Integer");
                               }
                            }
                            else if (type.equalsIgnoreCase("Long"))
@@ -318,23 +339,24 @@ public class JMSServerDeployer extends XmlDeployer
                               try
                               {
                                  Long lVal = Long.parseLong(value);
-                                 
+
                                  backupParams.put(key, lVal);
                               }
                               catch (NumberFormatException e2)
                               {
-                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value + " is not a valid Long");
+                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value +
+                                                                    " is not a valid Long");
                               }
                            }
                            else if (type.equalsIgnoreCase("String"))
                            {
-                              backupParams.put(key, value);                             
+                              backupParams.put(key, value);
                            }
                            else if (type.equalsIgnoreCase("Boolean"))
                            {
                               Boolean lVal = Boolean.parseBoolean(value);
-                                 
-                              backupParams.put(key, lVal);                              
+
+                              backupParams.put(key, lVal);
                            }
                            else
                            {
@@ -342,33 +364,42 @@ public class JMSServerDeployer extends XmlDeployer
                            }
                         }
                      }
-                  }                                                                  
+                  }
                }
             }
          }
-         
+
          if (connectorFactoryClassName == null)
          {
             throw new IllegalArgumentException("connector-factory-class-name must be specified in configuration");
          }
-         
-         TransportConfiguration connectorConfig =
-            new TransportConfiguration(connectorFactoryClassName, params);
-         
+
+         TransportConfiguration connectorConfig = new TransportConfiguration(connectorFactoryClassName, params);
+
          TransportConfiguration backupConnectorConfig = null;
-         
+
          if (backupConnectorFactoryClassName != null)
          {
             backupConnectorConfig = new TransportConfiguration(backupConnectorFactoryClassName, backupParams);
          }
-                  
+
          String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-                  
-         jmsServerManager.createConnectionFactory(name, connectorConfig, backupConnectorConfig,
-                  pingPeriod, callTimeout, clientID, dupsOKBatchSize, 
-               consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, 
-               blockOnAcknowledge, blockOnNonPersistentSend, 
-               blockOnPersistentSend, jndiBindings);
+
+         jmsServerManager.createConnectionFactory(name,
+                                                  connectorConfig,
+                                                  backupConnectorConfig,
+                                                  pingPeriod,
+                                                  callTimeout,
+                                                  clientID,
+                                                  dupsOKBatchSize,
+                                                  consumerWindowSize,
+                                                  consumerMaxRate,
+                                                  producerWindowSize,
+                                                  producerMaxRate,
+                                                  blockOnAcknowledge,
+                                                  blockOnNonPersistentSend,
+                                                  blockOnPersistentSend,
+                                                  jndiBindings);
       }
       else if (node.getNodeName().equals(QUEUE_NODE_NAME))
       {
@@ -419,14 +450,14 @@ public class JMSServerDeployer extends XmlDeployer
       else if (node.getNodeName().equals(QUEUE_NODE_NAME))
       {
          String queueName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-         //TODO: https://jira.jboss.org/jira/browse/JBMESSAGING-1413
-         //jmsServerManager.destroyQueue(queueName);
+         // TODO: https://jira.jboss.org/jira/browse/JBMESSAGING-1413
+         // jmsServerManager.destroyQueue(queueName);
       }
       else if (node.getNodeName().equals(TOPIC_NODE_NAME))
       {
          String topicName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-         //TODO: https://jira.jboss.org/jira/browse/JBMESSAGING-1413
-         //jmsServerManager.destroyTopic(topicName);
+         // TODO: https://jira.jboss.org/jira/browse/JBMESSAGING-1413
+         // jmsServerManager.destroyTopic(topicName);
       }
    }
 

@@ -488,11 +488,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    private void doWrite(final Packet packet)
    {
-      if (destroyed)
-      {
-         return;
-      }
-
       final MessagingBuffer buffer = transportConnection.createBuffer(PacketImpl.INITIAL_BUFFER_SIZE);
 
       packet.encode(buffer);
@@ -944,6 +939,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       // This must never called by more than one thread concurrently
       public Packet sendBlocking(final Packet packet) throws MessagingException
       {
+         if (connection.destroyed)
+         {
+            throw new MessagingException(MessagingException.NOT_CONNECTED, "Cannot write to connection - it is destroyed");
+         }
+         
          lock.readLock().lock();
 
          try

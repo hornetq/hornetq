@@ -22,12 +22,16 @@
       <connector>
          <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
       </connector>
+      <backup-connector>
+         <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+         <params>
+            <param key="jbm.remoting.netty.host" value="somehost" type="String"/>
+         </params>
+      </backup-connector>
       <entry name="/ClusteredConnectionFactory"/>
       <entry name="/ClusteredXAConnectionFactory"/>
       <entry name="java:/ClusteredConnectionFactory"/>
       <entry name="java:/ClusteredXAConnectionFactory"/>
-      <supports-failover>true</supports-failover>
-      <supports-load-balancing>true</supports-load-balancing>
    </connection-factory>
 
    <connection-factory name="MyExampleConnectionFactory">

@@ -565,10 +565,12 @@ public class ClientSessionImpl implements ClientSessionInternal
 
          channel.sendBlocking(new PacketImpl(SESS_CLOSE));
       }
-      finally
+      catch (Throwable ignore)
       {
-         doCleanup();
+         //Session close should always return without exception
       }
+      
+      doCleanup();      
    }
 
    public ClientMessage createClientMessage(byte type, boolean durable, long expiration, long timestamp, byte priority)
@@ -750,24 +752,20 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       ClientConsumerInternal consumer = consumers.get(consumerID);
 
-      if (consumer == null)
+      if (consumer != null)
       {
-         throw new IllegalArgumentException("Cannot find consumer with id " + consumerID);
-      }
-
-      consumer.handleMessage(message);
+         consumer.handleMessage(message);         
+      }      
    }
 
    public void receiveProducerCredits(final long producerID, final int credits) throws Exception
    {
       ClientProducerInternal producer = producers.get(producerID);
 
-      if (producer == null)
+      if (producer != null)
       {
-         throw new IllegalArgumentException("Cannot find producer with id " + producerID);
-      }
-
-      producer.receiveCredits(credits);
+         producer.receiveCredits(credits);         
+      }     
    }
 
    public void handleFailover(final RemotingConnection backupConnection)

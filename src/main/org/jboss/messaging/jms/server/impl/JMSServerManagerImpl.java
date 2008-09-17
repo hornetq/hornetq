@@ -1,23 +1,23 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat
+ * Middleware LLC, and individual contributors by the @authors tag. See the
+ * copyright.txt in the distribution for a full listing of individual
+ * contributors.
+ * 
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ * 
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 
 package org.jboss.messaging.jms.server.impl;
@@ -37,7 +37,6 @@ import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.JBossQueue;
@@ -56,8 +55,7 @@ import org.jboss.messaging.util.JNDIUtil;
  */
 public class JMSServerManagerImpl implements JMSServerManager
 {
-   private static final Logger log = Logger
-         .getLogger(JMSServerManagerImpl.class);
+   private static final Logger log = Logger.getLogger(JMSServerManagerImpl.class);
 
    /**
     * the initial context to bind to
@@ -81,9 +79,10 @@ public class JMSServerManagerImpl implements JMSServerManager
    private final JMSManagementService managementService;
 
    public JMSServerManagerImpl(final MessagingServerControlMBean server,
-         final PostOffice postOffice, final StorageManager storageManager,
-         final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-         final JMSManagementService managementService)
+                               final PostOffice postOffice,
+                               final StorageManager storageManager,
+                               final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                               final JMSManagementService managementService)
    {
       this.messagingServer = server;
       this.postOffice = postOffice;
@@ -97,7 +96,8 @@ public class JMSServerManagerImpl implements JMSServerManager
       try
       {
          initialContext = new InitialContext();
-      } catch (NamingException e)
+      }
+      catch (NamingException e)
       {
          log.error("Unable to create Initial Context", e);
       }
@@ -116,8 +116,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       return messagingServer.getVersion();
    }
 
-   public boolean createQueue(final String queueName, final String jndiBinding)
-         throws Exception
+   public boolean createQueue(final String queueName, final String jndiBinding) throws Exception
    {
       JBossQueue jBossQueue = new JBossQueue(queueName);
       postOffice.addDestination(jBossQueue.getSimpleAddress(), true);
@@ -128,13 +127,16 @@ public class JMSServerManagerImpl implements JMSServerManager
          addToDestinationBindings(queueName, jndiBinding);
       }
       Binding binding = postOffice.getBinding(jBossQueue.getSimpleAddress());
-      managementService.registerQueue(jBossQueue, binding.getQueue(),
-            jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      managementService.registerQueue(jBossQueue,
+                                      binding.getQueue(),
+                                      jndiBinding,
+                                      postOffice,
+                                      storageManager,
+                                      queueSettingsRepository);
       return added;
    }
 
-   public boolean createTopic(final String topicName, final String jndiBinding)
-         throws Exception
+   public boolean createTopic(final String topicName, final String jndiBinding) throws Exception
    {
       JBossTopic jBossTopic = new JBossTopic(topicName);
       postOffice.addDestination(jBossTopic.getSimpleAddress(), true);
@@ -143,8 +145,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       {
          addToDestinationBindings(topicName, jndiBinding);
       }
-      managementService.registerTopic(jBossTopic, jndiBinding, postOffice,
-            storageManager);
+      managementService.registerTopic(jBossTopic, jndiBinding, postOffice, storageManager);
       return added;
    }
 
@@ -161,10 +162,8 @@ public class JMSServerManagerImpl implements JMSServerManager
       }
       destinations.remove(name);
       managementService.unregisterQueue(name);
-      postOffice.removeDestination(JBossQueue.createAddressFromName(name),
-            false);
-      messagingServer.destroyQueue(JBossQueue.createAddressFromName(name)
-            .toString());
+      postOffice.removeDestination(JBossQueue.createAddressFromName(name), false);
+      messagingServer.destroyQueue(JBossQueue.createAddressFromName(name).toString());
 
       return true;
    }
@@ -182,8 +181,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       }
       destinations.remove(name);
       managementService.unregisterTopic(name);
-      postOffice.removeDestination(JBossTopic.createAddressFromName(name),
-            false);
+      postOffice.removeDestination(JBossTopic.createAddressFromName(name), false);
 
       return true;
    }
@@ -191,23 +189,33 @@ public class JMSServerManagerImpl implements JMSServerManager
    public boolean createConnectionFactory(String name,
                                           TransportConfiguration connectorConfig,
                                           TransportConfiguration backupConnectorConfig,
-                                          long pingPeriod, long callTimeout, String clientID,
-                                          int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
-                                          int producerWindowSize, int producerMaxRate,
+                                          long pingPeriod,
+                                          long callTimeout,
+                                          String clientID,
+                                          int dupsOKBatchSize,
+                                          int consumerWindowSize,
+                                          int consumerMaxRate,
+                                          int producerWindowSize,
+                                          int producerMaxRate,
                                           boolean blockOnAcknowledge,
                                           boolean blockOnNonPersistentSend,
-                                          boolean blockOnPersistentSend, String jndiBinding)
-         throws Exception
+                                          boolean blockOnPersistentSend,
+                                          String jndiBinding) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
          cf = new JBossConnectionFactory(connectorConfig,
                                          backupConnectorConfig,
-                                         pingPeriod, callTimeout,
-                                         clientID, dupsOKBatchSize,
-                                         consumerWindowSize, consumerMaxRate, producerWindowSize,
-                                         producerMaxRate, blockOnAcknowledge,
+                                         pingPeriod,
+                                         callTimeout,
+                                         clientID,
+                                         dupsOKBatchSize,
+                                         consumerWindowSize,
+                                         consumerMaxRate,
+                                         producerWindowSize,
+                                         producerMaxRate,
+                                         blockOnAcknowledge,
                                          blockOnNonPersistentSend,
                                          blockOnPersistentSend);
          connectionFactories.put(name, cf);
@@ -232,25 +240,35 @@ public class JMSServerManagerImpl implements JMSServerManager
    public boolean createConnectionFactory(String name,
                                           TransportConfiguration connectorConfig,
                                           TransportConfiguration backupConnectorConfig,
-                                          long pingPeriod, long callTimeout, String clientID,
-                                          int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
-                                          int producerWindowSize, int producerMaxRate,
+                                          long pingPeriod,
+                                          long callTimeout,
+                                          String clientID,
+                                          int dupsOKBatchSize,
+                                          int consumerWindowSize,
+                                          int consumerMaxRate,
+                                          int producerWindowSize,
+                                          int producerMaxRate,
                                           boolean blockOnAcknowledge,
                                           boolean blockOnNonPersistentSend,
-                                          boolean blockOnPersistentSend, List<String> jndiBindings)
-                                       throws Exception
+                                          boolean blockOnPersistentSend,
+                                          List<String> jndiBindings) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
          cf = new JBossConnectionFactory(connectorConfig,
-                  backupConnectorConfig,
-                  pingPeriod, callTimeout,
-                  clientID, dupsOKBatchSize,
-                  consumerWindowSize, consumerMaxRate, producerWindowSize,
-                  producerMaxRate, blockOnAcknowledge,
-                  blockOnNonPersistentSend,
-                  blockOnPersistentSend);
+                                         backupConnectorConfig,
+                                         pingPeriod,
+                                         callTimeout,
+                                         clientID,
+                                         dupsOKBatchSize,
+                                         consumerWindowSize,
+                                         consumerMaxRate,
+                                         producerWindowSize,
+                                         producerMaxRate,
+                                         blockOnAcknowledge,
+                                         blockOnNonPersistentSend,
+                                         blockOnPersistentSend);
       }
       for (String jndiBinding : jndiBindings)
       {
@@ -295,8 +313,7 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    // Private -------------------------------------------------------
 
-   private boolean bindToJndi(final String jndiName, final Object objectToBind)
-         throws NamingException
+   private boolean bindToJndi(final String jndiName, final Object objectToBind) throws NamingException
    {
       String parentContext;
       String jndiNameInContext;
@@ -328,8 +345,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       return true;
    }
 
-   private void addToDestinationBindings(final String destination,
-         final String jndiBinding)
+   private void addToDestinationBindings(final String destination, final String jndiBinding)
    {
       if (destinations.get(destination) == null)
       {

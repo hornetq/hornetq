@@ -80,6 +80,14 @@ public interface ClientSessionFactory
    Map<String, Object> getTransportParams();
 
    void setTransportParams(final Map<String, Object> transportParams);
+   
+   ConnectorFactory getBackupConnectorFactory();
+
+   void setBackupConnectorFactory(final ConnectorFactory connectorFactory);
+
+   Map<String, Object> getBackupTransportParams();
+
+   void setBackupTransportParams(final Map<String, Object> transportParams);
 
    long getPingPeriod();
 
