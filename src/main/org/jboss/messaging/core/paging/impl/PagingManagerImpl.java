@@ -320,18 +320,6 @@ public class PagingManagerImpl implements PagingManager
       transactions.put(pageTransaction.getTransactionID(), pageTransaction);
    }
 
-   public void completeTransaction(final long transactionId)
-   {
-      PageTransactionInfo pageTrans = transactions.get(transactionId);
-
-      // If nothing was paged.. we just remove the information to avoid memory
-      // leaks
-      if (pageTrans.getNumberOfMessages() == 0)
-      {
-         transactions.remove(pageTrans);
-      }
-   }
-
    public void sync(final Collection<SimpleString> destinationsToSync) throws Exception
    {
       for (SimpleString destination : destinationsToSync)

@@ -99,12 +99,6 @@ public interface PagingManager extends MessagingComponent
    void addTransaction(PageTransactionInfo pageTransaction);
 
    /**
-    * Use this method to inform when a transaction was completed.
-    * @param transactionId
-    */
-   void completeTransaction(long transactionId);
-
-   /**
     * 
     * Duplication detection for paging processing
     *  */
