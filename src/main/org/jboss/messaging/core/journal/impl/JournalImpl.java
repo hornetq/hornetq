@@ -117,33 +117,25 @@ public class JournalImpl implements TestableJournal
 
    public static final int BASIC_SIZE = SIZE_BYTE + SIZE_INT + SIZE_INT;
 
-   public static final int SIZE_ADD_RECORD = BASIC_SIZE + SIZE_LONG + SIZE_BYTE + SIZE_INT; // +
+   public static final int SIZE_ADD_RECORD = BASIC_SIZE + SIZE_LONG + SIZE_BYTE + SIZE_INT /* + record.length */;
 
-   // record.length
+   // 
 
    public static final byte ADD_RECORD = 11;
 
-   public static final byte SIZE_UPDATE_RECORD = BASIC_SIZE + SIZE_LONG + SIZE_BYTE + SIZE_INT; // +
-
-   // record.length;
+   public static final byte SIZE_UPDATE_RECORD = BASIC_SIZE + SIZE_LONG + SIZE_BYTE + SIZE_INT /* + record.length */;
 
    public static final byte UPDATE_RECORD = 12;
 
-   public static final int SIZE_ADD_RECORD_TX = BASIC_SIZE + SIZE_LONG + SIZE_BYTE + SIZE_LONG + SIZE_INT; // +
-
-   // record.length
+   public static final int SIZE_ADD_RECORD_TX = BASIC_SIZE + SIZE_LONG + SIZE_BYTE + SIZE_LONG + SIZE_INT /* + record.length */;
 
    public static final byte ADD_RECORD_TX = 13;
 
-   public static final int SIZE_UPDATE_RECORD_TX = BASIC_SIZE + SIZE_LONG + SIZE_BYTE + SIZE_LONG + SIZE_INT; // +
-
-   // record.length
+   public static final int SIZE_UPDATE_RECORD_TX = BASIC_SIZE + SIZE_LONG + SIZE_BYTE + SIZE_LONG + SIZE_INT /* + record.length */;
 
    public static final byte UPDATE_RECORD_TX = 14;
 
-   public static final int SIZE_DELETE_RECORD_TX = BASIC_SIZE + SIZE_LONG + SIZE_LONG + SIZE_INT; // +
-
-   // record.length
+   public static final int SIZE_DELETE_RECORD_TX = BASIC_SIZE + SIZE_LONG + SIZE_LONG + SIZE_INT /* + record.length */;
 
    public static final byte DELETE_RECORD_TX = 15;
 
@@ -151,9 +143,7 @@ public class JournalImpl implements TestableJournal
 
    public static final byte DELETE_RECORD = 16;
 
-   public static final int SIZE_COMPLETE_TRANSACTION_RECORD = BASIC_SIZE + SIZE_INT + SIZE_LONG; // +
-
-   // NumerOfElements*SIZE_INT*2
+   public static final int SIZE_COMPLETE_TRANSACTION_RECORD = BASIC_SIZE + SIZE_INT + SIZE_LONG /* + NumerOfElements*SIZE_INT*2 */;
 
    public static final int SIZE_PREPARE_RECORD = SIZE_COMPLETE_TRANSACTION_RECORD + SIZE_INT;
 
@@ -167,7 +157,7 @@ public class JournalImpl implements TestableJournal
 
    public static final byte ROLLBACK_RECORD = 19;
 
-   public static final byte FILL_CHARACTER = 74; // Letter 'J'
+   public static final byte FILL_CHARACTER = (byte)'J';
 
    // Attributes ----------------------------------------------------
 
