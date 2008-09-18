@@ -190,6 +190,10 @@
       <ant antfile="build-messaging.xml" target="durSubExample"/>
    </target>
 
+   <target name="wildcardExample" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="wildcardExample"/>
+   </target>
+
    <target name="perfListener" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="perfListener"/>
    </target>
@@ -228,5 +232,9 @@
 
    <target name="SimpleExample" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="SimpleExample"/>
+   </target>
+
+   <target name="WildCardClient" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="WildCardClient"/>
    </target>
 </project>

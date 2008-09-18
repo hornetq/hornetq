@@ -22,14 +22,14 @@
 
 package org.jboss.messaging.core.config.impl;
 
+import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.server.JournalType;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.server.JournalType;
 
 /**
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
@@ -83,7 +83,9 @@ public class ConfigurationImpl implements Configuration
    
    public static final int DEFAULT_JOURNAL_MAX_AIO = 5000;
    
-   public static final int DEFAULT_JOURNAL_REUSE_BUFFER_SIZE = -1;   
+   public static final int DEFAULT_JOURNAL_REUSE_BUFFER_SIZE = -1;
+
+   public static final boolean DEFAULT_WILDCARD_ROUTING_ENABLED = false;
    
    
    // Attributes -----------------------------------------------------------------------------
@@ -143,8 +145,10 @@ public class ConfigurationImpl implements Configuration
    protected int journalMaxAIO = DEFAULT_JOURNAL_MAX_AIO;
    
    protected int journalBufferReuseSize = DEFAULT_JOURNAL_REUSE_BUFFER_SIZE;
-   
-   
+
+   protected boolean wildcardRoutingEnabled = DEFAULT_WILDCARD_ROUTING_ENABLED;
+
+
    public boolean isClustered()
    {
       return clustered;
@@ -366,7 +370,12 @@ public class ConfigurationImpl implements Configuration
       this.createJournalDir = create;
    }
 
-	public boolean isSecurityEnabled()
+   public boolean isWildcardRoutingEnabled()
+   {
+      return wildcardRoutingEnabled;
+   }
+
+   public boolean isSecurityEnabled()
 	{
 	   return securityEnabled;
 	}
@@ -429,6 +438,7 @@ public class ConfigurationImpl implements Configuration
              cother.isJournalSyncTransactional() == this.isJournalSyncTransactional() &&
              cother.isRequireDestinations() == this.isRequireDestinations() &&
              cother.isSecurityEnabled() == this.isSecurityEnabled() &&
+             cother.isWildcardRoutingEnabled() == this.isWildcardRoutingEnabled() &&
              cother.getBindingsDirectory().equals(this.getBindingsDirectory()) &&
              cother.getJournalDirectory().equals(this.getJournalDirectory()) &&
              cother.getJournalFileSize() == this.getJournalFileSize() &&

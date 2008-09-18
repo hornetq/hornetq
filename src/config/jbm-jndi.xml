@@ -103,6 +103,12 @@
    <topic name="testTopic">
       <entry name="/topic/testTopic"/>
    </topic>
+   <topic name="topic.A">
+      <entry name="/topic/topicA"/>
+   </topic>
+   <topic name="topic.B">
+      <entry name="/topic/topicB"/>
+   </topic>
    <topic name="securedTopic">
       <entry name="/topic/securedTopic"/>
    </topic>

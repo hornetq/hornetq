@@ -22,9 +22,8 @@
 
 package org.jboss.messaging.tests.unit.util;
 
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import junit.framework.TestCase;
-
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import org.jboss.messaging.util.DataConstants;
 import org.jboss.messaging.util.SimpleString;
 
@@ -238,5 +237,75 @@ public class SimpleStringTest extends TestCase
 	   SimpleString str = new SimpleString(randomString());
 	   assertEquals(DataConstants.SIZE_INT + str.getData().length, SimpleString.sizeofString(str));
       
+   }
+
+   public void testSplitNoDelimeter() throws Exception
+   {
+      SimpleString s = new SimpleString("abcdefghi");
+      SimpleString[] strings = s.split('.');
+      assertNotNull(strings);
+      assertEquals(strings.length, 1);
+      assertEquals(strings[0], s);
+   }
+
+   public void testSplit1Delimeter() throws Exception
+   {
+      SimpleString s = new SimpleString("abcd.efghi");
+      SimpleString[] strings = s.split('.');
+      assertNotNull(strings);
+      assertEquals(strings.length, 2);
+      assertEquals(strings[0], new SimpleString("abcd"));
+      assertEquals(strings[1], new SimpleString("efghi"));
+   }
+   public void testSplitmanyDelimeters() throws Exception
+   {
+      SimpleString s = new SimpleString("abcd.efghi.jklmn.opqrs.tuvw.xyz");
+      SimpleString[] strings = s.split('.');
+      assertNotNull(strings);
+      assertEquals(strings.length, 6);
+      assertEquals(strings[0], new SimpleString("abcd"));
+      assertEquals(strings[1], new SimpleString("efghi"));
+      assertEquals(strings[2], new SimpleString("jklmn"));
+      assertEquals(strings[3], new SimpleString("opqrs"));
+      assertEquals(strings[4], new SimpleString("tuvw"));
+      assertEquals(strings[5], new SimpleString("xyz"));
+   }
+
+   public void testContains()
+   {
+      SimpleString simpleString = new SimpleString("abcdefghijklmnopqrst");
+      assertFalse(simpleString.contains('.'));
+      assertFalse(simpleString.contains('%'));
+      assertFalse(simpleString.contains('8'));
+      assertFalse(simpleString.contains('.'));
+      assertTrue(simpleString.contains('a'));
+      assertTrue(simpleString.contains('b'));
+      assertTrue(simpleString.contains('c'));
+      assertTrue(simpleString.contains('d'));
+      assertTrue(simpleString.contains('e'));
+      assertTrue(simpleString.contains('f'));
+      assertTrue(simpleString.contains('g'));
+      assertTrue(simpleString.contains('h'));
+      assertTrue(simpleString.contains('i'));
+      assertTrue(simpleString.contains('j'));
+      assertTrue(simpleString.contains('k'));
+      assertTrue(simpleString.contains('l'));
+      assertTrue(simpleString.contains('m'));
+      assertTrue(simpleString.contains('n'));
+      assertTrue(simpleString.contains('o'));
+      assertTrue(simpleString.contains('p'));
+      assertTrue(simpleString.contains('q'));
+      assertTrue(simpleString.contains('r'));
+      assertTrue(simpleString.contains('s'));
+      assertTrue(simpleString.contains('t'));
+   }
+
+   public void testConcat()
+   {
+      SimpleString start = new SimpleString("abcdefg");
+      SimpleString middle = new SimpleString("hijklmnop");
+      SimpleString end = new SimpleString("qrstuvwxyz");
+      assertEquals(start.concat(middle).concat(end), new SimpleString("abcdefghijklmnopqrstuvwxyz"));
+      assertEquals(start.concat('.').concat(end), new SimpleString("abcdefg.qrstuvwxyz"));
    }
 }

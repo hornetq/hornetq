@@ -11,16 +11,18 @@
       <security-enabled>true</security-enabled>
       
       <security-invalidation-interval>10000</security-invalidation-interval>
-      
+
+      <wild-card-routing-enabled>true</wild-card-routing-enabled>
+
       <!-- true to expose JBoss Messaging resources through JMX -->
       <jmx-management-enabled>true</jmx-management-enabled>
     
       <!--  call timeout in milliseconds -->
       <call-timeout>30000</call-timeout>
       
-      <packet-confirmation-batch-size>1000</packet-confirmation-batch-size>
+      <packet-confirmation-batch-size>10000</packet-confirmation-batch-size>
       
-      <connection-scan-period>1000</connection-scan-period>
+      <connection-scan-period>10000</connection-scan-period>
       
       <!-- Example interceptors 
       <remoting-interceptors>

@@ -22,17 +22,6 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -71,6 +60,11 @@ import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.VersionLoader;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.*;
 
 /**
  * The messaging server implementation
@@ -229,7 +223,8 @@ public class MessagingServerImpl implements MessagingServer
                                       queueFactory,
                                       managementService,
                                       configuration.isRequireDestinations(),
-                                      resourceManager);
+                                      resourceManager,
+                                      configuration.isWildcardRoutingEnabled());
 
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
       securityRepository.setDefault(new HashSet<Role>());

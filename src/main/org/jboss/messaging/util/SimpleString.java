@@ -22,11 +22,12 @@
 
 package org.jboss.messaging.util;
 
+import org.jboss.messaging.core.logging.Logger;
 import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import java.io.Serializable;
-
-import org.jboss.messaging.core.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -217,8 +218,70 @@ public class SimpleString implements CharSequence, Serializable
 		
 		return hash;
 	}
-	
-	public static int sizeofString(final SimpleString str)
+
+   public SimpleString[] split(char delim)
+   {
+      if(!contains(delim))
+      {
+         return new SimpleString[]{this};
+      }
+      else
+      {
+         List<SimpleString> all = new ArrayList<SimpleString>();
+         int lasPos = 0;
+         for (int i = 0; i < data.length; i+=2)
+         {
+            byte low = (byte)(delim & 0xFF);  // low byte
+            byte high = (byte)(delim >> 8 & 0xFF);  // high byte
+            if (data[i] == low && data[i+1] == high)
+            {
+               byte[] bytes = new byte[i - lasPos];
+               System.arraycopy(data, lasPos, bytes, 0, bytes.length);
+               lasPos = i + 2;
+               all.add(new SimpleString(bytes));
+            }
+         }
+         byte[] bytes = new byte[data.length - lasPos];
+         System.arraycopy(data, lasPos, bytes, 0, bytes.length);
+         all.add(new SimpleString(bytes));
+         SimpleString[] parts = new SimpleString[all.size()];
+         return all.toArray(parts);
+      }
+   }
+
+
+   public boolean contains(char c)
+   {
+      for (int i = 0; i < data.length; i+=2)
+      {
+         byte low = (byte)(c & 0xFF);  // low byte
+			byte high = (byte)(c >> 8 & 0xFF);  // high byte
+         if (data[i] == low && data[i+1] == high)
+         {
+            return true;
+         }
+      }
+      return false;
+   }
+
+   public SimpleString concat(SimpleString toAdd)
+   {
+      byte[] bytes = new byte[data.length + toAdd.getData().length];
+      System.arraycopy(data, 0, bytes, 0, data.length);
+      System.arraycopy(toAdd.getData(), 0, bytes, data.length, toAdd.getData().length);
+      return new SimpleString(bytes);
+   }
+
+   public SimpleString concat(char c)
+   {
+      byte[] bytes = new byte[data.length + 2];
+      System.arraycopy(data, 0, bytes, 0, data.length);
+      bytes[data.length] = (byte)(c & 0xFF);
+      bytes[data.length+1] = (byte)(c >> 8 & 0xFF);
+      return new SimpleString(bytes);
+   }
+
+   public static int sizeofString(final SimpleString str)
 	{
 	   if (str == null)
 	   {
@@ -226,4 +289,6 @@ public class SimpleString implements CharSequence, Serializable
 	   }
 		return SIZE_INT + str.data.length;
 	}
+
+
 }

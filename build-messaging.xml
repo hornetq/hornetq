@@ -959,6 +959,10 @@
       <ant dir="${examples.dir}/jms" antfile="build.xml" target="durSubExample"/>
    </target>
 
+    <target name="wildcardExample" depends="client-jar">
+      <ant dir="${examples.dir}/jms" antfile="build.xml" target="wildcardExample"/>
+   </target>
+
    <target name="SimpleClient" depends="client-jar">
       <ant dir="${examples.dir}/messaging" antfile="build.xml" target="SimpleClient"/>
    </target>
@@ -970,6 +974,10 @@
    <target name="SimpleExample" depends="jar, client-jar">
       <ant dir="${examples.dir}/messaging" antfile="build.xml" target="SimpleExample"/>
    </target>
+
+   <target name="WildCardClient" depends="jar, client-jar">
+         <ant dir="${examples.dir}/messaging" antfile="build.xml" target="WildCardClient"/>
+      </target>
 
    <!-- Performance examples -->
 

@@ -22,11 +22,11 @@
 
 package org.jboss.messaging.tests.unit.core.config.impl;
 
-import java.util.Map;
-
-import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.FileConfiguration;
+
+import java.util.Map;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -56,6 +56,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(12345678, conf.getJournalFileSize());
       assertEquals(100, conf.getJournalMinFiles());      
       assertEquals(56546, conf.getJournalMaxAIO());
+      assertEquals(true, conf.isWildcardRoutingEnabled());
       
       assertEquals(2, conf.getInterceptorClassNames().size());
       assertTrue(conf.getInterceptorClassNames().contains("org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1"));

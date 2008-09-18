@@ -22,11 +22,11 @@
 
 package org.jboss.messaging.core.config;
 
+import org.jboss.messaging.core.server.JournalType;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
-
-import org.jboss.messaging.core.server.JournalType;
 
 /**
  * 
@@ -145,4 +145,5 @@ public interface Configuration extends Serializable
    
    void setPagingMaxGlobalSizeBytes(long maxGlobalSize);
 
+   boolean isWildcardRoutingEnabled();
 }
