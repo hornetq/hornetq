@@ -159,4 +159,11 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       return new ServerMessageImpl(this);
    }  
+   
+   @Override
+   public String toString()
+   {
+      return "ServerMessage[messageID=" + messageID + ", durable=" + durable
+            + ", destination=" + getDestination() + "]";
+   }
 }

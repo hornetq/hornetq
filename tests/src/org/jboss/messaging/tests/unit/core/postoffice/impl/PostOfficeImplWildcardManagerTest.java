@@ -79,7 +79,7 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       EasyMock.expect(message.getDestination()).andStubReturn(address);
       EasyMock.expect(message2.getDestination()).andStubReturn(address2);
       EasyMock.expect(message3.getDestination()).andStubReturn(address3);
-      EasyMock.expect(qf.createQueue(-1, queueName, null, false)).andReturn(queue);
+      EasyMock.expect(qf.createQueue(-1, queueName, null, false, false)).andReturn(queue);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       queue.setBackup(false);
       queue.setFlowController(null);
@@ -100,7 +100,7 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       assertTrue(postOffice.containsDestination(address));
       assertTrue(postOffice.containsDestination(address2));
       assertTrue(postOffice.containsDestination(address3));
-      postOffice.addBinding(new SimpleString("test.*"), queueName, null, false);
+      postOffice.addBinding(new SimpleString("test.*"), queueName, null, false, false);
       postOffice.route(message);
       postOffice.route(message2);
       postOffice.route(message3);
@@ -144,8 +144,8 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       EasyMock.expect(message2.getDestination()).andStubReturn(address2);
       EasyMock.expect(message3.getDestination()).andStubReturn(address3);
       EasyMock.expect(message4.getDestination()).andStubReturn(address4);
-      EasyMock.expect(qf.createQueue(-1, queueName, null, false)).andReturn(queue);
-      EasyMock.expect(qf.createQueue(-1, queueName2, null, false)).andReturn(queue2);
+      EasyMock.expect(qf.createQueue(-1, queueName, null, false, false)).andReturn(queue);
+      EasyMock.expect(qf.createQueue(-1, queueName2, null, false, false)).andReturn(queue2);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       EasyMock.expect(queue2.getName()).andStubReturn(queueName2);
       queue.setBackup(false);
@@ -166,8 +166,8 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       postOffice.addDestination(address2, true);
       postOffice.addDestination(address3, true);
       postOffice.addDestination(address4, true);
-      postOffice.addBinding(new SimpleString("test.*"), queueName, null, false);
-      postOffice.addBinding(new SimpleString("test2.*"), queueName2, null, false);
+      postOffice.addBinding(new SimpleString("test.*"), queueName, null, false, false);
+      postOffice.addBinding(new SimpleString("test2.*"), queueName2, null, false, false);
       postOffice.route(message);
       postOffice.route(message2);
       postOffice.route(message3);

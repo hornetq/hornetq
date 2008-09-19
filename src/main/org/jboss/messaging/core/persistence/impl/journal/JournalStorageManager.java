@@ -531,7 +531,7 @@ public class JournalStorageManager implements StorageManager
 			      filter = new FilterImpl(encodeBinding.filter);
 			   }
 			   
-				Queue queue = queueFactory.createQueue(id, encodeBinding.queueName, filter, true);
+				Queue queue = queueFactory.createQueue(id, encodeBinding.queueName, filter, true, false);
 			
 				Binding binding = new BindingImpl(encodeBinding.address, queue);
 				

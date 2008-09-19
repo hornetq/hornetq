@@ -1,26 +1,31 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat
+ * Middleware LLC, and individual contributors by the @authors tag. See the
+ * copyright.txt in the distribution for a full listing of individual
+ * contributors.
+ * 
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ * 
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 
 package org.jboss.messaging.tests.unit.core.postoffice.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
@@ -44,35 +49,34 @@ import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-/**
+/*
  * A PostOfficeTest
- *
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public class PostOfficeImplTest extends UnitTestCase
 {
-   private QueueFactory queueFactory = new FakeQueueFactory();
+   private final QueueFactory queueFactory = new FakeQueueFactory();
 
    protected boolean wildCardRoutingEnabled = false;
+
    public void testPostOfficeStart() throws Exception
    {
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
-      
+
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true, null, wildCardRoutingEnabled);
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
       EasyMock.replay(pm, qf);
       postOffice.start();
       EasyMock.verify(pm, qf);
@@ -87,11 +91,13 @@ public class PostOfficeImplTest extends UnitTestCase
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true, null, wildCardRoutingEnabled);
-      
+
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
       EasyMock.replay(pm, qf);
       postOffice.start();
       postOffice.stop();
@@ -118,14 +124,16 @@ public class PostOfficeImplTest extends UnitTestCase
       EasyMock.expect(queue.getPersistenceID()).andStubReturn(1);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
-      
+
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true, null, wildCardRoutingEnabled);
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, null));
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
 
       EasyMock.replay(pm, qf, binding, queue);
 
@@ -161,7 +169,6 @@ public class PostOfficeImplTest extends UnitTestCase
          EasyMock.replay(bindings[i], queues[i]);
       }
 
-
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
@@ -171,9 +178,11 @@ public class PostOfficeImplTest extends UnitTestCase
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, null));
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
 
       EasyMock.replay(pm, pgm, qf);
 
@@ -212,12 +221,12 @@ public class PostOfficeImplTest extends UnitTestCase
       EasyMock.expect(queue.getPersistenceID()).andStubReturn(1);
 
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
-      
+
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true, null, wildCardRoutingEnabled);
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, null));
 
       EasyMock.replay(pm, pgm, qf, binding, binding2, queue);
@@ -258,7 +267,6 @@ public class PostOfficeImplTest extends UnitTestCase
          EasyMock.replay(bindings[i], queues[i]);
       }
 
-
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
@@ -269,9 +277,11 @@ public class PostOfficeImplTest extends UnitTestCase
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, null));
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
 
       EasyMock.replay(pm, pgm, qf);
 
@@ -304,7 +314,7 @@ public class PostOfficeImplTest extends UnitTestCase
       EasyMock.expect(binding.getQueue()).andStubReturn(queue);
       SimpleString queueName = new SimpleString("testQueueName1");
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
-      queue.setFlowController((FlowController) EasyMock.anyObject());
+      queue.setFlowController((FlowController)EasyMock.anyObject());
       EasyMock.expect(queue.getPersistenceID()).andStubReturn(1);
 
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
@@ -315,10 +325,12 @@ public class PostOfficeImplTest extends UnitTestCase
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, dests));
       EasyMock.expect(pm.addDestination(address1)).andReturn(true);
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
 
       EasyMock.replay(pm, qf, binding, queue, pgm, store);
 
@@ -338,11 +350,11 @@ public class PostOfficeImplTest extends UnitTestCase
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      
+
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
-      
+
       PagingStore pgstore = EasyMock.createNiceMock(PagingStore.class);
-      
+
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true, null, wildCardRoutingEnabled);
 
       qf.setPostOffice(postOffice);
@@ -360,26 +372,27 @@ public class PostOfficeImplTest extends UnitTestCase
          queues[i] = EasyMock.createStrictMock(Queue.class);
          addresses[i] = new SimpleString("testAddress" + i);
          queueNames[i] = new SimpleString("testQueueName" + i);
-         
+
          EasyMock.expect(pgm.getPageStore(addresses[i])).andReturn(pgstore);
-         
+
          EasyMock.expect(bindings[i].getAddress()).andStubReturn(addresses[i]);
          EasyMock.expect(bindings[i].getQueue()).andStubReturn(queues[i]);
          EasyMock.expect(queues[i].getName()).andStubReturn(queueNames[i]);
-         queues[i].setFlowController((FlowController) EasyMock.anyObject());
+         queues[i].setFlowController((FlowController)EasyMock.anyObject());
          EasyMock.expect(queues[i].getPersistenceID()).andStubReturn(i + 1);
          EasyMock.replay(bindings[i], queues[i]);
          dests.add(addresses[i]);
       }
 
-
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, dests));
       for (int i = 0; i < 100; i++)
       {
          EasyMock.expect(pm.addDestination(addresses[i])).andReturn(true);
       }
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
 
       EasyMock.replay(pm, qf, pgm, pgstore);
 
@@ -404,7 +417,6 @@ public class PostOfficeImplTest extends UnitTestCase
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
       PagingStore pgstore = EasyMock.createNiceMock(PagingStore.class);
-      
 
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true, null, wildCardRoutingEnabled);
 
@@ -427,20 +439,21 @@ public class PostOfficeImplTest extends UnitTestCase
          EasyMock.expect(bindings[i].getAddress()).andStubReturn(addresses[i]);
          EasyMock.expect(bindings[i].getQueue()).andStubReturn(queues[i]);
          EasyMock.expect(queues[i].getName()).andStubReturn(queueNames[i]);
-         queues[i].setFlowController((FlowController) EasyMock.anyObject());
+         queues[i].setFlowController((FlowController)EasyMock.anyObject());
          EasyMock.expect(queues[i].getPersistenceID()).andStubReturn(i + 1);
          EasyMock.replay(bindings[i], queues[i]);
          dests.add(addresses[i]);
       }
 
-
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, dests));
       for (int i = 0; i < 100; i++)
       {
          EasyMock.expect(pm.addDestination(addresses[i])).andReturn(true);
       }
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
 
       EasyMock.replay(pm, qf, pgm, pgstore);
 
@@ -470,7 +483,6 @@ public class PostOfficeImplTest extends UnitTestCase
 
       qf.setPostOffice(postOffice);
 
-      
       ArrayList<Binding> bindingArrayList = new ArrayList<Binding>();
       List<SimpleString> dests = new ArrayList<SimpleString>();
       Binding[] bindings = new Binding[100];
@@ -484,26 +496,27 @@ public class PostOfficeImplTest extends UnitTestCase
          queues[i] = EasyMock.createStrictMock(Queue.class);
          addresses[i] = new SimpleString("testAddress" + i);
          queueNames[i] = new SimpleString("testQueueName" + i);
-         
+
          EasyMock.expect(pgm.getPageStore(addresses[i])).andReturn(pgstore);
-         
+
          EasyMock.expect(bindings[i].getAddress()).andStubReturn(addresses[i]);
          EasyMock.expect(bindings[i].getQueue()).andStubReturn(queues[i]);
          EasyMock.expect(queues[i].getName()).andStubReturn(queueNames[i]);
-         queues[i].setFlowController((FlowController) EasyMock.anyObject());
+         queues[i].setFlowController((FlowController)EasyMock.anyObject());
          EasyMock.expect(queues[i].getPersistenceID()).andStubReturn(i + 1);
          EasyMock.replay(bindings[i], queues[i]);
          dests.add(addresses[i]);
       }
 
-
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, dests));
       for (int i = 0; i < 100; i++)
       {
          EasyMock.expect(pm.addDestination(addresses[i])).andReturn(true);
       }
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
 
       EasyMock.replay(pm, qf, pgm, pgstore);
 
@@ -532,7 +545,6 @@ public class PostOfficeImplTest extends UnitTestCase
 
       qf.setPostOffice(postOffice);
 
-      
       ArrayList<Binding> bindingArrayList = new ArrayList<Binding>();
       List<SimpleString> dests = new ArrayList<SimpleString>();
       Binding[] bindings = new Binding[100];
@@ -546,26 +558,27 @@ public class PostOfficeImplTest extends UnitTestCase
          queues[i] = EasyMock.createStrictMock(Queue.class);
          addresses[i] = new SimpleString("testAddress" + i);
          queueNames[i] = new SimpleString("testQueueName" + i);
-         
+
          EasyMock.expect(pgm.getPageStore(addresses[i])).andReturn(pgstore);
-         
+
          EasyMock.expect(bindings[i].getAddress()).andStubReturn(addresses[i]);
          EasyMock.expect(bindings[i].getQueue()).andStubReturn(queues[i]);
          EasyMock.expect(queues[i].getName()).andStubReturn(queueNames[i]);
-         queues[i].setFlowController((FlowController) EasyMock.anyObject());
+         queues[i].setFlowController((FlowController)EasyMock.anyObject());
          EasyMock.expect(queues[i].getPersistenceID()).andStubReturn(i + 1);
          EasyMock.replay(bindings[i], queues[i]);
          dests.add(addresses[i]);
       }
 
-
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new LoadBindingsIAnswer(bindingArrayList, dests));
       for (int i = 0; i < 100; i++)
       {
          EasyMock.expect(pm.addDestination(addresses[i])).andReturn(true);
       }
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
 
       EasyMock.replay(pm, qf, pgm, pgstore);
 
@@ -586,7 +599,7 @@ public class PostOfficeImplTest extends UnitTestCase
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
- 
+
       PostOffice po = new PostOfficeImpl(pm, pgm, qf, ms, false, null, wildCardRoutingEnabled);
 
       final long id = 324;
@@ -594,9 +607,9 @@ public class PostOfficeImplTest extends UnitTestCase
       final Filter filter = EasyMock.createMock(Filter.class);
       final boolean durable = true;
 
-      Queue queue = queueFactory.createQueue(id, name, filter, durable);
+      Queue queue = queueFactory.createQueue(id, name, filter, durable, false);
 
-      EasyMock.expect(qf.createQueue(-1, name, filter, durable)).andReturn(queue);
+      EasyMock.expect(qf.createQueue(-1, name, filter, durable, false)).andReturn(queue);
 
       final SimpleString condition = new SimpleString("queue.wibble");
 
@@ -606,7 +619,7 @@ public class PostOfficeImplTest extends UnitTestCase
 
       EasyMock.replay(qf, pm, filter);
 
-      po.addBinding(condition, name, filter, durable);
+      po.addBinding(condition, name, filter, durable, false);
 
       EasyMock.verify(qf, pm, filter);
 
@@ -614,9 +627,9 @@ public class PostOfficeImplTest extends UnitTestCase
 
       final boolean durable2 = false;
 
-      queue = queueFactory.createQueue(id, name, filter, durable2);
+      queue = queueFactory.createQueue(id, name, filter, durable2, false);
 
-      EasyMock.expect(qf.createQueue(-1, name, filter, durable2)).andReturn(queue);
+      EasyMock.expect(qf.createQueue(-1, name, filter, durable2, false)).andReturn(queue);
 
       EasyMock.replay(qf, pm, filter);
 
@@ -635,10 +648,10 @@ public class PostOfficeImplTest extends UnitTestCase
       final SimpleString name = new SimpleString("wibb22");
       final Filter filter = EasyMock.createMock(Filter.class);
       final boolean durable = true;
-  
-      Queue queue = queueFactory.createQueue(id, name, filter, durable);
 
-      EasyMock.expect(qf.createQueue(-1, name, filter, durable)).andReturn(queue);
+      Queue queue = queueFactory.createQueue(id, name, filter, durable, false);
+
+      EasyMock.expect(qf.createQueue(-1, name, filter, durable, false)).andReturn(queue);
 
       final SimpleString condition = new SimpleString("queue.wibble");
 
@@ -650,7 +663,7 @@ public class PostOfficeImplTest extends UnitTestCase
 
       EasyMock.replay(qf, pm, filter);
 
-      po.addBinding(condition, name, filter, durable);
+      po.addBinding(condition, name, filter, durable, false);
 
       po.removeBinding(name);
 
@@ -660,13 +673,13 @@ public class PostOfficeImplTest extends UnitTestCase
 
       final boolean durable2 = false;
 
-      queue = queueFactory.createQueue(id, name, filter, durable2);
+      queue = queueFactory.createQueue(id, name, filter, durable2, false);
 
-      EasyMock.expect(qf.createQueue(-1, name, filter, durable2)).andReturn(queue);
+      EasyMock.expect(qf.createQueue(-1, name, filter, durable2, false)).andReturn(queue);
 
       EasyMock.replay(qf, pm, filter);
 
-      po.addBinding(condition, name, filter, durable2);
+      po.addBinding(condition, name, filter, durable2, false);
 
       po.removeBinding(name);
 
@@ -691,15 +704,15 @@ public class PostOfficeImplTest extends UnitTestCase
       SimpleString squeue5 = new SimpleString("queue5");
       SimpleString squeue6 = new SimpleString("queue6");
 
-      po.addBinding(condition1, squeue1, null, false);
+      po.addBinding(condition1, squeue1, null, false, false);
       Map<SimpleString, List<Binding>> mappings = po.getMappings();
       assertEquals(1, mappings.size());
 
-      po.addBinding(condition1, squeue2, null, false);
+      po.addBinding(condition1, squeue2, null, false, false);
       mappings = po.getMappings();
       assertEquals(1, mappings.size());
 
-      po.addBinding(condition1, squeue3, null, false);
+      po.addBinding(condition1, squeue3, null, false, false);
       mappings = po.getMappings();
       assertEquals(1, mappings.size());
 
@@ -721,17 +734,17 @@ public class PostOfficeImplTest extends UnitTestCase
 
       final SimpleString condition2 = new SimpleString("queue.wibble2");
 
-      po.addBinding(condition2, squeue4, null, false);
+      po.addBinding(condition2, squeue4, null, false, false);
       mappings = po.getMappings();
       assertEquals(2, mappings.size());
 
-      po.addBinding(condition2, squeue5, null, false);
+      po.addBinding(condition2, squeue5, null, false, false);
       mappings = po.getMappings();
       assertEquals(2, mappings.size());
 
       final SimpleString condition3 = new SimpleString("topic.wibblexyz");
 
-      po.addBinding(condition3, squeue6, null, false);
+      po.addBinding(condition3, squeue6, null, false, false);
       mappings = po.getMappings();
       assertEquals(3, mappings.size());
 
@@ -772,8 +785,10 @@ public class PostOfficeImplTest extends UnitTestCase
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
       EasyMock.expect(pm.addDestination(address)).andReturn(true);
       EasyMock.replay(pm, qf);
       postOffice.start();
@@ -798,8 +813,10 @@ public class PostOfficeImplTest extends UnitTestCase
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
       EasyMock.expect(pm.addDestination(address)).andReturn(true);
       EasyMock.expect(pm.addDestination(address2)).andReturn(true);
       EasyMock.expect(pm.addDestination(address3)).andReturn(true);
@@ -830,8 +847,10 @@ public class PostOfficeImplTest extends UnitTestCase
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
       EasyMock.expect(pm.addDestination(address)).andReturn(true);
       EasyMock.expect(pm.deleteDestination(address)).andReturn(true);
       EasyMock.replay(pm, qf);
@@ -859,8 +878,10 @@ public class PostOfficeImplTest extends UnitTestCase
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
       EasyMock.expect(pm.addDestination(address)).andReturn(true);
       EasyMock.expect(pm.addDestination(address2)).andReturn(true);
       EasyMock.expect(pm.addDestination(address3)).andReturn(true);
@@ -888,7 +909,6 @@ public class PostOfficeImplTest extends UnitTestCase
       EasyMock.verify(pm, qf);
    }
 
-  
    public void testAddDurableBinding() throws Exception
    {
       SimpleString queueName = new SimpleString("testQueueName");
@@ -903,17 +923,19 @@ public class PostOfficeImplTest extends UnitTestCase
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
-      EasyMock.expect(qf.createQueue(-1, queueName, filter, true)).andReturn(queue);
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
+      EasyMock.expect(qf.createQueue(-1, queueName, filter, true, false)).andReturn(queue);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       queue.setBackup(false);
-      queue.setFlowController((FlowController) EasyMock.anyObject());
-      pm.addBinding((Binding) EasyMock.anyObject());
+      queue.setFlowController((FlowController)EasyMock.anyObject());
+      pm.addBinding((Binding)EasyMock.anyObject());
       EasyMock.replay(pm, qf, queue);
       postOffice.start();
 
-      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, true);
+      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, true, false);
       assertNotNull(postOffice.getBinding(queueName));
       EasyMock.verify(pm, qf, queue);
    }
@@ -936,29 +958,31 @@ public class PostOfficeImplTest extends UnitTestCase
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
-      EasyMock.expect(qf.createQueue(-1, queueName, filter, true)).andReturn(queue);
-      EasyMock.expect(qf.createQueue(-1, queueName2, filter, true)).andReturn(queue2);
-      EasyMock.expect(qf.createQueue(-1, queueName3, filter, true)).andReturn(queue3);
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
+      EasyMock.expect(qf.createQueue(-1, queueName, filter, true, false)).andReturn(queue);
+      EasyMock.expect(qf.createQueue(-1, queueName2, filter, true, false)).andReturn(queue2);
+      EasyMock.expect(qf.createQueue(-1, queueName3, filter, true, false)).andReturn(queue3);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       queue.setBackup(false);
-      queue.setFlowController((FlowController) EasyMock.anyObject());
+      queue.setFlowController((FlowController)EasyMock.anyObject());
       EasyMock.expect(queue2.getName()).andStubReturn(queueName2);
       queue2.setBackup(false);
-      queue2.setFlowController((FlowController) EasyMock.anyObject());
+      queue2.setFlowController((FlowController)EasyMock.anyObject());
       EasyMock.expect(queue3.getName()).andStubReturn(queueName3);
       queue3.setBackup(false);
-      queue3.setFlowController((FlowController) EasyMock.anyObject());
-      pm.addBinding((Binding) EasyMock.anyObject());
-      pm.addBinding((Binding) EasyMock.anyObject());
-      pm.addBinding((Binding) EasyMock.anyObject());
+      queue3.setFlowController((FlowController)EasyMock.anyObject());
+      pm.addBinding((Binding)EasyMock.anyObject());
+      pm.addBinding((Binding)EasyMock.anyObject());
+      pm.addBinding((Binding)EasyMock.anyObject());
       EasyMock.replay(pm, qf, queue, queue2, queue3);
       postOffice.start();
 
-      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, true);
-      postOffice.addBinding(new SimpleString("testAddress2"), queueName2, filter, true);
-      postOffice.addBinding(new SimpleString("testAddress3"), queueName3, filter, true);
+      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, true, false);
+      postOffice.addBinding(new SimpleString("testAddress2"), queueName2, filter, true, false);
+      postOffice.addBinding(new SimpleString("testAddress3"), queueName3, filter, true, false);
       assertNotNull(postOffice.getBinding(queueName));
       assertNotNull(postOffice.getBinding(queueName2));
       assertNotNull(postOffice.getBinding(queueName3));
@@ -979,16 +1003,18 @@ public class PostOfficeImplTest extends UnitTestCase
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
-      EasyMock.expect(qf.createQueue(-1, queueName, filter, false)).andReturn(queue);
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
+      EasyMock.expect(qf.createQueue(-1, queueName, filter, false, false)).andReturn(queue);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       queue.setBackup(false);
-      queue.setFlowController((FlowController) EasyMock.anyObject());
+      queue.setFlowController((FlowController)EasyMock.anyObject());
       EasyMock.replay(pm, qf, queue);
       postOffice.start();
 
-      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, false);
+      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, false, false);
       assertNotNull(postOffice.getBinding(queueName));
       EasyMock.verify(pm, qf, queue);
    }
@@ -1011,26 +1037,28 @@ public class PostOfficeImplTest extends UnitTestCase
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
-      EasyMock.expect(qf.createQueue(-1, queueName, filter, false)).andReturn(queue);
-      EasyMock.expect(qf.createQueue(-1, queueName2, filter, false)).andReturn(queue2);
-      EasyMock.expect(qf.createQueue(-1, queueName3, filter, false)).andReturn(queue3);
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
+      EasyMock.expect(qf.createQueue(-1, queueName, filter, false, false)).andReturn(queue);
+      EasyMock.expect(qf.createQueue(-1, queueName2, filter, false, false)).andReturn(queue2);
+      EasyMock.expect(qf.createQueue(-1, queueName3, filter, false, false)).andReturn(queue3);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       queue.setBackup(false);
-      queue.setFlowController((FlowController) EasyMock.anyObject());
+      queue.setFlowController((FlowController)EasyMock.anyObject());
       EasyMock.expect(queue2.getName()).andStubReturn(queueName2);
       queue2.setBackup(false);
-      queue2.setFlowController((FlowController) EasyMock.anyObject());
+      queue2.setFlowController((FlowController)EasyMock.anyObject());
       EasyMock.expect(queue3.getName()).andStubReturn(queueName3);
       queue3.setBackup(false);
-      queue3.setFlowController((FlowController) EasyMock.anyObject());
+      queue3.setFlowController((FlowController)EasyMock.anyObject());
       EasyMock.replay(pm, qf, queue, queue2, queue3);
       postOffice.start();
 
-      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, false);
-      postOffice.addBinding(new SimpleString("testAddress2"), queueName2, filter, false);
-      postOffice.addBinding(new SimpleString("testAddress3"), queueName3, filter, false);
+      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, false, false);
+      postOffice.addBinding(new SimpleString("testAddress2"), queueName2, filter, false, false);
+      postOffice.addBinding(new SimpleString("testAddress3"), queueName3, filter, false, false);
       assertNotNull(postOffice.getBinding(queueName));
       assertNotNull(postOffice.getBinding(queueName2));
       assertNotNull(postOffice.getBinding(queueName3));
@@ -1051,27 +1079,29 @@ public class PostOfficeImplTest extends UnitTestCase
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
-      EasyMock.expect(qf.createQueue(-1, queueName, filter, true)).andReturn(queue);
-      EasyMock.expect(qf.createQueue(-1, queueName, filter, true)).andReturn(queue);      
-      EasyMock.expect(queue.getName()).andStubReturn(queueName); 
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
+      EasyMock.expect(qf.createQueue(-1, queueName, filter, true, false)).andReturn(queue);
+      EasyMock.expect(qf.createQueue(-1, queueName, filter, true, false)).andReturn(queue);
+      EasyMock.expect(queue.getName()).andStubReturn(queueName);
       queue.setBackup(false);
-      queue.setFlowController((FlowController) EasyMock.anyObject());
-      pm.addBinding((Binding) EasyMock.anyObject());
+      queue.setFlowController((FlowController)EasyMock.anyObject());
+      pm.addBinding((Binding)EasyMock.anyObject());
       queue.setBackup(false);
       EasyMock.replay(pm, qf, queue);
       postOffice.start();
 
-      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, true);
+      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, true, false);
       try
       {
-         postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, true);
+         postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, true, false);
          fail("should throw exception");
       }
       catch (IllegalStateException e)
       {
-         //pass
+         // pass
       }
       assertNotNull(postOffice.getBinding(queueName));
       EasyMock.verify(pm, qf, queue);
@@ -1091,20 +1121,22 @@ public class PostOfficeImplTest extends UnitTestCase
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
-      EasyMock.expect(qf.createQueue(-1, queueName, filter, true)).andReturn(queue);
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
+      EasyMock.expect(qf.createQueue(-1, queueName, filter, true, false)).andReturn(queue);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       queue.setBackup(false);
-      queue.setFlowController((FlowController) EasyMock.anyObject());
-      pm.addBinding((Binding) EasyMock.anyObject());
+      queue.setFlowController((FlowController)EasyMock.anyObject());
+      pm.addBinding((Binding)EasyMock.anyObject());
       EasyMock.expect(queue.isDurable()).andStubReturn(true);
-      pm.deleteBinding((Binding) EasyMock.anyObject());
+      pm.deleteBinding((Binding)EasyMock.anyObject());
       queue.setFlowController(null);
       EasyMock.replay(pm, qf, queue);
       postOffice.start();
 
-      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, true);
+      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, true, false);
       postOffice.removeBinding(queueName);
       assertNull(postOffice.getBinding(queueName));
       EasyMock.verify(pm, qf, queue);
@@ -1128,25 +1160,27 @@ public class PostOfficeImplTest extends UnitTestCase
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
-      EasyMock.expect(qf.createQueue(-1, queueName, filter, true)).andReturn(queue);
-      EasyMock.expect(qf.createQueue(-1, queueName2, filter, true)).andReturn(queue2);
-      EasyMock.expect(qf.createQueue(-1, queueName3, filter, true)).andReturn(queue3);
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
+      EasyMock.expect(qf.createQueue(-1, queueName, filter, true, false)).andReturn(queue);
+      EasyMock.expect(qf.createQueue(-1, queueName2, filter, true, false)).andReturn(queue2);
+      EasyMock.expect(qf.createQueue(-1, queueName3, filter, true, false)).andReturn(queue3);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       queue.setBackup(false);
-      queue.setFlowController((FlowController) EasyMock.anyObject());
+      queue.setFlowController((FlowController)EasyMock.anyObject());
       EasyMock.expect(queue2.getName()).andStubReturn(queueName2);
       queue2.setBackup(false);
-      queue2.setFlowController((FlowController) EasyMock.anyObject());
+      queue2.setFlowController((FlowController)EasyMock.anyObject());
       EasyMock.expect(queue3.getName()).andStubReturn(queueName3);
       queue3.setBackup(false);
-      queue3.setFlowController((FlowController) EasyMock.anyObject());
-      pm.addBinding((Binding) EasyMock.anyObject());
-      pm.addBinding((Binding) EasyMock.anyObject());
-      pm.addBinding((Binding) EasyMock.anyObject());
-      pm.deleteBinding((Binding) EasyMock.anyObject());
-      pm.deleteBinding((Binding) EasyMock.anyObject());
+      queue3.setFlowController((FlowController)EasyMock.anyObject());
+      pm.addBinding((Binding)EasyMock.anyObject());
+      pm.addBinding((Binding)EasyMock.anyObject());
+      pm.addBinding((Binding)EasyMock.anyObject());
+      pm.deleteBinding((Binding)EasyMock.anyObject());
+      pm.deleteBinding((Binding)EasyMock.anyObject());
       EasyMock.expect(queue.isDurable()).andStubReturn(true);
       queue.setFlowController(null);
       EasyMock.expect(queue3.isDurable()).andStubReturn(true);
@@ -1154,9 +1188,9 @@ public class PostOfficeImplTest extends UnitTestCase
       EasyMock.replay(pm, qf, queue, queue2, queue3);
       postOffice.start();
 
-      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, true);
-      postOffice.addBinding(new SimpleString("testAddress2"), queueName2, filter, true);
-      postOffice.addBinding(new SimpleString("testAddress3"), queueName3, filter, true);
+      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, true, false);
+      postOffice.addBinding(new SimpleString("testAddress2"), queueName2, filter, true, false);
+      postOffice.addBinding(new SimpleString("testAddress3"), queueName3, filter, true, false);
       postOffice.removeBinding(queueName);
       postOffice.removeBinding(queueName3);
       assertNull(postOffice.getBinding(queueName));
@@ -1179,18 +1213,20 @@ public class PostOfficeImplTest extends UnitTestCase
 
       qf.setPostOffice(postOffice);
 
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
-      EasyMock.expect(qf.createQueue(-1, queueName, filter, false)).andReturn(queue);
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
+      EasyMock.expect(qf.createQueue(-1, queueName, filter, false, false)).andReturn(queue);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       queue.setBackup(false);
-      queue.setFlowController((FlowController) EasyMock.anyObject());
+      queue.setFlowController((FlowController)EasyMock.anyObject());
       EasyMock.expect(queue.isDurable()).andStubReturn(false);
       queue.setFlowController(null);
       EasyMock.replay(pm, qf, queue);
       postOffice.start();
 
-      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, false);
+      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, false, false);
       postOffice.removeBinding(queueName);
       assertNull(postOffice.getBinding(queueName));
       EasyMock.verify(pm, qf, queue);
@@ -1211,23 +1247,25 @@ public class PostOfficeImplTest extends UnitTestCase
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true, null, wildCardRoutingEnabled);
-      
+
       qf.setPostOffice(postOffice);
-      
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
-      EasyMock.expect(qf.createQueue(-1, queueName, filter, false)).andReturn(queue);
-      EasyMock.expect(qf.createQueue(-1, queueName2, filter, false)).andReturn(queue2);
-      EasyMock.expect(qf.createQueue(-1, queueName3, filter, false)).andReturn(queue3);
+
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
+      EasyMock.expect(qf.createQueue(-1, queueName, filter, false, false)).andReturn(queue);
+      EasyMock.expect(qf.createQueue(-1, queueName2, filter, false, false)).andReturn(queue2);
+      EasyMock.expect(qf.createQueue(-1, queueName3, filter, false, false)).andReturn(queue3);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       queue.setBackup(false);
-      queue.setFlowController((FlowController) EasyMock.anyObject());
+      queue.setFlowController((FlowController)EasyMock.anyObject());
       EasyMock.expect(queue2.getName()).andStubReturn(queueName2);
       queue2.setBackup(false);
-      queue2.setFlowController((FlowController) EasyMock.anyObject());
+      queue2.setFlowController((FlowController)EasyMock.anyObject());
       EasyMock.expect(queue3.getName()).andStubReturn(queueName3);
       queue3.setBackup(false);
-      queue3.setFlowController((FlowController) EasyMock.anyObject());
+      queue3.setFlowController((FlowController)EasyMock.anyObject());
 
       EasyMock.expect(queue.isDurable()).andStubReturn(false);
       queue.setFlowController(null);
@@ -1236,9 +1274,9 @@ public class PostOfficeImplTest extends UnitTestCase
       EasyMock.replay(pm, qf, queue, queue2, queue3);
       postOffice.start();
 
-      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, false);
-      postOffice.addBinding(new SimpleString("testAddress2"), queueName2, filter, false);
-      postOffice.addBinding(new SimpleString("testAddress3"), queueName3, filter, false);
+      postOffice.addBinding(new SimpleString("testAddress"), queueName, filter, false, false);
+      postOffice.addBinding(new SimpleString("testAddress2"), queueName2, filter, false, false);
+      postOffice.addBinding(new SimpleString("testAddress3"), queueName3, filter, false, false);
       postOffice.removeBinding(queueName);
       postOffice.removeBinding(queueName3);
       assertNull(postOffice.getBinding(queueName));
@@ -1257,11 +1295,13 @@ public class PostOfficeImplTest extends UnitTestCase
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true, null, wildCardRoutingEnabled);
-      
+
       qf.setPostOffice(postOffice);
-      
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       EasyMock.expect(queue.isDurable()).andStubReturn(false);
       EasyMock.replay(pm, qf, queue);
@@ -1274,7 +1314,7 @@ public class PostOfficeImplTest extends UnitTestCase
       }
       catch (IllegalStateException e)
       {
-         //pass
+         // pass
       }
       assertNull(postOffice.getBinding(queueName));
       EasyMock.verify(pm, qf, queue);
@@ -1289,11 +1329,13 @@ public class PostOfficeImplTest extends UnitTestCase
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true, null, wildCardRoutingEnabled);
-      
+
       qf.setPostOffice(postOffice);
-      
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
       EasyMock.expect(message.getDestination()).andStubReturn(new SimpleString("testtDestination"));
       EasyMock.replay(pm, qf, message);
       postOffice.start();
@@ -1304,7 +1346,7 @@ public class PostOfficeImplTest extends UnitTestCase
       }
       catch (Exception e)
       {
-         MessagingException messagingException = (MessagingException) e;
+         MessagingException messagingException = (MessagingException)e;
          assertEquals(MessagingException.ADDRESS_DOES_NOT_EXIST, messagingException.getCode());
       }
       EasyMock.verify(pm, qf, message);
@@ -1320,17 +1362,19 @@ public class PostOfficeImplTest extends UnitTestCase
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, false, null, wildCardRoutingEnabled);
-      
+
       qf.setPostOffice(postOffice);
-      
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
       EasyMock.expect(message.getDestination()).andStubReturn(new SimpleString("testtDestination"));
       EasyMock.replay(pm, qf, message);
-      
+
       postOffice.start();
       postOffice.route(message);
-      
+
       EasyMock.verify(pm, qf, message);
       assertTrue(postOffice.isStarted());
    }
@@ -1347,28 +1391,30 @@ public class PostOfficeImplTest extends UnitTestCase
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, false, null, wildCardRoutingEnabled);
-      
+
       qf.setPostOffice(postOffice);
-      
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
       SimpleString address = new SimpleString("testtDestination");
       EasyMock.expect(message.getDestination()).andStubReturn(address);
-      EasyMock.expect(qf.createQueue(-1, queueName, null, false)).andReturn(queue);
+      EasyMock.expect(qf.createQueue(-1, queueName, null, false, false)).andReturn(queue);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       EasyMock.expect(queue.getFilter()).andStubReturn(null);
       queue.setBackup(false);
-      queue.setFlowController((FlowController) EasyMock.anyObject());
-      
+      queue.setFlowController((FlowController)EasyMock.anyObject());
+
       EasyMock.expect(message.createReference(queue)).andReturn(messageReference);
-      
+
       EasyMock.replay(pm, qf, message, queue, messageReference);
-      
+
       postOffice.start();
-      postOffice.addBinding(address, queueName, null, false);
+      postOffice.addBinding(address, queueName, null, false, false);
 
       List<MessageReference> references = postOffice.route(message);
-      
+
       EasyMock.verify(pm, qf, message, queue, messageReference);
       assertTrue(postOffice.isStarted());
       assertEquals(1, references.size());
@@ -1378,44 +1424,45 @@ public class PostOfficeImplTest extends UnitTestCase
    public void testRouteAddressFull() throws Exception
    {
       SimpleString queueName = new SimpleString("testQueueName");
-      
+
       ServerMessage message = EasyMock.createStrictMock(ServerMessage.class);
-      
+
       Queue queue = EasyMock.createStrictMock(Queue.class);
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
-      
+
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-      
+
       PagingManager pgm = EasyMock.createMock(PagingManager.class);
       pgm.setPostOffice(EasyMock.isA(PostOffice.class));
       pgm.start();
 
       EasyMock.expect(pgm.addSize(EasyMock.isA(ServerMessage.class))).andReturn(-1l);
-      
+
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, false, null, wildCardRoutingEnabled);
 
       qf.setPostOffice(postOffice);
-      
-      
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
-      
+
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
+
       SimpleString address = new SimpleString("testtDestination");
       EasyMock.expect(message.getDestination()).andStubReturn(address);
-      EasyMock.expect(qf.createQueue(-1, queueName, null, false)).andReturn(queue);
+      EasyMock.expect(qf.createQueue(-1, queueName, null, false, false)).andReturn(queue);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       EasyMock.expect(queue.getFilter()).andStubReturn(null);
       queue.setBackup(false);
-      queue.setFlowController((FlowController) EasyMock.anyObject());
-      
+      queue.setFlowController((FlowController)EasyMock.anyObject());
+
       EasyMock.replay(pm, pgm, qf, message, queue);
-      
+
       postOffice.start();
-      postOffice.addBinding(address, queueName, null, false);
+      postOffice.addBinding(address, queueName, null, false, false);
 
       List<MessageReference> references = postOffice.route(message);
-      
+
       EasyMock.verify(pm, pgm, qf, message, queue);
       assertTrue(postOffice.isStarted());
       assertEquals(0, references.size());
@@ -1434,23 +1481,25 @@ public class PostOfficeImplTest extends UnitTestCase
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, false, null, wildCardRoutingEnabled);
-      
+
       qf.setPostOffice(postOffice);
-      
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
       SimpleString address = new SimpleString("testtDestination");
       EasyMock.expect(message.getDestination()).andStubReturn(address);
-      EasyMock.expect(qf.createQueue(-1, queueName, filter, false)).andReturn(queue);
+      EasyMock.expect(qf.createQueue(-1, queueName, filter, false, false)).andReturn(queue);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
-      EasyMock.expect(queue.getFilter()).andStubReturn(filter);      
+      EasyMock.expect(queue.getFilter()).andStubReturn(filter);
       EasyMock.expect(filter.match(message)).andReturn(true);
       queue.setBackup(false);
-      queue.setFlowController((FlowController) EasyMock.anyObject());
+      queue.setFlowController((FlowController)EasyMock.anyObject());
       EasyMock.expect(message.createReference(queue)).andReturn(messageReference);
       EasyMock.replay(pm, qf, message, queue, messageReference, filter);
       postOffice.start();
-      postOffice.addBinding(address, queueName, filter, false);
+      postOffice.addBinding(address, queueName, filter, false, false);
       List<MessageReference> references = postOffice.route(message);
       EasyMock.verify(pm, qf, message, queue, messageReference, filter);
       assertTrue(postOffice.isStarted());
@@ -1471,22 +1520,24 @@ public class PostOfficeImplTest extends UnitTestCase
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, false, null, wildCardRoutingEnabled);
-      
+
       qf.setPostOffice(postOffice);
-      
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
       SimpleString address = new SimpleString("testtDestination");
       EasyMock.expect(message.getDestination()).andStubReturn(address);
-      EasyMock.expect(qf.createQueue(-1, queueName, filter, false)).andReturn(queue);
+      EasyMock.expect(qf.createQueue(-1, queueName, filter, false, false)).andReturn(queue);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       EasyMock.expect(queue.getFilter()).andStubReturn(filter);
       EasyMock.expect(filter.match(message)).andReturn(false);
       queue.setBackup(false);
-      queue.setFlowController((FlowController) EasyMock.anyObject());
+      queue.setFlowController((FlowController)EasyMock.anyObject());
       EasyMock.replay(pm, qf, message, queue, messageReference, filter);
       postOffice.start();
-      postOffice.addBinding(address, queueName, filter, false);
+      postOffice.addBinding(address, queueName, filter, false, false);
       List<MessageReference> references = postOffice.route(message);
       EasyMock.verify(pm, qf, message, queue, messageReference, filter);
       assertTrue(postOffice.isStarted());
@@ -1511,16 +1562,18 @@ public class PostOfficeImplTest extends UnitTestCase
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, false, null, wildCardRoutingEnabled);
-      
+
       qf.setPostOffice(postOffice);
-      
-      pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-      pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
+
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
       SimpleString address = new SimpleString("testtDestination");
       EasyMock.expect(message.getDestination()).andStubReturn(address);
-      EasyMock.expect(qf.createQueue(-1, queueName, null, false)).andReturn(queue);
-      EasyMock.expect(qf.createQueue(-1, queueName2, null, false)).andReturn(queue2);
-      EasyMock.expect(qf.createQueue(-1, queueName3, null, false)).andReturn(queue3);
+      EasyMock.expect(qf.createQueue(-1, queueName, null, false, false)).andReturn(queue);
+      EasyMock.expect(qf.createQueue(-1, queueName2, null, false, false)).andReturn(queue2);
+      EasyMock.expect(qf.createQueue(-1, queueName3, null, false, false)).andReturn(queue3);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       EasyMock.expect(queue.getFilter()).andStubReturn(null);
       EasyMock.expect(queue2.getName()).andStubReturn(queueName2);
@@ -1530,17 +1583,17 @@ public class PostOfficeImplTest extends UnitTestCase
       queue.setBackup(false);
       queue2.setBackup(false);
       queue3.setBackup(false);
-      queue.setFlowController((FlowController) EasyMock.anyObject());
-      queue2.setFlowController((FlowController) EasyMock.anyObject());
-      queue3.setFlowController((FlowController) EasyMock.anyObject());
+      queue.setFlowController((FlowController)EasyMock.anyObject());
+      queue2.setFlowController((FlowController)EasyMock.anyObject());
+      queue3.setFlowController((FlowController)EasyMock.anyObject());
       EasyMock.expect(message.createReference(queue)).andReturn(messageReference);
       EasyMock.expect(message.createReference(queue2)).andReturn(messageReference2);
       EasyMock.expect(message.createReference(queue3)).andReturn(messageReference3);
       EasyMock.replay(pm, qf, message, queue, queue2, queue3, messageReference);
       postOffice.start();
-      postOffice.addBinding(address, queueName, null, false);
-      postOffice.addBinding(address, queueName2, null, false);
-      postOffice.addBinding(address, queueName3, null, false);
+      postOffice.addBinding(address, queueName, null, false, false);
+      postOffice.addBinding(address, queueName2, null, false, false);
+      postOffice.addBinding(address, queueName3, null, false, false);
       List<MessageReference> references = postOffice.route(message);
       EasyMock.verify(pm, qf, message, queue, queue2, queue3, messageReference);
       assertTrue(postOffice.isStarted());
@@ -1551,70 +1604,73 @@ public class PostOfficeImplTest extends UnitTestCase
    }
 
    public void testPostOfficeRouteToMultipleQueuesMixedFilters() throws Exception
-      {
-         SimpleString queueName = new SimpleString("testQueueName");
-         SimpleString queueName2 = new SimpleString("testQueueName2");
-         SimpleString queueName3 = new SimpleString("testQueueName3");
-         Filter filter = EasyMock.createStrictMock(Filter.class);
-         Filter filter2 = EasyMock.createStrictMock(Filter.class);
-         ServerMessage message = EasyMock.createStrictMock(ServerMessage.class);
-         MessageReference messageReference = EasyMock.createStrictMock(MessageReference.class);
-         MessageReference messageReference2 = EasyMock.createStrictMock(MessageReference.class);
-         MessageReference messageReference3 = EasyMock.createStrictMock(MessageReference.class);
-         Queue queue = EasyMock.createStrictMock(Queue.class);
-         Queue queue2 = EasyMock.createStrictMock(Queue.class);
-         Queue queue3 = EasyMock.createStrictMock(Queue.class);
-         StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-         QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
-         ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
-         PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+   {
+      SimpleString queueName = new SimpleString("testQueueName");
+      SimpleString queueName2 = new SimpleString("testQueueName2");
+      SimpleString queueName3 = new SimpleString("testQueueName3");
+      Filter filter = EasyMock.createStrictMock(Filter.class);
+      Filter filter2 = EasyMock.createStrictMock(Filter.class);
+      ServerMessage message = EasyMock.createStrictMock(ServerMessage.class);
+      MessageReference messageReference = EasyMock.createStrictMock(MessageReference.class);
+      MessageReference messageReference2 = EasyMock.createStrictMock(MessageReference.class);
+      MessageReference messageReference3 = EasyMock.createStrictMock(MessageReference.class);
+      Queue queue = EasyMock.createStrictMock(Queue.class);
+      Queue queue2 = EasyMock.createStrictMock(Queue.class);
+      Queue queue3 = EasyMock.createStrictMock(Queue.class);
+      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
+      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 
-         PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, false, null, wildCardRoutingEnabled);
-         
-         qf.setPostOffice(postOffice);
-         
-         pm.loadBindings(EasyMock.eq(qf), (List<Binding>) EasyMock.anyObject(), (List<SimpleString>) EasyMock.anyObject());
-         pm.loadMessages(EasyMock.eq(postOffice), (Map<Long, Queue>) EasyMock.anyObject(), (ResourceManager) EasyMock.anyObject());
-         SimpleString address = new SimpleString("testtDestination");
-         EasyMock.expect(message.getDestination()).andStubReturn(address);
-         EasyMock.expect(qf.createQueue(-1, queueName, null, false)).andReturn(queue);
-         EasyMock.expect(qf.createQueue(-1, queueName2, null, false)).andReturn(queue2);
-         EasyMock.expect(qf.createQueue(-1, queueName3, null, false)).andReturn(queue3);
-         EasyMock.expect(queue.getName()).andStubReturn(queueName);
-         EasyMock.expect(queue.getFilter()).andStubReturn(filter);
-         EasyMock.expect(queue2.getName()).andStubReturn(queueName2);
-         EasyMock.expect(queue2.getFilter()).andStubReturn(null);
-         EasyMock.expect(queue3.getName()).andStubReturn(queueName3);
-         EasyMock.expect(queue3.getFilter()).andStubReturn(filter2);
-         EasyMock.expect(filter.match(message)).andReturn(false);
-         EasyMock.expect(filter2.match(message)).andReturn(true);
-         queue.setBackup(false);
-         queue2.setBackup(false);
-         queue3.setBackup(false);
-         queue.setFlowController((FlowController) EasyMock.anyObject());
-         queue2.setFlowController((FlowController) EasyMock.anyObject());
-         queue3.setFlowController((FlowController) EasyMock.anyObject());
-         EasyMock.expect(message.createReference(queue2)).andReturn(messageReference2);
-         EasyMock.expect(message.createReference(queue3)).andReturn(messageReference3);
-         EasyMock.replay(pm, qf, message, queue, queue2, queue3, messageReference, filter, filter2);
-         postOffice.start();
-         postOffice.addBinding(address, queueName, null, false);
-         postOffice.addBinding(address, queueName2, null, false);
-         postOffice.addBinding(address, queueName3, null, false);
-         List<MessageReference> references = postOffice.route(message);
-         EasyMock.verify(pm, qf, message, queue, queue2, queue3, messageReference, filter, filter2);
-         assertTrue(postOffice.isStarted());
-         assertEquals(2, references.size());
-         assertEquals(messageReference2, references.get(0));
-         assertEquals(messageReference3, references.get(1));
-      }
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, false, null, wildCardRoutingEnabled);
+
+      qf.setPostOffice(postOffice);
+
+      pm.loadBindings(EasyMock.eq(qf), (List<Binding>)EasyMock.anyObject(), (List<SimpleString>)EasyMock.anyObject());
+      pm.loadMessages(EasyMock.eq(postOffice),
+                      (Map<Long, Queue>)EasyMock.anyObject(),
+                      (ResourceManager)EasyMock.anyObject());
+      SimpleString address = new SimpleString("testtDestination");
+      EasyMock.expect(message.getDestination()).andStubReturn(address);
+      EasyMock.expect(qf.createQueue(-1, queueName, null, false, false)).andReturn(queue);
+      EasyMock.expect(qf.createQueue(-1, queueName2, null, false, false)).andReturn(queue2);
+      EasyMock.expect(qf.createQueue(-1, queueName3, null, false, false)).andReturn(queue3);
+      EasyMock.expect(queue.getName()).andStubReturn(queueName);
+      EasyMock.expect(queue.getFilter()).andStubReturn(filter);
+      EasyMock.expect(queue2.getName()).andStubReturn(queueName2);
+      EasyMock.expect(queue2.getFilter()).andStubReturn(null);
+      EasyMock.expect(queue3.getName()).andStubReturn(queueName3);
+      EasyMock.expect(queue3.getFilter()).andStubReturn(filter2);
+      EasyMock.expect(filter.match(message)).andReturn(false);
+      EasyMock.expect(filter2.match(message)).andReturn(true);
+      queue.setBackup(false);
+      queue2.setBackup(false);
+      queue3.setBackup(false);
+      queue.setFlowController((FlowController)EasyMock.anyObject());
+      queue2.setFlowController((FlowController)EasyMock.anyObject());
+      queue3.setFlowController((FlowController)EasyMock.anyObject());
+      EasyMock.expect(message.createReference(queue2)).andReturn(messageReference2);
+      EasyMock.expect(message.createReference(queue3)).andReturn(messageReference3);
+      EasyMock.replay(pm, qf, message, queue, queue2, queue3, messageReference, filter, filter2);
+      postOffice.start();
+      postOffice.addBinding(address, queueName, null, false, false);
+      postOffice.addBinding(address, queueName2, null, false, false);
+      postOffice.addBinding(address, queueName3, null, false, false);
+      List<MessageReference> references = postOffice.route(message);
+      EasyMock.verify(pm, qf, message, queue, queue2, queue3, messageReference, filter, filter2);
+      assertTrue(postOffice.isStarted());
+      assertEquals(2, references.size());
+      assertEquals(messageReference2, references.get(0));
+      assertEquals(messageReference3, references.get(1));
+   }
 
    class LoadBindingsIAnswer implements IAnswer
    {
       List<Binding> bindings;
+
       List<SimpleString> dests;
 
-      public LoadBindingsIAnswer(List<Binding> bindings, List<SimpleString> dests)
+      public LoadBindingsIAnswer(final List<Binding> bindings, final List<SimpleString> dests)
       {
          this.bindings = bindings;
          this.dests = dests;
@@ -1622,14 +1678,14 @@ public class PostOfficeImplTest extends UnitTestCase
 
       public Object answer() throws Throwable
       {
-         if (this.bindings != null)
+         if (bindings != null)
          {
-            List<Binding> bindings = (List<Binding>) EasyMock.getCurrentArguments()[1];
+            List<Binding> bindings = (List<Binding>)EasyMock.getCurrentArguments()[1];
             bindings.addAll(this.bindings);
          }
-         if (this.dests != null)
+         if (dests != null)
          {
-            List<SimpleString> dests = (List<SimpleString>) EasyMock.getCurrentArguments()[2];
+            List<SimpleString> dests = (List<SimpleString>)EasyMock.getCurrentArguments()[2];
             dests.addAll(this.dests);
          }
          return null;

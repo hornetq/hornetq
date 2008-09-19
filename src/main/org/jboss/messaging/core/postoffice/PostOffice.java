@@ -64,7 +64,7 @@ public interface PostOffice extends MessagingComponent
    boolean containsDestination(SimpleString address);
 
    Binding addBinding(SimpleString address, SimpleString queueName, Filter filter,
-                      boolean durable) throws Exception;
+                      boolean durable, boolean temporary) throws Exception;
    
    Binding removeBinding(SimpleString queueName) throws Exception;
    

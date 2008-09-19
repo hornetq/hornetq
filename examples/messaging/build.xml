@@ -97,6 +97,12 @@
       </java>
    </target>
 
+   <target name="ManagementClient" depends="compile">
+      <java classname="org.jboss.messaging.example.ManagementClient" fork="true">
+         <classpath refid="runtime.classpath"/>
+      </java>
+   </target>
+
    <target name="WildCardClient" depends="compile">
       <java classname="org.jboss.messaging.example.WildCardClient" fork="true">
          <classpath refid="runtime.classpath"/>

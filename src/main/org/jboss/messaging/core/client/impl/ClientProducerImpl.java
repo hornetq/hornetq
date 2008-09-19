@@ -29,8 +29,9 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiter;
 
@@ -135,6 +136,55 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       doSend(address, msg);
    }
+   
+   // use a special wireformat packet to send management message (on the server-side they are
+   // handled by the server session differently from regular Client Message)
+   public void sendManagement(final ClientMessage msg) throws MessagingException
+   {
+      checkClosed();
+      
+      if (address != null)
+      {
+         msg.setDestination(address);
+      }
+      else
+      {
+         msg.setDestination(this.address);
+      }
+      
+      if (rateLimiter != null)
+      {
+         // Rate flow control
+                  
+         rateLimiter.limit();
+      }
+      
+      boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
+      
+      SessionSendManagementMessage message = new SessionSendManagementMessage(id, msg, false);
+      
+      if (sendBlocking)
+      {        
+         channel.sendBlocking(message);
+      }
+      else
+      {
+         channel.send(message);
+      }      
+      
+      //We only flow control with non-anonymous producers
+      if (address == null && creditFlowControl)
+      {
+         try
+         {
+            availableCredits.acquire(message.getClientMessage().getEncodeSize());
+         }
+         catch (InterruptedException e)
+         {           
+         }         
+      }
+   }
+
           
    public void registerAcknowledgementHandler(final AcknowledgementHandler handler)
    {

@@ -24,13 +24,11 @@ package org.jboss.messaging.jms.server.management.impl;
 
 import static javax.management.ObjectName.quote;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
@@ -45,11 +43,10 @@ import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSManagementService;
 
-/**
+/*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * @version <tt>$Revision$</tt>
- * 
  */
 public class JMSManagementServiceImpl implements JMSManagementService
 {
@@ -58,129 +55,118 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    // Attributes ----------------------------------------------------
 
-   public final MBeanServer mbeanServer;
-   private final boolean jmxManagementEnabled;
-   private final MessageCounterManager messageCounterManager;
-   private Map<ObjectName, Object> registry;
+   private final ManagementService managementService;
 
    // Static --------------------------------------------------------
 
    public static ObjectName getJMSServerObjectName() throws Exception
    {
-      return ObjectName.getInstance(ManagementServiceImpl.DOMAIN
-            + ":module=JMS,type=Server");
+      return ObjectName.getInstance(ManagementServiceImpl.DOMAIN + ":module=JMS,type=Server");
    }
 
-   public static ObjectName getJMSQueueObjectName(final String name)
-         throws Exception
+   public static ObjectName getJMSQueueObjectName(final String name) throws Exception
    {
-      return ObjectName.getInstance(ManagementServiceImpl.DOMAIN
-            + ":module=JMS,type=Queue,name=" + quote(name.toString()));
+      return ObjectName.getInstance(ManagementServiceImpl.DOMAIN + ":module=JMS,type=Queue,name=" +
+                                    quote(name.toString()));
    }
 
-   public static ObjectName getJMSTopicObjectName(final String name)
-         throws Exception
+   public static ObjectName getJMSTopicObjectName(final String name) throws Exception
    {
-      return ObjectName.getInstance(ManagementServiceImpl.DOMAIN
-            + ":module=JMS,type=Topic,name=" + quote(name.toString()));
+      return ObjectName.getInstance(ManagementServiceImpl.DOMAIN + ":module=JMS,type=Topic,name=" +
+                                    quote(name.toString()));
    }
 
-   public static ObjectName getConnectionFactoryObjectName(final String name)
-         throws Exception
+   public static ObjectName getConnectionFactoryObjectName(final String name) throws Exception
    {
-      return ObjectName.getInstance(ManagementServiceImpl.DOMAIN
-            + ":module=JMS,type=ConnectionFactory,name=" + quote(name));
+      return ObjectName.getInstance(ManagementServiceImpl.DOMAIN + ":module=JMS,type=ConnectionFactory,name=" +
+                                    quote(name));
    }
 
    // Constructors --------------------------------------------------
 
-   public JMSManagementServiceImpl(final MBeanServer mbeanServer,
-         final boolean jmxManagementEnabled, final MessageCounterManager messageCounterManager)
+   public JMSManagementServiceImpl(final ManagementService managementService)
    {
-      this.mbeanServer = mbeanServer;
-      this.jmxManagementEnabled = jmxManagementEnabled;
-      this.registry = new HashMap<ObjectName, Object>();
-      this.messageCounterManager = messageCounterManager;
+      this.managementService = managementService;
    }
 
    // Public --------------------------------------------------------
 
    // JMSManagementRegistration implementation ----------------------
 
-   public void registerJMSServer(final JMSServerManager server)
-         throws Exception
+   public void registerJMSServer(final JMSServerManager server) throws Exception
    {
       ObjectName objectName = getJMSServerObjectName();
       JMSServerControl control = new JMSServerControl(server);
-      register(objectName, control);
-      registerInJMX(objectName, control);
+      managementService.registerResource(objectName, control);
    }
 
    public void unregisterJMSServer() throws Exception
    {
       ObjectName objectName = getJMSServerObjectName();
-      unregister(objectName);
-      unregisterFromJMX(objectName);
+      managementService.unregisterResource(objectName);
    }
 
-   public void registerQueue(final JBossQueue queue, final Queue coreQueue,
-         final String jndiBinding, final PostOffice postOffice,
-         final StorageManager storageManager,
-         HierarchicalRepository<QueueSettings> queueSettingsRepository)
-         throws Exception
+   public void registerQueue(final JBossQueue queue,
+                             final Queue coreQueue,
+                             final String jndiBinding,
+                             final PostOffice postOffice,
+                             final StorageManager storageManager,
+                             HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
-      MessageCounter counter = new MessageCounter(queue.getName(), null, coreQueue, false, coreQueue.isDurable(),
-            messageCounterManager.getMaxDayCount());
+      MessageCounterManager messageCounterManager = managementService.getMessageCounterManager();
+      MessageCounter counter = new MessageCounter(queue.getName(),
+                                                  null,
+                                                  coreQueue,
+                                                  false,
+                                                  coreQueue.isDurable(),
+                                                  messageCounterManager.getMaxDayCount());
       messageCounterManager.registerMessageCounter(queue.getName(), counter);
       ObjectName objectName = getJMSQueueObjectName(queue.getQueueName());
-      JMSQueueControl control = new JMSQueueControl(queue, coreQueue,
-            jndiBinding, postOffice, storageManager, queueSettingsRepository, counter);
-      register(objectName, control);
-      registerInJMX(objectName, control);
+      JMSQueueControl control = new JMSQueueControl(queue,
+                                                    coreQueue,
+                                                    jndiBinding,
+                                                    postOffice,
+                                                    storageManager,
+                                                    queueSettingsRepository,
+                                                    counter);
+      managementService.registerResource(objectName, control);
    }
 
    public void unregisterQueue(final String name) throws Exception
    {
       ObjectName objectName = getJMSQueueObjectName(name);
-      unregister(objectName);
-      unregisterFromJMX(objectName);
+      managementService.unregisterResource(objectName);
    }
 
-   public void registerTopic(final JBossTopic topic, final String jndiBinding,
-         final PostOffice postOffice, final StorageManager storageManager)
-         throws Exception
+   public void registerTopic(final JBossTopic topic,
+                             final String jndiBinding,
+                             final PostOffice postOffice,
+                             final StorageManager storageManager) throws Exception
    {
       ObjectName objectName = getJMSTopicObjectName(topic.getTopicName());
-      TopicControl control = new TopicControl(topic, jndiBinding, postOffice,
-            storageManager);
-      register(objectName, control);
-      registerInJMX(objectName, control);
+      TopicControl control = new TopicControl(topic, jndiBinding, postOffice, storageManager);
+      managementService.registerResource(objectName, control);
    }
 
    public void unregisterTopic(final String name) throws Exception
    {
       ObjectName objectName = getJMSTopicObjectName(name);
-      unregister(objectName);
-      unregisterFromJMX(objectName);
+      managementService.unregisterResource(objectName);
    }
 
    public void registerConnectionFactory(final String name,
-         final JBossConnectionFactory connectionFactory,
-         final List<String> bindings) throws Exception
+                                         final JBossConnectionFactory connectionFactory,
+                                         final List<String> bindings) throws Exception
    {
       ObjectName objectName = getConnectionFactoryObjectName(name);
-      ConnectionFactoryControl control = new ConnectionFactoryControl(
-            connectionFactory, name,
-            bindings);
-      register(objectName, control);
-      registerInJMX(objectName, control);
+      ConnectionFactoryControl control = new ConnectionFactoryControl(connectionFactory, name, bindings);
+      managementService.registerResource(objectName, control);
    }
 
    public void unregisterConnectionFactory(final String name) throws Exception
    {
       ObjectName objectName = getConnectionFactoryObjectName(name);
-      unregister(objectName);
-      unregisterFromJMX(objectName);
+      managementService.unregisterResource(objectName);
    }
 
    // Package protected ---------------------------------------------
@@ -188,40 +174,6 @@ public class JMSManagementServiceImpl implements JMSManagementService
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   private void register(ObjectName objectName, Object managedResource)
-   {
-      unregister(objectName);
-      registry.put(objectName, managedResource);
-   }
-
-   private void unregister(ObjectName objectName)
-   {
-      registry.remove(objectName);
-   }
-
-   private void registerInJMX(ObjectName objectName, Object managedResource)
-         throws Exception
-   {
-      if (!jmxManagementEnabled)
-      {
-         return;
-      }
-      unregisterFromJMX(objectName);
-      mbeanServer.registerMBean(managedResource, objectName);
-   }
-
-   private void unregisterFromJMX(ObjectName objectName) throws Exception
-   {
-      if (!jmxManagementEnabled)
-      {
-         return;
-      }
-      if (mbeanServer.isRegistered(objectName))
-      {
-         mbeanServer.unregisterMBean(objectName);
-      }
-   }
 
    // Inner classes -------------------------------------------------
 }

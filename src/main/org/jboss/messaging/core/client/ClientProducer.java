@@ -36,7 +36,9 @@ public interface ClientProducer
 	void send(ClientMessage message) throws MessagingException;
 	
    void send(SimpleString address, ClientMessage message) throws MessagingException;
-   
+
+   void sendManagement(ClientMessage mngmntMessage) throws MessagingException;
+
    void registerAcknowledgementHandler(AcknowledgementHandler handler);
    
    void unregisterAcknowledgementHandler(AcknowledgementHandler handler);
@@ -52,4 +54,5 @@ public interface ClientProducer
    int getMaxRate();
    
    int getInitialWindowSize();
+
 }

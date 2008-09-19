@@ -40,7 +40,7 @@ import java.util.List;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SimpleString implements CharSequence, Serializable
+public class SimpleString implements CharSequence, Serializable, Comparable<SimpleString>
 {
    private static final long serialVersionUID = 4204223851422244307L;
    
@@ -125,6 +125,13 @@ public class SimpleString implements CharSequence, Serializable
 			return new SimpleString(bytes);
 		}
 	}
+	
+	// Comparable implementation -------------------------------------
+	
+   public int compareTo(SimpleString o)
+   {
+      return toString().compareTo(o.toString());
+   }
 	
 	// Public
 	// ---------------------------------------------------------------------------

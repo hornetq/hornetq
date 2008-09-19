@@ -117,6 +117,7 @@ public class PacketImpl implements Packet
    public static final byte SESS_NULL_RESPONSE = 91;
    public static final byte SESS_REPLICATE_DELIVERY = 92;   
    public static final byte SESS_REPLICATE_SEND = 93;
+   public static final byte SESS_MANAGEMENT_SEND = 94;
    
    // Static --------------------------------------------------------
 

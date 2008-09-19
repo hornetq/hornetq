@@ -25,6 +25,10 @@ package org.jboss.messaging.core.management;
 import static javax.management.openmbean.SimpleType.BOOLEAN;
 import static javax.management.openmbean.SimpleType.STRING;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
 import javax.management.openmbean.CompositeType;
@@ -89,6 +93,23 @@ public class RoleInfo
       return data;
    }
 
+   public static RoleInfo[] from(TabularData roles)
+   {
+      Collection values = roles.values();
+      List<RoleInfo> infos = new ArrayList<RoleInfo>();
+      for (Object object : values)
+      {
+         CompositeData compositeData = (CompositeData) object;
+         String name = (String) compositeData.get("name");
+         boolean create = (Boolean) compositeData.get("create");
+         boolean read = (Boolean) compositeData.get("read");
+         boolean write = (Boolean) compositeData.get("write");
+         infos.add(new RoleInfo(name, create, read, write));
+      }
+
+      return (RoleInfo[]) infos.toArray(new RoleInfo[infos.size()]);
+   }
+   
    // Constructors --------------------------------------------------
 
    public RoleInfo(String name, boolean create, boolean read, boolean write)
@@ -131,6 +152,13 @@ public class RoleInfo
       {
          return null;
       }
+   }
+
+   @Override
+   public String toString()
+   {
+      return "RoleInfo[name=" + name + ", create=" + create + ", read=" + read
+            + ", write=" + write + "]";
    }
 
    // Package protected ---------------------------------------------

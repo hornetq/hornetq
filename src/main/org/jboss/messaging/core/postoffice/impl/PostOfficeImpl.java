@@ -184,9 +184,9 @@ public class PostOfficeImpl implements PostOffice
    }
 
    public Binding addBinding(final SimpleString address, final SimpleString queueName, final Filter filter, 
-                             final boolean durable) throws Exception
+                             final boolean durable, boolean temporary) throws Exception
    {
-      Binding binding = createBinding(address, queueName, filter, durable);
+      Binding binding = createBinding(address, queueName, filter, durable, temporary);
 
       addBindingInMemory(binding);
       
@@ -335,9 +335,9 @@ public class PostOfficeImpl implements PostOffice
    // Private -----------------------------------------------------------------
    
    private Binding createBinding(final SimpleString address, final SimpleString name, final Filter filter,
-                                 final boolean durable) throws Exception
+                                 final boolean durable, final boolean temporary) throws Exception
    {
-      Queue queue = queueFactory.createQueue(-1, name, filter, durable);
+      Queue queue = queueFactory.createQueue(-1, name, filter, durable, false);
       
       queue.setBackup(backup);
       

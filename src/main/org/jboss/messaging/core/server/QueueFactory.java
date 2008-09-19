@@ -39,7 +39,7 @@ import org.jboss.messaging.util.SimpleString;
 public interface QueueFactory
 {
    Queue createQueue(long persistenceID, SimpleString name, Filter filter,
-                     boolean durable);
+                     boolean durable, boolean temporary);
    
    /**
     * This is required for delete-all-reference to work correctly with paging

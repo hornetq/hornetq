@@ -368,7 +368,7 @@ public class MessagingServerControlTest extends TestCase
       Binding newBinding = createMock(Binding.class);
       expect(
             postOffice.addBinding(new SimpleString(address), new SimpleString(
-                  name), null, true)).andReturn(newBinding);
+                  name), null, true, false)).andReturn(newBinding);
       replayMockedAttributes();
       replay(newBinding);
 
@@ -385,13 +385,14 @@ public class MessagingServerControlTest extends TestCase
       String name = randomString();
       String filter = "color = 'green'";
       boolean durable = true;
+      boolean temporary = false;
 
       expect(postOffice.getBinding(new SimpleString(address))).andReturn(null);
       Binding newBinding = createMock(Binding.class);
       expect(
             postOffice.addBinding(eq(new SimpleString(address)),
                   eq(new SimpleString(name)), isA(Filter.class), eq(durable)
-                  )).andReturn(newBinding);
+                  , eq(temporary))).andReturn(newBinding);
       replayMockedAttributes();
       replay(newBinding);
 
@@ -408,12 +409,13 @@ public class MessagingServerControlTest extends TestCase
       String name = randomString();
       String filter = "";
       boolean durable = true;
+      boolean temporary = false;
  
       expect(postOffice.getBinding(new SimpleString(address))).andReturn(null);
       Binding newBinding = createMock(Binding.class);
       expect(
             postOffice.addBinding(new SimpleString(address), new SimpleString(
-                  name), null, durable)).andReturn(newBinding);
+                  name), null, durable, temporary)).andReturn(newBinding);
       replay(newBinding);
       replayMockedAttributes();
 
@@ -430,12 +432,13 @@ public class MessagingServerControlTest extends TestCase
       String name = randomString();
       String filter = null;
       boolean durable = true;
+      boolean temporary = false;
 
       expect(postOffice.getBinding(new SimpleString(address))).andReturn(null);
       Binding newBinding = createMock(Binding.class);
       expect(
             postOffice.addBinding(new SimpleString(address), new SimpleString(
-                  name), null, durable)).andReturn(newBinding);
+                  name), null, durable, temporary)).andReturn(newBinding);
       replay(newBinding);
       replayMockedAttributes();
 

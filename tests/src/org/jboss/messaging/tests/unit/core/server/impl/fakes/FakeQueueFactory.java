@@ -46,9 +46,9 @@ public class FakeQueueFactory implements QueueFactory
 	private PostOffice postOffice;
 
 	public Queue createQueue(long persistenceID, SimpleString name, Filter filter,
-			                   boolean durable)
+			                   boolean durable, boolean temporary)
 	{
-		return new QueueImpl(persistenceID, name, filter, false, durable, scheduledExecutor, postOffice);
+		return new QueueImpl(persistenceID, name, filter, false, durable, temporary, scheduledExecutor, postOffice);
 	}
 
    public void setPostOffice(PostOffice postOffice)

@@ -66,6 +66,7 @@ import org.jboss.messaging.util.SimpleString;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  * 
  */
@@ -86,6 +87,8 @@ public class QueueImpl implements Queue
    private final boolean clustered;
 
    private final boolean durable;
+
+   private final boolean temporary;
 
    private final ScheduledExecutorService scheduledExecutor;
 
@@ -126,6 +129,7 @@ public class QueueImpl implements Queue
                     final Filter filter,
                     final boolean clustered,
                     final boolean durable,
+                    final boolean temporary,
                     final ScheduledExecutorService scheduledExecutor,
                     final PostOffice postOffice)
    {
@@ -138,6 +142,8 @@ public class QueueImpl implements Queue
       this.clustered = clustered;
 
       this.durable = durable;
+      
+      this.temporary = temporary;
 
       this.scheduledExecutor = scheduledExecutor;
 
@@ -157,6 +163,11 @@ public class QueueImpl implements Queue
    public boolean isDurable()
    {
       return durable;
+   }
+   
+   public boolean isTemporary()
+   {
+      return temporary;
    }
 
    public SimpleString getName()

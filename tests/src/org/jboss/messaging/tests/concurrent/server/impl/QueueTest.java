@@ -57,7 +57,7 @@ public class QueueTest extends UnitTestCase
     */
    public void testConcurrentAddsDeliver() throws Exception
    {
-      Queue queue = queueFactory.createQueue(1, new SimpleString("queue1"), null, false);
+      Queue queue = queueFactory.createQueue(1, new SimpleString("queue1"), null, false, false);
       
       FakeConsumer consumer = new FakeConsumer();
       

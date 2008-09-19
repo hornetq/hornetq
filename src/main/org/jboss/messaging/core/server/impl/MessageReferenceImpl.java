@@ -162,7 +162,7 @@ public class MessageReferenceImpl implements MessageReference
 
          if (dlqBinding == null)
          {
-            dlqBinding = postOffice.addBinding(dlq, dlq, null, true);
+            dlqBinding = postOffice.addBinding(dlq, dlq, null, true, false);
          }
 
          move(dlqBinding, persistenceManager, postOffice, false);
@@ -188,7 +188,7 @@ public class MessageReferenceImpl implements MessageReference
          if (expiryBinding == null)
          {
             expiryBinding = postOffice.addBinding(expiryQueue, expiryQueue, null,
-                  true);
+                  true, false);
          }
          
          move(expiryBinding, persistenceManager, postOffice, true);

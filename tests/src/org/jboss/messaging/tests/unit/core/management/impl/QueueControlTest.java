@@ -154,7 +154,7 @@ public class QueueControlTest extends TestCase
    public void testIsTemporary() throws Exception
    {
       boolean temp = randomBoolean();
-      expect(queue.isDurable()).andReturn(temp);
+      expect(queue.isTemporary()).andReturn(temp);
 
       replayMockedAttributes();
 

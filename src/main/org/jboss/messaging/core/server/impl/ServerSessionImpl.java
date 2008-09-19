@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -33,14 +34,18 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.management.Notification;
+import javax.management.NotificationListener;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -50,13 +55,14 @@ import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.cluster.SessionReplicateDeliveryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.cluster.SessionReplicateSendMessage;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.Delivery;
@@ -75,26 +81,31 @@ import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.SimpleString;
 
-/**
+/*
  * Session implementation
- *
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * 
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 
-public class ServerSessionImpl implements ServerSession, FailureListener
+public class ServerSessionImpl implements ServerSession, FailureListener, NotificationListener
 {
    // Constants
-   // ------------------------------------------------------------------------------------
+   //----------------------------------------------------------------------------
+   // --------
 
    private static final Logger log = Logger.getLogger(ServerSessionImpl.class);
 
    // Static
-   // ---------------------------------------------------------------------------------------
+   //----------------------------------------------------------------------------
+   // -----------
 
    // Attributes
-   // -----------------------------------------------------------------------------------
+   //----------------------------------------------------------------------------
+   // -------
 
    private final boolean trace = log.isTraceEnabled();
 
@@ -144,6 +155,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private final MessagingServer server;
 
+   private final ManagementService managementService;
+
    private volatile boolean started = false;
 
    private final List<Runnable> failureRunners = new ArrayList<Runnable>();
@@ -151,7 +164,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private final IDGenerator idGenerator = new IDGenerator(0);
 
    // Constructors
-   // ---------------------------------------------------------------------------------
+   //----------------------------------------------------------------------------
+   // -----
 
    public ServerSessionImpl(final String name,
                             final long id,
@@ -168,6 +182,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                             final SecurityStore securityStore,
                             final Executor executor,
                             final Channel channel,
+                            final ManagementService managementService,
                             final MessagingServer server) throws Exception
    {
       this.name = name;
@@ -188,7 +203,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       this.postOffice = postOffice;
 
-      this.pager = postOffice.getPagingManager();
+      pager = postOffice.getPagingManager();
 
       this.queueSettingsRepository = queueSettingsRepository;
 
@@ -208,10 +223,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       // this.replicatingChannel = channel.getReplicatingChannel();
 
       this.server = server;
+
+      this.managementService = managementService;
    }
 
    // ServerSession implementation
-   // ---------------------------------------------------------------------------------------
+   //----------------------------------------------------------------------------
+   // -----------
 
    public String getUsername()
    {
@@ -893,7 +911,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       return resourceManager.getTimeoutSeconds();
    }
 
-   public boolean setXATimeout(int timeoutSeconds)
+   public boolean setXATimeout(final int timeoutSeconds)
    {
       return resourceManager.setTimeoutSeconds(timeoutSeconds);
    }
@@ -968,7 +986,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          filter = new FilterImpl(filterString);
       }
 
-      binding = postOffice.addBinding(address, queueName, filter, durable);
+      binding = postOffice.addBinding(address, queueName, filter, durable, temporary);
 
       if (temporary)
       {
@@ -1045,7 +1063,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       QueueSettings qs = queueSettingsRepository.getMatch(queueName.toString());
 
-      Integer queueWindowSize = (Integer)qs.getConsumerWindowSize();
+      Integer queueWindowSize = qs.getConsumerWindowSize();
 
       windowSize = queueWindowSize != null ? queueWindowSize : windowSize;
 
@@ -1257,10 +1275,40 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       return channel.replayCommands(lastReceivedCommandID);
    }
 
+   public void handleManagementMessage(final SessionSendManagementMessage message) throws Exception
+   {
+      ServerMessage serverMessage = message.getServerMessage();
+      if (serverMessage.containsProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS))
+      {
+         boolean subscribe = (Boolean)serverMessage.getProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS);
+         final SimpleString replyTo = (SimpleString)serverMessage.getProperty(ManagementHelper.HDR_JMX_REPLYTO);
+         if (subscribe)
+         {
+            if (log.isDebugEnabled())
+            {
+               log.debug("added notification listener " + this);
+            }
+            managementService.addNotificationListener(this, null, replyTo);
+         }
+         else
+         {
+            if (log.isDebugEnabled())
+            {
+               log.debug("removed notification listener " + this);
+            }
+            managementService.removeNotificationListener(this);
+         }
+         return;
+      }
+      managementService.handleMessage(message.getServerMessage());
+      serverMessage.setDestination((SimpleString)serverMessage.getProperty(ManagementHelper.HDR_JMX_REPLYTO));
+      send(serverMessage);
+   }
+
    // FailureListener implementation
    // --------------------------------------------------------------------
 
-   public void connectionFailed(MessagingException me)
+   public void connectionFailed(final MessagingException me)
    {
       try
       {
@@ -1284,8 +1332,28 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
+   // NotificationListener implementation -------------------------------------
+
+   public void handleNotification(final Notification notification, final Object replyTo)
+   {
+      ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateID());
+      notificationMessage.setDestination((SimpleString)replyTo);
+      notificationMessage.setBody(new ByteBufferWrapper(ByteBuffer.allocate(2048)));
+      ManagementHelper.storeNotification(notificationMessage, notification);
+      try
+      {
+         send(notificationMessage);
+      }
+      catch (Exception e)
+      {
+         log.warn("problem while sending a notification message " + notification, e);
+
+      }
+   }
+
    // Public
-   // ---------------------------------------------------------------------------------------------
+   //----------------------------------------------------------------------------
+   // -----------------
 
    public Transaction getTransaction()
    {
@@ -1298,7 +1366,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    }
 
    // Private
-   // --------------------------------------------------------------------------------------------
+   //----------------------------------------------------------------------------
+   // ----------------
 
    private void doAck(final MessageReference ref) throws Exception
    {

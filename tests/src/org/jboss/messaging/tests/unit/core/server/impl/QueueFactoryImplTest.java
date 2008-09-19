@@ -51,7 +51,7 @@ public class QueueFactoryImplTest extends UnitTestCase
       EasyMock.replay(scheduledExecutor, queueSettingsRepository);
       QueueFactoryImpl queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);
       SimpleString qName = new SimpleString("testQ");
-      Queue queue = queueFactory.createQueue(123, qName, filter, true);
+      Queue queue = queueFactory.createQueue(123, qName, filter, true, false);
       EasyMock.verify(scheduledExecutor, queueSettingsRepository);
       assertEquals(queue.getDistributionPolicy().getClass(), RoundRobinDistributionPolicy.class);
       assertEquals(queue.isClustered(), true);
@@ -74,7 +74,7 @@ public class QueueFactoryImplTest extends UnitTestCase
       EasyMock.replay(scheduledExecutor, queueSettingsRepository);
       QueueFactoryImpl queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);
       SimpleString qName = new SimpleString("testQ2");
-      Queue queue = queueFactory.createQueue(456, qName, null, false);
+      Queue queue = queueFactory.createQueue(456, qName, null, false, false);
       EasyMock.verify(scheduledExecutor, queueSettingsRepository);
       assertEquals(queue.getDistributionPolicy().getClass(), RoundRobinDistributionPolicy.class);
       assertEquals(queue.isClustered(), false);

@@ -24,6 +24,9 @@ package org.jboss.messaging.core.management;
 
 import java.util.Set;
 
+import javax.management.NotificationBroadcaster;
+import javax.management.ObjectName;
+
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -31,6 +34,7 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
@@ -41,7 +45,7 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public interface ManagementService
+public interface ManagementService extends NotificationBroadcaster
 {
    MessageCounterManager getMessageCounterManager();
 
@@ -62,5 +66,13 @@ public interface ManagementService
 
    void unregisterQueue(SimpleString name, SimpleString address)
          throws Exception;
+
+   void registerResource(ObjectName objectName, Object resource) throws Exception;
+
+   void unregisterResource(ObjectName objectName) throws Exception;
+
+   public Object getResource(ObjectName objectName);
+
+   void handleMessage(ServerMessage message);
 
 }

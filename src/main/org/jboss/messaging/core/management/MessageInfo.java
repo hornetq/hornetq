@@ -28,6 +28,9 @@ import static javax.management.openmbean.SimpleType.INTEGER;
 import static javax.management.openmbean.SimpleType.LONG;
 import static javax.management.openmbean.SimpleType.STRING;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import javax.management.openmbean.CompositeData;
@@ -107,6 +110,30 @@ public class MessageInfo
          data.put(messageInfo.toCompositeData());
       }
       return data;
+   }
+
+   public static MessageInfo[] from(TabularData msgs)
+   {
+      Collection values = msgs.values();
+      List<MessageInfo> infos = new ArrayList<MessageInfo>();
+      for (Object object : values)
+      {
+         CompositeData compositeData = (CompositeData) object;
+         long id = (Long) compositeData.get("id");
+         String destination = (String) compositeData.get("destination");
+         boolean durable = (Boolean) compositeData.get("durable");
+         long timestamp = (Long) compositeData.get("timestamp");
+         byte type = (Byte) compositeData.get("type");
+         int size = (Integer) compositeData.get("size");
+         byte priority = (Byte) compositeData.get("priority");
+         boolean expired = (Boolean) compositeData.get("expired");
+         long expiration = (Long) compositeData.get("expiration");
+
+         infos.add(new MessageInfo(id, destination, durable, timestamp, type,
+               size, priority, expired, expiration));
+      }
+
+      return (MessageInfo[]) infos.toArray(new MessageInfo[infos.size()]);
    }
 
    // Constructors --------------------------------------------------
@@ -198,5 +225,14 @@ public class MessageInfo
          e.printStackTrace();
          return null;
       }
+   }
+
+   @Override
+   public String toString()
+   {
+      return "MessageInfo[id=" + id + ", destination=" + destination
+            + ", durable=" + durable + ", timestamp=" + timestamp + ", type="
+            + type + ", size=" + size + ", priority=" + priority + ", expired="
+            + expired + ", expiration=" + expiration + "]";
    }
 }

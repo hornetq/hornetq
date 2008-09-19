@@ -116,7 +116,7 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
 
    public boolean isTemporary()
    {
-      return queue.isDurable();
+      return queue.isTemporary();
    }
 
    public boolean isBackup()

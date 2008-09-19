@@ -702,12 +702,9 @@ public class JournalStorageManagerTest extends UnitTestCase
       Queue queue1 = EasyMock.createStrictMock(Queue.class);
       Queue queue2 = EasyMock.createStrictMock(Queue.class);
       Queue queue3 = EasyMock.createStrictMock(Queue.class);
-      EasyMock.expect(qf.createQueue(EasyMock.eq(0L),
-                                     EasyMock.eq(squeue1),
-                                     EasyMock.isA(Filter.class),
-                                     EasyMock.eq(true))).andReturn(queue1);
-      EasyMock.expect(qf.createQueue(1L, squeue2, null, true)).andReturn(queue1);
-      EasyMock.expect(qf.createQueue(2L, squeue3, null, true)).andReturn(queue1);
+      EasyMock.expect(qf.createQueue(EasyMock.eq(0L), EasyMock.eq(squeue1), EasyMock.isA(Filter.class), EasyMock.eq(true), EasyMock.eq(false))).andReturn(queue1);
+      EasyMock.expect(qf.createQueue(1L, squeue2, null, true, false)).andReturn(queue1);
+      EasyMock.expect(qf.createQueue(2L, squeue3, null, true, false)).andReturn(queue1);
 
       EasyMock.replay(messageJournal, bindingsJournal, queue1, queue2, queue3, qf);
 

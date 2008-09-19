@@ -234,6 +234,10 @@
       <ant antfile="build-messaging.xml" target="SimpleExample"/>
    </target>
 
+    <target name="ManagementClient" depends="createthirdparty">
+       <ant antfile="build-messaging.xml" target="ManagementClient"/>
+    </target>
+
    <target name="WildCardClient" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="WildCardClient"/>
    </target>

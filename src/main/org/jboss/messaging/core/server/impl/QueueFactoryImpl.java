@@ -63,11 +63,12 @@ public class QueueFactoryImpl implements QueueFactory
    }
    
    public Queue createQueue(final long persistenceID, final SimpleString name, final Filter filter,
-                            final boolean durable)
+                            final boolean durable, final boolean temporary)
    {
       QueueSettings queueSettings = queueSettingsRepository.getMatch(name.toString());
             
-      Queue queue = new QueueImpl(persistenceID, name, filter, queueSettings.isClustered(), durable, scheduledExecutor, postOffice);
+      Queue queue = new QueueImpl(persistenceID, name, filter, queueSettings.isClustered(), durable,
+      		temporary, scheduledExecutor, postOffice);
 
       queue.setDistributionPolicy(queueSettings.getDistributionPolicy());
 

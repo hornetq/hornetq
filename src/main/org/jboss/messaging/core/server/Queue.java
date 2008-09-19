@@ -98,6 +98,8 @@ public interface Queue
     
    boolean isDurable();
    
+   boolean isTemporary();
+   
    SimpleString getName();
    
    int getMessagesAdded();

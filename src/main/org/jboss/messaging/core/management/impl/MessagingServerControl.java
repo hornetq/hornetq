@@ -75,7 +75,6 @@ public class MessagingServerControl extends StandardMBean implements
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
    private final MessagingServer server;
    private final MessageCounterManager messageCounterManager;
-
    private final NotificationBroadcasterSupport broadcaster;
 
    private boolean enableMessageCounters;
@@ -362,7 +361,7 @@ public class MessagingServerControl extends StandardMBean implements
       SimpleString sName = new SimpleString(name);
       if (postOffice.getBinding(sAddress) == null)
       {
-         postOffice.addBinding(sAddress, sName, null, true);
+         postOffice.addBinding(sAddress, sName, null, true, false);
       }
    }
 
@@ -381,7 +380,7 @@ public class MessagingServerControl extends StandardMBean implements
       }
       if (postOffice.getBinding(sAddress) == null)
       {
-         postOffice.addBinding(sAddress, sName, filter, durable);
+         postOffice.addBinding(sAddress, sName, filter, durable, false);
       }
    }
 

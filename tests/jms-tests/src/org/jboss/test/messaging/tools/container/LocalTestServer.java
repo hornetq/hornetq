@@ -45,7 +45,6 @@ import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -644,9 +643,14 @@ public class LocalTestServer implements Server, Runnable
    public Integer getMessageCountForQueue(String queueName) throws Exception
    {
       ObjectName objectName = JMSManagementServiceImpl.getJMSQueueObjectName(queueName);
-      JMSQueueControlMBean queue = (JMSQueueControlMBean) MBeanServerInvocationHandler.newProxyInstance(
-            ManagementFactory.getPlatformMBeanServer(), objectName, JMSQueueControlMBean.class, false);
-      return queue.getMessageCount();
+      JMSQueueControlMBean queue = (JMSQueueControlMBean)getMessagingServer().getManagementService().getResource(objectName);
+      if (queue != null)
+      {
+         return queue.getMessageCount();
+      } else
+      {
+         return -1;
+      }
    }
 
    public void removeAllMessages(JBossDestination destination) throws Exception

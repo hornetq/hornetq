@@ -480,6 +480,7 @@ public class MessagingServerImpl implements MessagingServer
                                                               securityStore,
                                                               executorFactory.getExecutor(),
                                                               channel,
+                                                              managementService,
                                                               this);
 
       if (sessions.putIfAbsent(name, session) != null)

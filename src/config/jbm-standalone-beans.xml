@@ -145,13 +145,7 @@
    <bean name="JMSManagementService" class="org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl">
       <constructor>
          <parameter>
-            <inject bean="MBeanServer"/>
-         </parameter>
-         <parameter>
-            <inject bean="Configuration" property="JMXManagementEnabled" />
-         </parameter>
-         <parameter>
-            <inject bean="ManagementService" property="messageCounterManager" />
+            <inject bean="ManagementService"/>
          </parameter>
       </constructor>
    </bean>
