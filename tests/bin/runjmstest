@@ -133,7 +133,7 @@ if [ "$TEST_CLUSTERED" = "true" ]; then
 fi
 
 JAVA_OPTS="-Xmx1024M $JAVA_OPTS \
--Dmodule.output=$reldir/../output \
+-Dmodule.output=$reldir/../../ \
 $REMOTE_TEST \
 -Dtest.database=$TEST_DATABASE \
 -Dtest.serialization=$TEST_SERIALIZATION \
