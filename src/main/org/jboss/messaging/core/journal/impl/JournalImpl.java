@@ -47,6 +47,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.journal.BufferCallback;
@@ -113,13 +115,11 @@ public class JournalImpl implements TestableJournal
 
    public static final int SIZE_HEADER = 4;
 
-   // Record markers - they must be all unique
-
    public static final int BASIC_SIZE = SIZE_BYTE + SIZE_INT + SIZE_INT;
 
    public static final int SIZE_ADD_RECORD = BASIC_SIZE + SIZE_LONG + SIZE_BYTE + SIZE_INT /* + record.length */;
 
-   // 
+   // Record markers - they must be all unique
 
    public static final byte ADD_RECORD = 11;
 
@@ -188,7 +188,7 @@ public class JournalImpl implements TestableJournal
 
    private final BlockingQueue<JournalFile> openedFiles = new LinkedBlockingQueue<JournalFile>();
 
-   private final Map<Long, PosFiles> posFilesMap = new ConcurrentHashMap<Long, PosFiles>();
+   private final ConcurrentMap<Long, PosFiles> posFilesMap = new ConcurrentHashMap<Long, PosFiles>();
 
    private final ConcurrentMap<Long, JournalTransaction> transactionInfos = new ConcurrentHashMap<Long, JournalTransaction>();
 
@@ -201,9 +201,17 @@ public class JournalImpl implements TestableJournal
    /** Object that will control buffer's callback and getting buffers from the queue */
    private final ReuseBuffersController buffersControl = new ReuseBuffersController();
 
-   // TODO - improve concurrency by allowing concurrent accesses if doesn't
-   // change current file
-   private final Semaphore lock = new Semaphore(1, true);
+   /**
+    * Used to lock access while calculating the positioning of currentFile.
+    * That has to be done in single-thread, and it needs to be a very-fast operation
+    */
+   private final Semaphore positionLock = new Semaphore(1, true);
+
+   /**
+    * a WriteLock means, currentFile is being changed. When we get a writeLock we wait all the write operations to finish on that file before we can move to the next file
+    * a ReadLock means, currentFile is being used, do not change it until I'm done with it
+    */
+   private final ReadWriteLock rwlock = new ReentrantReadWriteLock();
 
    private volatile JournalFile currentFile;
 
@@ -301,15 +309,13 @@ public class JournalImpl implements TestableJournal
 
       try
       {
-         lock.acquire();
-
          JournalFile usedFile = appendRecord(bb.getBuffer(), syncNonTransactional, null);
 
          posFilesMap.put(id, new PosFiles(usedFile));
       }
       finally
       {
-         lock.release();
+         rwlock.readLock().unlock();
       }
    }
 
@@ -339,8 +345,6 @@ public class JournalImpl implements TestableJournal
       record.encode(bb);
       bb.putInt(size);
 
-      lock.acquire();
-
       try
       {
          JournalFile usedFile = appendRecord(bb.getBuffer(), syncNonTransactional, null);
@@ -349,7 +353,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.release();
+         rwlock.readLock().unlock();
       }
    }
 
@@ -376,8 +380,6 @@ public class JournalImpl implements TestableJournal
       bb.putLong(id);
       bb.putInt(size);
 
-      lock.acquire();
-
       try
       {
          JournalFile usedFile = appendRecord(bb, syncNonTransactional, null);
@@ -386,7 +388,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.release();
+         rwlock.readLock().unlock();
       }
    }
 
@@ -425,8 +427,6 @@ public class JournalImpl implements TestableJournal
       record.encode(bb);
       bb.putInt(size);
 
-      lock.acquire();
-
       try
       {
          JournalFile usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
@@ -437,7 +437,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.release();
+         rwlock.readLock().unlock();
       }
    }
 
@@ -464,8 +464,6 @@ public class JournalImpl implements TestableJournal
       record.encode(bb);
       bb.putInt(size);
 
-      lock.acquire();
-
       try
       {
          JournalFile usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
@@ -476,7 +474,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.release();
+         rwlock.readLock().unlock();
       }
    }
 
@@ -502,8 +500,6 @@ public class JournalImpl implements TestableJournal
       }
       bb.putInt(size);
 
-      lock.acquire();
-
       try
       {
          JournalFile usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
@@ -514,7 +510,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.release();
+         rwlock.readLock().unlock();
       }
    }
 
@@ -542,8 +538,6 @@ public class JournalImpl implements TestableJournal
 
       ByteBuffer bb = writeTransaction(PREPARE_RECORD, txID, tx, transactionData);
 
-      lock.acquire();
-
       TransactionCallback callback = getTransactionCallback(txID);
 
       try
@@ -554,7 +548,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.release();
+         rwlock.readLock().unlock();
       }
 
       // We should wait this outside of the lock, to increase throuput
@@ -597,8 +591,6 @@ public class JournalImpl implements TestableJournal
 
       ByteBuffer bb = writeTransaction(COMMIT_RECORD, txID, tx, null);
 
-      lock.acquire();
-
       TransactionCallback callback = getTransactionCallback(txID);
 
       try
@@ -611,7 +603,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.release();
+         rwlock.readLock().unlock();
       }
 
       // We should wait this outside of the lock, to increase throuput
@@ -645,8 +637,6 @@ public class JournalImpl implements TestableJournal
       bb.putLong(txID);
       bb.putInt(size);
 
-      lock.acquire();
-
       TransactionCallback callback = getTransactionCallback(txID);
 
       try
@@ -659,7 +649,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.release();
+         rwlock.readLock().unlock();
       }
 
       // We should wait this outside of the lock, to increase throuput
@@ -775,8 +765,10 @@ public class JournalImpl implements TestableJournal
 
          if (bytesRead != fileSize)
          {
-            // FIXME - shouldn't be just ignore the file and log a warning,
-            // rather than throw ISE?
+            // FIXME - We should extract everything we can from this file
+            // and then we shouldn't ever reuse this file on reclaiming (instead
+            // reclaim on different size files would aways throw the file away)
+            // rather than throw ISE!
             // We don't want to leave the user with an unusable system
             throw new IllegalStateException("File is wrong size " + bytesRead +
                                             " expected " +
@@ -1510,17 +1502,7 @@ public class JournalImpl implements TestableJournal
    // In some tests we need to force the journal to move to a next file
    public void forceMoveNextFile() throws Exception
    {
-      lock.acquire();
-
-      try
-      {
-         moveNextFile();
-      }
-      finally
-      {
-         lock.release();
-      }
-
+      moveNextFile();
       debugWait();
    }
 
@@ -1879,20 +1861,53 @@ public class JournalImpl implements TestableJournal
    }
 
    /** 
-    * You need to call lock.acquire before calling this method
+    * Note: This method will perform rwlock.readLock.lock(); 
+    *       The method caller should aways unlock that readLock
     * */
    private JournalFile appendRecord(final ByteBuffer bb, final boolean sync, final TransactionCallback callback) throws Exception
    {
-      int size = bb.limit();
+      positionLock.acquire();
 
-      checkFile(size);
+      try
+      {
+         int size = bb.limit();
+
+         if (size % currentFile.getFile().getAlignment() != 0)
+         {
+            throw new IllegalStateException("You can't write blocks in a size different than " + currentFile.getFile()
+                                                                                                            .getAlignment());
+         }
+
+         // We take into account the fileID used on the Header
+         if (size > fileSize - currentFile.getFile().calculateBlockStart(SIZE_HEADER))
+         {
+            throw new IllegalArgumentException("Record is too large to store " + size);
+         }
+
+         if (currentFile == null || fileSize - currentFile.getOffset() < size)
+         {
+            moveNextFile();
+         }
+
+         if (currentFile == null)
+         {
+            throw new IllegalStateException("Current file = null");
+         }
+
+         currentFile.extendOffset(size);
+
+         // we must get the readLock before we release positionLock
+         // We don't want a race condition where currentFile is changed by
+         // another write as soon as we leave this block
+         rwlock.readLock().lock();
+
+      }
+      finally
+      {
+         positionLock.release();
+      }
 
       bb.position(SIZE_BYTE);
-
-      if (currentFile == null)
-      {
-         throw new IllegalStateException("Current file = null");
-      }
 
       bb.putInt(currentFile.getOrderingID());
 
@@ -1900,14 +1915,18 @@ public class JournalImpl implements TestableJournal
 
       if (callback != null)
       {
+         // We are 100% sure currentFile won't change, since rwLock.readLock is
+         // locked
          currentFile.getFile().write(bb, callback);
+         // callback.waitCompletion() should be done on the caller of this
+         // method, so we would have better performance
       }
       else
       {
+         // We are 100% sure currentFile won't change, since rwLock.readLock is
+         // locked
          currentFile.getFile().write(bb, sync);
       }
-
-      currentFile.extendOffset(size);
 
       return currentFile;
    }
@@ -1974,42 +1993,25 @@ public class JournalImpl implements TestableJournal
       return nextOrderingId.incrementAndGet();
    }
 
-   // You need to guarantee lock.acquire() over currentFile before calling this
-   // method
-   private void checkFile(final int size) throws Exception
-   {
-      if (size % currentFile.getFile().getAlignment() != 0)
-      {
-         throw new IllegalStateException("You can't write blocks in a size different than " + currentFile.getFile()
-                                                                                                         .getAlignment());
-      }
-
-      // We take into account the first timestamp long
-      if (size > fileSize - currentFile.getFile().calculateBlockStart(SIZE_HEADER))
-      {
-         throw new IllegalArgumentException("Record is too large to store " + size);
-      }
-
-      if (currentFile == null || fileSize - currentFile.getOffset() < size)
-      {
-         moveNextFile();
-
-      }
-   }
-
    // You need to guarantee lock.acquire() before calling this method
    private void moveNextFile() throws InterruptedException
    {
-      closeFile(currentFile);
+      rwlock.writeLock().lock();
+      try
+      {
+         closeFile(currentFile);
 
-      currentFile = enqueueOpenFile();
+         currentFile = enqueueOpenFile();
+      }
+      finally
+      {
+         rwlock.writeLock().unlock();
+      }
    }
 
    /** 
     * This method will instantly return the opened file, and schedule opening and reclaiming.
     * In case there are no cached opened files, this method will block until the file was opened. (what would happen only if the system is under load).
-    * 
-    * Warning: You need to guarantee lock.acquire() before calling this method
     * */
    private JournalFile enqueueOpenFile() throws InterruptedException
    {
