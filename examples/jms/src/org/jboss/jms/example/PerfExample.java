@@ -54,14 +54,16 @@ import org.jboss.messaging.util.TokenBucketLimiterImpl;
  */
 public class PerfExample
 {
+   private static final String THROUGHPUT_DATA_PROPERTY_NAME = "throughputData";
+
    private static Logger log = Logger.getLogger(PerfExample.class);
-   
+
    private Queue queue;
-   
+
    private Connection connection;
-   
+
    private Session session;
-   
+
    private long start;
 
    public static void main(final String[] args)
@@ -103,14 +105,18 @@ public class PerfExample
       }
    }
 
-   private void init(final boolean transacted, final String queueLookup, final String connectionFactoryLookup,
+   private void init(final boolean transacted,
+                     final String queueLookup,
+                     final String connectionFactoryLookup,
                      final boolean dupsOk) throws Exception
    {
       InitialContext initialContext = new InitialContext();
-      queue = (Queue) initialContext.lookup(queueLookup);
-      ConnectionFactory cf = (ConnectionFactory) initialContext.lookup(connectionFactoryLookup);
+      queue = (Queue)initialContext.lookup(queueLookup);
+      ConnectionFactory cf = (ConnectionFactory)initialContext.lookup(connectionFactoryLookup);
       connection = cf.createConnection();
-      session = connection.createSession(transacted, transacted ? Session.SESSION_TRANSACTED : (dupsOk ? Session.DUPS_OK_ACKNOWLEDGE : Session.AUTO_ACKNOWLEDGE));
+      session = connection.createSession(transacted, transacted ? Session.SESSION_TRANSACTED
+                                                               : (dupsOk ? Session.DUPS_OK_ACKNOWLEDGE
+                                                                        : Session.AUTO_ACKNOWLEDGE));
    }
 
    private void displayAverage(final long numberOfMessages, final long start, final long end)
@@ -125,19 +131,34 @@ public class PerfExample
       try
       {
          log.info("params = " + perfParams);
-         init(perfParams.isSessionTransacted(), perfParams.getQueueLookup(), perfParams.getConnectionFactoryLookup(), perfParams.isDupsOk());
+         init(perfParams.isSessionTransacted(),
+              perfParams.getQueueLookup(),
+              perfParams.getConnectionFactoryLookup(),
+              perfParams.isDupsOk());
          start = System.currentTimeMillis();
          log.info("warming up by sending " + perfParams.getNoOfWarmupMessages() + " messages");
-         sendMessages(perfParams.getNoOfWarmupMessages(), perfParams.getTransactionBatchSize(),
-               perfParams.getDeliveryMode(), perfParams.isSessionTransacted(),
-               false, perfParams.getThrottleRate(), perfParams.getMessageSize());
+         sendMessages(perfParams.getNoOfWarmupMessages(),
+                      perfParams.getTransactionBatchSize(),
+                      perfParams.getDeliveryMode(),
+                      perfParams.isSessionTransacted(),
+                      false,
+                      perfParams.getThrottleRate(),
+                      perfParams.getMessageSize());
          log.info("warmed up");
          start = System.currentTimeMillis();
-         sendMessages(perfParams.getNoOfMessagesToSend(), perfParams.getTransactionBatchSize(),
-               perfParams.getDeliveryMode(), perfParams.isSessionTransacted(),
-               true, perfParams.getThrottleRate(), perfParams.getMessageSize());
+         sendMessages(perfParams.getNoOfMessagesToSend(),
+                      perfParams.getTransactionBatchSize(),
+                      perfParams.getDeliveryMode(),
+                      perfParams.isSessionTransacted(),
+                      true,
+                      perfParams.getThrottleRate(),
+                      perfParams.getMessageSize());
          long end = System.currentTimeMillis();
+
          displayAverage(perfParams.getNoOfMessagesToSend(), start, end);
+
+         displayThrouput(perfParams, start);
+
       }
       catch (Exception e)
       {
@@ -159,8 +180,46 @@ public class PerfExample
       }
    }
 
-   private void sendMessages(final int numberOfMessages, final int txBatchSize, final int deliveryMode,
-                             final boolean transacted, final boolean display, final int throttleRate,
+   private void displayThrouput(final PerfParams perfParams, final long start) throws JMSException
+   {
+      MessageConsumer consumer = session.createConsumer(queue);
+
+      connection.start();
+
+      Message msg = consumer.receive(10000);
+
+      if (perfParams.isSessionTransacted())
+      {
+         session.commit();
+      }
+
+      consumer.close();
+
+      if (msg == null)
+      {
+         log.warn("Throughput Message wasn't received");
+      }
+      else
+      {
+         long lastMessageTime = msg.getLongProperty(THROUGHPUT_DATA_PROPERTY_NAME);
+
+         if (lastMessageTime == 0l)
+         {
+            log.warn("invalid property Throughput-data on LastMessage");
+         }
+
+         double throughput = perfParams.getNoOfMessagesToSend() * 1000 / (lastMessageTime - start);
+
+         log.info(String.format("Throughput: %.2f msg/s", throughput));
+      }
+   }
+
+   private void sendMessages(final int numberOfMessages,
+                             final int txBatchSize,
+                             final int deliveryMode,
+                             final boolean transacted,
+                             final boolean display,
+                             final int throttleRate,
                              final int messageSize) throws JMSException
    {
       MessageProducer producer = session.createProducer(queue);
@@ -170,10 +229,10 @@ public class PerfExample
       BytesMessage bytesMessage = session.createBytesMessage();
       byte[] payload = new byte[messageSize];
       bytesMessage.writeBytes(payload);
-      
+
       final int modulo = 2000;
-      
-      TokenBucketLimiter tbl = throttleRate != -1 ? new TokenBucketLimiterImpl(throttleRate, false): null;
+
+      TokenBucketLimiter tbl = throttleRate != -1 ? new TokenBucketLimiterImpl(throttleRate, false) : null;
 
       boolean committed = false;
       for (int i = 1; i <= numberOfMessages; i++)
@@ -196,7 +255,7 @@ public class PerfExample
             double duration = (1.0 * System.currentTimeMillis() - start) / 1000;
             log.info(String.format("sent %6d messages in %2.2fs", i, duration));
          }
-         
+
          if (tbl != null)
          {
             tbl.limit();
@@ -212,7 +271,10 @@ public class PerfExample
    {
       try
       {
-         init(perfParams.isSessionTransacted(), perfParams.getQueueLookup(), perfParams.getConnectionFactoryLookup(), perfParams.isDupsOk());
+         init(perfParams.isSessionTransacted(),
+              perfParams.getQueueLookup(),
+              perfParams.getConnectionFactoryLookup(),
+              perfParams.isDupsOk());
          MessageConsumer messageConsumer = session.createConsumer(queue);
          connection.start();
 
@@ -224,7 +286,6 @@ public class PerfExample
                session.commit();
             }
          }
-         
 
          log.info("READY!!!");
 
@@ -232,8 +293,13 @@ public class PerfExample
          messageConsumer.setMessageListener(new PerfListener(countDownLatch, perfParams));
          countDownLatch.await();
          long end = System.currentTimeMillis();
+
+         messageConsumer.close();
+
          // start was set on the first received message
          displayAverage(perfParams.getNoOfMessagesToSend(), start, end);
+
+         answerThroughput(perfParams, end);
       }
       catch (Exception e)
       {
@@ -255,7 +321,19 @@ public class PerfExample
       }
    }
 
-   private void drainQueue(final MessageConsumer consumer, PerfParams perfParams) throws JMSException
+   private void answerThroughput(final PerfParams perfParams, final long end) throws JMSException
+   {
+      MessageProducer producer = session.createProducer(queue);
+      Message msg = session.createMessage();
+      msg.setLongProperty(THROUGHPUT_DATA_PROPERTY_NAME, end);
+      producer.send(msg);
+      if (perfParams.isSessionTransacted())
+      {
+         session.commit();
+      }
+   }
+
+   private void drainQueue(final MessageConsumer consumer, final PerfParams perfParams) throws JMSException
    {
       log.info("draining queue");
       int msgs = 0;
@@ -269,10 +347,10 @@ public class PerfExample
          }
          else
          {
-            msgs ++;
+            msgs++;
          }
-         
-         if (perfParams.isSessionTransacted() &&  msgs % perfParams.getTransactionBatchSize() == 0)
+
+         if (perfParams.isSessionTransacted() && msgs % perfParams.getTransactionBatchSize() == 0)
          {
             session.commit();
          }
@@ -286,11 +364,11 @@ public class PerfExample
       private final PerfParams perfParams;
 
       private boolean warmingUp = true;
-      
+
       private boolean started = false;
 
       private final int modulo;
-      
+
       private final AtomicLong count = new AtomicLong(0);
 
       public PerfListener(final CountDownLatch countDownLatch, final PerfParams perfParams)
@@ -298,7 +376,7 @@ public class PerfExample
          this.countDownLatch = countDownLatch;
          this.perfParams = perfParams;
          warmingUp = perfParams.getNoOfWarmupMessages() > 0;
-         this.modulo = 2000;
+         modulo = 2000;
       }
 
       public void onMessage(final Message message)
