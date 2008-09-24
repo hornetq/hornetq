@@ -73,7 +73,6 @@ import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -186,7 +185,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             doHandlePacket(packet);
          }
          else
-         {            
+         {
             Runnable action = new Runnable()
             {
                public void run()
@@ -422,9 +421,10 @@ public class ServerSessionPacketHandler implements ChannelHandler
                break;
             }
             case SESS_SEND:
-            {               
+            {
                SessionSendMessage message = (SessionSendMessage)packet;
-              // log.info("Got send " + message.getServerMessage().getMessageID());
+               // log.info("Got send " +
+               // message.getServerMessage().getMessageID());
                session.sendProducerMessage(message.getProducerID(), message.getServerMessage());
                if (message.isRequiresResponse())
                {
@@ -433,10 +433,9 @@ public class ServerSessionPacketHandler implements ChannelHandler
                break;
             }
             case SESS_REPLICATE_SEND:
-            {               
+            {
                SessionReplicateSendMessage message = (SessionReplicateSendMessage)packet;
                //log.info("Got replicated send " + message.getServerMessage().getMessageID());
-               storageManager.setMaxID(message.getServerMessage().getMessageID());
                session.sendProducerMessage(message.getProducerID(), message.getServerMessage());
                break;
             }

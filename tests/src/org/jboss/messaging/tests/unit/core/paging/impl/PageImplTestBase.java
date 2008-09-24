@@ -119,7 +119,7 @@ public abstract class PageImplTestBase extends UnitTestCase
 
       for (int i = 0; i < msgs.length; i++)
       {
-         assertEquals(0, msgs[i].getMessage().getMessageID());
+         assertEquals(i, msgs[i].getMessage().getMessageID());
 
          assertEquals(simpleDestination, msgs[i].getMessage().getDestination());
 

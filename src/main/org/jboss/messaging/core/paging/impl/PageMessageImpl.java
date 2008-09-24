@@ -82,19 +82,21 @@ public class PageMessageImpl implements PageMessage
    public void decode(final MessagingBuffer buffer)
    {
       transactionID = buffer.getLong();
+      message.setMessageID(buffer.getLong());
       message.decode(buffer);
    }
 
    public void encode(final MessagingBuffer buffer)
    {
       buffer.putLong(transactionID);
+      buffer.putLong(message.getMessageID());
       message.encode(buffer);
    }
 
    public int getEncodeSize()
    {
 
-      return 8 + message.getEncodeSize();
+      return 8 * 2 + message.getEncodeSize();
    }
 
    // Package protected ---------------------------------------------
