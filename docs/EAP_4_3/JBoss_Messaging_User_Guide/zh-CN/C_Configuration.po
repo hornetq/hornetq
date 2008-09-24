@@ -1,0 +1,446 @@
+# translation of C_Configuration.po to
+# Language zh-CN translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# Automatically generated, 2008.
+# Xi HUANG <xhuang@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: C_Configuration\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-07-22 12:47+1000\n"
+"Last-Translator: Xi HUANG <xhuang@redhat.com>\n"
+"Language-Team:  <en@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+#. Tag: title
+#: C_Configuration.xml:3
+#, no-c-format
+msgid "JBoss Messaging Clustering Configuration"
+msgstr "JBoss Messaging 群集配置"
+
+#. Tag: para
+#: C_Configuration.xml:4
+#, no-c-format
+msgid ""
+"JBoss Messaging clustering should work out of the box in most cases with no "
+"configuration changes. It is however crucial that every node is assigned a "
+"unique server id."
+msgstr ""
+"在大部分情况下，JBoss Messaging 群集应该可以直接运行而不需要修改任何配置。然"
+"而为每个节点都分配一个唯一的服务器 ID 是很重要的。"
+
+#. Tag: para
+#: C_Configuration.xml:8
+#, no-c-format
+msgid ""
+"For a clustered installation it is mandatory that a shared database is "
+"available to all nodes in the cluster. The default JBoss AS uses HSQLDB for "
+"its database which is a local shared database. Therefore in order to use "
+"clustering you must replace this with a different shared database. If the "
+"database is not replaced then clustering will not work."
+msgstr ""
+"对于基于群集的安装来说，群集里的每个节点都有一个共享的数据库是强制的。JBoss "
+"AS 缺省使用的 HSQLDB 是一个本地的共享数据库。因此，如果要使用群集，你必须用另"
+"外的数据库来替换它。"
+
+#. Tag: para
+#: C_Configuration.xml:16
+#, no-c-format
+msgid ""
+"If you want to run multiple JBoss Messaging nodes on the same box using the "
+"same IP address, e.g. for development purposes, then you can use the "
+"ServiceBindingManager to do this as follows:"
+msgstr ""
+"如果你想在同一台机器上运行多个 JBoss Messaging 实例，如出于开发目的，你可以"
+"用 ServiceBindingManager 来实现："
+
+#. Tag: para
+#: C_Configuration.xml:22
+#, no-c-format
+msgid "Uncomment binding manager service from $JBOSS_CONFIG/conf/jboss-service.xml"
+msgstr "在 $JBOSS_CONFIG/conf/jboss-service.xml 里注释 binding manager 服务"
+
+#. Tag: para
+#: C_Configuration.xml:26
+#, no-c-format
+msgid "Specify the desired port range (e.g. ports-01, ports-02... etc)"
+msgstr "指定端口范围（如ports-01、ports-02 等）"
+
+#. Tag: para
+#: C_Configuration.xml:30
+#, no-c-format
+msgid ""
+"Look at $JBOSS_HOME/docs/examples/binding-manager/sample-bindings.xml. On "
+"each port range, JBoss Remoting configuration should look like:"
+msgstr ""
+"来看看 $JBOSS_HOME/docs/examples/binding-manager/sample-bindings.xml。针对每"
+"个端口范围的 JBoss Remoting 配置都应该类似于："
+
+#. Tag: programlisting
+#: C_Configuration.xml:34
+#, no-c-format
+msgid ""
+"&lt;service-config name=\"jboss.messaging:service=Connector,"
+"transport=bisocket\"\n"
+"                      delegateClass=\"org.jboss.services.binding."
+"AttributeMappingDelegate\"&gt;\n"
+"         &lt;delegate-config&gt;\n"
+"            &lt;attribute name=\"Configuration\"&gt;&lt;![CDATA[\n"
+"           &lt;config&gt;\n"
+"            &lt;invoker transport=\"bisocket\"&gt;\n"
+"               &lt;attribute name=\"marshaller\" isParam=\"true\"&gt;\n"
+"                  org.jboss.jms.wireformat.JMSWireFormat\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"unmarshaller\" isParam=\"true\"&gt;\n"
+"                  org.jboss.jms.wireformat.JMSWireFormat\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"dataType\" isParam=\"true\"&gt;jms&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"socket.check_connection\" isParam=\"true"
+"\"&gt;false&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"timeout\" isParam=\"true\"&gt;0&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"serverBindAddress\"&gt;${jboss.bind."
+"address}&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverBindPort\"&gt;4657&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"leasePeriod\"&gt;10000&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"clientSocketClass\" isParam=\"true"
+"\"&gt;\n"
+"                  org.jboss.jms.client.remoting.ClientSocketWrapper\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverSocketClass\"&gt;\n"
+"                  org.jboss.jms.server.remoting.ServerSocketWrapper\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfCallRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"clientMaxPoolSize\" isParam=\"true"
+"\"&gt;50&lt;/attribute&gt;\n"
+"            &lt;/invoker&gt;\n"
+"            &lt;handlers&gt;\n"
+"               &lt;handler subsystem=\"JMS\"&gt;\n"
+"                  org.jboss.jms.server.remoting.JMSServerInvocationHandler\n"
+"               &lt;/handler&gt;\n"
+"            &lt;/handlers&gt;\n"
+"         &lt;/config&gt;\n"
+"            ]]&gt;&lt;/attribute&gt;\n"
+"         &lt;/delegate-config&gt;\n"
+"         &lt;binding port=\"4657\"/&gt;\n"
+"      &lt;/service-config&gt;"
+msgstr ""
+"&lt;service-config name=\"jboss.messaging:service=Connector,"
+"transport=bisocket\"\n"
+"                      delegateClass=\"org.jboss.services.binding."
+"AttributeMappingDelegate\"&gt;\n"
+"         &lt;delegate-config&gt;\n"
+"            &lt;attribute name=\"Configuration\"&gt;&lt;![CDATA[\n"
+"           &lt;config&gt;\n"
+"            &lt;invoker transport=\"bisocket\"&gt;\n"
+"               &lt;attribute name=\"marshaller\" isParam=\"true\"&gt;\n"
+"                  org.jboss.jms.wireformat.JMSWireFormat\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"unmarshaller\" isParam=\"true\"&gt;\n"
+"                  org.jboss.jms.wireformat.JMSWireFormat\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"dataType\" isParam=\"true\"&gt;jms&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"socket.check_connection\" isParam=\"true"
+"\"&gt;false&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"timeout\" isParam=\"true\"&gt;0&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"serverBindAddress\"&gt;${jboss.bind."
+"address}&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverBindPort\"&gt;4657&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"leasePeriod\"&gt;10000&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"clientSocketClass\" isParam=\"true"
+"\"&gt;\n"
+"                  org.jboss.jms.client.remoting.ClientSocketWrapper\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverSocketClass\"&gt;\n"
+"                  org.jboss.jms.server.remoting.ServerSocketWrapper\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfCallRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"clientMaxPoolSize\" isParam=\"true"
+"\"&gt;50&lt;/attribute&gt;\n"
+"            &lt;/invoker&gt;\n"
+"            &lt;handlers&gt;\n"
+"               &lt;handler subsystem=\"JMS\"&gt;\n"
+"                  org.jboss.jms.server.remoting.JMSServerInvocationHandler\n"
+"               &lt;/handler&gt;\n"
+"            &lt;/handlers&gt;\n"
+"         &lt;/config&gt;\n"
+"            ]]&gt;&lt;/attribute&gt;\n"
+"         &lt;/delegate-config&gt;\n"
+"         &lt;binding port=\"4657\"/&gt;\n"
+"      &lt;/service-config&gt;"
+
+#. Tag: para
+#: C_Configuration.xml:35
+#, no-c-format
+msgid ""
+"You must ensure that the config (like above) is identical to that in "
+"<literal>remoting-bisocket-service.xml</literal> With the exception of the "
+"actual serverBindPort which clearly must be different for each ports range. "
+"Please note that the default JBoss Messaging service binding manager "
+"bindings in <literal>sample-bindings.xml</literal> shipped with JBAS 4.2.0 "
+"is out of date and you will need to copy the config from <literal>remoting-"
+"bisocket-service.xml</literal>"
+msgstr ""
+"你必须确保这个配置（如上所示）和 <literal>remoting-bisocket-service.xml</"
+"literal> 里的一样，除了每个端口范围的实际 serverBindPort 必须不同。请注意，"
+"JBAS 4.2.0 附带的<literal>sample-bindings.xml</literal> 里的缺省 JBoss "
+"Messaging 服务 binding manager 绑定是过期的，你需要从 <literal>remoting-"
+"bisocket-service.xml</literal> 里把相关配置复制过来。"
+
+#. Tag: para
+#: C_Configuration.xml:45
+#, no-c-format
+msgid ""
+"You should ensure that each node is configured to use a different ports "
+"range."
+msgstr "你应该确保每个节点使用不同的端口范围。"
+
+#. Tag: title
+#: C_Configuration.xml:50
+#, no-c-format
+msgid "Unique server peer id"
+msgstr "唯一的 server peer id"
+
+#. Tag: para
+#: C_Configuration.xml:51
+#, no-c-format
+msgid ""
+"Every node deployed must have a unique id, including those in a particular "
+"LAN cluster, and also those only linked by message bridges."
+msgstr ""
+"每个部署的节点必须具有唯一的 ID，这包括特殊局域网群集里的节点，以及只通过消息"
+"桥链接的节点。 "
+
+#. Tag: para
+#: C_Configuration.xml:54
+#, no-c-format
+msgid ""
+"Ensure the <literal>ServerPeerID</literal> MBean attribute value in "
+"<filename>messaging-service.xml</filename> is unique for each node on the "
+"cluster. The <literal>ServerPeerID</literal> value must be a valid integer."
+msgstr ""
+"确保 <filename>messaging-service.xml</filename> 里针对群集里的每个节点的 "
+"<literal>ServerPeerID</literal> MBean 属性值是唯一的。<literal>ServerPeerID</"
+"literal> 必须为整型值。"
+
+#. Tag: title
+#: C_Configuration.xml:61
+#, no-c-format
+msgid "Clustered destinations"
+msgstr "群集目的地"
+
+#. Tag: para
+#: C_Configuration.xml:62
+#, no-c-format
+msgid ""
+"JBoss Messaging clusters JMS queues and topics transparently across the "
+"cluster. Messages sent to a distributed queue or topic on one node are "
+"consumable on other nodes. To designate that a particular destination is "
+"clustered simply set the clustered attribute in the destination deployment "
+"descriptor to true."
+msgstr ""
+"JBoss Messaging 透明地群集了 JMS 队列和主题。发送到分布式队列或主题的消息也可"
+"在其他节点上获取。要指定特定节点为群集的，只要设置目的地部署描述符里的 "
+"clustered 属性为 true 就可以了。"
+
+#. Tag: para
+#: C_Configuration.xml:67
+#, no-c-format
+msgid ""
+"JBoss Messaging balances messages between nodes, catering for faster or "
+"slower consumers to efficiently balance processing load across the cluster."
+msgstr ""
+"JBoss Messaging 在节点间平衡消息的负载，这是为了有效地调整群集里较快和较慢消"
+"费者的负载。"
+
+#. Tag: para
+#: C_Configuration.xml:70
+#, no-c-format
+msgid ""
+"If you do not want message redistribution between nodes, but still want to "
+"retain the other charactereristics of clustered destinations. You can do "
+"this by not specifying the attribute ClusterPullConnectionFactoryName on the "
+"server peer"
+msgstr ""
+"如果你不想在节点间重新分发消息，但仍然想保留群集目的地的其他特点，你可以通过"
+"不指定 server peer 上的 ClusterPullConnectionFactoryName 属性来实现这一点。"
+
+#. Tag: title
+#: C_Configuration.xml:76
+#, no-c-format
+msgid "Clustered durable subs"
+msgstr "群集的持久性订阅"
+
+#. Tag: para
+#: C_Configuration.xml:77
+#, no-c-format
+msgid ""
+"JBoss Messaging durable subscriptions can also be clustered. This means "
+"multiple subscribers can consume from the same durable subscription from "
+"different nodes of the cluster. A durable subscription will be clustered if "
+"it's topic is clustered"
+msgstr ""
+"JBoss Messaging 的持久性订阅（durable subscription）也可以进行群集。这意味着"
+"多个订阅者可以在不同节点里访问相同的持久性订阅。如果持久性订阅的主题是群集"
+"的，那么它也将是群集的。"
+
+#. Tag: title
+#: C_Configuration.xml:84
+#, no-c-format
+msgid "Clustered temporary destinations"
+msgstr "群集的临时目的地"
+
+#. Tag: para
+#: C_Configuration.xml:85
+#, no-c-format
+msgid ""
+"JBoss Messaging also supports clustered temporary topics and queues. All "
+"temporary topics and queues will be clustered if the post office is clustered"
+msgstr ""
+"JBoss Messaging 也支持群集的临时主题和队列。如果邮局（Post Office）是群集的，"
+"那么所有的临时主题和队列将被群集。"
+
+#. Tag: title
+#: C_Configuration.xml:91
+#, no-c-format
+msgid "Non clustered servers"
+msgstr "非群集的服务器"
+
+#. Tag: para
+#: C_Configuration.xml:92
+#, no-c-format
+msgid ""
+"If you don't want your nodes to participate in a cluster, or only have one "
+"non clustered server you can set the clustered attribute on the postoffice "
+"to false"
+msgstr ""
+"如果你不希望你的节点参与某个群集，或者你只有一个非群集的服务器，你可以设置邮"
+"局的 clustered 属性为 false。"
+
+#. Tag: title
+#: C_Configuration.xml:99
+#, no-c-format
+msgid "Message ordering in the cluster"
+msgstr "管理群集里的顺序"
+
+#. Tag: para
+#: C_Configuration.xml:100
+#, no-c-format
+msgid ""
+"If you wish to apply strict JMS ordering to messages, such that a particular "
+"JMS consumer consumes messages in the same order as they were produced by a "
+"particular producer, you can set the DefaultPreserveOrdering attribute in "
+"the server peer to true. By default this is false. The sideeffect of setting "
+"this to true is that messages cannot be distributed as freely around the "
+"cluster"
+msgstr ""
+"如果你想对消息应用严格的 JMS 顺序，亦即特定的 JMS 消费者（consumer）将按照和"
+"生产者（producer）产生消息的顺序来消费消息，你可以设置 server peer 里的 "
+"DefaultPreserveOrdering 属性为 true。它的缺省值是 false。设置它为 true 的副作"
+"用是消息不能自由地在群集里进行分发。"
+
+#. Tag: title
+#: C_Configuration.xml:110
+#, no-c-format
+msgid "Idempotent operations"
+msgstr "Idempotent 操作"
+
+#. Tag: para
+#: C_Configuration.xml:111
+#, no-c-format
+msgid ""
+"If the call to send a persistent message to a persistent destination returns "
+"successfully with no exception, then you can be sure that the message was "
+"persisted. However if the call doesn't return successfully e.g. if an "
+"exception is thrown, then you *can't be sure the message wasn't persisted*. "
+"Since the failure might have occurred after persisting the message but "
+"before writing the response to the caller. This is a common attribute of any "
+"RPC type call: You can't tell by the call not returning that the call didn't "
+"actually succeed. Whether it's a web services call, an HTTP get request, an "
+"ejb invocation the same applies. The trick is to code your application so "
+"your operations are *idempotent* i.e. they can be repeated without getting "
+"the system into an inconsistent state. With a message system you can do this "
+"on the application level, by checking for duplicate messages, and discarding "
+"them if they arrive. Duplicate checking is a very powerful technique that "
+"can remove the need for XA transactions in many cases."
+msgstr ""
+"如果对发送持久性消息到持久性目的地的调用成功返回，那么你可以确认消息已经被持"
+"久化了。然而，如果这个调用没有成功返回，例如有异常被抛出，你并不能确认消息没"
+"有被持久化。因为故障可能发生在消息已经被持久化后，而在响应调用者之前。这是任"
+"何 RPC 类型的调用的一个共同问题：调用没有返回并不代表它没有成功执行。不管它是"
+"一个 web 服务调用、HTTP 的 GET 请求，还是 EJB 调用，都是如此。编程的诀窍是使"
+"这些操作成为幂等的（idempotent），也就是它们可以重复而不会使系统的状态不一"
+"致。对于消息系统来说，你可以在应用程序级别上来实现这一点，也就是检查重复的消"
+"息并在其到达时丢弃它们。对重复的检查是一种非常强大的技术，在许多情况下它可以"
+"消除对 XA 事务的需要。"
+
+#. Tag: para
+#: C_Configuration.xml:126
+#, no-c-format
+msgid ""
+"In the clustered case, JBM is by default configured to automatically detect "
+"duplicate messages."
+msgstr "而在群集环境里，JBM 将缺省自动检测重复的消息。"
+
+#. Tag: title
+#: C_Configuration.xml:131
+#, no-c-format
+msgid "Clustered connection factories"
+msgstr "群集的连接工厂"
+
+#. Tag: para
+#: C_Configuration.xml:132
+#, no-c-format
+msgid ""
+"If the supportsLoadBalancing attribute of the connection factory is set to "
+"true then consecutive create connection attempts will round robin between "
+"available servers. The first node to try is chosen randomly"
+msgstr ""
+"如果连接工厂的 supportsLoadBalancing 属性为 true，那么它将在可用的服务器间循"
+"环地尝试创建连接。第一个尝试的节点将被随机地选择。"
+
+#. Tag: para
+#: C_Configuration.xml:133
+#, no-c-format
+msgid ""
+"If the supportsFailover attribute of the connection factory is set to true "
+"then automatic failover is enabled. This will automatically failover from "
+"one server to another, transparently to the user, in case of failure."
+msgstr ""
+"如果连接工厂的 supportsFailover 属性为 true，那么自动失效切换将被启用。在故障"
+"发生是，这将自动地从一个服务器切换到另外一个服务器，而对于用户来说是透明的。"
+
+#. Tag: para
+#: C_Configuration.xml:135
+#, no-c-format
+msgid ""
+"If automatic failover is not required or you wish to do manual failover "
+"(JBoss MQ style) this can be set to false, and you can supply a standard JMS "
+"ExceptionListener on the connection which will be called in case of "
+"connection failure. You would then need to manually close the connection, "
+"lookup a new connection factory from HA JNDI and recreate the connection."
+msgstr ""
+"如果不要求自动失效切换或者你想手工来完成（JBoss MQ 风格），你可以将其设置为 "
+"false，而且你可以为连接提供一个标准的 JMS ExceptionListener，它在连接发生故障"
+"时将被调用。然后你需要手工关闭这个连接，从 HA JNDI 里查找一个新的连接工厂并重"
+"新创建连接。"
+

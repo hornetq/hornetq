@@ -1,0 +1,1604 @@
+# translation of Installation.po to
+# Language de-DE translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# Automatically generated, 2008.
+# Jasna Dimanoski <jdimanos@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: Installation\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-08-22 16:21+1000\n"
+"Last-Translator: Jasna Dimanoski <jdimanos@redhat.com>\n"
+"Language-Team:  <de@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#. Tag: title
+#: Installation.xml:3
+#, no-c-format
+msgid "JBoss Messaging Installation"
+msgstr "JBoss Messaging Installation"
+
+#. Tag: para
+#: Installation.xml:4
+#, no-c-format
+msgid ""
+"JBoss Messaging is shipped within JBoss Enterprise Application Platform 4.3. "
+"So if you are using JBoss Enterprise Application Platform 4.3, you can "
+"ignore this section on installation."
+msgstr ""
+"JBoss Messaging wird mit der JBoss Enterprise Application Platform 4.3 geliefert. "
+"Wenn Sie also die JBoss Enterprise Application Platform 4.3 verwenden, so können Sie diesen Abschnitt zur Installation überspringen."
+
+#. Tag: para
+#: Installation.xml:7
+#, no-c-format
+msgid ""
+"This section describes procedures on how to install JBoss Messaging into "
+"JBoss AS. At the end of this procedure, you will create a JBoss Messaging "
+"configuration that will start a clustered or non-clustered messaging server."
+msgstr ""
+"Dieser Abschnitt beschreibt Vorgehensweisen zur Installation von JBoss Messaging in JBoss AS. Am Ende werden Sie eine JBoss Messaging "
+"Konfiguration erstellen, die einen geclusterten oder nicht geclusterten Messaging Server startet."
+
+#. Tag: para
+#: Installation.xml:12
+#, no-c-format
+msgid ""
+"By default, JBoss AS 4 ships with JBossMQ as default JMS provider. In order "
+"to use the JBoss AS instance with JBoss Messaging, you need to perform the "
+"installation procedure described below."
+msgstr "Standardmäßig wird mit JBoss AS 4 mit JBossMQ als standardmäßigem JMS Provider geliefert. Um die JBoss AS Instanz mit JBoss Messaging zu verwenden, müssen Sie den unten beschriebenen Installationsprozess durchführen."
+
+#. Tag: para
+#: Installation.xml:15
+#, no-c-format
+msgid ""
+"A JBossMQ and a JBoss Messaging instance cannot coexist, at least not unless "
+"special precautions are taken. Do not simply attempt to copy the Messaging "
+"release artifact <filename>jboss-messaging.sar</filename> over to the JBoss "
+"instance w <filename>deploy</filename> directory. Follow one of the "
+"alternate installation procedures outlined below instead."
+msgstr ""
+"Eine JBossMQ und eine JBoss Messaging Instanz können nicht koexistieren, zumindest nicht, ohne dass bestimmte Vorkehrungen getroffen werden. Versuchen Sie nicht, das Messaging Release Artifact <filename>jboss-messaging.sar</filename> einfach zur JBoss "
+"Instanz w <filename>deploy</filename>-Verzeichnis hinüber zu kopieren. Folgen Sie stattdessen einer der nachfolgend beschriebenen Vorgehensweisen zur Installation."
+
+#. Tag: para
+#: Installation.xml:22
+#, no-c-format
+msgid ""
+"We only recommend and support installing JBoss Messaging in JBoss AS 4.2 or "
+"later. You should avoid using JBoss Messaging on any version of JBoss AS "
+"prior to JBoss 4.2.0.GA, such as 4.0.5.GA and 4.0.4.GA."
+msgstr "Wir empfehlen nur und bieten auch nur Support für die Installation von JBoss Messaging in JBoss AS 4.2 oder späterer Version. Sie sollten die Verwendung von JBoss Messaging bei Versionen von JBoss AS die älter als JBoss 4.2.0.GA sind - etwa 4.0.5.GA und 4.0.4.GA - vermeiden."
+
+#. Tag: para
+#: Installation.xml:24
+#, no-c-format
+msgid ""
+"JBoss Messaging is built against the JBoss AS 4.2 libraries which are built "
+"using Java 5. Therefore JBoss Messaging only runs with Java 5 or later."
+msgstr "Der Build von JBoss Messaging entspricht JBoss AS 4.2 Bibliotheken, die unter Verwendung von Java 5 erstellt wurden. Daher funktioniert JBoss Messaging nur mit Java 5 oder später."
+
+#. Tag: title
+#: Installation.xml:28
+#, no-c-format
+msgid "Installing JBoss Messaging on JBoss AS 4.2"
+msgstr "Installation von JBoss Messaging auf JBoss AS 4.2"
+
+#. Tag: para
+#: Installation.xml:29
+#, no-c-format
+msgid ""
+"In this section we present two different methods of installing JBoss "
+"Messaging in JBoss AS 4.2"
+msgstr "In diesem Abschnitt stellen wir zwei verschiedene Methoden der Installation von JBoss Messaging in JBoss AS 4.2"
+
+#. Tag: para
+#: Installation.xml:33
+#, no-c-format
+msgid ""
+"If you have a completely clean JBoss AS 4.2.0 installation then you can do "
+"an <xref linkend=\"install.automated\"/>automatic install"
+msgstr "Falls Sie eine völlig reine JBoss AS 4.2.0 Installation besitzen, so können Sie eine <xref linkend=\"install.automated\"/>automatische Installation durchführen"
+
+#. Tag: para
+#: Installation.xml:38
+#, no-c-format
+msgid ""
+"If you have a JBoss 4.2.0 that you have changed in some way from a clean "
+"JBoss AS 4.2.0 installation then you will need to do a <xref linkend="
+"\"install.manual\"/>manual install"
+msgstr ""
+"Wurde Ihr JBoss 4.2.0 irgendwie verändert und ist keine reine "
+"JBoss AS 4.2.0 Installation mehr, so müssen Sie eine <xref linkend="
+"\"install.manual\"/>manuelle Installation durchführen"
+
+#. Tag: title
+#: Installation.xml:44
+#, no-c-format
+msgid "Automated Installation"
+msgstr "Automatisierte Installation"
+
+#. Tag: para
+#: Installation.xml:45
+#, no-c-format
+msgid ""
+"This procedure should only be performed from a clean JBoss AS 4.2 "
+"installation. If you have modifed the JBoss AS 4.2 installation at all since "
+"installation then you will need to perform a manual clustered JBoss "
+"Messaging installation"
+msgstr ""
+"Dieser Vorgang sollte nur von einer unveränderten JBoss AS 4.2 "
+"Installation aus durchgeführt werden.Falls Sie die JBoss AS 4.2 Installation seit der Installation auf irgendeine Weise verändert haben, werden Sie eine manuelle geclusterte JBoss Messaging Installation durchführen müssen"
+
+#. Tag: para
+#: Installation.xml:50
+#, no-c-format
+msgid ""
+"Set up the <literal>JBOSS_HOME</literal> environment variable to point to "
+"the JBoss 4.2 installation you want to use JBoss Messaging with."
+msgstr "Stellen Sie die <literal>JBOSS_HOME</literal>-Umgebungsvariable so ein, dass Sie auf die JBoss 4.2 Installation weist, mit der Sie JBoss Messaging verwenden möchten."
+
+#. Tag: para
+#: Installation.xml:53
+#, no-c-format
+msgid ""
+"Run the installation script, available in the <filename>util</filename> "
+"directory of the release bundle as follows:"
+msgstr "Führen Sie das im <filename>util</filename>-Verzeichnis des Release-Bündels verfügbare Installationskript wie folgt aus:"
+
+#. Tag: para
+#: Installation.xml:56
+#, no-c-format
+msgid ""
+"If you want to create a simple non clustered installion based on the default "
+"configuration:"
+msgstr "Falls Sie basierend auf der Standardkonfiguration eine einfache, nicht geclusterte Installation erstellen möchten:"
+
+#. Tag: programlisting
+#: Installation.xml:58
+#, no-c-format
+msgid ""
+"cd util\n"
+"         ant -f release-admin.aml"
+msgstr ""
+"cd util\n"
+"         ant -f release-admin.aml"
+
+#. Tag: para
+#: Installation.xml:59
+#, no-c-format
+msgid ""
+"If you want to create a clustered installation based on the all "
+"configuration or change the configuration name:"
+msgstr "Falls Sie basierend auf der \"all\" Konfiguration eine geclusterte Installation erstellen oder den Konfigurationsnamen ändern möchten:"
+
+#. Tag: programlisting
+#: Installation.xml:61
+#, no-c-format
+msgid ""
+"cd util\n"
+" ant -f release-admin.xml -Dmessaging.config.source=all -Dmessaging.config."
+"name=messaging-node0"
+msgstr ""
+"cd util\n"
+" ant -f release-admin.xml -Dmessaging.config.source=all -Dmessaging.config."
+"name=messaging-node0"
+
+#. Tag: para
+#: Installation.xml:62
+#, no-c-format
+msgid ""
+"In the above you would substitute <literal>messaging-node0</literal> with "
+"whatever is the name you want to give the configuration. If you want several "
+"cluster nodes on the same machine, e.g. for development purposes then a good "
+"convention is to name them <literal>messaging-node0, messaging-node1</"
+"literal> to match <literal>messaging-node&lt;ServerPeerID&gt;</literal>"
+msgstr "Oben würden Sie <literal>messaging-node0</literal> durch den Namen ersetzen, den Sie der Konfiguration geben möchten. Falls Sie mehrere Cluster Nodes auf derselben Maschine haben möchten, etwa zu Entwicklungszwecken, so empfiehlt sich die Namensgebung nach dem Schema <literal>messaging-node0, messaging-node1</literal> zur Übereinstimmung mit <literal>messaging-node&lt;ServerPeerID&gt;</literal>"
+
+#. Tag: para
+#: Installation.xml:69
+#, no-c-format
+msgid ""
+"The messaging.config.source variable determines which JBoss AS configuration "
+"(e.g. default or all) to base the installation on"
+msgstr "Die messaging.config.source Variable bestimmt, auf welcher JBoss AS Konfiguration (d.h. \"default\" oder \"all\") die Installation basiert wird"
+
+#. Tag: para
+#: Installation.xml:72
+#, no-c-format
+msgid ""
+"The installation script will create a <filename>$JBOSS_HOME/server/messaging-"
+"node0</filename> configuration. (If you have chosen <literal>messaging-"
+"node0</literal>)"
+msgstr ""
+"Das Installationsskript erstellt eine <filename>$JBOSS_HOME/server/messaging-"
+"node0</filename>-Konfiguration. (Falls Sie <literal>messaging-"
+"node0</literal> gewählt haben)"
+
+#. Tag: para
+#: Installation.xml:78
+#, no-c-format
+msgid ""
+"For the rest of the procedure we assume JBOSS_CONFIG refers to your new "
+"messaging configuration (e.g. messaging-node0 or messaging)"
+msgstr "Für die verbleibende Zeit gehen wir davon aus, dass JBOSS_CONFIG sich auf Ihre neue Messaging Konfiguration bezieht (z.B. messaging-node0 oder messaging)"
+
+#. Tag: para
+#: Installation.xml:81 Installation.xml:187
+#, no-c-format
+msgid ""
+"You don't actually have to create an environment variable "
+"<literal>JBOSS_CONFIG</literal>, this is just used in the installation "
+"instructions to describe the steps"
+msgstr ""
+"Sie müssen nicht tatsächlich eine Umgebungsvariable "
+"<literal>JBOSS_CONFIG</literal> erstellen, dies wurde lediglich in der Installationsanweisung verwendet, um die Schritte zu beschreiben"
+
+#. Tag: para
+#: Installation.xml:87 Installation.xml:258
+#, no-c-format
+msgid ""
+"For a clustered installation it is mandatory that a shared database is "
+"available to all nodes in the cluster. The default JBoss AS uses HSQLDB for "
+"its database which is a local shared database. Therefore in order to use "
+"clustering you must replace this with a different shared database. If the "
+"database is not replaced then clustering will not work."
+msgstr "Für eine geclusterte Installation ist es verbindlich, dass eine geteilte Datenbank allen Nodes im Cluster zugänglich ist. Der standardmäßige JBoss AS verwendet HSQLDB für seine Datenbank, die eine lokale, geteilte Datenbank ist. Um daher Clustering zu verwenden, müssen Sie diese durch eine andere geteilte Datenbank ersetzen. Wird die Datenbank nicht ersetzt, funktioniert Clustering nicht."
+
+#. Tag: para
+#: Installation.xml:97 Installation.xml:263
+#, no-c-format
+msgid ""
+"Replace <literal>$JBOSS_CONFIG/deploy/jboss-messaging.sar/hsqldb-persistence-"
+"service.xml</literal> by the <literal>databasename&gt;-persistence-service</"
+"literal> from <literal>&lt;downloadPackage&gt;/examples/config.</literal>. "
+"For instance <literal>mysql-persistence-service.xml</literal>"
+msgstr ""
+"Ersetzen Sie <literal>$JBOSS_CONFIG/deploy/jboss-messaging.sar/hsqldb-persistence-"
+"service.xml</literal> durch <literal>databasename&gt;-persistence-service</"
+"literal> aus <literal>&lt;downloadPackage&gt;/examples/config.</literal>. "
+"Zum Beispiel <literal>mysql-persistence-service.xml</literal>"
+
+#. Tag: para
+#: Installation.xml:106
+#, no-c-format
+msgid ""
+"Configure a JCA datasource using an example from <literal>$JBOSS_HOME/docs/"
+"examples/jca</literal> and copying to <literal>$JBOSS_CONFIG/deploy</"
+"literal> JBoss Messaging uses <literal>DefaultDS</literal> by default so you "
+"should configure your datasource to bind to that"
+msgstr ""
+"Konfigurieren Sie eine JCA-Datenquelle unter Verwendung eines Beispiels aus <literal>$JBOSS_HOME/docs/"
+"examples/jca</literal> und kopieren Sie in <literal>$JBOSS_CONFIG/deploy</"
+"literal>. JBoss Messaging verwendet standardmäßig <literal>DefaultDS</literal>, weshalb Sie Ihre Datenquelle so konfigurieren sollten, dass sie dort anbindet"
+
+#. Tag: para
+#: Installation.xml:113 Installation.xml:278
+#, no-c-format
+msgid "Remove hsqldb-ds.xml from <literal>$JBOSS_CONFIG/deploy</literal>"
+msgstr "Remove hsqldb-ds.xml from <literal>$JBOSS_CONFIG/deploy</literal>"
+
+#. Tag: para
+#: Installation.xml:117 Installation.xml:282
+#, no-c-format
+msgid ""
+"Copy your database driver to <literal>$JBOSS_CONFIG/lib</literal>. Your "
+"database driver can probably be downloaded from your database provider's web "
+"site"
+msgstr "Kopieren Sie Ihren Datenbanktreiber in <literal>$JBOSS_CONFIG/lib</literal>. Sie können Ihren Datenbanktreiber wahrscheinlich von der Website Ihres Datenbank-Providers herunterladen"
+
+#. Tag: para
+#: Installation.xml:125
+#, no-c-format
+msgid ""
+"Ensure the <literal>ServerPeerID</literal> MBean attribute value in "
+"messaging-service.xml is unique for each node. The <literal>ServerPeerID</"
+"literal> value must be a valid integer. Every node MUST have a unique id, "
+"including those just connected by message bridges."
+msgstr ""
+"Stellen Sie sicher, dass der <literal>ServerPeerID</literal> MBean Attributwert in "
+"messaging-service.xml eindeutig für jeden Node ist. Beim <literal>ServerPeerID</literal>-Wert muss es sich um eine gültige ganze Zahl handeln. Jeder Node MUSS eine eindeutige ID besitzen, einschließlich der nur durch Nachrichtenbrücken (\"Message Bridges\") verbundenen."
+
+#. Tag: para
+#: Installation.xml:131 Installation.xml:294
+#, no-c-format
+msgid ""
+"Each node must have a unique <literal>ServerPeerID</literal> for clustering "
+"to work!"
+msgstr "Jeder Node muss eine eindeutige <literal>ServerPeerID</literal> besitzen, damit Clustering funktioniert!"
+
+#. Tag: para
+#: Installation.xml:137 Installation.xml:301
+#, no-c-format
+msgid ""
+"If you want to run multiple JBoss Messaging nodes on the same box using the "
+"same IP address, e.g. for development purposes, then you can use the "
+"ServiceBindingManager to do this as follows:"
+msgstr ""
+"Falls Sie mehrere JBoss Messaging Nodes auf derselben Box unter Verwendung derselben IP-Adresse verwenden möchten, etwa zu Entwicklungszwecken, so können Sie den "
+"ServiceBindingManager verwenden, um dies wie folgt zu tun:"
+
+#. Tag: para
+#: Installation.xml:143 Installation.xml:307
+#, no-c-format
+msgid "Uncomment binding manager service from $JBOSS_CONFIG/conf/jboss-service.xml"
+msgstr "Unkommentieren Sie den Binding-Manager-Dienst aus $JBOSS_CONFIG/conf/jboss-service.xml"
+
+#. Tag: para
+#: Installation.xml:147 Installation.xml:311
+#, no-c-format
+msgid "Specify the desired port rage (e.g. ports-01, ports-02... etc)"
+msgstr "Legen Sie den gewünschten Port-Bereich fest (z.B. ports-01, ports-02... u.s.w.)"
+
+#. Tag: para
+#: Installation.xml:151
+#, no-c-format
+msgid ""
+"Look at $JBOSS_HOME/docs/examples/binding-manager/sample-bindings.xml. On "
+"each port range, JBoss Remoting configuration should look like:"
+msgstr "Sehen Sie sich $JBOSS_HOME/docs/examples/binding-manager/sample-bindings.xml an. An jedem Port-Bereich sollte die JBoss Remoting Konfiguration wie folgt aussehen:"
+
+#. Tag: programlisting
+#: Installation.xml:155
+#, no-c-format
+msgid ""
+"&lt;service-config name=\"jboss.messaging:service=Connector,"
+"transport=bisocket\"\n"
+"                      delegateClass=\"org.jboss.services.binding."
+"AttributeMappingDelegate\"&gt;\n"
+"         &lt;delegate-config&gt;\n"
+"            &lt;attribute name=\"Configuration\"&gt;&lt;![CDATA[\n"
+"           &lt;config&gt;\n"
+"            &lt;invoker transport=\"bisocket\"&gt;\n"
+"               &lt;attribute name=\"marshaller\" isParam=\"true\"&gt;\n"
+"                  org.jboss.jms.wireformat.JMSWireFormat\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"unmarshaller\" isParam=\"true\"&gt;\n"
+"                  org.jboss.jms.wireformat.JMSWireFormat\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"dataType\" isParam=\"true\"&gt;jms&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"socket.check_connection\" isParam=\"true"
+"\"&gt;false&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"timeout\" isParam=\"true\"&gt;0&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"serverBindAddress\"&gt;${jboss.bind."
+"address}&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverBindPort\"&gt;4657&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"leasePeriod\"&gt;10000&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"clientSocketClass\" isParam=\"true"
+"\"&gt;\n"
+"                  org.jboss.jms.client.remoting.ClientSocketWrapper\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverSocketClass\"&gt;\n"
+"                  org.jboss.jms.server.remoting.ServerSocketWrapper\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfCallRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"clientMaxPoolSize\" isParam=\"true"
+"\"&gt;50&lt;/attribute&gt;\n"
+"            &lt;/invoker&gt;\n"
+"            &lt;handlers&gt;\n"
+"               &lt;handler subsystem=\"JMS\"&gt;\n"
+"                  org.jboss.jms.server.remoting.JMSServerInvocationHandler\n"
+"               &lt;/handler&gt;\n"
+"            &lt;/handlers&gt;\n"
+"         &lt;/config&gt;\n"
+"            ]]&gt;&lt;/attribute&gt;\n"
+"         &lt;/delegate-config&gt;\n"
+"         &lt;binding port=\"4657\"/&gt;\n"
+"      &lt;/service-config&gt;"
+msgstr ""
+"&lt;service-config name=\"jboss.messaging:service=Connector,"
+"transport=bisocket\"\n"
+"                      delegateClass=\"org.jboss.services.binding."
+"AttributeMappingDelegate\"&gt;\n"
+"         &lt;delegate-config&gt;\n"
+"            &lt;attribute name=\"Configuration\"&gt;&lt;![CDATA[\n"
+"           &lt;config&gt;\n"
+"            &lt;invoker transport=\"bisocket\"&gt;\n"
+"               &lt;attribute name=\"marshaller\" isParam=\"true\"&gt;\n"
+"                  org.jboss.jms.wireformat.JMSWireFormat\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"unmarshaller\" isParam=\"true\"&gt;\n"
+"                  org.jboss.jms.wireformat.JMSWireFormat\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"dataType\" isParam=\"true\"&gt;jms&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"socket.check_connection\" isParam=\"true"
+"\"&gt;false&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"timeout\" isParam=\"true\"&gt;0&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"serverBindAddress\"&gt;${jboss.bind."
+"address}&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverBindPort\"&gt;4657&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"leasePeriod\"&gt;10000&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"clientSocketClass\" isParam=\"true"
+"\"&gt;\n"
+"                  org.jboss.jms.client.remoting.ClientSocketWrapper\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverSocketClass\"&gt;\n"
+"                  org.jboss.jms.server.remoting.ServerSocketWrapper\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfCallRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"clientMaxPoolSize\" isParam=\"true"
+"\"&gt;50&lt;/attribute&gt;\n"
+"            &lt;/invoker&gt;\n"
+"            &lt;handlers&gt;\n"
+"               &lt;handler subsystem=\"JMS\"&gt;\n"
+"                  org.jboss.jms.server.remoting.JMSServerInvocationHandler\n"
+"               &lt;/handler&gt;\n"
+"            &lt;/handlers&gt;\n"
+"         &lt;/config&gt;\n"
+"            ]]&gt;&lt;/attribute&gt;\n"
+"         &lt;/delegate-config&gt;\n"
+"         &lt;binding port=\"4657\"/&gt;\n"
+"      &lt;/service-config&gt;"
+
+#. Tag: para
+#: Installation.xml:156
+#, no-c-format
+msgid ""
+"You must ensure that the config (like above) is identical to that in "
+"<literal>remoting-bisocket-service.xml</literal> With the exception of the "
+"actual serverBindPort which clearly must be different for each ports range. "
+"Please note that the default JBoss Messaging service binding manager "
+"bindings in <literal>sample-bindings.xml</literal> shipped with JBAS 4.2.0 "
+"is out of date and you will need to copy the config from <literal>remoting-"
+"bisocket-service.xml</literal>"
+msgstr ""
+"Sie müssen sicherstellen, dass die config (wie oben) identisch zu der in "
+"<literal>remoting-bisocket-service.xml</literal> ist. Ausgenommen ist der tatsächliche serverBindPort, der natürlich für den Bereich jeden Ports unterschiedlich sein muss. "
+"Bitte beachten Sie, dass die Bindings des Binding Managers von JBoss Messaging in <literal>sample-bindings.xml</literal>, die mit JBAS 4.2.0 geliefert werden veraltet sind, und Sie die config aus <literal>remoting-"
+"bisocket-service.xml</literal> werden kopieren müssen"
+
+#. Tag: para
+#: Installation.xml:166
+#, no-c-format
+msgid ""
+"You should ensure that each node is configured to use a different ports "
+"range."
+msgstr "Sie sollten sicherstellen, dass jeder Node so konfiguriert ist, dass er den Bereich eines anderen Ports verwendet."
+
+#. Tag: para
+#: Installation.xml:172 Installation.xml:337
+#, no-c-format
+msgid "There are few extra steps at"
+msgstr "Es gibt einige Extra-Schritte unter "
+
+#. Tag: para
+#: Installation.xml:175 Installation.xml:341
+#, no-c-format
+msgid "That's it"
+msgstr "Das ist's"
+
+#. Tag: title
+#: Installation.xml:179
+#, no-c-format
+msgid "Manual Installation"
+msgstr "Manuelle Installation"
+
+#. Tag: para
+#: Installation.xml:180
+#, no-c-format
+msgid ""
+"This installation procedure should be performed if you are installing into a "
+"JBoss AS configuration that you have changed in some way from the default "
+"JBoss AS distribution. If you are just using the standard, untouched JBoss "
+"AS 4.2 distribution you can use the automated procedure above"
+msgstr ""
+"Dieser Installationsvorgang sollte durchgeführt werden, falls Sie in eine "
+"JBoss AS Konfiguration installieren, die Sie aufgrund einer an der standardmäßigen JBoss AS Distribution vorgenommenen Änderung erhalten haben. Falls Sie lediglich die standardmäßige JBoss "
+"AS 4.2 Distribution verwenden, können Sie die automatisierte Vorgehensweise oben verwenden"
+
+#. Tag: para
+#: Installation.xml:183
+#, no-c-format
+msgid ""
+"For this procedure we assume you already have your custom configuration "
+"located at <literal>JBOSS_CONFIG=$JBOSS_HOME/server/&lt;myconfiguration&gt;</"
+"literal>, and that it contains a JBoss MQ installation."
+msgstr ""
+"Für diesen Vorgang gehen wir davon aus, dass Sie bereits Ihre angepasste Konfiguration unter <literal>JBOSS_CONFIG=$JBOSS_HOME/server/&lt;myconfiguration&gt;</"
+"literal> besitzen und dass diese eine JBoss MQ Installation enthält."
+
+#. Tag: para
+#: Installation.xml:192
+#, no-c-format
+msgid ""
+"Move <literal>$JBOSS_CONFIG/deploy/jms/hajndi-jms-ds.xml</literal> and "
+"<literal>$JBOSS_CONFIG/deploy/jms/jms-ra.rar</literal> to <literal>"
+"$JBOSS_CONFIG/deploy</literal>"
+msgstr ""
+"Verschieben Sie <literal>$JBOSS_CONFIG/deploy/jms/hajndi-jms-ds.xml</literal> und "
+"<literal>$JBOSS_CONFIG/deploy/jms/jms-ra.rar</literal> nach <literal>"
+"$JBOSS_CONFIG/deploy</literal>"
+
+#. Tag: para
+#: Installation.xml:201
+#, no-c-format
+msgid ""
+"Remove the old JBoss MQ by removing the directory <literal>$JBOSS_CONFIG/"
+"deploy/jms.</literal>"
+msgstr ""
+"Entfernen Sie die alte JBoss MQ, indem Sie das Verzeichnis <literal>$JBOSS_CONFIG/"
+"deploy/jms.</literal> entfernen"
+
+#. Tag: para
+#: Installation.xml:206
+#, no-c-format
+msgid ""
+"Remove the old JBoss MQ jar file: <literal>$JBOSS_CONFIG/lib/jbossmq.jar</"
+"literal>"
+msgstr "Entfernen Sie die alte JBoss MQ jar-Datei: <literal>$JBOSS_CONFIG/lib/jbossmq.jar</literal>"
+
+#. Tag: para
+#: Installation.xml:210
+#, no-c-format
+msgid ""
+"Make sure you don't have any JBossMQ files under <literal>$JBOSS_CONFIG/"
+"deploy-hasingleton</literal>. For that just remove <literal>$JBOSS_CONFIG/"
+"deploy-hasingleton/jms</literal>"
+msgstr ""
+"Vergewissern Sie sich, dass Sie keine JBossMQ-Dateien unter <literal>$JBOSS_CONFIG/"
+"deploy-hasingleton</literal> haben. Entfernen Sie dafür einfach <literal>$JBOSS_CONFIG/"
+"deploy-hasingleton/jms</literal>"
+
+#. Tag: para
+#: Installation.xml:218
+#, no-c-format
+msgid ""
+"Add a security policy called \"messaging\" on $JBOSS_CONFIG/config/login-"
+"config.xml. You could use this as an example, or create one according to "
+"JBoss Security Documentation: <programlisting>\n"
+"&lt;application-policy name = \"messaging\"&gt;\n"
+"&lt;authentication&gt;\n"
+"&lt;login-module code = \"org.jboss.security.auth.spi.UsersRolesLoginModule"
+"\" flag = \"required\" &gt;\n"
+"   &lt;module-option name = \"unauthenticatedIdentity\"&gt;guest&lt;/module-"
+"option&gt;\n"
+"   &lt;module-option name = \"usersProperties\"&gt;props/messaging-users."
+"properties&lt;/module-option&gt;\n"
+"   &lt;module-option name = \"rolesProperties\"&gt;props/messaging-roles."
+"properties&lt;/module-option&gt;\n"
+"&lt;/login-module&gt;\n"
+"&lt;/authentication&gt;\n"
+"&lt;/application-policy&gt;\n"
+"          </programlisting> In case you are using the above policy you "
+"should also create files <literal>messaging-users.properties</literal> and "
+"<literal>messaging-roles.properties</literal> in the <literal>$JBOSS_CONFIG/"
+"config/props/</literal> directory. ."
+msgstr ""
+"Fügen Sie eine Sicherheitsrichtlinie namens \"messaging\" in $JBOSS_CONFIG/config/login-"
+"config.xml hinzu. Sie können diese als ein Beispiel nehmen oder eine entsprechend der "
+"JBoss Security Documentation (JBoss Sicherheitsdokumentation) erstellen: <programlisting>\n"
+"&lt;application-policy name = \"messaging\"&gt;\n"
+"&lt;authentication&gt;\n"
+"&lt;login-module code = \"org.jboss.security.auth.spi.UsersRolesLoginModule"
+"\" flag = \"required\" &gt;\n"
+"   &lt;module-option name = \"unauthenticatedIdentity\"&gt;guest&lt;/module-"
+"option&gt;\n"
+"   &lt;module-option name = \"usersProperties\"&gt;props/messaging-users."
+"properties&lt;/module-option&gt;\n"
+"   &lt;module-option name = \"rolesProperties\"&gt;props/messaging-roles."
+"properties&lt;/module-option&gt;\n"
+"&lt;/login-module&gt;\n"
+"&lt;/authentication&gt;\n"
+"&lt;/application-policy&gt;\n"
+"          </programlisting> Falls Sie die obige Richtlinie verwenden, sollten Sie auch die Dateien <literal>messaging-users.properties</literal> und "
+"<literal>messaging-roles.properties</literal> im <literal>$JBOSS_CONFIG/"
+"config/props/</literal>-Verzeichnis erstellen."
+
+#. Tag: para
+#: Installation.xml:231
+#, no-c-format
+msgid ""
+"You can find an example <literal>messaging-users.properties</literal> and "
+"<literal>messaging-roles.properties</literal> in the JBoss Messaging "
+"distribution in the <literal>&lt;downloadPackage&gt;src/etc/server/default/"
+"config</literal> directory."
+msgstr ""
+"Sie finden Beispiele für <literal>messaging-users.properties</literal> und "
+"<literal>messaging-roles.properties</literal> in der JBoss Messaging "
+"Distribution im <literal>&lt;downloadPackage&gt;src/etc/server/default/"
+"config</literal>-Verzeichnis."
+
+#. Tag: programlisting
+#: Installation.xml:239
+#, no-c-format
+msgid ""
+"# messaging-roles.properties\n"
+"# Add roles as you like\n"
+"# user=role1,role2,...\n"
+"#\n"
+"guest=guest"
+msgstr ""
+"# messaging-roles.properties\n"
+"# Add roles as you like\n"
+"# user=role1,role2,...\n"
+"#\n"
+"guest=guest"
+
+#. Tag: programlisting
+#: Installation.xml:241
+#, no-c-format
+msgid ""
+"# messaging-users.properties\n"
+"\n"
+"# Add users as you like\n"
+"# user=password\n"
+"#\n"
+"guest=guest"
+msgstr ""
+"# messaging-users.properties\n"
+"\n"
+"# Add users as you like\n"
+"# user=password\n"
+"#\n"
+"guest=guest"
+
+#. Tag: para
+#: Installation.xml:245
+#, no-c-format
+msgid ""
+"Unzip jboss-messaging.sar from your download package into the directory "
+"<literal>JBOSS_CONFIG/deploy/jboss-messaging.sar</literal>. JBoss Messaging "
+"should be deployed unzipped (exploded) so you have easy access to its config "
+"files which are stored there."
+msgstr ""
+"Entzippen Sie jboss-messaging.sar aus Ihrem Download-Paket in das "
+"<literal>JBOSS_CONFIG/deploy/jboss-messaging.sar</literal>-Verzeichnis. JBoss Messaging sollte entzippt (ausgeklappt) entzippt werden, damit Sie bequemen Zugriff auf die dort gespeicherten config-Dateien haben."
+
+#. Tag: para
+#: Installation.xml:252
+#, no-c-format
+msgid ""
+"Copy jboss-messaging.jar from your download package into the directory "
+"<literal>JBOSS_CONFIG/lib</literal>. jboss-messaging.jar needs to go in the "
+"lib directory so it is accessible to other services e.g. the JBoss "
+"Transactions Recovery Manager"
+msgstr "Kopieren Sie jboss-messaging.jar aus Ihrem Download-Paket in das Verzeichnis <literal>JBOSS_CONFIG/lib</literal>. jboss-messaging.jar gehört in das lib-Verzeichnis, damit es anderen Diensten zugänglich ist, etwa dem  JBoss Transactions Recovery Manager"
+
+#. Tag: para
+#: Installation.xml:274
+#, no-c-format
+msgid ""
+"Configure a JCA datasource using an example from <literal>$JBOSS_HOME/docs/"
+"examples/jca</literal> and copying to <literal>$JBOSS_CONFIG/deploy</"
+"literal>. JBoss Messaging uses <literal>DefaultDS</literal> by default so "
+"you should configure your datasource to bind to that"
+msgstr ""
+"Konfigurieren Sie eine JCA-Datenquelle unter Verwendung eines Beispiels aus <literal>$JBOSS_HOME/docs/"
+"examples/jca</literal> und kopieren Sie in <literal>$JBOSS_CONFIG/deploy</literal>. JBoss Messaging verwendet standardmäßig <literal>DefaultDS</literal>, daher sollten Sie Ihre Datenquelle so konfigurieren, dass Sie dort anbindet"
+
+#. Tag: para
+#: Installation.xml:290
+#, no-c-format
+msgid ""
+"Ensure the <literal>ServerPeerID</literal> MBean attribute value in "
+"messaging-service.xml is unique for each node on the cluster. The "
+"<literal>ServerPeerID</literal> value must be a valid integer."
+msgstr ""
+"Vergewissern Sie sich, dass der <literal>ServerPeerID</literal> MBean Attributwert in "
+"messaging-service.xml für jeden Node des Clusters eindeutig ist. Beim "
+"<literal>ServerPeerID</literal>-Wert muss es sich um eine gültige ganze Zahl handeln."
+
+#. Tag: para
+#: Installation.xml:315
+#, no-c-format
+msgid ""
+"Look at $JBOSS_HOME/docs/examples/binding-manager/sample-bindings.xml. On "
+"each port range, JBoss Remoting configuration should look like: "
+"<programlisting>\n"
+"      &lt;service-config name=\"jboss.messaging:service=Connector,"
+"transport=bisocket\"\n"
+"                      delegateClass=\"org.jboss.services.binding."
+"AttributeMappingDelegate\"&gt;\n"
+"         &lt;delegate-config&gt;\n"
+"            &lt;attribute name=\"Configuration\"&gt;&lt;![CDATA[\n"
+"           &lt;config&gt;\n"
+"            &lt;invoker transport=\"bisocket\"&gt;\n"
+"               &lt;attribute name=\"marshaller\" isParam=\"true\"&gt;\n"
+"                  org.jboss.jms.wireformat.JMSWireFormat\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"unmarshaller\" isParam=\"true\"&gt;\n"
+"                  org.jboss.jms.wireformat.JMSWireFormat\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"dataType\" isParam=\"true\"&gt;jms&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"socket.check_connection\" isParam=\"true"
+"\"&gt;false&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"timeout\" isParam=\"true\"&gt;0&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"serverBindAddress\"&gt;${jboss.bind."
+"address}&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverBindPort\"&gt;4657&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"leasePeriod\"&gt;10000&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"clientSocketClass\" isParam=\"true"
+"\"&gt;\n"
+"                  org.jboss.jms.client.remoting.ClientSocketWrapper\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverSocketClass\"&gt;\n"
+"                  org.jboss.jms.server.remoting.ServerSocketWrapper\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfCallRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"clientMaxPoolSize\" isParam=\"true"
+"\"&gt;50&lt;/attribute&gt;\n"
+"            &lt;/invoker&gt;\n"
+"            &lt;handlers&gt;\n"
+"               &lt;handler subsystem=\"JMS\"&gt;\n"
+"                  org.jboss.jms.server.remoting.JMSServerInvocationHandler\n"
+"               &lt;/handler&gt;\n"
+"            &lt;/handlers&gt;\n"
+"         &lt;/config&gt;\n"
+"            ]]&gt;&lt;/attribute&gt;\n"
+"         &lt;/delegate-config&gt;\n"
+"         &lt;binding port=\"4657\"/&gt;\n"
+"      &lt;/service-config&gt;              \n"
+"              </programlisting> <warning><para> You must ensure that the "
+"config (like above) is identical to that in <literal>remoting-bisocket-"
+"service.xml</literal> With the exception of the actual serverBindPort which "
+"clearly must be different for each ports range. Please note that the default "
+"JBoss Messaging service binding manager bindings in <literal>sample-bindings."
+"xml</literal> shipped with JBAS 4.2.0 is out of date and you will need to "
+"copy the config from <literal>remoting-bisocket-service.xml</literal> </"
+"para> </warning> You should ensure that each node is configured to use a "
+"different ports range."
+msgstr ""
+"Sehen Sie sich $JBOSS_HOME/docs/examples/binding-manager/sample-bindings.xml an. An jedem Port-Bereich sollte die JBoss Remoting Konfiguration wie folgt aussehen: "
+"<programlisting>\n"
+"      &lt;service-config name=\"jboss.messaging:service=Connector,"
+"transport=bisocket\"\n"
+"                      delegateClass=\"org.jboss.services.binding."
+"AttributeMappingDelegate\"&gt;\n"
+"         &lt;delegate-config&gt;\n"
+"            &lt;attribute name=\"Configuration\"&gt;&lt;![CDATA[\n"
+"           &lt;config&gt;\n"
+"            &lt;invoker transport=\"bisocket\"&gt;\n"
+"               &lt;attribute name=\"marshaller\" isParam=\"true\"&gt;\n"
+"                  org.jboss.jms.wireformat.JMSWireFormat\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"unmarshaller\" isParam=\"true\"&gt;\n"
+"                  org.jboss.jms.wireformat.JMSWireFormat\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"dataType\" isParam=\"true\"&gt;jms&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"socket.check_connection\" isParam=\"true"
+"\"&gt;false&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"timeout\" isParam=\"true\"&gt;0&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"serverBindAddress\"&gt;${jboss.bind."
+"address}&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverBindPort\"&gt;4657&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"leasePeriod\"&gt;10000&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"clientSocketClass\" isParam=\"true"
+"\"&gt;\n"
+"                  org.jboss.jms.client.remoting.ClientSocketWrapper\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverSocketClass\"&gt;\n"
+"                  org.jboss.jms.server.remoting.ServerSocketWrapper\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfCallRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"clientMaxPoolSize\" isParam=\"true"
+"\"&gt;50&lt;/attribute&gt;\n"
+"            &lt;/invoker&gt;\n"
+"            &lt;handlers&gt;\n"
+"               &lt;handler subsystem=\"JMS\"&gt;\n"
+"                  org.jboss.jms.server.remoting.JMSServerInvocationHandler\n"
+"               &lt;/handler&gt;\n"
+"            &lt;/handlers&gt;\n"
+"         &lt;/config&gt;\n"
+"            ]]&gt;&lt;/attribute&gt;\n"
+"         &lt;/delegate-config&gt;\n"
+"         &lt;binding port=\"4657\"/&gt;\n"
+"      &lt;/service-config&gt;              \n"
+"              </programlisting> <warning><para> Sie müssen sicherstellen, dass config (wie oben) identisch mit <literal>remoting-bisocket-"
+"service.xml</literal>ist, ausgenommen des tatsächlichen serverBindPort, der natürlich für den Bereich jeden Ports anders sein muss. Beachten Sie bitte, dass die standardmäßigen Bindings des Binding Managers des "
+"JBoss Messaging Dienstes in <literal>sample-bindings."
+"xml</literal>, die mit JBAS 4.2.0 geliefert werden, veraltet sind und Sie die config von <literal>remoting-bisocket-service.xml</literal> </"
+"para> werden kopieren müssen. </warning> Sie sollten sicherstellen, dass jeder Node zur Verwendung eines unterschiedlichen Port-Bereichs konfiguriert ist."
+
+#. Tag: title
+#: Installation.xml:346
+#, no-c-format
+msgid "Extra steps to complete your installation"
+msgstr "Weitere Schritte zur Fertigstellung Ihrer Installation"
+
+#. Tag: para
+#: Installation.xml:350
+#, no-c-format
+msgid ""
+"SECURITY RISK! To avoid a security risk, you MUST specify the value of the "
+"attribute SuckerPassword in the Server Peer config (messaging-service.xml). "
+"If you do not specify a value, the default value will be used. Any person "
+"that knows the default value will be able to access to all destinations on "
+"the server. The password chosen should only be exposed to administrators"
+msgstr ""
+"SICHERHEITSRISIKO! Um Sicherheitsrisiken zu vermeiden, MÜSSEN Sie den Wert des Attributs SuckerPassword in Server Peer config (messaging-service.xml) festlegen."
+"Falls Sie keinen Wert festlegen, so wird der Standardwert verwendet. Jede Person, die den Standardwert kennt kann auf sämtliche Destinationen auf dem Server zugreifen. Das gewählte Passwort sollte nur Administratoren zugänglich sein."
+
+#. Tag: para
+#: Installation.xml:361
+#, no-c-format
+msgid ""
+"JBoss Messaging 1.4.0 requires a patched version of jboss-remoting.jar. This "
+"version is not available in the JBoss AS 4.2.0 or JBoss AS 4.2.1 "
+"distributions. The patched jar can be found <ulink url=\"http://repository."
+"jboss.com/jboss/remoting/2.2.2.SP1-brew/lib/\">here</ulink>. Please download "
+"it and copy it into the <literal>$JBOSS_HOME/server/&lt;your server name&gt;/"
+"lib directory</literal> of any server profiles that use JBoss Messaging "
+"1.4.0. If you are using JBoss Messaging from a standalone client also make "
+"sure this jar is on your classpath *before* jbossall-client.jar."
+msgstr ""
+"JBoss Messaging 1.4.0 benötigt eine gepatchte Version der jboss-remoting.jar. Diese Version ist in den JBoss AS 4.2.0 oder JBoss AS 4.2.1 Distributionen nicht verfügbar. Die gepatchte jar finden Sie <ulink url=\"http://repository."
+"jboss.com/jboss/remoting/2.2.2.SP1-brew/lib/\">hier</ulink>. Bitte laden Sie sie herunter und kopieren Sie sie in das <literal>$JBOSS_HOME/server/&lt;your server name&gt;/"
+"lib directory</literal> sämtlicher Server-Profile, die JBoss Messaging "
+"1.4.0 verwenden. Falls Sie JBoss Messaging von einem eigenständigen Client verwenden, so stellen Sie außerdem sicher, dass diese jar *vor* jbossall-client.jar in Ihrem Klassenpfad ist."
+
+#. Tag: para
+#: Installation.xml:374
+#, no-c-format
+msgid ""
+"You should also make these changes on any configuration you choose, to "
+"remove all references to the old JBossMQ:"
+msgstr "Sie sollten diese Änderungen auch an jeder Konfiguration vornehmen, die Sie wählen, um sämtliche Verweise zur alten JBossMQ zu entfernen:"
+
+#. Tag: para
+#: Installation.xml:377
+#, no-c-format
+msgid ""
+"Edit <literal>$JBOSS_CONFIG/deploy/jms-ds.xml</literal> and replace jboss.mq "
+"by jboss.messaging on every occurrence. If you are in a clustered "
+"installation, then do the above with the file <literal>$JBOSS_CONFIG/deploy/"
+"hajndi-jms-ds.xml</literal>"
+msgstr ""
+"Bearbeiten Sie <literal>$JBOSS_CONFIG/deploy/jms-ds.xml</literal> und ersetzen Sie jboss.mq "
+"by jboss.messaging bei jedem Auftreten. Falls Sie eine geclusterte Installation besitzen, führen Sie das obige mit der <literal>$JBOSS_CONFIG/deploy/"
+"hajndi-jms-ds.xml</literal>-Datei durch"
+
+#. Tag: para
+#: Installation.xml:384
+#, no-c-format
+msgid ""
+"Edit <literal>$JBOSS_CONFIG/conf/standardjboss.xml</literal> and set "
+"<literal>CreateJBossMQDestination</literal> to false on every occurrence. "
+"Make sure it looks like this: <programlisting>               \n"
+"<literal>&lt;CreateJBossMQDestination&gt;false&lt;/"
+"CreateJBossMQDestination&gt;</literal>\n"
+"</programlisting> Those Proxies will try to create a Destination on JBossMQ "
+"if they can't find it on JNDI, what would cause some errors related to JBoss "
+"MQ."
+msgstr ""
+"Bearbeiten Sie <literal>$JBOSS_CONFIG/conf/standardjboss.xml</literal> und setzen Sie "
+"<literal>CreateJBossMQDestination</literal> bei jedem Auftreten auf \"false\". "
+"Stellen Sie sicher, dass es wie folgt aussieht: <programlisting>               \n"
+"<literal>&lt;CreateJBossMQDestination&gt;false&lt;/"
+"CreateJBossMQDestination&gt;</literal>\n"
+"</programlisting> Diese Proxies werden versuchen, eine Destination auf JBossMQ zu erstellen, wenn sie diese nicht auf JNDI finden können, was zu einigen Fehlern im Bezug auf JBoss MQ führen kann."
+
+#. Tag: para
+#: Installation.xml:395
+#, no-c-format
+msgid ""
+"Edit $JBOSS_CONFIG/conf/jboss-service.xml and remove the reference to JBoss "
+"MQ on JSR-77 Management Bean:"
+msgstr ""
+"Bearbeiten Sie $JBOSS_CONFIG/conf/jboss-service.xml und entfernen Sie den Verweis auf JBoss "
+"MQ am JSR-77 Management Bean:"
+
+#. Tag: programlisting
+#: Installation.xml:397
+#, no-c-format
+msgid ""
+"&lt;!-- ==================================================================== "
+"--&gt;\n"
+" &lt;!-- JSR-77 Single JBoss Server Management "
+"Domain                         --&gt;\n"
+" &lt;!-- "
+"==================================================================== --&gt;\n"
+" &lt;mbean code=\"org.jboss.management.j2ee.LocalJBossServerDomain\"\n"
+"\n"
+"  ... Remove this line ...\n"
+" &lt;attribute name=\"JMSService\"&gt;jboss.mq:"
+"service=DestinationManager&lt;/attribute&gt;"
+msgstr ""
+"&lt;!-- ==================================================================== "
+"--&gt;\n"
+" &lt;!-- JSR-77 Single JBoss Server Management "
+"Domain                         --&gt;\n"
+" &lt;!-- "
+"==================================================================== --&gt;\n"
+" &lt;mbean code=\"org.jboss.management.j2ee.LocalJBossServerDomain\"\n"
+"\n"
+"  ... Remove this line ...\n"
+" &lt;attribute name=\"JMSService\"&gt;jboss.mq:"
+"service=DestinationManager&lt;/attribute&gt;"
+
+#. Tag: para
+#: Installation.xml:400
+#, no-c-format
+msgid ""
+"Change <literal>$JBOSS_CONFIG/conf/login-config.xml</literal> and remove "
+"jboss-mq security policies"
+msgstr ""
+"Verändern Sie <literal>$JBOSS_CONFIG/conf/login-config.xml</literal> und entfernen Sie "
+"jboss-mq Sicherheitsrichtlinien"
+
+#. Tag: programlisting
+#: Installation.xml:403
+#, no-c-format
+msgid ""
+"### Remove these lines:\n"
+"\n"
+"&lt;!-- Security domain for JBossMQ --&gt;\n"
+"&lt;application-policy name = \"jbossmq\"&gt;\n"
+" &lt;authentication&gt;\n"
+"    &lt;login-module code = \"org.jboss.security.auth.spi."
+"DatabaseServerLoginModule\"\n"
+"       flag = \"required\"&gt;\n"
+"       &lt;module-option name = \"unauthenticatedIdentity\"&gt;guest&lt;/"
+"module-option&gt;\n"
+"       &lt;module-option name = \"dsJndiName\"&gt;java:/DefaultDS&lt;/module-"
+"option&gt;\n"
+"       &lt;module-option name = \"principalsQuery\"&gt;\n"
+"             SELECT PASSWD FROM JMS_USERS WHERE USERID=?&lt;/module-"
+"option&gt;\n"
+"       &lt;module-option name = \"rolesQuery\"&gt;\n"
+"             SELECT ROLEID, 'Roles' FROM JMS_ROLES WHERE USERID=?&lt;/module-"
+"option&gt;\n"
+"    &lt;/login-module&gt;\n"
+" &lt;/authentication&gt;\n"
+"&lt;/application-policy&gt;\n"
+"\n"
+"&lt;!-- Security domain for JBossMQ when using file-state-service.xml\n"
+"&lt;application-policy name = \"jbossmq\"&gt;\n"
+" &lt;authentication&gt;\n"
+"    &lt;login-module code = \"org.jboss.mq.sm.file.DynamicLoginModule\"\n"
+"       flag = \"required\"&gt;\n"
+"       &lt;module-option name = \"unauthenticatedIdentity\"&gt;guest&lt;/"
+"module-option&gt;\n"
+"       &lt;module-option name = \"sm.objectname\"&gt;jboss.mq:"
+"service=StateManager&lt;/module-option&gt;\n"
+"    &lt;/login-module&gt;\n"
+" &lt;/authentication&gt;\n"
+"&lt;/application-policy&gt;\n"
+"--&gt;"
+msgstr ""
+"### Entfernen Sie diese Zeilen:\n"
+"\n"
+"&lt;!-- Security domain for JBossMQ --&gt;\n"
+"&lt;application-policy name = \"jbossmq\"&gt;\n"
+" &lt;authentication&gt;\n"
+"    &lt;login-module code = \"org.jboss.security.auth.spi."
+"DatabaseServerLoginModule\"\n"
+"       flag = \"required\"&gt;\n"
+"       &lt;module-option name = \"unauthenticatedIdentity\"&gt;guest&lt;/"
+"module-option&gt;\n"
+"       &lt;module-option name = \"dsJndiName\"&gt;java:/DefaultDS&lt;/module-"
+"option&gt;\n"
+"       &lt;module-option name = \"principalsQuery\"&gt;\n"
+"             SELECT PASSWD FROM JMS_USERS WHERE USERID=?&lt;/module-"
+"option&gt;\n"
+"       &lt;module-option name = \"rolesQuery\"&gt;\n"
+"             SELECT ROLEID, 'Roles' FROM JMS_ROLES WHERE USERID=?&lt;/module-"
+"option&gt;\n"
+"    &lt;/login-module&gt;\n"
+" &lt;/authentication&gt;\n"
+"&lt;/application-policy&gt;\n"
+"\n"
+"&lt;!-- Security domain for JBossMQ when using file-state-service.xml\n"
+"&lt;application-policy name = \"jbossmq\"&gt;\n"
+" &lt;authentication&gt;\n"
+"    &lt;login-module code = \"org.jboss.mq.sm.file.DynamicLoginModule\"\n"
+"       flag = \"required\"&gt;\n"
+"       &lt;module-option name = \"unauthenticatedIdentity\"&gt;guest&lt;/"
+"module-option&gt;\n"
+"       &lt;module-option name = \"sm.objectname\"&gt;jboss.mq:"
+"service=StateManager&lt;/module-option&gt;\n"
+"    &lt;/login-module&gt;\n"
+" &lt;/authentication&gt;\n"
+"&lt;/application-policy&gt;\n"
+"--&gt;"
+
+#. Tag: title
+#: Installation.xml:410
+#, no-c-format
+msgid "Starting the Server"
+msgstr "Starten des Servers"
+
+#. Tag: para
+#: Installation.xml:411
+#, no-c-format
+msgid ""
+"To run the server, execute the <filename>run.bat</filename> or <filename>run."
+"sh</filename> script as appropriate for your operating system, in the "
+"<filename>$JBOSS_HOME/bin</filename> directory."
+msgstr ""
+"Um den Server laufen zu lassen, führen Sie das <filename>run.bat</filename> oder <filename>run."
+"sh</filename>-Skript im <filename>$JBOSS_HOME/bin</filename>-Verzeichnis wie für Ihr Betriebssystem passend aus."
+
+#. Tag: programlisting
+#: Installation.xml:414
+#, no-c-format
+msgid ""
+"cd $JBOSS_HOME/bin\n"
+"./run.sh -c &lt;config name&gt;"
+msgstr ""
+"cd $JBOSS_HOME/bin\n"
+"./run.sh -c &lt;config name&gt;"
+
+#. Tag: para
+#: Installation.xml:415
+#, no-c-format
+msgid ""
+"Where config_name is the name of the JBoss AS configuration where you have "
+"installed messaging. (The default is 'messaging')"
+msgstr "Wo config_name der Name der JBoss AS Konfiguration ist, wo Sie Messaging installiert haben. (Der Standard ist 'messaging')"
+
+#. Tag: para
+#: Installation.xml:417
+#, no-c-format
+msgid ""
+"A successful JBoss Messaging deployment generates logging output similar to "
+"for a non clustered installation (for a clustered installation you will also "
+"see extra cluster related output)"
+msgstr "Ein erfolgreiches JBoss Messaging Deployment generiert eine Protokollierungsausgabe ähnlich derjenigen einer nicht-geclusterten Installation (für eine geclusterte Installation sehen Sie auch Extra-Ausgaben, die sich auf das Cluster beziehen)"
+
+#. Tag: programlisting
+#: Installation.xml:420
+#, no-c-format
+msgid ""
+"....\n"
+"13:19:14,914 WARN  [JDBCPersistenceManager] \n"
+"\n"
+"JBoss Messaging Warning: DataSource connection transaction isolation should "
+"be READ_COMMITTED,\n"
+"but it is currently NONE.\n"
+"                         Using an isolation level less strict than "
+"READ_COMMITTED may lead to\n"
+"data consistency problems.\n"
+"                         Using an isolation level more strict than "
+"READ_COMMITTED may lead to\n"
+"deadlock.\n"
+"\n"
+"13:19:15,166 INFO  [ServerPeer] JBoss Messaging 1.4.0.GA server [0] started\n"
+"13:19:15,411 INFO  [ConnectionFactory] Connector bisocket://127.0.0.1:4457 "
+"has leasing enabled\n"
+", lease period 10000 milliseconds\n"
+"13:19:15,412 INFO  [ConnectionFactory] [/ConnectionFactory, /"
+"XAConnectionFactory, java:/Connec\n"
+"tionFactory, java:/XAConnectionFactory] started\n"
+"13:19:15,412 WARN  [ConnectionFactoryJNDIMapper] supportsFailover attribute "
+"is true on connect\n"
+"ion factory: jboss.messaging.connectionfactory:"
+"service=ClusteredConnectionFactory but\n"
+"post office is non clustered. So connection factory will *not* support "
+"failover\n"
+"13:19:15,413 WARN  [ConnectionFactoryJNDIMapper] supportsLoadBalancing "
+"attribute is true on co\n"
+"nnection factory: jboss.messaging.connectionfactory:"
+"service=ClusteredConnectionFactory\n"
+"but post office is non clustered. So connection factory will *not* support "
+"load balanc\n"
+"ing\n"
+"13:19:15,449 INFO  [ConnectionFactory] Connector bisocket://127.0.0.1:4457 "
+"has leasing enabled\n"
+", lease period 10000 milliseconds\n"
+"13:19:15,449 INFO  [ConnectionFactory] [/ClusteredConnectionFactory, /"
+"ClusteredXAConnectionFac\n"
+"tory, java:/ClusteredConnectionFactory, java:/ClusteredXAConnectionFactory] "
+"started\n"
+"13:19:15,468 INFO  [QueueService] Queue[/queue/DLQ] started, "
+"fullSize=200000, pageSize=2000, d\n"
+"ownCacheSize=2000\n"
+"13:19:15,474 INFO  [QueueService] Queue[/queue/ExpiryQueue] started, "
+"fullSize=200000, pageSize\n"
+"=2000, downCacheSize=2000\n"
+"13:19:15,476 INFO  [TopicService] Topic[/topic/testTopic] started, "
+"fullSize=200000, pageSize=2\n"
+"000, downCacheSize=2000\n"
+"13:19:15,478 INFO  [TopicService] Topic[/topic/securedTopic] started, "
+"fullSize=200000, pageSiz\n"
+"e=2000, downCacheSize=2000\n"
+"13:19:15,479 INFO  [TopicService] Topic[/topic/testDurableTopic] started, "
+"fullSize=200000, pag\n"
+"eSize=2000, downCacheSize=2000\n"
+"13:19:15,482 INFO  [QueueService] Queue[/queue/testQueue] started, "
+"fullSize=200000, pageSize=2\n"
+"000, downCacheSize=2000\n"
+"13:19:15,483 INFO  [QueueService] Queue[/queue/A] started, fullSize=200000, "
+"pageSize=2000, dow\n"
+"nCacheSize=2000\n"
+"13:19:15,485 INFO  [QueueService] Queue[/queue/B] started, fullSize=200000, "
+"pageSize=2000, dow\n"
+"nCacheSize=2000\n"
+"13:19:15,487 INFO  [QueueService] Queue[/queue/C] started, fullSize=200000, "
+"pageSize=2000, dow\n"
+"nCacheSize=2000\n"
+"13:19:15,489 INFO  [QueueService] Queue[/queue/D] started, fullSize=200000, "
+"pageSize=2000, dow\n"
+"nCacheSize=2000\n"
+"13:19:15,490 INFO  [QueueService] Queue[/queue/ex] started, fullSize=200000, "
+"pageSize=2000, do\n"
+"wnCacheSize=2000\n"
+"13:19:15,501 INFO  [QueueService] Queue[/queue/PrivateDLQ] started, "
+"fullSize=200000, pageSize=\n"
+"2000, downCacheSize=2000\n"
+"13:19:15,503 INFO  [QueueService] Queue[/queue/PrivateExpiryQueue] started, "
+"fullSize=200000, p\n"
+"ageSize=2000, downCacheSize=2000\n"
+"13:19:15,507 INFO  [QueueService] Queue[/queue/"
+"QueueWithOwnDLQAndExpiryQueue] started, fullSiz\n"
+"e=200000, pageSize=2000, downCacheSize=2000\n"
+"13:19:15,508 INFO  [TopicService] Topic[/topic/"
+"TopicWithOwnDLQAndExpiryQueue] started, fullSiz\n"
+"e=200000, pageSize=2000, downCacheSize=2000\n"
+"13:19:15,511 INFO  [QueueService] Queue[/queue/QueueWithOwnRedeliveryDelay] "
+"started, fullSize=\n"
+"200000, pageSize=2000, downCacheSize=2000\n"
+"13:19:15,512 INFO  [TopicService] Topic[/topic/TopicWithOwnRedeliveryDelay] "
+"started, fullSize=\n"
+"200000, pageSize=2000, downCacheSize=2000\n"
+"13:19:15,514 INFO  [QueueService] Queue[/queue/testDistributedQueue] "
+"started, fullSize=200000,\n"
+"pageSize=2000, downCacheSize=2000\n"
+"13:19:15,519 INFO  [TopicService] Topic[/topic/testDistributedTopic] "
+"started, fullSize=200000,\n"
+"pageSize=2000, downCacheSize=2000\n"
+"13:19:15,809 INFO  [ConnectionFactoryBindingService] Bound ConnectionManager "
+"'jboss.jca:servic\n"
+"e=ConnectionFactoryBinding,name=JmsXA' to JNDI name 'java:JmsXA'\n"
+"13:19:15,834 INFO  [TomcatDeployer] deploy, ctxPath=/jmx-console, warUrl=.../"
+"deploy/jmx-consol\n"
+"e.war/\n"
+"13:19:16,322 INFO  [Http11Protocol] Starting Coyote HTTP/1.1 on http-"
+"127.0.0.1-8080\n"
+"13:19:16,342 INFO  [AjpProtocol] Starting Coyote AJP/1.3 on ajp-127.0.0.1-"
+"8009\n"
+"13:19:16,480 INFO  [Server] JBoss (MX MicroKernel) [4.2.0.GA (build: "
+"SVNTag=JBoss_4_2_0_GA dat\n"
+"e=200705111440)] Started in 19s:359ms"
+msgstr ""
+"....\n"
+"13:19:14,914 WARN  [JDBCPersistenceManager] \n"
+"\n"
+"JBoss Messaging Warning: DataSource connection transaction isolation should "
+"be READ_COMMITTED,\n"
+"but it is currently NONE.\n"
+"                         Using an isolation level less strict than "
+"READ_COMMITTED may lead to\n"
+"data consistency problems.\n"
+"                         Using an isolation level more strict than "
+"READ_COMMITTED may lead to\n"
+"deadlock.\n"
+"\n"
+"13:19:15,166 INFO  [ServerPeer] JBoss Messaging 1.4.0.GA server [0] started\n"
+"13:19:15,411 INFO  [ConnectionFactory] Connector bisocket://127.0.0.1:4457 "
+"has leasing enabled\n"
+", lease period 10000 milliseconds\n"
+"13:19:15,412 INFO  [ConnectionFactory] [/ConnectionFactory, /"
+"XAConnectionFactory, java:/Connec\n"
+"tionFactory, java:/XAConnectionFactory] started\n"
+"13:19:15,412 WARN  [ConnectionFactoryJNDIMapper] supportsFailover attribute "
+"is true on connect\n"
+"ion factory: jboss.messaging.connectionfactory:"
+"service=ClusteredConnectionFactory but\n"
+"post office is non clustered. So connection factory will *not* support "
+"failover\n"
+"13:19:15,413 WARN  [ConnectionFactoryJNDIMapper] supportsLoadBalancing "
+"attribute is true on co\n"
+"nnection factory: jboss.messaging.connectionfactory:"
+"service=ClusteredConnectionFactory\n"
+"but post office is non clustered. So connection factory will *not* support "
+"load balanc\n"
+"ing\n"
+"13:19:15,449 INFO  [ConnectionFactory] Connector bisocket://127.0.0.1:4457 "
+"has leasing enabled\n"
+", lease period 10000 milliseconds\n"
+"13:19:15,449 INFO  [ConnectionFactory] [/ClusteredConnectionFactory, /"
+"ClusteredXAConnectionFac\n"
+"tory, java:/ClusteredConnectionFactory, java:/ClusteredXAConnectionFactory] "
+"started\n"
+"13:19:15,468 INFO  [QueueService] Queue[/queue/DLQ] started, "
+"fullSize=200000, pageSize=2000, d\n"
+"ownCacheSize=2000\n"
+"13:19:15,474 INFO  [QueueService] Queue[/queue/ExpiryQueue] started, "
+"fullSize=200000, pageSize\n"
+"=2000, downCacheSize=2000\n"
+"13:19:15,476 INFO  [TopicService] Topic[/topic/testTopic] started, "
+"fullSize=200000, pageSize=2\n"
+"000, downCacheSize=2000\n"
+"13:19:15,478 INFO  [TopicService] Topic[/topic/securedTopic] started, "
+"fullSize=200000, pageSiz\n"
+"e=2000, downCacheSize=2000\n"
+"13:19:15,479 INFO  [TopicService] Topic[/topic/testDurableTopic] started, "
+"fullSize=200000, pag\n"
+"eSize=2000, downCacheSize=2000\n"
+"13:19:15,482 INFO  [QueueService] Queue[/queue/testQueue] started, "
+"fullSize=200000, pageSize=2\n"
+"000, downCacheSize=2000\n"
+"13:19:15,483 INFO  [QueueService] Queue[/queue/A] started, fullSize=200000, "
+"pageSize=2000, dow\n"
+"nCacheSize=2000\n"
+"13:19:15,485 INFO  [QueueService] Queue[/queue/B] started, fullSize=200000, "
+"pageSize=2000, dow\n"
+"nCacheSize=2000\n"
+"13:19:15,487 INFO  [QueueService] Queue[/queue/C] started, fullSize=200000, "
+"pageSize=2000, dow\n"
+"nCacheSize=2000\n"
+"13:19:15,489 INFO  [QueueService] Queue[/queue/D] started, fullSize=200000, "
+"pageSize=2000, dow\n"
+"nCacheSize=2000\n"
+"13:19:15,490 INFO  [QueueService] Queue[/queue/ex] started, fullSize=200000, "
+"pageSize=2000, do\n"
+"wnCacheSize=2000\n"
+"13:19:15,501 INFO  [QueueService] Queue[/queue/PrivateDLQ] started, "
+"fullSize=200000, pageSize=\n"
+"2000, downCacheSize=2000\n"
+"13:19:15,503 INFO  [QueueService] Queue[/queue/PrivateExpiryQueue] started, "
+"fullSize=200000, p\n"
+"ageSize=2000, downCacheSize=2000\n"
+"13:19:15,507 INFO  [QueueService] Queue[/queue/"
+"QueueWithOwnDLQAndExpiryQueue] started, fullSiz\n"
+"e=200000, pageSize=2000, downCacheSize=2000\n"
+"13:19:15,508 INFO  [TopicService] Topic[/topic/"
+"TopicWithOwnDLQAndExpiryQueue] started, fullSiz\n"
+"e=200000, pageSize=2000, downCacheSize=2000\n"
+"13:19:15,511 INFO  [QueueService] Queue[/queue/QueueWithOwnRedeliveryDelay] "
+"started, fullSize=\n"
+"200000, pageSize=2000, downCacheSize=2000\n"
+"13:19:15,512 INFO  [TopicService] Topic[/topic/TopicWithOwnRedeliveryDelay] "
+"started, fullSize=\n"
+"200000, pageSize=2000, downCacheSize=2000\n"
+"13:19:15,514 INFO  [QueueService] Queue[/queue/testDistributedQueue] "
+"started, fullSize=200000,\n"
+"pageSize=2000, downCacheSize=2000\n"
+"13:19:15,519 INFO  [TopicService] Topic[/topic/testDistributedTopic] "
+"started, fullSize=200000,\n"
+"pageSize=2000, downCacheSize=2000\n"
+"13:19:15,809 INFO  [ConnectionFactoryBindingService] Bound ConnectionManager "
+"'jboss.jca:servic\n"
+"e=ConnectionFactoryBinding,name=JmsXA' to JNDI name 'java:JmsXA'\n"
+"13:19:15,834 INFO  [TomcatDeployer] deploy, ctxPath=/jmx-console, warUrl=.../"
+"deploy/jmx-consol\n"
+"e.war/\n"
+"13:19:16,322 INFO  [Http11Protocol] Starting Coyote HTTP/1.1 on http-"
+"127.0.0.1-8080\n"
+"13:19:16,342 INFO  [AjpProtocol] Starting Coyote AJP/1.3 on ajp-127.0.0.1-"
+"8009\n"
+"13:19:16,480 INFO  [Server] JBoss (MX MicroKernel) [4.2.0.GA (build: "
+"SVNTag=JBoss_4_2_0_GA dat\n"
+"e=200705111440)] Started in 19s:359ms"
+
+#. Tag: para
+#: Installation.xml:421
+#, no-c-format
+msgid ""
+"The warning message <literal>\"DataSource connection transaction isolation "
+"should be READ_COMMITTED, but it is currently NONE\"</literal> is there to "
+"remind you that by default JBossAS ships with Hypersonic, an in-memory Java-"
+"based database engine, which is apropriate for demo purposes, but not for "
+"heavy load production environments. The <ulink url=\"http://wiki.jboss.org/"
+"wiki/Wiki.jsp?page=ConfigJBossMQDB\">Critique of Hypersonic</ulink> wiki "
+"page outlines some of the well-known issues occuring when using this "
+"database."
+msgstr ""
+"Der Warnhinweis <literal>\"DataSource connection transaction isolation "
+"should be READ_COMMITTED, but it is currently NONE\"</literal> soll Sie daran erinnern, dass JBossAS standardmäßig mit Hypersonic einer in-memory Java-basierten Datenbank-Engine geliefert wird, die für Demo-Zwecke geeignet ist, nicht aber für stark ausgelastete Produktionsumgebungen. Die <ulink url=\"http://wiki.jboss.org/"
+"wiki/Wiki.jsp?page=ConfigJBossMQDB\">Critique of Hypersonic</ulink> Wiki-Seite geht auf einige der bekannten Probleme ein, die bei der Verwendung dieser Datenbank auftreten können."
+
+#. Tag: para
+#: Installation.xml:431
+#, no-c-format
+msgid ""
+"Before using Messaging in production, you <emphasis>must</emphasis> "
+"configure the Messaging instance to use an enterprise-class database backend "
+"such as Oracle, Sybase, PostgreSQL, MS SQL or MySQL, otherwise you risk "
+"losing your data. See <xref linkend=\"conf.changingds\"/> for details about "
+"replacing Hypersonic."
+msgstr ""
+"Ehe Sie Messaging in Production verwenden, <emphasis>müssen</emphasis> Sie "
+"die Messaging Instanz so konfigurieren, dass ein Datenbank-Backend der Enterprise-Klasse wie etwa Oracle, Sybase, PostgreSQL, MS SQL oder MySQL verwendet wird, da Sie andernfalls den Verlust Ihrer Daten riskieren. Einzelheiten zum Ersetzen von Hypersonic finden Sie unter <xref linkend=\"conf.changingds\"/>."
+
+#. Tag: title
+#: Installation.xml:440
+#, no-c-format
+msgid "Installation Validation"
+msgstr "Installationsvalidierung"
+
+#. Tag: para
+#: Installation.xml:441
+#, no-c-format
+msgid ""
+"The release bundle contains a series of examples that should run \"out of "
+"the box\" and could be used to validate a new installation. Such an example "
+"sends a persistent JMS message to a queue called <literal>queue/testQueue</"
+"literal>."
+msgstr ""
+"Das Release Bündel enthält eine Reihe von Beispielen, die sofort zur Ausführung bereit sein sollten und zur Validierung einer neuen Installation verwendet werden können. Ein solches Beispiel sendet eine persistente JMS-Nachricht an eine Warteschlange namens <literal>queue/testQueue</"
+"literal>."
+
+#. Tag: para
+#: Installation.xml:445
+#, no-c-format
+msgid ""
+"To run the example and validate the installation, open an new command line "
+"window and set the <literal>JBOSS_HOME</literal> environment variable to "
+"point to the JBoss AS 4.x installation you've just installed Messaging on. "
+"Navigate to the folder where you extracted the release bundle and drill down "
+"to <filename>/examples/queue</filename>. Apache Ant must pe present in your "
+"path in order to be able to run the example."
+msgstr ""
+"Um das Beispiel auszuführen und die Installation zu validieren öffnen Sie ein neues Befehlszeilenfenster und stellen Sie die <literal>JBOSS_HOME</literal>-Umgebungsvariable so ein, dass Sie auf die JBoss AS 4.x Installation weist auf der Sie gerade Messaging installiert haben. Navigieren Sie zum Ordner, wo Sie das Release-Bündel extrahiert haben und und begeben Sie sich in <filename>/examples/queue</filename>. Apache Ant muss in Ihrem Pfad vorhanden sein, damit Sie das Beispiel "
+"ausführen können."
+
+#. Tag: para
+#: Installation.xml:452
+#, no-c-format
+msgid "Make sure you start the JBoss server before trying to run the tests"
+msgstr "Stellen Sie sicher, dass der JBoss Server gestartet ist, ehe Sie die Tests ausführen"
+
+#. Tag: programlisting
+#: Installation.xml:454
+#, no-c-format
+msgid ""
+"setenv JBOSS_HOME=&lt;your_JBoss_installation&gt;\n"
+"cd .../examples/queue\n"
+"$ant"
+msgstr ""
+"setenv JBOSS_HOME=&lt;your_JBoss_installation&gt;\n"
+"cd .../examples/queue\n"
+"$ant"
+
+#. Tag: para
+#: Installation.xml:455
+#, no-c-format
+msgid "A successfull execution log output looks similar to:"
+msgstr "Die Ausgabe eines erfolgreichen Ausführungsprotokolls sieht in etwa so aus:"
+
+#. Tag: programlisting
+#: Installation.xml:456
+#, no-c-format
+msgid ""
+"[tim@Vigor14 queue]$ ant\n"
+"Buildfile: build.xml\n"
+"\n"
+"identify:\n"
+"     [echo] "
+"###########################################################################\n"
+"     [echo] #                       Running the QUEUE "
+"example                         #\n"
+"     [echo] "
+"###########################################################################\n"
+"     [echo] The queue:      testQueue\n"
+"     [echo] The client jar: ../../../output/lib/jboss-messaging-client.jar\n"
+"\n"
+"sanity-check:\n"
+"\n"
+"init:\n"
+"    [mkdir] Created dir: /home/tim/dev/jboss-messaging/trunk/docs/examples/"
+"queue/output/classe\n"
+"s\n"
+"    [mkdir] Created dir: /home/tim/dev/jboss-messaging/trunk/docs/examples/"
+"common/output/class\n"
+"es\n"
+"\n"
+"compile:\n"
+"    [javac] Compiling 5 source files to /home/tim/dev/jboss-messaging/trunk/"
+"docs/examples/comm\n"
+"on/output/classes\n"
+"    [javac] Compiling 1 source file to /home/tim/dev/jboss-messaging/trunk/"
+"docs/examples/queue\n"
+"/output/classes\n"
+"\n"
+"run:\n"
+"     [java] Queue /queue/testQueue exists\n"
+"     [java] The message was successfully sent to the testQueue queue\n"
+"     [java] Received message: Hello!\n"
+"     [java] The example connected to JBoss Messaging version 1.4.0.GA (1.4)\n"
+"\n"
+"     [java] #####################\n"
+"     [java] ###    SUCCESS!   ###\n"
+"     [java] #####################\n"
+"\n"
+"BUILD SUCCESSFUL\n"
+"Total time: 5 seconds\n"
+"[tim@Vigor14 queue]$"
+msgstr ""
+"[tim@Vigor14 queue]$ ant\n"
+"Buildfile: build.xml\n"
+"\n"
+"identify:\n"
+"     [echo] "
+"###########################################################################\n"
+"     [echo] #                       Running the QUEUE "
+"example                         #\n"
+"     [echo] "
+"###########################################################################\n"
+"     [echo] The queue:      testQueue\n"
+"     [echo] The client jar: ../../../output/lib/jboss-messaging-client.jar\n"
+"\n"
+"sanity-check:\n"
+"\n"
+"init:\n"
+"    [mkdir] Created dir: /home/tim/dev/jboss-messaging/trunk/docs/examples/"
+"queue/output/classe\n"
+"s\n"
+"    [mkdir] Created dir: /home/tim/dev/jboss-messaging/trunk/docs/examples/"
+"common/output/class\n"
+"es\n"
+"\n"
+"compile:\n"
+"    [javac] Compiling 5 source files to /home/tim/dev/jboss-messaging/trunk/"
+"docs/examples/comm\n"
+"on/output/classes\n"
+"    [javac] Compiling 1 source file to /home/tim/dev/jboss-messaging/trunk/"
+"docs/examples/queue\n"
+"/output/classes\n"
+"\n"
+"run:\n"
+"     [java] Queue /queue/testQueue exists\n"
+"     [java] The message was successfully sent to the testQueue queue\n"
+"     [java] Received message: Hello!\n"
+"     [java] The example connected to JBoss Messaging version 1.4.0.GA (1.4)\n"
+"\n"
+"     [java] #####################\n"
+"     [java] ###    SUCCESS!   ###\n"
+"     [java] #####################\n"
+"\n"
+"BUILD SUCCESSFUL\n"
+"Total time: 5 seconds\n"
+"[tim@Vigor14 queue]$"
+
+#. Tag: para
+#: Installation.xml:457
+#, no-c-format
+msgid ""
+"It is recommended to run <literal>all</literal> validation examples "
+"available in the <filename>example</filename> directory (<filename>queue</"
+"filename>, <filename>topic</filename>, <filename>mdb</filename>, "
+"<filename>stateless</filename>, etc.). In <xref linkend=\"examples\"/>, we "
+"will have a look at each of those examples."
+msgstr "Es empfiehlt sich, die im <filename>example</filename>-Verzeichnis verfügbaren <literal>all</literal>-Validierungsbeispiele auszuführen (<filename>queue</filename>, <filename>topic</filename>, <filename>mdb</filename>, <filename>stateless</filename>, u.s.w.). In <xref linkend=\"examples\"/> sehen wir uns diese Beispiele genauer an."
+
+#. Tag: title
+#: Installation.xml:465
+#, no-c-format
+msgid "Accessing JBoss Messaging from a remote client"
+msgstr "Zugriff auf JBoss Messaging von einem Remote Client"
+
+#. Tag: para
+#: Installation.xml:466
+#, no-c-format
+msgid ""
+"In order to access JBoss Messaging from a client outside the JBoss app "
+"server, you will need to ensure the following jar files are on the client "
+"classpath:"
+msgstr ""
+"Um von einem Client außerhalb des JBoss app "
+"Servers Zugriff auf JBoss Messaging zu haben, müssen Sie sicherstellen, dass die folgenden jar-Dateien sich im Klassenpfad des Clients "
+"befinden:"
+
+#. Tag: para
+#: Installation.xml:471
+#, no-c-format
+msgid ""
+"JBoss Messaging 1.4.0 requires a patched version of jboss-remoting.jar. This "
+"version is not available in the JBoss AS 4.2.0 or JBoss AS 4.2.1 "
+"distributions. The patched jar can be found <ulink url=\"http://repository."
+"jboss.com/jboss/remoting/2.2.2.SP1-brew/lib/\">here</ulink> . Please "
+"download it and make sure this jar is on your classpath *before* jbossall-"
+"client.jar."
+msgstr ""
+"JBoss Messaging 1.4.0 benötigt eine gepatchte Version von jboss-remoting.jar. Diese Version ist nicht in den JBoss AS 4.2.0 oder JBoss AS 4.2.1 Distributionen verfügbar. Die gepatchte jar finden Sie <ulink url=\"http://repository."
+"jboss.com/jboss/remoting/2.2.2.SP1-brew/lib/\">hier</ulink> . Bitte laden Sie diese herunter und stellen Sie sicher, dass diese jar *vor* jbossall-client.jar in Ihrem Klassenpfad ist."
+
+#. Tag: para
+#: Installation.xml:479
+#, no-c-format
+msgid "jboss-messaging-client.jar - This is available in the messaging distribution"
+msgstr "jboss-messaging-client.jar - Dies ist in der Messaging Distribution verfügbar"
+
+#. Tag: para
+#: Installation.xml:483
+#, no-c-format
+msgid "jbossall-client.jar - This is available in your $JBOSS_HOME/client directory"
+msgstr "jbossall-client.jar - Dies ist in Ihrem $JBOSS_HOME/client-Verzeichnis verfügbar"
+
+#. Tag: para
+#: Installation.xml:490
+#, no-c-format
+msgid ""
+"$JBOSS_HOME/server/&lt;SERVER_NAME&gt;/deploy/jboss-aop.deployer/jboss-aop."
+"jar"
+msgstr ""
+"$JBOSS_HOME/server/&lt;SERVER_NAME&gt;/deploy/jboss-aop.deployer/jboss-aop."
+"jar"
+
+#. Tag: para
+#: Installation.xml:493
+#, no-c-format
+msgid "JBoss AOP 1.5.5.GA+"
+msgstr "JBoss AOP 1.5.5.GA+"
+
+#. Tag: ulink
+#: Installation.xml:497
+#, no-c-format
+msgid "http://repository.jboss.com/jboss/aop/1.5.5.GA/lib/"
+msgstr "http://repository.jboss.com/jboss/aop/1.5.5.GA/lib/"
+
+#. Tag: para
+#: Installation.xml:500
+#, no-c-format
+msgid ""
+"(For AOP, sometimes you have to use a specific JAR according to your JVM of "
+"choice. Use the most convenient for you)"
+msgstr "(Bei AOP müssen Sie manchmal eine bestimmte JAR benutzen, gemäß der JVM Ihrer Wahl. Verwenden Sie die für Sie passendste)"
+
+#. Tag: para
+#: Installation.xml:509
+#, no-c-format
+msgid "$JBOSS_HOME/server/&lt;SERVER_NAME&gt;/lib/javassist.jar"
+msgstr "$JBOSS_HOME/server/&lt;SERVER_NAME&gt;/lib/javassist.jar"
+
+#. Tag: para
+#: Installation.xml:512
+#, no-c-format
+msgid "Javassist 3.5.0.GA-brew+"
+msgstr "Javassist 3.5.0.GA-brew+"
+
+#. Tag: ulink
+#: Installation.xml:515
+#, no-c-format
+msgid "http://repository.jboss.com/javassist/3.5.0.GA-brew/lib/"
+msgstr "http://repository.jboss.com/javassist/3.5.0.GA-brew/lib/"
+
+#. Tag: para
+#: Installation.xml:524
+#, no-c-format
+msgid "$JBOSS_HOME/server/&lt;SERVER_NAME&gt;/lib/trove.jar"
+msgstr "$JBOSS_HOME/server/&lt;SERVER_NAME&gt;/lib/trove.jar"
+
+#. Tag: para
+#: Installation.xml:527
+#, no-c-format
+msgid "trove 1.0.2-brew"
+msgstr "trove 1.0.2-brew"
+
+#. Tag: ulink
+#: Installation.xml:530
+#, no-c-format
+msgid "http://repository.jboss.com/trove/1.0.2-brew/lib/"
+msgstr "http://repository.jboss.com/trove/1.0.2-brew/lib/"
+
+#. Tag: para
+#: Installation.xml:536
+#, no-c-format
+msgid "log4j"
+msgstr "log4j"
+

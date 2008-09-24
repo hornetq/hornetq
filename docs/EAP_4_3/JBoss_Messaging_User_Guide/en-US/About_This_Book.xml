@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="about_this_book">
+	<title>About this book</title>
+	<para>
+		The goal of this book is to give you an overview of JBoss Messaging. It explains the important features of JBoss Messaging and its capability to provide a high-performance and robust messaging system for Enterprise Java Applications.  
+	</para>
+	<para>
+		JBoss Messaging is the new state-of-the-art enterprise messaging system from JBoss, providing superior performance, reliability and scalability with high throughput and low latency. JBoss Messaging has replaced JBossMQ as the default JMS provider in JBoss Enterprise Application Platform 4.3. The version used is JBoss Messaging 1.4. You should use this version or later with the examples demonstrating JBoss Messaging. The book is not intended to teach you the basics of Enterprise Messaging. Use it to familiarize with JBoss Messaging features and various configurations.
+	</para>
+</chapter>

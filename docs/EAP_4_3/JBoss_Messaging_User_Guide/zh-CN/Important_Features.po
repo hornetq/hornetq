@@ -1,0 +1,397 @@
+# Language zh-CN translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# Automatically generated, 2008.
+# Xi HUANG <xhuang@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: JBoss_Messaging_User_Guide 4.3\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-07-14 11:57+1000\n"
+"Last-Translator: Xi HUANG <xhuang@redhat.com>\n"
+"Language-Team: Chinese Simplified <kde-i18n-doc@lists.kde.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KAider 0.1\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+#. Tag: title
+#: Important_Features.xml:3
+#, no-c-format
+msgid "JBoss Messaging - A Quick Tour"
+msgstr "JBoss Messaging - 快速教程"
+
+#. Tag: title
+#: Important_Features.xml:5
+#, no-c-format
+msgid "Limitations of JBossMQ"
+msgstr "JBossMQ 的局限性"
+
+#. Tag: para
+#: Important_Features.xml:6
+#, no-c-format
+msgid "JBossMQ has two fundamental limitations:"
+msgstr "JBossMQ 有两个根本的局限性："
+
+#. Tag: para
+#: Important_Features.xml:10
+#, no-c-format
+msgid ""
+"JBossMQ is based on SpyderMQ (the open source project) which is a non-"
+"clustered broker."
+msgstr "JBossMQ 基于非群集的 SpyderMQ（一个开源项目）。"
+
+#. Tag: para
+#: Important_Features.xml:15
+#, no-c-format
+msgid ""
+"The threading model and the overall design of the non-clustered broker leads "
+"to performance limitations in certain high load usage scenarios."
+msgstr "它的线程模型和非群集设计在某些高负载情形下会导致性能问题。"
+
+#. Tag: title
+#: Important_Features.xml:23
+#, no-c-format
+msgid "JBoss Messaging Features"
+msgstr "JBoss Messaging 的特征"
+
+#. Tag: para
+#: Important_Features.xml:24
+#, no-c-format
+msgid ""
+"JBoss Messaging implements a high-performance and robust messaging core that "
+"is designed to support the largest and most heavily utilized Service "
+"Oriented Architectures(SOAs), Enterprise Service Buses (ESBs) and other "
+"integration needs ranging from the simplest to the highest demand networks."
+msgstr ""
+"JBoss Messaging 实现了一个高性能和稳定的消息核心，它的设计目的是为了最大限度"
+"地利用面向服务架构（Service Oriented Architectures，SOA）、企业级服务总线"
+"（Enterprise Service Buses，ESB）以及其他从最简单到最高要求的网络的集成需要。"
+
+#. Tag: para
+#: Important_Features.xml:27
+#, no-c-format
+msgid ""
+"It will allow you to smoothly distribute your application load across your "
+"cluster, intelligently balancing and utilizing each node's CPU cycles. It "
+"comes with no single point of failure and no single point of bottleneck, "
+"sophisticated and fully configurable message expiration handling and XA "
+"transaction recovery. Thus providing a highly scalable and performant "
+"clustering implementation. It includes a JMS front-end to deliver messaging "
+"in a standards-based format as well as being designed to be able to support "
+"other messaging protocols in the future."
+msgstr ""
+"它将允许你在群集系统里顺利地分布应用程序负载，智能地平衡和利用每个节点的 CPU "
+"周期。它没有单个故障点和瓶颈，但它具有复杂和完全可配置的消息过期管理和 XA 事"
+"务恢复，因此提供了具有高可扩充性和性能的群集实现。它也包括了以基于标准的格式"
+"递送消息且能够支持将来的其他消息协议的 JMS 前端。"
+
+#. Tag: para
+#: Important_Features.xml:31
+#, no-c-format
+msgid ""
+"<emphasis>JMS compliance</emphasis>: A fully compatible and Sun certified "
+"JMS 1.1 implementation, that currently works with JBoss Enterprise "
+"Application Platform 4.3 or JBoss Application Server version 4.2 or later."
+msgstr ""
+"<emphasis>JMS compliance</emphasis>：完全兼容和经 Sun 认证的 JMS 1.1 实现，可"
+"以在 JBoss 企业级应用程序平台 4.2、4.3 或更新版本里使用。"
+
+#. Tag: para
+#: Important_Features.xml:35
+#, no-c-format
+msgid "JBoss Messaging contains a host of other features, including:"
+msgstr "JBoss Messaging 还包含了其他功能："
+
+#. Tag: para
+#: Important_Features.xml:39
+#, no-c-format
+msgid "Publish-subscribe and point-to-point messaging models"
+msgstr "发布-订阅和点到点消息模型"
+
+#. Tag: para
+#: Important_Features.xml:42
+#, no-c-format
+msgid "Persistent and non-persistent messages"
+msgstr "持久的和非持久的消息"
+
+#. Tag: para
+#: Important_Features.xml:45
+#, no-c-format
+msgid ""
+"Guaranteed message delivery that ensures that messages arrive once and only "
+"once where required"
+msgstr "确保消息在有需要时只到达一次的消息递送保证"
+
+#. Tag: para
+#: Important_Features.xml:49
+#, no-c-format
+msgid "Transactional and reliable - supporting ACID semantics"
+msgstr "事务性和可靠性 － 支持 ACID 模式"
+
+#. Tag: para
+#: Important_Features.xml:53
+#, no-c-format
+msgid "Customizable security framework based on JAAS"
+msgstr "基于 JAAS 的可定制的安全框架"
+
+#. Tag: para
+#: Important_Features.xml:56
+#, no-c-format
+msgid ""
+"Fully integrated with JBoss Transactions (formerly known as Arjuna JTA) for "
+"full transaction recoverability."
+msgstr ""
+"和 JBoss Transactions（以前称为 Arjuna JTA）完全集成，具有完全事务恢复能力。"
+
+#. Tag: para
+#: Important_Features.xml:60
+#, no-c-format
+msgid "Extensive JMX management interface"
+msgstr "扩展的 JMX 管理接口"
+
+#. Tag: para
+#: Important_Features.xml:63
+#, no-c-format
+msgid ""
+"Support for most major databases including Oracle, Sybase, MS SQL Server, "
+"PostgreSQL and MySQL"
+msgstr ""
+"对 Oracle、Sybase、MS SQL Server、PostgreSQL 和 MySQL 等主要数据库的支持"
+
+#. Tag: para
+#: Important_Features.xml:67
+#, no-c-format
+msgid ""
+"HTTP transport to allow use through firewalls that only allow HTTP traffic"
+msgstr "通过 HTTP 传输使用只允许 HTTP 通信的防火墙"
+
+#. Tag: para
+#: Important_Features.xml:71
+#, no-c-format
+msgid "SSL transport"
+msgstr "SSL 传输"
+
+#. Tag: para
+#: Important_Features.xml:74
+#, no-c-format
+msgid "Configurable DLQs (Dead Letter Queues) and Expiry Queues"
+msgstr "可配置的 DLQs (Dead Letter Queues) 和 Expiry Queue"
+
+#. Tag: para
+#: Important_Features.xml:78
+#, no-c-format
+msgid ""
+"Message statistics: Gives you a rolling historical view of what messages "
+"were delivered to what queues and subscriptions"
+msgstr "消息统计：给你关于递送给不同队列和订阅的不同消息的历史数据视图"
+
+#. Tag: para
+#: Important_Features.xml:83
+#, no-c-format
+msgid ""
+"Automatic paging of messages to storage. Allows the use of very large queues "
+"- too large to fit in memory at once"
+msgstr ""
+"消息到存储的自动分页。这允许你使用非常大的队列 － 大到不能马上存放在内存里"
+
+#. Tag: title
+#: Important_Features.xml:90
+#, no-c-format
+msgid "Clustering Features"
+msgstr "群集功能"
+
+#. Tag: title
+#: Important_Features.xml:92
+#, no-c-format
+msgid "Fully clustered queues and topics"
+msgstr "完全群集的队列和主题"
+
+#. Tag: para
+#: Important_Features.xml:93
+#, no-c-format
+msgid ""
+"\"Logical\" queues and topics are distributed across the cluster. You can "
+"send to a queue or a topic from any node, and receive from any other."
+msgstr ""
+"“逻辑的”队列和主题分布在整个群集里。你可以向任何节点的队列和主题发送消息和接"
+"受消息。"
+
+#. Tag: title
+#: Important_Features.xml:98
+#, no-c-format
+msgid "Fully clustered durable subscriptions"
+msgstr "群集的持久性订阅"
+
+#. Tag: para
+#: Important_Features.xml:99
+#, no-c-format
+msgid ""
+"A particular durable subscription can be accessed from any node of the "
+"cluster - allowing you to spread processing load from that subscription "
+"across the cluster."
+msgstr ""
+"你可以从群集里任何节点访问特定的持久性订阅 － 这允许把订阅的负载分摊到整个群"
+"集里。"
+
+#. Tag: title
+#: Important_Features.xml:104
+#, no-c-format
+msgid "Fully clustered temporary queues"
+msgstr "完全群集的临时队列"
+
+#. Tag: para
+#: Important_Features.xml:105
+#, no-c-format
+msgid ""
+"Send a message with a <literal>replyTo</literal> of a temp queue and it can "
+"be sent back on any node of the cluster."
+msgstr ""
+"如果发送带有 <literal>replyTo</literal> 临时队列的消息，它就可以送回群集里的"
+"任何节点。"
+
+#. Tag: title
+#: Important_Features.xml:110
+#, no-c-format
+msgid "Intelligent message redistribution"
+msgstr "智能消息重分布"
+
+#. Tag: para
+#: Important_Features.xml:111
+#, no-c-format
+msgid ""
+"Messages are automatically moved between different nodes of the cluster if "
+"consumers are faster on one node than another. This can help prevent "
+"starvation or build up of messages on particular nodes."
+msgstr ""
+"如果在某个节点上消费者比另外一个节点块，消息将在群集中的不同节点间自动转移。"
+"这有助于防止 starvation 或者在某个节点上堆积消息。"
+
+#. Tag: title
+#: Important_Features.xml:116
+#, no-c-format
+msgid "Message order protection"
+msgstr "消息顺序保护"
+
+#. Tag: para
+#: Important_Features.xml:117
+#, no-c-format
+msgid ""
+"If you want to ensure that the order of messages produced by a producer is "
+"the same as is consumed by a consumer then you can set this to true. This "
+"works even in the presence of message redistribution."
+msgstr ""
+"如果你想确保生产者（Producer）产生消息的顺序和消费者（Consumer）消费消息的顺"
+"序一致，那就把这设置为 true。这甚至在消息重分布时也可以实现。"
+
+#. Tag: title
+#: Important_Features.xml:122
+#, no-c-format
+msgid "Fully transparent failover"
+msgstr "完全透明的失效切换"
+
+#. Tag: para
+#: Important_Features.xml:123
+#, no-c-format
+msgid ""
+"When a server fails, your sessions continue without exceptions on a new node "
+"as if nothing happened. (Fully configurable - If you don't want this you can "
+"fall back to exceptions being thrown and manually recreation of connections "
+"on another node)"
+msgstr ""
+"当某个服务器发生故障时，你的会话将在新的节点上继续进行，就好像什么都没有发生"
+"一样。（这是完全可配置的 － 如果你不希望这样，你可以设置为抛出异常并手工在另"
+"外节点上重新创建连接）"
+
+#. Tag: title
+#: Important_Features.xml:128
+#, no-c-format
+msgid "High availability and seamless fail-over"
+msgstr "高可用性和无缝式失效切换"
+
+#. Tag: para
+#: Important_Features.xml:129
+#, no-c-format
+msgid ""
+"If the node you are connected to fails, you will automatically fail over to "
+"another node and will not lose any persistent messages. You can carry on "
+"with your session seamlessly where you left off. Once and only once delivery "
+"of persistent messages is respected at all times."
+msgstr ""
+"如果你连接的节点出现了故障，你将自动切换至另外一个节点且不会丢失任何持久性消"
+"息。你可以从断开的地方开始无缝地继续你的会话。在任何时候，持久性消息都只会被"
+"递送一次。"
+
+#. Tag: title
+#: Important_Features.xml:134
+#, no-c-format
+msgid "Message bridge"
+msgstr "消息桥（Message Bridge）"
+
+#. Tag: para
+#: Important_Features.xml:135
+#, no-c-format
+msgid ""
+"JBoss Messaging contains a message bridge component which enables you to "
+"bridge messages between any two JMS1.1 destinations on the same or physical "
+"separate locations. (E.g. separated by a WAN). This allows you to connect "
+"geographically separate clusters, forming huge globally distributed logical "
+"queues and topics."
+msgstr ""
+"JBoss Messaging 包含一个消息桥组件，它让你可以在处于相同或不同（如由 WAN 分"
+"隔）位置上的两个 JMS1.1 目的地之间连接消息。这允许你连接物理上独立的群集系"
+"统，从而组成大型的全球分布式逻辑队列和主题。"
+
+#. Tag: title
+#: Important_Features.xml:141
+#, no-c-format
+msgid "Compatibility with JBossMQ"
+msgstr "对 JBossMQ 的兼容性"
+
+#. Tag: para
+#: Important_Features.xml:142
+#, no-c-format
+msgid ""
+"Since JBoss Messaging is JMS 1.1 and JMS 1.0.2b compatible, the JMS code "
+"written against JBossMQ will run with JBoss Messaging without any changes."
+msgstr ""
+"既然 JBoss Messaging 兼容 JMS 1.1 和 JMS 1.0.2b，针对 JBossMQ 编写的 JMS 代码"
+"不作修改就可以在 JBoss Messaging 里运行。"
+
+#. Tag: para
+#: Important_Features.xml:145
+#, no-c-format
+msgid ""
+"JBoss Messaging does not have wire format compatibility with JBossMQ so it "
+"would be necessary to upgrade JBoss MQ clients with JBoss Messaging client "
+"jars."
+msgstr ""
+"JBoss Messaging 不具备和 JBossMQ 的线格式（wire format）兼容，JBoss MQ 客户端"
+"有必要用 JBoss Messaging 客户端的 jar 文件进行升级。"
+
+#. Tag: para
+#: Important_Features.xml:149
+#, no-c-format
+msgid ""
+"Even if JBoss Messaging deployment descriptors are very similar to JBoss MQ "
+"deployment descriptors, they are <emphasis>not</emphasis> identical, so they "
+"will require some simple adjustments to get them to work with JBoss "
+"Messaging. Also, the database data model is completely different, so don't "
+"attempt to use JBoss Messaging with a JBoss MQ data schema and vice-versa."
+msgstr ""
+"即使 JBoss Messaging 和 JBoss MQ 的部署描述符非常相似，但它们<emphasis>并不是"
+"</emphasis>相同的，所以要进行少许调整才能在 JBoss Messaging 里使用。而且，数"
+"据库数据模型完全不一样，所以请不要试图用 JBoss MQ 的数据模型来使用 JBoss "
+"Messaging，反之亦然。"
+
+#. Tag: para
+#: Important_Features.xml:154
+#, no-c-format
+msgid ""
+"JBoss Messaging is built against the JBoss AS 4.2 libraries which are built "
+"using Java 5. Therefore JBoss Messaging only runs with Java 5 or later."
+msgstr ""
+"JBoss Messaging 是采用基于 Java 5 的 JBoss AS 4.2 类库进行构建的，因此 JBoss "
+"Messaging 只能运行在 Java 5 或更新版本里。"

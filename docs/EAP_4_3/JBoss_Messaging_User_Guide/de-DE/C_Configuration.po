@@ -1,0 +1,413 @@
+# translation of C_Configuration.po to
+# Language de-DE translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# Automatically generated, 2008.
+# Jasna Dimanoski <jdimanos@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: C_Configuration\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-08-30 18:26+1000\n"
+"Last-Translator: \n"
+"Language-Team:  <en@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#. Tag: title
+#: C_Configuration.xml:3
+#, no-c-format
+msgid "JBoss Messaging Clustering Configuration"
+msgstr "JBoss Messaging Clustering-Konfiguration"
+
+#. Tag: para
+#: C_Configuration.xml:4
+#, no-c-format
+msgid ""
+"JBoss Messaging clustering should work out of the box in most cases with no "
+"configuration changes. It is however crucial that every node is assigned a "
+"unique server id."
+msgstr "Das Clustering von JBoss Messaging sollte in den meisten Fällen ohne Konfigurationsänderung problemlos funktionieren. Es ist jedoch essentiell, dass jedem Node eine eindeutige Server-ID zugewiesen wird."
+
+#. Tag: para
+#: C_Configuration.xml:8
+#, no-c-format
+msgid ""
+"For a clustered installation it is mandatory that a shared database is "
+"available to all nodes in the cluster. The default JBoss AS uses HSQLDB for "
+"its database which is a local shared database. Therefore in order to use "
+"clustering you must replace this with a different shared database. If the "
+"database is not replaced then clustering will not work."
+msgstr ""
+"Für eine geclusterte Installation ist es zwingend erforderlich, dass allen Nodes im Cluster eine geteilte Datenbank verfügbar ist. Der standardmäßige JBoss AS verwendet HSQLDB für "
+"seine Datenbank, bei der es sich um eine lokale geteilte Datenbank handelt. Um daher Clustering zu verwenden, müssen Sie dies durch eine andere geteilte Datenbank ersetzen. Wird die Datenbank nicht ersetzt, so funktioniert Clustering nicht."
+
+#. Tag: para
+#: C_Configuration.xml:16
+#, no-c-format
+msgid ""
+"If you want to run multiple JBoss Messaging nodes on the same box using the "
+"same IP address, e.g. for development purposes, then you can use the "
+"ServiceBindingManager to do this as follows:"
+msgstr ""
+"Falls Sie mehrere JBoss Messaging Nodes an derselben Box laufen lassen und dieselbe IP-Adresse verwenden möchten, etwa zu Entwicklungszwecken, so können Sie den "
+"ServiceBindingManager verwenden, um dies wie folgt zu tun:"
+
+#. Tag: para
+#: C_Configuration.xml:22
+#, no-c-format
+msgid "Uncomment binding manager service from $JBOSS_CONFIG/conf/jboss-service.xml"
+msgstr "Unkommentieren Sie den Binding Manager Dienst von $JBOSS_CONFIG/conf/jboss-service.xml"
+
+#. Tag: para
+#: C_Configuration.xml:26
+#, no-c-format
+msgid "Specify the desired port range (e.g. ports-01, ports-02... etc)"
+msgstr "Legen Sie den gewünschten Port-Bereich fest (z.B. ports-01, ports-02... u.s.w.)"
+
+#. Tag: para
+#: C_Configuration.xml:30
+#, no-c-format
+msgid ""
+"Look at $JBOSS_HOME/docs/examples/binding-manager/sample-bindings.xml. On "
+"each port range, JBoss Remoting configuration should look like:"
+msgstr "Sehen Sie sich $JBOSS_HOME/docs/examples/binding-manager/sample-bindings.xml an. An jedem Port-Bereich sollte die JBoss Remoting-Konfiguration wie folgt aussehen:"
+
+#. Tag: programlisting
+#: C_Configuration.xml:34
+#, no-c-format
+msgid ""
+"&lt;service-config name=\"jboss.messaging:service=Connector,"
+"transport=bisocket\"\n"
+"                      delegateClass=\"org.jboss.services.binding."
+"AttributeMappingDelegate\"&gt;\n"
+"         &lt;delegate-config&gt;\n"
+"            &lt;attribute name=\"Configuration\"&gt;&lt;![CDATA[\n"
+"           &lt;config&gt;\n"
+"            &lt;invoker transport=\"bisocket\"&gt;\n"
+"               &lt;attribute name=\"marshaller\" isParam=\"true\"&gt;\n"
+"                  org.jboss.jms.wireformat.JMSWireFormat\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"unmarshaller\" isParam=\"true\"&gt;\n"
+"                  org.jboss.jms.wireformat.JMSWireFormat\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"dataType\" isParam=\"true\"&gt;jms&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"socket.check_connection\" isParam=\"true"
+"\"&gt;false&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"timeout\" isParam=\"true\"&gt;0&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"serverBindAddress\"&gt;${jboss.bind."
+"address}&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverBindPort\"&gt;4657&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"leasePeriod\"&gt;10000&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"clientSocketClass\" isParam=\"true"
+"\"&gt;\n"
+"                  org.jboss.jms.client.remoting.ClientSocketWrapper\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverSocketClass\"&gt;\n"
+"                  org.jboss.jms.server.remoting.ServerSocketWrapper\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfCallRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"clientMaxPoolSize\" isParam=\"true"
+"\"&gt;50&lt;/attribute&gt;\n"
+"            &lt;/invoker&gt;\n"
+"            &lt;handlers&gt;\n"
+"               &lt;handler subsystem=\"JMS\"&gt;\n"
+"                  org.jboss.jms.server.remoting.JMSServerInvocationHandler\n"
+"               &lt;/handler&gt;\n"
+"            &lt;/handlers&gt;\n"
+"         &lt;/config&gt;\n"
+"            ]]&gt;&lt;/attribute&gt;\n"
+"         &lt;/delegate-config&gt;\n"
+"         &lt;binding port=\"4657\"/&gt;\n"
+"      &lt;/service-config&gt;"
+msgstr ""
+"&lt;service-config name=\"jboss.messaging:service=Connector,"
+"transport=bisocket\"\n"
+"                      delegateClass=\"org.jboss.services.binding."
+"AttributeMappingDelegate\"&gt;\n"
+"         &lt;delegate-config&gt;\n"
+"            &lt;attribute name=\"Configuration\"&gt;&lt;![CDATA[\n"
+"           &lt;config&gt;\n"
+"            &lt;invoker transport=\"bisocket\"&gt;\n"
+"               &lt;attribute name=\"marshaller\" isParam=\"true\"&gt;\n"
+"                  org.jboss.jms.wireformat.JMSWireFormat\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"unmarshaller\" isParam=\"true\"&gt;\n"
+"                  org.jboss.jms.wireformat.JMSWireFormat\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"dataType\" isParam=\"true\"&gt;jms&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"socket.check_connection\" isParam=\"true"
+"\"&gt;false&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"timeout\" isParam=\"true\"&gt;0&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"serverBindAddress\"&gt;${jboss.bind."
+"address}&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverBindPort\"&gt;4657&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"leasePeriod\"&gt;10000&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"clientSocketClass\" isParam=\"true"
+"\"&gt;\n"
+"                  org.jboss.jms.client.remoting.ClientSocketWrapper\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverSocketClass\"&gt;\n"
+"                  org.jboss.jms.server.remoting.ServerSocketWrapper\n"
+"               &lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfCallRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"clientMaxPoolSize\" isParam=\"true"
+"\"&gt;50&lt;/attribute&gt;\n"
+"            &lt;/invoker&gt;\n"
+"            &lt;handlers&gt;\n"
+"               &lt;handler subsystem=\"JMS\"&gt;\n"
+"                  org.jboss.jms.server.remoting.JMSServerInvocationHandler\n"
+"               &lt;/handler&gt;\n"
+"            &lt;/handlers&gt;\n"
+"         &lt;/config&gt;\n"
+"            ]]&gt;&lt;/attribute&gt;\n"
+"         &lt;/delegate-config&gt;\n"
+"         &lt;binding port=\"4657\"/&gt;\n"
+"      &lt;/service-config&gt;"
+
+#. Tag: para
+#: C_Configuration.xml:35
+#, no-c-format
+msgid ""
+"You must ensure that the config (like above) is identical to that in "
+"<literal>remoting-bisocket-service.xml</literal> With the exception of the "
+"actual serverBindPort which clearly must be different for each ports range. "
+"Please note that the default JBoss Messaging service binding manager "
+"bindings in <literal>sample-bindings.xml</literal> shipped with JBAS 4.2.0 "
+"is out of date and you will need to copy the config from <literal>remoting-"
+"bisocket-service.xml</literal>"
+msgstr ""
+"Sie müssen sicherstellen, dass die config (wie oben) is identisch mit derjenigen in "
+"<literal>remoting-bisocket-service.xml</literal> ist, ausgenommen des tatsächlichen serverBindPorts, der für den Bereich jeden Ports verschieden sein muss. "
+"Bitte beachten Sie, dass die Bindings des standardmäßigen JBoss Messaging Service Binding Managers in <literal>sample-bindings.xml</literal>, die mit JBAS 4.2.0 geliefert werden, veraltet sind und Sie die config <literal>remoting-"
+"bisocket-service.xml</literal> werden kopieren müssen."
+
+#. Tag: para
+#: C_Configuration.xml:45
+#, no-c-format
+msgid ""
+"You should ensure that each node is configured to use a different ports "
+"range."
+msgstr "Sie sollten sicherstellen, dass jeder Node so konfiguriert ist, dass er den Bereich eines anderen Ports verwendet."
+
+#. Tag: title
+#: C_Configuration.xml:50
+#, no-c-format
+msgid "Unique server peer id"
+msgstr "Eindeutige Server Peer id"
+
+#. Tag: para
+#: C_Configuration.xml:51
+#, no-c-format
+msgid ""
+"Every node deployed must have a unique id, including those in a particular "
+"LAN cluster, and also those only linked by message bridges."
+msgstr "Jeder deployte Node muss eine eindeutige ID besitzen, einschließlich derer in einem bestimmten LAN Cluster sowie derjenigen, die durch Message Bridges (Nachrichtenbrücken) verbundenen."
+
+#. Tag: para
+#: C_Configuration.xml:54
+#, no-c-format
+msgid ""
+"Ensure the <literal>ServerPeerID</literal> MBean attribute value in "
+"<filename>messaging-service.xml</filename> is unique for each node on the "
+"cluster. The <literal>ServerPeerID</literal> value must be a valid integer."
+msgstr "Vergewissern Sie sich, dass der Wert des <literal>ServerPeerID</literal> MBean Attributs in <filename>messaging-service.xml</filename> eindeutig für jeden Node des Clusters ist. Der <literal>ServerPeerID</literal>-Wert muss ein gültiger ganzzahliger Wert sein."
+
+#. Tag: title
+#: C_Configuration.xml:61
+#, no-c-format
+msgid "Clustered destinations"
+msgstr "Geclusterte Destinationen"
+
+#. Tag: para
+#: C_Configuration.xml:62
+#, no-c-format
+msgid ""
+"JBoss Messaging clusters JMS queues and topics transparently across the "
+"cluster. Messages sent to a distributed queue or topic on one node are "
+"consumable on other nodes. To designate that a particular destination is "
+"clustered simply set the clustered attribute in the destination deployment "
+"descriptor to true."
+msgstr "JBoss Messaging clustert JMS-Warteschlangen und Topics transparent über das Cluster hinweg. An eine distribuierte Warteschlange oder Topic gesendete Nachrichten an einem Node sind an anderen Nodes verwendbar. Um eine bestimmte Destination als geclustert zu designieren setzen Sie das geclusterte Attribut im Destination-Deployment Descriptor auf \"true\"."
+
+#. Tag: para
+#: C_Configuration.xml:67
+#, no-c-format
+msgid ""
+"JBoss Messaging balances messages between nodes, catering for faster or "
+"slower consumers to efficiently balance processing load across the cluster."
+msgstr "JBoss Messaging balanciert Nachrichten zwischen Nodes, und sorgt dafür, dass schnellere und langsamere Verbraucher effizient die Verabeitungslasten über den Cluster abgleichen."
+
+#. Tag: para
+#: C_Configuration.xml:70
+#, no-c-format
+msgid ""
+"If you do not want message redistribution between nodes, but still want to "
+"retain the other charactereristics of clustered destinations. You can do "
+"this by not specifying the attribute ClusterPullConnectionFactoryName on the "
+"server peer"
+msgstr "Falls Sie keine Redistribution von Nachrichten zwischen Nodes wünschen, aber die anderen Eigenschaften geclusterter Destinationen beibehalten möchten, so können Sie dies einrichten, indem Sie das Attribut ClusterPullConnectionFactoryName am Server Peer nicht festlegen"
+
+#. Tag: title
+#: C_Configuration.xml:76
+#, no-c-format
+msgid "Clustered durable subs"
+msgstr "Geclusterte dauerhaft Subs"
+
+#. Tag: para
+#: C_Configuration.xml:77
+#, no-c-format
+msgid ""
+"JBoss Messaging durable subscriptions can also be clustered. This means "
+"multiple subscribers can consume from the same durable subscription from "
+"different nodes of the cluster. A durable subscription will be clustered if "
+"it's topic is clustered"
+msgstr "Dauerhafte Abonnements von JBoss Messaging können ebenfalls geclustert werden. Dies bedeutet, dass mehrere Abonnementen dasselbe dauerhafte Abonnement von verschiedenen Nodes des Clusters aus verwenden können. Ein dauerhaftes Abonnement wird geclustert, falls das Topic geclustert ist."
+
+#. Tag: title
+#: C_Configuration.xml:84
+#, no-c-format
+msgid "Clustered temporary destinations"
+msgstr "Geclusterte temporäre Destinationen"
+
+#. Tag: para
+#: C_Configuration.xml:85
+#, no-c-format
+msgid ""
+"JBoss Messaging also supports clustered temporary topics and queues. All "
+"temporary topics and queues will be clustered if the post office is clustered"
+msgstr ""
+"JBoss Messaging unterstützt außerdem temporäre geclusterte Topics und Warteschlangen. Alle temporären Topics und Warteschlangen "
+"werden geclustert, wenn das Post Office geclustert ist."
+
+#. Tag: title
+#: C_Configuration.xml:91
+#, no-c-format
+msgid "Non clustered servers"
+msgstr "Nicht geclusterte Server"
+
+#. Tag: para
+#: C_Configuration.xml:92
+#, no-c-format
+msgid ""
+"If you don't want your nodes to participate in a cluster, or only have one "
+"non clustered server you can set the clustered attribute on the postoffice "
+"to false"
+msgstr "Falls Sie nicht möchten, dass Ihre Nodes in einem Cluster teilhaben oder nur enen, ncht-geclusterten Server besitzen, so können Sie das \"clustered\"-Attribut am Post Office auf \"false\" setzen."
+
+#. Tag: title
+#: C_Configuration.xml:99
+#, no-c-format
+msgid "Message ordering in the cluster"
+msgstr "Nachrichtenreihenfolge im Cluster"
+
+#. Tag: para
+#: C_Configuration.xml:100
+#, no-c-format
+msgid ""
+"If you wish to apply strict JMS ordering to messages, such that a particular "
+"JMS consumer consumes messages in the same order as they were produced by a "
+"particular producer, you can set the DefaultPreserveOrdering attribute in "
+"the server peer to true. By default this is false. The sideeffect of setting "
+"this to true is that messages cannot be distributed as freely around the "
+"cluster"
+msgstr ""
+"If you wish to apply strict JMS ordering to messages, such that a particular "
+"JMS consumer consumes messages in the same order as they were produced by a "
+"particular producer, you can set the DefaultPreserveOrdering attribute in "
+"the server peer to true. By default this is false. The sideeffect of setting "
+"this to true is that messages cannot be distributed as freely around the "
+"cluster"
+
+#. Tag: title
+#: C_Configuration.xml:110
+#, no-c-format
+msgid "Idempotent operations"
+msgstr "Idempotente Operationen"
+
+#. Tag: para
+#: C_Configuration.xml:111
+#, no-c-format
+msgid ""
+"If the call to send a persistent message to a persistent destination returns "
+"successfully with no exception, then you can be sure that the message was "
+"persisted. However if the call doesn't return successfully e.g. if an "
+"exception is thrown, then you *can't be sure the message wasn't persisted*. "
+"Since the failure might have occurred after persisting the message but "
+"before writing the response to the caller. This is a common attribute of any "
+"RPC type call: You can't tell by the call not returning that the call didn't "
+"actually succeed. Whether it's a web services call, an HTTP get request, an "
+"ejb invocation the same applies. The trick is to code your application so "
+"your operations are *idempotent* i.e. they can be repeated without getting "
+"the system into an inconsistent state. With a message system you can do this "
+"on the application level, by checking for duplicate messages, and discarding "
+"them if they arrive. Duplicate checking is a very powerful technique that "
+"can remove the need for XA transactions in many cases."
+msgstr ""
+"Falls der Aufruf für das Senden einer persistenten Nachricht an eine persistente Destination erfolgreich und ohne Ausnahme wiedergegeben wird, so können Sie sicher sein, dass die Nachricht persisitiert wurde. Wird der Aufruf jedoch nicht erfolgreich wiedergegeben, wurde z.B. eine Ausnahme gemeldet, dann *können Sie nicht sicher sein, dass die Nachricht nicht persistiert wurde*.  "
+"Es ist möglich, dass die Fehlfunktion nach dem Persistieren der Nachricht aber vor dem Schreiben der Antwort an den Aurufer erfolgt ist. Dies ist ein gängiges Attributs jeden Aufrufs des RPC-Typs: Sie können nicht einfach aufgrund nicht reagierenden Aufrufs darauf schließen, dass dieser fehlgeschlagen ist. Ganz gleich, ob es sich um einen Aufruf von Web-Diensten, eine HTTP \"get\"-Anfrage oder einen ejb-Aufruf handelt - es gilt dasselbe. Der Trick besteht darin, den Code Ihrer Anwendungen so zu schreiben, dass Ihre Operationen *idempotent* sind, d.h. diese wiederholt werden können, ohne dass das System in einen inkonsistenten Status gelangt. Mit einem Nachrichtensystem können Sie dies auf Nachrichtenebene tun, indem Sie auf doppelte Nachrichten prüfen und diese bei deren Ankunft verwerfen. Das Prüfen doppelter Nachrichten (sog. \"Duplicate Checking\") ist ein wirkungsvolles Mittel, das in vielen Fällen die Notwendigkeit von XA-Transaktionen beseitigt."
+
+#. Tag: para
+#: C_Configuration.xml:126
+#, no-c-format
+msgid ""
+"In the clustered case, JBM is by default configured to automatically detect "
+"duplicate messages."
+msgstr "Im geclusterten Fall ist JBM standardmäßig so konfiguriert, dass doppelte Nachrichten automatisch aufgespürt werden."
+
+#. Tag: title
+#: C_Configuration.xml:131
+#, no-c-format
+msgid "Clustered connection factories"
+msgstr "Geclusterte Connection Factories"
+
+#. Tag: para
+#: C_Configuration.xml:132
+#, no-c-format
+msgid ""
+"If the supportsLoadBalancing attribute of the connection factory is set to "
+"true then consecutive create connection attempts will round robin between "
+"available servers. The first node to try is chosen randomly"
+msgstr ""
+"Falls das supportsLoadBalancing-Attribut der Connection Factory auf "
+"\"true\" eingestellt ist, so erfolgt bei nachfolgenden Versuchen eine Verbindung zu erstellen (\"create connection\") ein Round Robin zwischen verfügbaren Server. Der erste Node, an dem dies versucht wird, wird zufällig ausgewählt."
+
+#. Tag: para
+#: C_Configuration.xml:133
+#, no-c-format
+msgid ""
+"If the supportsFailover attribute of the connection factory is set to true "
+"then automatic failover is enabled. This will automatically failover from "
+"one server to another, transparently to the user, in case of failure."
+msgstr "Ist das supportsFailover-Attribut der Connection Factory auf \"true\" eingestellt, so ist automatische Failover aktiviert. Ein automatischer Failover von einem Server zum anderen erfolgt im Falle einer Fehlfunktion auf für den Benutzer transparente Weise."
+
+#. Tag: para
+#: C_Configuration.xml:135
+#, no-c-format
+msgid ""
+"If automatic failover is not required or you wish to do manual failover "
+"(JBoss MQ style) this can be set to false, and you can supply a standard JMS "
+"ExceptionListener on the connection which will be called in case of "
+"connection failure. You would then need to manually close the connection, "
+"lookup a new connection factory from HA JNDI and recreate the connection."
+msgstr ""
+"Wird der automatische Failover nicht benötigt oder aber Sie möchten einen manuellen Failover (JBoss MQ Art) durchführen, so kann dies auf \"false\" eingestellt werden, und Sie können einen standardmäßigen JMS "
+"ExceptionListener an der Verbindung angeben, der im Fall eines Fehlschlagens der Verbindung aufgerufen wird. Sie müssten dann die Verbindung manuell schließen, aus HA JNDI eine neue Connection Factory heraussuchen und die Verbindung neu erstellen."
+

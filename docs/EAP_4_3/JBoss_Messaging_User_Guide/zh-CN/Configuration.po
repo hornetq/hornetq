@@ -1,0 +1,4886 @@
+# translation of Configuration.po to
+# Language zh-CN translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# Automatically generated, 2008.
+# Xi HUANG <xhuang@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: Configuration\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-07-22 12:47+1000\n"
+"Last-Translator: Xi HUANG <xhuang@redhat.com>\n"
+"Language-Team:  <en@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+#. Tag: title
+#: Configuration.xml:3
+#, no-c-format
+msgid "Configuration"
+msgstr "配置"
+
+#. Tag: para
+#: Configuration.xml:4
+#, no-c-format
+msgid ""
+"The JMS API specifies how a messaging client interacts with a messaging "
+"server. The exact definition and implementation of messaging services, such "
+"as message destinations and connection factories, are specific to JMS "
+"providers. JBoss Messaging has its own configuration files to configure "
+"services. If you are migrating services from JBossMQ (or other JMS provider) "
+"to JBoss Messaging, you will need to understand these configuration files. "
+"In this chapter, we will discuss how to configure various services inside "
+"JBoss Messaging, which work together to provide JMS API level services to "
+"client applications."
+msgstr ""
+"JMS API 指定消息客户端怎样和服务器进行交互。消息服务的确切定义和实现，如消息"
+"目的地和连接工厂，都是 JMS 提供者所专有的。JBoss Messaging 具有自己的配置文件"
+"来对服务进行配置。如果你准备从 JBossMQ（或其他 JMS 提供者）移植服务到 JBoss "
+"Messaging 里，你需要理解这些配置文件。在本章我们将讨论如何配置 JBoss "
+"Messaging 里的不同服务，使其为客户应用程序提供 JMS API 级的服务。"
+
+#. Tag: para
+#: Configuration.xml:13
+#, no-c-format
+msgid ""
+"The JBoss Messaging service configuration is spread among several "
+"configuration files. Depending on the functionality provided by the services "
+"it configures, the configuration data is distributed between "
+"<filename>messaging-service.xml</filename>, <filename>remoting-bisocket-"
+"service.xml</filename>, <filename>xxx-persistence-service.xml (where xxx is "
+"the name of your database)</filename>, <filename>connection-factories-"
+"service.xml</filename> and <filename>destinations-service.xml</filename>."
+msgstr ""
+"JBoss Messaging 服务的配置分布在几个配置文件里。根据所配置服务的功能，配置数"
+"据分布在 <filename>messaging-service.xml</filename>、<filename>remoting-"
+"bisocket-service.xml</filename>、 <filename>xxx-persistence-service.xml（这里"
+"的 xxx 是数据库名）</filename>、<filename>connection-factories-service.xml</"
+"filename> 和 <filename>destinations-service.xml</filename> 里。"
+
+#. Tag: para
+#: Configuration.xml:21
+#, no-c-format
+msgid ""
+"The AOP client-side and server-side interceptor stacks are configured in "
+"<filename>aop-messaging-client.xml</filename> and <filename>aop-messaging-"
+"server.xml</filename>. Normally you will not want to change them, but some "
+"of the interceptors can be removed to give a small performance increase, if "
+"you don't need them. Be very careful you have considered the security "
+"implications before removing the security interceptor."
+msgstr ""
+"AOP 客户端和服务器端的拦截器栈在 <filename>aop-messaging-client.xml</"
+"filename> 和 <filename>aop-messaging-server.xml</filename> 里进行配置。通常你"
+"不用改动它们，但你可以删除某些不需要的拦截器来小幅提高性能。在删除安全拦截器"
+"（security interceptor）之前，请先仔细考虑安全隐患。"
+
+#. Tag: title
+#: Configuration.xml:29
+#, no-c-format
+msgid "Configuring the ServerPeer"
+msgstr "配置 ServerPeer"
+
+#. Tag: para
+#: Configuration.xml:30
+#, no-c-format
+msgid ""
+"The Server Peer is the heart of the JBoss Messaging JMS facade. The server's "
+"configuration, resides in <filename>messaging-service.xml</filename> "
+"configuration file."
+msgstr ""
+"Server Peer 是 JBoss Messaging JMS facade 的核心。相关服务器的配置位于 "
+"<filename>messaging-service.xml</filename> 文件里。"
+
+#. Tag: para
+#: Configuration.xml:33
+#, no-c-format
+msgid "All JBoss Messaging services are rooted at the server peer."
+msgstr "所有的 JBoss Messaging 服务在 server peer 里都以根用户运行。"
+
+#. Tag: para
+#: Configuration.xml:34
+#, no-c-format
+msgid ""
+"An example of a Server Peer configuration is presented below. Note that not "
+"all values for the server peer's attributes are specified in the example"
+msgstr ""
+"下面是一个 Server Peer 配置的例子。请注意这个例子并没有指定所有 Server Peer "
+"属性的值。"
+
+#. Tag: programlisting
+#: Configuration.xml:37
+#, no-c-format
+msgid ""
+"&lt;mbean code=\"org.jboss.jms.server.ServerPeer\"\n"
+"      name=\"jboss.messaging:service=ServerPeer\"\n"
+"      xmbean-dd=\"xmdesc/ServerPeer-xmbean.xml\"&gt;\n"
+"\n"
+"      &lt;!-- The unique id of the server peer - in a cluster each node MUST "
+"have a unique value - must be an integer --&gt;\n"
+"\n"
+"      &lt;attribute name=\"ServerPeerID\"&gt;0&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- The default JNDI context to use for queues when they are "
+"deployed without specifying one --&gt; \n"
+"      \n"
+"      &lt;attribute name=\"DefaultQueueJNDIContext\"&gt;/queue&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- The default JNDI context to use for topics when they are "
+"deployed without specifying one --&gt; \n"
+"      \n"
+"      &lt;attribute name=\"DefaultTopicJNDIContext\"&gt;/topic&lt;/"
+"attribute&gt;\n"
+"\n"
+"             &lt;attribute name=\"PostOffice\"&gt;jboss.messaging:"
+"service=PostOffice&lt;/attribute&gt;\n"
+"          \n"
+"             &lt;!-- The JAAS security domain to use for JBoss Messaging --"
+"&gt;\n"
+"          \n"
+"      &lt;attribute name=\"SecurityDomain\"&gt;java:/jaas/messaging&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- The default security configuration to apply to destinations - "
+"this can be overridden on a per destination basis --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"DefaultSecurityConfig\"&gt;\n"
+"        &lt;security&gt;\n"
+"            &lt;role name=\"guest\" read=\"true\" write=\"true\" create="
+"\"true\"/&gt;\n"
+"        &lt;/security&gt;\n"
+"      &lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- The default Dead Letter Queue (DLQ) to use for destinations.\n"
+"           This can be overridden on a per destinatin basis --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"DefaultDLQ\"&gt;jboss.messaging.destination:"
+"service=Queue,name=DLQ&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- The default maximum number of times to attempt delivery of a "
+"message before sending to the DLQ (if configured).\n"
+"           This can be overridden on a per destinatin basis --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"DefaultMaxDeliveryAttempts\"&gt;10&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- The default Expiry Queue to use for destinations. This can be "
+"overridden on a per destinatin basis --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"DefaultExpiryQueue\"&gt;jboss.messaging."
+"destination:service=Queue,name=ExpiryQueue&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- The default redelivery delay to impose. This can be overridden "
+"on a per destination basis --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"DefaultRedeliveryDelay\"&gt;0&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- The periodicity of the message counter manager enquiring on "
+"queues for statistics --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"MessageCounterSamplePeriod\"&gt;5000&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- The maximum amount of time for a client to wait for failover "
+"to start on the server side after\n"
+"           it has detected failure --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"FailoverStartTimeout\"&gt;60000&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- The maximum amount of time for a client to wait for failover "
+"to complete on the server side after\n"
+"           it has detected failure --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"FailoverCompleteTimeout\"&gt;300000&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- The maximum number of days results to maintain in the message "
+"counter history --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"DefaultMessageCounterHistoryDayLimit\"&gt;-1&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- The name of the connection factory to use for creating "
+"connections between nodes to pull messages --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"ClusterPullConnectionFactoryName\"&gt;jboss."
+"messaging.connectionfactory:service=ClusterPullConnectionFactory&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- When redistributing messages in the cluster. Do we need to "
+"preserve the order of messages received\n"
+"            by a particular consumer from a particular producer? --&gt;\n"
+"            \n"
+"      &lt;attribute name=\"DefaultPreserveOrdering\"&gt;false&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- Max. time to hold previously delivered messages back waiting "
+"for clients to reconnect after failover --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"RecoverDeliveriesTimeout\"&gt;300000&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;attribute name=\"EnableMessageCounters\"&gt;false&lt;/"
+"attribute&gt;           \n"
+"\n"
+"      &lt;!-- The password used by the message sucker connections to create "
+"connections.\n"
+"           THIS SHOULD ALWAYS BE CHANGED AT INSTALL TIME TO SECURE SYSTEM\n"
+"      &lt;attribute name=\"SuckerPassword\"&gt;&lt;/attribute&gt;\n"
+"      --&gt;\n"
+"\n"
+"      &lt;depends optional-attribute-name=\"PersistenceManager\"&gt;jboss."
+"messaging:service=PersistenceManager&lt;/depends&gt;\n"
+"      \n"
+"      &lt;depends optional-attribute-name=\"JMSUserManager\"&gt;jboss."
+"messaging:service=JMSUserManager&lt;/depends&gt;\n"
+"      \n"
+"      &lt;depends&gt;jboss.messaging:service=Connector,"
+"transport=bisocket&lt;/depends&gt;\n"
+"\n"
+"   &lt;/mbean&gt;"
+msgstr ""
+"&lt;mbean code=\"org.jboss.jms.server.ServerPeer\"\n"
+"      name=\"jboss.messaging:service=ServerPeer\"\n"
+"      xmbean-dd=\"xmdesc/ServerPeer-xmbean.xml\"&gt;\n"
+"\n"
+"      &lt;!-- The unique id of the server peer - in a cluster each node MUST "
+"have a unique value - must be an integer --&gt;\n"
+"\n"
+"      &lt;attribute name=\"ServerPeerID\"&gt;0&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- The default JNDI context to use for queues when they are "
+"deployed without specifying one --&gt; \n"
+"      \n"
+"      &lt;attribute name=\"DefaultQueueJNDIContext\"&gt;/queue&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- The default JNDI context to use for topics when they are "
+"deployed without specifying one --&gt; \n"
+"      \n"
+"      &lt;attribute name=\"DefaultTopicJNDIContext\"&gt;/topic&lt;/"
+"attribute&gt;\n"
+"\n"
+"             &lt;attribute name=\"PostOffice\"&gt;jboss.messaging:"
+"service=PostOffice&lt;/attribute&gt;\n"
+"          \n"
+"             &lt;!-- The JAAS security domain to use for JBoss Messaging --"
+"&gt;\n"
+"          \n"
+"      &lt;attribute name=\"SecurityDomain\"&gt;java:/jaas/messaging&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- The default security configuration to apply to destinations - "
+"this can be overridden on a per destination basis --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"DefaultSecurityConfig\"&gt;\n"
+"        &lt;security&gt;\n"
+"            &lt;role name=\"guest\" read=\"true\" write=\"true\" create="
+"\"true\"/&gt;\n"
+"        &lt;/security&gt;\n"
+"      &lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- The default Dead Letter Queue (DLQ) to use for destinations.\n"
+"           This can be overridden on a per destinatin basis --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"DefaultDLQ\"&gt;jboss.messaging.destination:"
+"service=Queue,name=DLQ&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- The default maximum number of times to attempt delivery of a "
+"message before sending to the DLQ (if configured).\n"
+"           This can be overridden on a per destinatin basis --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"DefaultMaxDeliveryAttempts\"&gt;10&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- The default Expiry Queue to use for destinations. This can be "
+"overridden on a per destinatin basis --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"DefaultExpiryQueue\"&gt;jboss.messaging."
+"destination:service=Queue,name=ExpiryQueue&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- The default redelivery delay to impose. This can be overridden "
+"on a per destination basis --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"DefaultRedeliveryDelay\"&gt;0&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- The periodicity of the message counter manager enquiring on "
+"queues for statistics --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"MessageCounterSamplePeriod\"&gt;5000&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- The maximum amount of time for a client to wait for failover "
+"to start on the server side after\n"
+"           it has detected failure --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"FailoverStartTimeout\"&gt;60000&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- The maximum amount of time for a client to wait for failover "
+"to complete on the server side after\n"
+"           it has detected failure --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"FailoverCompleteTimeout\"&gt;300000&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- The maximum number of days results to maintain in the message "
+"counter history --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"DefaultMessageCounterHistoryDayLimit\"&gt;-1&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- The name of the connection factory to use for creating "
+"connections between nodes to pull messages --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"ClusterPullConnectionFactoryName\"&gt;jboss."
+"messaging.connectionfactory:service=ClusterPullConnectionFactory&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- When redistributing messages in the cluster. Do we need to "
+"preserve the order of messages received\n"
+"            by a particular consumer from a particular producer? --&gt;\n"
+"            \n"
+"      &lt;attribute name=\"DefaultPreserveOrdering\"&gt;false&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- Max. time to hold previously delivered messages back waiting "
+"for clients to reconnect after failover --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"RecoverDeliveriesTimeout\"&gt;300000&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;attribute name=\"EnableMessageCounters\"&gt;false&lt;/"
+"attribute&gt;           \n"
+"\n"
+"      &lt;!-- The password used by the message sucker connections to create "
+"connections.\n"
+"           THIS SHOULD ALWAYS BE CHANGED AT INSTALL TIME TO SECURE SYSTEM\n"
+"      &lt;attribute name=\"SuckerPassword\"&gt;&lt;/attribute&gt;\n"
+"      --&gt;\n"
+"\n"
+"      &lt;depends optional-attribute-name=\"PersistenceManager\"&gt;jboss."
+"messaging:service=PersistenceManager&lt;/depends&gt;\n"
+"      \n"
+"      &lt;depends optional-attribute-name=\"JMSUserManager\"&gt;jboss."
+"messaging:service=JMSUserManager&lt;/depends&gt;\n"
+"      \n"
+"      &lt;depends&gt;jboss.messaging:service=Connector,"
+"transport=bisocket&lt;/depends&gt;\n"
+"\n"
+"   &lt;/mbean&gt;"
+
+#. Tag: para
+#: Configuration.xml:39
+#, no-c-format
+msgid ""
+"SECURITY RISK! To avoid a security risk, you MUST specify the value of the "
+"attribute SuckerPassword in the Server Peer config (messaging-service.xml). "
+"If you do not specify a value, the default value will be used. Any person "
+"that knows the default value will be able to access to all destinations on "
+"the server. The password chosen should only be exposed to administrators"
+msgstr ""
+"安全风险！要避免安全风险，你必须指定 Server Peer 配置文件（messaging-service."
+"xml）里的 SuckerPassword 属性的值。如果你没有进行指定，缺省值将被使用。任何知"
+"道缺省值的人都可以访问服务器上的所有目的地。只有管理员才应该知道这个密码。"
+
+#. Tag: title
+#: Configuration.xml:49
+#, no-c-format
+msgid "ServerPeer attributes"
+msgstr "ServerPeer 的属性"
+
+#. Tag: para
+#: Configuration.xml:50
+#, no-c-format
+msgid "We will now discuss the MBean attributes of the ServerPeer MBean."
+msgstr "现在我们将讨论 ServerPeer MBean 的 MBean 属性。"
+
+#. Tag: title
+#: Configuration.xml:53
+#, no-c-format
+msgid "ServerPeerID"
+msgstr "ServerPeerID"
+
+#. Tag: para
+#: Configuration.xml:54
+#, no-c-format
+msgid ""
+"The unique id of the server peer. Every node you deploy MUST have a unique "
+"id. This applies to different nodes that form a cluster as well as nodes "
+"that are only linked via a message bridge. The id must be a valid integer."
+msgstr ""
+"Server peer 的唯一 ID。你部署的每个节点都必须有唯一的 ID。这适用于组成群集的"
+"不同节点，也适用于仅通过消息桥链接的节点。这个 ID 必须为有效的整型值。"
+
+#. Tag: title
+#: Configuration.xml:60
+#, no-c-format
+msgid "DefaultQueueJNDIContext"
+msgstr "DefaultQueueJNDIContext"
+
+#. Tag: para
+#: Configuration.xml:61
+#, no-c-format
+msgid "The default JNDI context to use when binding queues. Defaults to /queue."
+msgstr "绑定队列时使用的缺省 JNDI 上下文。缺省为 /queue。"
+
+#. Tag: title
+#: Configuration.xml:65
+#, no-c-format
+msgid "DefaultTopicJNDIContext"
+msgstr "DefaultTopicJNDIContext"
+
+#. Tag: para
+#: Configuration.xml:66
+#, no-c-format
+msgid "The default JNDI context to use when binding topics. Defaults to /topic."
+msgstr "绑定主题时使用的缺省 JNDI 上下文。缺省为 /topic。"
+
+#. Tag: title
+#: Configuration.xml:70
+#, no-c-format
+msgid "PostOffice"
+msgstr "PostOffice"
+
+#. Tag: para
+#: Configuration.xml:71
+#, no-c-format
+msgid ""
+"This is the post office that the ServerPeer uses. Normally, you wouldn't "
+"have to change this attribute. The post office is responsible for routing "
+"messages to queues and maintaining the mapping between addresses and queues."
+msgstr ""
+"这是 ServerPeer 使用的邮局（Post Office）。通常，你不需要修改这个属性。邮局负"
+"责把消息转发至队列并维护地址和队列间的映射。"
+
+#. Tag: title
+#: Configuration.xml:76
+#, no-c-format
+msgid "SecurityDomain"
+msgstr "SecurityDomain"
+
+#. Tag: para
+#: Configuration.xml:77
+#, no-c-format
+msgid "The JAAS security domain to be used by this server peer."
+msgstr "本 server peer 使用的 JAAS 安全域名。"
+
+#. Tag: title
+#: Configuration.xml:81
+#, no-c-format
+msgid "DefaultSecurityConfig"
+msgstr "DefaultSecurityConfig"
+
+#. Tag: para
+#: Configuration.xml:82
+#, no-c-format
+msgid ""
+"Default security configuration is used when the security configuration for a "
+"specific queue or topic has not been overridden in the destination's "
+"deployment descriptor. It has exactly the same syntax and semantics as in "
+"JBossMQ."
+msgstr ""
+"当特定队列或主题的安全配置没有覆盖目的地的部署描述符时，缺省的安全配置将被使"
+"用。它与在 JBossMQ 里的语法和模式完全相同。"
+
+#. Tag: para
+#: Configuration.xml:86
+#, no-c-format
+msgid ""
+"The <literal>DefaultSecurityConfig</literal> attribute element should "
+"contain one <literal>&lt;security&gt;</literal> element. The <literal>&lt;"
+"security&gt;</literal> element can contain multiple <literal>&lt;role&gt;</"
+"literal> elements. Each <literal>&lt;role&gt;</literal> element defines the "
+"default access for that particular role."
+msgstr ""
+"<literal>DefaultSecurityConfig</literal> 属性元素应该包含一个 <literal>&lt;"
+"security&gt;</literal> 元素。<literal>&lt;security&gt;</literal> 元素可以包含"
+"多个 <literal>&lt;role&gt;</literal> 元素。每个 <literal>&lt;role&gt;</"
+"literal> 元素都定义了特定角色的缺省访问权限。"
+
+#. Tag: para
+#: Configuration.xml:92
+#, no-c-format
+msgid ""
+"If the <literal>read</literal> attribute is <literal>true</literal> then "
+"that role will be able to read (create consumers, receive messaages or "
+"browse) destinations by default."
+msgstr ""
+"如果 <literal>read</literal> 属性为 <literal>true</literal>，那么这个角色将缺"
+"省可以读取目的地（创建消费者、接收或浏览消息）。"
+
+#. Tag: para
+#: Configuration.xml:96
+#, no-c-format
+msgid ""
+"If the <literal>write</literal> attribute is <literal>true</literal> then "
+"that role will be able to write (create producers or send messages) to "
+"destinations by default."
+msgstr ""
+"如果 <literal>write</literal> 属性为 <literal>true</literal>，那么这个角色将"
+"缺省可以写入目的地（创建生产者或发送消息）。"
+
+#. Tag: para
+#: Configuration.xml:100
+#, no-c-format
+msgid ""
+"If the <literal>create</literal> attribute is <literal>true</literal> then "
+"that role will be able to create durable subscriptions on topics by default."
+msgstr ""
+"如果 <literal>create</literal> 属性为 <literal>true</literal>，那么这个角色将"
+"缺省可以创建主题上的可持久订阅。"
+
+#. Tag: title
+#: Configuration.xml:105
+#, no-c-format
+msgid "DefaultDLQ"
+msgstr "DefaultDLQ"
+
+#. Tag: para
+#: Configuration.xml:106
+#, no-c-format
+msgid ""
+"This is the name of the default DLQ (Dead Letter Queue) the server peer will "
+"use for destinations. The DLQ can be overridden on a per destination basis - "
+"see the destination MBean configuration for more details. A DLQ is a special "
+"destination where messages are sent when the server has attempted to deliver "
+"them unsuccessfully more than a certain number of times. If the DLQ is not "
+"specified at all then the message will be removed after the maximum number "
+"of delivery attempts. The maximum number of delivery attempts can be "
+"specified using the attribute DefaultMaxDeliveryAttempts for a global "
+"default or individually on a per destination basis."
+msgstr ""
+"这是 Server Peer 用于目的地的缺省 DLQ（Dead Letter Queue）。每个目的地的 DLQ "
+"可以被覆盖 － 更多细节请参考目的地 MBean 的配置。DLQ 是一个特殊的目的地，当服"
+"务器递送信息连续失败指定的次数之后，这些信息将被发送到这里。如果根本就没有指"
+"定 DLQ，那么这些消息在进行最多次数的递送尝试后将被删除。递送的最多次数可以用"
+"属性 DefaultMaxDeliveryAttempts 指定，它可以是全局的缺省属性也可以基于每个目"
+"的地进行设置。"
+
+#. Tag: title
+#: Configuration.xml:119
+#, no-c-format
+msgid "DefaultMaxDeliveryAttempts"
+msgstr "DefaultMaxDeliveryAttempts"
+
+#. Tag: para
+#: Configuration.xml:120
+#, no-c-format
+msgid ""
+"The default for the maximum number of times delivery of a message will be "
+"attempted before sending the message to the DLQ, if configured."
+msgstr "如果被设置的话，它表示消息在被发送到 DLQ 之前所尝试的最多次数。"
+
+#. Tag: para
+#: Configuration.xml:123
+#, no-c-format
+msgid "The default value is <literal>10</literal>."
+msgstr "它的缺省值是 <literal>10</literal>。"
+
+#. Tag: para
+#: Configuration.xml:124
+#, no-c-format
+msgid "This value can also be overridden on a per destination basis."
+msgstr "这个值也可以基于每个目的地进行覆盖。"
+
+#. Tag: title
+#: Configuration.xml:128
+#, no-c-format
+msgid "DefaultExpiryQueue"
+msgstr "DefaultExpiryQueue"
+
+#. Tag: para
+#: Configuration.xml:129
+#, no-c-format
+msgid ""
+"This is the name of the default expiry queue the server peer will use for "
+"destinations. The expiry can be overridden on a per destination basis - see "
+"the destination MBean configuration for more details. An expiry queue is a "
+"special destination where messages are sent when they have expired. Message "
+"expiry is determined by the value of Message::getJMSExpiration() If the "
+"expiry queue is not specified at all then the message will be removed after "
+"it is expired."
+msgstr ""
+"这是 Server Peer 用于目的地的缺省 Expiry Queue 的名称。过期时间可以基于每个目"
+"的地进行覆盖 － 更多细节请参考目的地的 MBean 配置。Expiry Queue 是一个特殊的"
+"目的地，当消息过期时将被发送到这里。消息是否过期是由 Message::"
+"getJMSExpiration() 的值决定的，如果根本没有指定 Expiry Queue，那么消息在过期"
+"后将被删除。"
+
+#. Tag: title
+#: Configuration.xml:139
+#, no-c-format
+msgid "DefaultRedeliveryDelay"
+msgstr "DefaultRedeliveryDelay"
+
+#. Tag: para
+#: Configuration.xml:140
+#, no-c-format
+msgid ""
+"When redelivering a message after failure of previous delivery it is often "
+"beneficial to introduce a delay perform redelivery in order to prevent "
+"thrashing of delivery-failure, delivery-failure etc"
+msgstr ""
+"在前一次递送失败后进行重新递送前，采用一定的延迟是有益处的，这是为了阻止连续"
+"的递送失败。"
+
+#. Tag: para
+#: Configuration.xml:144
+#, no-c-format
+msgid "The default value is <literal>0</literal> which means there will be no delay."
+msgstr "它的缺省值是 <literal>0</literal>，表示没有延迟。"
+
+#. Tag: para
+#: Configuration.xml:146
+#, no-c-format
+msgid ""
+"Change this if your application could benefit with a delay before "
+"redelivery. This value can also be overridden on a per destination basis."
+msgstr ""
+"修改这个值将使你的应用程序受益于重新递送前的延迟。这个值也可以基于每个目的地"
+"进行覆盖。"
+
+#. Tag: title
+#: Configuration.xml:151
+#, no-c-format
+msgid "MessageCounterSamplePeriod"
+msgstr "MessageCounterSamplePeriod"
+
+#. Tag: para
+#: Configuration.xml:152
+#, no-c-format
+msgid ""
+"Periodically the server will query each queue to gets its statistics. This "
+"is the period."
+msgstr "服务器将定期低查询每个队列来获取统计信息。这个值表示对应的时间间隔。"
+
+#. Tag: para
+#: Configuration.xml:154
+#, no-c-format
+msgid "The default value is <literal>10000</literal> milliseconds."
+msgstr "它的缺省值是 <literal>10000</literal> 毫秒。"
+
+#. Tag: title
+#: Configuration.xml:158
+#, no-c-format
+msgid "FailoverStartTimeout"
+msgstr "FailoverStartTimeout"
+
+#. Tag: para
+#: Configuration.xml:159
+#, no-c-format
+msgid ""
+"The maximum number of milliseconds the client will wait for failover to "
+"start on the server side when a problem is detected."
+msgstr "当检测到问题时，客户将等待服务器端启动失效切换的最长时间（毫秒）。"
+
+#. Tag: para
+#: Configuration.xml:162
+#, no-c-format
+msgid "The default value is <literal>60000</literal> (one minute)."
+msgstr "它的缺省值是 <literal>60000</literal>（亦即 1 分钟）。"
+
+#. Tag: title
+#: Configuration.xml:166
+#, no-c-format
+msgid "FailoverCompleteTimeout"
+msgstr "FailoverCompleteTimeout"
+
+#. Tag: para
+#: Configuration.xml:167
+#, no-c-format
+msgid ""
+"The maximum number of milliseconds the client will wait for failover to "
+"complete on the server side after it has started."
+msgstr "当失效切换已经启动时，客户将等待服务器端完成失效切换的最长时间（毫秒）。"
+
+#. Tag: para
+#: Configuration.xml:170
+#, no-c-format
+msgid "The default value is <literal>300000</literal> (five minutes)."
+msgstr "它的缺省值是 <literal>300000</literal>（亦即 5 分钟）。"
+
+#. Tag: title
+#: Configuration.xml:174
+#, no-c-format
+msgid "DefaultMessageCounterHistoryDayLimit"
+msgstr "DefaultMessageCounterHistoryDayLimit"
+
+#. Tag: para
+#: Configuration.xml:175
+#, no-c-format
+msgid ""
+"JBoss Messaging provides a message counter history which shows the number of "
+"messages arriving on each queue of a certain number of days. This attribute "
+"represents the maximum number of days for which to store message counter "
+"history. It can be overridden on a per destination basis."
+msgstr ""
+"JBoss Messaging 提供消息计数器的历史记录，它显示一段时间内到达每个队列的消息"
+"数量。这个属性代表消息计数器历史存储的最多天数。这个属"
+"性可以基于目的地进行覆盖。"
+
+#. Tag: title
+#: Configuration.xml:182
+#, no-c-format
+msgid "ClusterPullConnectionFactory"
+msgstr "ClusterPullConnectionFactory"
+
+#. Tag: para
+#: Configuration.xml:183
+#, no-c-format
+msgid "The name of the connection factory to use for pulling messages between nodes."
+msgstr "用于在节点间传送消息的连接工厂的名称。"
+
+#. Tag: para
+#: Configuration.xml:185
+#, no-c-format
+msgid ""
+"If you wish to turn off message sucking between queues altogether, but "
+"retain failover, then you can ommit this attribute altogether."
+msgstr "如果你希望关闭队列间的消息 sucking，但保留失效切换，你可以忽略这个属性。"
+
+#. Tag: title
+#: Configuration.xml:189
+#, no-c-format
+msgid "DefaultPreserveOrdering"
+msgstr "DefaultPreserveOrdering"
+
+#. Tag: para
+#: Configuration.xml:190
+#, no-c-format
+msgid ""
+"If true, then strict JMS ordering is preserved in the cluster. See the "
+"cluster configurations section for more details. Default is false."
+msgstr ""
+"如果为 true，群集里将应用严格的 JMS 顺序。更多细节请参考群集配置部分的内容。"
+"它的缺省值是 false。"
+
+#. Tag: title
+#: Configuration.xml:195
+#, no-c-format
+msgid "RecoverDeliveriesTimeout"
+msgstr "RecoverDeliveriesTimeout"
+
+#. Tag: para
+#: Configuration.xml:196
+#, no-c-format
+msgid ""
+"When failover occurs, already delivered messages will be kept aside, waiting "
+"for clients to reconnect. In the case that clients never reconnect (e.g. the "
+"client is dead) then eventually these messages will timeout and be added "
+"back to the queue. The value is in ms. The default is 5 mins."
+msgstr ""
+"当发生失效切换时，已经递送的消息将被置于一旁，等待客户端的重新连接。如果客户"
+"端不在重新连接（如客户端崩溃），那么这些消息最终将超时并放回队列。它以毫秒为"
+"单位，缺省值是 5 毫秒。"
+
+#. Tag: title
+#: Configuration.xml:203 Configuration.xml:355
+#, no-c-format
+msgid "EnableMessageCounters"
+msgstr "EnableMessageCounters"
+
+#. Tag: para
+#: Configuration.xml:204
+#, no-c-format
+msgid "Set this to true to enable message counters when the server starts"
+msgstr "设置为 true 可以在服务器启动时启用消息计数器。"
+
+#. Tag: title
+#: Configuration.xml:207
+#, no-c-format
+msgid "SuckerPassword"
+msgstr "SuckerPassword"
+
+#. Tag: para
+#: Configuration.xml:208
+#, no-c-format
+msgid ""
+"JBoss Messaging internally makes connections between nodes in order to "
+"redistribute messages between clustered destinations. These connections are "
+"made with the user name of a special reserved user. The password used by "
+"that user is specified by this parameter."
+msgstr ""
+"JBoss Messaging 在节点间创建内部的连接来在群集目的地间重新分发消息。这些连接"
+"使用特殊的保留用户的名称进行创建。这个参数指定该用户使用的密码。"
+
+#. Tag: para
+#: Configuration.xml:212
+#, no-c-format
+msgid ""
+"This must be specified at install time, or the default password will be "
+"used. Any one who then knows the default password will be able to gain "
+"access to any destinations on the server. This value MUST be changed at "
+"install time."
+msgstr ""
+"这必须在安装时指定，否则缺省密码将被使用。任何知道缺省密码的人都可以访问服务"
+"器上的任何目的地。这个值必须在安装时进行修改。"
+
+#. Tag: title
+#: Configuration.xml:217
+#, no-c-format
+msgid "StrictTCK"
+msgstr "StrictTCK"
+
+#. Tag: para
+#: Configuration.xml:218
+#, no-c-format
+msgid "Set to true if you want strict JMS TCK semantiocs"
+msgstr "如果你想应用严格的 JMS TCK 模式，将其设置为 true。"
+
+#. Tag: title
+#: Configuration.xml:221
+#, no-c-format
+msgid "Destinations"
+msgstr "Destinations"
+
+#. Tag: para
+#: Configuration.xml:222
+#, no-c-format
+msgid "Returns a list of the destinations (queues and topics) currently deployed."
+msgstr "返回目前部署的目的地（队列和主题）列表。"
+
+#. Tag: title
+#: Configuration.xml:226 Configuration.xml:1097
+#, no-c-format
+msgid "MessageCounters"
+msgstr "MessageCounters"
+
+#. Tag: para
+#: Configuration.xml:227
+#, no-c-format
+msgid "JBoss Messaging provides a message counter for each queue."
+msgstr "JBoss Messaging 为每个队列提供了一个消息计数器。"
+
+#. Tag: title
+#: Configuration.xml:231
+#, no-c-format
+msgid "MessageCountersStatistics"
+msgstr "MessageCountersStatistics"
+
+#. Tag: para
+#: Configuration.xml:232
+#, no-c-format
+msgid "JBoss Messaging provides statistics for each message counter for each queue."
+msgstr "JBoss Messaging 也为每个队列的每个消息计数器提供统计信息。"
+
+#. Tag: title
+#: Configuration.xml:236 Configuration.xml:1303
+#, no-c-format
+msgid "SupportsFailover"
+msgstr "SupportsFailover"
+
+#. Tag: para
+#: Configuration.xml:237
+#, no-c-format
+msgid ""
+"Set to false to prevent server side failover occurring in a cluster when a "
+"node crashes."
+msgstr "如设置为 false，当节点崩溃时会阻止群集里服务器端的失效切换。"
+
+#. Tag: title
+#: Configuration.xml:241
+#, no-c-format
+msgid "PersistenceManager"
+msgstr "PersistenceManager"
+
+#. Tag: para
+#: Configuration.xml:242
+#, no-c-format
+msgid ""
+"This is the persistence manager that the ServerPeer uses. You will not "
+"normally need to change this attribute."
+msgstr "这是 ServerPeer 使用的 persistence manager。你通常不需要修改这个属性。"
+
+#. Tag: title
+#: Configuration.xml:246
+#, no-c-format
+msgid "JMSUserManager"
+msgstr "JMSUserManager"
+
+#. Tag: para
+#: Configuration.xml:247
+#, no-c-format
+msgid ""
+"This is the JMS user manager that the ServerPeer uses. You will not normally "
+"need to change this attribute."
+msgstr "这是 ServerPeer 使用的 JMS user manager。你通常不需要修改这个属性。"
+
+#. Tag: title
+#: Configuration.xml:251
+#, no-c-format
+msgid "MBean operations of the ServerPeer MBean."
+msgstr "ServerPeer MBean 的 MBean 操作。"
+
+#. Tag: title
+#: Configuration.xml:254
+#, no-c-format
+msgid "DeployQueue"
+msgstr "DeployQueue"
+
+#. Tag: para
+#: Configuration.xml:255
+#, no-c-format
+msgid "This operation lets you programmatically deploy a queue."
+msgstr "这个操作可让你在程序里部署队列。"
+
+#. Tag: para
+#: Configuration.xml:257
+#, no-c-format
+msgid "There are two overloaded versions of this operation"
+msgstr "这个操作有两个重载的版本"
+
+#. Tag: para
+#: Configuration.xml:259
+#, no-c-format
+msgid ""
+"If the queue already exists but is undeployed it is deployed. Otherwise it "
+"is created and deployed."
+msgstr "如果队列存在但已卸载，它将被部署。否则队列将被创建并部署。"
+
+#. Tag: para
+#: Configuration.xml:261 Configuration.xml:304
+#, no-c-format
+msgid ""
+"The <literal>name</literal> parameter represents the name of the destination "
+"to deploy."
+msgstr "<literal>name</literal> 参数代表要部署的目的地的名称。"
+
+#. Tag: para
+#: Configuration.xml:263
+#, no-c-format
+msgid ""
+"The <literal>jndiName</literal> parameter (optional) represents the full "
+"jndi name where to bind the destination. If this is not specified then the "
+"destination will be bound in &lt;DefaultQueueJNDIContext&gt;/&lt;name&gt;."
+msgstr ""
+"<literal>jndiName</literal> 参数（可选）代表目的地绑定的 JNDI 全名。如果没有"
+"被指定，那么这个目的地将绑定在 &lt;DefaultQueueJNDIContext&gt;/&lt;name&gt;。"
+
+#. Tag: para
+#: Configuration.xml:267 Configuration.xml:310
+#, no-c-format
+msgid ""
+"The first version of this operation deploys the destination with the default "
+"paging parameters. The second overloaded version deploys the destination "
+"with the specified paging parameters. See the section on configuring "
+"destinations for a discussion of what the paging parameters mean."
+msgstr ""
+"这个操作的第一个版本用缺省的页面参数部署目的地。第二个重载的版本用指定的页面"
+"参数部署目的地。关于页面参数的定义，请参考目的地配置部分的内容。"
+
+#. Tag: title
+#: Configuration.xml:274
+#, no-c-format
+msgid "UndeployQueue"
+msgstr "UndeployQueue"
+
+#. Tag: para
+#: Configuration.xml:275
+#, no-c-format
+msgid "This operation lets you programmatically undeploy a queue."
+msgstr "这个操作让你可以在程序里卸载队列。"
+
+#. Tag: para
+#: Configuration.xml:277 Configuration.xml:320
+#, no-c-format
+msgid "The queue is undeployed but is NOT removed from persistent storage."
+msgstr "这个队列将被卸载但不会从持久性存储里删除。"
+
+#. Tag: para
+#: Configuration.xml:279
+#, no-c-format
+msgid ""
+"This operation returns <literal>true</literal> if the queue was successfull "
+"undeployed, otherwise it returns <literal>false</literal>."
+msgstr ""
+"如果队列被成功卸载，那么这个操作返回 <literal>true</literal>。否则返回 "
+"<literal>false</literal>。"
+
+#. Tag: title
+#: Configuration.xml:284
+#, no-c-format
+msgid "DestroyQueue"
+msgstr "DestroyQueue"
+
+#. Tag: para
+#: Configuration.xml:285
+#, no-c-format
+msgid "This operation lets you programmatically destroy a queue."
+msgstr "这个操作可让你在程序里销毁队列。"
+
+#. Tag: para
+#: Configuration.xml:287
+#, no-c-format
+msgid "The queue is undeployed and then all its data is destroyed from the database."
+msgstr "队列被卸载，然后所有的数据将从数据库里销毁。"
+
+#. Tag: para
+#: Configuration.xml:289
+#, no-c-format
+msgid ""
+"Be careful when using this method since it will delete all data for the "
+"queue."
+msgstr "在使用这个方法要小心，因为它将删除队列的所有数据。"
+
+#. Tag: para
+#: Configuration.xml:292
+#, no-c-format
+msgid ""
+"This operation returns <literal>true</literal> if the queue was successfully "
+"destroyed. otherwise it returns <literal>false</literal>."
+msgstr ""
+"如果队列被成功销毁，这个操作返回 <literal>true</literal>。否则返回 "
+"<literal>false</literal>。"
+
+#. Tag: title
+#: Configuration.xml:297
+#, no-c-format
+msgid "DeployTopic"
+msgstr "DeployTopic"
+
+#. Tag: para
+#: Configuration.xml:298
+#, no-c-format
+msgid "This operation lets you programmatically deploy a topic."
+msgstr "这个操作让你在程序里部署主题。"
+
+#. Tag: para
+#: Configuration.xml:300
+#, no-c-format
+msgid "There are two overloaded versions of this operation."
+msgstr "这个操作有两个重载的版本。"
+
+#. Tag: para
+#: Configuration.xml:302
+#, no-c-format
+msgid ""
+"If the topic already exists but is undeployed it is deployed. Otherwise it "
+"is created and deployed."
+msgstr "如果主题已存在但未卸载，那么它将被部署。否则它将被创建并部署。"
+
+#. Tag: para
+#: Configuration.xml:306
+#, no-c-format
+msgid ""
+"The <literal>jndiName</literal> parameter (optional) represents the full "
+"jndi name where to bind the destination. If this is not specified then the "
+"destination will be bound in &lt;DefaultTopicJNDIContext&gt;/&lt;name&gt;."
+msgstr ""
+"<literal>jndiName</literal> 参数（可选）代表绑定目的地的 JNDI 全名。如果它没"
+"有被指定，那么这个目的地将绑定在 &lt;DefaultTopicJNDIContext&gt;/&lt;"
+"name&gt;。"
+
+#. Tag: title
+#: Configuration.xml:317
+#, no-c-format
+msgid "UndeployTopic"
+msgstr "UndeployTopic"
+
+#. Tag: para
+#: Configuration.xml:318
+#, no-c-format
+msgid "This operation lets you programmatically undeploy a topic."
+msgstr "这个操作让你可以在程序里卸载主题。"
+
+#. Tag: para
+#: Configuration.xml:322
+#, no-c-format
+msgid ""
+"This operation returns <literal>true</literal> if the topic was successfully "
+"undeployed. otherwise it returns <literal>false</literal>."
+msgstr ""
+"如果主题被成功卸载，这个操作返回 <literal>true</literal>。否则返回 "
+"<literal>false</literal>。"
+
+#. Tag: title
+#: Configuration.xml:327
+#, no-c-format
+msgid "DestroyTopic"
+msgstr "DestroyTopic"
+
+#. Tag: para
+#: Configuration.xml:328
+#, no-c-format
+msgid "This operation lets you programmatically destroy a topic."
+msgstr "这个操作可让你在程序里部署主题。"
+
+#. Tag: para
+#: Configuration.xml:330
+#, no-c-format
+msgid "The topic is undeployed and then all its data is destroyed from the database."
+msgstr "主题被卸载，然后它的所有数据都会从数据库里销毁。"
+
+#. Tag: para
+#: Configuration.xml:332
+#, no-c-format
+msgid ""
+"Be careful when using this method since it will delete all data for the "
+"topic."
+msgstr "请小心使用这个方法，因为它将删除主题的所有数据。"
+
+#. Tag: para
+#: Configuration.xml:335
+#, no-c-format
+msgid ""
+"This operation returns <literal>true</literal> if the topic was successfully "
+"destroyed. otherwise it returns <literal>false</literal>."
+msgstr ""
+"如果主题被成功销毁，这个操作返回 <literal>true</literal>，否则返回 "
+"<literal>false</literal>。"
+
+#. Tag: title
+#: Configuration.xml:340
+#, no-c-format
+msgid "ListMessageCountersHTML"
+msgstr "ListMessageCountersHTML"
+
+#. Tag: para
+#: Configuration.xml:341
+#, no-c-format
+msgid "This operation returns message counters in an easy to display HTML format."
+msgstr "这个操作返回 HTML 格式的消息计数器。"
+
+#. Tag: title
+#: Configuration.xml:345 Configuration.xml:350
+#, no-c-format
+msgid "ResetAllMesageCounters"
+msgstr "ResetAllMesageCounters"
+
+#. Tag: para
+#: Configuration.xml:346
+#, no-c-format
+msgid "This operation resets all message counters to zero."
+msgstr "这个操作将所有消息计数器清零。"
+
+#. Tag: para
+#: Configuration.xml:351
+#, no-c-format
+msgid "This operation resets all message counter histories to zero."
+msgstr "这个操作将所有消息计数器历史清零。"
+
+#. Tag: para
+#: Configuration.xml:356
+#, no-c-format
+msgid ""
+"This operation enables all message counters for all destinations. Message "
+"counters are disabled by default."
+msgstr "这个操作为所有目的地启用消息计数器。消息计数器缺省是禁用的。"
+
+#. Tag: title
+#: Configuration.xml:360
+#, no-c-format
+msgid "DisableMessageCounters"
+msgstr "DisableMessageCounters"
+
+#. Tag: para
+#: Configuration.xml:361
+#, no-c-format
+msgid ""
+"This operation disables all message counters for all destinations. Message "
+"counters are disabled by default."
+msgstr "这个操作禁用所有目的地的消息计数器。消息计数器缺省是禁用的。"
+
+#. Tag: title
+#: Configuration.xml:365
+#, no-c-format
+msgid "RetrievePreparedTransactions"
+msgstr "RetrievePreparedTransactions"
+
+#. Tag: para
+#: Configuration.xml:366
+#, no-c-format
+msgid ""
+"Retrieves a list of the Xids for all transactions currently in a prepared "
+"state on the node."
+msgstr "获取节点上当前处于 prepared 状态的所有事务的 XID 列表。"
+
+#. Tag: title
+#: Configuration.xml:370
+#, no-c-format
+msgid "ShowPreparedTransactions"
+msgstr "ShowPreparedTransactions"
+
+#. Tag: para
+#: Configuration.xml:371
+#, no-c-format
+msgid ""
+"Retrieves a list of the Xids for all transactions currently in a prepared "
+"state on the node in an easy to display HTML format."
+msgstr "获取节点上当前处于 prepared 状态的所有事务的 XID 列表，并以 HTML 形式显示。"
+
+#. Tag: title
+#: Configuration.xml:379
+#, no-c-format
+msgid "Changing the Database"
+msgstr "修改数据库"
+
+#. Tag: para
+#: Configuration.xml:380
+#, no-c-format
+msgid ""
+"The JMS service in the JBoss AS uses relational databases to persist its "
+"messages. For improved performance, you should change the JMS service to "
+"take advantage of the external database. To do that, you need to replace the "
+"file <filename>jboss-as/server/production/deploy/jboss-messaging.sar/"
+"clustered-hsqldb-persistence-service.xml</filename> with a file in "
+"<filename>jboss-as/docs/examples/jms/</filename> depending on your external "
+"database and restart your server. <itemizedlist> <listitem><para>MySQL: "
+"<literal>mysql-persistence-service.xml</literal></para></listitem> "
+"<listitem><para>PostgreSQL: <literal>postgresql-persistence-service.xml</"
+"literal></para></listitem> <listitem><para>Oracle: <literal>oracle-"
+"persistence-service.xml</literal></para></listitem> <listitem><para>Sybase: "
+"<literal>sybase-persistence-service.xml</literal></para></listitem> "
+"<listitem><para>MS SQL Server: <literal>mssql-persistence-service.xml</"
+"literal></para></listitem> </itemizedlist> For the <literal>default</"
+"literal> and <literal>all</literal> configurations, replace the files "
+"<filename>jboss-as/server/default/deploy/jboss-messaging.sar/hsqldb-"
+"persistence-service.xml</filename> and <filename>jboss-as/server/all/deploy/"
+"jboss-messaging.sar/clustered-hsqldb-persistence-service.xml</filename> "
+"respectively."
+msgstr ""
+"JBoss AS 里的 JMS 服务使用关系型数据库来持久化消息。为了提供性能，你应该让 "
+"JMS 服务利用外部的数据库。根据不同的数据库，你需要用 <filename>jboss-as/docs/"
+"examples/jms/</filename> 里的文件替换 <filename>jboss-as/server/production/"
+"deploy/jboss-messaging.sar/clustered-hsqldb-persistence-service.xml</"
+"filename> 并重启服务器。<itemizedlist> <listitem><para>MySQL: <literal>mysql-"
+"persistence-service.xml</literal></para></listitem> "
+"<listitem><para>PostgreSQL: <literal>postgresql-persistence-service.xml</"
+"literal></para></listitem> <listitem><para>Oracle: <literal>oracle-"
+"persistence-service.xml</literal></para></listitem> <listitem><para>Sybase: "
+"<literal>sybase-persistence-service.xml</literal></para></listitem> "
+"<listitem><para>MS SQL Server: <literal>mssql-persistence-service.xml</"
+"literal></para></listitem> </itemizedlist> 对于 <literal>default</literal> "
+"和 <literal>all</literal> 配置，请分别替换 <filename>jboss-as/server/default/"
+"deploy/jboss-messaging.sar/hsqldb-persistence-service.xml</filename> 和 "
+"<filename>jboss-as/server/all/deploy/jboss-messaging.sar/clustered-hsqldb-"
+"persistence-service.xml</filename>。"
+
+#. Tag: para
+#: Configuration.xml:408
+#, no-c-format
+msgid ""
+"Also, be aware that by default, the Messaging services relying on a "
+"datastore are referencing <literal>\"java:/DefaultDS\"</literal> for the "
+"datasource. If you are deploying a datasource with a different JNDI name, "
+"you need to update all the <literal>DataSource</literal> attribute in the "
+"persistence configuration file. Example data source configurations for each "
+"of the popular databases are available in the distribution."
+msgstr ""
+"而且，请注意 Messaging 服务缺省依赖于以 <literal>\"java:/DefaultDS\"</"
+"literal> 引用的数据源。如果你采用不同的 JNDI 名称部署数据源，你需要更新持久化"
+"配置文件里所有的 <literal>DataSource</literal> 属性。本发行版本里包含了所有流"
+"行数据库的数据源配置示例。"
+
+#. Tag: para
+#: Configuration.xml:415
+#, no-c-format
+msgid ""
+"You can configure a JCA datasource using an example from <filename>jboss-as/"
+"docs/examples/jca</filename> and copying to <filename>jboss-as/server/"
+"<replaceable>&lt;config-name&gt;</replaceable>/deploy</filename>. By default "
+"JBoss Messaging uses <literal>DefaultDS</literal>."
+msgstr ""
+"你可以把 <filename>jboss-as/docs/examples/jca</filename> 里的例子复制到 "
+"<filename>jboss-as/server/<replaceable>&lt;config-name&gt;</replaceable>/"
+"deploy</filename> 里来配置 JCA 数据源。JBoss Messaging 缺省使用 "
+"<literal>DefaultDS</literal>。"
+
+#. Tag: title
+#: Configuration.xml:422
+#, no-c-format
+msgid "Configuring the Post office"
+msgstr "配置邮局"
+
+#. Tag: para
+#: Configuration.xml:423
+#, no-c-format
+msgid "It is the job of the post office to route messages to their destination(s)."
+msgstr "邮局（Post Office）的职责是把消息传递至目的地。"
+
+#. Tag: para
+#: Configuration.xml:425
+#, no-c-format
+msgid ""
+"The post office maintains the mappings between addresses to which messages "
+"can be sent and their final queues."
+msgstr "邮局维护消息可发送到的地址和最终队列之间的映射关系。"
+
+#. Tag: para
+#: Configuration.xml:427
+#, no-c-format
+msgid ""
+"For example when sending a message with an address that represents a JMS "
+"queue name, the post office will route this to a single queue - the JMS "
+"queue. When sending a message with an address that repesents a JMS topic "
+"name, the post office will route this to a set of queues - one for each JMS "
+"subscription."
+msgstr ""
+"例如，当发送带有代表 JMS 队列名称的地址的消息时，邮局会将其传递到单一的对列 "
+"- 该 JMS 对列。而当带有代表 JMS 主题名称的地址的消息时，邮局会将其传递到一组"
+"对列 - 每个 JMS 订阅对应一个。"
+
+#. Tag: para
+#: Configuration.xml:432
+#, no-c-format
+msgid "The post office also handles the persistence for the mapping of addresses."
+msgstr "邮局也处理地址映射的持久化。"
+
+#. Tag: para
+#: Configuration.xml:434
+#, no-c-format
+msgid ""
+"JBoss Messaging post-offices are also cluster aware. In a cluster they will "
+"automatically route and pull messages between them in order to provide fully "
+"distributed JMS queues and topics."
+msgstr ""
+"JBoss Messaging 的邮局也可用于群集。在群集环境里，它们将在节点间自动传递和获"
+"取消息来提供完全分布式的 JMS 队列和主题。"
+
+#. Tag: para
+#: Configuration.xml:437
+#, no-c-format
+msgid ""
+"The post office configuration is found in the xxx-persistence-service.xml "
+"file (where xxx is the name of your database)."
+msgstr "邮局的配置在 xxx-persistence-service.xml（xxx 是数据库的名称）文件里进行。"
+
+#. Tag: para
+#: Configuration.xml:440
+#, no-c-format
+msgid "Here is an example of a post office configuration:"
+msgstr "下面是一个邮局的配置示例："
+
+#. Tag: programlisting
+#: Configuration.xml:441
+#, no-c-format
+msgid ""
+"&lt;mbean code=\"org.jboss.messaging.core.jmx.MessagingPostOfficeService\"\n"
+"      name=\"jboss.messaging:service=PostOffice\"\n"
+"      xmbean-dd=\"xmdesc/MessagingPostOffice-xmbean.xml\"&gt;\n"
+"      \n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;jboss.messaging:"
+"service=ServerPeer&lt;/depends&gt;\n"
+"                \n"
+"      &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/"
+"depends&gt;\n"
+"      \n"
+"      &lt;depends optional-attribute-name=\"TransactionManager\"&gt;jboss:"
+"service=TransactionManager&lt;/depends&gt;\n"
+"      \n"
+"      &lt;!-- The name of the post office --&gt;                  \n"
+"      \n"
+"      &lt;attribute name=\"PostOfficeName\"&gt;JMS post office&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- The datasource used by the post office to access it's binding "
+"information --&gt;                     \n"
+"      \n"
+"      &lt;attribute name=\"DataSource\"&gt;java:/DefaultDS&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- If true will attempt to create tables and indexes on every "
+"start-up --&gt;\n"
+"                        \n"
+"      &lt;attribute name=\"CreateTablesOnStartup\"&gt;true&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- If true then we will automatically detect and reject duplicate "
+"messages sent during failover --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"DetectDuplicates\"&gt;true&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- The size of the id cache to use when detecting duplicate "
+"messages --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"IDCacheSize\"&gt;500&lt;/attribute&gt;\n"
+"                  \n"
+"      &lt;attribute name=\"SqlProperties\"&gt;&lt;![CDATA[\n"
+"CREATE_POSTOFFICE_TABLE=CREATE TABLE JBM_POSTOFFICE (POSTOFFICE_NAME VARCHAR"
+"(255), NODE_ID INTEGER, QUEUE_NAME VARCHAR(255), COND VARCHAR(1023), "
+"SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT, CLUSTERED CHAR(1), ALL_NODES CHAR"
+"(1), PRIMARY KEY(POSTOFFICE_NAME, NODE_ID, QUEUE_NAME)) ENGINE = INNODB\n"
+"INSERT_BINDING=INSERT INTO JBM_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, "
+"QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODES) VALUES "
+"(?, ?, ?, ?, ?, ?, ?, ?)\n"
+"DELETE_BINDING=DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND "
+"NODE_ID=? AND QUEUE_NAME=?\n"
+"LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, "
+"ALL_NODES FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=?\n"
+"      ]]&gt;&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- This post office is clustered. If you don't want a clustered "
+"post office then set to false --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"Clustered\"&gt;true&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- All the remaining properties only have to be specified if the "
+"post office is clustered.\n"
+"           You can safely comment them out if your post office is non "
+"clustered --&gt;\n"
+"      \n"
+"      &lt;!-- The JGroups group name that the post office will use --"
+"&gt;            \n"
+"      \n"
+"      &lt;attribute name=\"GroupName\"&gt;${jboss.messaging.groupname:"
+"MessagingPostOffice}&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- Max time to wait for state to arrive when the post office "
+"joins the cluster --&gt;            \n"
+"                  \n"
+"      &lt;attribute name=\"StateTimeout\"&gt;5000&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- Max time to wait for a synchronous call to node members using "
+"the MessageDispatcher --&gt;            \n"
+"                  \n"
+"      &lt;attribute name=\"CastTimeout\"&gt;50000&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- Set this to true if you want failover of connections to occur "
+"when a node is shut down --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"FailoverOnNodeLeave\"&gt;false&lt;/attribute&gt;\n"
+"            \n"
+"      \n"
+"      &lt;!-- JGroups stack configuration for the data channel - used for "
+"sending data across the cluster --&gt; \n"
+"                   \n"
+"      &lt;!-- By default we use the TCP stack for data --"
+"&gt;                  \n"
+"      &lt;attribute name=\"DataChannelConfig\"&gt;      \n"
+"         &lt;config&gt;\n"
+"            &lt;TCP start_port=\"7900\"\n"
+"                 loopback=\"true\"\n"
+"                 recv_buf_size=\"20000000\"\n"
+"                 send_buf_size=\"640000\"\n"
+"                 discard_incompatible_packets=\"true\"\n"
+"                 max_bundle_size=\"64000\"\n"
+"                 max_bundle_timeout=\"30\"\n"
+"                 use_incoming_packet_handler=\"true\"\n"
+"                 use_outgoing_packet_handler=\"false\"\n"
+"                 down_thread=\"false\" up_thread=\"false\"\n"
+"                 enable_bundling=\"false\"\n"
+"                 use_send_queues=\"false\"\n"
+"                 sock_conn_timeout=\"300\"\n"
+"                 skip_suspected_members=\"true\"/&gt;\n"
+"            &lt;MPING timeout=\"4000\"\n"
+"                         bind_to_all_interfaces=\"true\"\n"
+"                         mcast_addr=\"${jboss.messaging."
+"datachanneludpaddress:228.6.6.6}\"\n"
+"                         mcast_port=\"${jboss.messaging."
+"datachanneludpport:45567}\"\n"
+"                         ip_ttl=\"8\"\n"
+"                         num_initial_members=\"2\"\n"
+"                         num_ping_requests=\"1\"/&gt;                     \n"
+"            &lt;MERGE2 max_interval=\"100000\"\n"
+"                    down_thread=\"false\" up_thread=\"false\" min_interval="
+"\"20000\"/&gt;\n"
+"            &lt;FD_SOCK down_thread=\"false\" up_thread=\"false\"/"
+"&gt;            \n"
+"            &lt;VERIFY_SUSPECT timeout=\"1500\" down_thread=\"false\" "
+"up_thread=\"false\"/&gt;\n"
+"            &lt;pbcast.NAKACK max_xmit_size=\"60000\"\n"
+"                           use_mcast_xmit=\"false\" gc_lag=\"0\"\n"
+"                           retransmit_timeout=\"300,600,1200,2400,4800\"\n"
+"                           down_thread=\"false\" up_thread=\"false\"\n"
+"                           discard_delivered_msgs=\"true\"/&gt;\n"
+"            &lt;pbcast.STABLE stability_delay=\"1000\" desired_avg_gossip="
+"\"50000\"\n"
+"                           down_thread=\"false\" up_thread=\"false\"\n"
+"                           max_bytes=\"400000\"/&gt;\n"
+"            &lt;pbcast.GMS print_local_addr=\"true\" join_timeout=\"3000\"\n"
+"                        down_thread=\"false\" up_thread=\"false\"\n"
+"                        join_retry_timeout=\"2000\" shun=\"false\"\n"
+"                        view_bundling=\"true\"/&gt;\n"
+"        &lt;/config&gt;        \n"
+"      &lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- JGroups stack configuration to use for the control channel - "
+"used for control messages --&gt;         \n"
+"              \n"
+"      &lt;!-- We use udp stack for the control channel --&gt;\n"
+"      &lt;attribute name=\"ControlChannelConfig\"&gt;\n"
+"         &lt;config&gt;\n"
+"            &lt;UDP\n"
+"                 mcast_addr=\"${jboss.messaging."
+"controlchanneludpaddress:228.7.7.7}\"\n"
+"                 mcast_port=\"${jboss.messaging.controlchanneludpport:45568}"
+"\"\n"
+"                 tos=\"8\"\n"
+"                 ucast_recv_buf_size=\"20000000\"\n"
+"                 ucast_send_buf_size=\"640000\"\n"
+"                 mcast_recv_buf_size=\"25000000\"\n"
+"                 mcast_send_buf_size=\"640000\"\n"
+"                 loopback=\"false\"\n"
+"                 discard_incompatible_packets=\"true\"\n"
+"                 max_bundle_size=\"64000\"\n"
+"                 max_bundle_timeout=\"30\"\n"
+"                 use_incoming_packet_handler=\"true\"\n"
+"                 use_outgoing_packet_handler=\"false\"\n"
+"                 ip_ttl=\"2\"\n"
+"                 down_thread=\"false\" up_thread=\"false\"\n"
+"                 enable_bundling=\"false\"/&gt;\n"
+"            &lt;PING timeout=\"2000\"\n"
+"                  down_thread=\"false\" up_thread=\"false\" "
+"num_initial_members=\"3\"/&gt;\n"
+"            &lt;MERGE2 max_interval=\"100000\"\n"
+"                    down_thread=\"false\" up_thread=\"false\" min_interval="
+"\"20000\"/&gt;\n"
+"            &lt;FD_SOCK down_thread=\"false\" up_thread=\"false\"/&gt;\n"
+"            &lt;FD timeout=\"10000\" max_tries=\"5\" down_thread=\"false\" "
+"up_thread=\"false\" shun=\"true\"/&gt;\n"
+"            &lt;VERIFY_SUSPECT timeout=\"1500\" down_thread=\"false\" "
+"up_thread=\"false\"/&gt;\n"
+"            &lt;pbcast.NAKACK max_xmit_size=\"60000\"\n"
+"                           use_mcast_xmit=\"false\" gc_lag=\"0\"\n"
+"                           retransmit_timeout=\"300,600,1200,2400,4800\"\n"
+"                           down_thread=\"false\" up_thread=\"false\"\n"
+"                           discard_delivered_msgs=\"true\"/&gt;\n"
+"            &lt;UNICAST timeout=\"300,600,1200,2400,3600\"\n"
+"                     down_thread=\"false\" up_thread=\"false\"/&gt;\n"
+"            &lt;pbcast.STABLE stability_delay=\"1000\" desired_avg_gossip="
+"\"50000\"\n"
+"                           down_thread=\"false\" up_thread=\"false\"\n"
+"                           max_bytes=\"400000\"/&gt;\n"
+"            &lt;pbcast.GMS print_local_addr=\"true\" join_timeout=\"3000\" "
+"use_flush=\"true\" flush_timeout=\"3000\"\n"
+"                        down_thread=\"false\" up_thread=\"false\"\n"
+"                        join_retry_timeout=\"2000\" shun=\"false\"\n"
+"                        view_bundling=\"true\"/&gt;\n"
+"            &lt;FRAG2 frag_size=\"60000\" down_thread=\"false\" up_thread="
+"\"false\"/&gt;\n"
+"            &lt;pbcast.STATE_TRANSFER down_thread=\"false\" up_thread=\"false"
+"\" use_flush=\"true\" flush_timeout=\"3000\"/&gt;\n"
+"            &lt;pbcast.FLUSH down_thread=\"false\" up_thread=\"false\" "
+"timeout=\"20000\" auto_flush_conf=\"false\"/&gt;\n"
+"        &lt;/config&gt;\n"
+"     &lt;/attribute&gt;           \n"
+"      \n"
+"   &lt;/mbean&gt;"
+msgstr ""
+"&lt;mbean code=\"org.jboss.messaging.core.jmx.MessagingPostOfficeService\"\n"
+"      name=\"jboss.messaging:service=PostOffice\"\n"
+"      xmbean-dd=\"xmdesc/MessagingPostOffice-xmbean.xml\"&gt;\n"
+"      \n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;jboss.messaging:"
+"service=ServerPeer&lt;/depends&gt;\n"
+"                \n"
+"      &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/"
+"depends&gt;\n"
+"      \n"
+"      &lt;depends optional-attribute-name=\"TransactionManager\"&gt;jboss:"
+"service=TransactionManager&lt;/depends&gt;\n"
+"      \n"
+"      &lt;!-- The name of the post office --&gt;                  \n"
+"      \n"
+"      &lt;attribute name=\"PostOfficeName\"&gt;JMS post office&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- The datasource used by the post office to access it's binding "
+"information --&gt;                     \n"
+"      \n"
+"      &lt;attribute name=\"DataSource\"&gt;java:/DefaultDS&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- If true will attempt to create tables and indexes on every "
+"start-up --&gt;\n"
+"                        \n"
+"      &lt;attribute name=\"CreateTablesOnStartup\"&gt;true&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- If true then we will automatically detect and reject duplicate "
+"messages sent during failover --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"DetectDuplicates\"&gt;true&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- The size of the id cache to use when detecting duplicate "
+"messages --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"IDCacheSize\"&gt;500&lt;/attribute&gt;\n"
+"                  \n"
+"      &lt;attribute name=\"SqlProperties\"&gt;&lt;![CDATA[\n"
+"CREATE_POSTOFFICE_TABLE=CREATE TABLE JBM_POSTOFFICE (POSTOFFICE_NAME VARCHAR"
+"(255), NODE_ID INTEGER, QUEUE_NAME VARCHAR(255), COND VARCHAR(1023), "
+"SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT, CLUSTERED CHAR(1), ALL_NODES CHAR"
+"(1), PRIMARY KEY(POSTOFFICE_NAME, NODE_ID, QUEUE_NAME)) ENGINE = INNODB\n"
+"INSERT_BINDING=INSERT INTO JBM_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, "
+"QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODES) VALUES "
+"(?, ?, ?, ?, ?, ?, ?, ?)\n"
+"DELETE_BINDING=DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND "
+"NODE_ID=? AND QUEUE_NAME=?\n"
+"LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, "
+"ALL_NODES FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=?\n"
+"      ]]&gt;&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- This post office is clustered. If you don't want a clustered "
+"post office then set to false --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"Clustered\"&gt;true&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- All the remaining properties only have to be specified if the "
+"post office is clustered.\n"
+"           You can safely comment them out if your post office is non "
+"clustered --&gt;\n"
+"      \n"
+"      &lt;!-- The JGroups group name that the post office will use --"
+"&gt;            \n"
+"      \n"
+"      &lt;attribute name=\"GroupName\"&gt;${jboss.messaging.groupname:"
+"MessagingPostOffice}&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- Max time to wait for state to arrive when the post office "
+"joins the cluster --&gt;            \n"
+"                  \n"
+"      &lt;attribute name=\"StateTimeout\"&gt;5000&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- Max time to wait for a synchronous call to node members using "
+"the MessageDispatcher --&gt;            \n"
+"                  \n"
+"      &lt;attribute name=\"CastTimeout\"&gt;50000&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- Set this to true if you want failover of connections to occur "
+"when a node is shut down --&gt;\n"
+"      \n"
+"      &lt;attribute name=\"FailoverOnNodeLeave\"&gt;false&lt;/attribute&gt;\n"
+"            \n"
+"      \n"
+"      &lt;!-- JGroups stack configuration for the data channel - used for "
+"sending data across the cluster --&gt; \n"
+"                   \n"
+"      &lt;!-- By default we use the TCP stack for data --"
+"&gt;                  \n"
+"      &lt;attribute name=\"DataChannelConfig\"&gt;      \n"
+"         &lt;config&gt;\n"
+"            &lt;TCP start_port=\"7900\"\n"
+"                 loopback=\"true\"\n"
+"                 recv_buf_size=\"20000000\"\n"
+"                 send_buf_size=\"640000\"\n"
+"                 discard_incompatible_packets=\"true\"\n"
+"                 max_bundle_size=\"64000\"\n"
+"                 max_bundle_timeout=\"30\"\n"
+"                 use_incoming_packet_handler=\"true\"\n"
+"                 use_outgoing_packet_handler=\"false\"\n"
+"                 down_thread=\"false\" up_thread=\"false\"\n"
+"                 enable_bundling=\"false\"\n"
+"                 use_send_queues=\"false\"\n"
+"                 sock_conn_timeout=\"300\"\n"
+"                 skip_suspected_members=\"true\"/&gt;\n"
+"            &lt;MPING timeout=\"4000\"\n"
+"                         bind_to_all_interfaces=\"true\"\n"
+"                         mcast_addr=\"${jboss.messaging."
+"datachanneludpaddress:228.6.6.6}\"\n"
+"                         mcast_port=\"${jboss.messaging."
+"datachanneludpport:45567}\"\n"
+"                         ip_ttl=\"8\"\n"
+"                         num_initial_members=\"2\"\n"
+"                         num_ping_requests=\"1\"/&gt;                     \n"
+"            &lt;MERGE2 max_interval=\"100000\"\n"
+"                    down_thread=\"false\" up_thread=\"false\" min_interval="
+"\"20000\"/&gt;\n"
+"            &lt;FD_SOCK down_thread=\"false\" up_thread=\"false\"/"
+"&gt;            \n"
+"            &lt;VERIFY_SUSPECT timeout=\"1500\" down_thread=\"false\" "
+"up_thread=\"false\"/&gt;\n"
+"            &lt;pbcast.NAKACK max_xmit_size=\"60000\"\n"
+"                           use_mcast_xmit=\"false\" gc_lag=\"0\"\n"
+"                           retransmit_timeout=\"300,600,1200,2400,4800\"\n"
+"                           down_thread=\"false\" up_thread=\"false\"\n"
+"                           discard_delivered_msgs=\"true\"/&gt;\n"
+"            &lt;pbcast.STABLE stability_delay=\"1000\" desired_avg_gossip="
+"\"50000\"\n"
+"                           down_thread=\"false\" up_thread=\"false\"\n"
+"                           max_bytes=\"400000\"/&gt;\n"
+"            &lt;pbcast.GMS print_local_addr=\"true\" join_timeout=\"3000\"\n"
+"                        down_thread=\"false\" up_thread=\"false\"\n"
+"                        join_retry_timeout=\"2000\" shun=\"false\"\n"
+"                        view_bundling=\"true\"/&gt;\n"
+"        &lt;/config&gt;        \n"
+"      &lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- JGroups stack configuration to use for the control channel - "
+"used for control messages --&gt;         \n"
+"              \n"
+"      &lt;!-- We use udp stack for the control channel --&gt;\n"
+"      &lt;attribute name=\"ControlChannelConfig\"&gt;\n"
+"         &lt;config&gt;\n"
+"            &lt;UDP\n"
+"                 mcast_addr=\"${jboss.messaging."
+"controlchanneludpaddress:228.7.7.7}\"\n"
+"                 mcast_port=\"${jboss.messaging.controlchanneludpport:45568}"
+"\"\n"
+"                 tos=\"8\"\n"
+"                 ucast_recv_buf_size=\"20000000\"\n"
+"                 ucast_send_buf_size=\"640000\"\n"
+"                 mcast_recv_buf_size=\"25000000\"\n"
+"                 mcast_send_buf_size=\"640000\"\n"
+"                 loopback=\"false\"\n"
+"                 discard_incompatible_packets=\"true\"\n"
+"                 max_bundle_size=\"64000\"\n"
+"                 max_bundle_timeout=\"30\"\n"
+"                 use_incoming_packet_handler=\"true\"\n"
+"                 use_outgoing_packet_handler=\"false\"\n"
+"                 ip_ttl=\"2\"\n"
+"                 down_thread=\"false\" up_thread=\"false\"\n"
+"                 enable_bundling=\"false\"/&gt;\n"
+"            &lt;PING timeout=\"2000\"\n"
+"                  down_thread=\"false\" up_thread=\"false\" "
+"num_initial_members=\"3\"/&gt;\n"
+"            &lt;MERGE2 max_interval=\"100000\"\n"
+"                    down_thread=\"false\" up_thread=\"false\" min_interval="
+"\"20000\"/&gt;\n"
+"            &lt;FD_SOCK down_thread=\"false\" up_thread=\"false\"/&gt;\n"
+"            &lt;FD timeout=\"10000\" max_tries=\"5\" down_thread=\"false\" "
+"up_thread=\"false\" shun=\"true\"/&gt;\n"
+"            &lt;VERIFY_SUSPECT timeout=\"1500\" down_thread=\"false\" "
+"up_thread=\"false\"/&gt;\n"
+"            &lt;pbcast.NAKACK max_xmit_size=\"60000\"\n"
+"                           use_mcast_xmit=\"false\" gc_lag=\"0\"\n"
+"                           retransmit_timeout=\"300,600,1200,2400,4800\"\n"
+"                           down_thread=\"false\" up_thread=\"false\"\n"
+"                           discard_delivered_msgs=\"true\"/&gt;\n"
+"            &lt;UNICAST timeout=\"300,600,1200,2400,3600\"\n"
+"                     down_thread=\"false\" up_thread=\"false\"/&gt;\n"
+"            &lt;pbcast.STABLE stability_delay=\"1000\" desired_avg_gossip="
+"\"50000\"\n"
+"                           down_thread=\"false\" up_thread=\"false\"\n"
+"                           max_bytes=\"400000\"/&gt;\n"
+"            &lt;pbcast.GMS print_local_addr=\"true\" join_timeout=\"3000\" "
+"use_flush=\"true\" flush_timeout=\"3000\"\n"
+"                        down_thread=\"false\" up_thread=\"false\"\n"
+"                        join_retry_timeout=\"2000\" shun=\"false\"\n"
+"                        view_bundling=\"true\"/&gt;\n"
+"            &lt;FRAG2 frag_size=\"60000\" down_thread=\"false\" up_thread="
+"\"false\"/&gt;\n"
+"            &lt;pbcast.STATE_TRANSFER down_thread=\"false\" up_thread=\"false"
+"\" use_flush=\"true\" flush_timeout=\"3000\"/&gt;\n"
+"            &lt;pbcast.FLUSH down_thread=\"false\" up_thread=\"false\" "
+"timeout=\"20000\" auto_flush_conf=\"false\"/&gt;\n"
+"        &lt;/config&gt;\n"
+"     &lt;/attribute&gt;           \n"
+"      \n"
+"   &lt;/mbean&gt;"
+
+#. Tag: title
+#: Configuration.xml:443
+#, no-c-format
+msgid "The post office has the following attributes"
+msgstr "邮局具有下列的属性"
+
+#. Tag: title
+#: Configuration.xml:445
+#, no-c-format
+msgid "DataSource"
+msgstr "DataSource"
+
+#. Tag: para
+#: Configuration.xml:446
+#, no-c-format
+msgid "The datasource the postoffice should use for persisting its mapping data."
+msgstr "邮局用来持久化其映射数据的数据源。"
+
+#. Tag: title
+#: Configuration.xml:450 Configuration.xml:672 Configuration.xml:731
+#, no-c-format
+msgid "SQLProperties"
+msgstr "SQLProperties"
+
+#. Tag: para
+#: Configuration.xml:451 Configuration.xml:673 Configuration.xml:732
+#, no-c-format
+msgid ""
+"This is where the DDL and DML for the particular database is specified. If a "
+"particular DDL or DML statement is not overridden, the default Hypersonic "
+"configuration will be used for that statement."
+msgstr ""
+"这是为特定数据库指定的 DDL 和 DML。如果 DDL 和 DML 没有根据特定数据库覆盖，那"
+"么缺省的 Hypersonic 配置将被使用。"
+
+#. Tag: title
+#: Configuration.xml:457 Configuration.xml:620 Configuration.xml:711
+#, no-c-format
+msgid "CreateTablesOnStartup"
+msgstr "CreateTablesOnStartup"
+
+#. Tag: para
+#: Configuration.xml:458
+#, no-c-format
+msgid ""
+"Set this to <literal>true</literal> if you wish the post office to attempt "
+"to create the tables (and indexes) when it starts. If the tables (or "
+"indexes) already exist a <literal>SQLException</literal> will be thrown by "
+"the JDBC driver and ignored by the Persistence Manager, allowing it to "
+"continue."
+msgstr ""
+"如果你希望邮局在启动时创建表（和索引），设置它为 <literal>true</literal>。如"
+"果这个表（或索引）已经存在，那么 JDBC 驱动将抛出 <literal>SQLException</"
+"literal>，但 Persistence Manager 会忽略它并允许继续运行。"
+
+#. Tag: para
+#: Configuration.xml:464 Configuration.xml:627 Configuration.xml:718
+#, no-c-format
+msgid ""
+"By default the value of <literal>CreateTablesOnStartup</literal> attribute "
+"is set to <literal>true</literal>"
+msgstr ""
+"<literal>CreateTablesOnStartup</literal> 属性的缺省值是 <literal>true</"
+"literal>。"
+
+#. Tag: title
+#: Configuration.xml:469
+#, no-c-format
+msgid "DetectDuplicates"
+msgstr "DetectDuplicates"
+
+#. Tag: para
+#: Configuration.xml:470
+#, no-c-format
+msgid ""
+"Set this to <literal>true</literal> if you wish the post office to detect "
+"duplicate messages, that may be sent, when a send is retried on a different "
+"node after a server failure."
+msgstr ""
+"如果你希望邮局检测在服务器故障后重发的重复消息，可将其设置为 <literal>true</"
+"literal>。"
+
+#. Tag: para
+#: Configuration.xml:473
+#, no-c-format
+msgid ""
+"By default the value of the <literal>DetectDuplicates</literal> attribute is "
+"set to <literal>true.</literal>"
+msgstr "<literal>DetectDuplicates</literal> 属性的缺省值是 <literal>true</literal>。"
+
+#. Tag: title
+#: Configuration.xml:477
+#, no-c-format
+msgid "IDCacheSize"
+msgstr "IDCacheSize"
+
+#. Tag: para
+#: Configuration.xml:478
+#, no-c-format
+msgid ""
+"If duplicate detection (See <literal>DetectDuplicates</literal>) is enabled, "
+"then the server will remember the last <literal>n</literal> message ids "
+"sent. This will prevent sending duplicate messages after a failover has "
+"occurred. The value of <literal>n</literal> is determined by this attribute."
+msgstr ""
+"如果启用了对重复消息的检测（请参考 <literal>DetectDuplicates</literal>），那"
+"么服务器将记住最后发送的 <literal>n</literal> 条消息的 ID。这将阻止发生故障后"
+"发送重复的消息。<literal>n</literal> 由这个属性指定。"
+
+#. Tag: para
+#: Configuration.xml:482
+#, no-c-format
+msgid ""
+"By default the value of the <literal>IDCacheSize</literal> attribute is set "
+"to <literal>500.</literal>"
+msgstr "<literal>IDCacheSize</literal> 属性的缺省值为 <literal>500</literal>。"
+
+#. Tag: title
+#: Configuration.xml:487
+#, no-c-format
+msgid "PostOfficeName"
+msgstr "PostOfficeName"
+
+#. Tag: para
+#: Configuration.xml:488
+#, no-c-format
+msgid "The name of the post office."
+msgstr "邮局的名称。"
+
+#. Tag: title
+#: Configuration.xml:491
+#, no-c-format
+msgid "NodeIDView"
+msgstr "NodeIDView"
+
+#. Tag: para
+#: Configuration.xml:492
+#, no-c-format
+msgid "This returns set containing the node ids of all the nodes in the cluster."
+msgstr "它返回包含群集里所有节点的 ID 的集合。"
+
+#. Tag: title
+#: Configuration.xml:496
+#, no-c-format
+msgid "GroupName"
+msgstr "GroupName"
+
+#. Tag: para
+#: Configuration.xml:497
+#, no-c-format
+msgid ""
+"All post offices in the cluster with the same group name will form a cluster "
+"together. Make sure the group name matches with all the nodes in the cluster "
+"you want to form a cluster with."
+msgstr ""
+"群集里的所有具有相同组名的邮局将组成一个群集。请确保组名匹配你希望组成群集的"
+"所有节点。"
+
+#. Tag: title
+#: Configuration.xml:503 Configuration.xml:892 Configuration.xml:1087
+#, no-c-format
+msgid "Clustered"
+msgstr "Clustered"
+
+#. Tag: para
+#: Configuration.xml:504
+#, no-c-format
+msgid ""
+"If true the post office will take part in a cluster to form distributed "
+"queues and topics. If false then it will not participate in the cluster. If "
+"false, then all the cluster related attributes will be ignored."
+msgstr ""
+"如果为 true，邮局将参与群集来组成分布式的队列和主题。如果为 false 则不参与群"
+"集，且所有和群集相关的属性都会被忽略。"
+
+#. Tag: title
+#: Configuration.xml:510
+#, no-c-format
+msgid "StateTimeout"
+msgstr "StateTimeout"
+
+#. Tag: para
+#: Configuration.xml:511
+#, no-c-format
+msgid ""
+"The maximum time to wait when waiting for the group state to arrive when a "
+"node joins a pre-existing cluster."
+msgstr "当某个节点加入现有的群集时，在组状态到达前等待的最长时间。"
+
+#. Tag: para
+#: Configuration.xml:513 Configuration.xml:520
+#, no-c-format
+msgid "The default value is <literal>5000</literal> milliseconds."
+msgstr "它的缺省值为 <literal>5000</literal> 毫秒。"
+
+#. Tag: title
+#: Configuration.xml:517
+#, no-c-format
+msgid "CastTimeout"
+msgstr "CastTimeout"
+
+#. Tag: para
+#: Configuration.xml:518
+#, no-c-format
+msgid "The maximum time to wait for a reply casting message synchronously."
+msgstr "同步转换消息回复的最长等待时间。"
+
+#. Tag: title
+#: Configuration.xml:524
+#, no-c-format
+msgid "FailoverOnNodeLeave"
+msgstr "FailoverOnNodeLeave"
+
+#. Tag: para
+#: Configuration.xml:525
+#, no-c-format
+msgid ""
+"If this attribute is set to <literal>true</literal>, when a server node is "
+"shut down cleanly, any connections on the node that is shut down, will "
+"failover onto another node."
+msgstr ""
+"如果这个属性为 <literal>true</literal>，当服务器节点关闭后，任何到这个节点的"
+"连接都会切换到另外一个节点上。"
+
+#. Tag: para
+#: Configuration.xml:527
+#, no-c-format
+msgid "The default value for this is attribute is <literal>false.</literal>"
+msgstr "这个属性的缺省值是 <literal>false</literal>。"
+
+#. Tag: title
+#: Configuration.xml:530
+#, no-c-format
+msgid "MaxConcurrentReplications"
+msgstr "MaxConcurrentReplications"
+
+#. Tag: para
+#: Configuration.xml:531
+#, no-c-format
+msgid ""
+"The maximum number of concurrent replication requests to make before "
+"blocking for replies to come back. This prevents us overwhelming JGroups. "
+"This is rarely a good reason to change this."
+msgstr ""
+"在阻塞回复前，最大的并行复制请求数量。这可以防止 JGroups 的负担过重。我们通常"
+"不需要修改它。"
+
+#. Tag: para
+#: Configuration.xml:535
+#, no-c-format
+msgid "The default value is <literal>50</literal>"
+msgstr "它的缺省值是 <literal>50</literal>。"
+
+#. Tag: title
+#: Configuration.xml:538
+#, no-c-format
+msgid "ControlChannelConfig"
+msgstr "ControlChannelConfig"
+
+#. Tag: para
+#: Configuration.xml:539
+#, no-c-format
+msgid ""
+"JBoss Messaging uses JGroups for all group management. This contains the "
+"JGroups stack configuration for the control channel."
+msgstr ""
+"JBoss Messaging 将 JGroups 用于所有的组管理。这包含了用于控制频道的 JGroups "
+"栈配置。"
+
+#. Tag: para
+#: Configuration.xml:542
+#, no-c-format
+msgid ""
+"The control channel is used for sending request/receiving responses from "
+"other nodes in the cluster"
+msgstr "控制频道（Control Channel）被用来往/从群集里的其他节点发送请求/接收响应。"
+
+#. Tag: para
+#: Configuration.xml:544 Configuration.xml:560
+#, no-c-format
+msgid ""
+"The details of the JGroups configuration won't be discussed here since it is "
+"standard JGroups configuration. Detailed information on JGroups can be found "
+"in JGroups release documentation or on-line at <ulink url=\"http://www."
+"jgroups.org\">http://www.jgroups.org</ulink> or <ulink url=\"http://wiki."
+"jboss.org/wiki/Wiki.jsp?page=JGroups\">http://wiki.jboss.org/wiki/Wiki.jsp?"
+"page=JGroups</ulink>."
+msgstr ""
+"既然这只是标准的 JGroups 配置，我们不会在这里讨论其细节。你可以在 JGroups 发"
+"行文档 <ulink url=\"http://www.jgroups.org\">http://www.jgroups.org</ulink> "
+"或 <ulink url=\"http://wiki.jboss.org/wiki/Wiki.jsp?page=JGroups\">http://"
+"wiki.jboss.org/wiki/Wiki.jsp?page=JGroups</ulink> 里找到 JGroups 的详细信息。"
+
+#. Tag: title
+#: Configuration.xml:553
+#, no-c-format
+msgid "DataChannelConfig"
+msgstr "DataChannelConfig"
+
+#. Tag: para
+#: Configuration.xml:554
+#, no-c-format
+msgid ""
+"JBoss Messaging uses JGroups for all group management. This contains the "
+"JGroups stack configuration for the data channel."
+msgstr ""
+"JBoss Messaging 将 JGroups 用于所有的组管理。这包含了用于数据频道（Data "
+"Channel）的 JGroups 栈配置。"
+
+#. Tag: para
+#: Configuration.xml:557
+#, no-c-format
+msgid ""
+"The data channel is used for sending sending/receiving messages from other "
+"nodes in the cluster and for replicating session data."
+msgstr ""
+"数据频道（Data Channel）被用来往/从群集里的其他节点发送请求/接收响应以及复制"
+"会话数据。"
+
+#. Tag: title
+#: Configuration.xml:571
+#, no-c-format
+msgid "Configuring the Persistence Manager"
+msgstr "配置 Persistence Manager"
+
+#. Tag: para
+#: Configuration.xml:572
+#, no-c-format
+msgid ""
+"It is the job of the persistence manager to manage all message related "
+"persistence."
+msgstr "Persistence Manager 的职责是管理所有和消息相关的持久化。"
+
+#. Tag: para
+#: Configuration.xml:574
+#, no-c-format
+msgid ""
+"JBoss Messaging ships with a JDBC Persistence Manager used for handling "
+"persistence of message data in a relational database accessed via JDBC. The "
+"Persistence Manager implementation is pluggable (the Persistence Manager is "
+"a Messaging server plug-in), this making possible to provide other "
+"implementations for persisting message data in non relational stores, file "
+"stores etc."
+msgstr ""
+"JBoss Messaging 带有一个在通过 JDBC 访问的关系型数据库里处理消息数据的持久化"
+"的 JDBC Persistence Manager。这个 Persistence Manager 实现是可插拔的"
+"（Persistence Manager 是一个消息服务器的插件），这使得在非关系型数据库里（如"
+"文件系统）提供消息数据的持久化成为可能。"
+
+#. Tag: para
+#: Configuration.xml:580
+#, no-c-format
+msgid ""
+"The configuration of \"persistent\" services is grouped in a <filename>xxx-"
+"persistence-service.xml</filename> file, where xxx corresponds to the "
+"database name. By default, Messaging ships with a <filename>hsqldb-"
+"persistence-service.xml</filename>, which configures the Messaging server to "
+"use the in-VM Hypersonic database instance that comes by default with any "
+"JBossAS instance."
+msgstr ""
+"\"persistent\" 服务的配置以 <filename>xxx-persistence-service.xml</filename> "
+"文件的形式分组，其中的 xxx 对应数据库名称。在缺省情况下，JBoss Messaging 附带"
+"一个 <filename>hsqldb-persistence-service.xml</filename> 文件，它配置任何 "
+"JBossAS 实例缺省使用的 in-VM Hypersonic 数据库。"
+
+#. Tag: para
+#: Configuration.xml:587
+#, no-c-format
+msgid ""
+"The default Persistence Manager works out of the box with Hypersonic. "
+"However, it must be stressed that Hypersonic should not be used in a "
+"production environment, mainly due to its limited support for transaction "
+"isolation, and its propensity to behave erratically under high load."
+msgstr ""
+"Persistence Manager 缺省使用 Hypersonic。然而，我们需要强调的是，Hypersonic "
+"不应该用在产品环境里，这是因为它只有限地支持事务隔离，且在高负荷下表现不稳"
+"定。"
+
+#. Tag: para
+#: Configuration.xml:589
+#, no-c-format
+msgid ""
+"The <ulink url=\"http://wiki.jboss.org/wiki/Wiki.jsp?page=ConfigJBossMQDB"
+"\">Critique of Hypersonic</ulink> wiki page outlines some of the well-known "
+"issues occuring when using this database."
+msgstr ""
+"<ulink url=\"http://wiki.jboss.org/wiki/Wiki.jsp?page=ConfigJBossMQDB"
+"\">Critique of Hypersonic</ulink> wiki 页面概述了使用这个数据库的一些众所周知"
+"的问题。"
+
+#. Tag: para
+#: Configuration.xml:594
+#, no-c-format
+msgid ""
+"JBoss Messaging also ships with pre-made Persistence Manager configurations "
+"for MySQL, Oracle, PostgreSQL, Sybase and MS SQL Server. The example "
+"<filename>mysql-persistence-service.xml</filename>, <filename>ndb-"
+"persistence-service.xml</filename>, <filename>oracle-persistence-service."
+"xml</filename>, <filename>postgres-persistence-service.xml</filename> and "
+"<filename>sybase-persistence-service.xml</filename> and <filename>mssql-"
+"persistence-service.xml</filename> configuration files are available in the "
+"<filename>examples/config</filename> directory of the release bundle."
+msgstr ""
+"JBoss Messaging 也附带用于 MySQL、Oracle、PostgreSQL、Sybase 和 MS SQL "
+"Server 的 Persistence Manager 配置。示例的 <filename>mysql-persistence-"
+"service.xml</filename>、<filename>ndb-persistence-service.xml</filename>、"
+"<filename>oracle-persistence-service.xml</filename>、<filename>postgres-"
+"persistence-service.xml</filename>、 <filename>sybase-persistence-service."
+"xml</filename> 和 <filename>mssql-persistence-service.xml</filename> 文件位"
+"于 <filename>examples/config</filename> 目录之下。"
+
+#. Tag: para
+#: Configuration.xml:604
+#, no-c-format
+msgid ""
+"Users are encouraged to contribute their own configuration files where we "
+"will thoroughly test them before certifying them for suppported use with "
+"JBoss Messaging. The JDBC Persistence Manager has been designed to use "
+"standard SQL for the DML so writing a JDBC Persistence Manager configuration "
+"for another database is usually only a fairly simple matter of changing DDL "
+"in the configuration which is likely to be different for different databases."
+msgstr ""
+"我们鼓励用户贡献自己的配置文件，我们将在认证之前进行详尽测试。JDBC "
+"Persistence Manager 被设计成对 DML 使用标准的 SQL ，所以为其他数据库编写 "
+"JDBC Persistence Manager 配置通常只需要修改其中的 DDL（对于不同的数据库，这些"
+"语句很可能有差别）就可以了。"
+
+#. Tag: para
+#: Configuration.xml:611
+#, no-c-format
+msgid ""
+"JBoss Messaging also ships with a 'Null Persistence Manager' config - this "
+"can be used when you don't want any persistence at all."
+msgstr ""
+"JBoss Messaging 也带有一个 'Null Persistence Manager' 配置 － 它可以在你根本"
+"不需要任何持久化时使用。"
+
+#. Tag: para
+#: Configuration.xml:613
+#, no-c-format
+msgid "The default Hypersonic persistence configuration file is listed below:"
+msgstr "下面是缺省的 Hypersonic persistence 配置文件："
+
+#. Tag: programlisting
+#: Configuration.xml:615
+#, no-c-format
+msgid ""
+"&lt;mbean code=\"org.jboss.messaging.core.jmx.JDBCPersistenceManagerService"
+"\"\n"
+"      name=\"jboss.messaging:service=PersistenceManager\"\n"
+"      xmbean-dd=\"xmdesc/JDBCPersistenceManager-xmbean.xml\"&gt;\n"
+"      \n"
+"      &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/"
+"depends&gt;\n"
+"      \n"
+"      &lt;depends optional-attribute-name=\"TransactionManager\"&gt;jboss:"
+"service=TransactionManager&lt;/depends&gt;\n"
+"      \n"
+"      &lt;!-- The datasource to use for the persistence manager --&gt;\n"
+"                    \n"
+"      &lt;attribute name=\"DataSource\"&gt;java:/DefaultDS&lt;/"
+"attribute&gt;      \n"
+"      \n"
+"      &lt;!-- If true will attempt to create tables and indexes on every "
+"start-up --&gt;\n"
+"                  \n"
+"      &lt;attribute name=\"CreateTablesOnStartup\"&gt;true&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- If true then will use JDBC batch updates --&gt;\n"
+"                  \n"
+"      &lt;attribute name=\"UsingBatchUpdates\"&gt;true&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;attribute name=\"SqlProperties\"&gt;&lt;![CDATA[\n"
+"   CREATE_DUAL=CREATE TABLE JBM_DUAL (DUMMY INTEGER, PRIMARY KEY (DUMMY)) "
+"ENGINE = INNODB\n"
+"   CREATE_MESSAGE_REFERENCE=CREATE TABLE JBM_MSG_REF (CHANNEL_ID BIGINT, "
+"MESSAGE_ID BIGINT, TRANSACTION_ID BIGINT, STATE CHAR(1), ORD BIGINT, "
+"PAGE_ORD BIGINT, DELIVERY_COUNT INTEGER, SCHED_DELIVERY BIGINT, PRIMARY KEY"
+"(CHANNEL_ID, MESSAGE_ID)) ENGINE = INNODB\n"
+"   CREATE_IDX_MESSAGE_REF_TX=CREATE INDEX JBM_MSG_REF_TX ON JBM_MSG_REF "
+"(TRANSACTION_ID)\n"
+"   CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JBM_MSG_REF_ORD ON JBM_MSG_REF "
+"(ORD)\n"
+"   CREATE_IDX_MESSAGE_REF_PAGE_ORD=CREATE INDEX JBM_MSG_REF_PAGE_ORD ON "
+"JBM_MSG_REF (PAGE_ORD)\n"
+"   CREATE_IDX_MESSAGE_REF_MESSAGE_ID=CREATE INDEX JBM_MSG_REF_MESSAGE_ID ON "
+"JBM_MSG_REF (MESSAGE_ID)\n"
+"   CREATE_IDX_MESSAGE_REF_SCHED_DELIVERY=CREATE INDEX "
+"JBM_MSG_REF_SCHED_DELIVERY ON JBM_MSG_REF (SCHED_DELIVERY)\n"
+"   CREATE_MESSAGE=CREATE TABLE JBM_MSG (MESSAGE_ID BIGINT, RELIABLE CHAR(1), "
+"EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, TYPE TINYINT, HEADERS "
+"MEDIUMBLOB, PAYLOAD LONGBLOB, PRIMARY KEY (MESSAGE_ID)) ENGINE = INNODB\n"
+"   CREATE_IDX_MESSAGE_TIMESTAMP=CREATE INDEX JBM_MSG_REF_TIMESTAMP ON "
+"JBM_MSG (TIMESTAMP)\n"
+"   CREATE_TRANSACTION=CREATE TABLE JBM_TX (NODE_ID INTEGER, TRANSACTION_ID "
+"BIGINT, BRANCH_QUAL VARBINARY(254), FORMAT_ID INTEGER, GLOBAL_TXID VARBINARY"
+"(254), PRIMARY KEY (TRANSACTION_ID)) ENGINE = INNODB\n"
+"   CREATE_COUNTER=CREATE TABLE JBM_COUNTER (NAME VARCHAR(255), NEXT_ID "
+"BIGINT, PRIMARY KEY(NAME)) ENGINE = INNODB\n"
+"   INSERT_DUAL=INSERT INTO JBM_DUAL VALUES (1)\n"
+"   CHECK_DUAL=SELECT 1 FROM JBM_DUAL\n"
+"   INSERT_MESSAGE_REF=INSERT INTO JBM_MSG_REF (CHANNEL_ID, MESSAGE_ID, "
+"TRANSACTION_ID, STATE, ORD, PAGE_ORD, DELIVERY_COUNT, SCHED_DELIVERY) VALUES "
+"(?, ?, ?, ?, ?, ?, ?, ?)\n"
+"   DELETE_MESSAGE_REF=DELETE FROM JBM_MSG_REF WHERE MESSAGE_ID=? AND "
+"CHANNEL_ID=? AND STATE='C'\n"
+"   UPDATE_MESSAGE_REF=UPDATE JBM_MSG_REF SET TRANSACTION_ID=?, STATE='-' "
+"WHERE MESSAGE_ID=? AND CHANNEL_ID=? AND STATE='C'\n"
+"   UPDATE_PAGE_ORDER=UPDATE JBM_MSG_REF SET PAGE_ORD = ? WHERE MESSAGE_ID=? "
+"AND CHANNEL_ID=?\n"
+"   COMMIT_MESSAGE_REF1=UPDATE JBM_MSG_REF SET STATE='C', TRANSACTION_ID = "
+"NULL WHERE TRANSACTION_ID=? AND STATE='+'\n"
+"   COMMIT_MESSAGE_REF2=DELETE FROM JBM_MSG_REF WHERE TRANSACTION_ID=? AND "
+"STATE='-'\n"
+"   ROLLBACK_MESSAGE_REF1=DELETE FROM JBM_MSG_REF WHERE TRANSACTION_ID=? AND "
+"STATE='+'\n"
+"   ROLLBACK_MESSAGE_REF2=UPDATE JBM_MSG_REF SET STATE='C', TRANSACTION_ID = "
+"NULL WHERE TRANSACTION_ID=? AND STATE='-'\n"
+"   LOAD_PAGED_REFS=SELECT MESSAGE_ID, DELIVERY_COUNT, PAGE_ORD, "
+"SCHED_DELIVERY FROM JBM_MSG_REF WHERE CHANNEL_ID = ? AND PAGE_ORD BETWEEN ? "
+"AND ? ORDER BY PAGE_ORD\n"
+"   LOAD_UNPAGED_REFS=SELECT MESSAGE_ID, DELIVERY_COUNT, SCHED_DELIVERY FROM "
+"JBM_MSG_REF WHERE STATE = 'C' AND CHANNEL_ID = ? AND PAGE_ORD IS NULL ORDER "
+"BY ORD\n"
+"   LOAD_REFS=SELECT MESSAGE_ID, DELIVERY_COUNT, SCHED_DELIVERY FROM "
+"JBM_MSG_REF WHERE STATE = 'C' AND CHANNEL_ID = ? ORDER BY ORD     \n"
+"   UPDATE_REFS_NOT_PAGED=UPDATE JBM_MSG_REF SET PAGE_ORD = NULL WHERE "
+"PAGE_ORD BETWEEN ? AND ? AND CHANNEL_ID=?\n"
+"   SELECT_MIN_MAX_PAGE_ORD=SELECT MIN(PAGE_ORD), MAX(PAGE_ORD) FROM "
+"JBM_MSG_REF WHERE CHANNEL_ID = ?\n"
+"   SELECT_EXISTS_REF_MESSAGE_ID=SELECT MESSAGE_ID FROM JBM_MSG_REF WHERE "
+"MESSAGE_ID = ?\n"
+"   UPDATE_DELIVERY_COUNT=UPDATE JBM_MSG_REF SET DELIVERY_COUNT = ? WHERE "
+"CHANNEL_ID = ? AND MESSAGE_ID = ?\n"
+"   UPDATE_CHANNEL_ID=UPDATE JBM_MSG_REF SET CHANNEL_ID = ? WHERE CHANNEL_ID "
+"= ?\n"
+"   LOAD_MESSAGES=SELECT MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, "
+"PRIORITY, HEADERS, PAYLOAD, TYPE FROM JBM_MSG\n"
+"   INSERT_MESSAGE=INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, "
+"TIMESTAMP, PRIORITY, TYPE, HEADERS, PAYLOAD) VALUES "
+"(?, ?, ?, ?, ?, ?, ?, ?)\n"
+"   INSERT_MESSAGE_CONDITIONAL=INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, "
+"EXPIRATION, TIMESTAMP, PRIORITY, TYPE, INST_TIME) SELECT ?, ?, ?, ?, ?, ?, ? "
+"FROM JBM_DUAL WHERE NOT EXISTS (SELECT MESSAGE_ID FROM JBM_MSG WHERE "
+"MESSAGE_ID = ?)\n"
+"   UPDATE_MESSAGE_4CONDITIONAL=UPDATE JBM_MSG SET HEADERS=?, PAYLOAD=? WHERE "
+"MESSAGE_ID=?\n"
+"   INSERT_MESSAGE_CONDITIONAL_FULL=INSERT INTO JBM_MSG (MESSAGE_ID, "
+"RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, TYPE, HEADERS, PAYLOAD) "
+"SELECT ?, ?, ?, ?, ?, ?, ?, ? FROM JBM_DUAL WHERE NOT EXISTS (SELECT "
+"MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?)   \n"
+"   MESSAGE_ID_COLUMN=MESSAGE_ID   \n"
+"   DELETE_MESSAGE=DELETE FROM JBM_MSG WHERE MESSAGE_ID = ? AND NOT EXISTS "
+"(SELECT * FROM JBM_MSG_REF WHERE JBM_MSG_REF.MESSAGE_ID = ?)      \n"
+"   INSERT_TRANSACTION=INSERT INTO JBM_TX (NODE_ID, TRANSACTION_ID, "
+"BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) VALUES(?, ?, ?, ?, ?)\n"
+"   DELETE_TRANSACTION=DELETE FROM JBM_TX WHERE NODE_ID = ? AND "
+"TRANSACTION_ID = ?\n"
+"   SELECT_PREPARED_TRANSACTIONS=SELECT TRANSACTION_ID, BRANCH_QUAL, "
+"FORMAT_ID, GLOBAL_TXID FROM JBM_TX WHERE NODE_ID = ?\n"
+"   SELECT_MESSAGE_ID_FOR_REF=SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF "
+"WHERE TRANSACTION_ID = ? AND STATE = '+' ORDER BY ORD\n"
+"   SELECT_MESSAGE_ID_FOR_ACK=SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF "
+"WHERE TRANSACTION_ID = ? AND STATE = '-' ORDER BY ORD\n"
+"   UPDATE_COUNTER=UPDATE JBM_COUNTER SET NEXT_ID = ? WHERE NAME=?\n"
+"   SELECT_COUNTER=SELECT NEXT_ID FROM JBM_COUNTER WHERE NAME=? FOR UPDATE\n"
+"   INSERT_COUNTER=INSERT INTO JBM_COUNTER (NAME, NEXT_ID) VALUES (?, ?)\n"
+"   SELECT_ALL_CHANNELS=SELECT DISTINCT(CHANNEL_ID) FROM JBM_MSG_REF\n"
+"   UPDATE_TX=UPDATE JBM_TX SET NODE_ID=? WHERE NODE_ID=?\n"
+"      ]]&gt;&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- The maximum number of parameters to include in a prepared "
+"statement --&gt;\n"
+"                  \n"
+"      &lt;attribute name=\"MaxParams\"&gt;500&lt;/attribute&gt;\n"
+"\n"
+"      &lt;attribute name=\"UseNDBFailoverStrategy\"&gt;true&lt;/"
+"attribute&gt;\n"
+"         \n"
+"   &lt;/mbean&gt;"
+msgstr ""
+"&lt;mbean code=\"org.jboss.messaging.core.jmx.JDBCPersistenceManagerService"
+"\"\n"
+"      name=\"jboss.messaging:service=PersistenceManager\"\n"
+"      xmbean-dd=\"xmdesc/JDBCPersistenceManager-xmbean.xml\"&gt;\n"
+"      \n"
+"      &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/"
+"depends&gt;\n"
+"      \n"
+"      &lt;depends optional-attribute-name=\"TransactionManager\"&gt;jboss:"
+"service=TransactionManager&lt;/depends&gt;\n"
+"      \n"
+"      &lt;!-- The datasource to use for the persistence manager --&gt;\n"
+"                    \n"
+"      &lt;attribute name=\"DataSource\"&gt;java:/DefaultDS&lt;/"
+"attribute&gt;      \n"
+"      \n"
+"      &lt;!-- If true will attempt to create tables and indexes on every "
+"start-up --&gt;\n"
+"                  \n"
+"      &lt;attribute name=\"CreateTablesOnStartup\"&gt;true&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;!-- If true then will use JDBC batch updates --&gt;\n"
+"                  \n"
+"      &lt;attribute name=\"UsingBatchUpdates\"&gt;true&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;attribute name=\"SqlProperties\"&gt;&lt;![CDATA[\n"
+"   CREATE_DUAL=CREATE TABLE JBM_DUAL (DUMMY INTEGER, PRIMARY KEY (DUMMY)) "
+"ENGINE = INNODB\n"
+"   CREATE_MESSAGE_REFERENCE=CREATE TABLE JBM_MSG_REF (CHANNEL_ID BIGINT, "
+"MESSAGE_ID BIGINT, TRANSACTION_ID BIGINT, STATE CHAR(1), ORD BIGINT, "
+"PAGE_ORD BIGINT, DELIVERY_COUNT INTEGER, SCHED_DELIVERY BIGINT, PRIMARY KEY"
+"(CHANNEL_ID, MESSAGE_ID)) ENGINE = INNODB\n"
+"   CREATE_IDX_MESSAGE_REF_TX=CREATE INDEX JBM_MSG_REF_TX ON JBM_MSG_REF "
+"(TRANSACTION_ID)\n"
+"   CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JBM_MSG_REF_ORD ON JBM_MSG_REF "
+"(ORD)\n"
+"   CREATE_IDX_MESSAGE_REF_PAGE_ORD=CREATE INDEX JBM_MSG_REF_PAGE_ORD ON "
+"JBM_MSG_REF (PAGE_ORD)\n"
+"   CREATE_IDX_MESSAGE_REF_MESSAGE_ID=CREATE INDEX JBM_MSG_REF_MESSAGE_ID ON "
+"JBM_MSG_REF (MESSAGE_ID)\n"
+"   CREATE_IDX_MESSAGE_REF_SCHED_DELIVERY=CREATE INDEX "
+"JBM_MSG_REF_SCHED_DELIVERY ON JBM_MSG_REF (SCHED_DELIVERY)\n"
+"   CREATE_MESSAGE=CREATE TABLE JBM_MSG (MESSAGE_ID BIGINT, RELIABLE CHAR(1), "
+"EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, TYPE TINYINT, HEADERS "
+"MEDIUMBLOB, PAYLOAD LONGBLOB, PRIMARY KEY (MESSAGE_ID)) ENGINE = INNODB\n"
+"   CREATE_IDX_MESSAGE_TIMESTAMP=CREATE INDEX JBM_MSG_REF_TIMESTAMP ON "
+"JBM_MSG (TIMESTAMP)\n"
+"   CREATE_TRANSACTION=CREATE TABLE JBM_TX (NODE_ID INTEGER, TRANSACTION_ID "
+"BIGINT, BRANCH_QUAL VARBINARY(254), FORMAT_ID INTEGER, GLOBAL_TXID VARBINARY"
+"(254), PRIMARY KEY (TRANSACTION_ID)) ENGINE = INNODB\n"
+"   CREATE_COUNTER=CREATE TABLE JBM_COUNTER (NAME VARCHAR(255), NEXT_ID "
+"BIGINT, PRIMARY KEY(NAME)) ENGINE = INNODB\n"
+"   INSERT_DUAL=INSERT INTO JBM_DUAL VALUES (1)\n"
+"   CHECK_DUAL=SELECT 1 FROM JBM_DUAL\n"
+"   INSERT_MESSAGE_REF=INSERT INTO JBM_MSG_REF (CHANNEL_ID, MESSAGE_ID, "
+"TRANSACTION_ID, STATE, ORD, PAGE_ORD, DELIVERY_COUNT, SCHED_DELIVERY) VALUES "
+"(?, ?, ?, ?, ?, ?, ?, ?)\n"
+"   DELETE_MESSAGE_REF=DELETE FROM JBM_MSG_REF WHERE MESSAGE_ID=? AND "
+"CHANNEL_ID=? AND STATE='C'\n"
+"   UPDATE_MESSAGE_REF=UPDATE JBM_MSG_REF SET TRANSACTION_ID=?, STATE='-' "
+"WHERE MESSAGE_ID=? AND CHANNEL_ID=? AND STATE='C'\n"
+"   UPDATE_PAGE_ORDER=UPDATE JBM_MSG_REF SET PAGE_ORD = ? WHERE MESSAGE_ID=? "
+"AND CHANNEL_ID=?\n"
+"   COMMIT_MESSAGE_REF1=UPDATE JBM_MSG_REF SET STATE='C', TRANSACTION_ID = "
+"NULL WHERE TRANSACTION_ID=? AND STATE='+'\n"
+"   COMMIT_MESSAGE_REF2=DELETE FROM JBM_MSG_REF WHERE TRANSACTION_ID=? AND "
+"STATE='-'\n"
+"   ROLLBACK_MESSAGE_REF1=DELETE FROM JBM_MSG_REF WHERE TRANSACTION_ID=? AND "
+"STATE='+'\n"
+"   ROLLBACK_MESSAGE_REF2=UPDATE JBM_MSG_REF SET STATE='C', TRANSACTION_ID = "
+"NULL WHERE TRANSACTION_ID=? AND STATE='-'\n"
+"   LOAD_PAGED_REFS=SELECT MESSAGE_ID, DELIVERY_COUNT, PAGE_ORD, "
+"SCHED_DELIVERY FROM JBM_MSG_REF WHERE CHANNEL_ID = ? AND PAGE_ORD BETWEEN ? "
+"AND ? ORDER BY PAGE_ORD\n"
+"   LOAD_UNPAGED_REFS=SELECT MESSAGE_ID, DELIVERY_COUNT, SCHED_DELIVERY FROM "
+"JBM_MSG_REF WHERE STATE = 'C' AND CHANNEL_ID = ? AND PAGE_ORD IS NULL ORDER "
+"BY ORD\n"
+"   LOAD_REFS=SELECT MESSAGE_ID, DELIVERY_COUNT, SCHED_DELIVERY FROM "
+"JBM_MSG_REF WHERE STATE = 'C' AND CHANNEL_ID = ? ORDER BY ORD     \n"
+"   UPDATE_REFS_NOT_PAGED=UPDATE JBM_MSG_REF SET PAGE_ORD = NULL WHERE "
+"PAGE_ORD BETWEEN ? AND ? AND CHANNEL_ID=?\n"
+"   SELECT_MIN_MAX_PAGE_ORD=SELECT MIN(PAGE_ORD), MAX(PAGE_ORD) FROM "
+"JBM_MSG_REF WHERE CHANNEL_ID = ?\n"
+"   SELECT_EXISTS_REF_MESSAGE_ID=SELECT MESSAGE_ID FROM JBM_MSG_REF WHERE "
+"MESSAGE_ID = ?\n"
+"   UPDATE_DELIVERY_COUNT=UPDATE JBM_MSG_REF SET DELIVERY_COUNT = ? WHERE "
+"CHANNEL_ID = ? AND MESSAGE_ID = ?\n"
+"   UPDATE_CHANNEL_ID=UPDATE JBM_MSG_REF SET CHANNEL_ID = ? WHERE CHANNEL_ID "
+"= ?\n"
+"   LOAD_MESSAGES=SELECT MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, "
+"PRIORITY, HEADERS, PAYLOAD, TYPE FROM JBM_MSG\n"
+"   INSERT_MESSAGE=INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, "
+"TIMESTAMP, PRIORITY, TYPE, HEADERS, PAYLOAD) VALUES "
+"(?, ?, ?, ?, ?, ?, ?, ?)\n"
+"   INSERT_MESSAGE_CONDITIONAL=INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, "
+"EXPIRATION, TIMESTAMP, PRIORITY, TYPE, INST_TIME) SELECT ?, ?, ?, ?, ?, ?, ? "
+"FROM JBM_DUAL WHERE NOT EXISTS (SELECT MESSAGE_ID FROM JBM_MSG WHERE "
+"MESSAGE_ID = ?)\n"
+"   UPDATE_MESSAGE_4CONDITIONAL=UPDATE JBM_MSG SET HEADERS=?, PAYLOAD=? WHERE "
+"MESSAGE_ID=?\n"
+"   INSERT_MESSAGE_CONDITIONAL_FULL=INSERT INTO JBM_MSG (MESSAGE_ID, "
+"RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, TYPE, HEADERS, PAYLOAD) "
+"SELECT ?, ?, ?, ?, ?, ?, ?, ? FROM JBM_DUAL WHERE NOT EXISTS (SELECT "
+"MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?)   \n"
+"   MESSAGE_ID_COLUMN=MESSAGE_ID   \n"
+"   DELETE_MESSAGE=DELETE FROM JBM_MSG WHERE MESSAGE_ID = ? AND NOT EXISTS "
+"(SELECT * FROM JBM_MSG_REF WHERE JBM_MSG_REF.MESSAGE_ID = ?)      \n"
+"   INSERT_TRANSACTION=INSERT INTO JBM_TX (NODE_ID, TRANSACTION_ID, "
+"BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) VALUES(?, ?, ?, ?, ?)\n"
+"   DELETE_TRANSACTION=DELETE FROM JBM_TX WHERE NODE_ID = ? AND "
+"TRANSACTION_ID = ?\n"
+"   SELECT_PREPARED_TRANSACTIONS=SELECT TRANSACTION_ID, BRANCH_QUAL, "
+"FORMAT_ID, GLOBAL_TXID FROM JBM_TX WHERE NODE_ID = ?\n"
+"   SELECT_MESSAGE_ID_FOR_REF=SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF "
+"WHERE TRANSACTION_ID = ? AND STATE = '+' ORDER BY ORD\n"
+"   SELECT_MESSAGE_ID_FOR_ACK=SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF "
+"WHERE TRANSACTION_ID = ? AND STATE = '-' ORDER BY ORD\n"
+"   UPDATE_COUNTER=UPDATE JBM_COUNTER SET NEXT_ID = ? WHERE NAME=?\n"
+"   SELECT_COUNTER=SELECT NEXT_ID FROM JBM_COUNTER WHERE NAME=? FOR UPDATE\n"
+"   INSERT_COUNTER=INSERT INTO JBM_COUNTER (NAME, NEXT_ID) VALUES (?, ?)\n"
+"   SELECT_ALL_CHANNELS=SELECT DISTINCT(CHANNEL_ID) FROM JBM_MSG_REF\n"
+"   UPDATE_TX=UPDATE JBM_TX SET NODE_ID=? WHERE NODE_ID=?\n"
+"      ]]&gt;&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;!-- The maximum number of parameters to include in a prepared "
+"statement --&gt;\n"
+"                  \n"
+"      &lt;attribute name=\"MaxParams\"&gt;500&lt;/attribute&gt;\n"
+"\n"
+"      &lt;attribute name=\"UseNDBFailoverStrategy\"&gt;true&lt;/"
+"attribute&gt;\n"
+"         \n"
+"   &lt;/mbean&gt;"
+
+#. Tag: title
+#: Configuration.xml:617
+#, no-c-format
+msgid "MBean attributes of the PersistenceManager MBean"
+msgstr "PersistenceManager MBean 的 MBean 属性"
+
+#. Tag: para
+#: Configuration.xml:621
+#, no-c-format
+msgid ""
+"Set this to <literal>true</literal> if you wish the Persistence Manager to "
+"attempt to create the tables (and indexes) when it starts. If the tables (or "
+"indexes) already exist a <literal>SQLException</literal> will be thrown by "
+"the JDBC driver and ignored by the Persistence Manager, allowing it to "
+"continue."
+msgstr ""
+"如果你希望 Persistence Manager 在启动时创建表（以及索引），请将其设置为 "
+"<literal>true</literal>。如果这些表（以及索引）已经存在，JDBC 驱动将抛出一个 "
+"<literal>SQLException</literal>，Persistence Manager 会忽略这个异常并继续运"
+"行。"
+
+#. Tag: title
+#: Configuration.xml:632 Configuration.xml:723
+#, no-c-format
+msgid "UsingBatchUpdates"
+msgstr "UsingBatchUpdates"
+
+#. Tag: para
+#: Configuration.xml:633 Configuration.xml:724
+#, no-c-format
+msgid ""
+"Set this to <literal>true</literal> if the database supports JDBC batch "
+"updates. The JDBC Persistence Manager will then group multiple database "
+"updates in batches to aid performance."
+msgstr ""
+"如果数据库支持 JDBC 批量更新，请设置它为 <literal>true</literal>。JDBC "
+"Persistence Manager 将对批量的数据库更新进行分组来提供性能。"
+
+#. Tag: para
+#: Configuration.xml:636 Configuration.xml:727
+#, no-c-format
+msgid ""
+"By default the value of <literal>UsingBatchUpdates</literal> attribute is "
+"set to <literal>false</literal>"
+msgstr ""
+"<literal>UsingBatchUpdates</literal> 属性的缺省值是 <literal>false</"
+"literal>。"
+
+#. Tag: title
+#: Configuration.xml:640
+#, no-c-format
+msgid "UsingBinaryStream"
+msgstr "UsingBinaryStream"
+
+#. Tag: para
+#: Configuration.xml:641
+#, no-c-format
+msgid ""
+"Set this to <literal>true</literal> if you want messages to be store and "
+"read using a JDBC binary stream rather than using getBytes(), setBytes(). "
+"Some database has limits on the maximum number of bytes that can be get/set "
+"using getBytes()/setBytes()."
+msgstr ""
+"如果你希望用 JDBC 二进制流而不是 getBytes()、setBytes() 存储和读取消息，请设"
+"置它为 <literal>true</literal>。有些数据库对用 getBytes()/setBytes() 读取/写"
+"的字节数有限制。"
+
+#. Tag: para
+#: Configuration.xml:646
+#, no-c-format
+msgid ""
+"By default the value of <literal>UsingBinaryStream</literal> attribute is "
+"set to <literal>true</literal>"
+msgstr "<literal>UsingBinaryStream</literal> 属性的缺省值是 <literal>true</literal>。"
+
+#. Tag: title
+#: Configuration.xml:650
+#, no-c-format
+msgid "UsingTrailingByte"
+msgstr "UsingTrailingByte"
+
+#. Tag: para
+#: Configuration.xml:651
+#, no-c-format
+msgid ""
+"Certain version of Sybase are known to truncate blobs if they have trailing "
+"zeros. To prevent this if this attribute is set to <literal>true</literal> "
+"then a trailing non zero byte will be added and removed to each blob before "
+"and after persistence to prevent the database from truncating it. Currently "
+"this is only known to be necessary for Sybase."
+msgstr ""
+"Sybase 的某些版本会把尾部的零截为圆点。要防止这种情况，这个属性应该设置为 "
+"<literal>true</literal>，这样尾部的非零字节将在持久化之前和之后添加和删除以防"
+"止数据库删除它们。目前这仅对于 Sybase 是必需的。"
+
+#. Tag: para
+#: Configuration.xml:657
+#, no-c-format
+msgid ""
+"By default the value of <literal>UsingTrailingByte</literal> attribute is "
+"set to <literal>false</literal>"
+msgstr ""
+"<literal>UsingTrailingByte</literal> 属性的缺省值是 <literal>false</"
+"literal>。"
+
+#. Tag: title
+#: Configuration.xml:661
+#, no-c-format
+msgid "SupportsBlobOnSelect"
+msgstr "SupportsBlobOnSelect"
+
+#. Tag: para
+#: Configuration.xml:662
+#, no-c-format
+msgid ""
+"Oracle (and possibly other databases) is known to not allow BLOBs to be "
+"inserted using a INSERT INTO ... SELECT FROM statement, and requires a two "
+"stage conditional insert of messages. If this value is false then such a two "
+"stage insert will be used."
+msgstr ""
+"Oracle（可能还有其他数据库）不允许用 INSERT INTO ... SELECT FROM 语句插入 "
+"BLOB，且要求两阶段插入消息。如果这个值为 false，那么将使用两阶段的插入。"
+
+#. Tag: para
+#: Configuration.xml:667
+#, no-c-format
+msgid ""
+"By default the value of <literal>SupportsBlobOnSelect</literal> attribute is "
+"set to <literal>true</literal>"
+msgstr ""
+"<literal>SupportsBlobOnSelect</literal> 属性缺省值是 <literal>true</"
+"literal>。"
+
+#. Tag: title
+#: Configuration.xml:679
+#, no-c-format
+msgid "MaxParams"
+msgstr "MaxParams"
+
+#. Tag: para
+#: Configuration.xml:680
+#, no-c-format
+msgid ""
+"When loading messages the persistence manager will generate prepared "
+"statements with many parameters. This value tells the persistence manager "
+"what the absolute maximum number of parameters are allowable per prepared "
+"statement."
+msgstr ""
+"当加载消息时，Persistence manager 将生成带有很多参数的 prepared 语句。这个值"
+"通知 Persistence manager 每个 prepared 语句所允许的参数的最大个数。"
+
+#. Tag: para
+#: Configuration.xml:684
+#, no-c-format
+msgid ""
+"By default the value of <literal>MaxParams</literal> attribute is set to "
+"<literal>100</literal>"
+msgstr "<literal>MaxParams</literal> 属性的缺省值是<literal>100</literal>。"
+
+#. Tag: title
+#: Configuration.xml:688
+#, no-c-format
+msgid "UseNDBFailoverStrategy"
+msgstr "UseNDBFailoverStrategy"
+
+#. Tag: para
+#: Configuration.xml:689
+#, no-c-format
+msgid ""
+"When running in a clustered database environment it is possible that some "
+"databases, MySQL for instance, can fail during the commit of a database "
+"transaction. If the database node dies while committing then the final state "
+"of the transaction is unknown. If the attribute "
+"<literal>UseNDBFailoverStrategy</literal> is set to true and the above "
+"happens then the SQL statement will be re-executed. However any further "
+"error is ignored because an assumption is made that the error is due to the "
+"previous transaction being committed successfully."
+msgstr ""
+"当在群集的数据库环境里运行时，某些数据库如 MySQL，可能在提交数据库事务时失"
+"败。如果在提交阶段数据库节点停止运行了，那么就无法获知该事务的最后状态。如果"
+"设置了 <literal>UseNDBFailoverStrategy</literal> 为 true，那么相关 SQL 语句将"
+"被重新执行。然而，任何进一步的错误将被忽略，这是因为我们假设这个错误是由于前"
+"面成功提交的事务所引起的。"
+
+#. Tag: para
+#: Configuration.xml:694
+#, no-c-format
+msgid ""
+"By default the value of the attribute <literal>UseNDBFailoverStrategy</"
+"literal> is set to <literal>false.</literal>"
+msgstr ""
+"<literal>UseNDBFailoverStrategy</literal> 的缺省值是 <literal>false</"
+"literal>。"
+
+#. Tag: title
+#: Configuration.xml:701
+#, no-c-format
+msgid "Configuring the JMS user manager"
+msgstr "配置 JMS User Manager"
+
+#. Tag: para
+#: Configuration.xml:702
+#, no-c-format
+msgid ""
+"The JMS user manager handles the mapping of pre-configured client IDs to "
+"users and also managers the user and role tables which may or may not be "
+"used depending on which login module you have configured"
+msgstr ""
+"JMS user manager 处理预配置的客户 ID 和用户的映射，它也管理用户和角色表（其是"
+"否被使用取决于你所配置的登录模块）。"
+
+#. Tag: para
+#: Configuration.xml:705
+#, no-c-format
+msgid "Here is an example JMSUserManager configuration"
+msgstr "下面是一个配置 JMSUserManager 的例子"
+
+#. Tag: programlisting
+#: Configuration.xml:706
+#, no-c-format
+msgid ""
+"&lt;mbean code=\"org.jboss.jms.server.plugin.JDBCJMSUserManagerService\"\n"
+"      name=\"jboss.messaging:service=JMSUserManager\"\n"
+"      xmbean-dd=\"xmdesc/JMSUserManager-xmbean.xml\"&gt;\n"
+"      &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/"
+"depends&gt;\n"
+"      &lt;depends optional-attribute-name=\"TransactionManager\"&gt;\n"
+"               jboss:service=TransactionManager\n"
+"      &lt;/depends&gt;\n"
+"      &lt;attribute name=\"DataSource\"&gt;java:/DefaultDS&lt;/"
+"attribute&gt;\n"
+"      &lt;attribute name=\"CreateTablesOnStartup\"&gt;true&lt;/"
+"attribute&gt;\n"
+"      &lt;attribute name=\"SqlProperties\"&gt;&lt;![CDATA[\n"
+"               CREATE_USER_TABLE=CREATE TABLE JBM_USER (USER_ID VARCHAR(32) "
+"NOT NULL,\n"
+"               PASSWD VARCHAR(32) NOT NULL, CLIENTID VARCHAR(128),\n"
+"               PRIMARY KEY(USER_ID)) ENGINE = INNODB\n"
+"               CREATE_ROLE_TABLE=CREATE TABLE JBM_ROLE (ROLE_ID VARCHAR(32) "
+"NOT NULL,\n"
+"               USER_ID VARCHAR(32) NOT NULL, PRIMARY KEY(USER_ID, ROLE_ID))\n"
+"               ENGINE = INNODB\n"
+"               SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JBM_USER WHERE "
+"USER_ID=?\n"
+"               POPULATE.TABLES.1=INSERT INTO JBM_USER (USER_ID,PASSWD,"
+"CLIENTID)\n"
+"               VALUES ('dilbert','dogbert','dilbert-id')\n"
+"      ]]&gt;&lt;/attribute&gt;\n"
+"   &lt;/mbean&gt;"
+msgstr ""
+"&lt;mbean code=\"org.jboss.jms.server.plugin.JDBCJMSUserManagerService\"\n"
+"      name=\"jboss.messaging:service=JMSUserManager\"\n"
+"      xmbean-dd=\"xmdesc/JMSUserManager-xmbean.xml\"&gt;\n"
+"      &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/"
+"depends&gt;\n"
+"      &lt;depends optional-attribute-name=\"TransactionManager\"&gt;\n"
+"               jboss:service=TransactionManager\n"
+"      &lt;/depends&gt;\n"
+"      &lt;attribute name=\"DataSource\"&gt;java:/DefaultDS&lt;/"
+"attribute&gt;\n"
+"      &lt;attribute name=\"CreateTablesOnStartup\"&gt;true&lt;/"
+"attribute&gt;\n"
+"      &lt;attribute name=\"SqlProperties\"&gt;&lt;![CDATA[\n"
+"               CREATE_USER_TABLE=CREATE TABLE JBM_USER (USER_ID VARCHAR(32) "
+"NOT NULL,\n"
+"               PASSWD VARCHAR(32) NOT NULL, CLIENTID VARCHAR(128),\n"
+"               PRIMARY KEY(USER_ID)) ENGINE = INNODB\n"
+"               CREATE_ROLE_TABLE=CREATE TABLE JBM_ROLE (ROLE_ID VARCHAR(32) "
+"NOT NULL,\n"
+"               USER_ID VARCHAR(32) NOT NULL, PRIMARY KEY(USER_ID, ROLE_ID))\n"
+"               ENGINE = INNODB\n"
+"               SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JBM_USER WHERE "
+"USER_ID=?\n"
+"               POPULATE.TABLES.1=INSERT INTO JBM_USER (USER_ID,PASSWD,"
+"CLIENTID)\n"
+"               VALUES ('dilbert','dogbert','dilbert-id')\n"
+"      ]]&gt;&lt;/attribute&gt;\n"
+"   &lt;/mbean&gt;"
+
+#. Tag: title
+#: Configuration.xml:708
+#, no-c-format
+msgid "MBean attributes of the JMSUserManager MBean"
+msgstr "JMSUserManager MBean 的 MBean 属性"
+
+#. Tag: para
+#: Configuration.xml:712
+#, no-c-format
+msgid ""
+"Set this to <literal>true</literal> if you wish the JMS user manager to "
+"attempt to create the tables (and indexes) when it starts. If the tables (or "
+"indexes) already exist a <literal>SQLException</literal> will be thrown by "
+"the JDBC driver and ignored by the Persistence Manager, allowing it to "
+"continue."
+msgstr ""
+"如果你希望 JMS user manager 试图在启动时创建表（和索引），请设置它为 "
+"<literal>true</literal>。如果这个表（或索引）已经存在，那么 JDBC 驱动将抛出 "
+"<literal>SQLException</literal> 而 Persistence Manager 会忽略这个异常来使其继"
+"续运行。"
+
+#. Tag: para
+#: Configuration.xml:736
+#, no-c-format
+msgid ""
+"Default user and role data can also be specified here. Any data to be "
+"inserted must be specified with property names starting with "
+"<literal>POPULATE.TABLES</literal> as in the above example."
+msgstr ""
+"缺省的用户和角色数据也可以在这里指定。如上例一样，任何被插入的数据必须用名称"
+"以 <literal>POPULATE.TABLES</literal> 开始的属性来指定。"
+
+#. Tag: title
+#: Configuration.xml:746
+#, no-c-format
+msgid "Configuring Destinations"
+msgstr "配置目的地"
+
+#. Tag: title
+#: Configuration.xml:748
+#, no-c-format
+msgid "Pre-configured destinations"
+msgstr "预配置的目的地"
+
+#. Tag: para
+#: Configuration.xml:749
+#, no-c-format
+msgid ""
+"JBoss Messaging ships with a default set of pre-configured destinations that "
+"will be deployed during the server start up. The file that contains "
+"configuration for these destinations is <filename>destinations-service.xml</"
+"filename>. A section of this file is listed below:"
+msgstr ""
+"JBoss Messaging 带有一套缺省的预配置目的地，它将在服务器启动过程中被部署。针"
+"对这些目的地的包含配置信息的文件是 <filename>destinations-service.xml</"
+"filename>。下面是这个文件的一部分内容："
+
+#. Tag: programlisting
+#: Configuration.xml:754
+#, no-c-format
+msgid ""
+"&lt;!--\n"
+"      The Default Dead Letter Queue. This destination is a dependency of an "
+"EJB MDB container.\n"
+"   --&gt;\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.QueueService\"\n"
+"      name=\"jboss.messaging.destination:service=Queue,name=DLQ\"\n"
+"      xmbean-dd=\"xmdesc/Queue-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.TopicService\"\n"
+"      name=\"jboss.messaging.destination:service=Topic,name=testTopic\"\n"
+"      xmbean-dd=\"xmdesc/Topic-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"      &lt;attribute name=\"SecurityConfig\"&gt;\n"
+"         &lt;security&gt;\n"
+"            &lt;role name=\"guest\" read=\"true\" write=\"true\"/&gt;\n"
+"            &lt;role name=\"publisher\" read=\"true\" write=\"true\" create="
+"\"false\"/&gt;\n"
+"            &lt;role name=\"durpublisher\" read=\"true\" write=\"true\" "
+"create=\"true\"/&gt;\n"
+"         &lt;/security&gt;\n"
+"      &lt;/attribute&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.TopicService\"\n"
+"      name=\"jboss.messaging.destination:service=Topic,name=securedTopic\"\n"
+"      xmbean-dd=\"xmdesc/Topic-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"      &lt;attribute name=\"SecurityConfig\"&gt;\n"
+"         &lt;security&gt;\n"
+"            &lt;role name=\"publisher\" read=\"true\" write=\"true\" create="
+"\"false\"/&gt;\n"
+"         &lt;/security&gt;\n"
+"      &lt;/attribute&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.QueueService\"\n"
+"      name=\"jboss.messaging.destination:service=Queue,name=testQueue\"\n"
+"      xmbean-dd=\"xmdesc/Queue-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"      &lt;attribute name=\"SecurityConfig\"&gt;\n"
+"         &lt;security&gt;\n"
+"            &lt;role name=\"guest\" read=\"true\" write=\"true\"/&gt;\n"
+"            &lt;role name=\"publisher\" read=\"true\" write=\"true\" create="
+"\"false\"/&gt;\n"
+"            &lt;role name=\"noacc\" read=\"false\" write=\"false\" create="
+"\"false\"/&gt;\n"
+"         &lt;/security&gt;\n"
+"      &lt;/attribute&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.QueueService\"\n"
+"      name=\"jboss.messaging.destination:service=Queue,name=A\"\n"
+"      xmbean-dd=\"xmdesc/Queue-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"\n"
+"   &lt;!-- It's possible for indiviual queues and topics to use a specific "
+"queue for\n"
+"   an expiry or DLQ --&gt;\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.QueueService\"\n"
+"      name=\"jboss.messaging.destination:service=Queue,name=PrivateDLQ\"\n"
+"      xmbean-dd=\"xmdesc/Queue-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.QueueService\"\n"
+"      name=\"jboss.messaging.destination:service=Queue,"
+"name=PrivateExpiryQueue\"\n"
+"      xmbean-dd=\"xmdesc/Queue-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.QueueService\"\n"
+"      name=\"jboss.messaging.destination:service=Queue,"
+"name=QueueWithOwnDLQAndExpiryQueue\"\n"
+"      xmbean-dd=\"xmdesc/Queue-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"      &lt;attribute name=\"DLQ\"&gt;\n"
+"                  jboss.messaging.destination:service=Queue,name=PrivateDLQ\n"
+"      &lt;/attribute&gt;\n"
+"      &lt;attribute name=\"ExpiryQueue\"&gt;\n"
+"                  jboss.messaging.destination:service=Queue,"
+"name=PrivateExpiryQueue\n"
+"      &lt;/attribute&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.TopicService\"\n"
+"      name=\"jboss.messaging.destination:service=Topic,"
+"name=TopicWithOwnDLQAndExpiryQueue\"\n"
+"      xmbean-dd=\"xmdesc/Topic-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"      &lt;attribute name=\"DLQ\"&gt;\n"
+"                  jboss.messaging.destination:service=Queue,name=PrivateDLQ\n"
+"      &lt;/attribute&gt;\n"
+"      &lt;attribute name=\"ExpiryQueue\"&gt;\n"
+"                  jboss.messaging.destination:service=Queue,"
+"name=PrivateExpiryQueue\n"
+"      &lt;/attribute&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.TopicService\"\n"
+"      name=\"jboss.messaging.destination:service=Topic,"
+"name=TopicWithOwnRedeliveryDelay\"\n"
+"      xmbean-dd=\"xmdesc/Topic-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"      &lt;attribute name=\"RedeliveryDelay\"&gt;5000&lt;/attribute&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.TopicService\"\n"
+"      name=\"jboss.messaging.destination:service=Topic,"
+"name=testDistributedTopic\"\n"
+"      xmbean-dd=\"xmdesc/Topic-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"      &lt;attribute name=\"Clustered\"&gt;true&lt;/attribute&gt;\n"
+"   &lt;/mbean&gt;\n"
+"...."
+msgstr ""
+"&lt;!--\n"
+"      The Default Dead Letter Queue. This destination is a dependency of an "
+"EJB MDB container.\n"
+"   --&gt;\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.QueueService\"\n"
+"      name=\"jboss.messaging.destination:service=Queue,name=DLQ\"\n"
+"      xmbean-dd=\"xmdesc/Queue-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.TopicService\"\n"
+"      name=\"jboss.messaging.destination:service=Topic,name=testTopic\"\n"
+"      xmbean-dd=\"xmdesc/Topic-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"      &lt;attribute name=\"SecurityConfig\"&gt;\n"
+"         &lt;security&gt;\n"
+"            &lt;role name=\"guest\" read=\"true\" write=\"true\"/&gt;\n"
+"            &lt;role name=\"publisher\" read=\"true\" write=\"true\" create="
+"\"false\"/&gt;\n"
+"            &lt;role name=\"durpublisher\" read=\"true\" write=\"true\" "
+"create=\"true\"/&gt;\n"
+"         &lt;/security&gt;\n"
+"      &lt;/attribute&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.TopicService\"\n"
+"      name=\"jboss.messaging.destination:service=Topic,name=securedTopic\"\n"
+"      xmbean-dd=\"xmdesc/Topic-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"      &lt;attribute name=\"SecurityConfig\"&gt;\n"
+"         &lt;security&gt;\n"
+"            &lt;role name=\"publisher\" read=\"true\" write=\"true\" create="
+"\"false\"/&gt;\n"
+"         &lt;/security&gt;\n"
+"      &lt;/attribute&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.QueueService\"\n"
+"      name=\"jboss.messaging.destination:service=Queue,name=testQueue\"\n"
+"      xmbean-dd=\"xmdesc/Queue-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"      &lt;attribute name=\"SecurityConfig\"&gt;\n"
+"         &lt;security&gt;\n"
+"            &lt;role name=\"guest\" read=\"true\" write=\"true\"/&gt;\n"
+"            &lt;role name=\"publisher\" read=\"true\" write=\"true\" create="
+"\"false\"/&gt;\n"
+"            &lt;role name=\"noacc\" read=\"false\" write=\"false\" create="
+"\"false\"/&gt;\n"
+"         &lt;/security&gt;\n"
+"      &lt;/attribute&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.QueueService\"\n"
+"      name=\"jboss.messaging.destination:service=Queue,name=A\"\n"
+"      xmbean-dd=\"xmdesc/Queue-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"\n"
+"   &lt;!-- It's possible for indiviual queues and topics to use a specific "
+"queue for\n"
+"   an expiry or DLQ --&gt;\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.QueueService\"\n"
+"      name=\"jboss.messaging.destination:service=Queue,name=PrivateDLQ\"\n"
+"      xmbean-dd=\"xmdesc/Queue-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.QueueService\"\n"
+"      name=\"jboss.messaging.destination:service=Queue,"
+"name=PrivateExpiryQueue\"\n"
+"      xmbean-dd=\"xmdesc/Queue-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.QueueService\"\n"
+"      name=\"jboss.messaging.destination:service=Queue,"
+"name=QueueWithOwnDLQAndExpiryQueue\"\n"
+"      xmbean-dd=\"xmdesc/Queue-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"      &lt;attribute name=\"DLQ\"&gt;\n"
+"                  jboss.messaging.destination:service=Queue,name=PrivateDLQ\n"
+"      &lt;/attribute&gt;\n"
+"      &lt;attribute name=\"ExpiryQueue\"&gt;\n"
+"                  jboss.messaging.destination:service=Queue,"
+"name=PrivateExpiryQueue\n"
+"      &lt;/attribute&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.TopicService\"\n"
+"      name=\"jboss.messaging.destination:service=Topic,"
+"name=TopicWithOwnDLQAndExpiryQueue\"\n"
+"      xmbean-dd=\"xmdesc/Topic-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"      &lt;attribute name=\"DLQ\"&gt;\n"
+"                  jboss.messaging.destination:service=Queue,name=PrivateDLQ\n"
+"      &lt;/attribute&gt;\n"
+"      &lt;attribute name=\"ExpiryQueue\"&gt;\n"
+"                  jboss.messaging.destination:service=Queue,"
+"name=PrivateExpiryQueue\n"
+"      &lt;/attribute&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.TopicService\"\n"
+"      name=\"jboss.messaging.destination:service=Topic,"
+"name=TopicWithOwnRedeliveryDelay\"\n"
+"      xmbean-dd=\"xmdesc/Topic-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"      &lt;attribute name=\"RedeliveryDelay\"&gt;5000&lt;/attribute&gt;\n"
+"   &lt;/mbean&gt;\n"
+"\n"
+"\n"
+"   &lt;mbean code=\"org.jboss.jms.server.destination.TopicService\"\n"
+"      name=\"jboss.messaging.destination:service=Topic,"
+"name=testDistributedTopic\"\n"
+"      xmbean-dd=\"xmdesc/Topic-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                  jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"      &lt;attribute name=\"Clustered\"&gt;true&lt;/attribute&gt;\n"
+"   &lt;/mbean&gt;\n"
+"...."
+
+#. Tag: title
+#: Configuration.xml:758
+#, no-c-format
+msgid "Configuring queues"
+msgstr "配置队列"
+
+#. Tag: title
+#: Configuration.xml:760
+#, no-c-format
+msgid "Attributes of the Queue MBean"
+msgstr "Queue MBean 的属性"
+
+#. Tag: title
+#: Configuration.xml:762 Configuration.xml:976
+#, no-c-format
+msgid "Name"
+msgstr "Name"
+
+#. Tag: para
+#: Configuration.xml:763
+#, no-c-format
+msgid "The name of the queue"
+msgstr "队列的名称"
+
+#. Tag: title
+#: Configuration.xml:766 Configuration.xml:980
+#, no-c-format
+msgid "JNDIName"
+msgstr "JNDIName"
+
+#. Tag: para
+#: Configuration.xml:767
+#, no-c-format
+msgid "The JNDI name where the queue is bound"
+msgstr "队列绑定的 JNDI 名称"
+
+#. Tag: title
+#: Configuration.xml:770 Configuration.xml:984
+#, no-c-format
+msgid "<title>DLQ</title>"
+msgstr "<title>DLQ</title>"
+
+#. Tag: para
+#: Configuration.xml:771
+#, no-c-format
+msgid "The DLQ used for this queue. Overrides any value set on the ServerPeer config"
+msgstr "用于这个队列的 DLQ。它将覆盖 ServerPeer 配置里的任何值。"
+
+#. Tag: title
+#: Configuration.xml:775 Configuration.xml:989
+#, no-c-format
+msgid "ExpiryQueue"
+msgstr "ExpiryQueue"
+
+#. Tag: para
+#: Configuration.xml:776
+#, no-c-format
+msgid ""
+"The Expiry queue used for this queue. Overrides any value set on the "
+"ServerPeer config"
+msgstr "用于这个队列的过期队列（Expiry Queue）。它将覆盖 ServerPeer 配置里的任何值。"
+
+#. Tag: title
+#: Configuration.xml:780 Configuration.xml:994
+#, no-c-format
+msgid "RedeliveryDelay"
+msgstr "RedeliveryDelay"
+
+#. Tag: para
+#: Configuration.xml:781
+#, no-c-format
+msgid ""
+"The redelivery delay to be used for this queue. Overrides any value set on "
+"the ServerPeer config"
+msgstr "这个队列使用的重递送延迟。它将覆盖 ServerPeer 配置里的任何值。"
+
+#. Tag: title
+#: Configuration.xml:785 Configuration.xml:999
+#, no-c-format
+msgid "MaxDeliveryAttempts"
+msgstr "MaxDeliveryAttempts"
+
+#. Tag: para
+#: Configuration.xml:786 Configuration.xml:1000
+#, no-c-format
+msgid ""
+"The maximum number of times delivery of a message will be attempted before "
+"sending the message to the DLQ, if configured. If set to -1 (the default), "
+"the value from the ServerPeer config is used. Any other setting overrides "
+"the value set on the ServerPeer config."
+msgstr ""
+"在把消息发送到 DLQ 之前，尝试递送消息的最大次数。如果为 -1（缺省值），"
+"ServerPeer 配置里值将被使用。任何其他值将覆盖 ServerPeer 配置里的值。"
+
+#. Tag: title
+#: Configuration.xml:793 Configuration.xml:1007
+#, no-c-format
+msgid "Destination Security Configuration"
+msgstr "目的地的安全性配置"
+
+#. Tag: para
+#: Configuration.xml:794 Configuration.xml:1008
+#, no-c-format
+msgid ""
+"<literal>SecurityConfig</literal> - allows you to determine which roles are "
+"allowed to read, write and create on the destination. It has exactly the "
+"same syntax and semantics as the security configuration in JBossMQ "
+"destinations."
+msgstr ""
+"<literal>SecurityConfig</literal> - 允许你决定哪些角色可以在目的地读、写和创"
+"建。它具有和 JBossMQ 目的地的安全配置完全相同的语法。"
+
+#. Tag: para
+#: Configuration.xml:798 Configuration.xml:1012
+#, no-c-format
+msgid ""
+"The <literal>SecurityConfig</literal> element should contain one "
+"<literal>&lt;security&gt;</literal> element. The <literal>&lt;security&gt;</"
+"literal> element can contain multiple <literal>&lt;role&gt;</literal> "
+"elements. Each <literal>&lt;role&gt;</literal> element defines the access "
+"for that particular role."
+msgstr ""
+"<literal>SecurityConfig</literal> 元素里应该包含一个 <literal>&lt;"
+"security&gt;</literal> 元素。而 <literal>&lt;security&gt;</literal> 元素可以"
+"包含多个 <literal>&lt;role&gt;</literal> 元素。每个 <literal>&lt;role&gt;</"
+"literal> 元素都定义特定角色的访问权限。"
+
+#. Tag: para
+#: Configuration.xml:804 Configuration.xml:1018
+#, no-c-format
+msgid ""
+"If the <literal>read</literal> attribute is <literal>true</literal> then "
+"that role will be able to read (create consumers, receive messaages or "
+"browse) this destination."
+msgstr ""
+"如果 <literal>read</literal> 属性为 <literal>true</literal>，那么这个角色可以"
+"读取（创建消费者、接收消息或浏览消息）目的地。"
+
+#. Tag: para
+#: Configuration.xml:808 Configuration.xml:1022
+#, no-c-format
+msgid ""
+"If the <literal>write</literal> attribute is <literal>true</literal> then "
+"that role will be able to write (create producers or send messages) to this "
+"destination."
+msgstr ""
+"如果 <literal>write</literal> 属性为 <literal>true</literal>，那么该角色可以"
+"写这个目的地（创建生产者或发送消息）。"
+
+#. Tag: para
+#: Configuration.xml:811 Configuration.xml:1025
+#, no-c-format
+msgid ""
+"If the <literal>create</literal> attribute is <literal>true</literal> then "
+"that role will be able to create durable subscriptions on this destination."
+msgstr ""
+"如果 <literal>create</literal> 属性为 <literal>true</literal>，那么该角色可以"
+"在这个目的地上创建持久性订阅。"
+
+#. Tag: para
+#: Configuration.xml:814 Configuration.xml:1028
+#, no-c-format
+msgid ""
+"Note that the security configuration for a destination is optional. If a "
+"<literal>SecurityConfig</literal> element is not specifed then the default "
+"security configuration from the Server Peer will be used."
+msgstr ""
+"请注意目的地的安全性配置是可选的。如果没有指定 <literal>SecurityConfig</"
+"literal> 元素，那么 Server Peer 里的缺省安全配置将被使用。"
+
+#. Tag: title
+#: Configuration.xml:820 Configuration.xml:1034
+#, no-c-format
+msgid "Destination paging parameters"
+msgstr "目的地的页面参数"
+
+#. Tag: para
+#: Configuration.xml:821 Configuration.xml:1035
+#, no-c-format
+msgid ""
+"'Pageable Channels' are a sophisticated new feature available in JBoss "
+"Messaging."
+msgstr "'Pageable Channels' 是 JBoss Messaging 里的一个复杂的新功能。"
+
+#. Tag: para
+#: Configuration.xml:823 Configuration.xml:1037
+#, no-c-format
+msgid ""
+"If your application needs to support very large queues or subscriptions "
+"containing potentially millions of messages, then it's not possible to store "
+"them all in memory at once."
+msgstr ""
+"如果你的应用程序需要支持超大的对列或可能包含数百万条消息的订阅，那么一次性进"
+"行存储就不可能。"
+
+#. Tag: para
+#: Configuration.xml:826 Configuration.xml:1040
+#, no-c-format
+msgid ""
+"JBoss Messaging solves this problem but letting you specify the maximum "
+"number of messages that can be stored in memory at any one time, on a queue-"
+"by-queue, or topic-by-topic basis. JBoss Messaging then pages messages to "
+"and from storage transparently in blocks, allowing queues and subscriptions "
+"to grow to very large sizes without any performance degradation as channel "
+"size increases."
+msgstr ""
+"JBoss Messaging 没有解决这个问题，但它可以让你指定可以一次性存储在内存里的每"
+"个队列或主题的消息的最大个数。JBoss Messaging 然后以块的形式透明地将这些消息"
+"分页，允许队列和订阅非常大而不影响性能。"
+
+#. Tag: para
+#: Configuration.xml:833 Configuration.xml:1047
+#, no-c-format
+msgid ""
+"This has been tested with in excess of 10 million 2K messages on very basic "
+"hardware and has the potential to scale to much larger number of messages."
+msgstr ""
+"这已经在基本的硬件上使用超过一千万零两千条消息进行了测试，且有可能扩展至更大"
+"的数目。"
+
+#. Tag: para
+#: Configuration.xml:836 Configuration.xml:1050
+#, no-c-format
+msgid "The individual parameters are:"
+msgstr "其各个参数为："
+
+#. Tag: para
+#: Configuration.xml:837 Configuration.xml:1051
+#, no-c-format
+msgid ""
+"<literal>FullSize</literal> - this is the maximum number of messages held by "
+"the queue or topic subscriptions in memory at any one time. The actual queue "
+"or subscription can hold many more messages than this but these are paged to "
+"and from storage as necessary as messages are added or consumed."
+msgstr ""
+"<literal>FullSize</literal> - 这是内存里的队列或主题订阅在任何时刻可容纳的最"
+"大消息数目。实际的队列或订阅可以容纳比这更多的消息，因为在添加或消费消息时可"
+"以按需要将这些消息分页至存储里。"
+
+#. Tag: para
+#: Configuration.xml:842 Configuration.xml:1056
+#, no-c-format
+msgid ""
+"<literal>PageSize</literal> - When loading messages from the queue or "
+"subscrition this is the maximum number of messages to pre-load in one "
+"operation."
+msgstr ""
+"<literal>PageSize</literal> - 当从队列或订阅加载消息时，这是在某个操作里可以"
+"预加载的最大消息数目。"
+
+#. Tag: para
+#: Configuration.xml:845 Configuration.xml:1059
+#, no-c-format
+msgid ""
+"<literal>DownCacheSize</literal> - When paging messages to storage from the "
+"queue they first go into a \"Down Cache\" before being written to storage. "
+"This enables the write to occur as a single operation thus aiding "
+"performance. This setting determines the max number of messages that the "
+"Down Cache will hold before they are flushed to storage."
+msgstr ""
+"<literal>DownCacheSize</literal> - 当把消息从队列里分页至存储里时，在实际上写"
+"入前它们首先进入一个 \"Down Cache\" 里。这使写入成为单个操作，因此提高了性"
+"能。这个设置决定了 Down Cache 在冲刷消息至存储前可容纳的消息的最大数目。"
+
+#. Tag: para
+#: Configuration.xml:851 Configuration.xml:1065
+#, no-c-format
+msgid ""
+"If no values for <literal>FullSize</literal>, <literal>PageSize</literal>, "
+"or <literal>DownCacheSize</literal> are specified they will default to "
+"values 75000, 2000, 2000 respectively."
+msgstr ""
+"如果没有指定 <literal>FullSize</literal>、<literal>PageSize</literal> 或 "
+"<literal>DownCacheSize</literal>，它们的缺省值将分别是 75000、2000、2000。"
+
+#. Tag: para
+#: Configuration.xml:855 Configuration.xml:1069
+#, no-c-format
+msgid ""
+"If you want to specify the paging parameters used for temporary queues then "
+"you need to specify them on the appropriate connection factory. See "
+"connection factory configuration for details."
+msgstr ""
+"如果你向指定用于临时队列的页面参数，那么你需要在合适的连接工厂上对它们进行指"
+"定。详情请参考连接工厂的配置。"
+
+#. Tag: title
+#: Configuration.xml:861 Configuration.xml:1075
+#, no-c-format
+msgid "CreatedProgrammatically"
+msgstr "CreatedProgrammatically"
+
+#. Tag: para
+#: Configuration.xml:862
+#, no-c-format
+msgid "Returns <literal>true</literal> if the queue was created programmatically"
+msgstr "如果队列是在程序里创建的话，返回 <literal>true</literal>"
+
+#. Tag: title
+#: Configuration.xml:866
+#, no-c-format
+msgid "MessageCount"
+msgstr "MessageCount"
+
+#. Tag: para
+#: Configuration.xml:867
+#, no-c-format
+msgid ""
+"Returns the total number of messages in the queue = number not being "
+"delivered + number being delivered + number being scheduled"
+msgstr ""
+"返回队列里的消息总数，它等于正在递送的消息数目 + 未递送的消息数目 + 正被调度"
+"的消息数目。"
+
+#. Tag: title
+#: Configuration.xml:872
+#, no-c-format
+msgid "ScheduledMessageCount"
+msgstr "ScheduledMessageCount"
+
+#. Tag: para
+#: Configuration.xml:873
+#, no-c-format
+msgid ""
+"Returns the number of scheduled messages in the queue. This is the number of "
+"messages scheduled to be delivered at a later date."
+msgstr "返回队列里已调度的消息的数目。这些消息预定在以后的时间进行递送。"
+
+#. Tag: para
+#: Configuration.xml:876
+#, no-c-format
+msgid ""
+"Scheduled delivery is a feature of JBoss Messaging where you can send a "
+"message and specify the earliest time at which it will be delivered. E.g. "
+"you can send a message now, but the message won't actually be delivered "
+"until 2 hours time."
+msgstr ""
+"调度递送是 JBoss Messaging 的一个功能，你可以发送消息并指定递送的最早时间。例"
+"如，你可以现在就发送一条消息，但这个消息实际上会在两小时后被递送。"
+
+#. Tag: para
+#: Configuration.xml:880
+#, no-c-format
+msgid ""
+"To do this, you just need to set the following header in the message before "
+"sending:"
+msgstr "要实现这一点，你只需要在消息里设置下面的消息头部信息："
+
+#. Tag: programlisting
+#: Configuration.xml:882
+#, no-c-format
+msgid ""
+"long now = System.currentTimeMillis();\n"
+"         \n"
+"              Message msg = sess.createMessage();  \n"
+"                  \n"
+"              msg.setLongProperty(JBossMessage."
+"JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME,\n"
+"                     now + 1000 * 60 * 60 * 2);\n"
+"              \n"
+"              prod.send(msg);"
+msgstr ""
+"long now = System.currentTimeMillis();\n"
+"         \n"
+"              Message msg = sess.createMessage();  \n"
+"                  \n"
+"              msg.setLongProperty(JBossMessage."
+"JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME,\n"
+"                     now + 1000 * 60 * 60 * 2);\n"
+"              \n"
+"              prod.send(msg);"
+
+#. Tag: title
+#: Configuration.xml:885 Configuration.xml:1080
+#, no-c-format
+msgid "MaxSize"
+msgstr "MaxSize"
+
+#. Tag: para
+#: Configuration.xml:886
+#, no-c-format
+msgid ""
+"A maximum size (in number of messages) can be specified for a queue. Any "
+"messages that arrive beyond this point will be dropped. The default is "
+"<literal>-1</literal> which is unbounded."
+msgstr ""
+"指定队列里消息的最大数目。任何超过这个数量的消息将被忽略。它的缺省值为 "
+"<literal>-1</literal>，表示不加限制。"
+
+#. Tag: para
+#: Configuration.xml:893
+#, no-c-format
+msgid "Clustered destinations must have this set to <literal>true</literal>."
+msgstr "群集的目的地必须把它设置为 <literal>true</literal>。"
+
+#. Tag: title
+#: Configuration.xml:897
+#, no-c-format
+msgid "MessageCounter"
+msgstr "MessageCounter"
+
+#. Tag: para
+#: Configuration.xml:898
+#, no-c-format
+msgid "Each queue maintains a message counter."
+msgstr "每个队列都维护一个消息计数器。"
+
+#. Tag: title
+#: Configuration.xml:901
+#, no-c-format
+msgid "MessageCounterStatistics"
+msgstr "MessageCounterStatistics"
+
+#. Tag: para
+#: Configuration.xml:902
+#, no-c-format
+msgid "The statistics for the message counter"
+msgstr "消息计数器的统计信息"
+
+#. Tag: title
+#: Configuration.xml:905 Configuration.xml:1092
+#, no-c-format
+msgid "MessageCounterHistoryDayLimit"
+msgstr "MessageCounterHistoryDayLimit"
+
+#. Tag: para
+#: Configuration.xml:906 Configuration.xml:1093
+#, no-c-format
+msgid ""
+"The maximum number of days to hold message counter history for. Overrides "
+"any value set on the ServerPeer."
+msgstr "消息计数器历史记录保留的最多天数。它将覆盖 ServerPeer 配置里的任何值。"
+
+#. Tag: title
+#: Configuration.xml:910
+#, no-c-format
+msgid "ConsumerCount"
+msgstr "ConsumerCount"
+
+#. Tag: para
+#: Configuration.xml:911
+#, no-c-format
+msgid "The number of consumers currently consuming from the queue."
+msgstr "目前在队列里消费的消费者的数量。"
+
+#. Tag: title
+#: Configuration.xml:916
+#, no-c-format
+msgid "MBean operations of the Queue MBean"
+msgstr "Queue MBean 的 MBean 操作"
+
+#. Tag: title
+#: Configuration.xml:919 Configuration.xml:1135
+#, no-c-format
+msgid "RemoveAllMessages"
+msgstr "RemoveAllMessages"
+
+#. Tag: para
+#: Configuration.xml:920
+#, no-c-format
+msgid ""
+"Remove (and delete) all messages from the queue. <warning><para> Use this "
+"with caution. It will permanently delete all messages from the queue </"
+"para></warning>."
+msgstr ""
+"从队列里移除（和删除）所有消息。<warning><para>请小心使用这个操作。它将永久删"
+"除队列里所有的消息。</para></warning>"
+
+#. Tag: title
+#: Configuration.xml:925 Configuration.xml:1169
+#, no-c-format
+msgid "ListAllMessages"
+msgstr "ListAllMessages"
+
+#. Tag: para
+#: Configuration.xml:926
+#, no-c-format
+msgid "List all messages currently in the queue"
+msgstr "列出队列里当前的所有消息"
+
+#. Tag: para
+#: Configuration.xml:927 Configuration.xml:936 Configuration.xml:945
+#, no-c-format
+msgid ""
+"There are two overloaded versions of this operation: One takes a JMS "
+"selector as an argument, the other does not. By using the selector you can "
+"retrieve a subset of the messages in the queue that match the criteria"
+msgstr ""
+"这个操作有两个重载版本：其中一个以 JMS selector 为参数，另外一个则不以其为参"
+"数。通过使用 selector，你可以获取队列里符合标准的消息子集。"
+
+#. Tag: title
+#: Configuration.xml:933 Configuration.xml:1184
+#, no-c-format
+msgid "ListDurableMessages"
+msgstr "ListDurableMessages"
+
+#. Tag: para
+#: Configuration.xml:934
+#, no-c-format
+msgid "As listAllMessages but only lists the durable messages"
+msgstr "和 listAllMessages 一样但它只列出持久性消息"
+
+#. Tag: title
+#: Configuration.xml:942 Configuration.xml:1176
+#, no-c-format
+msgid "ListNonDurableMessages"
+msgstr "ListNonDurableMessages"
+
+#. Tag: para
+#: Configuration.xml:943
+#, no-c-format
+msgid "As listAllMessages but only lists the non durable messages"
+msgstr "和 listAllMessages 一样但它只列出非持久性消息"
+
+#. Tag: title
+#: Configuration.xml:951
+#, no-c-format
+msgid "ResetMessageCounter"
+msgstr "ResetMessageCounter"
+
+#. Tag: para
+#: Configuration.xml:952
+#, no-c-format
+msgid "Resets the message counter to zero."
+msgstr "将消息计数器清零。"
+
+#. Tag: title
+#: Configuration.xml:955
+#, no-c-format
+msgid "ResetMessageCounterHistory"
+msgstr "ResetMessageCounterHistory"
+
+#. Tag: para
+#: Configuration.xml:956
+#, no-c-format
+msgid "Resets the message counter history."
+msgstr "将消息计数器历史记录清零。"
+
+#. Tag: title
+#: Configuration.xml:959
+#, no-c-format
+msgid "ListMessageCounterAsHTML"
+msgstr "ListMessageCounterAsHTML"
+
+#. Tag: para
+#: Configuration.xml:960
+#, no-c-format
+msgid "Lists the message counter in an easy to display HTML format"
+msgstr "以 HTML 形式列出消息计数器"
+
+#. Tag: title
+#: Configuration.xml:964
+#, no-c-format
+msgid "ListMessageCounterHistoryAsHTML"
+msgstr "ListMessageCounterHistoryAsHTML"
+
+#. Tag: para
+#: Configuration.xml:965
+#, no-c-format
+msgid "Lists the message counter history in an easy to display HTML format"
+msgstr "以 HTML 形式列出消息计数器历史记录"
+
+#. Tag: title
+#: Configuration.xml:971
+#, no-c-format
+msgid "Configuring topics"
+msgstr "配置主题"
+
+#. Tag: title
+#: Configuration.xml:973
+#, no-c-format
+msgid "MBean attributes of the Topic MBean"
+msgstr "Topic MBean 的 MBean 属性"
+
+#. Tag: para
+#: Configuration.xml:977
+#, no-c-format
+msgid "The name of the topic"
+msgstr "状态的名称"
+
+#. Tag: para
+#: Configuration.xml:981
+#, no-c-format
+msgid "The JNDI name where the topic is bound"
+msgstr "主题所绑定的 JNDI 名称"
+
+#. Tag: para
+#: Configuration.xml:985
+#, no-c-format
+msgid "The DLQ used for this topic. Overrides any value set on the ServerPeer config"
+msgstr "用于该主题的 DLQ。它将覆盖 ServerPeer 配置里的任何值。"
+
+#. Tag: para
+#: Configuration.xml:990
+#, no-c-format
+msgid ""
+"The Expiry queue used for this topic. Overrides any value set on the "
+"ServerPeer config"
+msgstr "用于该主题的 Expiry queue。它将覆盖 ServerPeer 配置里的任何值。"
+
+#. Tag: para
+#: Configuration.xml:995
+#, no-c-format
+msgid ""
+"The redelivery delay to be used for this topic. Overrides any value set on "
+"the ServerPeer config"
+msgstr "用于该主题的重递送延迟。它将覆盖 ServerPeer 配置里的任何值。"
+
+#. Tag: para
+#: Configuration.xml:1076
+#, no-c-format
+msgid "Returns <literal>true</literal> if the topic was created programmatically"
+msgstr "如果主题在程序里被成功创建，返回 <literal>true</literal>。"
+
+#. Tag: para
+#: Configuration.xml:1081
+#, no-c-format
+msgid ""
+"A maximum size (in number of messages) can be specified for a topic "
+"subscription. Any messages that arrive beyond this point will be dropped. "
+"The default is <literal>-1</literal> which is unbounded."
+msgstr ""
+"主题订阅里的消息的最大数量。任何超过这个数量的消息将被忽略。缺省值为 "
+"<literal>-1</literal>，表示不加限制。"
+
+#. Tag: para
+#: Configuration.xml:1088
+#, no-c-format
+msgid "Clustered destinations must have this set to <literal>true</literal>"
+msgstr "群集的目的地将它必须设置为 <literal>true</literal>。"
+
+#. Tag: para
+#: Configuration.xml:1098
+#, no-c-format
+msgid "Return a list of the message counters for the subscriptions of this topic."
+msgstr "返回该主题的订阅的消息计数器列表。"
+
+#. Tag: title
+#: Configuration.xml:1102
+#, no-c-format
+msgid "AllMessageCount"
+msgstr "AllMessageCount"
+
+#. Tag: para
+#: Configuration.xml:1103
+#, no-c-format
+msgid "Return the total number of messages in all subscriptions of this topic."
+msgstr "返回该主题的订阅的所有消息的个数。"
+
+#. Tag: title
+#: Configuration.xml:1107
+#, no-c-format
+msgid "DurableMessageCount"
+msgstr "DurableMessageCount"
+
+#. Tag: para
+#: Configuration.xml:1108
+#, no-c-format
+msgid ""
+"Return the total number of durable messages in all subscriptions of this "
+"topic."
+msgstr "返回该主题的订阅的所有持久性消息的个数。"
+
+#. Tag: title
+#: Configuration.xml:1112
+#, no-c-format
+msgid "NonDurableMessageCount"
+msgstr "NonDurableMessageCount"
+
+#. Tag: para
+#: Configuration.xml:1113
+#, no-c-format
+msgid ""
+"Return the total number of non durable messages in all subscriptions of this "
+"topic."
+msgstr "返回该主题的订阅的所有非持久性消息的个数。"
+
+#. Tag: title
+#: Configuration.xml:1117
+#, no-c-format
+msgid "AllSubscriptionsCount"
+msgstr "AllSubscriptionsCount"
+
+#. Tag: para
+#: Configuration.xml:1118
+#, no-c-format
+msgid "The count of all subscriptions on this topic"
+msgstr "该主题上所有订阅的个数。"
+
+#. Tag: title
+#: Configuration.xml:1121
+#, no-c-format
+msgid "DurableSubscriptionsCount"
+msgstr "DurableSubscriptionsCount"
+
+#. Tag: para
+#: Configuration.xml:1122
+#, no-c-format
+msgid "The count of all durable subscriptions on this topic"
+msgstr "该主题上所有持久性订阅的个数。"
+
+#. Tag: title
+#: Configuration.xml:1126
+#, no-c-format
+msgid "NonDurableSubscriptionsCount"
+msgstr "NonDurableSubscriptionsCount"
+
+#. Tag: para
+#: Configuration.xml:1127
+#, no-c-format
+msgid "The count of all non durable subscriptions on this topic"
+msgstr "该主题上所有非持久性订阅的个数。"
+
+#. Tag: title
+#: Configuration.xml:1132
+#, no-c-format
+msgid "MBean operations of the Topic MBean"
+msgstr "Topic MBean 的 MBean 操作"
+
+#. Tag: para
+#: Configuration.xml:1136
+#, no-c-format
+msgid "Remove (and delete) all messages from the subscriptions of this topic."
+msgstr "从该主题的订阅里移除（并删除）所有消息。"
+
+#. Tag: para
+#: Configuration.xml:1137
+#, no-c-format
+msgid "Use this with caution. It will permanently delete all messages from the topic"
+msgstr "请小心使用这个操作。它将永久地删除主题里的所有消息。"
+
+#. Tag: title
+#: Configuration.xml:1142
+#, no-c-format
+msgid "ListAllSubscriptions"
+msgstr "ListAllSubscriptions"
+
+#. Tag: para
+#: Configuration.xml:1143
+#, no-c-format
+msgid "List all subscriptions of this topic"
+msgstr "列出该主题的所有订阅。"
+
+#. Tag: title
+#: Configuration.xml:1146
+#, no-c-format
+msgid "ListDurableSubscriptions"
+msgstr "ListDurableSubscriptions"
+
+#. Tag: para
+#: Configuration.xml:1147
+#, no-c-format
+msgid "List all durable subscriptions of this topic"
+msgstr "列出该主题的所有持久性订阅。"
+
+#. Tag: title
+#: Configuration.xml:1150
+#, no-c-format
+msgid "ListNonDurableSubscriptions"
+msgstr "ListNonDurableSubscriptions"
+
+#. Tag: para
+#: Configuration.xml:1151
+#, no-c-format
+msgid "List all non durable subscriptions of this topic"
+msgstr "列出该主题的所有非持久性订阅。"
+
+#. Tag: title
+#: Configuration.xml:1154
+#, no-c-format
+msgid "ListAllSubscriptionsAsHTML"
+msgstr "ListAllSubscriptionsAsHTML"
+
+#. Tag: para
+#: Configuration.xml:1155
+#, no-c-format
+msgid "List all subscriptions of this topic in an easy to display HTML format"
+msgstr "以 HTML 形式列出该主题的所有订阅。"
+
+#. Tag: title
+#: Configuration.xml:1159
+#, no-c-format
+msgid "ListDurableSubscriptionsAsHTML"
+msgstr "ListDurableSubscriptionsAsHTML"
+
+#. Tag: para
+#: Configuration.xml:1160
+#, no-c-format
+msgid ""
+"List all durable subscriptions of this topic in an easy to display HTML "
+"format"
+msgstr "以 HTML 形式列出该主题的所有持久性订阅。"
+
+#. Tag: title
+#: Configuration.xml:1164
+#, no-c-format
+msgid "ListNonDurableSubscriptionsAsHTML"
+msgstr "ListNonDurableSubscriptionsAsHTML"
+
+#. Tag: para
+#: Configuration.xml:1165
+#, no-c-format
+msgid ""
+"List all non durable subscriptions of this topic in an easy to display HTML "
+"format"
+msgstr "以 HTML 形式列出该主题的所有非持久性订阅。"
+
+#. Tag: para
+#: Configuration.xml:1170
+#, no-c-format
+msgid "Lists all messages for the specified subscription."
+msgstr "列出指定订阅的所有消息。"
+
+#. Tag: para
+#: Configuration.xml:1171 Configuration.xml:1179 Configuration.xml:1187
+#, no-c-format
+msgid ""
+"There are two overloaded versions of this operation. One that takes a "
+"selector and one that does not. By specifyingthe selector you can limit the "
+"messages returned."
+msgstr ""
+"这个操作有两个重载版本。其中一个使用 selector 而另外一个则不使用。通过指定 "
+"selector，你可以限制返回的消息。"
+
+#. Tag: para
+#: Configuration.xml:1177
+#, no-c-format
+msgid "Lists all non durable messages for the specified subscription."
+msgstr "列出指定订阅的所有非持久性消息。"
+
+#. Tag: para
+#: Configuration.xml:1185
+#, no-c-format
+msgid "Lists all durable messages for the specified subscription."
+msgstr "列出指定订阅的所有持久性消息。"
+
+#. Tag: title
+#: Configuration.xml:1196
+#, no-c-format
+msgid "Configuring Connection Factories"
+msgstr "配置连接工厂"
+
+#. Tag: para
+#: Configuration.xml:1197
+#, no-c-format
+msgid ""
+"With the default configuration JBoss Messaging binds two connection "
+"factories in JNDI at start-up."
+msgstr "在启动时，JBoss Messaging 用缺省的配置在 JNDI 里构建了两个连接工厂。"
+
+#. Tag: para
+#: Configuration.xml:1199
+#, no-c-format
+msgid ""
+"The first connection factory is the default non-clustered connection factory "
+"and is bound into the following JNDI contexts: <literal>/ConnectionFactory, /"
+"XAConnectionFactory, java:/ConnectionFactory, java:/XAConnectionFactory</"
+"literal>. This connection factory is provided to maintain compatibility with "
+"applications originally written against JBoss MQ which has no automatic "
+"failover or load balancing. This connection factory should be used if you do "
+"not require client side automatic failover or load balancing."
+msgstr ""
+"第一个连接工厂是缺省的非群集连接工厂，它绑定在下面的 JNDI 上下文里："
+"<literal>/ConnectionFactory, /XAConnectionFactory, java:/ConnectionFactory, "
+"java:/XAConnectionFactory</literal>。这个连接工厂用来兼容原来针对 JBoss MQ 编"
+"写的没有自动失效切换或负载平衡功能的应用程序。如果你不要求客户端的自动失效切"
+"换或负载平衡，你应该使用它。"
+
+#. Tag: para
+#: Configuration.xml:1208
+#, no-c-format
+msgid ""
+"The second connection factory is the default clustered connection factory "
+"and is bound into the following JNDI contexts <literal>/"
+"ClusteredConnectionFactory, /ClusteredXAConnectionFactory, java:/"
+"ClusteredConnectionFactory, java:/ClusteredXAConnectionFactory</literal>."
+msgstr ""
+"第二个连接工厂是缺省的群集连接工厂，它绑定在下面的 JNDI 上下文里：<literal>/"
+"ClusteredConnectionFactory, /ClusteredXAConnectionFactory, java:/"
+"ClusteredConnectionFactory, java:/ClusteredXAConnectionFactory</literal>。"
+
+#. Tag: para
+#: Configuration.xml:1213
+#, no-c-format
+msgid ""
+"You may want to configure additional connection factories, for instance if "
+"you want to provide a default client id for a connection factory, or if you "
+"want to bind it in different places in JNDI, if you want different "
+"connection factories to use different transports, or if you want to "
+"selective enable or disable load-balancing and/or automatic failover for a "
+"particular connection factory. Deploying a new connection factory is "
+"equivalent with adding a new ConnectionFactory MBean configuration to "
+"<filename>connection-factories-service.xml</filename>."
+msgstr ""
+"你可能想配置其他的连接工厂，例如，你想为连接工厂提供缺省的客户 ID、或者想绑定"
+"到不同的 JNDI 位置、或让不同的连接工厂使用不同的传输协议、或选择性地为某个特"
+"定的连接工厂启用或禁止负载平衡和/或自动失效切换。在 <filename>connection-"
+"factories-service.xml</filename> 里添加新的 ConnectionFactory MBean 配置就可"
+"以部署新的连接工厂。"
+
+#. Tag: para
+#: Configuration.xml:1222
+#, no-c-format
+msgid ""
+"It is also possible to create an entirely new service deployment descriptor "
+"<filename>xxx-service.xml</filename> altogether and deploy it in <filename>"
+"$JBOSS_HOME/server/messaging/deploy</filename>."
+msgstr ""
+"你也可以创建一个完全新的服务部署描述符 <filename>xxx-service.xml</filename> "
+"并部署在 <filename>$JBOSS_HOME/server/messaging/deploy</filename> 里。"
+
+#. Tag: para
+#: Configuration.xml:1225
+#, no-c-format
+msgid ""
+"Connection factories can support automatic failover and/or load-balancing by "
+"setting the corresponding attributes"
+msgstr "通过设置相关属性，连接工厂也可以支持自动失效切换和/或负载平衡。"
+
+#. Tag: para
+#: Configuration.xml:1227
+#, no-c-format
+msgid "An example connection factory configuration is presented below:"
+msgstr "下面是一个连接工厂配置的例子："
+
+#. Tag: programlisting
+#: Configuration.xml:1229
+#, no-c-format
+msgid ""
+"&lt;mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n"
+"      name=\"jboss.messaging.connectionfactory:service=MyConnectionFactory"
+"\"\n"
+"      xmbean-dd=\"xmdesc/ConnectionFactory-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                 jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends optional-attribute-name=\"Connector\"&gt;\n"
+"                 jboss.messaging:service=Connector,transport=bisocket\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"\n"
+"      &lt;attribute name=\"JNDIBindings\"&gt;\n"
+"         &lt;bindings&gt;\n"
+"            &lt;binding&gt;/MyConnectionFactory&lt;/binding&gt;\n"
+"            &lt;binding&gt;/factories/cf&lt;/binding&gt;\n"
+"         &lt;/bindings&gt;\n"
+"      &lt;/attribute&gt;\n"
+"      \n"
+"      &lt;attribute name=\"ClientID\"&gt;myClientID&lt;/attribute&gt;\n"
+"\n"
+"      &lt;attribute name=\"SupportsFailover\"&gt;true&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;attribute name=\"SupportsLoadBalancing\"&gt;false&lt;/"
+"attribute&gt;  \n"
+"      \n"
+"      &lt;attribute name=\"LoadBalancingFactory\"&gt;org.acme."
+"MyLoadBalancingFactory&lt;/attribute&gt;\n"
+"          \n"
+"      &lt;attribute name=\"PrefetchSize\"&gt;1000&lt;/attribute&gt; \n"
+"\n"
+"      &lt;attribute name=\"SlowConsumers\"&gt;false&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;attribute name=\"StrictTck\"&gt;true&lt;/attribute&gt;\n"
+"\n"
+"      &lt;attribute name=\"DefaultTempQueueFullSize\"&gt;50000&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;attribute name=\"DefaultTempQueuePageSize\"&gt;1000&lt;/"
+"attribute&gt; \n"
+"            \n"
+"      &lt;attribute name=\"DefaultTempQueueDownCacheSize\"&gt;1000&lt;/"
+"attribute&gt; \n"
+"      \n"
+"      &lt;attribute name=\"DupsOKBatchSize\"&gt;10000&lt;/attribute&gt; \n"
+"   &lt;/mbean&gt;"
+msgstr ""
+"&lt;mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n"
+"      name=\"jboss.messaging.connectionfactory:service=MyConnectionFactory"
+"\"\n"
+"      xmbean-dd=\"xmdesc/ConnectionFactory-xmbean.xml\"&gt;\n"
+"      &lt;depends optional-attribute-name=\"ServerPeer\"&gt;\n"
+"                 jboss.messaging:service=ServerPeer\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends optional-attribute-name=\"Connector\"&gt;\n"
+"                 jboss.messaging:service=Connector,transport=bisocket\n"
+"      &lt;/depends&gt;\n"
+"      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;\n"
+"\n"
+"      &lt;attribute name=\"JNDIBindings\"&gt;\n"
+"         &lt;bindings&gt;\n"
+"            &lt;binding&gt;/MyConnectionFactory&lt;/binding&gt;\n"
+"            &lt;binding&gt;/factories/cf&lt;/binding&gt;\n"
+"         &lt;/bindings&gt;\n"
+"      &lt;/attribute&gt;\n"
+"      \n"
+"      &lt;attribute name=\"ClientID\"&gt;myClientID&lt;/attribute&gt;\n"
+"\n"
+"      &lt;attribute name=\"SupportsFailover\"&gt;true&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;attribute name=\"SupportsLoadBalancing\"&gt;false&lt;/"
+"attribute&gt;  \n"
+"      \n"
+"      &lt;attribute name=\"LoadBalancingFactory\"&gt;org.acme."
+"MyLoadBalancingFactory&lt;/attribute&gt;\n"
+"          \n"
+"      &lt;attribute name=\"PrefetchSize\"&gt;1000&lt;/attribute&gt; \n"
+"\n"
+"      &lt;attribute name=\"SlowConsumers\"&gt;false&lt;/attribute&gt;\n"
+"      \n"
+"      &lt;attribute name=\"StrictTck\"&gt;true&lt;/attribute&gt;\n"
+"\n"
+"      &lt;attribute name=\"DefaultTempQueueFullSize\"&gt;50000&lt;/"
+"attribute&gt;\n"
+"      \n"
+"      &lt;attribute name=\"DefaultTempQueuePageSize\"&gt;1000&lt;/"
+"attribute&gt; \n"
+"            \n"
+"      &lt;attribute name=\"DefaultTempQueueDownCacheSize\"&gt;1000&lt;/"
+"attribute&gt; \n"
+"      \n"
+"      &lt;attribute name=\"DupsOKBatchSize\"&gt;10000&lt;/attribute&gt; \n"
+"   &lt;/mbean&gt;"
+
+#. Tag: para
+#: Configuration.xml:1230
+#, no-c-format
+msgid ""
+"The above example would create a connection factory with pre-configured "
+"client ID <literal>myClientID</literal> and bind the connection factory in "
+"two places in the JNDI tree: <literal>/MyConnectionFactory</literal> and "
+"<literal>/factories/cf</literal>. The connection factory overrides the "
+"default values for PreFetchSize, DefaultTempQueueFullSize, "
+"DefaultTempQueuePageSize, DefaultTempQueueDownCacheSize and DupsOKBatchSize, "
+"SupportsFailover, SupportsLoadBalancing and LoadBalancingFactory. The "
+"connection factory will use the default remoting connector. To use a "
+"different remoting connector with the connection factory change the "
+"<literal>Connector</literal> attribute to specify the service name of the "
+"connector you wish to use."
+msgstr ""
+"上面的例子将创建一个带有预配置客户 ID <literal>myClientID</literal> 的连接工"
+"厂并绑定在 JNDI 树的两个地方：<literal>/MyConnectionFactory</literal> 和 "
+"<literal>/factories/cf</literal>。这个连接工厂覆盖了 PreFetchSize、"
+"DefaultTempQueueFullSize、DefaultTempQueuePageSize、"
+"DefaultTempQueueDownCacheSize 和 DupsOKBatchSize 的缺省值。它将使用缺省的远程"
+"连接器（remoting connector）。要使用不同的远程连接器，你可以修改 "
+"<literal>Connector</literal> 属性来指定连接器的服务名。"
+
+#. Tag: title
+#: Configuration.xml:1243
+#, no-c-format
+msgid "MBean attributes of the ConnectionFactory MBean"
+msgstr "ConnectionFactory MBean 的 MBean 属性"
+
+#. Tag: title
+#: Configuration.xml:1246
+#, no-c-format
+msgid "ClientID"
+msgstr "ClientID"
+
+#. Tag: para
+#: Configuration.xml:1247
+#, no-c-format
+msgid ""
+"Connection factories can be pre-configured with a client id. Any connections "
+"created using this connection factory will obtain this client id"
+msgstr ""
+"连接工厂可用  client id 进行预配置。使用这个连接工厂创建的任何连接都将获得这"
+"个 ID。"
+
+#. Tag: title
+#: Configuration.xml:1252
+#, no-c-format
+msgid "JNDIBindings"
+msgstr "JNDIBindings"
+
+#. Tag: para
+#: Configuration.xml:1253
+#, no-c-format
+msgid "The list of the JNDI bindings for this connection factory"
+msgstr "这个连接工厂使用的 JNDI 绑定的列表"
+
+#. Tag: title
+#: Configuration.xml:1257
+#, no-c-format
+msgid "PrefetchSize"
+msgstr "PrefetchSize"
+
+#. Tag: para
+#: Configuration.xml:1258
+#, no-c-format
+msgid ""
+"This parameter specifies the window size for consumer flow control. The "
+"window size determines the number of messages a server can send to a "
+"consumer without blocking. Each consumer maintains a buffer of messages from "
+"which it consumes. Please note that TCP also implements its own flow "
+"control, so if you set this to too large a number, then the TCP window size "
+"may be hit before the <literal>prefetchSize</literal>, which can cause "
+"writes to block."
+msgstr ""
+"这个参数为消费者（Consumer）流控制指定窗口大小。这个窗口大小决定服务器可以发"
+"送到某个消费者而不阻塞的消息数量。每个消费者都维护一个它从中消费的消息缓冲。"
+"请注意，TCP 也实现自己的流控制，所以如果你把它设置为过大的值，TCP 窗口大小限"
+"制可能在 <literal>prefetchSize</literal> 之前就被突破，这样会导致写阻塞。"
+
+#. Tag: title
+#: Configuration.xml:1261
+#, no-c-format
+msgid "SlowConsumers"
+msgstr "SlowConsumers"
+
+#. Tag: para
+#: Configuration.xml:1262
+#, no-c-format
+msgid ""
+"If you have very slow consumers, then you probably want to make sure they "
+"don't buffer any messages since this can prevent them from being consumed by "
+"faster consumers. Setting this to true is equivalent to setting "
+"<literal>PrefetchSize</literal> to 1."
+msgstr ""
+"如果存在非常慢的消费者，你可能希望它们不缓冲任何消息，因为这会阻止这些消息被"
+"更快的消费者所消费。把它设置为 true 和设置 <literal>PrefetchSize</literal> "
+"为 1 是相等的。"
+
+#. Tag: title
+#: Configuration.xml:1266
+#, no-c-format
+msgid "StrictTck"
+msgstr "StrictTck"
+
+#. Tag: para
+#: Configuration.xml:1267
+#, no-c-format
+msgid "Set this to true if you want strict JMS behaviour as required by the TCK."
+msgstr "如果你期望 TCK 所要求的严格的 JMS 行为的话，你可以将它设置为 true。"
+
+#. Tag: title
+#: Configuration.xml:1271
+#, no-c-format
+msgid "Temporary queue paging parameters"
+msgstr "临时队列的页面参数"
+
+#. Tag: para
+#: Configuration.xml:1272
+#, no-c-format
+msgid ""
+"DefaultTempQueueFullSize, DefaultTempQueuePageSize, "
+"DefaultTempQueueDownCacheSize are optional attributes that determine the "
+"default paging parameters to be used for any temporary destinations scoped "
+"to connections created using this connection factory. See the section on "
+"paging channels for more information on what these values mean. They will "
+"default to values of 200000, 2000 and 2000 respectively if ommitted."
+msgstr ""
+"DefaultTempQueueFullSize、DefaultTempQueuePageSize、"
+"DefaultTempQueueDownCacheSize 是决定缺省页面参数的可选属性，它们用于连接工厂"
+"创建的作用域为临时目的连接。关于这些参数的更多信息，请参考 paging channels 部"
+"分的内容。如果忽略的话，它们的缺省值为 200000, 2000 和 2000。"
+
+#. Tag: title
+#: Configuration.xml:1281
+#, no-c-format
+msgid "DupsOKBatchSize"
+msgstr "DupsOKBatchSize"
+
+#. Tag: para
+#: Configuration.xml:1282
+#, no-c-format
+msgid ""
+"When using a session with acknowledge mode of DUPS_OK_ACKNOWLEDGE this "
+"setting determines how many acknowledgments it will buffer locally before "
+"sending. The default value is <literal>2000</literal>"
+msgstr ""
+"当使用带有 DUPS_OK_ACKNOWLEDGE 确认模式的会话时，设置它可以决定在发送前确认多"
+"少次后就在本地进行缓冲。它的缺省值为 <literal>2000</literal>。"
+
+#. Tag: title
+#: Configuration.xml:1288
+#, no-c-format
+msgid "SupportsLoadBalancing"
+msgstr "SupportsLoadBalancing"
+
+#. Tag: para
+#: Configuration.xml:1289
+#, no-c-format
+msgid ""
+"When using a connection factory with a clustered JBoss Messaging "
+"installation you can choose whether to enable client side connection load-"
+"balancing. This is determined by setting the attribute supportsLoadBalancing "
+"on the connection factory."
+msgstr ""
+"当使用带有群集 JBoss Messaging 安装的连接工厂时，你可以选择是否启用客户端连接"
+"的负载平衡。这可以通过设置连接工厂的 supportsLoadBalancing 属性来实现。"
+
+#. Tag: para
+#: Configuration.xml:1293
+#, no-c-format
+msgid ""
+"If load balancing is enabled on a connection factory then any connections "
+"created with that connection factory will be load-balanced across the nodes "
+"of the cluster. Once a connection is created on a particular node, it stays "
+"on that node."
+msgstr ""
+"如果连接工厂启用了负载平衡，那么用它创建的任何连接都将在群集里的节点间进行负"
+"载平衡。一旦在某个节点上创建了一个连接，它就会呆在那个节点上。"
+
+#. Tag: para
+#: Configuration.xml:1297
+#, no-c-format
+msgid ""
+"The exact policy that determines how connections are load balanced is "
+"determined by the LoadBalancingFactory attribute"
+msgstr "连接使用何种策略进行负载平衡是由 LoadBalancingFactory 属性决定的"
+
+#. Tag: para
+#: Configuration.xml:1300 Configuration.xml:1322 Configuration.xml:1333
+#, no-c-format
+msgid "The default value is <literal>false</literal>"
+msgstr "它的缺省值为 <literal>false</literal>"
+
+#. Tag: para
+#: Configuration.xml:1304
+#, no-c-format
+msgid ""
+"When using a connection factory with a clustered JBoss Messaging "
+"installation you can choose whether to enable client side automatic "
+"failover. This is determined by setting the attribute supportsFailover on "
+"the connection factory."
+msgstr ""
+"当使用带有群集 JBoss Messaging 安装的连接工厂时，你可以选择是否启用客户端自动"
+"失效切换。这可以通过设置连接工厂的 supportsFailover 属性来完成。"
+
+#. Tag: para
+#: Configuration.xml:1308
+#, no-c-format
+msgid ""
+"If automatic failover is enabled on a connection factory, then if a "
+"connection problem is detected with the connection then JBoss Messaging will "
+"automatically and transparently failover to another node in the cluster."
+msgstr ""
+"如果连接工厂启用了自动失效切换，且某个连接出现了连接问题，JBoss Messaging 将"
+"自动和透明地切换至群集里的另外一个节点上。"
+
+#. Tag: para
+#: Configuration.xml:1312
+#, no-c-format
+msgid ""
+"The failover is transparent meaning the user can carry on using the "
+"sessions, consumers, producers and connection objects as before."
+msgstr ""
+"透明的失效切换意味着客户可以象故障发生前一样地使用会话、消费者、生产者和连接"
+"对象。"
+
+#. Tag: para
+#: Configuration.xml:1315
+#, no-c-format
+msgid ""
+"If automatic failover is not required, then this attribute can be set to "
+"false. With automatic failover disabled it is up to the user code to catch "
+"connection exceptions in synchronous JMS operations and install a JMS "
+"ExceptionListener to catch exceptions asynchronously. When a connection is "
+"caught, the client side code should lookup a new connection factory using "
+"HAJNDI and recreate the connection using that."
+msgstr ""
+"如果不要求自动失效切换，那可以把这个属性设置为 false。如果禁用了自动失效切"
+"换，那么程序代码要在同步 JMS 操作里捕获异常或安装 JMS ExceptionListener 来异"
+"步捕获异常。当某个连接被捕获时，客户端代码应该查找一个使用 HAJNDI 的连接工厂"
+"并用它来重新创建连接。"
+
+#. Tag: title
+#: Configuration.xml:1325
+#, no-c-format
+msgid "DisableRemotingChecks"
+msgstr "DisableRemotingChecks"
+
+#. Tag: para
+#: Configuration.xml:1326
+#, no-c-format
+msgid ""
+"By default, when deploying a connection factory, JBoss Messaging checks that "
+"the corresponding JBoss Remoting Connector has \"sensible\" values. JBoss "
+"Messaging is very sensitive to the values and for many of them there's "
+"rarely a good reason to change them. To disable such sanity checking set "
+"this to false."
+msgstr ""
+"在缺省情况下，在部署一个连接工厂时，JBoss Messaging 将检查对应的 JBoss "
+"Remoting Connector 是否具有某些敏感的（\"sensible\"）值。JBoss Messaging 对这"
+"些值非常敏感且很少有修改这些值的时候。要禁用这样的检查，可将其设置为 false。"
+
+#. Tag: para
+#: Configuration.xml:1330
+#, no-c-format
+msgid ""
+"There is rarely a good reason to disable checking. Only do so if you are "
+"absolutely sure in what you are doing"
+msgstr "我们通常没什么理由禁用这个检查。请在有明确目的时才这么做。"
+
+#. Tag: title
+#: Configuration.xml:1336
+#, no-c-format
+msgid "LoadBalancingFactory"
+msgstr "LoadBalancingFactory"
+
+#. Tag: para
+#: Configuration.xml:1337
+#, no-c-format
+msgid ""
+"If you are using a connection factory with client side load balancing then "
+"you can specify how the load balancing is implemented by overriding this "
+"attribute. The value must correspond to the name of a class which implements "
+"the interface org.jboss.jms.client.plugin.LoadBalancingFactory"
+msgstr ""
+"如果你在使用带有客户端负载平衡的连接工厂，你可以通过覆盖这个属性来指定实施方"
+"法。这个值必须对应实现 org.jboss.jms.client.plugin.LoadBalancingFactory 接口"
+"的类名。"
+
+#. Tag: para
+#: Configuration.xml:1342
+#, no-c-format
+msgid ""
+"The default value is org.jboss.jms.client.plugin."
+"RoundRobinLoadBalancingFactory, which load balances connections across the "
+"cluster in a round-robin fashion"
+msgstr ""
+"它的缺省值是 org.jboss.jms.client.plugin.RoundRobinLoadBalancingFactory，这将"
+"以 round-robin 模式在群集里平衡连接负载。"
+
+#. Tag: title
+#: Configuration.xml:1348
+#, no-c-format
+msgid "Connector"
+msgstr "连接器"
+
+#. Tag: para
+#: Configuration.xml:1349
+#, no-c-format
+msgid ""
+"This specifies which remoting connector this connection factory uses. "
+"Different connection factories can use different connectors."
+msgstr "它指定连接工厂使用的远程连接器。不同的连接工厂可以使用不同的连接器。"
+
+#. Tag: para
+#: Configuration.xml:1352
+#, no-c-format
+msgid ""
+"For instance you could deploy one connection factory that creates "
+"connections that use the HTTP transport to communicate to the server and "
+"another that creates connections that use the bisocket transport to "
+"communicate."
+msgstr ""
+"例如，你部署的连接工厂可以创建使用 HTTP 传输在服务器和客户端间通信的连接、也"
+"可以创建使用双向套接字传输通信的连接。"
+
+#. Tag: title
+#: Configuration.xml:1362
+#, no-c-format
+msgid "Configuring the remoting connector"
+msgstr "配置远程连接器"
+
+#. Tag: para
+#: Configuration.xml:1363
+#, no-c-format
+msgid ""
+"JBoss Messaging uses JBoss Remoting for all client to server communication. "
+"For full details of what JBoss Remoting is capable of and how it is "
+"configured please consult the JBoss Remoting documentation."
+msgstr ""
+"对于所有的客户端和服务器之间的通信，JBoss Messaging 都使用 JBoss Remoting。关"
+"于 JBoss Remoting 的功能和配置，请参考 JBoss Remoting 文档。"
+
+#. Tag: para
+#: Configuration.xml:1367
+#, no-c-format
+msgid ""
+"The default configuration includes a single remoting connector which is used "
+"by the single default connection factory. Each connection factory can be "
+"configured to use its own connector."
+msgstr ""
+"缺省的配置包括单一的远程连接器，它被单一的缺省连接工厂使用。你可以配置每个连"
+"接工厂都使用自己的连接器。"
+
+#. Tag: para
+#: Configuration.xml:1370
+#, no-c-format
+msgid ""
+"The default connector is configured to use the remoting bisocket transport. "
+"The bisocket transport is a TCP socket based transport which only listens "
+"and accepts connections on the server side. I.e. connections are always "
+"initiated from the client side. This means it works well in typical firewall "
+"scenarios where only inbound connections are allowed on the server. Or where "
+"onlu outbound connections are allowed from the client."
+msgstr ""
+"缺省的连接器使用远程双向套接字传输（bisocket transport）。双向套接字传输基于 "
+"TCP 套接字，它只在服务器端侦听和接受连接。也就是说，连接总是从客户端发起。这"
+"意味着它适合于典型的防火墙环境里，因为此时只允许服务器上的转入连接。或者说只"
+"允许客户端的转出连接。"
+
+#. Tag: para
+#: Configuration.xml:1377
+#, no-c-format
+msgid ""
+"The bisocket transport can be configured to use SSL where a higher level of "
+"security is required."
+msgstr "如果需要更高级别的安全性，我们可以配置双向套接字传输使用 SSL。"
+
+#. Tag: para
+#: Configuration.xml:1379
+#, no-c-format
+msgid ""
+"The other supported transport is the HTTP transport. This uses the HTTP "
+"protocol to communicate between client and server. Data is received on the "
+"client by the client periodically polling the server for messages. This "
+"transport is well suited to situations where there is a firewall between "
+"client and server which only allows incoming HTTP traffic on the server. "
+"Please note this transport will not be as performant as the bisocket "
+"transport due to the nature of polling and the HTTP protocl. Also please "
+"note it is not designed for high load situations."
+msgstr ""
+"另外一种被支持的传输协是 HTTP 传输。它使用 HTTP 协议在服务器和客户端之间通"
+"信。客户端通过定期地轮询服务器来接收数据。这种传输特别适合于在客户端和服务器"
+"之间存在防火墙的情况，此时只允许服务器上的转入 HTTP 通信。请注意，这种传输不"
+"具有和双向传输相同的性能，这是由于轮询的性质以及 HTTP 协议的采用。也请注意它"
+"不是为高负载环境设计的。"
+
+#. Tag: para
+#: Configuration.xml:1388
+#, no-c-format
+msgid "No other remoting transports are currently supported by JBoss Messaging"
+msgstr "JBoss Messaging 目前不支持其他远程传输模式。"
+
+#. Tag: para
+#: Configuration.xml:1390
+#, no-c-format
+msgid "You can look at remoting configuration under:"
+msgstr "你可以在这里查看远程配置："
+
+#. Tag: para
+#: Configuration.xml:1391
+#, no-c-format
+msgid ""
+"&lt;JBoss&gt;/server/&lt;YourMessagingServer&gt;/deploy/jboss-messaging.sar/"
+"remoting-bisocket-service.xml"
+msgstr ""
+"&lt;JBoss&gt;/server/&lt;YourMessagingServer&gt;/deploy/jboss-messaging.sar/"
+"remoting-bisocket-service.xml"
+
+#. Tag: para
+#: Configuration.xml:1392
+#, no-c-format
+msgid "Here is an example bisocket remoting configuration:"
+msgstr "下面是一个关于双向远程传输的配置示例："
+
+#. Tag: programlisting
+#: Configuration.xml:1393
+#, no-c-format
+msgid ""
+"&lt;config&gt;\n"
+"            &lt;invoker transport=\"bisocket\"&gt;\n"
+"            \n"
+"               &lt;!-- There should be no reason to change these parameters "
+"- warning!\n"
+"                    Changing them may stop JBoss Messaging working correctly "
+"--&gt;            \n"
+"               &lt;attribute name=\"marshaller\" isParam=\"true\"&gt;org."
+"jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"unmarshaller\" isParam=\"true\"&gt;org."
+"jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"dataType\" isParam=\"true\"&gt;jms&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"socket.check_connection\" isParam=\"true"
+"\"&gt;false&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"timeout\" isParam=\"true\"&gt;0&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"serverBindAddress\"&gt;${jboss.bind."
+"address}&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverBindPort\"&gt;4457&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"clientSocketClass\" isParam=\"true\"&gt;"
+"org.jboss.jms.client.remoting.ClientSocketWrapper&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverSocketClass\" isParam=\"true\"&gt;"
+"org.jboss.jms.server.remoting.ServerSocketWrapper&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfCallRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"pingFrequency\" isParam=\"true"
+"\"&gt;214748364&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"pingWindowFactor\" isParam=\"true"
+"\"&gt;10&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"onewayThreadPool\"&gt;org.jboss.jms."
+"server.remoting.DirectThreadPool&lt;/attribute&gt;\n"
+"               \n"
+"               &lt;!-- Periodicity of client pings. Server window by default "
+"is twice this figure --&gt;                               \n"
+"               &lt;attribute name=\"clientLeasePeriod\" isParam=\"true"
+"\"&gt;10000&lt;/attribute&gt;\n"
+"\n"
+"               &lt;!-- Number of seconds to wait for a connection in the "
+"client pool to become free --&gt;\n"
+"               &lt;attribute name=\"numberOfRetries\" isParam=\"true"
+"\"&gt;10&lt;/attribute&gt;\n"
+"\n"
+"               &lt;!-- Max Number of connections in client pool. This should "
+"be significantly higher than\n"
+"                    the max number of sessions/consumers you expect --&gt;\n"
+"               &lt;attribute name=\"clientMaxPoolSize\" isParam=\"true"
+"\"&gt;200&lt;/attribute&gt;\n"
+"               \n"
+"               &lt;!-- Use these parameters to specify values for binding "
+"and connecting control connections to \n"
+"                    work with your firewall/NAT configuration\n"
+"               &lt;attribute name=\"secondaryBindPort\"&gt;xyz&lt;/"
+"attribute&gt;                           \n"
+"               &lt;attribute name=\"secondaryConnectPort\"&gt;abc&lt;/"
+"attribute&gt;               \n"
+"               --&gt;\n"
+"                              \n"
+"            &lt;/invoker&gt;\n"
+"            &lt;handlers&gt;\n"
+"               &lt;handler subsystem=\"JMS\"&gt;org.jboss.jms.server."
+"remoting.JMSServerInvocationHandler&lt;/handler&gt;\n"
+"            &lt;/handlers&gt;\n"
+"         &lt;/config&gt;"
+msgstr ""
+"&lt;config&gt;\n"
+"            &lt;invoker transport=\"bisocket\"&gt;\n"
+"            \n"
+"               &lt;!-- There should be no reason to change these parameters "
+"- warning!\n"
+"                    Changing them may stop JBoss Messaging working correctly "
+"--&gt;            \n"
+"               &lt;attribute name=\"marshaller\" isParam=\"true\"&gt;org."
+"jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"unmarshaller\" isParam=\"true\"&gt;org."
+"jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"dataType\" isParam=\"true\"&gt;jms&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"socket.check_connection\" isParam=\"true"
+"\"&gt;false&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"timeout\" isParam=\"true\"&gt;0&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"serverBindAddress\"&gt;${jboss.bind."
+"address}&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverBindPort\"&gt;4457&lt;/"
+"attribute&gt;\n"
+"               &lt;attribute name=\"clientSocketClass\" isParam=\"true\"&gt;"
+"org.jboss.jms.client.remoting.ClientSocketWrapper&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"serverSocketClass\" isParam=\"true\"&gt;"
+"org.jboss.jms.server.remoting.ServerSocketWrapper&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"numberOfCallRetries\" isParam=\"true"
+"\"&gt;1&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"pingFrequency\" isParam=\"true"
+"\"&gt;214748364&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"pingWindowFactor\" isParam=\"true"
+"\"&gt;10&lt;/attribute&gt;\n"
+"               &lt;attribute name=\"onewayThreadPool\"&gt;org.jboss.jms."
+"server.remoting.DirectThreadPool&lt;/attribute&gt;\n"
+"               \n"
+"               &lt;!-- Periodicity of client pings. Server window by default "
+"is twice this figure --&gt;                               \n"
+"               &lt;attribute name=\"clientLeasePeriod\" isParam=\"true"
+"\"&gt;10000&lt;/attribute&gt;\n"
+"\n"
+"               &lt;!-- Number of seconds to wait for a connection in the "
+"client pool to become free --&gt;\n"
+"               &lt;attribute name=\"numberOfRetries\" isParam=\"true"
+"\"&gt;10&lt;/attribute&gt;\n"
+"\n"
+"               &lt;!-- Max Number of connections in client pool. This should "
+"be significantly higher than\n"
+"                    the max number of sessions/consumers you expect --&gt;\n"
+"               &lt;attribute name=\"clientMaxPoolSize\" isParam=\"true"
+"\"&gt;200&lt;/attribute&gt;\n"
+"               \n"
+"               &lt;!-- Use these parameters to specify values for binding "
+"and connecting control connections to \n"
+"                    work with your firewall/NAT configuration\n"
+"               &lt;attribute name=\"secondaryBindPort\"&gt;xyz&lt;/"
+"attribute&gt;                           \n"
+"               &lt;attribute name=\"secondaryConnectPort\"&gt;abc&lt;/"
+"attribute&gt;               \n"
+"               --&gt;\n"
+"                              \n"
+"            &lt;/invoker&gt;\n"
+"            &lt;handlers&gt;\n"
+"               &lt;handler subsystem=\"JMS\"&gt;org.jboss.jms.server."
+"remoting.JMSServerInvocationHandler&lt;/handler&gt;\n"
+"            &lt;/handlers&gt;\n"
+"         &lt;/config&gt;"
+
+#. Tag: para
+#: Configuration.xml:1394
+#, no-c-format
+msgid ""
+"Please note that some of the attributes should not be changed unless you "
+"know exactly what you are doing. We will discuss the attributes that you may "
+"have a good reason to change:"
+msgstr ""
+"请注意，除非你有明确的目的，否则不要修改其中一些属性。我们将讨论你可能需要修"
+"改的属性："
+
+#. Tag: para
+#: Configuration.xml:1398
+#, no-c-format
+msgid ""
+"clientLeasePeriod - Clients periodically send heartbeats to the server to "
+"tell the server they are still alive. If the server does not receive a "
+"heartbeat after a certain time it will close down the connection and remove "
+"all resources on the server corresponding to the client's session. The "
+"clientLeasePeriod determines the period of heartbeats. The server will (by "
+"default) close a client if it does not receive a heartbeat in 2 * "
+"clientLeasePeriod ms. The actual factor gets automatically resized according "
+"to system load. The value is in milliseconds. The defaut value is 10000 ms."
+msgstr ""
+"clientLeasePeriod - 客户端定期地往服务器发送 heartbeat 来告知它处于活动状态。"
+"如果服务器在一段时间后没有接收到 heartbeat，那么它将关掉连接并删除这个会话对"
+"应的所有服务器上的资源。clientLeasePeriod 决定了发送 heartbeat 的间隔。如果服"
+"务器在 2 * clientLeasePeriod 毫秒后还没有收到 heartbeat 信息，它缺省将关闭这"
+"个客户连接。实际的因子会根据系统负载自动进行调节。这个值以毫秒为单位。它的缺"
+"省值是 10000 毫秒。"
+
+#. Tag: para
+#: Configuration.xml:1401
+#, no-c-format
+msgid ""
+"numberOfRetries - This effectively corresponds to the number of seconds "
+"JBoss Remoting will block on the client connection pool waiting for a "
+"connection to become free. If you have a very large number of sessions "
+"concurrently accessing the server from a client and you are experiencing "
+"issues due to not being able to obtain connections from the pool, you may "
+"want to consider increasing this value."
+msgstr ""
+"numberOfRetries - 它对应 JBoss Remoting 在等待客户连接池有空闲的连接时阻塞的"
+"时间（秒）。如果有数目众多的会话并行地访问服务器，且你遇到不能从连接池获得连"
+"接的问题，那么你就可以考虑增大这个值。"
+
+#. Tag: para
+#: Configuration.xml:1404
+#, no-c-format
+msgid ""
+"clientMaxPoolSize - JBoss Remoting maintains a client side pool of TCP "
+"connections on which to service requests. If you have a very large number of "
+"sessions concurrently accessing the server from a client and you are "
+"experiencing issues due to not being able to obtain connections from the "
+"pool in a timely manner, you may want to consider increasing this value."
+msgstr ""
+"clientMaxPoolSize - JBoss Remoting 维护一个客户端的对应服务请求的 TCP 连接"
+"池。如果有数目众多的会话并行地访问服务器，且你遇到不能及时地从连接池获得连接"
+"的问题，那么你就可以考虑增大这个值。"
+
+#. Tag: para
+#: Configuration.xml:1407
+#, no-c-format
+msgid ""
+"secondaryBindPort - The bisocket transport uses control connections to pass "
+"control messages between server and client. If you want to work behind a "
+"firewall you may want to specify a particular value for this according to "
+"your firewall configuration. This is the address the secondary ServerSocket "
+"binds to"
+msgstr ""
+"secondaryBindPort - 双向传输使用控制连接（control connection）在服务器和客户"
+"端之间传递控制消息。如果你想在防火墙后工作，你可能需要按照防火墙配置为这个连"
+"接指定特殊的值。它是第二个 ServerSocket 所绑定的地址。"
+
+#. Tag: para
+#: Configuration.xml:1410
+#, no-c-format
+msgid ""
+"secondaryConnectPort - This is the port the client uses to connect. You may "
+"want to specify this to allow clients to work with NAT routers."
+msgstr ""
+"secondaryConnectPort - 这是客户端用户连接的端口。你可能希望指定它来允许客户使"
+"用 NAT 路由器。"
+
+#. Tag: para
+#: Configuration.xml:1413
+#, no-c-format
+msgid ""
+"maxPoolSize - This is the number of threads used on the server side to "
+"service requests."
+msgstr "maxPoolSize - 这是服务器端用于处理请求的线程数量。"
+
+#. Tag: para
+#: Configuration.xml:1417
+#, no-c-format
+msgid ""
+"By default JBoss Messaging binds to ${jboss.bind.address} which can be "
+"defined by: ./run.sh -c &lt;yourconfig&gt; -b yourIP."
+msgstr ""
+"在缺省情况下，JBoss Messaging 绑定到 ${jboss.bind.address}，它可用 ./run.sh -"
+"c &lt;yourconfig&gt; -b yourIP 进行定义。"
+
+#. Tag: para
+#: Configuration.xml:1419
+#, no-c-format
+msgid ""
+"You can change remoting-bisocket-service.xml if you want for example use a "
+"different communication port."
+msgstr "如果你想使用不同的通信端口，你可以修改 remoting-bisocket-service.xml。"
+
+#. Tag: para
+#: Configuration.xml:1421
+#, no-c-format
+msgid ""
+"There is rarely a good reason to change values in the the bisocket or "
+"sslbisocket connector configuration apart from clientLeasePeriod, "
+"clientMaxPoolSize, maxRetries, numberOfRetries, secondaryBindPort or "
+"secondaryConnectPort. Changing them can cause JBoss Messaging to stop "
+"functioning correctly."
+msgstr ""
+"除了 clientLeasePeriod、clientMaxPoolSize、maxRetries、numberOfRetries、"
+"secondaryBindPort 和 secondaryConnectPort 以外，我们通常不需修改 bisocket 或 "
+"sslbisocket 连接器配置里的其他值。修改这些值可能导致 JBoss Messaging 不能正常"
+"运行。"
+
+#. Tag: title
+#: Configuration.xml:1427
+#, no-c-format
+msgid "ServiceBindingManager"
+msgstr "ServiceBindingManager"
+
+#. Tag: para
+#: Configuration.xml:1428
+#, no-c-format
+msgid ""
+"If you are using the JBoss AS ServiceBindingManager to provide different "
+"servers with different port ranges, then you must make sure that the JBoss "
+"Messaging remoting configuration specified in the JBoss Messaging section of "
+"the ServiceBindingManager xml file exactly matches that in remoting-bisocket-"
+"service.xml."
+msgstr ""
+"如果你要使用 JBoss AS ServiceBindingManager 来提供带有不同端口范围俄的不同服"
+"务器，你必须确保 ServiceBindingManager xml 文件里的 JBoss Messaging 部分里的 "
+"JBoss Messaging 远程配置完全符合 remoting-bisocket-service.xml 里的配置。"
+
+#. Tag: para
+#: Configuration.xml:1433
+#, no-c-format
+msgid ""
+"If you are using a newer version of JBM in an older version of JBAS then the "
+"example bindings in the AS distribution may well be out of date. It is "
+"therefore imperative that the relevant sections are overwritten with the "
+"remoting configuration from the JBM distribution."
+msgstr ""
+"如果你在较旧版本的 JBAS 里使用更新版本的 JBM，那么 AS 发行版本里的例子可能是"
+"过期的。因此相关部分急需用 JBM 发行版本里的远程配置进行覆盖。"
+

@@ -1,0 +1,185 @@
+# translation of Recovery_Config.po to Japanese
+# Language ja-JP translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# Automatically generated, 2008.
+# Kiyoto Hashida <khashida@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: Recovery_Config\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-07-18 15:22+1000\n"
+"Last-Translator: Kiyoto Hashida <khashida@redhat.com>\n"
+"Language-Team: Japanese <jp@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#. Tag: title
+#: Recovery_Config.xml:3
+#, no-c-format
+msgid "JBoss Messaging XA Recovery Configuration"
+msgstr "JBoss Messaging XA 復元の設定"
+
+#. Tag: para
+#: Recovery_Config.xml:4
+#, no-c-format
+msgid ""
+"This section describes how to configure JBoss Transactions in JBoss AS 4.2.0 "
+"to handle XA recovery for JBoss Messaging resources."
+msgstr ""
+"このセクションでは、JBoss Messaging リソース用に XA の復元を処理するための "
+"JBoss  AS 4.2.0 の JBoss Transactions の設定の仕方を説明しています。"
+
+#. Tag: para
+#: Recovery_Config.xml:6
+#, no-c-format
+msgid ""
+"JBoss Transactions recovery manager can easily be configured to continually "
+"poll for and recover JBoss Messaging XA resources, this provides an "
+"extremely high level of durability of transactions."
+msgstr ""
+"JBoss Transactions リカバリーマネージャは連続的にポーリングして JBoss "
+"Messaging XA リソースを 復元するように簡単に設定することができます。これによ"
+"り、トランザクションで非常に高い耐久性が提供されます。"
+
+#. Tag: para
+#: Recovery_Config.xml:9
+#, no-c-format
+msgid ""
+"Enabling JBoss Transactions Recovery Manager to recover JBoss Messaging "
+"resources is a very simple matter and involves adding a line to the file "
+"${JBOSS_CONFIG}/conf/jbossjta-properties.xml"
+msgstr ""
+"JBoss Transactions リカバリーマネージャを有効にして、JBoss Messaging リソース"
+"を復元するのは、 １つの行をファイル ${JBOSS_CONFIG}/conf/jbossjta-properties."
+"xml に追加するだけの 非常に単純な操作です。"
+
+#. Tag: para
+#: Recovery_Config.xml:12
+#, no-c-format
+msgid ""
+"Here's an example section of a jbossjta-properties.xml file with the line "
+"added (note the whole file is not shown)"
+msgstr ""
+"以下にその１行を追加した jbossjta-properties.xml  ファイルの サンプルセクショ"
+"ンを示します（ファイルの一部のみ表示）。"
+
+#. Tag: programlisting
+#: Recovery_Config.xml:14
+#, no-c-format
+msgid ""
+"&lt;properties depends=\"arjuna\" name=\"jta\"&gt;\n"
+"        &lt;!--\n"
+"        Support subtransactions in the JTA layer?\n"
+"        Default is NO.\n"
+"        --&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.supportSubtransactions\" "
+"value=\"NO\"/&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.jtaTMImplementation\"\n"
+"           value=\"com.arjuna.ats.internal.jta.transaction.arjunacore."
+"TransactionManagerImple\"/&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.jtaUTImplementation\"\n"
+"           value=\"com.arjuna.ats.internal.jta.transaction.arjunacore."
+"UserTransactionImple\"/&gt;      \n"
+"        &lt;!--\n"
+"           *** Add this line to enable recovery for JMS resources using "
+"DefaultJMSProvider ***\n"
+"        --&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.recovery.XAResourceRecovery."
+"JBMESSAGING1\"\n"
+"           value=\"org.jboss.jms.server.recovery.MessagingXAResourceRecovery;"
+"java:/DefaultJMSProvider\"/&gt;\n"
+"\n"
+"    &lt;/properties&gt;"
+msgstr ""
+"&lt;properties depends=\"arjuna\" name=\"jta\"&gt;\n"
+"        &lt;!--\n"
+"        Support subtransactions in the JTA layer?\n"
+"        Default is NO.\n"
+"        --&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.supportSubtransactions\" "
+"value=\"NO\"/&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.jtaTMImplementation\"\n"
+"           value=\"com.arjuna.ats.internal.jta.transaction.arjunacore."
+"TransactionManagerImple\"/&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.jtaUTImplementation\"\n"
+"           value=\"com.arjuna.ats.internal.jta.transaction.arjunacore."
+"UserTransactionImple\"/&gt;      \n"
+"        &lt;!--\n"
+"           *** Add this line to enable recovery for JMS resources using "
+"DefaultJMSProvider ***\n"
+"        --&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.recovery.XAResourceRecovery."
+"JBMESSAGING1\"\n"
+"           value=\"org.jboss.jms.server.recovery.MessagingXAResourceRecovery;"
+"java:/DefaultJMSProvider\"/&gt;\n"
+"\n"
+"    &lt;/properties&gt;"
+
+#. Tag: para
+#: Recovery_Config.xml:15
+#, no-c-format
+msgid ""
+"In the above example the recovery manager will attempt to recover JMS "
+"resources using the JMSProviderLoader \"DefaultJMSProvider\""
+msgstr ""
+"上記の例では、リカバリーマネージャが、JMSProviderLoader \"DefaultJMSProvider"
+"\" を 使用して JMS リソースの復元を試行しています。"
+
+#. Tag: para
+#: Recovery_Config.xml:17
+#, no-c-format
+msgid ""
+"DefaultJMSProvider is the default JMS provider loader that ships with JBoss "
+"AS and is defined in jms-ds.xml (or hajndi-jms-ds.xml in a clustered "
+"configuration). If you want to recovery using a different JMS provider "
+"loader - e.g. one corresponding to a remote JMS provider then just add "
+"another line and instead of DefaultJMSProvider specify the name of the "
+"remote JMS provider as specified in it's MBean configuration."
+msgstr ""
+"DefaultJMSProvider とは、デフォルトの JMS プロバイダーローダー であり、これ"
+"は JBoss AS に同梱されていて jms-ds.xml （又はクラスター設定の hajndi-jms-ds."
+"xml）内で定義されています。もし、異なるプロバイダー（例えば、 リモート JMS プ"
+"ロバイダーに相当するもの）を使用して復元したい場合は、 別の行を追加して、"
+"DefaultJMSProvider  ではなくリモート JMS プロバイダーの 名前を MBean 設定内で"
+"指定されているのと同様に指定します。"
+
+#. Tag: para
+#: Recovery_Config.xml:23
+#, no-c-format
+msgid ""
+"For each line you add, the name must be unique, so you could specify \"com."
+"arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1\", \"com.arjuna.ats."
+"jta.recovery.XAResourceRecovery.JBMESSAGING2, ...\" etc."
+msgstr ""
+"追加する行のそれぞれでその名前は特有でなければなりません。そうすると \"com."
+"arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1\" や \"com.arjuna."
+"ats.jta.recovery.XAResourceRecovery.JBMESSAGING2, ...\" などのように指定でき"
+"ます。"
+
+#. Tag: para
+#: Recovery_Config.xml:27
+#, no-c-format
+msgid ""
+"In actual fact, the recovery also should work with any JMS provider that "
+"implements recoverable XAResources (i.e. it properly implements XAResource."
+"recover()) , not just JBoss Messaging"
+msgstr ""
+"実際には、この復元は JBoss Messaging だけでなく、復元可能な XAResources （こ"
+"れは XAResource.recover() を正しく実装します）を実装するいずれかの JMS プロバ"
+"イダーでも動作するはずです。"
+
+#. Tag: para
+#: Recovery_Config.xml:30
+#, no-c-format
+msgid ""
+"Please note that to configure the recovery manager to recovery transactions "
+"from any node of the cluster it will be necessary to specify a line in the "
+"configuration for every node of the cluster"
+msgstr ""
+"クラスターのノードからトランザクションを復元するようにリカバリーマネージャを"
+"設定するには、 クラスターの各ノード毎の設定内で１つの行を指定する必要があるこ"
+"とに注意して下さい。"

@@ -1,0 +1,46 @@
+# translation of Book_Info.po to Japanese
+# Language ja-JP translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# Automatically generated, 2008.
+# Kiyoto Hashida <khashida@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: Book_Info\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-06-10 16:30+1000\n"
+"Last-Translator: Kiyoto Hashida <khashida@redhat.com>\n"
+"Language-Team: Japanese <jp@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#. Tag: title
+#: Book_Info.xml:6
+#, no-c-format
+msgid "JBoss Messaging User Guide"
+msgstr "JBoss Messaging ユーザーガイド"
+
+#. Tag: subtitle
+#: Book_Info.xml:7
+#, no-c-format
+msgid "JBoss Enterprise Application Platform"
+msgstr "JBoss Enterprise Application Platform"
+
+#. Tag: para
+#: Book_Info.xml:12
+#, no-c-format
+msgid ""
+"This User Guide documents relevant information regarding the usage of JBoss "
+"Messaging 1.4 for JBoss Enteprise Application Platform 4.3"
+msgstr ""
+"このユーザーガイドは、JBoss Enteprise Application Platform 4.3 用の JBoss "
+"Messaging 1.4 の使用法に関する関連情報を文書化したものです。"
+
+#. Tag: holder
+#: Book_Info.xml:24
+#, no-c-format
+msgid "&HOLDER;"
+msgstr "&HOLDER;"

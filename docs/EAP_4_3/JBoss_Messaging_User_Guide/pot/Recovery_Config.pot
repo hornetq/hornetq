@@ -1,0 +1,131 @@
+# SOME DESCRIPTIVE TITLE.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <kde-i18n-doc@kde.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: application/x-xml2pot; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Tag: title
+#: Recovery_Config.xml:3
+#, no-c-format
+msgid "JBoss Messaging XA Recovery Configuration"
+msgstr ""
+
+#. Tag: para
+#: Recovery_Config.xml:4
+#, no-c-format
+msgid ""
+"This section describes how to configure JBoss Transactions in JBoss AS 4.2.0 "
+"to handle XA recovery for JBoss Messaging resources."
+msgstr ""
+
+#. Tag: para
+#: Recovery_Config.xml:6
+#, no-c-format
+msgid ""
+"JBoss Transactions recovery manager can easily be configured to continually "
+"poll for and recover JBoss Messaging XA resources, this provides an "
+"extremely high level of durability of transactions."
+msgstr ""
+
+#. Tag: para
+#: Recovery_Config.xml:9
+#, no-c-format
+msgid ""
+"Enabling JBoss Transactions Recovery Manager to recover JBoss Messaging "
+"resources is a very simple matter and involves adding a line to the file "
+"${JBOSS_CONFIG}/conf/jbossjta-properties.xml"
+msgstr ""
+
+#. Tag: para
+#: Recovery_Config.xml:12
+#, no-c-format
+msgid ""
+"Here's an example section of a jbossjta-properties.xml file with the line "
+"added (note the whole file is not shown)"
+msgstr ""
+
+#. Tag: programlisting
+#: Recovery_Config.xml:14
+#, no-c-format
+msgid ""
+"&lt;properties depends=\"arjuna\" name=\"jta\"&gt;\n"
+"        &lt;!--\n"
+"        Support subtransactions in the JTA layer?\n"
+"        Default is NO.\n"
+"        --&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.supportSubtransactions\" "
+"value=\"NO\"/&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.jtaTMImplementation\"\n"
+"           value=\"com.arjuna.ats.internal.jta.transaction.arjunacore."
+"TransactionManagerImple\"/&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.jtaUTImplementation\"\n"
+"           value=\"com.arjuna.ats.internal.jta.transaction.arjunacore."
+"UserTransactionImple\"/&gt;      \n"
+"        &lt;!--\n"
+"           *** Add this line to enable recovery for JMS resources using "
+"DefaultJMSProvider ***\n"
+"        --&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.recovery.XAResourceRecovery."
+"JBMESSAGING1\"\n"
+"           value=\"org.jboss.jms.server.recovery.MessagingXAResourceRecovery;"
+"java:/DefaultJMSProvider\"/&gt;\n"
+"\n"
+"    &lt;/properties&gt;"
+msgstr ""
+
+#. Tag: para
+#: Recovery_Config.xml:15
+#, no-c-format
+msgid ""
+"In the above example the recovery manager will attempt to recover JMS "
+"resources using the JMSProviderLoader \"DefaultJMSProvider\""
+msgstr ""
+
+#. Tag: para
+#: Recovery_Config.xml:17
+#, no-c-format
+msgid ""
+"DefaultJMSProvider is the default JMS provider loader that ships with JBoss "
+"AS and is defined in jms-ds.xml (or hajndi-jms-ds.xml in a clustered "
+"configuration). If you want to recovery using a different JMS provider "
+"loader - e.g. one corresponding to a remote JMS provider then just add "
+"another line and instead of DefaultJMSProvider specify the name of the "
+"remote JMS provider as specified in it's MBean configuration."
+msgstr ""
+
+#. Tag: para
+#: Recovery_Config.xml:23
+#, no-c-format
+msgid ""
+"For each line you add, the name must be unique, so you could specify \"com."
+"arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1\", \"com.arjuna.ats."
+"jta.recovery.XAResourceRecovery.JBMESSAGING2, ...\" etc."
+msgstr ""
+
+#. Tag: para
+#: Recovery_Config.xml:27
+#, no-c-format
+msgid ""
+"In actual fact, the recovery also should work with any JMS provider that "
+"implements recoverable XAResources (i.e. it properly implements XAResource."
+"recover()) , not just JBoss Messaging"
+msgstr ""
+
+#. Tag: para
+#: Recovery_Config.xml:30
+#, no-c-format
+msgid ""
+"Please note that to configure the recovery manager to recovery transactions "
+"from any node of the cluster it will be necessary to specify a line in the "
+"configuration for every node of the cluster"
+msgstr ""

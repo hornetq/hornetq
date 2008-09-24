@@ -1,0 +1,62 @@
+# translation of About_This_Book.po to French
+# Language fr-FR translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# Automatically generated, 2008.
+# Corina Roe <croe@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: About_This_Book\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-07-17 15:22+1000\n"
+"Last-Translator: Corina Roe <croe@redhat.com>\n"
+"Language-Team: French <i18@redhat.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#. Tag: title
+#: About_This_Book.xml:3
+#, no-c-format
+msgid "About this book"
+msgstr "A propos de ce manuel"
+
+#. Tag: para
+#: About_This_Book.xml:4
+#, no-c-format
+msgid ""
+"The goal of this book is to give you an overview of JBoss Messaging. It "
+"explains the important features of JBoss Messaging and its capability to "
+"provide a high-performance and robust messaging system for Enterprise Java "
+"Applications."
+msgstr ""
+"Le but de cet ouvrage est de vous donner un aperçu de JBoss Messaging. Il "
+"décrit les fonctions principales de JBoss Messaging et ses capacités à "
+"offrir un système de messagerie robuste et de haute performance pour les "
+"applications Enterprise Java Applications."
+
+#. Tag: para
+#: About_This_Book.xml:7
+#, no-c-format
+msgid ""
+"JBoss Messaging is the new state-of-the-art enterprise messaging system from "
+"JBoss, providing superior performance, reliability and scalability with high "
+"throughput and low latency. JBoss Messaging has replaced JBossMQ as the "
+"default JMS provider in JBoss Enterprise Application Platform 4.3. The "
+"version used is JBoss Messaging 1.4. You should use this version or later "
+"with the examples demonstrating JBoss Messaging. The book is not intended to "
+"teach you the basics of Enterprise Messaging. Use it to familiarize with "
+"JBoss Messaging features and various configurations."
+msgstr ""
+"JBoss Messaging est le nouveau système de messagerie enterprise à la fine "
+"pointe de la technologie, qui offre à la fois une performance supérieure, "
+"fiabilité et variabilité dimensionnelle avec un haut débit et un temps "
+"d'attente minimum. JBoss Messaging remplace JBossMQ en tant que prestataire "
+"JMS dans la plateforme JBoss Enterprise Application Platform 4.3. La version "
+"utilisée est JBoss Messaging 1.4. Vous devriez utiliser cette version "
+"maintenant ou plus tard avec les exemples expliquant JBoss Messaging. Cet "
+"ouvrage n'a pas pour dessein de vous enseigner les principes de base "
+"d'Enterprise Messaging. Utilisez-le pour vous familiariser avec les "
+"fonctions JBoss Messaging et ses différentes configurations."

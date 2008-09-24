@@ -1,0 +1,111 @@
+# translation of About.po to
+# Language zh-CN translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# Automatically generated, 2008.
+# Xi HUANG <xhuang@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: About\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-07-10 13:05+1000\n"
+"Last-Translator: Xi HUANG <xhuang@redhat.com>\n"
+"Language-Team:  <en@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+#. Tag: title
+#: About.xml:3
+#, no-c-format
+msgid "About JBoss Messaging"
+msgstr "关于 JBoss Messaging"
+
+#. Tag: para
+#: About.xml:4
+#, no-c-format
+msgid ""
+"JBoss Messaging is the new enterprise messaging system from JBoss. It is a "
+"complete rewrite of JBossMQ, the legacy JBoss JMS provider."
+msgstr ""
+"JBoss Messaging 是 JBoss 里最新的企业级消息系统。它完全重写了以前的 JBoss "
+"JMS 提供者 － JBossMQ。"
+
+#. Tag: para
+#: About.xml:6
+#, no-c-format
+msgid ""
+"JBoss Messaging is the default JMS provider in JBoss Enterprise Application "
+"Platform 4.3, for JBoss ESB and JBoss Service Integration Platform. It will "
+"also be the default JMS provider in JBoss Application Server 5. It is an "
+"integral part of Red Hat's strategy for messaging."
+msgstr ""
+"JBoss Messaging 是 JBoss 企业级应用程序平台 4.3 里用于 JBoss ESB 和 JBoss "
+"Service Integration Platform 的缺省 JMS 提供者。它也将是 JBoss Application "
+"Server 5 里的缺省 JMS 提供者。它是红帽关于消息系统的策略的一个集成部分。"
+
+#. Tag: para
+#: About.xml:10
+#, no-c-format
+msgid ""
+"Compared with JBossMQ, JBoss Messaging offers improved performance in both "
+"single node and clustered environments. It also features a much better "
+"modular architecture that allows adding more features in the future. From "
+"release 1.4.0 onwards JBoss Messaging is designed for JBoss AS version 4.2 "
+"or above only and is Java 5."
+msgstr ""
+"和 JBossMQ 相比，JBoss Messaging 为单节点和群集环境都提供了更好的性能。它也以"
+"更好的模块化架构允许以后添加更多功能。从 1.4.0 版本开始，JBoss Messaging 只适"
+"用于 JBoss AS 4.2 或更高版本且要求 Java 5。"
+
+#. Tag: para
+#: About.xml:15
+#, no-c-format
+msgid ""
+"Please send your suggestions or comments to the <ulink url=\"http://www."
+"jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=238\">JBoss Messaging "
+"user forum</ulink>."
+msgstr ""
+"请把你的建议或意见发送到 <ulink url=\"http://www.jboss.org/index.html?"
+"module=bb&amp;op=viewforum&amp;f=238\">JBoss Messaging user forum</ulink>。"
+
+#. Tag: para
+#: About.xml:18
+#, no-c-format
+msgid ""
+"Permanent Team: Tim Fox (Project Lead), Jeff Mesnil (Core Developer), "
+"Clebert Suconic (Core Developer), Andy Taylor (Core Developer)"
+msgstr ""
+"核心团队：Tim Fox (Project Lead), Jeff Mesnil (Core Developer), Clebert "
+"Suconic (Core Developer), Andy Taylor (Core Developer)"
+
+#. Tag: para
+#: About.xml:20
+#, no-c-format
+msgid ""
+"Contributors: Ovidiu Feodorov (Project Founder), Sergey Koshcheyev, Ron "
+"Sigal, Madhu Konda, Jay Howell, Tyronne Wickramarathne, Aaron Walker, Adrian "
+"Brock, Rajdeep Dua, Tom Elrod, Alex Fu, Juha Lindfors, Alexey Loubyansky, "
+"Luc Texier, Scott Stark, Aslak Knutsen"
+msgstr ""
+"贡献者：Ovidiu Feodorov (Project Founder), Sergey Koshcheyev, Ron Sigal, "
+"Madhu Konda, Jay Howell, Tyronne Wickramarathne, Aaron Walker, Adrian Brock, "
+"Rajdeep Dua, Tom Elrod, Alex Fu, Juha Lindfors, Alexey Loubyansky, Luc "
+"Texier, Scott Stark, Aslak Knutsen"
+
+#. Tag: para
+#: About.xml:24
+#, no-c-format
+msgid ""
+"Messaging support team: Jay Howell, David Boeren, Mike Clark, Tyronne "
+"Wickramarathne"
+msgstr "支持团队：Jay Howell, David Boeren, Mike Clark, Tyronne Wickramarathne"
+
+#. Tag: para
+#: About.xml:26
+#, no-c-format
+msgid "Other thanks to: Mark Little and Pete Bennett"
+msgstr "鸣谢：Mark Little，Pete Bennett"

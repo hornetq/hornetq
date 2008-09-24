@@ -1,0 +1,97 @@
+# translation of Introduction.po to Japanese
+# Language ja-JP translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# Automatically generated, 2008.
+# Kiyoto Hashida <khashida@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: Introduction\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-07-18 11:40+1000\n"
+"Last-Translator: Kiyoto Hashida <khashida@redhat.com>\n"
+"Language-Team: Japanese <jp@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#. Tag: title
+#: Introduction.xml:3
+#, no-c-format
+msgid "Introduction"
+msgstr "はじめに"
+
+#. Tag: para
+#: Introduction.xml:4
+#, no-c-format
+msgid ""
+"JBoss Messaging provides an open source and standards-based messaging "
+"platform and is an integral part of Red Hat's strategy for enterprise "
+"messaging. It is a complete rewrite of JBossMQ, the legacy JBoss JMS "
+"provider, and offers improved performance in both single node and clustered "
+"environments. It also features a much better modular architecture that "
+"allows easy adding of new features in the future."
+msgstr ""
+"JBoss Messaging はオープンソースの標準ベースメッセージングプラットフォームを"
+"提供し、 エンタープライズメッセージングでレッドハット戦略の不可欠な一部となり"
+"ます。これは以前の JBoss JMS プロバイダーである JBossMQ の完全な書き換えであ"
+"り、単独ノード及びクラスター化 環境の両方でパフォーマンスの向上を提供します。"
+"JBoss Messaging はまた、将来の新機能の 追加も簡単にできるようにするより良いモ"
+"ジューラーアーキテクチャを特徴としています。"
+
+#. Tag: para
+#: Introduction.xml:8
+#, no-c-format
+msgid ""
+"JBoss Messaging 1.4 is the default JMS provider in JBoss Enterprise "
+"Application Platform 4.3."
+msgstr ""
+"JBoss Messaging 1.4 は、JBoss Enterprise Application Platform 4.3 に於ける デ"
+"フォルトの JMS プロバイダーです。"
+
+#. Tag: title
+#: Introduction.xml:16
+#, no-c-format
+msgid "Feedback"
+msgstr "フィードバック"
+
+#. Tag: para
+#: Introduction.xml:17
+#, no-c-format
+msgid ""
+"If you spot a typo in this guide, or if you have thought of a way to make "
+"this manual better, we would love to hear from you! Submit a report in "
+"<ulink url=\"http://jira.jboss.com/jira/browse/JBPAPP\">JIRA</ulink> against "
+"the Product: JBoss Enterprise Application Platform, Version: "
+"<replaceable>&lt;version&gt;</replaceable>, Component: <emphasis>Doc</"
+"emphasis>. If you have a suggestion for improving the documentation, try to "
+"be as specific as possible. If you have found an error, include the section "
+"number and some of the surrounding text so we can find it easily."
+msgstr ""
+"このガイド内で誤字・脱字を発見されたり、本マニュアルを改善する提案をお持ちの"
+"場合は 弊社までご連絡ください。その場合、この製品: JBoss Enterprise "
+"Application Platform、 バージョン:<replaceable>&lt;version&gt;</"
+"replaceable>、コンポーネント: <emphasis>Doc</emphasis> に対して <ulink url="
+"\"http://jira.jboss.com/jira/browse/JBPAPP\">JIRA</ulink> で 報告の提出をお願"
+"いします。マニュアルの改善案をお持ちの場合は、できるだけ詳しい説明を 記入して"
+"下さい。エラーを発見された場合は、そのセクション番号と周辺文章を含んで頂くと "
+"弊社で素早く見つけることができます。"
+
+#. Tag: title
+#: Introduction.xml:23
+#, no-c-format
+msgid "Other Manuals"
+msgstr "その他のマニュアル"
+
+#. Tag: para
+#: Introduction.xml:24
+#, no-c-format
+msgid ""
+"If you are looking for detailed product information refer to the manuals "
+"available online at <ulink url=\"http://www.redhat.com/docs/manuals/jboss"
+"\"></ulink>."
+msgstr ""
+"詳しい製品情報をお探しの場合は、<ulink url=\"http://www.redhat.com/docs/"
+"manuals/jboss\"></ulink> で閲覧できるマニュアルを参照して下さい。"

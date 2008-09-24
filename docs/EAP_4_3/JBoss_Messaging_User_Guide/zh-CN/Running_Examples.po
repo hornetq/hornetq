@@ -1,0 +1,455 @@
+# Language zh-CN translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# Automatically generated, 2008.
+# Xi HUANG <xhuang@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: JBoss_Messaging_User_Guide 4.3\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-07-11 08:36+1000\n"
+"Last-Translator: Xi HUANG <xhuang@redhat.com>\n"
+"Language-Team: Chinese Simplified <kde-i18n-doc@lists.kde.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KAider 0.1\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+#. Tag: title
+#: Running_Examples.xml:3
+#, no-c-format
+msgid "JBoss Messaging Examples"
+msgstr "JBoss Messaging 示例"
+
+#. Tag: title
+#: Running_Examples.xml:5
+#, no-c-format
+msgid "About the Examples"
+msgstr "关于这些示例"
+
+#. Tag: para
+#: Running_Examples.xml:6
+#, no-c-format
+msgid ""
+"In the installation directory of your JBoss Enterprise Application Platform "
+"you will find a set of JBoss Messaging examples located in "
+"<literal>JBOSS_DIST/doc/examples/jboss-messaging-examples</literal>. These "
+"examples demonstrate JBoss Messaging in action. Within the "
+"<literal>JBOSS_DIST/doc/examples/jboss-messaging-examples</literal> "
+"directory, you will find the following sub-directories:"
+msgstr ""
+"在 JBoss 企业级应用程序平台的安装目录里，你可以找到位于 <literal>JBOSS_DIST/"
+"doc/examples/jboss-messaging-examples</literal> 的一系列示例。这些例子演示了 "
+"JBoss Messaging 的运行。在 <literal>JBOSS_DIST/doc/examples/jboss-messaging-"
+"examples</literal> 里，你将看到下面的子目录："
+
+#. Tag: para
+#: Running_Examples.xml:11
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/queue"
+msgstr "docs/examples/jboss-messaging-examples/queue"
+
+#. Tag: para
+#: Running_Examples.xml:12
+#, no-c-format
+msgid ""
+"This example demonstrates a simple 'send' and 'receive' to a remote queue "
+"using a JMS client."
+msgstr ""
+"这个例子演示了一个 JMS 客户端，它对远程队列进行简单的 '发送' 和 '接收'。"
+
+#. Tag: para
+#: Running_Examples.xml:17
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/topic"
+msgstr "docs/examples/jboss-messaging-examples/topic"
+
+#. Tag: para
+#: Running_Examples.xml:19
+#, no-c-format
+msgid ""
+"This example demonstrates a simple 'send' and 'receive' to a remote topic "
+"using a JMS client."
+msgstr ""
+"这个例子演示使用 JMS 客户端对远程主题（Topic）进行简单的 '发送' 和 '接收'。"
+
+#. Tag: para
+#: Running_Examples.xml:24
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/mdb"
+msgstr "docs/examples/jboss-messaging-examples/mdb"
+
+#. Tag: para
+#: Running_Examples.xml:26
+#, no-c-format
+msgid ""
+"This example demonstrates the usage of an EJB2.1 MDB with JBoss Messaging."
+msgstr "这个例子演示 JBoss Messaging 对 EJB2.1 MDB 的使用。"
+
+#. Tag: para
+#: Running_Examples.xml:31
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/ejb3mdb"
+msgstr "docs/examples/jboss-messaging-examples/ejb3mdb"
+
+#. Tag: para
+#: Running_Examples.xml:33
+#, no-c-format
+msgid ""
+"This example demonstrates the usage of an EJB3 MDB with JBoss Messaging."
+msgstr "这个例子演示 JBoss Messaging 对 EJB3 MDB 的使用。"
+
+#. Tag: para
+#: Running_Examples.xml:38
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/stateless"
+msgstr "docs/examples/jboss-messaging-examples/stateless"
+
+#. Tag: para
+#: Running_Examples.xml:40
+#, no-c-format
+msgid ""
+"This example demonstrates an EJB2.1 stateless session bean interacting with "
+"JBoss Messaging."
+msgstr "这个例子演示 EJB2.1 stateless session bean 和 JBoss Messaging 的交互。"
+
+#. Tag: para
+#: Running_Examples.xml:45
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/mdb-failure"
+msgstr "docs/examples/jboss-messaging-examples/mdb-failure"
+
+#. Tag: para
+#: Running_Examples.xml:47
+#, no-c-format
+msgid ""
+"This example demonstrates rollback and redelivery occuring with an EJB2.1 "
+"MDB."
+msgstr ""
+"这个例子演示了 EJB2.1 MDB 里发生的回滚（rollback）和重递送（redelivery）。"
+
+#. Tag: para
+#: Running_Examples.xml:52
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/secure-socket"
+msgstr "docs/examples/jboss-messaging-examples/secure-socket"
+
+#. Tag: para
+#: Running_Examples.xml:54
+#, no-c-format
+msgid ""
+"This example demonstrates a JMS client interacting with a JBoss Messaging "
+"server using SSL encrypted transport."
+msgstr ""
+"这个例子演示了 JMS 客户端用 SSL 加密传输和 JBoss Messaging 服务器进行交互。"
+
+#. Tag: para
+#: Running_Examples.xml:59
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/http"
+msgstr "docs/examples/jboss-messaging-examples/http"
+
+#. Tag: para
+#: Running_Examples.xml:61
+#, no-c-format
+msgid ""
+"This example demonstrates a JMS client interacting with a JBoss Messaging "
+"server tunneling traffic over HTTP protocol."
+msgstr ""
+"这个例子演示了 JMS 客户端通过 HTTP 协议和 JBoss Messaging 服务器进行交互。"
+
+#. Tag: para
+#: Running_Examples.xml:66
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/web-service"
+msgstr "docs/examples/jboss-messaging-examples/web-service"
+
+#. Tag: para
+#: Running_Examples.xml:68
+#, no-c-format
+msgid ""
+"This example demonstrates JBoss web-service interacting with JBoss Messaging."
+msgstr "这个例子演示了 JBoss web-service 和 JBoss Messaging 的交互。"
+
+#. Tag: para
+#: Running_Examples.xml:73
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/distributed-queue"
+msgstr "docs/examples/jboss-messaging-examples/distributed-queue"
+
+#. Tag: para
+#: Running_Examples.xml:75
+#, no-c-format
+msgid ""
+"This example demonstrates a JMS client interacting with a JBoss Messaging "
+"distributed queue - it requires two JBoss Application Server instances to be "
+"running."
+msgstr ""
+"这个例子演示了 JMS 客户端和 JBoss Messaging 分布式队列的交互 － 它要求运行两"
+"个 JBoss 应用服务器实例。"
+
+#. Tag: para
+#: Running_Examples.xml:81
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/distributed-topic"
+msgstr "docs/examples/jboss-messaging-examples/distributed-topic"
+
+#. Tag: para
+#: Running_Examples.xml:83
+#, no-c-format
+msgid ""
+"This example demonstrates a JMS client interacting with a JBoss Messaging "
+"distributed topic - it requires two JBoss Application Server instances to be "
+"running."
+msgstr ""
+"这个例子演示了 JMS 客户端和 JBoss Messaging 分布式主题的交互 － 它要求运行两"
+"个 JBoss 应用服务器实例。"
+
+#. Tag: para
+#: Running_Examples.xml:89
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/stateless-clustered"
+msgstr "docs/examples/jboss-messaging-examples/stateless-clustered"
+
+#. Tag: para
+#: Running_Examples.xml:91
+#, no-c-format
+msgid ""
+"This example demonstrates a JMS client interacting with a clustered EJB2.1 "
+"stateless session bean, which in turn interacts with JBoss Messaging. The "
+"example uses HAJNDI to lookup the connection factory. It requires two JBoss "
+"Application Server instances to be running."
+msgstr ""
+"这个例子演示了 JMS 客户端和群集 EJB2.1 stateless session bean 的交互、以及它"
+"反过来和 JBoss Messaging 的交互。这个例子使用 HAJNDI 来查找连接工厂。它要求运"
+"行两个 JBoss 应用服务器实例。"
+
+#. Tag: para
+#: Running_Examples.xml:98
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/bridge"
+msgstr "docs/examples/jboss-messaging-examples/bridge"
+
+#. Tag: para
+#: Running_Examples.xml:100
+#, no-c-format
+msgid ""
+"This example demonstrates the usage of a message bridge. It deploys a "
+"message bridge in JBoss Application Server which then proceeds to move "
+"messages from a source to a target queue."
+msgstr ""
+"这个例子演示了消息桥（Message Bridge）的使用。它在 JBoss 应用服务器里部署消息"
+"桥，然后把消息从来源移至一个目标队列。"
+
+#. Tag: title
+#: Running_Examples.xml:107
+#, no-c-format
+msgid "Running the Examples"
+msgstr "运行示例程序"
+
+#. Tag: title
+#: Running_Examples.xml:109
+#, no-c-format
+msgid "Install Ant"
+msgstr "安装 Ant"
+
+#. Tag: para
+#: Running_Examples.xml:110
+#, no-c-format
+msgid ""
+"To compile the examples, you must have Apache Ant 1.6+ installed in your "
+"machine. You can download it from <ulink url=\"http://ant.apache.org\"></"
+"ulink> and have it installed in few steps:"
+msgstr ""
+"要编译这些例子，你必须安装 Apache Ant 1.6+。你可以从 <ulink url=\"http://ant."
+"apache.org\"></ulink> 上下载并按下列步骤安装："
+
+#. Tag: para
+#: Running_Examples.xml:113
+#, no-c-format
+msgid "Unzip the downloaded file to the directory of your choice."
+msgstr "把下载的文件解压到你选定的目录。"
+
+#. Tag: para
+#: Running_Examples.xml:118
+#, no-c-format
+msgid ""
+"Create an environment variable called <literal>ANT_HOME</literal> pointing "
+"to the Ant installation directory. You can do this by adding the following "
+"line to your <filename>.bashrc</filename> file (substituting with the actual "
+"location of the ant directory on your system):"
+msgstr ""
+"创建名为 <literal>ANT_HOME</literal> 的环境变量，使其指向 Ant 的安装目录。你"
+"可以在 <filename>.bashrc</filename> 文件里添加如下一行来实现（你需要替换成实"
+"际的 Ant 目录）："
+
+#. Tag: programlisting
+#: Running_Examples.xml:119
+#, no-c-format
+msgid "export ANT_HOME=/home/user/apache-ant-1.7.0"
+msgstr "export ANT_HOME=/home/user/apache-ant-1.7.0"
+
+#. Tag: para
+#: Running_Examples.xml:122
+#, no-c-format
+msgid ""
+"On Windows you do this by opening the Control Panel from the Start Menu, "
+"switching it to classic view if necessary, then opening System/Advanced/"
+"Environment Variables. Create a new variable, call it <literal>ANT_HOME</"
+"literal> and set it to be the ant directory."
+msgstr ""
+"在 Windows 里，你可以从启动菜单里打开控制面板（如有需要则切换至经典视图），然"
+"后打开系统/高级/环境变量。创建一个新的变量，命名为 <literal>ANT_HOME</"
+"literal> 并设置为 Ant 的安装目录。"
+
+#. Tag: para
+#: Running_Examples.xml:127
+#, no-c-format
+msgid ""
+"Add <literal>$ANT_HOME/bin</literal> to the system path to be able to run "
+"<literal>ant</literal> from the command line. You can do this by adding the "
+"following line to your <filename>.bashrc</filename> file:"
+msgstr ""
+"在系统路径里添加 <literal>$ANT_HOME/bin</literal>，这样就能够在命令行下运行 "
+"<literal>ant</literal> 了。你可以在 <filename>.bashrc</filename> 文件里添加如"
+"下一行来实现这一点："
+
+#. Tag: programlisting
+#: Running_Examples.xml:128
+#, no-c-format
+msgid "export PATH=$PATH:$ANT_HOME/bin"
+msgstr "export PATH=$PATH:$ANT_HOME/bin"
+
+#. Tag: para
+#: Running_Examples.xml:130
+#, no-c-format
+msgid ""
+"On Windows you do this by opening the Control Panel from the Start Menu, "
+"switching it to classic view if necessary, then editing the <literal>PATH</"
+"literal> environment variable found in System/Advanced/Environment Variables/"
+"System Variables/Path. Add a semicolon and the path to the ant <filename "
+"class=\"directory\">bin</filename> directory."
+msgstr ""
+"在 Windows 里，你可以从启动菜单里打开控制面板（如有需要则切换至经典视图），然"
+"后在系统/高级/环境变量/路径中找到并编辑环境变量 <literal>PATH</literal>。添加"
+"一个分号以及 Ant 的 <filename class=\"directory\">bin</filename> 目录路径。"
+
+#. Tag: para
+#: Running_Examples.xml:135
+#, no-c-format
+msgid ""
+"Verify your Ant installation. To do this type <literal> ant -version</"
+"literal> at the command prompt. Your output should look something like this:"
+msgstr ""
+"你可以在命令行提示下输入 <literal> ant -version</literal> 来验证 Ant 安装。输"
+"出应该类似于："
+
+#. Tag: programlisting
+#: Running_Examples.xml:137
+#, no-c-format
+msgid "Apache Ant version 1.7.0 compiled on December 13 2006"
+msgstr "Apache Ant version 1.7.0 compiled on December 13 2006"
+
+#. Tag: title
+#: Running_Examples.xml:144
+#, no-c-format
+msgid "Set JBOSS_HOME Environment Variable"
+msgstr "设置 JBOSS_HOME 环境变量"
+
+#. Tag: title
+#: Running_Examples.xml:146
+#, no-c-format
+msgid "On a Linux Platform"
+msgstr "在 Linux 平台上"
+
+#. Tag: para
+#: Running_Examples.xml:149
+#, no-c-format
+msgid ""
+"Create an environment variable that points to the installation directory "
+"(<filename>JBOSS_DIST/jboss-as</filename>) and call it <literal>JBOSS_HOME</"
+"literal>. Add <literal>$JBOSS_HOME/bin</literal> to the system path to be "
+"able to run the server from the command line. You can do this by adding the "
+"following lines to the <filename>.bashrc</filename> file in your home "
+"directory."
+msgstr ""
+"创建一个指向安装目录（<filename>JBOSS_DIST/jboss-as</filename>）的环境变量并"
+"命名为 <literal>JBOSS_HOME</literal>。把 <literal>$JBOSS_HOME/bin</literal> "
+"添加至系统路径以便从命令行下运行服务器。你可以在自己主目录里的 <filename>."
+"bashrc</filename> 文件添加如下一样来实现："
+
+#. Tag: programlisting
+#: Running_Examples.xml:151
+#, no-c-format
+msgid ""
+"#In this example /home/vrenish/EnterprisePlatform-4.3/jboss-as is the "
+"installation directory.\n"
+"export JBOSS_HOME=/home/vrenish/EnterprisePlatform-4.3/jboss-as\n"
+"export PATH=$PATH:$JBOSS_HOME/bin"
+msgstr ""
+"#In this example /home/vrenish/EnterprisePlatform-4.3/jboss-as is the "
+"installation directory.\n"
+"export JBOSS_HOME=/home/vrenish/EnterprisePlatform-4.3/jboss-as\n"
+"export PATH=$PATH:$JBOSS_HOME/bin"
+
+#. Tag: title
+#: Running_Examples.xml:155
+#, no-c-format
+msgid "On Microsoft Windows"
+msgstr "在 Microsoft Windows 平台上"
+
+#. Tag: para
+#: Running_Examples.xml:158
+#, no-c-format
+msgid ""
+"Create an environment variable called <literal>JBOSS_HOME</literal> that "
+"points to the installation directory, for example: C:\\Program Files"
+"\\EnterprisePlatform-4.3\\jboss-as\\. In order to run the server from the "
+"command line add the <filename>bin</filename> directory to your path, for "
+"example: C:\\Program Files\\EnterprisePlatform-4.3\\jboss-as\\bin. To do "
+"this, open the Control Panel from the Start Menu, switch to Classic View if "
+"necessary, open the System Control Panel applet, select the Advanced Tab, "
+"and click on the Environment Variables button."
+msgstr ""
+"创建一个指向安装目录的环境变量（如 C:\\Program Files\\EnterprisePlatform-4.3"
+"\\jboss-as\\） ，命名为 <literal>JBOSS_HOME</literal>。为了从命令行下运行服务"
+"器，你需要把 <filename>bin</filename> 目录添加至系统路径，如 C:\\Program "
+"Files\\EnterprisePlatform-4.3\\jboss-as\\bin。你可以这样来完成：从启动菜单里"
+"打开控制面板（如有需要则切换至经典视图），打开“系统”，然后选择“高级”标签页并"
+"点击“环境变量”按钮。"
+
+#. Tag: title
+#: Running_Examples.xml:164
+#, no-c-format
+msgid "Run the Example"
+msgstr "运行这个例子"
+
+#. Tag: para
+#: Running_Examples.xml:165
+#, no-c-format
+msgid ""
+"Make sure you start the JBoss Application server before trying to run the "
+"examples. The non clustered examples expect a single JBoss Application "
+"Server instance to be running with all the default settings. The clustered "
+"examples expect two JBoss Application Server instances to be running with "
+"ports settings as per ports-01 and ports-02. For each example, you can "
+"always override the default ports it will try to connect to by editing "
+"<literal>jndi.properties</literal> in the particular example's directory."
+msgstr ""
+"请确保在运行这些例子之前启动了 JBoss 应用服务器。非群集的示例需要单个的 "
+"JBoss 应用服务器实例以缺省设置运行。群集示例则需要两个 JBoss 应用服务器实例并"
+"设置端口（如 ports-01 和 ports-02）。对于每个示例，你都可以通过编辑其相应目录"
+"下的 <literal>jndi.properties</literal> 来覆盖它试图连接的缺省端口。"
+
+#. Tag: para
+#: Running_Examples.xml:166
+#, no-c-format
+msgid ""
+"To run any of the examples inside the <literal>JBOSS_DIST/doc/examples/jboss-"
+"messaging-examples</literal> directory, navigate to the example's folder in "
+"a command line prompt, and type <literal>ant</literal>."
+msgstr ""
+"要运行 <literal>JBOSS_DIST/doc/examples/jboss-messaging-examples</literal> 目"
+"录里的任何示例，你可以进入该示例的目录，并输入 <literal>ant</literal>。"

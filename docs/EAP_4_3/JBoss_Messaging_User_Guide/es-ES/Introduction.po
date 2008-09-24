@@ -1,0 +1,97 @@
+# translation of Introduction.po to
+# Language es-ES translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+# Automatically generated, 2008.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Introduction\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-07-21 12:45+1000\n"
+"Last-Translator: Angela Garcia\n"
+"Language-Team:  <en@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#. Tag: title
+#: Introduction.xml:3
+#, no-c-format
+msgid "Introduction"
+msgstr "Introducción"
+
+#. Tag: para
+#: Introduction.xml:4
+#, no-c-format
+msgid ""
+"JBoss Messaging provides an open source and standards-based messaging "
+"platform and is an integral part of Red Hat's strategy for enterprise "
+"messaging. It is a complete rewrite of JBossMQ, the legacy JBoss JMS "
+"provider, and offers improved performance in both single node and clustered "
+"environments. It also features a much better modular architecture that "
+"allows easy adding of new features in the future."
+msgstr ""
+"JBoss Messaging proporciona una plataforma de mensajería de código abierto y "
+"con base en estándares y es una parte integral de la estrategia de Red Hat "
+"para la mensajería empresarial. Es una re-escritura completa de JBossMQ, el "
+"proveedor legado de JBoss JMS y ofrece un rendimiento mejorado en entornos "
+"con un sólo nodo o con clústers. También cuenta con una arquitectura modular "
+"que permite el añadir fácilmente nuevas características en el futuro."
+
+#. Tag: para
+#: Introduction.xml:8
+#, no-c-format
+msgid ""
+"JBoss Messaging 1.4 is the default JMS provider in JBoss Enterprise "
+"Application Platform 4.3."
+msgstr ""
+"JBoss Messaging 1.4 es el proveedor JMS predeterminado en JBoss Enterprise "
+"Application Platform 4.3."
+
+#. Tag: title
+#: Introduction.xml:16
+#, no-c-format
+msgid "Feedback"
+msgstr "Comentarios"
+
+#. Tag: para
+#: Introduction.xml:17
+#, no-c-format
+msgid ""
+"If you spot a typo in this guide, or if you have thought of a way to make "
+"this manual better, we would love to hear from you! Submit a report in "
+"<ulink url=\"http://jira.jboss.com/jira/browse/JBPAPP\">JIRA</ulink> against "
+"the Product: JBoss Enterprise Application Platform, Version: "
+"<replaceable>&lt;version&gt;</replaceable>, Component: <emphasis>Doc</"
+"emphasis>. If you have a suggestion for improving the documentation, try to "
+"be as specific as possible. If you have found an error, include the section "
+"number and some of the surrounding text so we can find it easily."
+msgstr ""
+"Si encontró un error de ortografía o si se le ocurrió alguna manera de "
+"mejorar este manual ¡nos encantaría escucharlo! Llene un reporte en <ulink "
+"url=\"http://jira.jboss.com/jira/browse/JBPAPP\">JIRA</ulink> con referencia "
+"al Producto: JBoss Enterprise Application Platform, Versión: "
+"<replaceable>&lt;version&gt;</replaceable>, Componente: <emphasis>Doc</"
+"emphasis>. Si tiene alguna sugerencia para mejorar la documentación trate de "
+"ser lo más especifico posible. Si encontró un error incluya el número de la "
+"sección y algo del contexto para que lo podamos encontrar fácilmente. "
+
+#. Tag: title
+#: Introduction.xml:23
+#, no-c-format
+msgid "Other Manuals"
+msgstr "Otros manuales "
+
+#. Tag: para
+#: Introduction.xml:24
+#, no-c-format
+msgid ""
+"If you are looking for detailed product information refer to the manuals "
+"available online at <ulink url=\"http://www.redhat.com/docs/manuals/jboss"
+"\"></ulink>."
+msgstr ""
+"Si está buscando información detallada sobre algún producto consulte los "
+"manuales disponibles en <ulink url=\"http://www.redhat.com/docs/manuals/jboss"
+"\"></ulink>."

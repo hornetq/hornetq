@@ -1,0 +1,424 @@
+# translation of Important_Features.po to Japanese
+# Language ja-JP translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# Automatically generated, 2008.
+# Kiyoto Hashida <khashida@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: Important_Features\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-07-24 16:07+1000\n"
+"Last-Translator: Kiyoto Hashida <khashida@redhat.com>\n"
+"Language-Team: Japanese <jp@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#. Tag: title
+#: Important_Features.xml:3
+#, no-c-format
+msgid "JBoss Messaging - A Quick Tour"
+msgstr "JBoss Messaging - クイックツアー "
+
+#. Tag: title
+#: Important_Features.xml:5
+#, no-c-format
+msgid "Limitations of JBossMQ"
+msgstr "JBossMQ の制約"
+
+#. Tag: para
+#: Important_Features.xml:6
+#, no-c-format
+msgid "JBossMQ has two fundamental limitations:"
+msgstr "JBossMQ は二つの根本的な制約があります。"
+
+#. Tag: para
+#: Important_Features.xml:10
+#, no-c-format
+msgid ""
+"JBossMQ is based on SpyderMQ (the open source project) which is a non-"
+"clustered broker."
+msgstr ""
+"JBossMQ は クラスターに対応していないブローカーである SpyderMQ （オープンソー"
+"スプロジェクト）を ベースにしています。"
+
+#. Tag: para
+#: Important_Features.xml:15
+#, no-c-format
+msgid ""
+"The threading model and the overall design of the non-clustered broker leads "
+"to performance limitations in certain high load usage scenarios."
+msgstr ""
+"クラスターに対応していないブローカーのスレッディングモデルと全般的な設計は、"
+"特定の 高負荷な状況では、パフォーマンスに制約があります。"
+
+#. Tag: title
+#: Important_Features.xml:23
+#, no-c-format
+msgid "JBoss Messaging Features"
+msgstr "JBoss Messaging の特徴"
+
+#. Tag: para
+#: Important_Features.xml:24
+#, no-c-format
+msgid ""
+"JBoss Messaging implements a high-performance and robust messaging core that "
+"is designed to support the largest and most heavily utilized Service "
+"Oriented Architectures(SOAs), Enterprise Service Buses (ESBs) and other "
+"integration needs ranging from the simplest to the highest demand networks."
+msgstr ""
+"JBoss Messaging はハイパフォーマンスで強健なメッセージングコアを実装するもの"
+"で、 最大規模で最も高負荷な運用を持つ サービス指向アーキテクチャ (SOA)、 エン"
+"タープライズサービスバス (ESB)、及びその他、最も単純なものから高度な要求まで "
+"幅広くネットワーク統合要求をサポートするように設計されています。 "
+
+#. Tag: para
+#: Important_Features.xml:27
+#, no-c-format
+msgid ""
+"It will allow you to smoothly distribute your application load across your "
+"cluster, intelligently balancing and utilizing each node's CPU cycles. It "
+"comes with no single point of failure and no single point of bottleneck, "
+"sophisticated and fully configurable message expiration handling and XA "
+"transaction recovery. Thus providing a highly scalable and performant "
+"clustering implementation. It includes a JMS front-end to deliver messaging "
+"in a standards-based format as well as being designed to be able to support "
+"other messaging protocols in the future."
+msgstr ""
+"JBoss Messaging の使用で、クラスター全域に渡りアプリケーションの負荷を スムー"
+"ズに分散することが可能になり、各ノードの CPU サイクルを知的に バランスを取り"
+"ながら使用できるようになります。単独障害点（single point of failure）や 単独"
+"ボトルネックが無く、洗練された完全設定可能なメッセージ期限切れ処理と XA トラ"
+"ンザクションのリカバリ機能を持っています。このように高い拡張性と性能を持った "
+"クラスタリングの実装を提供します。JBoss Messaging には、標準ベース フォーマッ"
+"トでメッセージを配信する為の JMS フロントエンドが含まれていると同時に、将来に"
+"は 他のメッセージングプロトコルも対応することが出来るように設計されています。"
+
+#. Tag: para
+#: Important_Features.xml:31
+#, no-c-format
+msgid ""
+"<emphasis>JMS compliance</emphasis>: A fully compatible and Sun certified "
+"JMS 1.1 implementation, that currently works with JBoss Enterprise "
+"Application Platform 4.3 or JBoss Application Server version 4.2 or later."
+msgstr ""
+"<emphasis>JMS 準拠</emphasis>: 完全に互換であり、現在 JBoss Enterprise "
+"Application Platform 4.3 又は、JBoss Application Server バージョン 4.2 とそれ"
+"以降で機能する Sun 認定の JMS 1.1 の実装です。"
+
+#. Tag: para
+#: Important_Features.xml:35
+#, no-c-format
+msgid "JBoss Messaging contains a host of other features, including:"
+msgstr "JBoss Messaging には、以下を含む他の多くの特徴があります:"
+
+#. Tag: para
+#: Important_Features.xml:39
+#, no-c-format
+msgid "Publish-subscribe and point-to-point messaging models"
+msgstr "パブリッシュ/サブスクライブとポイントツーポイントのメッセージングモデル"
+
+#. Tag: para
+#: Important_Features.xml:42
+#, no-c-format
+msgid "Persistent and non-persistent messages"
+msgstr "永続化と非永続化のメッセージ"
+
+#. Tag: para
+#: Important_Features.xml:45
+#, no-c-format
+msgid ""
+"Guaranteed message delivery that ensures that messages arrive once and only "
+"once where required"
+msgstr "必要な場所にはメッセージが一度だけ到着することを確実にするメッセージ配信保証"
+
+#. Tag: para
+#: Important_Features.xml:49
+#, no-c-format
+msgid "Transactional and reliable - supporting ACID semantics"
+msgstr "トランザクショナルで信頼できる：ACID セマンティクスに対応"
+
+#. Tag: para
+#: Important_Features.xml:53
+#, no-c-format
+msgid "Customizable security framework based on JAAS"
+msgstr "JAAS を基にしたカスタマイズ可能なセキュリティフレームワーク"
+
+#. Tag: para
+#: Important_Features.xml:56
+#, no-c-format
+msgid ""
+"Fully integrated with JBoss Transactions (formerly known as Arjuna JTA) for "
+"full transaction recoverability."
+msgstr ""
+"完全なトランザクションリカバリ機能のため JBoss Transactions（旧名 Arjuna "
+"JTA）と 完全な統合"
+
+#. Tag: para
+#: Important_Features.xml:60
+#, no-c-format
+msgid "Extensive JMX management interface"
+msgstr "拡張型 JMX 管理インターフェイス"
+
+#. Tag: para
+#: Important_Features.xml:63
+#, no-c-format
+msgid ""
+"Support for most major databases including Oracle, Sybase, MS SQL Server, "
+"PostgreSQL and MySQL"
+msgstr ""
+"Oracle, Sybase, MS SQL Server, PostgreSQL そして MySQL を含むほとんどの 主要"
+"データベースへの対応"
+
+#. Tag: para
+#: Important_Features.xml:67
+#, no-c-format
+msgid "HTTP transport to allow use through firewalls that only allow HTTP traffic"
+msgstr ""
+"HTTP トラフィックのみを許可するファイアウォールを通過しての使用を許可する "
+"HTTP トランスポート"
+
+#. Tag: para
+#: Important_Features.xml:71
+#, no-c-format
+msgid "SSL transport"
+msgstr "SSL トランスポート"
+
+#. Tag: para
+#: Important_Features.xml:74
+#, no-c-format
+msgid "Configurable DLQs (Dead Letter Queues) and Expiry Queues"
+msgstr "設定可能な DLQ (Dead Letter Queues) と 期限切れキュー"
+
+#. Tag: para
+#: Important_Features.xml:78
+#, no-c-format
+msgid ""
+"Message statistics: Gives you a rolling historical view of what messages "
+"were delivered to what queues and subscriptions"
+msgstr ""
+"メッセージ統計: どのメッセージがどのキュー とどのサブスクライバに配信されたか"
+"の 履歴をスクロール表示します。"
+
+#. Tag: para
+#: Important_Features.xml:83
+#, no-c-format
+msgid ""
+"Automatic paging of messages to storage. Allows the use of very large queues "
+"- too large to fit in memory at once"
+msgstr ""
+"保存するメッセージの自動ページング。一度にメモリーに収納するには大きすぎる大"
+"規模な キュー の使用を可能にします。"
+
+#. Tag: title
+#: Important_Features.xml:90
+#, no-c-format
+msgid "Clustering Features"
+msgstr "クラスタリングの特徴"
+
+#. Tag: title
+#: Important_Features.xml:92
+#, no-c-format
+msgid "Fully clustered queues and topics"
+msgstr "完全にクラスター化した キュー と トピック"
+
+#. Tag: para
+#: Important_Features.xml:93
+#, no-c-format
+msgid ""
+"\"Logical\" queues and topics are distributed across the cluster. You can "
+"send to a queue or a topic from any node, and receive from any other."
+msgstr ""
+"論理的な キュー と トピック はクラスター全域に分散されます。どのノードでも "
+"キュー や トピック を送信したり、他のノードから受信したりすることができます。"
+
+#. Tag: title
+#: Important_Features.xml:98
+#, no-c-format
+msgid "Fully clustered durable subscriptions"
+msgstr "完全クラスター化した恒久サブスクリプション"
+
+#. Tag: para
+#: Important_Features.xml:99
+#, no-c-format
+msgid ""
+"A particular durable subscription can be accessed from any node of the "
+"cluster - allowing you to spread processing load from that subscription "
+"across the cluster."
+msgstr ""
+"特定の恒久サブスクリプションはクラスター内のどのノードからでもアクセスが可能"
+"です。 これにより、クラスター全域でそのサブスクリプションからのプロセス負荷を"
+"拡散できる ようになります。"
+
+#. Tag: title
+#: Important_Features.xml:104
+#, no-c-format
+msgid "Fully clustered temporary queues"
+msgstr "完全クラスター化したテンポラリー キュー"
+
+#. Tag: para
+#: Important_Features.xml:105
+#, no-c-format
+msgid ""
+"Send a message with a <literal>replyTo</literal> of a temp queue and it can "
+"be sent back on any node of the cluster."
+msgstr ""
+"テンポラリーキュー の <literal>replyTo</literal> の付いたメッセージを送信しま"
+"す。 これはクラスター内のどのノードへも返信できます。"
+
+#. Tag: title
+#: Important_Features.xml:110
+#, no-c-format
+msgid "Intelligent message redistribution"
+msgstr "知能的なメッセージ再分散"
+
+#. Tag: para
+#: Important_Features.xml:111
+#, no-c-format
+msgid ""
+"Messages are automatically moved between different nodes of the cluster if "
+"consumers are faster on one node than another. This can help prevent "
+"starvation or build up of messages on particular nodes."
+msgstr ""
+"１つのノードで コンシューマ が他のノードより速い場合、メッセージは自動的にク"
+"ラスター内の 異なるノード間で移動します。これにより、特定のノード上でのメッ"
+"セージの枯渇や 集積のアンバランスを防止できます。"
+
+#. Tag: title
+#: Important_Features.xml:116
+#, no-c-format
+msgid "Message order protection"
+msgstr "メッセージ順序の保護"
+
+#. Tag: para
+#: Important_Features.xml:117
+#, no-c-format
+msgid ""
+"If you want to ensure that the order of messages produced by a producer is "
+"the same as is consumed by a consumer then you can set this to true. This "
+"works even in the presence of message redistribution."
+msgstr ""
+"プロデューサにより作成されたメッセージの順序が コンシューマ により 消費される"
+"順序と同じである ことを確実にしたい場合は、これを「true」にセットします。これ"
+"は、メッセージ 再分散がある場合でも機能します。"
+
+#. Tag: title
+#: Important_Features.xml:122
+#, no-c-format
+msgid "Fully transparent failover"
+msgstr "完全透過性のフェイルオーバー"
+
+#. Tag: para
+#: Important_Features.xml:123
+#, no-c-format
+msgid ""
+"When a server fails, your sessions continue without exceptions on a new node "
+"as if nothing happened. (Fully configurable - If you don't want this you can "
+"fall back to exceptions being thrown and manually recreation of connections "
+"on another node)"
+msgstr ""
+"サーバーが障害を持つ場合、まるで何も発生しなかったように例外なく新規ノード上"
+"で セッションが継続します（完全に設定可能：これを実行したくない場合、例外エ"
+"ラーが 出るように変更して、手動で別のノード上で接続を再開始することができま"
+"す。）"
+
+#. Tag: title
+#: Important_Features.xml:128
+#, no-c-format
+msgid "High availability and seamless fail-over"
+msgstr "ハイアベイラビリティーとシームレスフェイルオーバー"
+
+#. Tag: para
+#: Important_Features.xml:129
+#, no-c-format
+msgid ""
+"If the node you are connected to fails, you will automatically fail over to "
+"another node and will not lose any persistent messages. You can carry on "
+"with your session seamlessly where you left off. Once and only once delivery "
+"of persistent messages is respected at all times."
+msgstr ""
+"接続しているノードが障害を持つ場合、それを自動的に別のノードにフェイルオー"
+"バーするように 設定すると永続化メッセージのいずれも失うことはありません。作業"
+"が停止したところから継目のない セッションを継続することが出来ます。いかなる場"
+"合でも永続化メッセージの配信は常に1 回のみです。"
+
+#. Tag: title
+#: Important_Features.xml:134
+#, no-c-format
+msgid "Message bridge"
+msgstr "メッセージブリッジ"
+
+#. Tag: para
+#: Important_Features.xml:135
+#, no-c-format
+msgid ""
+"JBoss Messaging contains a message bridge component which enables you to "
+"bridge messages between any two JMS1.1 destinations on the same or physical "
+"separate locations. (E.g. separated by a WAN). This allows you to connect "
+"geographically separate clusters, forming huge globally distributed logical "
+"queues and topics."
+msgstr ""
+"JBoss Messaging には、メッセージブリッジコンポーネントが含まれており、これが "
+"同一場所、又は物理的に隔離した場所（例：WAN で隔離）にある２つの JMS1.1 送り"
+"先 間で メッセージのブリッジ（橋渡し）が出来ます。これにより、地理的に隔離し"
+"たクラスター群を接続できる ようになり、大規模なグローバル分散の論理 キュー "
+"や トピック を形成することができます。"
+
+#. Tag: title
+#: Important_Features.xml:141
+#, no-c-format
+msgid "Compatibility with JBossMQ"
+msgstr "JBossMQ との互換性"
+
+#. Tag: para
+#: Important_Features.xml:142
+#, no-c-format
+msgid ""
+"Since JBoss Messaging is JMS 1.1 and JMS 1.0.2b compatible, the JMS code "
+"written against JBossMQ will run with JBoss Messaging without any changes."
+msgstr ""
+"JBoss Messaging は JMS 1.1 及び JMS 1.0.2b とに互換性を持つため、JBossMQ に "
+"対して書かれた JMS コードは変更無しに JBoss Messaging で実行出来ます。"
+
+#. Tag: para
+#: Important_Features.xml:145
+#, no-c-format
+msgid ""
+"JBoss Messaging does not have wire format compatibility with JBossMQ so it "
+"would be necessary to upgrade JBoss MQ clients with JBoss Messaging client "
+"jars."
+msgstr ""
+"JBoss Messaging は JBossMQ に対して書き込み形式の互換性を持ちません。そのた"
+"め、 JBoss MQ クライアントを JBoss Messaging client jars でアップグレードする"
+"必要が あります。"
+
+#. Tag: para
+#: Important_Features.xml:149
+#, no-c-format
+msgid ""
+"Even if JBoss Messaging deployment descriptors are very similar to JBoss MQ "
+"deployment descriptors, they are <emphasis>not</emphasis> identical, so they "
+"will require some simple adjustments to get them to work with JBoss "
+"Messaging. Also, the database data model is completely different, so don't "
+"attempt to use JBoss Messaging with a JBoss MQ data schema and vice-versa."
+msgstr ""
+"JBoss Messaging のデプロイメント記述子が JBoss MQ のデプロイメント記述子に類"
+"似していても、その両者は 同一では <emphasis>ありません</emphasis>。そのため、"
+"両者は JBoss Messaging と共に 機能するには簡単な調節を必要とします。また、"
+"データベースのデータモデルは全く異なる為に、 JBoss Messaging を JBoss MQ デー"
+"タスキーマと共に使用したりその逆はしないで下さい。"
+
+#. Tag: para
+#: Important_Features.xml:154
+#, no-c-format
+msgid ""
+"JBoss Messaging is built against the JBoss AS 4.2 libraries which are built "
+"using Java 5. Therefore JBoss Messaging only runs with Java 5 or later."
+msgstr ""
+"JBoss Messaging は、Java 5 を使用してビルドされた JBoss AS 4.2 ライブラリに "
+"対してビルドされています。その理由で、JBoss Messaging は Java 5 あるいはそれ"
+"以降で のみ稼働します。"
+

@@ -1,0 +1,486 @@
+# translation of Running_Examples.po to Japanese
+# Language ja-JP translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# Automatically generated, 2008.
+# Kiyoto Hashida <khashida@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: Running_Examples\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-07-24 16:03+1000\n"
+"Last-Translator: Kiyoto Hashida <khashida@redhat.com>\n"
+"Language-Team: Japanese <jp@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#. Tag: title
+#: Running_Examples.xml:3
+#, no-c-format
+msgid "JBoss Messaging Examples"
+msgstr "JBoss Messaging のサンプル"
+
+#. Tag: title
+#: Running_Examples.xml:5
+#, no-c-format
+msgid "About the Examples"
+msgstr "サンプルについて"
+
+#. Tag: para
+#: Running_Examples.xml:6
+#, no-c-format
+msgid ""
+"In the installation directory of your JBoss Enterprise Application Platform "
+"you will find a set of JBoss Messaging examples located in "
+"<literal>JBOSS_DIST/doc/examples/jboss-messaging-examples</literal>. These "
+"examples demonstrate JBoss Messaging in action. Within the "
+"<literal>JBOSS_DIST/doc/examples/jboss-messaging-examples</literal> "
+"directory, you will find the following sub-directories:"
+msgstr ""
+"JBoss Enterprise Application Platform のインストールディレクトリで、 "
+"<literal>JBOSS_DIST/doc/examples/jboss-messaging-examples</literal> に配置 し"
+"てある JBoss Messaging サンプルセットを見つけることができます。これらのサンプ"
+"ルは JBoss Messaging の実際の動作をデモンストレーションします。 "
+"<literal>JBOSS_DIST/doc/examples/jboss-messaging-examples</literal> ディレク"
+"トリ内には、 以下のようなサブディレクトリがあります:"
+
+#. Tag: para
+#: Running_Examples.xml:11
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/queue"
+msgstr "docs/examples/jboss-messaging-examples/queue"
+
+#. Tag: para
+#: Running_Examples.xml:12
+#, no-c-format
+msgid ""
+"This example demonstrates a simple 'send' and 'receive' to a remote queue "
+"using a JMS client."
+msgstr ""
+"このサンプルは、JMS クライアントを使用したリモートキューへの簡単な送信と 受信"
+"のデモンストレーションです。"
+
+#. Tag: para
+#: Running_Examples.xml:17
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/topic"
+msgstr "docs/examples/jboss-messaging-examples/topic"
+
+#. Tag: para
+#: Running_Examples.xml:19
+#, no-c-format
+msgid ""
+"This example demonstrates a simple 'send' and 'receive' to a remote topic "
+"using a JMS client."
+msgstr ""
+"このサンプルは JMS クライアントを使用したリモートトピック への 簡単な送信と受"
+"信のデモンストレーションです。"
+
+#. Tag: para
+#: Running_Examples.xml:24
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/mdb"
+msgstr "docs/examples/jboss-messaging-examples/mdb"
+
+#. Tag: para
+#: Running_Examples.xml:26
+#, no-c-format
+msgid "This example demonstrates the usage of an EJB2.1 MDB with JBoss Messaging."
+msgstr ""
+"これサンプルは、JBoss Messaging と共に EJB2.1 MDB を使用するデモンストレー"
+"ションです。"
+
+#. Tag: para
+#: Running_Examples.xml:31
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/ejb3mdb"
+msgstr "docs/examples/jboss-messaging-examples/ejb3mdb"
+
+#. Tag: para
+#: Running_Examples.xml:33
+#, no-c-format
+msgid "This example demonstrates the usage of an EJB3 MDB with JBoss Messaging."
+msgstr ""
+"このサンプルは JBoss Messaging と共に EJB3 MDB を使用するデモンストレーション"
+"です。"
+
+#. Tag: para
+#: Running_Examples.xml:38
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/stateless"
+msgstr "docs/examples/jboss-messaging-examples/stateless"
+
+#. Tag: para
+#: Running_Examples.xml:40
+#, no-c-format
+msgid ""
+"This example demonstrates an EJB2.1 stateless session bean interacting with "
+"JBoss Messaging."
+msgstr ""
+"このサンプルは JBoss Messaging と対話する EJB2.1 ステートレス セッション "
+"Bean のデモンストレーションです。"
+
+#. Tag: para
+#: Running_Examples.xml:45
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/mdb-failure"
+msgstr "docs/examples/jboss-messaging-examples/mdb-failure"
+
+#. Tag: para
+#: Running_Examples.xml:47
+#, no-c-format
+msgid ""
+"This example demonstrates rollback and redelivery occuring with an EJB2.1 "
+"MDB."
+msgstr ""
+"このサンプルは EJB2.1 MDB で発生するロールバックと再配信のデモンストレーショ"
+"ンです。"
+
+#. Tag: para
+#: Running_Examples.xml:52
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/secure-socket"
+msgstr "docs/examples/jboss-messaging-examples/secure-socket"
+
+#. Tag: para
+#: Running_Examples.xml:54
+#, no-c-format
+msgid ""
+"This example demonstrates a JMS client interacting with a JBoss Messaging "
+"server using SSL encrypted transport."
+msgstr ""
+"このサンプルは SSL 暗号化のトランスポートを使用した JBoss Messaging サーバー"
+"と通信する JMS クライアントのデモンストレーションです。 "
+
+#. Tag: para
+#: Running_Examples.xml:59
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/http"
+msgstr "docs/examples/jboss-messaging-examples/http"
+
+#. Tag: para
+#: Running_Examples.xml:61
+#, no-c-format
+msgid ""
+"This example demonstrates a JMS client interacting with a JBoss Messaging "
+"server tunneling traffic over HTTP protocol."
+msgstr ""
+"このサンプルは HTTP プロトコルでトラフィックをトンネリングしている JBoss "
+"Messaging サーバーと対話する JMS クライアントのデモンストレーションです。"
+
+#. Tag: para
+#: Running_Examples.xml:66
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/web-service"
+msgstr "docs/examples/jboss-messaging-examples/web-service"
+
+#. Tag: para
+#: Running_Examples.xml:68
+#, no-c-format
+msgid "This example demonstrates JBoss web-service interacting with JBoss Messaging."
+msgstr ""
+"このサンプルは JBoss Messaging と対話する JBoss web サービスのデモンストレー"
+"ションです。"
+
+#. Tag: para
+#: Running_Examples.xml:73
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/distributed-queue"
+msgstr "docs/examples/jboss-messaging-examples/distributed-queue"
+
+#. Tag: para
+#: Running_Examples.xml:75
+#, no-c-format
+msgid ""
+"This example demonstrates a JMS client interacting with a JBoss Messaging "
+"distributed queue - it requires two JBoss Application Server instances to be "
+"running."
+msgstr ""
+"このサンプルは JBoss Messaging 分散型キュー と対話する JMS クライアントのデモ"
+"ンストレーションです。 これには、２つの JBoss Application Server インスタンス"
+"が稼働している必要があります。"
+
+#. Tag: para
+#: Running_Examples.xml:81
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/distributed-topic"
+msgstr "docs/examples/jboss-messaging-examples/distributed-topic"
+
+#. Tag: para
+#: Running_Examples.xml:83
+#, no-c-format
+msgid ""
+"This example demonstrates a JMS client interacting with a JBoss Messaging "
+"distributed topic - it requires two JBoss Application Server instances to be "
+"running."
+msgstr ""
+"このサンプルは、JBoss Messaging 分散型 トピック と対話する JMS クライアント"
+"の デモンストレーションです。これには、２つの JBoss Application Server インス"
+"タンスが 稼働している必要があります。"
+
+#. Tag: para
+#: Running_Examples.xml:89
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/stateless-clustered"
+msgstr "docs/examples/jboss-messaging-examples/stateless-clustered"
+
+#. Tag: para
+#: Running_Examples.xml:91
+#, no-c-format
+msgid ""
+"This example demonstrates a JMS client interacting with a clustered EJB2.1 "
+"stateless session bean, which in turn interacts with JBoss Messaging. The "
+"example uses HAJNDI to lookup the connection factory. It requires two JBoss "
+"Application Server instances to be running."
+msgstr ""
+"このサンプルはクラスター化した EJB2.1 ステートレス セッション Bean と対話"
+"し、 その結果、 JBoss Messaging と対話する JMS クライアントのデモンストレー"
+"ションです。 このサンプルでは、HAJNDI  を使用して接続ファクトリをルックアップ"
+"しています。これには、 ２つの JBoss Application Server インスタンスが稼働して"
+"いる必要があります。"
+
+#. Tag: para
+#: Running_Examples.xml:98
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/bridge"
+msgstr "docs/examples/jboss-messaging-examples/bridge"
+
+#. Tag: para
+#: Running_Examples.xml:100
+#, no-c-format
+msgid ""
+"This example demonstrates the usage of a message bridge. It deploys a "
+"message bridge in JBoss Application Server which then proceeds to move "
+"messages from a source to a target queue."
+msgstr ""
+"このサンプルはメッセージブリッジの使用法のデモンストレーションです。これは、 "
+"JBoss Application Server 内のメッセージブリッジをデプロイして、メッセージを"
+"ソースから ターゲットキューまで移動するように進行します。"
+
+#. Tag: title
+#: Running_Examples.xml:107
+#, no-c-format
+msgid "Running the Examples"
+msgstr "判例の実行"
+
+#. Tag: title
+#: Running_Examples.xml:109
+#, no-c-format
+msgid "Install Ant"
+msgstr "Ant のインストール"
+
+#. Tag: para
+#: Running_Examples.xml:110
+#, no-c-format
+msgid ""
+"To compile the examples, you must have Apache Ant 1.6+ installed in your "
+"machine. You can download it from <ulink url=\"http://ant.apache.org\"></"
+"ulink> and have it installed in few steps:"
+msgstr ""
+"このサンプルをコンパイルするには、マシンに Apache Ant 1.6+ をインストールして"
+"いる 必要があります。これは <ulink url=\"http://ant.apache.org\"></ulink> か"
+"らダウンロードが可能で、いくつかの手順でインストールできます。"
+
+#. Tag: para
+#: Running_Examples.xml:113
+#, no-c-format
+msgid "Unzip the downloaded file to the directory of your choice."
+msgstr "ダウンロードしたファイルを好みのディレクトリに展開します。"
+
+#. Tag: para
+#: Running_Examples.xml:118
+#, no-c-format
+msgid ""
+"Create an environment variable called <literal>ANT_HOME</literal> pointing "
+"to the Ant installation directory. You can do this by adding the following "
+"line to your <filename>.bashrc</filename> file (substituting with the actual "
+"location of the ant directory on your system):"
+msgstr ""
+"Ant インストールのディレクトリにポイントした <literal>ANT_HOME</literal> と言"
+"う名の 環境変数を作成します。それは、<filename>.bashrc</filename> ファイルに "
+"以下の行を追加して達成できます。（使用システムの Ant ディレクトリの実際の位置"
+"で 入れ替えること）:"
+
+#. Tag: programlisting
+#: Running_Examples.xml:119
+#, no-c-format
+msgid "export ANT_HOME=/home/user/apache-ant-1.7.0"
+msgstr "export ANT_HOME=/home/user/apache-ant-1.7.0"
+
+#. Tag: para
+#: Running_Examples.xml:122
+#, no-c-format
+msgid ""
+"On Windows you do this by opening the Control Panel from the Start Menu, "
+"switching it to classic view if necessary, then opening System/Advanced/"
+"Environment Variables. Create a new variable, call it <literal>ANT_HOME</"
+"literal> and set it to be the ant directory."
+msgstr ""
+"Windows では、スタートメニューからコントロールパネルを開き、必要であれば クラ"
+"シックビューに変更し、システム/高度な設定/環境変数 へと移動します。新規の 変"
+"数を作成して <literal>ANT_HOME</literal> と命名し Ant ディレクトリを設定 しま"
+"す。"
+
+#. Tag: para
+#: Running_Examples.xml:127
+#, no-c-format
+msgid ""
+"Add <literal>$ANT_HOME/bin</literal> to the system path to be able to run "
+"<literal>ant</literal> from the command line. You can do this by adding the "
+"following line to your <filename>.bashrc</filename> file:"
+msgstr ""
+"コマンドラインから <literal>ant</literal> を実行できるようにシステムパスへ "
+"<literal>$ANT_HOME/bin</literal> を追加します。これは、<filename>.bashrc</"
+"filename> ファイルに以下の行を追加することで達成できます:"
+
+#. Tag: programlisting
+#: Running_Examples.xml:128
+#, no-c-format
+msgid "export PATH=$PATH:$ANT_HOME/bin"
+msgstr "export PATH=$PATH:$ANT_HOME/bin"
+
+#. Tag: para
+#: Running_Examples.xml:130
+#, no-c-format
+msgid ""
+"On Windows you do this by opening the Control Panel from the Start Menu, "
+"switching it to classic view if necessary, then editing the <literal>PATH</"
+"literal> environment variable found in System/Advanced/Environment Variables/"
+"System Variables/Path. Add a semicolon and the path to the ant <filename "
+"class=\"directory\">bin</filename> directory."
+msgstr ""
+"Windows では、スタートメニューからコントロールパネルを開いて、必要であればク"
+"ラシックビューに 変更してから、システム/高度な設定/環境変数/システム変数/パ"
+"ス で見つけることができる <literal>PATH</literal> 環境変数を編集します。セミコロン"
+"と Ant の bin ディレクトリをパスに追加します "
+
+#. Tag: para
+#: Running_Examples.xml:135
+#, no-c-format
+msgid ""
+"Verify your Ant installation. To do this type <literal> ant -version</"
+"literal> at the command prompt. Your output should look something like this:"
+msgstr ""
+"Ant インストールを確認します。これを達成するには、コマンドプロンプトで "
+"<literal> ant -version</literal> を入力します。その出力は以下のようになるはず"
+"です:"
+
+#. Tag: programlisting
+#: Running_Examples.xml:137
+#, no-c-format
+msgid "Apache Ant version 1.7.0 compiled on December 13 2006"
+msgstr "Apache Ant version 1.7.0 compiled on December 13 2006"
+
+#. Tag: title
+#: Running_Examples.xml:144
+#, no-c-format
+msgid "Set JBOSS_HOME Environment Variable"
+msgstr "JBOSS_HOME 環境変数の設定"
+
+#. Tag: title
+#: Running_Examples.xml:146
+#, no-c-format
+msgid "On a Linux Platform"
+msgstr "Linux プラットフォーム上では："
+
+#. Tag: para
+#: Running_Examples.xml:149
+#, no-c-format
+msgid ""
+"Create an environment variable that points to the installation directory "
+"(<filename>JBOSS_DIST/jboss-as</filename>) and call it <literal>JBOSS_HOME</"
+"literal>. Add <literal>$JBOSS_HOME/bin</literal> to the system path to be "
+"able to run the server from the command line. You can do this by adding the "
+"following lines to the <filename>.bashrc</filename> file in your home "
+"directory."
+msgstr ""
+"インストールディレクトリ（<filename>JBOSS_DIST/jboss-as</filename>）をポイン"
+"トする環境変数、  <literal>JBOSS_HOME</literal> を作成します。 コマンドライン"
+"からサーバーを実行できるように システムパスに <literal>$JBOSS_HOME/bin</"
+"literal> を追加します。これを達成するには、ユーザーの ホームディレクトリ内の "
+"<filename>.bashrc</filename> ファイルに以下の行を追加します。"
+
+#. Tag: programlisting
+#: Running_Examples.xml:151
+#, no-c-format
+msgid ""
+"#In this example /home/vrenish/EnterprisePlatform-4.3/jboss-as is the "
+"installation directory.\n"
+"export JBOSS_HOME=/home/vrenish/EnterprisePlatform-4.3/jboss-as\n"
+"export PATH=$PATH:$JBOSS_HOME/bin"
+msgstr ""
+"#In this example /home/vrenish/EnterprisePlatform-4.3/jboss-as is the "
+"installation directory.\n"
+"export JBOSS_HOME=/home/vrenish/EnterprisePlatform-4.3/jboss-as\n"
+"export PATH=$PATH:$JBOSS_HOME/bin"
+
+#. Tag: title
+#: Running_Examples.xml:155
+#, no-c-format
+msgid "On Microsoft Windows"
+msgstr "Microsoft Windows 上では："
+
+#. Tag: para
+#: Running_Examples.xml:158
+#, no-c-format
+msgid ""
+"Create an environment variable called <literal>JBOSS_HOME</literal> that "
+"points to the installation directory, for example: C:\\Program Files"
+"\\EnterprisePlatform-4.3\\jboss-as\\. In order to run the server from the "
+"command line add the <filename>bin</filename> directory to your path, for "
+"example: C:\\Program Files\\EnterprisePlatform-4.3\\jboss-as\\bin. To do "
+"this, open the Control Panel from the Start Menu, switch to Classic View if "
+"necessary, open the System Control Panel applet, select the Advanced Tab, "
+"and click on the Environment Variables button."
+msgstr ""
+"インストールディレクトリにポイントする <literal>JBOSS_HOME</literal> と言う名"
+"の 環境変数を作成します。例えば、 C:\\Program Files\\EnterprisePlatform-4.3"
+"\\jboss-as\\  コマンドラインからサーバーを実行出来るように パスに "
+"<filename>bin</filename> ディレクトリを追加します。例えば、C:\\Program Files"
+"\\EnterprisePlatform-4.3\\jboss-as\\bin これを達成するには、スタートメニュー"
+"からコントロールパネルを開いて、必要であればクラシックビューに変更してから シ"
+"ステムコントロールパネルアイコンを開きます。高度な設定のタブを選択して環境変"
+"数のボタンをクリックします。"
+
+#. Tag: title
+#: Running_Examples.xml:164
+#, no-c-format
+msgid "Run the Example"
+msgstr "サンプルの実行"
+
+#. Tag: para
+#: Running_Examples.xml:165
+#, no-c-format
+msgid ""
+"Make sure you start the JBoss Application server before trying to run the "
+"examples. The non clustered examples expect a single JBoss Application "
+"Server instance to be running with all the default settings. The clustered "
+"examples expect two JBoss Application Server instances to be running with "
+"ports settings as per ports-01 and ports-02. For each example, you can "
+"always override the default ports it will try to connect to by editing "
+"<literal>jndi.properties</literal> in the particular example's directory."
+msgstr ""
+"サンプルの実行を試す前に JBoss Application server を確実に開始します。 クラス"
+"ター化に対応していないサンプルは全てがデフォルト設定の単独の JBoss "
+"Application Server インスタンスが実行していることを想定します。クラスター化し"
+"たサンプルでは、 ports-01 と ports-02 としてのポート設定を持つ２つの JBoss "
+"Application Server インスタンスが 実行していることを想定します。各サンプルに"
+"は、特定のサンプルディレクトリ内にある <literal>jndi.properties</literal> を"
+"編集することにより、接続しようとするデフォルトの ポートを常に書き換えることが"
+"できます。"
+
+#. Tag: para
+#: Running_Examples.xml:166
+#, no-c-format
+msgid ""
+"To run any of the examples inside the <literal>JBOSS_DIST/doc/examples/jboss-"
+"messaging-examples</literal> directory, navigate to the example's folder in "
+"a command line prompt, and type <literal>ant</literal>."
+msgstr ""
+"<literal>JBOSS_DIST/doc/examples/jboss-messaging-examples</literal> ディレク"
+"トリ内で いずれかのサンプルを実行するには、コマンドラインプロンプトでサンプル"
+"のフォルダーへ移動して、 <literal>ant</literal> を実行します。"
+

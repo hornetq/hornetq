@@ -1,0 +1,436 @@
+# translation of Important_Features.po to Brazilian Portuguese
+# Language pt-BR translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# Automatically generated, 2008.
+# Leticia de Lima <ldelima@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: Important_Features\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-07-22 09:54+1000\n"
+"Last-Translator: Leticia de Lima <ldelima@redhat.com>\n"
+"Language-Team: Brazilian Portuguese <en@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#. Tag: title
+#: Important_Features.xml:3
+#, no-c-format
+msgid "JBoss Messaging - A Quick Tour"
+msgstr "Uma rápida viagem ao JBoss Messaging"
+
+#. Tag: title
+#: Important_Features.xml:5
+#, no-c-format
+msgid "Limitations of JBossMQ"
+msgstr "Limitações do JBossMQ"
+
+#. Tag: para
+#: Important_Features.xml:6
+#, no-c-format
+msgid "JBossMQ has two fundamental limitations:"
+msgstr "O JBossMQ possui duas limitações fundamentais:"
+
+#. Tag: para
+#: Important_Features.xml:10
+#, no-c-format
+msgid ""
+"JBossMQ is based on SpyderMQ (the open source project) which is a non-"
+"clustered broker."
+msgstr ""
+"O JBossMQ é baseado no SpyderMQ (o projeto de código aberto) que é um "
+"corretor sem cluster."
+
+#. Tag: para
+#: Important_Features.xml:15
+#, no-c-format
+msgid ""
+"The threading model and the overall design of the non-clustered broker leads "
+"to performance limitations in certain high load usage scenarios."
+msgstr ""
+"O modelo segmentado e a criação em geral de um corretor sem cluster lidera "
+"as limitações de desempenho em certos cenários de uso de carregamento grande."
+
+#. Tag: title
+#: Important_Features.xml:23
+#, no-c-format
+msgid "JBoss Messaging Features"
+msgstr "Recursos do JBoss Messaging"
+
+#. Tag: para
+#: Important_Features.xml:24
+#, no-c-format
+msgid ""
+"JBoss Messaging implements a high-performance and robust messaging core that "
+"is designed to support the largest and most heavily utilized Service "
+"Oriented Architectures(SOAs), Enterprise Service Buses (ESBs) and other "
+"integration needs ranging from the simplest to the highest demand networks."
+msgstr ""
+"O JBoss Messaging implementa o alto-desempenho e principal mensagem robusta "
+"que é criada para suportar as maiores e mais pesadas Arquiteturas de "
+"Serviços Orientados - Service Oriented Architectures(SOAs), Enterprise "
+"Service Buses (ESBs) e outras integrações necessárias abrangendo desde a "
+"mais simples à mais alta demanda das redes."
+
+#. Tag: para
+#: Important_Features.xml:27
+#, no-c-format
+msgid ""
+"It will allow you to smoothly distribute your application load across your "
+"cluster, intelligently balancing and utilizing each node's CPU cycles. It "
+"comes with no single point of failure and no single point of bottleneck, "
+"sophisticated and fully configurable message expiration handling and XA "
+"transaction recovery. Thus providing a highly scalable and performant "
+"clustering implementation. It includes a JMS front-end to deliver messaging "
+"in a standards-based format as well as being designed to be able to support "
+"other messaging protocols in the future."
+msgstr ""
+"Isto permitirá que você distribua facilmente sua carga de aplicativo através "
+"de seu cluster, balanceando-o inteligentemente e utilizando cada nó de "
+"ciclos de CPU. Isto aparece sem nenhum único ponto de falha e sem nenhum "
+"único ponto de afunilação. Ele é sofisticado e manuseia a expiração de "
+"mensagem inteiramente configurável e recuperação de transação XA. Desta "
+"forma, isto fornece uma implementação com cluster de alta escabilidade e "
+"desempenho. Isto inclui uma front-end (parte do programa que é responsável "
+"pela interface do usuário) JMS para entregar mensagens num formato de padrão "
+"baseado, assim como ser designado a suportar outros protocolos de mensagem "
+"no futuro."
+
+#. Tag: para
+#: Important_Features.xml:31
+#, no-c-format
+msgid ""
+"<emphasis>JMS compliance</emphasis>: A fully compatible and Sun certified "
+"JMS 1.1 implementation, that currently works with JBoss Enterprise "
+"Application Platform 4.3 or JBoss Application Server version 4.2 or later."
+msgstr ""
+"<emphasis>Flexibilidade JMS</emphasis>: Uma compatibilidade completa e "
+"implementação JMS 1.1 Sun certificada, que atualmente trabalha com a "
+"Plataforma de Aplicativo JBoss Enterprise 4.3 ou versão do Servidor de "
+"Aplicativo JBoss 4.2, ou outra versão mais recente."
+
+#. Tag: para
+#: Important_Features.xml:35
+#, no-c-format
+msgid "JBoss Messaging contains a host of other features, including:"
+msgstr "O JBoss Messaging contém outros recursos, incluindo:"
+
+#. Tag: para
+#: Important_Features.xml:39
+#, no-c-format
+msgid "Publish-subscribe and point-to-point messaging models"
+msgstr "Modelos de mensagens Publish-subscribe e point-to-point "
+
+#. Tag: para
+#: Important_Features.xml:42
+#, no-c-format
+msgid "Persistent and non-persistent messages"
+msgstr "Mensagens de Persistência e Sem Persistência"
+
+#. Tag: para
+#: Important_Features.xml:45
+#, no-c-format
+msgid ""
+"Guaranteed message delivery that ensures that messages arrive once and only "
+"once where required"
+msgstr ""
+"Entrega de mensagem garantida que assegura que as mensagens cheguem uma só "
+"vez e apenas uma vez quando requerido."
+
+#. Tag: para
+#: Important_Features.xml:49
+#, no-c-format
+msgid "Transactional and reliable - supporting ACID semantics"
+msgstr "Transacional e confiável - suportando as semânticas ACID."
+
+#. Tag: para
+#: Important_Features.xml:53
+#, no-c-format
+msgid "Customizable security framework based on JAAS"
+msgstr "Framework de segurança personalizada baseado no JAAS."
+
+#. Tag: para
+#: Important_Features.xml:56
+#, no-c-format
+msgid ""
+"Fully integrated with JBoss Transactions (formerly known as Arjuna JTA) for "
+"full transaction recoverability."
+msgstr ""
+"Inteiramente integrado com as Transações do JBoss (anteriormente conhecido "
+"como Arjuna JTA) para completa recuperação da transação."
+
+#. Tag: para
+#: Important_Features.xml:60
+#, no-c-format
+msgid "Extensive JMX management interface"
+msgstr "Interface de gerenciamento JMX extensivo"
+
+#. Tag: para
+#: Important_Features.xml:63
+#, no-c-format
+msgid ""
+"Support for most major databases including Oracle, Sybase, MS SQL Server, "
+"PostgreSQL and MySQL"
+msgstr ""
+"Suporte para a maioria de bancos de dados incluindo Oracle, SYbase, MS SQL "
+"Server, PostgreSQL e MySQL."
+
+#. Tag: para
+#: Important_Features.xml:67
+#, no-c-format
+msgid ""
+"HTTP transport to allow use through firewalls that only allow HTTP traffic"
+msgstr ""
+"Transporte HTTP para permitir o uso através de firewalls que apenas permitem "
+"o tráfego HTTP."
+
+#. Tag: para
+#: Important_Features.xml:71
+#, no-c-format
+msgid "SSL transport"
+msgstr "Transporte SSL"
+
+#. Tag: para
+#: Important_Features.xml:74
+#, no-c-format
+msgid "Configurable DLQs (Dead Letter Queues) and Expiry Queues"
+msgstr "Configuração DLQs (Dead Letter Queues) e Filas Expiradas"
+
+#. Tag: para
+#: Important_Features.xml:78
+#, no-c-format
+msgid ""
+"Message statistics: Gives you a rolling historical view of what messages "
+"were delivered to what queues and subscriptions"
+msgstr ""
+"Estatísticas de mensagens: Fornece a visualização histórica completa sobre "
+"quais mensagens foram entregues para quais filas e subscrições."
+
+#. Tag: para
+#: Important_Features.xml:83
+#, no-c-format
+msgid ""
+"Automatic paging of messages to storage. Allows the use of very large queues "
+"- too large to fit in memory at once"
+msgstr ""
+"Paginação automática para mensagens de armazenamento. Permite o uso de filas "
+"bastante grandes - tão grandes que não cabem na memória de uma só vez."
+
+#. Tag: title
+#: Important_Features.xml:90
+#, no-c-format
+msgid "Clustering Features"
+msgstr "Recursos de Cluster"
+
+#. Tag: title
+#: Important_Features.xml:92
+#, no-c-format
+msgid "Fully clustered queues and topics"
+msgstr "Tópicos e filas completos de cluster"
+
+#. Tag: para
+#: Important_Features.xml:93
+#, no-c-format
+msgid ""
+"\"Logical\" queues and topics are distributed across the cluster. You can "
+"send to a queue or a topic from any node, and receive from any other."
+msgstr ""
+"Filas \"lógicas\" e tópicos são distribuídas através do cluster. Você pode "
+"enviar uma fila ou um tópico a partir de qualquer nó e receber a partir de "
+"qualquer outro. "
+
+#. Tag: title
+#: Important_Features.xml:98
+#, no-c-format
+msgid "Fully clustered durable subscriptions"
+msgstr "Subscrições duráveis completas de cluster"
+
+#. Tag: para
+#: Important_Features.xml:99
+#, no-c-format
+msgid ""
+"A particular durable subscription can be accessed from any node of the "
+"cluster - allowing you to spread processing load from that subscription "
+"across the cluster."
+msgstr ""
+"Uma subscrição durável particular pode ser acessada a partir de qualquer nó "
+"do cluster - permitindo que você propague o processamento de carga a partir "
+"daquela subscrição através do cluster. "
+
+#. Tag: title
+#: Important_Features.xml:104
+#, no-c-format
+msgid "Fully clustered temporary queues"
+msgstr "Filas temporárias completas com cluster"
+
+#. Tag: para
+#: Important_Features.xml:105
+#, no-c-format
+msgid ""
+"Send a message with a <literal>replyTo</literal> of a temp queue and it can "
+"be sent back on any node of the cluster."
+msgstr ""
+"Envia uma mensagem com o <literal>replyTo</literal> de uma temp queue e pode "
+"retorná-la em qualquer outro nó de cluster."
+
+#. Tag: title
+#: Important_Features.xml:110
+#, no-c-format
+msgid "Intelligent message redistribution"
+msgstr "Redistribuição de mensagem inteligente"
+
+#. Tag: para
+#: Important_Features.xml:111
+#, no-c-format
+msgid ""
+"Messages are automatically moved between different nodes of the cluster if "
+"consumers are faster on one node than another. This can help prevent "
+"starvation or build up of messages on particular nodes."
+msgstr ""
+"As mensagens são automaticamente movidas entre diferente nós do cluster, "
+"caso os consumidores forem mais rápidos em um nó do que em outro. Isto pode "
+"ajudar a prevenir starvation ou construção de mensagens em nós particulares."
+
+#. Tag: title
+#: Important_Features.xml:116
+#, no-c-format
+msgid "Message order protection"
+msgstr "Proteção de pedido de mensagem"
+
+#. Tag: para
+#: Important_Features.xml:117
+#, no-c-format
+msgid ""
+"If you want to ensure that the order of messages produced by a producer is "
+"the same as is consumed by a consumer then you can set this to true. This "
+"works even in the presence of message redistribution."
+msgstr ""
+"Caso você queira assegurar que o pedido de mensagens produzidas por um "
+"produtor é o mesmo do que as mensagens consumidas por um consumidor, então "
+"você poderá configurar isto para verdadeiro. Isto funciona mesmo com a "
+"presença de uma redistribuição de mensagens."
+
+#. Tag: title
+#: Important_Features.xml:122
+#, no-c-format
+msgid "Fully transparent failover"
+msgstr "Falha de transparência completa"
+
+#. Tag: para
+#: Important_Features.xml:123
+#, no-c-format
+msgid ""
+"When a server fails, your sessions continue without exceptions on a new node "
+"as if nothing happened. (Fully configurable - If you don't want this you can "
+"fall back to exceptions being thrown and manually recreation of connections "
+"on another node)"
+msgstr ""
+"Quando um servidor falhar, suas sessões continuarão sem exceções em um novo "
+"nó como se nada houvesse acontecido. (Configuração completa - caso você não "
+"queira isto, você poderá voltar atrás das exceções que foram lançadas e "
+"realizar manualmente a recriação das conexões em outro nó). "
+
+#. Tag: title
+#: Important_Features.xml:128
+#, no-c-format
+msgid "High availability and seamless fail-over"
+msgstr "Alta disponibilidade e seamless fail-over"
+
+#. Tag: para
+#: Important_Features.xml:129
+#, no-c-format
+msgid ""
+"If the node you are connected to fails, you will automatically fail over to "
+"another node and will not lose any persistent messages. You can carry on "
+"with your session seamlessly where you left off. Once and only once delivery "
+"of persistent messages is respected at all times."
+msgstr ""
+"Caso o nó em que você estiver conectado falhar, você irá automaticamente "
+"realizar o fail over para outro nó e não perderá qualquer mensagem de "
+"persistência. Você poderá continuar com a sua sessão seamlessly onde você a "
+"deixou. A entrega das mensagens de persistência é respeitada em todos os "
+"períodos, apenas uma só vez."
+
+#. Tag: title
+#: Important_Features.xml:134
+#, no-c-format
+msgid "Message bridge"
+msgstr "Interligação de Mensagem"
+
+#. Tag: para
+#: Important_Features.xml:135
+#, no-c-format
+msgid ""
+"JBoss Messaging contains a message bridge component which enables you to "
+"bridge messages between any two JMS1.1 destinations on the same or physical "
+"separate locations. (E.g. separated by a WAN). This allows you to connect "
+"geographically separate clusters, forming huge globally distributed logical "
+"queues and topics."
+msgstr ""
+"O JBoss Messaging contém o componente de interligação de mensagem que "
+"permite que você interligue mensagens entre duas quaisquer destinações "
+"JMS1.1, nas mesmas ou diferentes localizações físicas. (Por exemplo: "
+"separado por um WAN). Isto permite que você conecte-se a clusters "
+"geograficamente separados, formando imensos tópicos e filas lógicas "
+"distribuídas localmente.  "
+
+#. Tag: title
+#: Important_Features.xml:141
+#, no-c-format
+msgid "Compatibility with JBossMQ"
+msgstr "Compatibilidade com o JBossMQ"
+
+#. Tag: para
+#: Important_Features.xml:142
+#, no-c-format
+msgid ""
+"Since JBoss Messaging is JMS 1.1 and JMS 1.0.2b compatible, the JMS code "
+"written against JBossMQ will run with JBoss Messaging without any changes."
+msgstr ""
+"Uma vez que o JBoss Messaging é compatível ao JMS 1.1 e JMS 1.0.2b, o código "
+"JMS gravado em referência ao JBossMQ rodará com o JBoss Messaging sem "
+"quaisquer alterações."
+
+#. Tag: para
+#: Important_Features.xml:145
+#, no-c-format
+msgid ""
+"JBoss Messaging does not have wire format compatibility with JBossMQ so it "
+"would be necessary to upgrade JBoss MQ clients with JBoss Messaging client "
+"jars."
+msgstr ""
+"O JBoss Messaging não possui cabo de formato compatível ao JBossMQ, de forma "
+"que poderá ser necessário atualizar os clientes JBoss MQ com as jarras do "
+"cliente JBoss Messaging."
+
+#. Tag: para
+#: Important_Features.xml:149
+#, no-c-format
+msgid ""
+"Even if JBoss Messaging deployment descriptors are very similar to JBoss MQ "
+"deployment descriptors, they are <emphasis>not</emphasis> identical, so they "
+"will require some simple adjustments to get them to work with JBoss "
+"Messaging. Also, the database data model is completely different, so don't "
+"attempt to use JBoss Messaging with a JBoss MQ data schema and vice-versa."
+msgstr ""
+"Mesmo que os descritores de implementação do JBoss Messaging forem bastante "
+"similares aos descritores de implementação do JBoss MQ, estes <emphasis>não</"
+"emphasis> são idênticos, de forma que eles solicitarão alguns ajustamentos "
+"para funcionarem com o JBoss Messaging. Além disso, o modelo de dados do "
+"banco de dados é completamente diferente. Sendo assim, não é recomendável "
+"usar o JBoss Messaging com um esquema de dados do JBoss MQ e vice-versa."
+
+#. Tag: para
+#: Important_Features.xml:154
+#, no-c-format
+msgid ""
+"JBoss Messaging is built against the JBoss AS 4.2 libraries which are built "
+"using Java 5. Therefore JBoss Messaging only runs with Java 5 or later."
+msgstr ""
+"O JBoss Messaging é construído de acordo com as bibliotecas do JBoss AS 4.2, "
+"das quais são construídas usando o Java 5. Portanto, o JBoss Messaging "
+"apenas roda com o Java 5 ou versões mais atualizadas."

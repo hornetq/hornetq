@@ -1,0 +1,179 @@
+# translation of Recovery_Config.po to
+# Language zh-CN translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# Automatically generated, 2008.
+# Xi HUANG <xhuang@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: Recovery_Config\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-07-10 13:34+1000\n"
+"Last-Translator: Xi HUANG <xhuang@redhat.com>\n"
+"Language-Team:  <en@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#. Tag: title
+#: Recovery_Config.xml:3
+#, no-c-format
+msgid "JBoss Messaging XA Recovery Configuration"
+msgstr "JBoss Messaging XA 恢复的配置"
+
+#. Tag: para
+#: Recovery_Config.xml:4
+#, no-c-format
+msgid ""
+"This section describes how to configure JBoss Transactions in JBoss AS 4.2.0 "
+"to handle XA recovery for JBoss Messaging resources."
+msgstr ""
+"本节描述了如何在 JBoss AS 4.2.0 里配置 JBoss Transactions 来处理  JBoss "
+"Messaging 资源的 XA 恢复。"
+
+#. Tag: para
+#: Recovery_Config.xml:6
+#, no-c-format
+msgid ""
+"JBoss Transactions recovery manager can easily be configured to continually "
+"poll for and recover JBoss Messaging XA resources, this provides an "
+"extremely high level of durability of transactions."
+msgstr ""
+"你可以很容易地配置 JBoss Transactions Recovery Manager 来轮询和恢复 JBoss "
+"Messaging 的 XA 资源，这为事务提供了极高级别的持久性。"
+
+#. Tag: para
+#: Recovery_Config.xml:9
+#, no-c-format
+msgid ""
+"Enabling JBoss Transactions Recovery Manager to recover JBoss Messaging "
+"resources is a very simple matter and involves adding a line to the file "
+"${JBOSS_CONFIG}/conf/jbossjta-properties.xml"
+msgstr ""
+"启用 JBoss Transactions Recovery Manager 来恢复 JBoss Messaging 资源很简单，"
+"你只需在 ${JBOSS_CONFIG}/conf/jbossjta-properties.xml 里添加一行就可以了。"
+
+#. Tag: para
+#: Recovery_Config.xml:12
+#, no-c-format
+msgid ""
+"Here's an example section of a jbossjta-properties.xml file with the line "
+"added (note the whole file is not shown)"
+msgstr ""
+"下面是一个已经添加了这一行的 jbossjta-properties.xml 文件的示例片段（注意这里"
+"并未显示整个文件）："
+
+#. Tag: programlisting
+#: Recovery_Config.xml:14
+#, no-c-format
+msgid ""
+"&lt;properties depends=\"arjuna\" name=\"jta\"&gt;\n"
+"        &lt;!--\n"
+"        Support subtransactions in the JTA layer?\n"
+"        Default is NO.\n"
+"        --&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.supportSubtransactions\" "
+"value=\"NO\"/&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.jtaTMImplementation\"\n"
+"           value=\"com.arjuna.ats.internal.jta.transaction.arjunacore."
+"TransactionManagerImple\"/&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.jtaUTImplementation\"\n"
+"           value=\"com.arjuna.ats.internal.jta.transaction.arjunacore."
+"UserTransactionImple\"/&gt;      \n"
+"        &lt;!--\n"
+"           *** Add this line to enable recovery for JMS resources using "
+"DefaultJMSProvider ***\n"
+"        --&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.recovery.XAResourceRecovery."
+"JBMESSAGING1\"\n"
+"           value=\"org.jboss.jms.server.recovery.MessagingXAResourceRecovery;"
+"java:/DefaultJMSProvider\"/&gt;\n"
+"\n"
+"    &lt;/properties&gt;"
+msgstr ""
+"&lt;properties depends=\"arjuna\" name=\"jta\"&gt;\n"
+"        &lt;!--\n"
+"        Support subtransactions in the JTA layer?\n"
+"        Default is NO.\n"
+"        --&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.supportSubtransactions\" "
+"value=\"NO\"/&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.jtaTMImplementation\"\n"
+"           value=\"com.arjuna.ats.internal.jta.transaction.arjunacore."
+"TransactionManagerImple\"/&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.jtaUTImplementation\"\n"
+"           value=\"com.arjuna.ats.internal.jta.transaction.arjunacore."
+"UserTransactionImple\"/&gt;      \n"
+"        &lt;!--\n"
+"           *** Add this line to enable recovery for JMS resources using "
+"DefaultJMSProvider ***\n"
+"        --&gt;\n"
+"        &lt;property name=\"com.arjuna.ats.jta.recovery.XAResourceRecovery."
+"JBMESSAGING1\"\n"
+"           value=\"org.jboss.jms.server.recovery.MessagingXAResourceRecovery;"
+"java:/DefaultJMSProvider\"/&gt;\n"
+"\n"
+"    &lt;/properties&gt;"
+
+#. Tag: para
+#: Recovery_Config.xml:15
+#, no-c-format
+msgid ""
+"In the above example the recovery manager will attempt to recover JMS "
+"resources using the JMSProviderLoader \"DefaultJMSProvider\""
+msgstr ""
+"在上面的例子里，Recovery Manager 将试图用 JMSProviderLoader "
+"\"DefaultJMSProvider\" 恢复 JMS 资源。"
+
+#. Tag: para
+#: Recovery_Config.xml:17
+#, no-c-format
+msgid ""
+"DefaultJMSProvider is the default JMS provider loader that ships with JBoss "
+"AS and is defined in jms-ds.xml (or hajndi-jms-ds.xml in a clustered "
+"configuration). If you want to recovery using a different JMS provider "
+"loader - e.g. one corresponding to a remote JMS provider then just add "
+"another line and instead of DefaultJMSProvider specify the name of the "
+"remote JMS provider as specified in it's MBean configuration."
+msgstr ""
+"DefaultJMSProvider 是 JBoss AS 附带的缺省 JMS 提供者的加载器，它在 jms-ds.xml"
+"（群集环境里使用 hajndi-jms-ds.xml）里进行定义。如果你想用不同的 JMS 提供者加"
+"载器进行恢复 － 例如对应远程 JMS 提供者的加载器，你只需要再添加一行来指定远"
+"程 JSM 提供者（如其 MBean 配置里所指定的）的名字来代替 DefaultJMSProvider 就"
+"可以了。"
+
+#. Tag: para
+#: Recovery_Config.xml:23
+#, no-c-format
+msgid ""
+"For each line you add, the name must be unique, so you could specify \"com."
+"arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1\", \"com.arjuna.ats."
+"jta.recovery.XAResourceRecovery.JBMESSAGING2, ...\" etc."
+msgstr ""
+"对于你添加的每一行，名字必须是唯一的，所以你可以指定 \"com.arjuna.ats.jta."
+"recovery.XAResourceRecovery.JBMESSAGING1\", \"com.arjuna.ats.jta.recovery."
+"XAResourceRecovery.JBMESSAGING2, ...\" 等等。"
+
+#. Tag: para
+#: Recovery_Config.xml:27
+#, no-c-format
+msgid ""
+"In actual fact, the recovery also should work with any JMS provider that "
+"implements recoverable XAResources (i.e. it properly implements XAResource."
+"recover()) , not just JBoss Messaging"
+msgstr ""
+"实际上，恢复也可以使用实现了可恢复 XAResources（也就是需要正确实现 "
+"XAResource.recover()）的任何 JMS 提供者来进行，而不仅仅是 JBoss Messaging。"
+
+#. Tag: para
+#: Recovery_Config.xml:30
+#, no-c-format
+msgid ""
+"Please note that to configure the recovery manager to recovery transactions "
+"from any node of the cluster it will be necessary to specify a line in the "
+"configuration for every node of the cluster"
+msgstr ""
+"请注意，要配置 Recovery Manager 来恢复群集里任何节点的事务，你有必要在配置文"
+"件里用一行为每个节点进行指定。"

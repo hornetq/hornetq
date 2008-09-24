@@ -1,0 +1,92 @@
+# translation of Introduction.po to
+# Language zh-CN translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# Automatically generated, 2008.
+# Xi HUANG <xhuang@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: Introduction\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-07-10 12:54+1000\n"
+"Last-Translator: Xi HUANG <xhuang@redhat.com>\n"
+"Language-Team:  <en@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#. Tag: title
+#: Introduction.xml:3
+#, no-c-format
+msgid "Introduction"
+msgstr "简介"
+
+#. Tag: para
+#: Introduction.xml:4
+#, no-c-format
+msgid ""
+"JBoss Messaging provides an open source and standards-based messaging "
+"platform and is an integral part of Red Hat's strategy for enterprise "
+"messaging. It is a complete rewrite of JBossMQ, the legacy JBoss JMS "
+"provider, and offers improved performance in both single node and clustered "
+"environments. It also features a much better modular architecture that "
+"allows easy adding of new features in the future."
+msgstr ""
+"JBoss Messaging 提供一个开源的、基于业界标准的消息平台，它是红帽关于企业级消"
+"息系统策略的一个集成部分。它完全重写了旧的 JBoss JMS 提供者 － JBossMQ，并为"
+"单节点和群集环境提供了更好的性能。它也使用了更好的模块化架构，方便以后添加新"
+"的功能。"
+
+#. Tag: para
+#: Introduction.xml:8
+#, no-c-format
+msgid ""
+"JBoss Messaging 1.4 is the default JMS provider in JBoss Enterprise "
+"Application Platform 4.3."
+msgstr ""
+"JBoss Messaging 1.4 是 JBoss 企业级应用程序平台 4.3 里的缺省 JMS 提供者。"
+
+#. Tag: title
+#: Introduction.xml:16
+#, no-c-format
+msgid "Feedback"
+msgstr "反馈"
+
+#. Tag: para
+#: Introduction.xml:17
+#, no-c-format
+msgid ""
+"If you spot a typo in this guide, or if you have thought of a way to make "
+"this manual better, we would love to hear from you! Submit a report in "
+"<ulink url=\"http://jira.jboss.com/jira/browse/JBPAPP\">JIRA</ulink> against "
+"the Product: JBoss Enterprise Application Platform, Version: "
+"<replaceable>&lt;version&gt;</replaceable>, Component: <emphasis>Doc</"
+"emphasis>. If you have a suggestion for improving the documentation, try to "
+"be as specific as possible. If you have found an error, include the section "
+"number and some of the surrounding text so we can find it easily."
+msgstr ""
+"如果你在本指南里发现了印刷错误，或者你有改进该手册的建议，我们希望听到你的声"
+"音！请提交报告到  <ulink url=\"http://jira.jboss.com/jira/browse/JBPAPP"
+"\">JIRA</ulink> 并指明：产品：JBoss Enterprise Application Platform, 版本："
+"<replaceable>&lt;version&gt;</replaceable>，组件：<emphasis>Doc</emphasis>。"
+"如果是改进本文档的建议，请尽量具体化；如果是其他错误，请指出章节号以及具体的"
+"内容，这样我们就可以尽快改正。"
+
+#. Tag: title
+#: Introduction.xml:23
+#, no-c-format
+msgid "Other Manuals"
+msgstr "其他文档"
+
+#. Tag: para
+#: Introduction.xml:24
+#, no-c-format
+msgid ""
+"If you are looking for detailed product information refer to the manuals "
+"available online at <ulink url=\"http://www.redhat.com/docs/manuals/jboss"
+"\"></ulink>."
+msgstr ""
+"如果你需要详细的产品信息，请访问 <ulink url=\"http://www.redhat.com/docs/"
+"manuals/jboss\"></ulink> 里的在线手册。"

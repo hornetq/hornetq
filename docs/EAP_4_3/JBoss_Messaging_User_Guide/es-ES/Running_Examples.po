@@ -1,0 +1,486 @@
+# translation of Running_Examples.po to
+# Language es-ES translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+# Automatically generated, 2008.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Running_Examples\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-07-22 11:11+1000\n"
+"Last-Translator: Angela Garcia\n"
+"Language-Team:  <en@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#. Tag: title
+#: Running_Examples.xml:3
+#, no-c-format
+msgid "JBoss Messaging Examples"
+msgstr "Ejemplos de JBoss Messaging"
+
+#. Tag: title
+#: Running_Examples.xml:5
+#, no-c-format
+msgid "About the Examples"
+msgstr "Con relación a los ejemplos "
+
+#. Tag: para
+#: Running_Examples.xml:6
+#, no-c-format
+msgid ""
+"In the installation directory of your JBoss Enterprise Application Platform "
+"you will find a set of JBoss Messaging examples located in "
+"<literal>JBOSS_DIST/doc/examples/jboss-messaging-examples</literal>. These "
+"examples demonstrate JBoss Messaging in action. Within the "
+"<literal>JBOSS_DIST/doc/examples/jboss-messaging-examples</literal> "
+"directory, you will find the following sub-directories:"
+msgstr ""
+"En el directorio de instalación de su JBoss Enterprise Application Platform "
+"encontrará un grupo de ejemplos de JBoss Messaging en <literal>JBOSS_DIST/"
+"doc/examples/jboss-messaging-examples</literal>. Estos ejemplos demuestran "
+"JBoss Messaging en acción. Dentro del directorio <literal>JBOSS_DIST/doc/"
+"examples/jboss-messaging-examples</literal> encontrará los siguientes sub-"
+"directorios:"
+
+#. Tag: para
+#: Running_Examples.xml:11
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/queue"
+msgstr "docs/examples/jboss-messaging-examples/queue"
+
+#. Tag: para
+#: Running_Examples.xml:12
+#, no-c-format
+msgid ""
+"This example demonstrates a simple 'send' and 'receive' to a remote queue "
+"using a JMS client."
+msgstr ""
+"Este ejemplo demuestra un simple 'enviar' y 'recibir' a una cola remota "
+"utilizando un cliente JMS."
+
+#. Tag: para
+#: Running_Examples.xml:17
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/topic"
+msgstr "docs/examples/jboss-messaging-examples/topic"
+
+#. Tag: para
+#: Running_Examples.xml:19
+#, no-c-format
+msgid ""
+"This example demonstrates a simple 'send' and 'receive' to a remote topic "
+"using a JMS client."
+msgstr ""
+"Este ejemplo demuestra un simple 'enviar' y 'recibir' a un tema remoto "
+"utilizando un cliente JMS."
+
+#. Tag: para
+#: Running_Examples.xml:24
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/mdb"
+msgstr "docs/examples/jboss-messaging-examples/mdb"
+
+#. Tag: para
+#: Running_Examples.xml:26
+#, no-c-format
+msgid ""
+"This example demonstrates the usage of an EJB2.1 MDB with JBoss Messaging."
+msgstr "Este ejemplo demuestra el uso de un EJB2.1 MDB con JBoss Messaging."
+
+#. Tag: para
+#: Running_Examples.xml:31
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/ejb3mdb"
+msgstr "docs/examples/jboss-messaging-examples/ejb3mdb"
+
+#. Tag: para
+#: Running_Examples.xml:33
+#, no-c-format
+msgid ""
+"This example demonstrates the usage of an EJB3 MDB with JBoss Messaging."
+msgstr "Este ejemplo demuestra el uso de un EJB3 MDB con JBoss Messaging."
+
+#. Tag: para
+#: Running_Examples.xml:38
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/stateless"
+msgstr "docs/examples/jboss-messaging-examples/stateless"
+
+#. Tag: para
+#: Running_Examples.xml:40
+#, no-c-format
+msgid ""
+"This example demonstrates an EJB2.1 stateless session bean interacting with "
+"JBoss Messaging."
+msgstr ""
+"Este ejemplo demuestra el uso de un bean de sesión sin estado EJB2.1 "
+"interactuando con JBoss Messaging."
+
+#. Tag: para
+#: Running_Examples.xml:45
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/mdb-failure"
+msgstr "docs/examples/jboss-messaging-examples/mdb-failure"
+
+#. Tag: para
+#: Running_Examples.xml:47
+#, no-c-format
+msgid ""
+"This example demonstrates rollback and redelivery occuring with an EJB2.1 "
+"MDB."
+msgstr ""
+"Este ejemplo demuestra la manera de deshacer y re-entregar con un EJB2.1 MDB."
+
+#. Tag: para
+#: Running_Examples.xml:52
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/secure-socket"
+msgstr "docs/examples/jboss-messaging-examples/secure-socket"
+
+#. Tag: para
+#: Running_Examples.xml:54
+#, no-c-format
+msgid ""
+"This example demonstrates a JMS client interacting with a JBoss Messaging "
+"server using SSL encrypted transport."
+msgstr ""
+"Este ejemplo demuestra un cliente JMS interactuando con un servidor JBoss "
+"Messaging utilizando transporte encriptado SSL."
+
+#. Tag: para
+#: Running_Examples.xml:59
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/http"
+msgstr "docs/examples/jboss-messaging-examples/http"
+
+#. Tag: para
+#: Running_Examples.xml:61
+#, no-c-format
+msgid ""
+"This example demonstrates a JMS client interacting with a JBoss Messaging "
+"server tunneling traffic over HTTP protocol."
+msgstr ""
+"Este ejemplo demuestra un cliente JMS interactuando con un servidor JBoss "
+"Messaging construyendo un tunel para el tráfico sobre el protocolo HTTP."
+
+#. Tag: para
+#: Running_Examples.xml:66
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/web-service"
+msgstr "docs/examples/jboss-messaging-examples/web-service"
+
+#. Tag: para
+#: Running_Examples.xml:68
+#, no-c-format
+msgid ""
+"This example demonstrates JBoss web-service interacting with JBoss Messaging."
+msgstr ""
+"Este ejemplo demuestra JBoss web-service interactuando con JBoss Messaging."
+
+#. Tag: para
+#: Running_Examples.xml:73
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/distributed-queue"
+msgstr "docs/examples/jboss-messaging-examples/distributed-queue"
+
+#. Tag: para
+#: Running_Examples.xml:75
+#, no-c-format
+msgid ""
+"This example demonstrates a JMS client interacting with a JBoss Messaging "
+"distributed queue - it requires two JBoss Application Server instances to be "
+"running."
+msgstr ""
+"Este ejemplo demuestra el cliente JMS interactuando con una cola distribuida "
+"de JBoss Messaging - requiere que dos instancias del JBoss Application "
+"Server se encuentren ejecutando. "
+
+#. Tag: para
+#: Running_Examples.xml:81
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/distributed-topic"
+msgstr "docs/examples/jboss-messaging-examples/distributed-topic"
+
+#. Tag: para
+#: Running_Examples.xml:83
+#, no-c-format
+msgid ""
+"This example demonstrates a JMS client interacting with a JBoss Messaging "
+"distributed topic - it requires two JBoss Application Server instances to be "
+"running."
+msgstr ""
+"Este ejemplo demuestra un cliente JMS interactuando con un tema distribuido "
+"de JBoss Messaging - requiere que dos instancias del JBoss Application "
+"Server se encuentren ejecutando. "
+
+#. Tag: para
+#: Running_Examples.xml:89
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/stateless-clustered"
+msgstr "docs/examples/jboss-messaging-examples/stateless-clustered"
+
+#. Tag: para
+#: Running_Examples.xml:91
+#, no-c-format
+msgid ""
+"This example demonstrates a JMS client interacting with a clustered EJB2.1 "
+"stateless session bean, which in turn interacts with JBoss Messaging. The "
+"example uses HAJNDI to lookup the connection factory. It requires two JBoss "
+"Application Server instances to be running."
+msgstr ""
+"Este ejemplo demuestra un cliente JMS interactuando con un bean de sesión "
+"sin estado EJB2.1 en clúster, el cual a su vez interactúa con JBoss "
+"Messaging. El ejemplo utiliza HAJNDI para buscar la fábrica de conexiones. "
+"Requiere que dos instancias del JBoss Application Server se encuentren "
+"ejecutando. "
+
+#. Tag: para
+#: Running_Examples.xml:98
+#, no-c-format
+msgid "docs/examples/jboss-messaging-examples/bridge"
+msgstr "docs/examples/jboss-messaging-examples/bridge"
+
+#. Tag: para
+#: Running_Examples.xml:100
+#, no-c-format
+msgid ""
+"This example demonstrates the usage of a message bridge. It deploys a "
+"message bridge in JBoss Application Server which then proceeds to move "
+"messages from a source to a target queue."
+msgstr ""
+"Este ejemplo demuestra el uso de un puente de mensajes. Despliega un puente "
+"de mensajes en el JBoss Application Server, el cual procede a mover los "
+"mensajes desde una cola fuente a una destino. "
+
+#. Tag: title
+#: Running_Examples.xml:107
+#, no-c-format
+msgid "Running the Examples"
+msgstr "Ejecución de los ejemplos"
+
+#. Tag: title
+#: Running_Examples.xml:109
+#, no-c-format
+msgid "Install Ant"
+msgstr "Instale Ant"
+
+#. Tag: para
+#: Running_Examples.xml:110
+#, no-c-format
+msgid ""
+"To compile the examples, you must have Apache Ant 1.6+ installed in your "
+"machine. You can download it from <ulink url=\"http://ant.apache.org\"></"
+"ulink> and have it installed in few steps:"
+msgstr ""
+"Para compilar los ejemplos debe tener Apache Ant 1.6+ instalado en su "
+"máquina. Puede descargarlo de <ulink url=\"http://ant.apache.org\"></ulink> "
+"y puede instalarlo en pocos pasos:"
+
+#. Tag: para
+#: Running_Examples.xml:113
+#, no-c-format
+msgid "Unzip the downloaded file to the directory of your choice."
+msgstr "Descomprima el archivo descargado en el directorio que escoja. "
+
+#. Tag: para
+#: Running_Examples.xml:118
+#, no-c-format
+msgid ""
+"Create an environment variable called <literal>ANT_HOME</literal> pointing "
+"to the Ant installation directory. You can do this by adding the following "
+"line to your <filename>.bashrc</filename> file (substituting with the actual "
+"location of the ant directory on your system):"
+msgstr ""
+"Cree una variable de entorno llamada <literal>ANT_HOME</literal> que apunte "
+"al directorio de instalación Ant. Puede hacer esto añadiendo la siguiente "
+"línea a su archivo <filename>.bashrc</filename> (substituyendo con la "
+"ubicación real del directorio ant en su sistema):"
+
+#. Tag: programlisting
+#: Running_Examples.xml:119
+#, no-c-format
+msgid "export ANT_HOME=/home/user/apache-ant-1.7.0"
+msgstr "export ANT_HOME=/home/user/apache-ant-1.7.0"
+
+#. Tag: para
+#: Running_Examples.xml:122
+#, no-c-format
+msgid ""
+"On Windows you do this by opening the Control Panel from the Start Menu, "
+"switching it to classic view if necessary, then opening System/Advanced/"
+"Environment Variables. Create a new variable, call it <literal>ANT_HOME</"
+"literal> and set it to be the ant directory."
+msgstr ""
+"Para hacer esto en Windows abra el panel de control desde el menú de inicio, "
+"cámbielo a la vista clásica si es necesario y luego abra Sistema/Avanzado/"
+"Variables de entorno. Cree una nueva variable, llámela <literal>ANT_HOME</"
+"literal> y configúrela para que sea el directorio ant."
+
+#. Tag: para
+#: Running_Examples.xml:127
+#, no-c-format
+msgid ""
+"Add <literal>$ANT_HOME/bin</literal> to the system path to be able to run "
+"<literal>ant</literal> from the command line. You can do this by adding the "
+"following line to your <filename>.bashrc</filename> file:"
+msgstr ""
+"Añada <literal>$ANT_HOME/bin</literal> a la ruta del sistema para poder "
+"ejecutar <literal>ant</literal> desde la línea de comandos. Puede hacer esto "
+"añadiendo la siguiente línea a su archivo <filename>.bashrc</filename>:"
+
+#. Tag: programlisting
+#: Running_Examples.xml:128
+#, no-c-format
+msgid "export PATH=$PATH:$ANT_HOME/bin"
+msgstr "export PATH=$PATH:$ANT_HOME/bin"
+
+#. Tag: para
+#: Running_Examples.xml:130
+#, no-c-format
+msgid ""
+"On Windows you do this by opening the Control Panel from the Start Menu, "
+"switching it to classic view if necessary, then editing the <literal>PATH</"
+"literal> environment variable found in System/Advanced/Environment Variables/"
+"System Variables/Path. Add a semicolon and the path to the ant <filename "
+"class=\"directory\">bin</filename> directory."
+msgstr ""
+"Para hacer esto en Windows abra el panel de control desde el menú de inicio, "
+"cámbielo a la vista clásica si es necesario y luego modifique la variable de "
+"entorno <literal>PATH</literal> que se encuentra en Sistem/Avanzado/"
+"Variables de entorno/Variables del sistema/Ruta. Añada un punto y coma y la "
+"ruta al directorio ant <filename class=\"directory\">bin</filename>. "
+
+#. Tag: para
+#: Running_Examples.xml:135
+#, no-c-format
+msgid ""
+"Verify your Ant installation. To do this type <literal> ant -version</"
+"literal> at the command prompt. Your output should look something like this:"
+msgstr ""
+"Verifique su instalación Ant. Para hacer esto escriba <literal> ant -"
+"version</literal> en el prompt de comandos. Su salida se debe ver similar a "
+"esta:"
+
+#. Tag: programlisting
+#: Running_Examples.xml:137
+#, no-c-format
+msgid "Apache Ant version 1.7.0 compiled on December 13 2006"
+msgstr "Apache Ant version 1.7.0 compiled on December 13 2006"
+
+#. Tag: title
+#: Running_Examples.xml:144
+#, no-c-format
+msgid "Set JBOSS_HOME Environment Variable"
+msgstr "Configure la variable de entorno JBOSS_HOME"
+
+#. Tag: title
+#: Running_Examples.xml:146
+#, no-c-format
+msgid "On a Linux Platform"
+msgstr "En una plataforma Linux"
+
+#. Tag: para
+#: Running_Examples.xml:149
+#, no-c-format
+msgid ""
+"Create an environment variable that points to the installation directory "
+"(<filename>JBOSS_DIST/jboss-as</filename>) and call it <literal>JBOSS_HOME</"
+"literal>. Add <literal>$JBOSS_HOME/bin</literal> to the system path to be "
+"able to run the server from the command line. You can do this by adding the "
+"following lines to the <filename>.bashrc</filename> file in your home "
+"directory."
+msgstr ""
+"Cree una variable de entorno que apunte al directorio de instalación "
+"(<filename>JBOSS_DIST/jboss-as</filename>) y llámela <literal>JBOSS_HOME</"
+"literal>. Añada <literal>$JBOSS_HOME/bin</literal> a la ruta del sistema "
+"para poder ejecutar el servidor desde la línea de comandos. Puede hacer esto "
+"añadiendo las siguientes líneas al archivo <filename>.bashrc</filename> en "
+"su directorio de inicio."
+
+#. Tag: programlisting
+#: Running_Examples.xml:151
+#, no-c-format
+msgid ""
+"#In this example /home/vrenish/EnterprisePlatform-4.3/jboss-as is the "
+"installation directory.\n"
+"export JBOSS_HOME=/home/vrenish/EnterprisePlatform-4.3/jboss-as\n"
+"export PATH=$PATH:$JBOSS_HOME/bin"
+msgstr ""
+"#En este ejemplo /home/vrenish/EnterprisePlatform-4.3/jboss-as es el "
+"directorio de instalación.\n"
+"export JBOSS_HOME=/home/vrenish/EnterprisePlatform-4.3/jboss-as\n"
+"export PATH=$PATH:$JBOSS_HOME/bin"
+
+#. Tag: title
+#: Running_Examples.xml:155
+#, no-c-format
+msgid "On Microsoft Windows"
+msgstr "En Microsoft Windows"
+
+#. Tag: para
+#: Running_Examples.xml:158
+#, no-c-format
+msgid ""
+"Create an environment variable called <literal>JBOSS_HOME</literal> that "
+"points to the installation directory, for example: C:\\Program Files"
+"\\EnterprisePlatform-4.3\\jboss-as\\. In order to run the server from the "
+"command line add the <filename>bin</filename> directory to your path, for "
+"example: C:\\Program Files\\EnterprisePlatform-4.3\\jboss-as\\bin. To do "
+"this, open the Control Panel from the Start Menu, switch to Classic View if "
+"necessary, open the System Control Panel applet, select the Advanced Tab, "
+"and click on the Environment Variables button."
+msgstr ""
+"Cree una variable de entorno llamada <literal>JBOSS_HOME</literal> que "
+"apunte al directorio de instalación, por ejemplo: C:\\Program Files"
+"\\EnterprisePlatform-4.3\\jboss-as\\. Con el fin de ejecutar el servidor "
+"desde la línea de comandos añada el directorio <filename>bin</filename> a su "
+"ruta, por ejemplo: C:\\Program Files\\EnterprisePlatform-4.3\\jboss-as\\bin. "
+"Para hacer esto, abra el panel de control desde el menú de inicio, cambie a "
+"la vista clásica si es necesario, abra el applet del panel de control del "
+"sistema, seleccione la pestaña avanzada y haga click en el botón de las "
+"variables de entorno."
+
+#. Tag: title
+#: Running_Examples.xml:164
+#, no-c-format
+msgid "Run the Example"
+msgstr "Ejecute el ejemplo"
+
+#. Tag: para
+#: Running_Examples.xml:165
+#, no-c-format
+msgid ""
+"Make sure you start the JBoss Application server before trying to run the "
+"examples. The non clustered examples expect a single JBoss Application "
+"Server instance to be running with all the default settings. The clustered "
+"examples expect two JBoss Application Server instances to be running with "
+"ports settings as per ports-01 and ports-02. For each example, you can "
+"always override the default ports it will try to connect to by editing "
+"<literal>jndi.properties</literal> in the particular example's directory."
+msgstr ""
+"Asegúrese de iniciar el servidor de aplicaciones de JBoss antes de intentar "
+"ejecutar los ejemplos. Los ejemplos sin clústers esperan que una sola "
+"instancia del servidor de aplicaciones de JBoss esté ejecutando con todos "
+"los valores predeterminados. Los ejemplos con clústers esperan que dos de "
+"las instancias del servidor de aplicaciones de JBoss estén ejecutando con "
+"configuraciones de puerto como las de ports-01 y ports-02. Por cada ejemplo, "
+"siempre puede sobreescribir los puertos predeterminados a los que intentará "
+"conectarse modificando <literal>jndi.properties</literal> en el directorio "
+"del ejemplo en particular. "
+
+#. Tag: para
+#: Running_Examples.xml:166
+#, no-c-format
+msgid ""
+"To run any of the examples inside the <literal>JBOSS_DIST/doc/examples/jboss-"
+"messaging-examples</literal> directory, navigate to the example's folder in "
+"a command line prompt, and type <literal>ant</literal>."
+msgstr ""
+"Para ejecutar cualquiera de los ejemplos dentro del directorio "
+"<literal>JBOSS_DIST/doc/examples/jboss-messaging-examples</literal>, navegue "
+"hasta el folder de los ejemplos en una terminal y escriba <literal>ant</"
+"literal>."

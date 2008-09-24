@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="c_configuration">
+   <title>JBoss Messaging Clustering Notes</title>
+  
+   <section id="c_conf.serverpeerid">
+	   <title>Unique server peer id</title>
+	   <para>JBoss Messaging clustering should work out of the box in most cases
+		 with no configuration changes. It is however crucial that every node is
+		 assigned a unique server id, as specified in the installation guide.</para>
+	   <para>Every node deployed must have a unique id, including those in a
+		 particular LAN cluster, and also those only linked by mesage
+		 bridges.</para>
+   </section>
+     
+   <section id="c_conf.clustereddests">   
+	<title>Clustered destinations</title>
+	<para>JBoss Messaging clusters JMS queues and topics transparently across
+		the cluster. Messages sent to a distributed queue or topic on one node are
+		consumable on other nodes. To designate that a particular destination is
+		clustered simply set the clustered attribute in the destination deployment
+		descriptor to true.</para>
+	<para>JBoss Messaging balances messages between nodes, catering for faster
+		or slower consumers to efficiently balance processing load across the
+		cluster.</para>
+	<para>If you do not want message redistribution between nodes, but still want to retain the other charactereristics
+	of clustered destinations. You can do this by not specifying the attribute ClusterPullConnectionFactoryName on the server peer
+        </para>
+   </section>
+   
+      <section id="c_conf.clustereddursubs">
+	   	<title>Clustered durable subs</title>
+	   	<para>JBoss Messaging durable subscriptions can also be clustered. This
+		   	means multiple subscribers can consume from the same durable subscription
+		   	from different nodes of the cluster. A durable subscription will be
+		   	clustered if it's topic is clustered</para>
+	      </section>
+      
+      <section id="c_conf.clusteredtempdest">
+	   	<title>Clustered temporary destinations</title>
+	   	<para>JBoss Messaging also supports clustered temporary topics and queues.
+		   	All temporary topics and queues will be clustered if the post office is
+		   	clustered</para>
+	      </section>
+   
+      <section id="c_conf.nonclusteredserver">  
+	   	<title>Non clustered servers</title>
+	   	<para>If you don't want your nodes to participate in a cluster, or only
+		   	have one non clustered server you can set the clustered attribute on the
+		   	postoffice to false</para>
+	      </section>
+      
+      
+      <section id="c_conf.orderingincluster">
+	   	<title>Message ordering in the cluster</title>
+	   	<para>If you wish to apply strict JMS ordering to messages, such that a
+		   	particular JMS consumer consumes messages in the same order as they were
+		   	produced by a particular producer, you can set the DefaultPreserveOrdering
+		   	attribute in the server peer to true. By default this is false. The
+		   	sideeffect of setting this to true is that messages cannot be distributed
+		   	as freely around the cluster</para>
+	      </section>
+   
+   	   
+      <section id="c_conf.idempotentops">	
+	   	<title>Idempotent operations</title>
+	   	<para>If the call to send a persistent message to a persistent destination
+		   	returns successfully with no exception, then you can be sure that the
+		   	message was persisted. However if the call doesn't return successfully e.g.
+		   	if an exception is thrown, then you *can't be sure the message wasn't
+		   	persisted*. Since the failure might have occurred after persisting the
+		   	message but before writing the response to the caller. This is a common
+		   	attribute of any RPC type call: You can't tell by the call not returning
+		   	that the call didn't actually succeed. Whether it's a web services call, an
+		   	HTTP get request, an ejb invocation the same applies. The trick is to code
+		   	your application so your operations are *idempotent*  i.e. they can be
+		   	repeated without getting the system into an inconsistent state. With a
+		   	message system you can do this on the application level, by checking for
+		   	duplicate messages, and discarding them if they arrive. Duplicate checking
+		   	is a very powerful technique that can remove the need for XA transactions
+		   	in many cases.</para>
+		<para>In the clustered case. JBM is by default configured to detect duplicate automatically messages by default</para>
+	      </section>
+      
+      
+      <section id="c_conf.clusteredcfs">
+	   	<title>Clustered connection factories</title>
+	   	<para>If the supportsLoadBalancing attribute of the connection factory is set to true then consecutive create connection attempts will round robin between available servers. The first node to try is chosen randomly</para>
+	   	<para>If the supportsFailover attribute of the connection factory is set to true then automatic failover is enabled.
+		   	This will automatically failover from one server to another, transparently to the user, in case of failure.</para>
+	           <para>If automatic failover is not required or you wish to do manual failover (JBoss MQ style) this can be set to false, and you can supply a standard JMS ExceptionListener on the connection which will be called in case of
+		   	connection failure. You would then need to manually close the connection, lookup a new connection factory from
+		   	HA JNDI and recreate the connection.</para>
+	   	
+   </section>
+   
+   
+</chapter>

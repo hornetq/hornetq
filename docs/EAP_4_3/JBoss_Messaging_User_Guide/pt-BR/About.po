@@ -1,0 +1,117 @@
+# translation of About.po to Brazilian Portuguese
+# Language pt-BR translations for JBoss_Messaging_User_Guide package.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# Automatically generated, 2008.
+# Leticia de Lima <ldelima@redhat.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: About\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+"POT-Creation-Date: 2008-07-22 02:07+0000\n"
+"PO-Revision-Date: 2008-07-08 11:01+1000\n"
+"Last-Translator: Leticia de Lima <ldelima@redhat.com>\n"
+"Language-Team: Brazilian Portuguese <en@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#. Tag: title
+#: About.xml:3
+#, no-c-format
+msgid "About JBoss Messaging"
+msgstr "Introdução ao JBoss Messaging"
+
+#. Tag: para
+#: About.xml:4
+#, no-c-format
+msgid ""
+"JBoss Messaging is the new enterprise messaging system from JBoss. It is a "
+"complete rewrite of JBossMQ, the legacy JBoss JMS provider."
+msgstr ""
+"O JBoss Messaging é o novo sistema de mensagem empresarial do JBoss. Ele é "
+"uma completa re-gravação do JBossMQ, uma herança do provedor JBoss JMS."
+
+#. Tag: para
+#: About.xml:6
+#, no-c-format
+msgid ""
+"JBoss Messaging is the default JMS provider in JBoss Enterprise Application "
+"Platform 4.3, for JBoss ESB and JBoss Service Integration Platform. It will "
+"also be the default JMS provider in JBoss Application Server 5. It is an "
+"integral part of Red Hat's strategy for messaging."
+msgstr ""
+"O JBoss Messaging é o provedor JMS padrão na Plataforma de Aplicativo JBoss "
+"Enterprise 4.3, para o JBoss ESB e a Plataforma de Integração de Serviço "
+"JBoss. Isto será também o provedor JMS padrão no Servidor do Aplicativo "
+"JBoss 5. É a parte integral da estratégia da Red Hat para mensagens."
+
+#. Tag: para
+#: About.xml:10
+#, no-c-format
+msgid ""
+"Compared with JBossMQ, JBoss Messaging offers improved performance in both "
+"single node and clustered environments. It also features a much better "
+"modular architecture that allows adding more features in the future. From "
+"release 1.4.0 onwards JBoss Messaging is designed for JBoss AS version 4.2 "
+"or above only and is Java 5."
+msgstr ""
+"Quando comparando com o JBossMQ, o JBoss Messaging oferece uma melhoria no "
+"desempenho em ambos nó único e ambientes com cluster. Ele possui também a "
+"característica de melhor arquitetura modular, da qual permite a adição de "
+"mais atributos futuramente. A partir da liberação 1.4.0 adiante, o JBoss "
+"Messaging é programado para a versão 4.2 ou acima disto, além de ser Java 5."
+
+#. Tag: para
+#: About.xml:15
+#, no-c-format
+msgid ""
+"Please send your suggestions or comments to the <ulink url=\"http://www."
+"jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=238\">JBoss Messaging "
+"user forum</ulink>."
+msgstr ""
+"Por favor envie suas sugestões ou comentários para <ulink url=\"http://www."
+"jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=238\">JBoss Messaging "
+"user forum</ulink>."
+
+#. Tag: para
+#: About.xml:18
+#, no-c-format
+msgid ""
+"Permanent Team: Tim Fox (Project Lead), Jeff Mesnil (Core Developer), "
+"Clebert Suconic (Core Developer), Andy Taylor (Core Developer)"
+msgstr ""
+"Time Permanente: Tim Fox (Líder do Projeto), Jeff Mesnil (Desenvolvedor "
+"Principal), Clebert Suconic (Desenvolvedor Principal) e Andy Taylor "
+"(Desenvolvedor Principal)."
+
+#. Tag: para
+#: About.xml:20
+#, no-c-format
+msgid ""
+"Contributors: Ovidiu Feodorov (Project Founder), Sergey Koshcheyev, Ron "
+"Sigal, Madhu Konda, Jay Howell, Tyronne Wickramarathne, Aaron Walker, Adrian "
+"Brock, Rajdeep Dua, Tom Elrod, Alex Fu, Juha Lindfors, Alexey Loubyansky, "
+"Luc Texier, Scott Stark, Aslak Knutsen"
+msgstr ""
+"Contribuintes: Ovidiu Feodorov (Fundador do Projeto), Sergey Koshcheyev, Ron "
+"Sigal, Madhu Konda, Jay Howell, Tyronne Wickramarathne, Aaron Walker, Adrian "
+"Brock, Rajdeep Dua, Tom Elrod, Alex Fu, Juha Lindfors, Alexey Loubyansky, "
+"Luc Texier, Scott Stark, Aslak Knutsen."
+
+#. Tag: para
+#: About.xml:24
+#, no-c-format
+msgid ""
+"Messaging support team: Jay Howell, David Boeren, Mike Clark, Tyronne "
+"Wickramarathne"
+msgstr ""
+"Time de suporte do Messaging: Jay Howell, David Boeren, Mike Clark, Tyronne "
+"Wickramarathne."
+
+#. Tag: para
+#: About.xml:26
+#, no-c-format
+msgid "Other thanks to: Mark Little and Pete Bennett"
+msgstr "Demais agradecimentos para: Mark Little e Pete Bennett."

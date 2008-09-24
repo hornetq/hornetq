@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="A_QUICK_TOUR">
+	<title>JBoss Messaging - A Quick Tour</title>
+	<section id="Limitations_of_JBossMQ">
+		<title>Limitations of JBossMQ</title>
+		<para>
+			JBossMQ has two fundamental limitations:
+			<itemizedlist>
+				<listitem>
+					<para>
+						JBossMQ is based on SpyderMQ (the open source project) which is a non-clustered broker.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						The threading model and the overall design of the non-clustered broker leads to performance limitations in certain high load usage scenarios.
+					</para>
+				</listitem>
+			</itemizedlist>
+		</para>
+	</section>
+	<section id="JBoss_Messaging_Features">
+		<title>JBoss Messaging Features</title>
+		<para>
+			JBoss Messaging implements a high-performance and robust messaging core that is designed to support the largest and most heavily utilized Service Oriented Architectures(SOAs), Enterprise Service Buses (ESBs) and other integration needs ranging from the simplest to the highest demand networks. 
+		</para>
+		<para>
+			It will allow you to smoothly distribute your application load across your cluster, intelligently balancing and utilizing each node's CPU cycles. It comes with no single point of failure and no single point of bottleneck, sophisticated and fully configurable message expiration handling and XA transaction recovery. Thus providing a highly scalable and performant clustering implementation. It includes a JMS front-end to deliver messaging in a standards-based format as well as being designed to be able to support other messaging protocols in the future.
+		</para>
+		<note>
+			<para>
+				<emphasis>JMS compliance</emphasis>: A fully compatible and Sun certified JMS 1.1 implementation, that currently works with JBoss Enterprise Application Platform 4.3 or JBoss Application Server version 4.2 or later.
+			</para>
+		</note>
+		<para>
+			JBoss Messaging contains a host of other features, including: 
+      <itemizedlist>
+         <listitem>
+            <para>Publish-subscribe and point-to-point messaging models</para>
+         </listitem>
+         <listitem>
+            <para>Persistent and non-persistent messages</para>
+         </listitem>
+         <listitem>
+            <para>Guaranteed message delivery that ensures that messages
+            arrive once and only once where required</para>
+         </listitem>
+         <listitem>
+            <para>Transactional and reliable - supporting ACID
+            semantics</para>
+         </listitem>
+         <listitem>
+            <para>Customizable security framework based on JAAS</para>
+         </listitem>
+         <listitem>
+            <para>Fully integrated with JBoss Transactions (formerly known as
+            Arjuna JTA) for full transaction recoverability.</para>
+         </listitem>
+         <listitem>
+            <para>Extensive JMX management interface</para>
+         </listitem>
+         <listitem>
+            <para>Support for most major databases including Oracle, Sybase,
+            MS SQL Server, PostgreSQL and MySQL</para>
+         </listitem>
+         <listitem>
+            <para>HTTP transport to allow use through firewalls that only
+            allow HTTP traffic</para>
+         </listitem>
+         <listitem>
+            <para>SSL transport</para>
+         </listitem>
+         <listitem>
+            <para>Configurable DLQs (Dead Letter Queues) and Expiry
+            Queues</para>
+         </listitem>
+         <listitem>
+            <para>Message statistics: Gives you a rolling historical view of
+            what messages were delivered to what queues and
+            subscriptions</para>
+         </listitem>
+         <listitem>
+            <para>Automatic paging of messages to storage. Allows the use of
+            very large queues - too large to fit in memory at once</para>
+         </listitem>
+      </itemizedlist>
+		</para>
+	</section>
+	<section id="clustering">
+		<title>Clustering Features</title>
+		<formalpara>
+			<title>Fully clustered queues and topics</title>
+			<para>
+				"Logical" queues and topics are distributed across the cluster. You can send to a queue or a topic from any node, and receive from any other.
+			</para>
+		</formalpara>
+		<formalpara>
+			<title>Fully clustered durable subscriptions</title>
+			<para>
+				A particular durable subscription can be accessed from any node of the cluster - allowing you to spread processing load from that subscription across the cluster.
+			</para>
+		</formalpara>
+		<formalpara>
+			<title>Fully clustered temporary queues</title>
+			<para>
+				Send a message with a <literal>replyTo</literal> of a temp queue and it can be sent back on any node of the cluster.
+			</para>
+		</formalpara>
+		<formalpara>
+			<title>Intelligent message redistribution</title>
+			<para>
+				 Messages are automatically moved between different nodes of the cluster if consumers are faster on one node than another. This can help prevent starvation or build up of messages on particular nodes.
+			</para>
+		</formalpara>
+		<formalpara>
+			<title>Message order protection</title>
+			<para>
+				If you want to ensure that the order of messages produced by a producer is the same as is consumed by a consumer then you can set this to true. This works even in the presence of message redistribution.
+			</para>
+		</formalpara>
+		<formalpara>
+			<title>Fully transparent failover</title>
+			<para>
+				When a server fails, your sessions continue without exceptions on a new node as if nothing happened. (Fully configurable - If you don't want this you can fall back to exceptions being thrown and manually recreation of connections on another node)
+			</para>
+		</formalpara>
+		<formalpara>
+			<title>High availability and seamless fail-over</title>
+			<para>
+				If the node you are connected to fails, you will automatically fail over to another node and will not lose any persistent messages. You can carry on with your session seamlessly where you left off. Once and only once delivery of persistent messages is respected at all times.
+			</para>
+		</formalpara>
+		<formalpara>
+			<title>Message bridge</title>
+			<para>
+				JBoss Messaging contains a message bridge component which enables you to bridge messages between any two JMS1.1 destinations on the same or physical separate locations. (E.g. separated by a WAN). This allows you to connect geographically separate clusters, forming huge globally distributed logical queues and topics.
+			</para>
+		</formalpara>
+	</section>
+	<section id="compatibility">
+		<title>Compatibility with JBossMQ</title>
+		<para>
+			Since JBoss Messaging is JMS 1.1 and JMS 1.0.2b compatible, the JMS code written against JBossMQ will run with JBoss Messaging without any changes.
+		</para>
+		<para>
+			JBoss Messaging does not have wire format compatibility with JBossMQ so it would be necessary to upgrade JBoss MQ clients with JBoss Messaging client jars.
+		</para>
+		<important>
+			<para>
+				Even if JBoss Messaging deployment descriptors are very similar to JBoss MQ deployment descriptors, they are  <emphasis>not</emphasis> identical, so they will require some simple adjustments to get them to work with JBoss Messaging. Also, the database data model is completely different, so don't attempt to use JBoss Messaging with a JBoss MQ data schema and vice-versa.
+			</para>
+		</important>
+		<note>
+			<para>
+				JBoss Messaging is built against the JBoss AS 4.2 libraries which are built using Java 5. Therefore JBoss Messaging only runs with Java 5 or later. 
+			</para>
+		</note>
+	</section>
+</chapter>

@@ -1,0 +1,19 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN" "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd" [
+]>
+
+<book>
+	<xi:include href="Book_Info.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+	<xi:include href="About_This_Book.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+	<xi:include href="Introduction.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+	<xi:include href="Important_Features.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+<!--	<xi:include href="Getting_Started.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />-->
+<!--	<xi:include href="Installation.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />-->
+	<xi:include href="Running_Examples.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+	<xi:include href="Configuration.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+	<xi:include href="C_Configuration.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+	<xi:include href="Recovery_Config.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+	<xi:include href="Bridge.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="Revision_History.xml"/>
+
+</book>
