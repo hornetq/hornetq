@@ -68,8 +68,11 @@ import org.jboss.messaging.util.SimpleIDGenerator;
 import org.jboss.messaging.util.SimpleString;
 
 /*
- * Session implementation @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> @author <a
- * href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a> @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * Session implementation 
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> 
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a> 
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 
 public class ServerSessionImpl implements ServerSession, FailureListener, NotificationListener
@@ -296,16 +299,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       {
          if (!pager.page(msg))
          {
-            // We only set the messageID after we are sure the message is not
-            // being paged
-            // Paged messages won't have an ID until they are depaged
-            // This is because after restart we get the max id to use by looking at the journal.
-            // But if some messages are paged, we may get duplicates since id might be lower
-            // than it should be
-
-            // FIXME - the above won't work - we need to set the messsage id before send to be sure that
-            // messages on live and backup get the same ids
-
             List<MessageReference> refs = postOffice.route(msg);
 
             if (msg.getDurableRefCount() != 0)
