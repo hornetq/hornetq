@@ -39,10 +39,6 @@ public interface Packet
    
    boolean isResponse();
    
-   boolean isUsesConfirmations();
-   
-   //boolean isReplicateOnSend();
-   
    byte getType();
 
    void encode(MessagingBuffer buffer);

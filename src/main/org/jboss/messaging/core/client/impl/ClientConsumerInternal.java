@@ -24,7 +24,6 @@ package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.exception.MessagingException;
 
 /**
  * 
@@ -39,11 +38,11 @@ public interface ClientConsumerInternal extends ClientConsumer
    
    void handleMessage(ClientMessage message) throws Exception;
    
-   void recover(long lastDeliveryID) throws MessagingException;
+   void clear();
+   
+   void resume();
    
    int getClientWindowSize();
-   
-   long getIgnoreDeliveryMark();
    
    int getBufferSize();
    

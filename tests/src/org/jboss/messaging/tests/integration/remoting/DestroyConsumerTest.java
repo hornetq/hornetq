@@ -57,7 +57,7 @@ public class DestroyConsumerTest extends IntegrationTestBase
       
       ClientSessionFactory factory = createInVMFactory();
       
-      ClientSession session = factory.createSession(false, false, false, -1, false);
+      ClientSession session = factory.createSession(false, false, false, false);
       
       session.createQueue(queue, queue, null, false, false);
       

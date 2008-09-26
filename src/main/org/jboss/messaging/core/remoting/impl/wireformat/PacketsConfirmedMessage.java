@@ -72,11 +72,6 @@ public class PacketsConfirmedMessage extends PacketImpl
       commandID = buffer.getInt();
    }
    
-   public boolean isUsesConfirmations()
-   {
-      return true;
-   }
-
    @Override
    public String toString()
    {

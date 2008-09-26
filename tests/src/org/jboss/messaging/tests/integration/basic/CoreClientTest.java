@@ -78,7 +78,7 @@ public class CoreClientTest extends TestCase
       
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(connectorFactoryClassName));
 
-      ClientSession session = sf.createSession(false, true, true, -1, false);
+      ClientSession session = sf.createSession(false, true, true, false);
       
       session.createQueue(QUEUE, QUEUE, null, false, false);
       
@@ -104,6 +104,8 @@ public class CoreClientTest extends TestCase
          ClientMessage message2 = consumer.receive();
 
          assertEquals("testINVMCoreClient", message2.getBody().getString());
+         
+         message2.processed();
       }
       
       session.close();

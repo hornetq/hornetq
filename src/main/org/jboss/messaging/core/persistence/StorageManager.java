@@ -48,12 +48,9 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface StorageManager extends MessagingComponent
 {
-
    // Message related operations
 
-   long generateID();
-
-   long generateTransactionID();
+   long generateUniqueID();
 
    void storeMessage(ServerMessage message) throws Exception;
 

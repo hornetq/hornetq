@@ -62,6 +62,8 @@ public abstract class MessageImpl implements Message
 
    // Attributes ----------------------------------------------------
 
+   protected long messageID;
+   
    private SimpleString destination;
 
    private byte type;
@@ -112,6 +114,8 @@ public abstract class MessageImpl implements Message
     */
    protected MessageImpl(final MessageImpl other)
    {
+      this();
+      this.messageID = other.messageID;
       this.destination = other.destination;
       this.type = other.type;
       this.durable = other.durable;
@@ -121,11 +125,18 @@ public abstract class MessageImpl implements Message
       this.properties = new TypedProperties(other.properties);
       this.body = other.body;
    }
+   
+   protected MessageImpl(final long messageID)
+   {
+      this();
+      this.messageID = messageID;
+   }
 
    // Message implementation ----------------------------------------
 
    public void encode(MessagingBuffer buff)
    {
+      buff.putLong(messageID);
       buff.putSimpleString(destination);
       buff.putByte(type);
       buff.putBoolean(durable);
@@ -139,7 +150,7 @@ public abstract class MessageImpl implements Message
 
    public int getEncodeSize()
    {
-      return /* Destination */ SimpleString.sizeofString(destination) +
+      return SIZE_LONG + /* Destination */ SimpleString.sizeofString(destination) +
       /* Type */ SIZE_BYTE +
       /* Durable */ SIZE_BOOLEAN +
       /* Expiration */ SIZE_LONG +
@@ -151,6 +162,7 @@ public abstract class MessageImpl implements Message
 
    public void decode(final MessagingBuffer buffer)
    {
+      messageID = buffer.getLong();
       destination = buffer.getSimpleString();
       type = buffer.getByte();
       durable = buffer.getBoolean();
@@ -166,6 +178,11 @@ public abstract class MessageImpl implements Message
       buffer.getBytes(bytes);
       body = buffer.createNewBuffer(len);
       body.putBytes(bytes);      
+   }
+   
+   public long getMessageID()
+   {
+      return messageID;
    }
    
    public SimpleString getDestination()

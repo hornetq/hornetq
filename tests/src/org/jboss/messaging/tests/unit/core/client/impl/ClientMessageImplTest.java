@@ -54,11 +54,9 @@ public class ClientMessageImplTest extends MessageImplTestBase
    
    public void testDeliveryCountDeliveryIDConstructor()
    {
-      final int deliveryCount = 120982;
-      final long deliveryID = 10291029;
-      ClientMessage msg = new ClientMessageImpl(deliveryCount, deliveryID);
+      final int deliveryCount = 120982;      
+      ClientMessage msg = new ClientMessageImpl(deliveryCount);
       assertEquals(deliveryCount, msg.getDeliveryCount());
-      assertEquals(deliveryID, msg.getDeliveryID());
    }
    
    public void testSetDeliveryCount()
@@ -67,14 +65,6 @@ public class ClientMessageImplTest extends MessageImplTestBase
       final int deliveryCount = 127627;
       msg.setDeliveryCount(deliveryCount);
       assertEquals(deliveryCount, msg.getDeliveryCount());
-   }
-   
-   public void testSetDeliveryID()
-   {
-      ClientMessage msg = new ClientMessageImpl();
-      final long deliveryID = 1029123843;
-      msg.setDeliveryID(deliveryID);
-      assertEquals(deliveryID, msg.getDeliveryID());
    }
    
    public void testConstructor1()

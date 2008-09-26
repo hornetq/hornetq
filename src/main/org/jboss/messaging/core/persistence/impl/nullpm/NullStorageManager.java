@@ -133,8 +133,9 @@ public class NullStorageManager implements StorageManager
 	{
 	}
 
-	public long generateID()
+	public long generateUniqueID()
 	{
+	   //FIXME - this needs to use Howard's ID generator from JBM 1.4
 		return messageIDSequence.getAndIncrement();
 	}
 	

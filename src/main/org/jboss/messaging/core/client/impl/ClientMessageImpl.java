@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
@@ -38,18 +39,22 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
 {
    private int deliveryCount;
    
-   private long deliveryID;
+   private long consumerID;
    
+   private ClientSessionInternal session;
+           
    /*
     * Constructor for when reading from network
     */
-   public ClientMessageImpl(final int deliveryCount, final long deliveryID)
+   public ClientMessageImpl(final int deliveryCount)
    {      
       super();
       
-      this.deliveryCount = deliveryCount;
+      this.session = session;
       
-      this.deliveryID = deliveryID;
+      this.consumerID = consumerID;
+      
+      this.deliveryCount = deliveryCount;
    }
    
    /*
@@ -76,6 +81,13 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
    {      
    }
    
+   public void onReceipt(final ClientSessionInternal session, final long consumerID)
+   {
+      this.session = session;
+      
+      this.consumerID = consumerID;
+   }
+   
    public void setDeliveryCount(final int deliveryCount)
    {
       this.deliveryCount = deliveryCount;
@@ -86,14 +98,11 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
       return this.deliveryCount;
    }
    
-   public void setDeliveryID(final long deliveryID)
+   public void processed() throws MessagingException
    {
-      this.deliveryID = deliveryID;
+      if (session != null)
+      {
+         session.processed(consumerID, messageID);
+      }
    }
-   
-   public long getDeliveryID()
-   {
-      return this.deliveryID;
-   }
-
 }

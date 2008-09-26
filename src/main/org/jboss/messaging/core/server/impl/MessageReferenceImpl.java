@@ -254,7 +254,8 @@ public class MessageReferenceImpl implements MessageReference
 
       ServerMessage copy = message.copy();
       
-      long newMessageId = pm.generateID();
+      //FIXME - this won't work with replication!!!!!!!!!!!
+      long newMessageId = pm.generateUniqueID();
       
       copy.setMessageID(newMessageId);
       

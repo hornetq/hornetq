@@ -545,7 +545,7 @@ public class ClientSessionImplTest extends UnitTestCase
 //      
 //      final int sessionTargetID = 71267162;
 //            
-//      SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(numMessages - 1, true);
+//      SessionAcknowledgeMessageBlah message = new SessionAcknowledgeMessageBlah(numMessages - 1, true);
 //            
 //      cm.sendCommandOneway(sessionTargetID, message);
 //
@@ -559,7 +559,7 @@ public class ClientSessionImplTest extends UnitTestCase
 //      cons1.recover(numMessages);
 //      cons2.recover(numMessages);
 //            
-//      SessionAcknowledgeMessage message2 = new SessionAcknowledgeMessage(numMessages * 2 - 1, true);
+//      SessionAcknowledgeMessageBlah message2 = new SessionAcknowledgeMessageBlah(numMessages * 2 - 1, true);
 //      
 //      cm.sendCommandOneway(sessionTargetID, message2);
 //
@@ -1208,7 +1208,7 @@ public class ClientSessionImplTest extends UnitTestCase
 //      
 //      if (delivered)
 //      {
-//         SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(numDeliveries - 1, true);
+//         SessionAcknowledgeMessageBlah message = new SessionAcknowledgeMessageBlah(numDeliveries - 1, true);
 //         
 //         cm.sendCommandOneway(sessionTargetID, message);
 //      }
@@ -1471,7 +1471,7 @@ public class ClientSessionImplTest extends UnitTestCase
 //      
 //      if (flags != XAResource.TMNOFLAGS)
 //      {      
-//         SessionAcknowledgeMessage msg = new SessionAcknowledgeMessage(numMessages - 1, true);
+//         SessionAcknowledgeMessageBlah msg = new SessionAcknowledgeMessageBlah(numMessages - 1, true);
 //         
 //         cm.sendCommandOneway(sessionTargetID, msg);
 //      }
@@ -1693,7 +1693,7 @@ public class ClientSessionImplTest extends UnitTestCase
 //
 //      final int numMessages = 10;
 //      
-//      SessionAcknowledgeMessage msg = new SessionAcknowledgeMessage(numMessages - 1, true);
+//      SessionAcknowledgeMessageBlah msg = new SessionAcknowledgeMessageBlah(numMessages - 1, true);
 //      
 //      cm.sendCommandOneway(sessionTargetID, msg);
 //      
@@ -1761,7 +1761,7 @@ public class ClientSessionImplTest extends UnitTestCase
 //
 //      final int numMessages = 10;
 //      
-//      SessionAcknowledgeMessage msg = new SessionAcknowledgeMessage(numMessages - 1, true);
+//      SessionAcknowledgeMessageBlah msg = new SessionAcknowledgeMessageBlah(numMessages - 1, true);
 //      
 //      cm.sendCommandOneway(sessionTargetID, msg);
 //      
@@ -1864,7 +1864,7 @@ public class ClientSessionImplTest extends UnitTestCase
 //      
 //      if (delivered)
 //      {
-//         SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(numDeliveries - 1, true);
+//         SessionAcknowledgeMessageBlah message = new SessionAcknowledgeMessageBlah(numDeliveries - 1, true);
 //         
 //         cm.sendCommandOneway(sessionTargetID, message);
 //      }
@@ -1921,7 +1921,7 @@ public class ClientSessionImplTest extends UnitTestCase
 //            
 //      for (int i = 0; i < numMessages / batchSize; i++)
 //      {
-//         SessionAcknowledgeMessage message = new SessionAcknowledgeMessage((i + 1) * batchSize - 1, true);
+//         SessionAcknowledgeMessageBlah message = new SessionAcknowledgeMessageBlah((i + 1) * batchSize - 1, true);
 //               
 //         if (blockOnAcknowledge)
 //         {
@@ -1940,7 +1940,7 @@ public class ClientSessionImplTest extends UnitTestCase
 //      
 //      for (int i = 0; i < numMessages / batchSize; i++)
 //      {
-//         SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(numMessages + (i + 1) * batchSize - 1, true);
+//         SessionAcknowledgeMessageBlah message = new SessionAcknowledgeMessageBlah(numMessages + (i + 1) * batchSize - 1, true);
 //                   
 //         if (blockOnAcknowledge)
 //         {
@@ -2005,7 +2005,7 @@ public class ClientSessionImplTest extends UnitTestCase
 //         
 //      for (int i = 0; i < messages.length; i++)
 //      {
-//         SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(messages[i], false);
+//         SessionAcknowledgeMessageBlah message = new SessionAcknowledgeMessageBlah(messages[i], false);
 //         
 //         if (blockOnAcknowledge)
 //         {
@@ -2026,7 +2026,7 @@ public class ClientSessionImplTest extends UnitTestCase
 //      
 //      for (int i = 0; i < messages2.length; i++)
 //      {
-//         SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(messages2[i], false);
+//         SessionAcknowledgeMessageBlah message = new SessionAcknowledgeMessageBlah(messages2[i], false);
 //         
 //         if (blockOnAcknowledge)
 //         {

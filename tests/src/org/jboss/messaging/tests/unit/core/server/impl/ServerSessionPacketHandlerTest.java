@@ -171,7 +171,7 @@ public class ServerSessionPacketHandlerTest extends UnitTestCase
 //
 //   public void testSessionAck() throws Exception
 //   {
-//      SessionAcknowledgeMessage request = new SessionAcknowledgeMessage(44, true);     
+//      SessionAcknowledgeMessageBlah request = new SessionAcknowledgeMessageBlah(44, true);     
 //      session.acknowledge(44, true);
 //      cm.packetProcessed(request);
 //      replay(session, cm);      

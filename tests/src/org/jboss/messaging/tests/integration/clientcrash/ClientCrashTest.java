@@ -95,7 +95,7 @@ public class ClientCrashTest extends TestCase
               .getName(), new String[]{Integer
               .toString(numberOfConnectionsOnTheClient)});
 
-      ClientSession session = sf.createSession(false, true, true, -1, false);
+      ClientSession session = sf.createSession(false, true, true, false);
       session.createQueue(QUEUE, QUEUE, null, false, false);
       ClientConsumer consumer = session.createConsumer(QUEUE);
       ClientProducer producer = session.createProducer(QUEUE);

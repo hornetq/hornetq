@@ -49,11 +49,12 @@ public interface ManagementService extends NotificationBroadcaster
 {
    MessageCounterManager getMessageCounterManager();
 
-   MessagingServerControlMBean registerServer(PostOffice postOffice, StorageManager storageManager,
-         Configuration configuration,
-         HierarchicalRepository<Set<Role>> securityRepository,
-         HierarchicalRepository<QueueSettings> queueSettingsRepository,
-         MessagingServer messagingServer) throws Exception;
+   MessagingServerControlMBean registerServer(PostOffice postOffice,
+                                              StorageManager storageManager,
+                                              Configuration configuration,
+                                              HierarchicalRepository<Set<Role>> securityRepository,
+                                              HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                                              MessagingServer messagingServer) throws Exception;
 
    void unregisterServer() throws Exception;
 
@@ -61,11 +62,9 @@ public interface ManagementService extends NotificationBroadcaster
 
    void unregisterAddress(SimpleString address) throws Exception;
 
-   void registerQueue(Queue queue, SimpleString address,
-         StorageManager storageManager) throws Exception;
+   void registerQueue(Queue queue, SimpleString address, StorageManager storageManager) throws Exception;
 
-   void unregisterQueue(SimpleString name, SimpleString address)
-         throws Exception;
+   void unregisterQueue(SimpleString name, SimpleString address) throws Exception;
 
    void registerResource(ObjectName objectName, Object resource) throws Exception;
 

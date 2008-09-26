@@ -10,45 +10,40 @@
  * site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.remoting;
-
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.spi.BufferHandler;
-import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+package org.jboss.messaging.core.remoting.impl.wireformat;
 
 /**
- * A RemotingConnection
- * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @version <tt>$Revision$</tt>
  */
-public interface RemotingConnection extends BufferHandler
+public class NullResponseMessage extends PacketImpl
 {
-   Object getID();
+   // Constants -----------------------------------------------------
 
-   Channel getChannel(long channelID, boolean ordered, int packetConfirmationBatchSize, boolean interruptBlockOnFailure);
+   // Attributes ----------------------------------------------------
 
-   long generateChannelID();
+   // Static --------------------------------------------------------
 
-   public void setReplicating(boolean backup);
+   // Constructors --------------------------------------------------
 
-   boolean isReplicating();
+   public NullResponseMessage()
+   {
+      super(NULL_RESPONSE);
+   }
 
-   void addFailureListener(FailureListener listener);
+   // Public --------------------------------------------------------
 
-   boolean removeFailureListener(FailureListener listener);
+   @Override
+   public boolean isResponse()
+   {
+      return true;
+   }
 
-   MessagingBuffer createBuffer(int size);
+   // Package protected ---------------------------------------------
 
-   void fail(MessagingException me);
+   // Protected -----------------------------------------------------
 
-   void destroy();
+   // Private -------------------------------------------------------
 
-   boolean isExpired(long now);
-
-   void startPinger();
-
-   void syncIDGeneratorSequence(long id);
-
-   long getIDGeneratorSequence();
+   // Inner classes -------------------------------------------------
 }

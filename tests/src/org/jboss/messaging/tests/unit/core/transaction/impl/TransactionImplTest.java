@@ -73,7 +73,7 @@ public class TransactionImplTest extends UnitTestCase
       
       final long txID = 123L;
       
-      EasyMock.expect(sm.generateTransactionID()).andReturn(txID);
+      EasyMock.expect(sm.generateUniqueID()).andReturn(txID);
    	
       EasyMock.replay(sm);
       
@@ -98,7 +98,7 @@ public class TransactionImplTest extends UnitTestCase
       
       final long txID = 123L;
       
-      EasyMock.expect(sm.generateTransactionID()).andReturn(txID);
+      EasyMock.expect(sm.generateUniqueID()).andReturn(txID);
    	
       EasyMock.replay(sm);
       
@@ -568,7 +568,7 @@ public class TransactionImplTest extends UnitTestCase
       
       final long txID = 123;
       
-      EasyMock.expect(sm.generateTransactionID()).andReturn(txID);
+      EasyMock.expect(sm.generateUniqueID()).andReturn(txID);
       
       EasyMock.replay(sm);
             
@@ -648,7 +648,7 @@ public class TransactionImplTest extends UnitTestCase
       
       final long txID = 123L;
       
-      EasyMock.expect(sm.generateTransactionID()).andReturn(txID);
+      EasyMock.expect(sm.generateUniqueID()).andReturn(txID);
    	
       EasyMock.replay(sm);
       
@@ -673,7 +673,7 @@ public class TransactionImplTest extends UnitTestCase
    	
       trans.xid = randomXid();
       
-      EasyMock.expect(trans.sm.generateTransactionID()).andReturn(trans.txId);
+      EasyMock.expect(trans.sm.generateUniqueID()).andReturn(trans.txId);
 
       EasyMock.replay(trans.sm, trans.po);
 

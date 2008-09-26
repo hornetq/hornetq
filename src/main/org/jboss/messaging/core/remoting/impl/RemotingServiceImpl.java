@@ -1,23 +1,13 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors by
+ * the @authors tag. See the copyright.txt in the distribution for a full listing of individual contributors. This is
+ * free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. You should have received a copy of the GNU Lesser General Public License along with this software; if not,
+ * write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 
 package org.jboss.messaging.core.remoting.impl;
@@ -57,7 +47,6 @@ import org.jboss.messaging.util.JBMThreadFactory;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  * @version <tt>$Revision$</tt>
  */
 public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycleListener
@@ -71,28 +60,27 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    private volatile boolean started = false;
 
    private final Set<TransportConfiguration> transportConfigs;
-   
+
    private final List<Interceptor> interceptors = new ArrayList<Interceptor>();
-   
-   private Set<Acceptor> acceptors = new HashSet<Acceptor>();
+
+   private final Set<Acceptor> acceptors = new HashSet<Acceptor>();
 
    private final ExecutorService remotingExecutor;
 
    private final long callTimeout;
 
-   private final Map<Object, RemotingConnection> connections =
-      new ConcurrentHashMap<Object, RemotingConnection>();
+   private final Map<Object, RemotingConnection> connections = new ConcurrentHashMap<Object, RemotingConnection>();
 
    private final Timer failedConnectionTimer = new Timer(true);
 
    private TimerTask failedConnectionsTask;
-   
+
    private final long connectionScanPeriod;
-   
+
    private final BufferHandler bufferHandler = new DelegatingBufferHandler();
-   
+
    private volatile boolean backup;
-   
+
    private volatile MessagingServer server;
 
    // Static --------------------------------------------------------
@@ -103,27 +91,27 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    {
       remotingExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-session-ordering-threads"));
 
-      this.transportConfigs = config.getAcceptorConfigurations();
-      
+      transportConfigs = config.getAcceptorConfigurations();
+
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
       for (String interceptorClass : config.getInterceptorClassNames())
       {
          try
          {
             Class<?> clazz = loader.loadClass(interceptorClass);
-            interceptors.add((Interceptor) clazz.newInstance());
+            interceptors.add((Interceptor)clazz.newInstance());
          }
          catch (Exception e)
          {
             log.warn("Error instantiating interceptor \"" + interceptorClass + "\"", e);
          }
       }
-      
-      this.callTimeout = config.getCallTimeout();
-      
-      this.connectionScanPeriod = config.getConnectionScanPeriod();
-      
-      this.backup = config.isBackup();
+
+      callTimeout = config.getCallTimeout();
+
+      connectionScanPeriod = config.getConnectionScanPeriod();
+
+      backup = config.isBackup();
    }
 
    // RemotingService implementation -------------------------------
@@ -134,17 +122,17 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          return;
       }
-      
+
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
-      
-      for (TransportConfiguration info: transportConfigs)
+
+      for (TransportConfiguration info : transportConfigs)
       {
          try
          {
             Class<?> clazz = loader.loadClass(info.getFactoryClassName());
-            
+
             AcceptorFactory factory = (AcceptorFactory)clazz.newInstance();
-            
+
             Acceptor acceptor = factory.createAcceptor(info.getParams(), bufferHandler, this);
 
             acceptors.add(acceptor);
@@ -152,7 +140,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          catch (Exception e)
          {
             log.warn("Error instantiating acceptor \"" + info.getFactoryClassName() + "\"", e);
-         }        
+         }
       }
 
       for (Acceptor a : acceptors)
@@ -163,7 +151,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       failedConnectionsTask = new FailedConnectionsTask();
 
       failedConnectionTimer.schedule(failedConnectionsTask, connectionScanPeriod, connectionScanPeriod);
-      
+
       started = true;
    }
 
@@ -185,9 +173,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          acceptor.stop();
       }
-      
-      this.remotingExecutor.shutdown();
-      
+
+      remotingExecutor.shutdown();
+
       try
       {
          if (!remotingExecutor.awaitTermination(10000, TimeUnit.MILLISECONDS))
@@ -197,7 +185,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
       catch (InterruptedException e)
       {
-         //Ignore
+         // Ignore
       }
 
       started = false;
@@ -222,12 +210,12 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    {
       return new HashSet<RemotingConnection>(connections.values());
    }
-   
+
    public void setMessagingServer(final MessagingServer server)
    {
       this.server = server;
    }
-   
+
    public void setBackup(final boolean backup)
    {
       this.backup = backup;
@@ -236,48 +224,52 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    // ConnectionLifeCycleListener implementation -----------------------------------
 
    public void connectionCreated(final Connection connection)
-   {     
+   {
       if (server == null)
       {
          throw new IllegalStateException("Unable to create connection, server hasn't finished starting up");
       }
-      
+
       RemotingConnection replicatingConnection = server.getReplicatingConnection();
-  
-      RemotingConnection rc =
-         new RemotingConnectionImpl(connection, callTimeout, -1, remotingExecutor, null, interceptors,
-                                    replicatingConnection,
-                                    false);
-      
+
+      RemotingConnection rc = new RemotingConnectionImpl(connection,
+                                                         callTimeout,
+                                                         -1,
+                                                         remotingExecutor,
+                                                         null,
+                                                         interceptors,
+                                                         replicatingConnection,
+                                                         false);
+
       rc.setReplicating(backup);
-            
-      Channel channel1 = rc.getChannel(1, false, -1);
-                  
+
+      Channel channel1 = rc.getChannel(1, false, -1, true);
+
       ChannelHandler handler = new MessagingServerPacketHandler(server, channel1, rc);
-      
+
       channel1.setHandler(handler);
-          
+
       Object id = connection.getID();
-            
-      connections.put(id, rc);      
+
+      connections.put(id, rc);
    }
 
-   public void connectionDestroyed(Object connectionID)
+   public void connectionDestroyed(final Object connectionID)
    {
       RemotingConnection conn = connections.remove(connectionID);
-      
+
       if (conn == null)
       {
          throw new IllegalStateException("Cannot find connection with id " + connectionID);
-      }            
-      
+      }
+
       conn.destroy();
    }
 
-   public void connectionException(Object connectionID, MessagingException me)
+   public void connectionException(final Object connectionID, final MessagingException me)
    {
       RemotingConnection rc = connections.remove(connectionID);
-      
+
       if (rc == null)
       {
          throw new IllegalStateException("Cannot find connection with id " + connectionID);
@@ -285,13 +277,13 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       rc.fail(me);
    }
-   
-   public void addInterceptor(Interceptor interceptor)
+
+   public void addInterceptor(final Interceptor interceptor)
    {
       interceptors.add(interceptor);
    }
-   
-   public boolean removeInterceptor(Interceptor interceptor)
+
+   public boolean removeInterceptor(final Interceptor interceptor)
    {
       return interceptors.remove(interceptor);
    }
@@ -319,22 +311,21 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
 
          Set<RemotingConnection> failedConnections = new HashSet<RemotingConnection>();
-         
+
          long now = System.currentTimeMillis();
-         
-         for (RemotingConnection conn: connections.values())
+
+         for (RemotingConnection conn : connections.values())
          {
             if (conn.isExpired(now))
             {
                failedConnections.add(conn);
             }
          }
-            
-         for (RemotingConnection conn: failedConnections)
+
+         for (RemotingConnection conn : failedConnections)
          {
             MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
-                  "Did not receive ping on connection. It is likely a client has exited or crashed without " +
-                  "closing its connection, or the network between the server and client has failed. The connection will now be closed.");
+                                                           "Did not receive ping on connection. It is likely a client has exited or crashed without " + "closing its connection, or the network between the server and client has failed. The connection will now be closed.");
 
             conn.fail(me);
          }
@@ -349,13 +340,13 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
 
    }
-   
+
    private class DelegatingBufferHandler extends AbstractBufferHandler
    {
       public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
       {
          RemotingConnection conn = connections.get(connectionID);
-         
+
          if (conn != null)
          {
             conn.bufferReceived(connectionID, buffer);

@@ -1,37 +1,26 @@
 /*
- * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat
- * Middleware LLC, and individual contributors by the @authors tag. See the
- * copyright.txt in the distribution for a full listing of individual
- * contributors.
- * 
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- * 
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors by
+ * the @authors tag. See the copyright.txt in the distribution for a full listing of individual contributors. This is
+ * free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. You should have received a copy of the GNU Lesser General Public License along with this software; if not,
+ * write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
 
 package org.jboss.messaging.core.remoting.impl;
 
-import static java.util.Collections.synchronizedList;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CLOSE_SESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EXCEPTION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NULL_RESPONSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PING;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PONG;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REPLICATION_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ACKNOWLEDGE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ADD_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY_RESP;
@@ -40,8 +29,6 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_HASNEXTMESSAGE_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_NEXTMESSAGE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_RESET;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CANCEL;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_COMMIT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEBROWSER;
@@ -53,8 +40,8 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_DELETE_QUEUE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FLOWTOKEN;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_MANAGEMENT_SEND;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_NULL_RESPONSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_PACKETS_CONFIRMED;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_PROCESSED;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_PRODUCER_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY_RESP;
@@ -62,8 +49,6 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_MSG;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECOVER;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REMOVE_DESTINATION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REPLICATE_DELIVERY;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REPLICATE_SEND;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ROLLBACK;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_SEND;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_START;
@@ -85,20 +70,20 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_START;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SUSPEND;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -108,16 +93,18 @@ import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.ResponseNotifier;
+import org.jboss.messaging.core.remoting.impl.wireformat.CloseSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketsConfirmedMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
@@ -127,7 +114,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserResetMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
@@ -137,7 +123,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionNullResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionProcessedMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
@@ -159,21 +145,17 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessag
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.cluster.ReplicationResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.cluster.SessionReplicateDeliveryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.cluster.SessionReplicateSendMessage;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.Future;
-import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.OrderedExecutorFactory;
+import org.jboss.messaging.util.SimpleIDGenerator;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * @version <tt>$Revision$</tt> $Id: RemotingConnectionImpl.java 4633
- *          2008-07-04 11:43:34Z timfox $
+ * @version <tt>$Revision$</tt> $Id$
  */
 public class RemotingConnectionImpl extends AbstractBufferHandler implements RemotingConnection
 {
@@ -194,7 +176,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    private final Map<Long, ChannelImpl> channels = new ConcurrentHashMap<Long, ChannelImpl>();
 
-   private final List<FailureListener> failureListeners = synchronizedList(new ArrayList<FailureListener>());
+   private final List<FailureListener> failureListeners = new CopyOnWriteArrayList<FailureListener>();
 
    private final long blockingCallTimeout;
 
@@ -235,9 +217,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    // Channels 0-9 are reserved for the system
    // 0 is for pinging
    // 1 is for session creation and attachment
-   private final IDGenerator idGenerator = new IDGenerator(10);
+   private volatile SimpleIDGenerator idGenerator = new SimpleIDGenerator(10);
 
-   private final Object failLock = new Object();
+   private boolean idGeneratorSynced = false;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -251,8 +233,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                                  final RemotingConnection replicatingConnection,
                                  final boolean client)
 
-   {
-      //log.info("creating connection " + System.identityHashCode(this) + " client " + client);
+   {    
       this.transportConnection = transportConnection;
 
       this.blockingCallTimeout = blockingCallTimeout;
@@ -279,7 +260,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       this.pingExecutor = pingExecutor;
 
       // Channel zero is reserved for pinging
-      pingChannel = getChannel(0, false, -1);
+      pingChannel = getChannel(0, false, -1, false);
 
       final ChannelHandler ppHandler = new PingPongHandler();
 
@@ -312,13 +293,14 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    public synchronized Channel getChannel(final long channelID,
                                           final boolean ordered,
-                                          final int packetConfirmationBatchSize)
+                                          final int packetConfirmationBatchSize,
+                                          final boolean interruptBlockOnFailure)
    {
       ChannelImpl channel = channels.get(channelID);
 
       if (channel == null)
       {
-         channel = new ChannelImpl(this, channelID, ordered, packetConfirmationBatchSize);
+         channel = new ChannelImpl(this, channelID, ordered, packetConfirmationBatchSize, interruptBlockOnFailure);
 
          channels.put(channelID, channel);
       }
@@ -330,8 +312,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    public void setReplicating(final boolean replicating)
    {
       this.replicating = replicating;
-
-      //log.info("set replicating " + System.identityHashCode(this) + " replicating " + replicating);
 
       writePackets = client || !replicating;
    }
@@ -366,6 +346,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       return transportConnection.createBuffer(size);
    }
 
+   private final Object failLock = new Object();
+
    /*
     * This can be called concurrently by more than one thread so needs to be locked
     */
@@ -381,10 +363,15 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
          log.warn(me.getMessage());
 
-         internalClose();
-
          // Then call the listeners
          callListeners(me);
+
+         internalClose();
+
+         for (Channel channel : channels.values())
+         {
+            channel.fail();
+         }
       }
    }
 
@@ -400,9 +387,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          internalClose();
 
          // TODO: https://jira.jboss.org/jira/browse/JBMESSAGING-1421
-         //         This affects clustering, so I'm keeping this out for now
+         // This affects clustering, so I'm keeping this out for now
          // We need to inform Listeners about the connection being closed
-         //callListeners(null);
+         // callListeners(null);
       }
    }
 
@@ -421,21 +408,39 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    {
       stopPinging = true;
    }
-   
+
+   public synchronized void syncIDGeneratorSequence(final long id)
+   {
+      if (!idGeneratorSynced)
+      {
+         idGenerator = new SimpleIDGenerator(id);
+
+         idGeneratorSynced = true;
+      }
+   }
+
+   public long getIDGeneratorSequence()
+   {
+      return idGenerator.getCurrentID();
+   }
+
    // Buffer Handler implementation
    // ----------------------------------------------------
 
-   public synchronized void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
+   public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
    {
       final Packet packet = decode(buffer);
 
       final long channelID = packet.getChannelID();
 
-      final ChannelImpl channel = channels.get(channelID);
-
-      if (channel != null)
+      synchronized (this)
       {
-         channel.handlePacket(packet);
+         final ChannelImpl channel = channels.get(channelID);
+
+         if (channel != null)
+         {
+            channel.handlePacket(packet);
+         }
       }
    }
 
@@ -485,6 +490,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       if (replicatingConnection != null)
       {
          replicatingConnection.destroy();
+      }
+
+      for (Channel channel : channels.values())
+      {
+         channel.close();
       }
    }
 
@@ -540,6 +550,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             packet = new ReattachSessionResponseMessage();
             break;
          }
+         case CLOSE_SESSION:
+         {
+            packet = new CloseSessionMessage();
+            break;
+         }
          case SESS_CREATECONSUMER:
          {
             packet = new SessionCreateConsumerMessage();
@@ -565,9 +580,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             packet = new SessionCreateBrowserMessage();
             break;
          }
-         case SESS_ACKNOWLEDGE:
+         case SESS_PROCESSED:
          {
-            packet = new SessionAcknowledgeMessage();
+            packet = new SessionProcessedMessage();
             break;
          }
          case SESS_RECOVER:
@@ -583,11 +598,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          case SESS_ROLLBACK:
          {
             packet = new PacketImpl(PacketImpl.SESS_ROLLBACK);
-            break;
-         }
-         case SESS_CANCEL:
-         {
-            packet = new SessionCancelMessage();
             break;
          }
          case SESS_QUEUEQUERY:
@@ -770,11 +780,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             packet = new PacketsConfirmedMessage();
             break;
          }
-         case SESS_CLOSE:
-         {
-            packet = new PacketImpl(PacketImpl.SESS_CLOSE);
-            break;
-         }
          case SESS_CONSUMER_CLOSE:
          {
             packet = new SessionConsumerCloseMessage();
@@ -790,24 +795,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             packet = new SessionBrowserCloseMessage();
             break;
          }
-         case SESS_NULL_RESPONSE:
+         case NULL_RESPONSE:
          {
-            packet = new SessionNullResponseMessage();
-            break;
-         }
-         case SESS_REPLICATE_DELIVERY:
-         {
-            packet = new SessionReplicateDeliveryMessage();
-            break;
-         }
-         case REPLICATION_RESP:
-         {
-            packet = new ReplicationResponseMessage();
-            break;
-         }
-         case SESS_REPLICATE_SEND:
-         {
-            packet = new SessionReplicateSendMessage();
+            packet = new NullResponseMessage();
             break;
          }
          case SESS_MANAGEMENT_SEND:
@@ -853,18 +843,19 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       private Channel replicatingChannel;
 
       // This lock is used to block sends during failover
-      private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
+      private final Lock lock = new ReentrantLock();
 
       private volatile RemotingConnectionImpl connection;
 
       private volatile boolean closed;
 
-      private final java.util.Queue<Runnable> replicationResponseActions = new ConcurrentLinkedQueue<Runnable>();
+      private final boolean interruptBlockOnFailure;
 
       private ChannelImpl(final RemotingConnectionImpl connection,
                           final long id,
                           final boolean ordered,
-                          final int packetConfirmationBatchSize)
+                          final int packetConfirmationBatchSize,
+                          final boolean interruptBlockOnFailure)
       {
          this.connection = connection;
 
@@ -881,11 +872,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
          this.packetConfirmationBatchSize = packetConfirmationBatchSize;
 
-         if (packetConfirmationBatchSize != -1 && (connection.client && !connection.replicating || !connection.client && connection.replicatingConnection == null))
+         if (packetConfirmationBatchSize != -1 && ((connection.client && !connection.replicating) || (!connection.client && connection.replicatingConnection == null)))
          {
             resendCache = new ConcurrentLinkedQueue<Packet>();
-
-            nextConfirmation = packetConfirmationBatchSize - 1;
+       
+            nextConfirmation = packetConfirmationBatchSize - 1;       
          }
          else
          {
@@ -894,7 +885,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
          if (connection.replicatingConnection != null)
          {
-            replicatingChannel = connection.replicatingConnection.getChannel(id, ordered, -1);
+            replicatingChannel = connection.replicatingConnection.getChannel(id, ordered, -1, interruptBlockOnFailure);
 
             replicatingChannel.setHandler(new ReplicatedPacketsConfirmedChannelHandler());
          }
@@ -902,6 +893,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          {
             replicatingChannel = null;
          }
+
+         this.interruptBlockOnFailure = interruptBlockOnFailure;
       }
 
       public long getID()
@@ -917,56 +910,80 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       // This must never called by more than one thread concurrently
       public void send(final Packet packet)
       {
-         lock.readLock().lock();
-
-         try
+         synchronized (this)
          {
             packet.setChannelID(id);
 
-            if (resendCache != null)
+            lock.lock();
+            try
             {
-               addToCache(packet);
+               if (resendCache != null)
+               {
+                  addToCache(packet);
+               }
+            }
+            finally
+            {
+               lock.unlock();
             }
 
             final byte packetType = packet.getType();
 
             if (connection.writePackets || packetType == SESS_PACKETS_CONFIRMED ||
-                packetType == REPLICATION_RESP ||
                 packetType == PONG)
             {
                connection.doWrite(packet);
             }
          }
-         finally
-         {
-            lock.readLock().unlock();
-         }
       }
+
+      private final Object waitLock = new Object();
+
+      private Thread blockThread;
+      
+      private ResponseNotifier responseNotifier;
 
       // This must never called by more than one thread concurrently
       public Packet sendBlocking(final Packet packet) throws MessagingException
       {
-         if (connection.destroyed)
+         return sendBlocking(packet, null);
+      }
+      
+      // This must never called by more than one thread concurrently
+      public Packet sendBlocking(final Packet packet, final ResponseNotifier notifier) throws MessagingException
+      {
+         // For now we only allow one blocking request-response at a time per
+         // channel
+         // We can relax this but it will involve some kind of correlation id
+         synchronized (waitLock)
          {
-            throw new MessagingException(MessagingException.NOT_CONNECTED, "Cannot write to connection - it is destroyed");
-         }
-         
-         lock.readLock().lock();
-
-         try
-         {
-            // For now we only allow one blocking request-response at a time per
-            // channel
-            // We can relax this but it will involve some kind of correlation id
-            synchronized (this)
+            try
             {
+               blockThread = Thread.currentThread();
+               
+               responseNotifier = notifier;
+
+               if (connection.destroyed)
+               {
+                  throw new MessagingException(MessagingException.NOT_CONNECTED,
+                                               "Cannot write to connection - it is destroyed");
+               }
+
                response = null;
 
                packet.setChannelID(id);
 
-               if (resendCache != null)
+               lock.lock();
+               try
                {
-                  addToCache(packet);
+                  if (resendCache != null)
+                  {
+                     addToCache(packet);
+                  }
+               }
+               finally
+               {
+                  lock.unlock();
                }
 
                connection.doWrite(packet);
@@ -979,10 +996,17 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                {
                   try
                   {
-                     wait(toWait);
+                     waitLock.wait(toWait);
                   }
                   catch (final InterruptedException e)
                   {
+                     if (interruptBlockOnFailure)
+                     {
+                        if (connection.destroyed)
+                        {
+                           throw new MessagingException(MessagingException.NOT_CONNECTED, "Connection failed");
+                        }
+                     }
                   }
 
                   final long now = System.currentTimeMillis();
@@ -994,7 +1018,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
                if (response == null)
                {
-                  throw new IllegalStateException("Timed out waiting for response");
+                  throw new MessagingException(MessagingException.CONNECTION_TIMEDOUT, "Timed out waiting for response");
                }
 
                if (response.getType() == PacketImpl.EXCEPTION)
@@ -1008,33 +1032,19 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                   return response;
                }
             }
-         }
-         finally
-         {
-            lock.readLock().unlock();
+            finally
+            {
+               blockThread = null;
+            }
          }
       }
 
-      public void replicatePacket(final Packet packet, final Runnable action)
+      public void replicatePacket(final Packet packet)
       {
          if (replicatingChannel != null)
          {
-            replicationResponseActions.add(action);
-
             replicatingChannel.send(packet);
          }
-      }
-
-      private void replicationResponseReceived()
-      {
-         Runnable action = replicationResponseActions.poll();
-
-         if (action == null)
-         {
-            throw new IllegalStateException("Cannot find action to run");
-         }
-
-         action.run();
       }
 
       public void setHandler(final ChannelHandler handler)
@@ -1053,6 +1063,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          {
             throw new IllegalArgumentException("Cannot find channel with id " + id + " to close");
          }
+         
+         waitForExecutorToComplete();
 
          if (replicatingChannel != null)
          {
@@ -1062,9 +1074,41 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          closed = true;
       }
 
+      public void fail()
+      {
+         if (interruptBlockOnFailure)
+         {
+            synchronized (waitLock)
+            {
+               if (blockThread != null)
+               {
+                  blockThread.interrupt();
+               }
+            }
+         }
+      }
+
       public Channel getReplicatingChannel()
       {
          return replicatingChannel;
+      }
+      
+      private void waitForExecutorToComplete()
+      {
+         if (executor != null)
+         {
+            // Wait for anything in the executor to complete
+            final Future future = new Future();
+
+            executor.execute(future);
+
+            boolean ok = future.await(10000);
+
+            if (!ok)
+            {
+               log.warn("Timed out waiting for executor to complete");
+            }
+         }
       }
 
       public void transferConnection(final RemotingConnection newConnection)
@@ -1076,20 +1120,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          {
             connection.channels.remove(id);
 
-            if (executor != null)
-            {
-               // Wait for anything in the executor to complete
-               final Future future = new Future();
-
-               executor.execute(future);
-
-               boolean ok = future.await(10000);
-
-               if (!ok)
-               {
-                  log.warn("Timed out waiting for executor to complete");
-               }
-            }
+            waitForExecutorToComplete();
 
             // And switch it
 
@@ -1117,12 +1148,12 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       public void lock()
       {
-         lock.writeLock().lock();
+         lock.lock();
       }
 
       public void unlock()
       {
-         lock.writeLock().unlock();
+         lock.unlock();
       }
 
       private void handlePacket(final Packet packet)
@@ -1143,7 +1174,14 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                   {
                      public void run()
                      {
-                        clearUpTo(msg.getCommandID());
+                        try
+                        {
+                           clearUpTo(msg.getCommandID());
+                        }
+                        catch (Exception e)
+                        {
+                           log.error("Failed to clear up to", e);
+                        }
                      }
                   });
                }
@@ -1185,13 +1223,25 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
             if (packet.isResponse())
             {
-               synchronized (this)
+               synchronized (waitLock)
                {
                   response = packet;
 
                   checkConfirmation(packet);
 
-                  notify();
+                  // Shouldn't get responses back on replicating connections - since should never be written
+
+                  if (connection.replicating)
+                  {
+                     throw new IllegalStateException("Got response back on replicating connection " + packet.getType());
+                  }
+                  
+                  if (responseNotifier != null)
+                  {
+                     responseNotifier.onResponseReceived();
+                  }
+
+                  waitLock.notify();
                }
             }
             else if (handler != null)
@@ -1201,8 +1251,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                   checkConfirmation(packet);
 
                   handler.handlePacket(packet);
-
-                  checkSendReplicationResponse(packet);
                }
                else
                {
@@ -1210,11 +1258,16 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                   {
                      public void run()
                      {
-                        checkConfirmation(packet);
-
-                        handler.handlePacket(packet);
-
-                        checkSendReplicationResponse(packet);
+                        try
+                        {
+                           checkConfirmation(packet);
+   
+                           handler.handlePacket(packet);
+                        }
+                        catch (Exception e)
+                        {
+                           log.error("Failed to handle packet", e);
+                        }
                      }
                   });
                }
@@ -1226,26 +1279,12 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
       }
 
-      private void checkSendReplicationResponse(Packet packet)
-      {
-         if (connection.replicating && !connection.client &&
-             packet.getType() != PacketImpl.PING &&
-             packet.getType() != PacketImpl.PONG)
-         {
-            Packet response = new ReplicationResponseMessage();
-
-            response.setChannelID(id);
-
-            connection.doWrite(response);
-         }
-      }
-
       private void checkConfirmation(final Packet packet)
-      {
-         if (packet.isUsesConfirmations() && resendCache != null)
+      {                 
+         if (resendCache != null)
          {
             lastReceivedCommandID++;
-
+            
             if (lastReceivedCommandID == nextConfirmation)
             {
                final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
@@ -1266,7 +1305,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       }
 
       private void clearUpTo(final int lastReceivedCommandID)
-      {
+      {         
          final int numberToClear = 1 + lastReceivedCommandID - firstStoredCommandID;
 
          if (numberToClear == -1)
@@ -1296,10 +1335,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                // Send it straight back to the client
                connection.doWrite(packet);
             }
-            else if (packet.getType() == REPLICATION_RESP)
-            {
-               replicationResponseReceived();
-            }
             else
             {
                throw new IllegalArgumentException("Invalid packet " + packet);
@@ -1327,7 +1362,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
          // Send ping
          final Packet ping = new Ping(expirePeriod);
-   
+
          pingChannel.send(ping);
       }
    }
@@ -1345,7 +1380,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             if (stopPinging)
             {
                future.cancel(true);
-            }           
+            }
          }
          else if (type == PING)
          {

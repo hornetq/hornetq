@@ -1,27 +1,15 @@
 /*
- * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat
- * Middleware LLC, and individual contributors by the @authors tag. See the
- * copyright.txt in the distribution for a full listing of individual
- * contributors.
- * 
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- * 
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors by
+ * the @authors tag. See the copyright.txt in the distribution for a full listing of individual contributors. This is
+ * free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. You should have received a copy of the GNU Lesser General Public License along with this software; if not,
+ * write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
 package org.jboss.messaging.core.client.impl;
-
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CLOSE;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,15 +36,15 @@ import org.jboss.messaging.core.remoting.ConnectionRegistry;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.ResponseNotifier;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.CloseSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCancelMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
@@ -65,6 +53,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionProcessedMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
@@ -86,6 +75,7 @@ import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
+import org.jboss.messaging.util.SimpleIDGenerator;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiterImpl;
 
@@ -100,15 +90,14 @@ import org.jboss.messaging.util.TokenBucketLimiterImpl;
  * 
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * 
- * @version <tt>$Revision: 3603 $</tt>
+ * @version <tt>$Revision: 3603 $</tt> $Id: ClientSessionImpl.java 3603 2008-01-21 18:49:20Z timfox $
  * 
  * $Id: ClientSessionImpl.java 3603 2008-01-21 18:49:20Z timfox $
+ * 
  */
 public class ClientSessionImpl implements ClientSessionInternal
 {
-   // Constants
-   //----------------------------------------------------------------------------
-   // --------
+   // Constants ----------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ClientSessionImpl.class);
 
@@ -118,17 +107,13 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    private static final ExecutorFactory executorFactory = new OrderedExecutorFactory(Executors.newCachedThreadPool(new JBMThreadFactory("jbm-client-session-threads")));
 
-   // Attributes
-   //----------------------------------------------------------------------------
-   // -------
+   // Attributes ----------------------------------------------------------------------------
 
    private final ClientSessionFactoryInternal sessionFactory;
 
    private final String name;
 
    private final boolean xa;
-
-   private final int lazyAckBatchSize;
 
    private final boolean cacheProducers;
 
@@ -148,20 +133,6 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    private volatile boolean closed;
 
-   private boolean acked = true;
-
-   private boolean broken;
-
-   private long toAckCount;
-
-   private long lastID = -1;
-
-   private long deliverID;
-
-   private boolean deliveryExpired;
-
-   private long lastCommittedID = -1;
-
    private final boolean autoCommitAcks;
 
    private final boolean autoCommitSends;
@@ -177,16 +148,13 @@ public class ClientSessionImpl implements ClientSessionInternal
    // For testing only
    private boolean forceNotSameRM;
 
-   private final IDGenerator idGenerator = new IDGenerator(0);
-
-   // Constructors
-   //----------------------------------------------------------------------------
-   // -----
+   private final IDGenerator idGenerator = new SimpleIDGenerator(0);
+   
+   // Constructors ----------------------------------------------------------------------------  
 
    public ClientSessionImpl(final ClientSessionFactoryInternal sessionFactory,
                             final String name,
-                            final boolean xa,
-                            final int lazyAckBatchSize,
+                            final boolean xa,         
                             final boolean cacheProducers,
                             final boolean autoCommitSends,
                             final boolean autoCommitAcks,
@@ -196,11 +164,6 @@ public class ClientSessionImpl implements ClientSessionInternal
                             final int version,
                             final Channel channel) throws MessagingException
    {
-      if (lazyAckBatchSize < -1 || lazyAckBatchSize == 0)
-      {
-         throw new IllegalArgumentException("Invalid lazyAckbatchSize, valid values are > 0 or -1 (infinite)");
-      }
-
       this.sessionFactory = sessionFactory;
 
       this.name = name;
@@ -214,8 +177,6 @@ public class ClientSessionImpl implements ClientSessionInternal
       executor = executorFactory.getExecutor();
 
       this.xa = xa;
-
-      this.lazyAckBatchSize = lazyAckBatchSize;
 
       if (cacheProducers)
       {
@@ -487,75 +448,34 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       checkClosed();
 
-      // Flush any acks to the server
-      acknowledgeInternal(false);
-
       channel.sendBlocking(new PacketImpl(PacketImpl.SESS_COMMIT));
-
-      lastCommittedID = lastID;
    }
 
    public void rollback() throws MessagingException
    {
       checkClosed();
 
-      // We tell each consumer to clear it's buffers and ignore any repeated
-      // deliveries
-
-      if (autoCommitAcks)
-      {
-         lastCommittedID = lastID;
-      }
-
+      //We need to make sure we don't get any inflight messages
       for (ClientConsumerInternal consumer : consumers.values())
       {
-         consumer.recover(lastCommittedID + 1);
+         consumer.clear();                  
       }
-
-      // Flush any acks to the server
-      acknowledgeInternal(false);
-
-      toAckCount = 0;
-
-      channel.sendBlocking(new PacketImpl(PacketImpl.SESS_ROLLBACK));
-   }
-
-   public void acknowledge() throws MessagingException
-   {
-      checkClosed();
-
-      if (lastID + 1 != deliverID)
+      
+      channel.sendBlocking(new PacketImpl(PacketImpl.SESS_ROLLBACK),
+                           new ResponseNotifier()
       {
-         broken = true;
-      }
-
-      lastID = deliverID;
-
-      toAckCount++;
-
-      acked = false;
-
-      if (deliveryExpired)
-      {
-         channel.send(new SessionCancelMessage(lastID, true));
-
-         toAckCount = 0;
-
-         acked = true;
-      }
-      else if (broken || toAckCount == lazyAckBatchSize)
-      {
-         acknowledgeInternal(blockOnAcknowledge);
-
-         toAckCount = 0;
-
-         if (autoCommitAcks)
+         public void onResponseReceived()
          {
-            lastCommittedID = lastID;
+            //This needs to be called on before the blocking thread is awoken
+            //hence the ResponseNotifier
+            for (ClientConsumerInternal consumer : consumers.values())
+            {
+               consumer.resume();
+            }
          }
-      }
+      }); 
    }
-
+  
    public synchronized void close() throws MessagingException
    {
       if (closed)
@@ -563,14 +483,15 @@ public class ClientSessionImpl implements ClientSessionInternal
          return;
       }
 
+      sessionFactory.removeSession(this);
+
       try
       {
          closeChildren();
 
-         // Flush any acks to the server
-         acknowledgeInternal(false);
+         Channel channel1 = remotingConnection.getChannel(1, false, -1, true);
 
-         channel.sendBlocking(new PacketImpl(SESS_CLOSE));
+         channel1.sendBlocking(new CloseSessionMessage(name));
       }
       catch (Throwable ignore)
       {
@@ -630,11 +551,6 @@ public class ClientSessionImpl implements ClientSessionInternal
       return cacheProducers;
    }
 
-   public int getLazyAckBatchSize()
-   {
-      return lazyAckBatchSize;
-   }
-
    public boolean isXA()
    {
       return xa;
@@ -672,11 +588,25 @@ public class ClientSessionImpl implements ClientSessionInternal
    // ClientSessionInternal implementation
    // ------------------------------------------------------------
 
-   public void delivered(final long deliverID, final boolean expired)
+   public String getName()
    {
-      this.deliverID = deliverID;
+      return name;
+   }
+   
+   public void processed(final long consumerID, final long messageID) throws MessagingException
+   {
+      checkClosed();
+      
+      SessionProcessedMessage message = new SessionProcessedMessage(consumerID, messageID, blockOnAcknowledge);
 
-      deliveryExpired = expired;
+      if (blockOnAcknowledge)
+      {
+         channel.sendBlocking(message);
+      }
+      else
+      {
+         channel.send(message);
+      }          
    }
 
    public void addConsumer(final ClientConsumerInternal consumer)
@@ -697,14 +627,6 @@ public class ClientSessionImpl implements ClientSessionInternal
    public void removeConsumer(final ClientConsumerInternal consumer) throws MessagingException
    {
       consumers.remove(consumer.getID());
-
-      // 1. flush any unacked message to the server
-
-      acknowledgeInternal(false);
-
-      // 2. cancel all deliveries on server but not in tx
-
-      channel.send(new SessionCancelMessage(-1, false));
    }
 
    public void removeProducer(final ClientProducerInternal producer)
@@ -749,6 +671,8 @@ public class ClientSessionImpl implements ClientSessionInternal
          return;
       }
 
+      sessionFactory.removeSession(this);
+
       try
       {
          cleanUpChildren();
@@ -781,17 +705,22 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    public void handleFailover(final RemotingConnection backupConnection)
    {
+      // We lock the channel to prevent any packets to be added to the resend
+      // cache
+      // during the failover process
       channel.lock();
 
       try
       {
          channel.transferConnection(backupConnection);
 
+         backupConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
+
          remotingConnection = backupConnection;
 
          Packet request = new ReattachSessionMessage(name, channel.getLastReceivedCommandID());
 
-         Channel channel1 = backupConnection.getChannel(1, false, -1);
+         Channel channel1 = backupConnection.getChannel(1, false, -1, true);
 
          ReattachSessionResponseMessage response = (ReattachSessionResponseMessage)channel1.sendBlocking(request);
 
@@ -859,9 +788,6 @@ public class ClientSessionImpl implements ClientSessionInternal
             throw new XAException(XAException.XAER_INVAL);
          }
 
-         // Need to flush any acks to server first
-         acknowledgeInternal(false);
-
          SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
 
          if (response.isError())
@@ -882,9 +808,6 @@ public class ClientSessionImpl implements ClientSessionInternal
       checkXA();
       try
       {
-         // Need to flush any acks to server first
-         acknowledgeInternal(false);
-
          SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(new SessionXAForgetMessage(xid));
 
          if (response.isError())
@@ -996,14 +919,29 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       checkXA();
 
-      // Note - don't need to flush acks since the previous end would have
-      // done this
-
+      //We need to make sure we don't get any inflight messages
+      for (ClientConsumerInternal consumer : consumers.values())
+      {
+         consumer.clear();                  
+      }
+      
       SessionXARollbackMessage packet = new SessionXARollbackMessage(xid);
 
       try
       {
-         SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
+         SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet,
+                              new ResponseNotifier()
+         {
+            public void onResponseReceived()
+            {
+               //This needs to be called on before the blocking thread is awoken
+               //hence the ResponseNotifier
+               for (ClientConsumerInternal consumer : consumers.values())
+               {
+                  consumer.resume();
+               }
+            }
+         }); 
 
          if (response.isError())
          {
@@ -1043,16 +981,10 @@ public class ClientSessionImpl implements ClientSessionInternal
 
          if (flags == XAResource.TMJOIN)
          {
-            // Need to flush any acks to server first
-            acknowledgeInternal(false);
-
             packet = new SessionXAJoinMessage(xid);
          }
          else if (flags == XAResource.TMRESUME)
          {
-            // Need to flush any acks to server first
-            acknowledgeInternal(false);
-
             packet = new SessionXAResumeMessage(xid);
          }
          else if (flags == XAResource.TMNOFLAGS)
@@ -1083,7 +1015,6 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    // Public
    //----------------------------------------------------------------------------
-   // -----------
 
    public void setForceNotSameRM(final boolean force)
    {
@@ -1102,15 +1033,12 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    // Protected
    //----------------------------------------------------------------------------
-   // --------
 
    // Package Private
    //----------------------------------------------------------------------------
-   // --
 
    // Private
    //----------------------------------------------------------------------------
-   // ----------
 
    private void checkXA() throws XAException
    {
@@ -1119,27 +1047,6 @@ public class ClientSessionImpl implements ClientSessionInternal
          log.error("Session is not XA");
          throw new XAException(XAException.XAER_RMERR);
       }
-   }
-
-   private void acknowledgeInternal(final boolean block) throws MessagingException
-   {
-      if (acked)
-      {
-         return;
-      }
-
-      SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(lastID, !broken, block);
-
-      if (block)
-      {
-         channel.sendBlocking(message);
-      }
-      else
-      {
-         channel.send(message);
-      }
-
-      acked = true;
    }
 
    private void checkClosed() throws MessagingException
@@ -1209,13 +1116,6 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       connectionRegistry.returnConnection(remotingConnection.getID());
 
-      sessionFactory.removeSession(this);
-
       closed = true;
    }
-
-   // Inner Classes
-   //----------------------------------------------------------------------------
-   // ----
-
 }

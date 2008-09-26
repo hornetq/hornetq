@@ -22,12 +22,15 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
@@ -36,7 +39,8 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 
 /**
  * Concrete implementation of a ClientConsumer. 
@@ -80,6 +84,10 @@ public class ServerConsumerImpl implements ServerConsumer
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
 
    private final PostOffice postOffice;
+   
+   private final java.util.Queue<MessageReference> deliveringRefs = new ConcurrentLinkedQueue<MessageReference>();
+   
+   private final Channel channel;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -93,7 +101,8 @@ public class ServerConsumerImpl implements ServerConsumer
                              final boolean started,
                              final StorageManager storageManager,
                              final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-                             final PostOffice postOffice)
+                             final PostOffice postOffice,
+                             final Channel channel)
    {
       this.id = id;
 
@@ -119,7 +128,9 @@ public class ServerConsumerImpl implements ServerConsumer
       this.queueSettingsRepository = queueSettingsRepository;
 
       this.postOffice = postOffice;
-
+      
+      this.channel = channel;
+       
       messageQueue.addConsumer(this);
    }
 
@@ -167,10 +178,13 @@ public class ServerConsumerImpl implements ServerConsumer
             availableCredits.addAndGet(-message.getEncodeSize());
          }
          
-       //  log.info(System.identityHashCode(this) + " Handling delivery " + ref.getMessage().getProperty(new SimpleString("count")));
-
-         session.handleDelivery(ref, this);
-
+         deliveringRefs.add(ref);         
+         
+         SessionReceiveMessage packet =
+            new SessionReceiveMessage(id, ref.getMessage(), ref.getDeliveryCount() + 1);
+         
+         channel.send(packet);
+             
          return HandleStatus.HANDLED;
       }
    }
@@ -182,6 +196,25 @@ public class ServerConsumerImpl implements ServerConsumer
       messageQueue.removeConsumer(this);
 
       session.removeConsumer(this);
+      
+      cancelRefs();
+   }
+   
+   public void cancelRefs() throws Exception
+   {
+      if (!deliveringRefs.isEmpty())
+      {
+         Transaction tx = new TransactionImpl(storageManager, postOffice);
+         
+         for (MessageReference ref : deliveringRefs)
+         {
+            tx.addAcknowledgement(ref);
+         }
+
+         deliveringRefs.clear();
+
+         tx.rollback(queueSettingsRepository);
+      }      
    }
 
    public void setStarted(final boolean started)
@@ -220,7 +253,7 @@ public class ServerConsumerImpl implements ServerConsumer
       return messageQueue;
    }
 
-   public void deliverMessage(final long messageID) throws Exception
+   private MessageReference deliverMessage(final long messageID) throws Exception
    {
       // Deliver a specific message from the queue - this is used when
       // replicating delivery state
@@ -243,6 +276,35 @@ public class ServerConsumerImpl implements ServerConsumer
       if (handled != HandleStatus.HANDLED)
       {
          throw new IllegalStateException("Failed to handle replicated reference " + messageID);
+      }
+      
+      return ref;
+   }
+   
+   public MessageReference getReference(final long messageID) throws Exception
+   {
+//      MessageReference ref;
+//      do
+//      {
+//         ref = deliveringRefs.poll();
+//      }
+//      while (ref.getMessage().getMessageID() != messageID);
+      
+      if (messageQueue.isBackup())
+      {
+         return deliverMessage(messageID);
+      }
+      else
+      {
+         
+         MessageReference ref = deliveringRefs.poll();
+         
+         if (ref.getMessage().getMessageID() != messageID)
+         {
+            throw new IllegalStateException("Invalid order");
+         }
+   
+         return ref;
       }
    }
 

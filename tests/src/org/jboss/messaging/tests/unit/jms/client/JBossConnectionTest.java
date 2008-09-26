@@ -80,9 +80,9 @@ public class JBossConnectionTest extends TestCase
       ClientSession sess2 = createStrictMock(ClientSession.class);
       ClientSession sess3 = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, false)).andReturn(sess1);
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, false)).andReturn(sess2);
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, false)).andReturn(sess3);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(sess1);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(sess2);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(sess3);
       
       sess1.addFailureListener(EasyMock.isA(FailureListener.class));
       sess2.addFailureListener(EasyMock.isA(FailureListener.class));
@@ -114,7 +114,7 @@ public class JBossConnectionTest extends TestCase
       
       ClientSession sess1 = createStrictMock(ClientSession.class);
            
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, false)).andReturn(sess1);     
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(sess1);     
       
       sess1.addFailureListener(EasyMock.isA(FailureListener.class));
 
@@ -146,9 +146,9 @@ public class JBossConnectionTest extends TestCase
       ClientSession sess2 = createStrictMock(ClientSession.class);
       ClientSession sess3 = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, false)).andReturn(sess1);
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, false)).andReturn(sess2);
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, false)).andReturn(sess3);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(sess1);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(sess2);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(sess3);
       
       sess1.addFailureListener(EasyMock.isA(FailureListener.class));
       sess2.addFailureListener(EasyMock.isA(FailureListener.class));
@@ -180,7 +180,7 @@ public class JBossConnectionTest extends TestCase
       
       ClientSession sess1 = createStrictMock(ClientSession.class);
            
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, false)).andReturn(sess1);     
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(sess1);     
       
       sess1.addFailureListener(EasyMock.isA(FailureListener.class));
 
@@ -212,9 +212,9 @@ public class JBossConnectionTest extends TestCase
       ClientSession sess2 = createStrictMock(ClientSession.class);
       ClientSession sess3 = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, false)).andReturn(sess1);
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, false)).andReturn(sess2);
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, false)).andReturn(sess3);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(sess1);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(sess2);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(sess3);
       
       sess1.addFailureListener(EasyMock.isA(FailureListener.class));
       sess2.addFailureListener(EasyMock.isA(FailureListener.class));
@@ -246,7 +246,7 @@ public class JBossConnectionTest extends TestCase
       
       ClientSession sess1 = createStrictMock(ClientSession.class);
            
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, false)).andReturn(sess1);     
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(sess1);     
       
       sess1.addFailureListener(EasyMock.isA(FailureListener.class));
 
@@ -611,7 +611,7 @@ public class JBossConnectionTest extends TestCase
       JBossConnection connection = new JBossConnection(null, null,
                JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
 
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, false)).andThrow(new MessagingException());
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andThrow(new MessagingException());
       
       replay(sf);
   
@@ -634,7 +634,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, false, false, -1, false)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, false, false, false)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -653,7 +653,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, false)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -672,7 +672,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_QUEUE_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 100, false)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -691,7 +691,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_QUEUE_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, false, -1, false)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, false, false)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -732,7 +732,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_TOPIC_CONNECTION, null, -1, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, false, false, -1, false)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, false, false, false)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -751,7 +751,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_TOPIC_CONNECTION, null, -1, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, false)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -770,7 +770,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_TOPIC_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 100, false)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -789,7 +789,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_TOPIC_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, false, -1, false)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, false, false)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -831,7 +831,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_GENERIC_CONNECTION, null, -1, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, false, false, -1, false)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, false, false, false)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -850,7 +850,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_GENERIC_CONNECTION, null, -1, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, false)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -869,7 +869,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_GENERIC_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 100, false)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, false)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -888,7 +888,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_GENERIC_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, false, -1, false)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, false, false)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -929,7 +929,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_GENERIC_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, true, false, false, -1, false)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, true, false, false, false)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -948,7 +948,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_GENERIC_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, true, false, false, -1, false)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, true, false, false, false)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -967,7 +967,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_GENERIC_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, true, false, false, -1, false)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, true, false, false, false)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -987,7 +987,7 @@ public class JBossConnectionTest extends TestCase
       JBossConnection connection = new JBossConnection(null, null,
                JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
 
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, true)).andThrow(new MessagingException());
+      EasyMock.expect(sf.createSession(null, null, false, true, true, true)).andThrow(new MessagingException());
       
       replay(sf);
   
@@ -1010,7 +1010,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, false, false, -1, true)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, false, false, true)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -1029,7 +1029,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_QUEUE_CONNECTION, null, -1, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, true)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, true)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -1048,7 +1048,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_QUEUE_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 100, true)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, true)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -1067,7 +1067,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_QUEUE_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, false, -1, true)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, false, true)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -1108,7 +1108,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_TOPIC_CONNECTION, null, -1, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, false, false, -1, true)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, false, false, true)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -1127,7 +1127,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_TOPIC_CONNECTION, null, -1, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, true)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, true)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -1146,7 +1146,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_TOPIC_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 100, true)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, true)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -1165,7 +1165,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_TOPIC_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, false, -1, true)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, false, true)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -1207,7 +1207,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_GENERIC_CONNECTION, null, -1, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, false, false, -1, true)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, false, false, true)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -1226,7 +1226,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_GENERIC_CONNECTION, null, -1, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 1, true)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, true)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -1245,7 +1245,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_GENERIC_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, true, 100, true)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, true, true)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -1264,7 +1264,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_GENERIC_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, false, true, false, -1, true)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, false, true, false, true)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -1305,7 +1305,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_GENERIC_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, true, false, false, -1, true)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, true, false, false, true)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -1324,7 +1324,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_GENERIC_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, true, false, false, -1, true)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, true, false, false, true)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);
@@ -1343,7 +1343,7 @@ public class JBossConnectionTest extends TestCase
                JBossConnection.TYPE_GENERIC_CONNECTION, null, 100, sf);
       ClientSession clientSession = createStrictMock(ClientSession.class);
       
-      EasyMock.expect(sf.createSession(null, null, true, false, false, -1, true)).andReturn(clientSession);
+      EasyMock.expect(sf.createSession(null, null, true, false, false, true)).andReturn(clientSession);
       clientSession.addFailureListener(EasyMock.isA(FailureListener.class));
       
       replay(sf, clientSession);

@@ -88,8 +88,6 @@ public class JBossConnection implements
 
    private final int connectionType;
    
-   private final int dupsOKBatchSize;
-   
    private final Set<JBossSession> sessions = new ConcurrentHashSet<JBossSession>();
    
    private final Set<SimpleString> tempAddresses = new ConcurrentHashSet<SimpleString>();
@@ -136,8 +134,6 @@ public class JBossConnection implements
       
       this.clientID = clientID;
       
-      this.dupsOKBatchSize = dupsOKBatchSize;
-
       this.sessionFactory = sessionFactory;
       
       uid = UUIDGenerator.getInstance().generateSimpleStringUUID();    
@@ -261,7 +257,7 @@ public class JBossConnection implements
             try
             {
                session =
-                  sessionFactory.createSession(username, password, false, true, true, 1, false);
+                  sessionFactory.createSession(username, password, false, true, true, false);
                          
                //Remove any temporary queues and addresses
                
@@ -494,20 +490,20 @@ public class JBossConnection implements
       	if (acknowledgeMode == Session.SESSION_TRANSACTED)
       	{
       	   session =
-               sessionFactory.createSession(username, password, isXA, false, false, -1, cacheProducers);
+               sessionFactory.createSession(username, password, isXA, false, false, cacheProducers);
       	}
       	else if (acknowledgeMode == Session.AUTO_ACKNOWLEDGE)
          {
-      	   session = sessionFactory.createSession(username, password, isXA, true, true, 1, cacheProducers);
+      	   session = sessionFactory.createSession(username, password, isXA, true, true, cacheProducers);
          }
          else if (acknowledgeMode == Session.DUPS_OK_ACKNOWLEDGE)
          {
-            session = sessionFactory.createSession(username, password, isXA, true, true, dupsOKBatchSize, cacheProducers);
+            session = sessionFactory.createSession(username, password, isXA, true, true, cacheProducers);
          }
          else if (acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
          {
             session =
-               sessionFactory.createSession(username, password, isXA, true, false, -1, cacheProducers);
+               sessionFactory.createSession(username, password, isXA, true, false, cacheProducers);
          }         
          else
          {

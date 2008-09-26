@@ -51,13 +51,11 @@ public class SessionReceiveMessage extends PacketImpl
    
    private int deliveryCount;
    
-   private long deliveryID;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
    
-   public SessionReceiveMessage(final long consumerID, final ServerMessage message, final int deliveryCount, final long deliveryID)
+   public SessionReceiveMessage(final long consumerID, final ServerMessage message, final int deliveryCount)
    {
       super(SESS_RECEIVE_MSG);
       
@@ -68,8 +66,6 @@ public class SessionReceiveMessage extends PacketImpl
       this.clientMessage = null;
       
       this.deliveryCount = deliveryCount;
-      
-      this.deliveryID = deliveryID;
    }
    
    public SessionReceiveMessage()
@@ -99,16 +95,10 @@ public class SessionReceiveMessage extends PacketImpl
       return deliveryCount;
    }
    
-   public long getDeliveryID()
-   {
-      return deliveryID;
-   }
-   
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putLong(consumerID);
       buffer.putInt(deliveryCount);
-      buffer.putLong(deliveryID);
       serverMessage.encode(buffer);
    }
    
@@ -117,10 +107,10 @@ public class SessionReceiveMessage extends PacketImpl
       //TODO can be optimised
       
       consumerID = buffer.getLong();
-      deliveryCount = buffer.getInt();
-      deliveryID = buffer.getLong();
       
-      clientMessage = new ClientMessageImpl(deliveryCount, deliveryID);
+      deliveryCount = buffer.getInt();
+
+      clientMessage = new ClientMessageImpl(deliveryCount);
       
       clientMessage.decode(buffer);
       

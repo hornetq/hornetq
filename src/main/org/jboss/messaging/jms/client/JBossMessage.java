@@ -1,24 +1,14 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors by
+ * the @authors tag. See the copyright.txt in the distribution for a full listing of individual contributors. This is
+ * free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. You should have received a copy of the GNU Lesser General Public License along with this software; if not,
+ * write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
+ */
 
 package org.jboss.messaging.jms.client;
 
@@ -49,49 +39,44 @@ import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- * 
- * Implementation of a JMS Message
- * 
- * JMS Messages only live on the client side - the server only deals with MessageImpl instances
+ * Implementation of a JMS Message JMS Messages only live on the client side - the server only deals with MessageImpl
+ * instances
  * 
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:bershath@yahoo.com">Tyronne Wickramarathne</a>
- * 
- * Partially ported from JBossMQ implementation originally written by:
+ * @author <a href="mailto:bershath@yahoo.com">Tyronne Wickramarathne</a> Partially ported from JBossMQ implementation
+ *         originally written by:
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author Hiram Chirino (Cojonudo14@hotmail.com)
  * @author David Maplesden (David.Maplesden@orion.co.nz)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
- * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- *
- * $Id: JBossMessage.java 3466 2007-12-10 18:44:52Z timfox $
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a> $Id: JBossMessage.java 3466 2007-12-10 18:44:52Z timfox $
  */
 public class JBossMessage implements javax.jms.Message
 {
    // Constants -----------------------------------------------------
 
    public static final SimpleString REPLYTO_HEADER_NAME = new SimpleString("JMSReplyTo");
-   
+
    public static final SimpleString CORRELATIONID_HEADER_NAME = new SimpleString("JMSCorrelationID");
 
    public static final SimpleString JBM_MESSAGE_ID = new SimpleString("JMSMessageID");
-   
+
    public static final SimpleString TYPE_HEADER_NAME = new SimpleString("JMSType");
-   
+
    private static final SimpleString JMS = new SimpleString("JMS");
-   
+
    private static final SimpleString JMSX = new SimpleString("JMSX");
-   
+
    private static final SimpleString JMS_ = new SimpleString("JMS_");
-   
+
    public static final String JMSXDELIVERYCOUNT = "JMSXDeliveryCount";
-   
-   //Used when bridging a message
+
+   // Used when bridging a message
    public static final String JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST = "JBM_BRIDGE_MSG_ID_LIST";
-   
+
    public static final byte TYPE = 0;
-   
+
    // Static --------------------------------------------------------
 
    private static final HashSet<String> reservedIdentifiers = new HashSet<String>();
@@ -109,89 +94,112 @@ public class JBossMessage implements javax.jms.Message
       reservedIdentifiers.add("IS");
       reservedIdentifiers.add("ESCAPE");
    }
-      
+
    private static final Logger log = Logger.getLogger(JBossMessage.class);
-  
+
    public static JBossMessage createMessage(final ClientMessage message, final ClientSession session)
    {
       int type = message.getType();
-      
+
       JBossMessage msg;
-      
-      switch(type)
+
+      switch (type)
       {
          case JBossMessage.TYPE:
-            msg =  new JBossMessage(message, session);
+         {
+            msg = new JBossMessage(message, session);
             break;
+         }
          case JBossBytesMessage.TYPE:
+         {
             msg = new JBossBytesMessage(message, session);
             break;
+         }
          case JBossMapMessage.TYPE:
-            msg =  new JBossMapMessage(message, session);
+         {
+            msg = new JBossMapMessage(message, session);
             break;
+         }
          case JBossObjectMessage.TYPE:
-            msg =  new JBossObjectMessage(message, session);
+         {
+            msg = new JBossObjectMessage(message, session);
             break;
+         }
          case JBossStreamMessage.TYPE:
+         {
             msg = new JBossStreamMessage(message, session);
             break;
+         }
          case JBossTextMessage.TYPE:
+         {
             msg = new JBossTextMessage(message, session);
             break;
+         }
          default:
+         {
             throw new IllegalArgumentException("Invalid message type " + type);
+         }
       }
-      
-      return msg;      
+
+      return msg;
    }
-   
+
    // Attributes ----------------------------------------------------
 
-   //The underlying message
+   // The underlying message
    protected ClientMessage message;
-   
+
    protected MessagingBuffer body;
-   
+
    private ClientSession session;
-   
-   //Read-only?
+
+   // Read-only?
    protected boolean readOnly;
-   
-   //Cache it
+
+   // Cache it
    private Destination dest;
-   
-   //Cache it
+
+   // Cache it
    private String msgID;
 
-   //Cache it
+   // Cache it
    private Destination replyTo;
 
-   //Cache it
+   // Cache it
    private String jmsCorrelationID;
-   
-   //Cache it
+
+   // Cache it
    private String jmsType;
-              
+
    // Constructors --------------------------------------------------
    /**
     * constructors for test purposes only
     */
    public JBossMessage()
    {
-      message = new ClientMessageImpl(JBossMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, new ByteBufferWrapper(ByteBuffer.allocate(1024)));
+      message = new ClientMessageImpl(JBossMessage.TYPE,
+                                      true,
+                                      0,
+                                      System.currentTimeMillis(),
+                                      (byte)4,
+                                      new ByteBufferWrapper(ByteBuffer.allocate(1024)));
 
-      //TODO - can we lazily create this?
+      // TODO - can we lazily create this?
       body = message.getBody();
    }
 
    public JBossMessage(byte type)
    {
-      message = new ClientMessageImpl(type, true, 0, System.currentTimeMillis(), (byte)4, new ByteBufferWrapper(ByteBuffer.allocate(1024)));
+      message = new ClientMessageImpl(type,
+                                      true,
+                                      0,
+                                      System.currentTimeMillis(),
+                                      (byte)4,
+                                      new ByteBufferWrapper(ByteBuffer.allocate(1024)));
 
-      //TODO - can we lazily create this?
+      // TODO - can we lazily create this?
       body = message.getBody();
    }
-
 
    /*
     * Create a new message prior to sending
@@ -199,38 +207,38 @@ public class JBossMessage implements javax.jms.Message
    protected JBossMessage(final byte type, final ClientSession session)
    {
       message = session.createClientMessage(type, true, 0, System.currentTimeMillis(), (byte)4);
-      
-      //TODO - can we lazily create this?
+
+      // TODO - can we lazily create this?
       body = message.getBody();
    }
-   
+
    public JBossMessage(final ClientSession session)
    {
-      this (JBossMessage.TYPE, session);
+      this(JBossMessage.TYPE, session);
    }
-   
+
    /**
     * Constructor for when receiving a message from the server
     */
    public JBossMessage(final ClientMessage message, ClientSession session)
    {
       this.message = message;
-      
+
       this.readOnly = true;
-      
+
       this.session = session;
-      
+
       this.body = message.getBody();
    }
 
    /*
     * A constructor that takes a foreign message
-    */  
-   public JBossMessage(final Message foreign,final ClientSession session) throws JMSException
+    */
+   public JBossMessage(final Message foreign, final ClientSession session) throws JMSException
    {
       this(foreign, JBossMessage.TYPE, session);
    }
-      
+
    protected JBossMessage(final Message foreign, final byte type, final ClientSession session) throws JMSException
    {
       this(type, session);
@@ -242,7 +250,7 @@ public class JBossMessage implements javax.jms.Message
          byte[] corrIDBytes = foreign.getJMSCorrelationIDAsBytes();
          setJMSCorrelationIDAsBytes(corrIDBytes);
       }
-      catch(JMSException e)
+      catch (JMSException e)
       {
          // specified as String
          String corrIDString = foreign.getJMSCorrelationID();
@@ -251,38 +259,38 @@ public class JBossMessage implements javax.jms.Message
             setJMSCorrelationID(corrIDString);
          }
       }
-      
+
       setJMSReplyTo(foreign.getJMSReplyTo());
       setJMSDestination(foreign.getJMSDestination());
       setJMSDeliveryMode(foreign.getJMSDeliveryMode());
       setJMSExpiration(foreign.getJMSExpiration());
-      setJMSPriority(foreign.getJMSPriority());      
+      setJMSPriority(foreign.getJMSPriority());
       setJMSType(foreign.getJMSType());
-      
-      //We can't avoid a cast warning here since getPropertyNames() is on the JMS API
-      for (Enumeration<String> props = foreign.getPropertyNames(); props.hasMoreElements(); )
+
+      // We can't avoid a cast warning here since getPropertyNames() is on the JMS API
+      for (Enumeration<String> props = foreign.getPropertyNames(); props.hasMoreElements();)
       {
          String name = (String)props.nextElement();
-         
+
          Object prop = foreign.getObjectProperty(name);
 
-         this.setObjectProperty(name, prop);                       
+         this.setObjectProperty(name, prop);
       }
    }
-   
+
    // javax.jmx.Message implementation ------------------------------
-   
+
    public String getJMSMessageID()
    {
       if (msgID == null)
       {
          SimpleString id = (SimpleString)message.getProperty(JBM_MESSAGE_ID);
-      
-         msgID = id == null ? null : id.toString();    
+
+         msgID = id == null ? null : id.toString();
       }
       return msgID;
    }
-   
+
    public void setJMSMessageID(final String jmsMessageID) throws JMSException
    {
       if (jmsMessageID != null && !jmsMessageID.startsWith("ID:"))
@@ -313,7 +321,7 @@ public class JBossMessage implements javax.jms.Message
    public byte[] getJMSCorrelationIDAsBytes() throws JMSException
    {
       Object obj = message.getProperty(CORRELATIONID_HEADER_NAME);
-      
+
       if (obj instanceof byte[])
       {
          return (byte[])obj;
@@ -321,7 +329,7 @@ public class JBossMessage implements javax.jms.Message
       else
       {
          return null;
-      }      
+      }
    }
 
    public void setJMSCorrelationIDAsBytes(final byte[] correlationID) throws JMSException
@@ -338,38 +346,38 @@ public class JBossMessage implements javax.jms.Message
       if (correlationID == null)
       {
          message.removeProperty(CORRELATIONID_HEADER_NAME);
-         
+
          jmsCorrelationID = null;
       }
       else
       {
          message.putStringProperty(CORRELATIONID_HEADER_NAME, new SimpleString(correlationID));
-         
+
          jmsCorrelationID = correlationID;
       }
    }
-   
+
    public String getJMSCorrelationID() throws JMSException
    {
       if (jmsCorrelationID == null)
       {
          Object obj = message.getProperty(CORRELATIONID_HEADER_NAME);
-         
+
          if (obj != null)
          {
             jmsCorrelationID = ((SimpleString)obj).toString();
-         }  
+         }
       }
-      
-      return jmsCorrelationID;         
+
+      return jmsCorrelationID;
    }
-   
+
    public Destination getJMSReplyTo() throws JMSException
    {
       if (replyTo == null)
       {
          SimpleString repl = (SimpleString)message.getProperty(REPLYTO_HEADER_NAME);
-         
+
          if (repl != null)
          {
             replyTo = JBossDestination.fromAddress(repl.toString());
@@ -383,7 +391,7 @@ public class JBossMessage implements javax.jms.Message
       if (dest == null)
       {
          message.removeProperty(REPLYTO_HEADER_NAME);
-         
+
          replyTo = null;
       }
       else
@@ -392,32 +400,32 @@ public class JBossMessage implements javax.jms.Message
          {
             throw new InvalidDestinationException("Not a JBoss destination " + dest);
          }
-         
+
          JBossDestination jbd = (JBossDestination)dest;
-         
+
          message.putStringProperty(REPLYTO_HEADER_NAME, jbd.getSimpleAddress());
-         
+
          replyTo = jbd;
       }
    }
-   
+
    public Destination getJMSDestination() throws JMSException
    {
       if (dest == null)
       {
          SimpleString sdest = message.getDestination();
-         
+
          dest = sdest == null ? null : JBossDestination.fromAddress(sdest.toString());
       }
 
-      return dest;         
+      return dest;
    }
 
    public void setJMSDestination(final Destination destination) throws JMSException
    {
       this.dest = destination;
    }
-   
+
    public int getJMSDeliveryMode() throws JMSException
    {
       return message.isDurable() ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT;
@@ -435,8 +443,7 @@ public class JBossMessage implements javax.jms.Message
       }
       else
       {
-         throw new JMSException("DeliveryImpl mode must be either DeliveryMode.PERSISTENT "
-               + "or DeliveryMode.NON_PERSISTENT");
+         throw new JMSException("DeliveryImpl mode must be either DeliveryMode.PERSISTENT " + "or DeliveryMode.NON_PERSISTENT");
       }
    }
 
@@ -446,15 +453,16 @@ public class JBossMessage implements javax.jms.Message
    }
 
    public void setJMSRedelivered(final boolean redelivered) throws JMSException
-   {      
+   {
       if (!redelivered)
       {
          message.setDeliveryCount(1);
       }
-      else {
+      else
+      {
          if (message.getDeliveryCount() > 1)
          {
-            //do nothing
+            // do nothing
          }
          else
          {
@@ -462,13 +470,13 @@ public class JBossMessage implements javax.jms.Message
          }
       }
    }
-   
+
    public void setJMSType(final String type) throws JMSException
    {
       if (type != null)
       {
          message.putStringProperty(TYPE_HEADER_NAME, new SimpleString(type));
-         
+
          jmsType = type;
       }
    }
@@ -478,7 +486,7 @@ public class JBossMessage implements javax.jms.Message
       if (jmsType == null)
       {
          SimpleString ss = (SimpleString)message.getProperty(TYPE_HEADER_NAME);
-         
+
          if (ss != null)
          {
             jmsType = ss.toString();
@@ -505,23 +513,23 @@ public class JBossMessage implements javax.jms.Message
    public void setJMSPriority(final int priority) throws JMSException
    {
       checkPriority(priority);
-      
+
       message.setPriority((byte)priority);
    }
 
    public void clearProperties() throws JMSException
-   {     
+   {
       List<SimpleString> toRemove = new ArrayList<SimpleString>();
-      
-      for (SimpleString propName: message.getPropertyNames())
+
+      for (SimpleString propName : message.getPropertyNames())
       {
          if (!propName.startsWith(JMS) || propName.startsWith(JMSX) || propName.startsWith(JMS_))
          {
-            toRemove.add(propName);            
+            toRemove.add(propName);
          }
-      }     
-      
-      for (SimpleString propName: toRemove)
+      }
+
+      for (SimpleString propName : toRemove)
       {
          message.removeProperty(propName);
       }
@@ -534,8 +542,7 @@ public class JBossMessage implements javax.jms.Message
 
    public boolean propertyExists(final String name) throws JMSException
    {
-      return message.containsProperty(new SimpleString(name))
-             || name.equals(JMSXDELIVERYCOUNT);
+      return message.containsProperty(new SimpleString(name)) || name.equals(JMSXDELIVERYCOUNT);
    }
 
    public boolean getBooleanProperty(final String name) throws JMSException
@@ -545,9 +552,9 @@ public class JBossMessage implements javax.jms.Message
          return Boolean.valueOf(null).booleanValue();
 
       if (value instanceof Boolean)
-         return ((Boolean) value).booleanValue();
+         return ((Boolean)value).booleanValue();
       else if (value instanceof SimpleString)
-         return Boolean.valueOf(((SimpleString) value).toString()).booleanValue();
+         return Boolean.valueOf(((SimpleString)value).toString()).booleanValue();
       else
          throw new MessageFormatException("Invalid conversion");
    }
@@ -559,9 +566,9 @@ public class JBossMessage implements javax.jms.Message
          throw new NumberFormatException("Message property '" + name + "' not set.");
 
       if (value instanceof Byte)
-         return ((Byte) value).byteValue();
+         return ((Byte)value).byteValue();
       else if (value instanceof SimpleString)
-         return Byte.parseByte(((SimpleString) value).toString());
+         return Byte.parseByte(((SimpleString)value).toString());
       else
          throw new MessageFormatException("Invalid conversion");
    }
@@ -573,22 +580,22 @@ public class JBossMessage implements javax.jms.Message
          throw new NumberFormatException("Message property '" + name + "' not set.");
 
       if (value instanceof Byte)
-         return ((Byte) value).shortValue();
+         return ((Byte)value).shortValue();
       else if (value instanceof Short)
-         return ((Short) value).shortValue();
+         return ((Short)value).shortValue();
       else if (value instanceof SimpleString)
-         return Short.parseShort(((SimpleString) value).toString());
+         return Short.parseShort(((SimpleString)value).toString());
       else
          throw new MessageFormatException("Invalid conversion");
    }
 
    public int getIntProperty(final String name) throws JMSException
-   {       
+   {
       if (JMSXDELIVERYCOUNT.equals(name))
       {
          return message.getDeliveryCount();
       }
-      
+
       Object value = message.getProperty(new SimpleString(name));
 
       if (value == null)
@@ -598,19 +605,19 @@ public class JBossMessage implements javax.jms.Message
 
       if (value instanceof Byte)
       {
-         return ((Byte) value).intValue();
+         return ((Byte)value).intValue();
       }
       else if (value instanceof Short)
       {
-         return ((Short) value).intValue();
+         return ((Short)value).intValue();
       }
       else if (value instanceof Integer)
       {
-         return ((Integer) value).intValue();
+         return ((Integer)value).intValue();
       }
       else if (value instanceof SimpleString)
       {
-         return Integer.parseInt(((SimpleString) value).toString());
+         return Integer.parseInt(((SimpleString)value).toString());
       }
       else
       {
@@ -624,7 +631,7 @@ public class JBossMessage implements javax.jms.Message
       {
          return message.getDeliveryCount();
       }
-      
+
       Object value = message.getProperty(new SimpleString(name));
 
       if (value == null)
@@ -634,23 +641,23 @@ public class JBossMessage implements javax.jms.Message
 
       if (value instanceof Byte)
       {
-         return ((Byte) value).longValue();
+         return ((Byte)value).longValue();
       }
       else if (value instanceof Short)
       {
-         return ((Short) value).longValue();
+         return ((Short)value).longValue();
       }
       else if (value instanceof Integer)
       {
-         return ((Integer) value).longValue();
+         return ((Integer)value).longValue();
       }
       else if (value instanceof Long)
       {
-         return ((Long) value).longValue();
+         return ((Long)value).longValue();
       }
       else if (value instanceof SimpleString)
       {
-         return Long.parseLong(((SimpleString) value).toString());
+         return Long.parseLong(((SimpleString)value).toString());
       }
       else
       {
@@ -665,9 +672,9 @@ public class JBossMessage implements javax.jms.Message
          return Float.valueOf(null).floatValue();
 
       if (value instanceof Float)
-         return ((Float) value).floatValue();
+         return ((Float)value).floatValue();
       else if (value instanceof SimpleString)
-         return Float.parseFloat(((SimpleString) value).toString());
+         return Float.parseFloat(((SimpleString)value).toString());
       else
          throw new MessageFormatException("Invalid conversion");
    }
@@ -679,11 +686,11 @@ public class JBossMessage implements javax.jms.Message
          return Double.valueOf(null).doubleValue();
 
       if (value instanceof Float)
-         return ((Float) value).doubleValue();
+         return ((Float)value).doubleValue();
       else if (value instanceof Double)
-         return ((Double) value).doubleValue();
+         return ((Double)value).doubleValue();
       else if (value instanceof SimpleString)
-         return Double.parseDouble(((SimpleString) value).toString());
+         return Double.parseDouble(((SimpleString)value).toString());
       else
          throw new MessageFormatException("Invalid conversion");
    }
@@ -700,7 +707,7 @@ public class JBossMessage implements javax.jms.Message
 
       if (value instanceof SimpleString)
       {
-         return ((SimpleString) value).toString();
+         return ((SimpleString)value).toString();
       }
       else if (value instanceof Boolean)
       {
@@ -736,7 +743,7 @@ public class JBossMessage implements javax.jms.Message
       }
    }
 
-   public Object getObjectProperty(final String name) throws JMSException                                                              
+   public Object getObjectProperty(final String name) throws JMSException
    {
       if (JMSXDELIVERYCOUNT.equals(name))
       {
@@ -753,17 +760,17 @@ public class JBossMessage implements javax.jms.Message
    public Enumeration getPropertyNames() throws JMSException
    {
       HashSet<String> set = new HashSet<String>();
-      
-      for (SimpleString propName: message.getPropertyNames())
+
+      for (SimpleString propName : message.getPropertyNames())
       {
          if (!propName.startsWith(JMS) || propName.startsWith(JMSX) || propName.startsWith(JMS_))
          {
             set.add(propName.toString());
          }
       }
-      
+
       set.add(JMSXDELIVERYCOUNT);
-      
+
       return Collections.enumeration(set);
    }
 
@@ -796,10 +803,10 @@ public class JBossMessage implements javax.jms.Message
    }
 
    public void setLongProperty(final String name, final long value) throws JMSException
-   {     
+   {
       Long l = new Long(value);
       checkProperty(name, l);
-      message.putLongProperty(new SimpleString(name), value);               
+      message.putLongProperty(new SimpleString(name), value);
    }
 
    public void setFloatProperty(final String name, final float value) throws JMSException
@@ -825,7 +832,7 @@ public class JBossMessage implements javax.jms.Message
    public void setObjectProperty(final String name, final Object value) throws JMSException
    {
       checkProperty(name, value);
-      
+
       SimpleString key = new SimpleString(name);
 
       if (value instanceof Boolean)
@@ -865,7 +872,7 @@ public class JBossMessage implements javax.jms.Message
          throw new MessageFormatException("Invalid property type");
       }
    }
-   
+
    public void acknowledge() throws JMSException
    {
       try
@@ -875,37 +882,37 @@ public class JBossMessage implements javax.jms.Message
       catch (MessagingException e)
       {
          JMSException je = new JMSException(e.toString());
-         
+
          je.initCause(e);
-         
-         throw je;         
-      } 
+
+         throw je;
+      }
    }
-    
+
    // Public --------------------------------------------------------
-   
+
    public ClientMessage getCoreMessage()
    {
       return message;
    }
-   
+
    public void doBeforeSend() throws Exception
    {
       body.flip();
-      
+
       message.setBody(body);
    }
-   
+
    public void doBeforeReceive() throws Exception
    {
       body = message.getBody();
    }
-   
+
    public byte getType()
    {
       return JBossMessage.TYPE;
-   }   
-   
+   }
+
    public ClientSession getSession()
    {
       return session;
@@ -920,11 +927,11 @@ public class JBossMessage implements javax.jms.Message
       sb.append(message.isDurable() ? "PERSISTENT" : "NON-PERSISTENT");
       return sb.toString();
    }
-      
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-        
+
    protected void checkWrite() throws JMSException
    {
       if (readOnly)
@@ -932,7 +939,7 @@ public class JBossMessage implements javax.jms.Message
          throw new MessageNotWriteableException("Message is read-only");
       }
    }
-   
+
    protected void checkRead() throws JMSException
    {
       if (!readOnly)
@@ -940,13 +947,13 @@ public class JBossMessage implements javax.jms.Message
          throw new MessageNotReadableException("Message is write-only");
       }
    }
-   
+
    // Private ------------------------------------------------------------
-   
+
    private void checkProperty(final String name, final Object value) throws JMSException
    {
       checkWrite();
-      
+
       if (name == null)
       {
          throw new IllegalArgumentException("The name of a property must not be null.");
@@ -959,16 +966,14 @@ public class JBossMessage implements javax.jms.Message
 
       if (!isValidJavaIdentifier(name))
       {
-         throw new IllegalArgumentException("The property name '" + name +
-                                            "' is not a valid java identifier.");
+         throw new IllegalArgumentException("The property name '" + name + "' is not a valid java identifier.");
       }
 
       if (reservedIdentifiers.contains(name))
       {
-         throw new IllegalArgumentException("The property name '" + name +
-                                            "' is reserved due to selector syntax.");
+         throw new IllegalArgumentException("The property name '" + name + "' is reserved due to selector syntax.");
       }
-      
+
       if (name.startsWith("JMS"))
       {
          if (name.length() > 3)
@@ -976,11 +981,12 @@ public class JBossMessage implements javax.jms.Message
             char c = name.charAt(3);
             if (c != 'X' && c != '_')
             {
-               //See http://java.sun.com/javaee/5/docs/api/
-               //(java.jms.Message javadoc)
-               //"Property names must obey the rules for a message selector identifier"
-               //"Any name that does not begin with 'JMS' is an application-specific property name"
-               throw new IllegalArgumentException("The property name '" + name + "' is illegal since it starts with JMS");
+               // See http://java.sun.com/javaee/5/docs/api/
+               // (java.jms.Message javadoc)
+               // "Property names must obey the rules for a message selector identifier"
+               // "Any name that does not begin with 'JMS' is an application-specific property name"
+               throw new IllegalArgumentException("The property name '" + name +
+                                                  "' is illegal since it starts with JMS");
             }
          }
          else
@@ -989,7 +995,7 @@ public class JBossMessage implements javax.jms.Message
          }
       }
    }
-   
+
    private boolean isValidJavaIdentifier(final String s)
    {
       if (s == null || s.length() == 0)
@@ -998,7 +1004,7 @@ public class JBossMessage implements javax.jms.Message
       }
 
       char[] c = s.toCharArray();
-      
+
       if (!Character.isJavaIdentifierStart(c[0]))
       {
          return false;
@@ -1014,8 +1020,7 @@ public class JBossMessage implements javax.jms.Message
 
       return true;
    }
-   
-   
+
    private void checkPriority(int priority) throws JMSException
    {
       if (priority < 0 || priority > 9)

@@ -558,6 +558,7 @@ public class JMSXDeliveryCountTest extends JBMServerTestCase
          
          tx.delistResource(consumerSess.getXAResource(), XAResource.TMSUCCESS);
          
+         log.info("*** rolling back");
          mgr.rollback();         
          
          mgr.begin();

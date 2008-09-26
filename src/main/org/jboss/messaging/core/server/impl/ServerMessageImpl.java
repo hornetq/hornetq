@@ -40,9 +40,7 @@ import org.jboss.messaging.core.server.ServerMessage;
  *
  */
 public class ServerMessageImpl extends MessageImpl implements ServerMessage
-{
-   private long messageID;
-
+{  
    private final AtomicInteger durableRefCount = new AtomicInteger(0);
 
    /** Global reference counts for paging control */
@@ -60,19 +58,12 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
     */
    public ServerMessageImpl(final long messageID)
    {
-      super();
-
-      this.messageID = messageID;
+      super(messageID);
    }
-
-   /*
-    * Copy constructor
-    */
+   
    public ServerMessageImpl(final ServerMessageImpl other)
    {
       super(other);
-
-      this.messageID = other.messageID;
    }
 
    /**
@@ -86,11 +77,6 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
                             MessagingBuffer buffer)
    {
       super(type, durable, expiration, timestamp, priority, buffer);
-   }
-
-   public long getMessageID()
-   {
-      return messageID;
    }
 
    public void setMessageID(final long id)

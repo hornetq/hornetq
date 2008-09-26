@@ -45,7 +45,7 @@ public class WildCardClient
       {
          ClientSessionFactory sessionFactory =
             new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));
-         clientSession = sessionFactory.createSession(false, true, true, 1, false);
+         clientSession = sessionFactory.createSession(false, true, true, false);
          SimpleString queue = new SimpleString("queuejms.testQueue");
          SimpleString queue2 = new SimpleString("queuejms.MyQueue");
 
@@ -65,11 +65,11 @@ public class WildCardClient
          clientProducer2.send(message2);
          log.info("message sent to " + queue2);
          clientSession.start();
-         Message msg = clientConsumer.receive(5000);
-         clientSession.acknowledge();
+         ClientMessage msg = clientConsumer.receive(5000);
+         msg.processed();
          log.info("message received: " + msg.getBody().getString());
-         Message msg2 = clientConsumer.receive(5000);
-         clientSession.acknowledge();
+         ClientMessage msg2 = clientConsumer.receive(5000);
+         msg2.processed();
          log.info("message received: " + msg2.getBody().getString());
       }
       catch(Exception e)

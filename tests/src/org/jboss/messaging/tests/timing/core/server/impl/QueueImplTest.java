@@ -290,7 +290,7 @@ public class QueueImplTest extends UnitTestCase
 
       //What I expect to get
 
-      EasyMock.expect(storageManager.generateTransactionID()).andReturn(1L);
+      EasyMock.expect(storageManager.generateUniqueID()).andReturn(1L);
 
       for (int i = 0; i < numMessages; i++)
       {

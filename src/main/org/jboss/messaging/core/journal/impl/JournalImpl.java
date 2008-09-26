@@ -217,8 +217,6 @@ public class JournalImpl implements TestableJournal
 
    private volatile int state;
 
-   private final AtomicLong transactionIDSequence = new AtomicLong(0);
-
    private final Reclaimer reclaimer = new Reclaimer();
 
    // Constructors --------------------------------------------------
@@ -390,16 +388,6 @@ public class JournalImpl implements TestableJournal
       {
          rwlock.readLock().unlock();
       }
-   }
-
-   public long getTransactionID()
-   {
-      if (state != STATE_LOADED)
-      {
-         throw new IllegalStateException("Journal must be loaded first");
-      }
-
-      return transactionIDSequence.getAndIncrement();
    }
 
    public void appendAddRecordTransactional(final long txID,
@@ -1226,8 +1214,6 @@ public class JournalImpl implements TestableJournal
             freeFiles.add(file);
          }
       }
-
-      transactionIDSequence.set(maxTransactionID + 1);
 
       // Create any more files we need
 

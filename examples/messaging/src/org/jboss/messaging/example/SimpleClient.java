@@ -47,7 +47,7 @@ public class SimpleClient
       {
          ClientSessionFactory sessionFactory =
             new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));          
-         clientSession = sessionFactory.createSession(false, true, true, 1, false);
+         clientSession = sessionFactory.createSession(false, true, true, false);
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);
          ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, false, 0,
@@ -56,9 +56,9 @@ public class SimpleClient
          clientProducer.send(message);
          ClientConsumer clientConsumer = clientSession.createConsumer(queue);
          clientSession.start();
-         Message msg = clientConsumer.receive(5000);
+         ClientMessage msg = clientConsumer.receive(5000);
          System.out.println("msg.getPayload() = " + msg.getBody().getString());
-         clientSession.acknowledge();
+         msg.processed();
       }
       catch(Exception e)
       {

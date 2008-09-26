@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.client.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EXCEPTION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVETOKENS;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_MSG;
 
@@ -75,7 +76,7 @@ public class ClientSessionPacketHandler implements ChannelHandler
                
                break;
             }
-            case PacketImpl.EXCEPTION:
+            case EXCEPTION:
             {
                //TODO - we can provide a means for async exceptions to get back to to client
                //For now we just log it

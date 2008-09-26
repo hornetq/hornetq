@@ -178,7 +178,7 @@ public class PagingManagerImpl implements PagingManager
 
       // / Depage has to be done atomically, in case of failure it should be
       // back to where it was
-      final long depageTransactionID = storageManager.generateTransactionID();
+      final long depageTransactionID = storageManager.generateUniqueID();
 
       LastPageRecord lastPage = pagingStore.getLastRecord();
 
@@ -237,8 +237,6 @@ public class PagingManagerImpl implements PagingManager
                pageTransactionsToUpdate.add(pageTransactionInfo);
             }
          }
-
-         msg.getMessage().setMessageID(storageManager.generateID());
 
          refsToAdd.addAll(postOffice.route(msg.getMessage()));
 

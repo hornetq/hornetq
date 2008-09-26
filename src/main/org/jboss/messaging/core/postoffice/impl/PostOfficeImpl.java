@@ -18,9 +18,18 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.postoffice.impl;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
@@ -40,10 +49,6 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 /**
  * 
  * A PostOfficeImpl
@@ -53,32 +58,36 @@ import java.util.concurrent.ConcurrentMap;
  *
  */
 public class PostOfficeImpl implements PostOffice
-{  
+{
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
-   
+
    private final AddressManager addressManager;
-   
+
    private final ConcurrentMap<SimpleString, FlowController> flowControllers = new ConcurrentHashMap<SimpleString, FlowController>();
-   
+
    private final QueueFactory queueFactory;
-   
+
    private final boolean checkAllowable;
-   
+
    private final StorageManager storageManager;
-   
+
    private final PagingManager pagingManager;
-   
+
    private volatile boolean started;
 
    private volatile boolean backup;
 
    private final ManagementService managementService;
-   
+
    private final ResourceManager resourceManager;
 
-   public PostOfficeImpl(final StorageManager storageManager, final PagingManager pagingManager,
-   		                final QueueFactory queueFactory, final ManagementService managementService, final boolean checkAllowable,
-                         final ResourceManager resourceManager, boolean enableWildCardRouting)
+   public PostOfficeImpl(final StorageManager storageManager,
+                         final PagingManager pagingManager,
+                         final QueueFactory queueFactory,
+                         final ManagementService managementService,
+                         final boolean checkAllowable,
+                         final ResourceManager resourceManager,
+                         final boolean enableWildCardRouting)
    {
       this.storageManager = storageManager;
 
@@ -92,7 +101,7 @@ public class PostOfficeImpl implements PostOffice
 
       this.resourceManager = resourceManager;
 
-      if(enableWildCardRouting)
+      if (enableWildCardRouting)
       {
          addressManager = new WildcardAddressManager();
       }
@@ -101,78 +110,78 @@ public class PostOfficeImpl implements PostOffice
          addressManager = new SimpleAddressManager();
       }
    }
-      
+
    // MessagingComponent implementation ---------------------------------------
-   
+
    public void start() throws Exception
    {
       if (pagingManager != null)
       {
          pagingManager.setPostOffice(this);
-   
+
          pagingManager.start();
       }
-      
+
       // Injecting the postoffice (itself) on queueFactory for paging-control
       queueFactory.setPostOffice(this);
-      
+
       loadBindings();
-      
+
       started = true;
    }
 
    public void stop() throws Exception
    {
       pagingManager.stop();
-      
+
       addressManager.clear();
-      
+
       started = false;
    }
-   
+
    public boolean isStarted()
    {
       return started;
    }
-   
+
    // PostOffice implementation -----------------------------------------------
 
    public boolean addDestination(final SimpleString address, final boolean durable) throws Exception
-   {      
-   	boolean added = addressManager.addDestination(address);// destinations.addIfAbsent(address);
-   	
-   	if (added)
-   	{   	
-      	if (durable)
-      	{
-      		storageManager.addDestination(address);     
-      	}
-      	
+   {
+      boolean added = addressManager.addDestination(address);// destinations.addIfAbsent(address);
+
+      if (added)
+      {
+         if (durable)
+         {
+            storageManager.addDestination(address);
+         }
+
          flowControllers.put(address, new FlowControllerImpl(address, this));
          managementService.registerAddress(address);
-   	}
-   	
-   	return added;
+      }
+
+      return added;
    }
-   
+
    public boolean removeDestination(final SimpleString address, final boolean durable) throws Exception
-   {      
+   {
       boolean removed = addressManager.removeDestination(address);
-      
+
       if (removed)
       {
-      	flowControllers.remove(address);
-      	
-      	if (durable)
+         flowControllers.remove(address);
+
+         if (durable)
          {
-      		storageManager.deleteDestination(address);
+            storageManager.deleteDestination(address);
          }
-      	managementService.unregisterAddress(address);
+         managementService.unregisterAddress(address);
       }
 
       return removed;
    }
-   
+
    public boolean containsDestination(final SimpleString address)
    {
       return addressManager.containsDestination(address);
@@ -183,59 +192,60 @@ public class PostOfficeImpl implements PostOffice
       return addressManager.getDestinations();
    }
 
-   public Binding addBinding(final SimpleString address, final SimpleString queueName, final Filter filter, 
+   public Binding addBinding(final SimpleString address,
+                             final SimpleString queueName,
+                             final Filter filter,
                              final boolean durable, boolean temporary) throws Exception
    {
       Binding binding = createBinding(address, queueName, filter, durable, temporary);
 
       addBindingInMemory(binding);
-      
+
       if (durable)
       {
-      	storageManager.addBinding(binding);
+         storageManager.addBinding(binding);
       }
-      
-      return binding;      
+
+      return binding;
    }
-         
+
    public Binding removeBinding(final SimpleString queueName) throws Exception
    {
       Binding binding = removeQueueInMemory(queueName);
-      
+
       if (binding.getQueue().isDurable())
       {
-      	storageManager.deleteBinding(binding);
+         storageManager.deleteBinding(binding);
       }
-      
+
       managementService.unregisterQueue(queueName, binding.getAddress());
-      
+
       return binding;
    }
-   
+
    public List<Binding> getBindingsForAddress(final SimpleString address)
    {
       List<Binding> bindings = addressManager.getBindings(address);
-      
+
       if (bindings != null)
       {
-      	return bindings;
+         return bindings;
       }
       else
       {
-      	return Collections.emptyList();
+         return Collections.emptyList();
       }
    }
-   
+
    public Binding getBinding(final SimpleString queueName)
    {
       return addressManager.getBinding(queueName);
    }
-   
+
    public List<MessageReference> route(final ServerMessage message) throws Exception
    {
-      
       long size = pagingManager.addSize(message);
-      
+
       if (size < 0)
       {
          return new ArrayList<MessageReference>();
@@ -243,7 +253,7 @@ public class PostOfficeImpl implements PostOffice
       else
       {
          SimpleString address = message.getDestination();
-             
+
          if (checkAllowable)
          {
             if (!addressManager.containsDestination(address))
@@ -252,23 +262,23 @@ public class PostOfficeImpl implements PostOffice
                                             "Cannot route to address " + address);
             }
          }
-              
+
          List<Binding> bindings = addressManager.getBindings(address);
-         
+
          List<MessageReference> refs = new ArrayList<MessageReference>();
-         
+
          if (bindings != null)
          {
-            for (Binding binding: bindings)
+            for (Binding binding : bindings)
             {
                Queue queue = binding.getQueue();
-               
+
                Filter filter = queue.getFilter();
-               
+
                if (filter == null || filter.match(message))
-               {                      
-                  MessageReference reference = message.createReference(queue);              
-                  
+               {
+                  MessageReference reference = message.createReference(queue);
+
                   refs.add(reference);
                }
             }
@@ -276,47 +286,47 @@ public class PostOfficeImpl implements PostOffice
 
          return refs;
       }
-         
-   }
-   
-//   public void routeFromCluster(final String address, final Message message) throws Exception
-//   {     
-//      List<Binding> bindings = mappings.get(address);
-//      
-//      for (Binding binding: bindings)
-//      {
-//         Queue queue = binding.getQueue();
-//         
-//         if (binding.getNodeID() == nodeID)
-//         {         
-//            if (queue.getFilter() == null || queue.getFilter().match(message))
-//            {         
-//               MessageReference ref = message.createReference(queue);
-//
-//               //We never route durably from other nodes - so no need to persist
-//
-//               queue.addLast(ref);             
-//            }
-//         }
-//      }
-//   }
-   
-   public PagingManager getPagingManager()
-   {
-      return this.pagingManager;
+
    }
 
+   // public void routeFromCluster(final String address, final Message message)
+   // throws Exception
+   // {
+   // List<Binding> bindings = mappings.get(address);
+   //      
+   // for (Binding binding: bindings)
+   // {
+   // Queue queue = binding.getQueue();
+   //         
+   // if (binding.getNodeID() == nodeID)
+   // {
+   // if (queue.getFilter() == null || queue.getFilter().match(message))
+   // {
+   // MessageReference ref = message.createReference(queue);
+   //
+   // //We never route durably from other nodes - so no need to persist
+   //
+   // queue.addLast(ref);
+   // }
+   // }
+   // }
+   // }
+
+   public PagingManager getPagingManager()
+   {
+      return pagingManager;
+   }
 
    public Map<SimpleString, List<Binding>> getMappings()
    {
       return addressManager.getMappings();
    }
 
-   public FlowController getFlowController(SimpleString address)
-   {   	
-   	return flowControllers.get(address);
+   public FlowController getFlowController(final SimpleString address)
+   {
+      return flowControllers.get(address);
    }
-   
+
    public void setBackup(final boolean backup)
    {
       if (this.backup != backup)
@@ -325,27 +335,29 @@ public class PostOfficeImpl implements PostOffice
 
          Map<SimpleString, Binding> nameMap = addressManager.getBindings();
 
-         for (Binding binding: nameMap.values())
+         for (Binding binding : nameMap.values())
          {
             binding.getQueue().setBackup(backup);
          }
       }
    }
-   
+
    // Private -----------------------------------------------------------------
-   
-   private Binding createBinding(final SimpleString address, final SimpleString name, final Filter filter,
+
+   private Binding createBinding(final SimpleString address,
+                                 final SimpleString name,
+                                 final Filter filter,
                                  final boolean durable, final boolean temporary) throws Exception
    {
       Queue queue = queueFactory.createQueue(-1, name, filter, durable, false);
-      
+
       queue.setBackup(backup);
-      
+
       Binding binding = new BindingImpl(address, queue);
-      
+
       return binding;
    }
-   
+
    private void addBindingInMemory(final Binding binding) throws Exception
    {
       boolean exists = addressManager.addMapping(binding.getAddress(), binding);
@@ -353,56 +365,57 @@ public class PostOfficeImpl implements PostOffice
       {
          managementService.registerAddress(binding.getAddress());
       }
-                     
+
       managementService.registerQueue(binding.getQueue(), binding.getAddress(), storageManager);
 
       addressManager.addBinding(binding);
-      
+
       FlowController flowController = flowControllers.get(binding.getAddress());
-                    
+
       binding.getQueue().setFlowController(flowController);
    }
-   
+
    private Binding removeQueueInMemory(final SimpleString queueName) throws Exception
    {
       Binding binding = addressManager.removeBinding(queueName);
 
       if (addressManager.removeMapping(binding.getAddress(), queueName))
-      {         
+      {
          managementService.unregisterAddress(binding.getAddress());
-         
+
          binding.getQueue().setFlowController(null);
       }
-               
+
       return binding;
    }
-   
+
    private void loadBindings() throws Exception
    {
       List<Binding> bindings = new ArrayList<Binding>();
-      
+
       List<SimpleString> dests = new ArrayList<SimpleString>();
-      
+
       storageManager.loadBindings(queueFactory, bindings, dests);
-                       
-      //Destinations must be added first to ensure flow controllers exist before queues are created
-      for (SimpleString destination: dests)
+
+      // Destinations must be added first to ensure flow controllers exist
+      // before queues are created
+      for (SimpleString destination : dests)
       {
          addDestination(destination, true);
       }
-                	
+
       Map<Long, Queue> queues = new HashMap<Long, Queue>();
-      
-      for (Binding binding: bindings)
+
+      for (Binding binding : bindings)
       {
-         addBindingInMemory(binding);             
-         
+         addBindingInMemory(binding);
+
          queues.put(binding.getQueue().getPersistenceID(), binding.getQueue());
       }
-                 
+
       storageManager.loadMessages(this, queues, resourceManager);
-      
-      for (SimpleString destination: dests)
+
+      for (SimpleString destination : dests)
       {
          if (!pagingManager.isGlobalPageMode())
          {

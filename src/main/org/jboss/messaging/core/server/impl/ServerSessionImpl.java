@@ -1,22 +1,12 @@
 /*
- * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat
- * Middleware LLC, and individual contributors by the @authors tag. See the
- * copyright.txt in the distribution for a full listing of individual
- * contributors.
- * 
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- * 
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors by
+ * the @authors tag. See the copyright.txt in the distribution for a full listing of individual contributors. This is
+ * free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. You should have received a copy of the GNU Lesser General Public License along with this software; if not,
+ * write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
 
@@ -25,14 +15,11 @@ package org.jboss.messaging.core.server.impl;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -53,19 +40,17 @@ import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.FailureListener;
-import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.cluster.SessionReplicateDeliveryMessage;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.server.Delivery;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
@@ -79,37 +64,25 @@ import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.IDGenerator;
+import org.jboss.messaging.util.SimpleIDGenerator;
 import org.jboss.messaging.util.SimpleString;
 
 /*
- * Session implementation
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
- * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- * 
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * Session implementation @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> @author <a
+ * href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a> @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 
 public class ServerSessionImpl implements ServerSession, FailureListener, NotificationListener
 {
-   // Constants
-   //----------------------------------------------------------------------------
-   // --------
+   // Constants -----------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ServerSessionImpl.class);
 
-   // Static
-   //----------------------------------------------------------------------------
-   // -----------
+   // Static -------------------------------------------------------------------------------
 
-   // Attributes
-   //----------------------------------------------------------------------------
-   // -------
+   // Attributes ----------------------------------------------------------------------------
 
    private final boolean trace = log.isTraceEnabled();
-
-   private final String name;
 
    private final long id;
 
@@ -129,10 +102,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
    private final Map<Long, ServerProducer> producers = new ConcurrentHashMap<Long, ServerProducer>();
 
-   private final java.util.Queue<Delivery> deliveries = new ConcurrentLinkedQueue<Delivery>();
-
-   private final AtomicLong deliveryIDSequence = new AtomicLong(0);
-
    private final Executor executor;
 
    private Transaction tx;
@@ -151,21 +120,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
    private final Channel channel;
 
-   // private final Channel replicatingChannel;
-
-   private final MessagingServer server;
-
    private final ManagementService managementService;
 
    private volatile boolean started = false;
 
    private final List<Runnable> failureRunners = new ArrayList<Runnable>();
 
-   private final IDGenerator idGenerator = new IDGenerator(0);
+   private final IDGenerator idGenerator = new SimpleIDGenerator(0);
 
-   // Constructors
-   //----------------------------------------------------------------------------
-   // -----
+   // Constructors ---------------------------------------------------------------------------------
 
    public ServerSessionImpl(final String name,
                             final long id,
@@ -185,8 +148,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
                             final ManagementService managementService,
                             final MessagingServer server) throws Exception
    {
-      this.name = name;
-
       this.id = id;
 
       this.username = username;
@@ -220,16 +181,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       this.channel = channel;
 
-      // this.replicatingChannel = channel.getReplicatingChannel();
-
-      this.server = server;
-
       this.managementService = managementService;
    }
 
-   // ServerSession implementation
-   //----------------------------------------------------------------------------
-   // -----------
+   // ServerSession implementation ----------------------------------------------------------------------------
 
    public String getUsername()
    {
@@ -270,34 +225,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
    }
 
-   public void handleDelivery(final MessageReference ref, final ServerConsumer consumer)
-   {
-      long nextID = deliveryIDSequence.getAndIncrement();
-
-      final Delivery delivery = new DeliveryImpl(ref, consumer.getID(), nextID, channel);
-
-      deliveries.add(delivery);
-
-      if (channel.getReplicatingChannel() != null)
-      {
-         Packet msg = new SessionReplicateDeliveryMessage(consumer.getID(), ref.getMessage().getMessageID());
-
-         Runnable action = new Runnable()
-         {
-            public void run()
-            {
-               delivery.deliver();
-            }
-         };
-
-         channel.replicatePacket(msg, action);
-      }
-      else
-      {
-         delivery.deliver();
-      }
-   }
-
    public void setStarted(final boolean s) throws Exception
    {
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
@@ -312,6 +239,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
    public void close() throws Exception
    {
+      channel.close();
+
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
 
       for (ServerConsumer consumer : consumersClone)
@@ -340,20 +269,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       producers.clear();
 
       rollback();
-
-      deliveries.clear();
-
-      channel.close();
-
-      server.removeSession(name);
    }
 
    public void promptDelivery(final Queue queue)
    {
       queue.deliverAsync(executor);
    }
-
-   // long idSequence;
 
    public void send(final ServerMessage msg) throws Exception
    {
@@ -378,7 +299,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             // We only set the messageID after we are sure the message is not
             // being paged
             // Paged messages won't have an ID until they are depaged
-            // WHY?
+            // This is because after restart we get the max id to use by looking at the journal.
+            // But if some messages are paged, we may get duplicates since id might be lower
+            // than it should be
+
+            // FIXME - the above won't work - we need to set the messsage id before send to be sure that
+            // messages on live and backup get the same ids
 
             List<MessageReference> refs = postOffice.route(msg);
 
@@ -397,93 +323,27 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       {
          tx.addMessage(msg);
       }
+
    }
 
-   public void acknowledge(final long deliveryID, final boolean allUpTo) throws Exception
+   public void processed(final long consumerID, final long messageID) throws Exception
    {
-      /*
-      Note that we do not consider it an error if the deliveries cannot be found to be acked.
-      This can legitimately occur if a connection/session/consumer is closed
-      from inside a MessageHandlers onMessage method. In this situation the close will cancel any unacked
-      deliveries, but the subsequent call to delivered() will try and ack again and not find the last
-      delivery on the server.
-      */
-      if (allUpTo)
+      MessageReference ref = consumers.get(consumerID).getReference(messageID);
+      
+      // Ref = null would imply consumer is already closed so we could ignore it
+      if (ref != null)
       {
-         // Ack all deliveries up to and including the specified id
-
-         for (Iterator<Delivery> iter = deliveries.iterator(); iter.hasNext();)
+         if (autoCommitAcks)
          {
-            Delivery rec = iter.next();
-
-            if (rec.getDeliveryID() <= deliveryID)
-            {
-               iter.remove();
-
-               MessageReference ref = rec.getReference();
-
-               if (rec.getDeliveryID() > deliveryID)
-               {
-                  // This catches the case where the delivery has been cancelled
-                  // since it's expired
-                  // And we don't want to end up acking all deliveries!
-                  break;
-               }
-
-               if (autoCommitAcks)
-               {
-                  doAck(ref);
-               }
-               else
-               {
-                  tx.addAcknowledgement(ref);
-
-                  // Del count is not actually updated in storage unless it's
-                  // cancelled
-                  ref.incrementDeliveryCount();
-               }
-
-               if (rec.getDeliveryID() == deliveryID)
-               {
-                  break;
-               }
-            }
-            else
-            {
-               // Sanity check
-               throw new IllegalStateException("Failed to ack contiguently");
-            }
+            doAck(ref);
          }
-      }
-      else
-      {
-         // Ack a specific delivery
-
-         for (Iterator<Delivery> iter = deliveries.iterator(); iter.hasNext();)
+         else
          {
-            Delivery rec = iter.next();
+            tx.addAcknowledgement(ref);
 
-            if (rec.getDeliveryID() == deliveryID)
-            {
-               iter.remove();
-
-               MessageReference ref = rec.getReference();
-
-               if (autoCommitAcks)
-               {
-                  doAck(ref);
-               }
-               else
-               {
-                  tx.addAcknowledgement(ref);
-
-                  // Del count is not actually updated in storage unless it's
-                  // cancelled
-                  ref.incrementDeliveryCount();
-               }
-
-               break;
-            }
+            // Del count is not actually updated in storage unless it's
+            // cancelled
+            ref.incrementDeliveryCount();
          }
       }
    }
@@ -497,122 +357,32 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          tx = new TransactionImpl(storageManager, postOffice);
       }
 
-      // We need to lock all the queues while we're rolling back, to prevent any
-      // deliveries occurring during this
-      // period
-
-      List<Queue> locked = new ArrayList<Queue>();
-
+      //Need to write the response now - before redeliveries occur
+      channel.send(new NullResponseMessage());
+      
+      boolean wasStarted = started;
+      
       for (ServerConsumer consumer : consumers.values())
-      {
-         consumer.getQueue().lock();
-
-         locked.add(consumer.getQueue());
-      }
-
-      try
-      {
-
-         // Add any unacked deliveries into the tx. Doing this ensures all
-         // references are rolled back in the correct
-         // order in a single contiguous block
-
-         for (Delivery del : deliveries)
+      {            
+         if (wasStarted)
          {
-            tx.addAcknowledgement(del.getReference());
+            consumer.setStarted(false);
          }
-
-         deliveries.clear();
-
-         deliveryIDSequence.addAndGet(-tx.getAcknowledgementsCount());
-
-         tx.rollback(queueSettingsRepository);
+         
+         consumer.cancelRefs();
       }
-      finally
-      {
-         // Now unlock
-
-         for (Queue queue : locked)
-         {
-            queue.unlock();
-         }
-      }
-
-      tx = new TransactionImpl(storageManager, postOffice);
-   }
-
-   public void cancel(final long deliveryID, final boolean expired) throws Exception
-   {
-      if (deliveryID == -1)
-      {
-         // Cancel all
-
-         // We need to lock all the queues while we're rolling back, to prevent
-         // any deliveries occurring during this
-         // period
-
-         List<Queue> locked = new ArrayList<Queue>();
-
+      
+      tx.rollback(queueSettingsRepository);
+      
+      if (wasStarted)
+      {         
          for (ServerConsumer consumer : consumers.values())
-         {
-            consumer.getQueue().lock();
-
-            locked.add(consumer.getQueue());
-         }
-
-         try
-         {
-            Transaction cancelTx = new TransactionImpl(storageManager, postOffice);
-
-            for (Delivery del : deliveries)
-            {
-               cancelTx.addAcknowledgement(del.getReference());
-            }
-
-            deliveries.clear();
-
-            cancelTx.rollback(queueSettingsRepository);
-         }
-         finally
-         {
-         }
-         // finally (TODO: enable this back)
-         {
-            // Now unlock
-
-            for (Queue queue : locked)
-            {
-               queue.unlock();
-            }
+         {            
+            consumer.setStarted(true);
          }
       }
-      else if (expired)
-      {
-         if (deliveryID == -1)
-         {
-            throw new IllegalArgumentException("Invalid delivery id");
-         }
-
-         // Expire a single reference
-
-         for (Iterator<Delivery> iter = deliveries.iterator(); iter.hasNext();)
-         {
-            Delivery delivery = iter.next();
-
-            if (delivery.getDeliveryID() == deliveryID)
-            {
-               delivery.getReference().expire(storageManager, postOffice, queueSettingsRepository);
-
-               iter.remove();
-
-               break;
-            }
-         }
-      }
-      else
-      {
-         throw new IllegalArgumentException("Invalid delivery id " + deliveryID);
-      }
+      
+      tx = new TransactionImpl(storageManager, postOffice);
    }
 
    public void commit() throws Exception
@@ -841,7 +611,27 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
                                              "Cannot rollback transaction, it is suspended " + xid);
       }
 
+      boolean wasStarted = started;
+      
+      for (ServerConsumer consumer : consumers.values())
+      {            
+         if (wasStarted)
+         {
+            consumer.setStarted(false);
+         }
+         
+         consumer.cancelRefs();
+      }
+      
       theTx.rollback(queueSettingsRepository);
+      
+      if (wasStarted)
+      {
+         for (ServerConsumer consumer : consumers.values())
+         {            
+            consumer.setStarted(true);
+         }
+      }
 
       boolean removed = resourceManager.removeTransaction(xid);
 
@@ -1080,7 +870,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
                                                        started,
                                                        storageManager,
                                                        queueSettingsRepository,
-                                                       postOffice);
+                                                       postOffice,
+                                                       channel);
 
       SessionCreateConsumerResponseMessage response = new SessionCreateConsumerResponseMessage(windowSize);
 
@@ -1167,12 +958,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
    /**
     * Create a producer for the specified address
-    *
-    * @param address    The address to produce too
-    * @param windowSize - the producer window size to use for flow control.
-    *                   Specify -1 to disable flow control completely
-    *                   The actual window size used may be less than the specified window size if
-    *                   it is overridden by any producer-window-size specified on the queue
+    * 
+    * @param address The address to produce too
+    * @param windowSize - the producer window size to use for flow control. Specify -1 to disable flow control
+    *           completely The actual window size used may be less than the specified window size if it is overridden by
+    *           any producer-window-size specified on the queue
     */
    public SessionCreateProducerResponseMessage createProducer(final SimpleString address,
                                                               final int windowSize,
@@ -1251,16 +1041,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       producers.get(producerID).send(message);
    }
 
-   public void handleReplicateDelivery(final long consumerID, final long messageID) throws Exception
-   {
-      consumers.get(consumerID).deliverMessage(messageID);
-   }
-
    public void transferConnection(final RemotingConnection newConnection)
    {
       remotingConnection.removeFailureListener(this);
 
       channel.transferConnection(newConnection);
+
+      newConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
 
       // Destroy the old connection
       remotingConnection.destroy();
@@ -1278,16 +1065,20 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    public void handleManagementMessage(final SessionSendManagementMessage message) throws Exception
    {
       ServerMessage serverMessage = message.getServerMessage();
+      
       if (serverMessage.containsProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS))
       {
          boolean subscribe = (Boolean)serverMessage.getProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS);
+         
          final SimpleString replyTo = (SimpleString)serverMessage.getProperty(ManagementHelper.HDR_JMX_REPLYTO);
+         
          if (subscribe)
          {
             if (log.isDebugEnabled())
             {
                log.debug("added notification listener " + this);
             }
+            
             managementService.addNotificationListener(this, null, replyTo);
          }
          else
@@ -1296,12 +1087,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             {
                log.debug("removed notification listener " + this);
             }
+            
             managementService.removeNotificationListener(this);
          }
          return;
       }
       managementService.handleMessage(message.getServerMessage());
+      
       serverMessage.setDestination((SimpleString)serverMessage.getProperty(ManagementHelper.HDR_JMX_REPLYTO));
+      
       send(serverMessage);
    }
 
@@ -1336,7 +1130,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
    public void handleNotification(final Notification notification, final Object replyTo)
    {
-      ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateID());
+      // FIXME this won't work with replication
+      ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
       notificationMessage.setDestination((SimpleString)replyTo);
       notificationMessage.setBody(new ByteBufferWrapper(ByteBuffer.allocate(2048)));
       ManagementHelper.storeNotification(notificationMessage, notification);
@@ -1352,22 +1147,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    }
 
    // Public
-   //----------------------------------------------------------------------------
-   // -----------------
+   // ----------------------------------------------------------------------------
 
    public Transaction getTransaction()
    {
       return tx;
    }
-
-   public java.util.Queue<Delivery> getDeliveries()
-   {
-      return deliveries;
-   }
-
+   
    // Private
-   //----------------------------------------------------------------------------
-   // ----------------
+   // ----------------------------------------------------------------------------
 
    private void doAck(final MessageReference ref) throws Exception
    {

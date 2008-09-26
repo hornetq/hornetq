@@ -1,26 +1,27 @@
 /*
- * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat
- * Middleware LLC, and individual contributors by the @authors tag. See the
- * copyright.txt in the distribution for a full listing of individual
- * contributors.
- * 
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- * 
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors by
+ * the @authors tag. See the copyright.txt in the distribution for a full listing of individual contributors. This is
+ * free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. You should have received a copy of the GNU Lesser General Public License along with this software; if not,
+ * write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
 
 package org.jboss.messaging.core.server.impl;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -61,19 +62,12 @@ import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.VersionLoader;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.*;
-
 /**
  * The messaging server implementation
- *
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
- * @version <tt>$Revision: 3543 $</tt>
- *          <p/>
- *          $Id: ServerPeer.java 3543 2008-01-07 22:31:58Z clebert.suconic@jboss.com $
+ * @version <tt>$Revision: 3543 $</tt> <p/> $Id: ServerPeer.java 3543 2008-01-07 22:31:58Z clebert.suconic@jboss.com $
  */
 public class MessagingServerImpl implements MessagingServer
 {
@@ -155,12 +149,11 @@ public class MessagingServerImpl implements MessagingServer
       }
 
       /*
-      The following components are pluggable on the messaging server:
-      Configuration, StorageManager, RemotingService, SecurityManager and ManagementRegistration
-      They must already be injected by the time the messaging server starts
-      It's up to the user to make sure the pluggable components are started - their
-      lifecycle will not be controlled here
-      */
+       * The following components are pluggable on the messaging server: Configuration, StorageManager, RemotingService,
+       * SecurityManager and ManagementRegistration They must already be injected by the time the messaging server
+       * starts It's up to the user to make sure the pluggable components are started - their lifecycle will not be
+       * controlled here
+       */
 
       // We make sure the pluggable components have been injected
       if (configuration == null)
@@ -248,7 +241,7 @@ public class MessagingServerImpl implements MessagingServer
          try
          {
             Class<?> clz = loader.loadClass(backupConnector.getFactoryClassName());
-            this.backupConnectorFactory = (ConnectorFactory)clz.newInstance();
+            backupConnectorFactory = (ConnectorFactory)clz.newInstance();
          }
          catch (Exception e)
          {
@@ -256,7 +249,7 @@ public class MessagingServerImpl implements MessagingServer
                                                         "\"",
                                                e);
          }
-         this.backupConnectorParams = backupConnector.getParams();
+         backupConnectorParams = backupConnector.getParams();
       }
       remotingService.setMessagingServer(this);
 
@@ -303,7 +296,7 @@ public class MessagingServerImpl implements MessagingServer
 
    // The plugabble components
 
-   public void setConfiguration(Configuration configuration)
+   public void setConfiguration(final Configuration configuration)
    {
       if (started)
       {
@@ -318,7 +311,7 @@ public class MessagingServerImpl implements MessagingServer
       return configuration;
    }
 
-   public void setRemotingService(RemotingService remotingService)
+   public void setRemotingService(final RemotingService remotingService)
    {
       if (started)
       {
@@ -332,7 +325,7 @@ public class MessagingServerImpl implements MessagingServer
       return remotingService;
    }
 
-   public void setStorageManager(StorageManager storageManager)
+   public void setStorageManager(final StorageManager storageManager)
    {
       if (started)
       {
@@ -346,7 +339,7 @@ public class MessagingServerImpl implements MessagingServer
       return storageManager;
    }
 
-   public void setSecurityManager(JBMSecurityManager securityManager)
+   public void setSecurityManager(final JBMSecurityManager securityManager)
    {
       if (started)
       {
@@ -361,7 +354,7 @@ public class MessagingServerImpl implements MessagingServer
       return securityManager;
    }
 
-   public void setManagementService(ManagementService managementService)
+   public void setManagementService(final ManagementService managementService)
    {
       if (started)
       {
@@ -463,7 +456,7 @@ public class MessagingServerImpl implements MessagingServer
 
       securityStore.authenticate(username, password);
 
-      Channel channel = connection.getChannel(channelID, true, configuration.getPacketConfirmationBatchSize());
+      Channel channel = connection.getChannel(channelID, true, configuration.getPacketConfirmationBatchSize(), false);
 
       final ServerSessionImpl session = new ServerSessionImpl(name,
                                                               channelID,
@@ -483,19 +476,32 @@ public class MessagingServerImpl implements MessagingServer
                                                               managementService,
                                                               this);
 
-      if (sessions.putIfAbsent(name, session) != null)
+      // If the session already exists that's fine - create session must be idempotent
+      // This is because if server failures occurring during a create session call we need to
+      // retry it on the backup, but the create session might have and might not have been replicated
+      // to the backup, so we need to work in both cases
+      if (sessions.putIfAbsent(name, session) == null)
       {
-         throw new IllegalArgumentException("Session with name " + name + " already exists");
+         ChannelHandler handler = new ServerSessionPacketHandler(session, channel, storageManager);
+
+         channel.setHandler(handler);
+
+         connection.addFailureListener(session);
       }
-
-      ChannelHandler handler = new ServerSessionPacketHandler(session, channel, storageManager);
-
-      channel.setHandler(handler);
-
-      connection.addFailureListener(session);
 
       return new CreateSessionResponseMessage(version.getIncrementingVersion(),
                                               configuration.getPacketConfirmationBatchSize());
+   }
+
+   // Must also be idempotent
+   public void closeSession(final String name) throws Exception
+   {
+      ServerSession session = sessions.remove(name);
+
+      if (session != null)
+      {
+         session.close();
+      }
    }
 
    public RemotingConnection getReplicatingConnection()
@@ -524,14 +530,6 @@ public class MessagingServerImpl implements MessagingServer
       }
    }
 
-   public void removeSession(final String name)
-   {
-      if (sessions.remove(name) == null)
-      {
-         throw new IllegalArgumentException("Cannot find session with name " + name + " to remove");
-      }
-   }
-
    public MessagingServerControlMBean getServerManagement()
    {
       return serverManagement;
@@ -539,7 +537,7 @@ public class MessagingServerImpl implements MessagingServer
 
    public int getConnectionCount()
    {
-      return this.remotingService.getConnections().size();
+      return remotingService.getConnections().size();
    }
 
    public PostOffice getPostOffice()

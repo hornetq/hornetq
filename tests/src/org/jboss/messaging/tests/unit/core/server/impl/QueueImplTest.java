@@ -38,7 +38,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.filter.Filter;
@@ -764,7 +763,7 @@ public class QueueImplTest extends UnitTestCase
 
       //What I expect to get
 
-      EasyMock.expect(storageManager.generateTransactionID()).andReturn(1L);
+      EasyMock.expect(storageManager.generateUniqueID()).andReturn(1L);
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -1131,90 +1130,6 @@ public class QueueImplTest extends UnitTestCase
       assertEquals(queue.getMessagesAdded(), 3);
    }
 
-   public void testAddLastWhenLocked() throws Exception
-   {
-
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
-      MessageReference messageReference = generateReference(queue, 1);
-      queue.lock();
-      CountDownLatch countDownLatch = new CountDownLatch(1);
-      AddtoQueueRunner runner = new AddtoQueueRunner(false, queue, messageReference, countDownLatch);
-      new Thread(runner).start();
-      assertFalse(runner.added);
-      queue.unlock();
-      countDownLatch.await(1000, TimeUnit.MILLISECONDS);
-      assertTrue(runner.added);
-
-   }
-
-   public void testAddLastWhenLockedMultiple() throws Exception
-   {
-
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
-      MessageReference messageReference = generateReference(queue, 1);
-      MessageReference messageReference2 = generateReference(queue, 2);
-      MessageReference messageReference3 = generateReference(queue, 3);
-      queue.lock();
-      CountDownLatch countDownLatch = new CountDownLatch(3);
-      AddtoQueueRunner runner = new AddtoQueueRunner(false, queue, messageReference, countDownLatch);
-      new Thread(runner).start();
-      AddtoQueueRunner runner2 = new AddtoQueueRunner(false, queue, messageReference2, countDownLatch);
-      new Thread(runner2).start();
-      AddtoQueueRunner runner3 = new AddtoQueueRunner(false, queue, messageReference3, countDownLatch);
-      new Thread(runner3).start();
-      assertFalse(runner.added);
-      assertFalse(runner2.added);
-      assertFalse(runner3.added);
-      queue.unlock();
-      countDownLatch.await(1000, TimeUnit.MILLISECONDS);
-      assertTrue(runner.added);
-      assertTrue(runner2.added);
-      assertTrue(runner3.added);
-
-   }
-
-   public void testAddFirstWhenLocked() throws Exception
-   {
-
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
-      MessageReference messageReference = generateReference(queue, 1);
-      queue.lock();
-      CountDownLatch countDownLatch = new CountDownLatch(1);
-      AddtoQueueRunner runner = new AddtoQueueRunner(true, queue, messageReference, countDownLatch);
-      new Thread(runner).start();
-      assertFalse(runner.added);
-      queue.unlock();
-      countDownLatch.await(1000, TimeUnit.MILLISECONDS);
-      assertTrue(runner.added);
-
-   }
-
-   public void testAddFirstWhenLockedMultiple() throws Exception
-   {
-
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
-      MessageReference messageReference = generateReference(queue, 1);
-      MessageReference messageReference2 = generateReference(queue, 2);
-      MessageReference messageReference3 = generateReference(queue, 3);
-      queue.lock();
-      CountDownLatch countDownLatch = new CountDownLatch(3);
-      AddtoQueueRunner runner = new AddtoQueueRunner(true, queue, messageReference, countDownLatch);
-      new Thread(runner).start();
-      AddtoQueueRunner runner2 = new AddtoQueueRunner(true, queue, messageReference2, countDownLatch);
-      new Thread(runner2).start();
-      AddtoQueueRunner runner3 = new AddtoQueueRunner(true, queue, messageReference3, countDownLatch);
-      new Thread(runner3).start();
-      assertFalse(runner.added);
-      assertFalse(runner2.added);
-      assertFalse(runner3.added);
-      queue.unlock();
-      countDownLatch.await(10000, TimeUnit.MILLISECONDS);
-      assertTrue(runner.added);
-      assertTrue(runner2.added);
-      assertTrue(runner3.added);
-
-   }
-
    public void testAddListFirst() throws Exception
    {
       Consumer consumer = EasyMock.createStrictMock(Consumer.class);
@@ -1339,8 +1254,8 @@ public class QueueImplTest extends UnitTestCase
       Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
       MessageReference messageReference = generateReference(queue, messageID);
       StorageManager storageManager = EasyMock.createMock(StorageManager.class);
-      EasyMock.expect(storageManager.generateTransactionID()).andReturn(randomLong());
-      EasyMock.expect(storageManager.generateID()).andReturn(randomLong());
+      EasyMock.expect(storageManager.generateUniqueID()).andReturn(randomLong());
+      EasyMock.expect(storageManager.generateUniqueID()).andReturn(randomLong());
       storageManager.storeDeleteMessageTransactional(EasyMock.anyLong(), EasyMock.eq(queue.getPersistenceID()), EasyMock.eq(messageID));
       storageManager.commit(EasyMock.anyLong());
 
@@ -1397,8 +1312,8 @@ public class QueueImplTest extends UnitTestCase
       Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
       MessageReference messageReference = generateReference(queue, messageID);
       StorageManager storageManager = createMock(StorageManager.class);
-      expect(storageManager.generateTransactionID()).andReturn(randomLong());
-      expect(storageManager.generateID()).andReturn(randomLong());
+      expect(storageManager.generateUniqueID()).andReturn(randomLong());
+      expect(storageManager.generateUniqueID()).andReturn(randomLong());
       storageManager.storeDeleteMessageTransactional(anyLong(), eq(queue.getPersistenceID()), eq(messageID));
       storageManager.commit(anyLong());
       
@@ -1458,8 +1373,8 @@ public class QueueImplTest extends UnitTestCase
     
       MessageReference messageReference = generateReference(queue, messageID);
       StorageManager storageManager = EasyMock.createMock(StorageManager.class);
-      EasyMock.expect(storageManager.generateID()).andReturn(newMessageID);
-      EasyMock.expect(storageManager.generateTransactionID()).andReturn(tid);
+      EasyMock.expect(storageManager.generateUniqueID()).andReturn(newMessageID);
+      EasyMock.expect(storageManager.generateUniqueID()).andReturn(tid);
       storageManager.storeDeleteMessageTransactional(EasyMock.anyLong(), EasyMock.eq(queue.getPersistenceID()), EasyMock.eq(messageID));
       storageManager.commit(EasyMock.anyLong());
       

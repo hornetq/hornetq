@@ -58,7 +58,7 @@ public class GracefulClient
       try
       {
          ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));         
-         ClientSession session = sf.createSession(false, true, true, -1, false);
+         ClientSession session = sf.createSession(false, true, true, false);
          ClientProducer producer = session.createProducer(QUEUE);
          ClientConsumer consumer = session.createConsumer(QUEUE);
 

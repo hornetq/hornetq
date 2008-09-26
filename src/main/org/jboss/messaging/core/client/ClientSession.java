@@ -88,8 +88,6 @@ public interface ClientSession extends XAResource
 
    void rollback() throws MessagingException;
 
-   void acknowledge() throws MessagingException;
-
    void close() throws MessagingException;
 
    boolean isClosed();
@@ -101,8 +99,6 @@ public interface ClientSession extends XAResource
    boolean isBlockOnAcknowledge();
 
    boolean isCacheProducers();
-
-   int getLazyAckBatchSize();
 
    boolean isXA();
 

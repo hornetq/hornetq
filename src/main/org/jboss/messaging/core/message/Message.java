@@ -42,6 +42,8 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface Message
 {   
+   long getMessageID();
+   
    SimpleString getDestination();
    
    void setDestination(SimpleString destination);

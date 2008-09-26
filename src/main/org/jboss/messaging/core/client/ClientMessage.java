@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.client;
 
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.Message;
 
 /**
@@ -33,12 +35,13 @@ import org.jboss.messaging.core.message.Message;
  */
 public interface ClientMessage extends Message
 {
+   long getMessageID();
+   
    int getDeliveryCount();
    
    void setDeliveryCount(int deliveryCount);
    
-   long getDeliveryID();
+   void onReceipt(ClientSessionInternal session, long consumerID);
    
-   void setDeliveryID(long deliveryID);
-   
+   void processed() throws MessagingException;
 }

@@ -38,11 +38,11 @@ import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 public interface ClientSessionFactory
 {         
    ClientSession createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
-                               int lazyAckBatchSize, boolean cacheProducers)
+                               boolean cacheProducers)
       throws MessagingException;
       
    ClientSession createSession(String username, String password, boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
-                               int lazyAckBatchSize, boolean cacheProducers)
+                               boolean cacheProducers)
       throws MessagingException;
         
    void setConsumerWindowSize(int size);

@@ -46,65 +46,64 @@ import org.jboss.messaging.util.UUIDGenerator;
 public class InVMConnection implements Connection
 {
    private static final Logger log = Logger.getLogger(InVMConnection.class);
-   
+
    private final BufferHandler handler;
-   
+
    private final ConnectionLifeCycleListener listener;
-   
+
    private final String id;
-   
+
    private volatile boolean started;
-   
-   private static final ExecutorFactory factory =
-      new OrderedExecutorFactory(Executors.newCachedThreadPool(new JBMThreadFactory("JBM-InVM-Transport-Threads")));
-   
+
+   private static final ExecutorFactory factory = new OrderedExecutorFactory(Executors.newCachedThreadPool(new JBMThreadFactory("JBM-InVM-Transport-Threads")));
+
    private final Executor executor;
-         
+
    public InVMConnection(final BufferHandler handler, final ConnectionLifeCycleListener listener)
    {
-      this (UUIDGenerator.getInstance().generateSimpleStringUUID().toString(), handler, listener);
+      this(UUIDGenerator.getInstance().generateSimpleStringUUID().toString(), handler, listener);
    }
-   
+
    public InVMConnection(final String id, final BufferHandler handler, final ConnectionLifeCycleListener listener)
    {
       this.handler = handler;
-      
+
       this.listener = listener;
-      
+
       this.id = id;
-      
-      this.executor = factory.getExecutor();
-      
+
+      executor = factory.getExecutor();
+
       listener.connectionCreated(this);
-      
+
       started = true;
    }
 
    public void close()
-   {      
+   {
       if (!started)
       {
          return;
       }
-      
-      //Wait for writes to be processed
+
+      // Wait for writes to be processed
       Future future = new Future();
-      
+
       executor.execute(future);
-      
+
       boolean ok = future.await(10000);
-      
+
       if (!ok)
       {
          log.warn("Timed out waiting for connection writes to be processed");
       }
-       
+
       listener.connectionDestroyed(id);
-      
+
       started = false;
    }
 
-   public MessagingBuffer createBuffer(int size)
+   public MessagingBuffer createBuffer(final int size)
    {
       return new ByteBufferWrapper(ByteBuffer.allocate(size));
    }
@@ -122,16 +121,16 @@ public class InVMConnection implements Connection
          {
             try
             {
-               buffer.getInt(); //read and discard
+               buffer.getInt(); // read and discard
                handler.bufferReceived(id, buffer);
             }
             catch (Exception e)
             {
                final String msg = "Failed to write to handler";
                log.error(msg, e);
-               throw new IllegalStateException(msg, e);         
+               throw new IllegalStateException(msg, e);
             }
          }
-      });      
+      });
    }
 }

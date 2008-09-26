@@ -26,10 +26,10 @@ import java.util.concurrent.CountDownLatch;
 
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.ConcurrentHashSet;
-import org.jboss.messaging.util.SequenceGenerator;
+import org.jboss.messaging.util.TimeAndCounterIDGenerator;
 
 /**
- * A SequenceGeneratorTest
+ * A TimeAndCounterIDGeneratorTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * 
@@ -37,7 +37,7 @@ import org.jboss.messaging.util.SequenceGenerator;
  *
  *
  */
-public class SequenceGeneratorTest extends UnitTestCase
+public class TimeAndCounterIDGeneratorTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------
@@ -52,7 +52,7 @@ public class SequenceGeneratorTest extends UnitTestCase
 
    public void testCalculation()
    {
-      SequenceGenerator seq = new SequenceGenerator();
+      TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
       long max = 100000;
 
       long lastNr = 0;
@@ -86,7 +86,7 @@ public class SequenceGeneratorTest extends UnitTestCase
    {
       final ConcurrentHashSet<Long> hashSet = new ConcurrentHashSet<Long>();
 
-      final SequenceGenerator seq = new SequenceGenerator();
+      final TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
 
       seq.setInternalID(Integer.MAX_VALUE - 50);
 

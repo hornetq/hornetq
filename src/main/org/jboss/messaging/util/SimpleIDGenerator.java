@@ -22,37 +22,42 @@
 package org.jboss.messaging.util;
 
 /**
- * A IDGenerator
+ * A SimpleIDGenerator
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class IDGenerator
+public class SimpleIDGenerator implements IDGenerator
 {
    private long idSequence;
-   
+
    private boolean wrapped;
-   
-   public IDGenerator(final long startID)
+
+   public SimpleIDGenerator(final long startID)
    {
-      this.idSequence = startID;
+      idSequence = startID;
    }
-   
+
    public synchronized long generateID()
    {
       long id = idSequence++;
 
       if (idSequence == Long.MIN_VALUE)
       {
-         wrapped = true;         
-      }      
-      
+         wrapped = true;
+      }
+
       if (wrapped)
       {
-         //Wrap - Very unlikely to happen
+         // Wrap - Very unlikely to happen
          throw new IllegalStateException("Exhausted ids to use!");
       }
-      
+
       return id;
+   }
+
+   public synchronized long getCurrentID()
+   {
+      return idSequence;
    }
 }

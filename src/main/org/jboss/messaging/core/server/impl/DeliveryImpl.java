@@ -22,9 +22,6 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.server.Delivery;
 import org.jboss.messaging.core.server.MessageReference;
 
@@ -36,47 +33,25 @@ import org.jboss.messaging.core.server.MessageReference;
  *
  */
 public class DeliveryImpl implements Delivery
-{
-   private static final Logger log = Logger.getLogger(DeliveryImpl.class);
-   
-   private final MessageReference reference;
-   
+{ 
    private final long consumerID;
    
-   private final long deliveryID;
-   
-   private final Channel channel;
-
-   public DeliveryImpl(final MessageReference reference, 
-                       final long consumerID,
-                       final long deliveryID, final Channel channel)
+   private final MessageReference reference;
+        
+   public DeliveryImpl(final long consumerID,
+                       final MessageReference reference)
    {      
-      this.reference = reference;
       this.consumerID = consumerID;
-      this.deliveryID = deliveryID;
-      this.channel = channel;
+      this.reference = reference;      
    }
 
-   public MessageReference getReference()
-   {
-      return reference;
-   }
-
-   public long getDeliveryID()
-   {
-      return deliveryID;
-   }
-   
    public long getConsumerID()
    {
       return consumerID;
    }
    
-   public void deliver()
+   public MessageReference getReference()
    {
-      SessionReceiveMessage message =
-         new SessionReceiveMessage(consumerID, reference.getMessage(), reference.getDeliveryCount() + 1, deliveryID);
-      
-      channel.send(message);
-   }
+      return reference;
+   }     
 }

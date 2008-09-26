@@ -36,11 +36,13 @@ public interface ServerConsumer extends Consumer
 	
 	void close() throws Exception;
 	
+	void cancelRefs() throws Exception;
+	
 	void setStarted(boolean started) throws Exception;
 	
 	void receiveCredits(int credits) throws Exception;
 	
 	Queue getQueue();
-	
-	void deliverMessage(long messageID) throws Exception;
+
+	MessageReference getReference(long messageID) throws Exception;
 }

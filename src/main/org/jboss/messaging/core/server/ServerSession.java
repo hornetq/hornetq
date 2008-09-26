@@ -61,17 +61,13 @@ public interface ServerSession
 	
 	void setStarted(boolean started) throws Exception;
 	
-	void handleDelivery(MessageReference reference, ServerConsumer consumer) throws Exception;
-	
 	void promptDelivery(Queue queue);
 	
 	void send(ServerMessage msg) throws Exception;
 		
-   void acknowledge(long deliveryID, boolean allUpTo) throws Exception;
-
+	void processed(final long consumerID, final long messageID) throws Exception;
+	
    void rollback() throws Exception;
-
-   void cancel(long deliveryID, boolean expired) throws Exception;
 
    void commit() throws Exception;
 
@@ -134,8 +130,6 @@ public interface ServerSession
    ServerMessage browserNextMessage(long browserID) throws Exception;
    
    void browserReset(long browserID) throws Exception;
-   
-   void handleReplicateDelivery(long consumerID, long messageID) throws Exception;
    
    void transferConnection(RemotingConnection newConnection);
    

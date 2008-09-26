@@ -66,8 +66,9 @@ import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
-import org.jboss.messaging.util.SequenceGenerator;
+import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.TimeAndCounterIDGenerator;
 
 /**
  * 
@@ -111,7 +112,8 @@ public class JournalStorageManager implements StorageManager
 
    public static final byte SET_SCHEDULED_DELIVERY_TIME = 44;
 
-   private final SequenceGenerator idSequence = new SequenceGenerator();
+   //This will produce a unique id **for this node only**
+   private final IDGenerator idGenerator = new TimeAndCounterIDGenerator();
 
    private final AtomicLong bindingIDSequence = new AtomicLong(0);
 
@@ -198,16 +200,9 @@ public class JournalStorageManager implements StorageManager
       this.bindingsJournal = bindingsJournal;
    }
 
-   public long generateID()
+   public long generateUniqueID()
    {
-      return idSequence.generateID();
-   }
-
-   // Needed for replication
-
-   public long generateTransactionID()
-   {
-      return messageJournal.getTransactionID();
+      return idGenerator.generateID();
    }
 
    // Non transactional operations
@@ -243,7 +238,7 @@ public class JournalStorageManager implements StorageManager
          messageJournal.appendDeleteRecordTransactional(txID, pageTransaction.getRecordID(), null);
       }
 
-      pageTransaction.setRecordID(generateID());
+      pageTransaction.setRecordID(generateUniqueID());
 
       messageJournal.appendAddRecordTransactional(txID,
                                                   pageTransaction.getRecordID(),
@@ -260,7 +255,7 @@ public class JournalStorageManager implements StorageManager
          messageJournal.appendDeleteRecordTransactional(txID, lastPage.getRecordId(), null);
       }
 
-      lastPage.setRecordId(generateID());
+      lastPage.setRecordId(generateUniqueID());
 
       messageJournal.appendAddRecordTransactional(txID, lastPage.getRecordId(), LAST_PAGE, lastPage);
    }

@@ -1,22 +1,12 @@
 /*
- * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat
- * Middleware LLC, and individual contributors by the @authors tag. See the
- * copyright.txt in the distribution for a full listing of individual
- * contributors.
- * 
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- * 
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors by
+ * the @authors tag. See the copyright.txt in the distribution for a full listing of individual contributors. This is
+ * free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. You should have received a copy of the GNU Lesser General Public License along with this software; if not,
+ * write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
 
@@ -35,8 +25,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.list.PriorityLinkedList;
@@ -59,16 +47,12 @@ import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- * 
- * Implementation of a Queue
- * 
- * TODO use Java 5 concurrent queue
+ * Implementation of a Queue TODO use Java 5 concurrent queue
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
- * 
  */
 public class QueueImpl implements Queue
 {
@@ -120,8 +104,6 @@ public class QueueImpl implements Queue
 
    private final Runnable deliverRunner = new DeliverRunner();
 
-   private final Lock lock = new ReentrantLock(false);
-
    private volatile boolean backup;
 
    public QueueImpl(final long persistenceID,
@@ -142,7 +124,7 @@ public class QueueImpl implements Queue
       this.clustered = clustered;
 
       this.durable = durable;
-      
+
       this.temporary = temporary;
 
       this.scheduledExecutor = scheduledExecutor;
@@ -164,7 +146,7 @@ public class QueueImpl implements Queue
    {
       return durable;
    }
-   
+
    public boolean isTemporary()
    {
       return temporary;
@@ -177,29 +159,12 @@ public class QueueImpl implements Queue
 
    public HandleStatus addLast(final MessageReference ref)
    {
-      lock.lock();
-      try
-      {
-         return add(ref, false);
-      }
-      finally
-      {
-         lock.unlock();
-      }
+      return add(ref, false);
    }
 
    public HandleStatus addFirst(final MessageReference ref)
    {
-      lock.lock();
-
-      try
-      {
-         return add(ref, true);
-      }
-      finally
-      {
-         lock.unlock();
-      }
+      return add(ref, true);
    }
 
    public void addListFirst(final LinkedList<MessageReference> list)
@@ -212,7 +177,7 @@ public class QueueImpl implements Queue
 
          messageReferences.addFirst(ref, ref.getMessage().getPriority());
       }
-
+      
       deliver();
    }
 
@@ -241,77 +206,65 @@ public class QueueImpl implements Queue
          return;
       }
 
-      // TODO - we need to lock during delivery since otherwise delivery could
-      // occur while we're rolling back a transaction
-      // which would mean messages got delivered in the wrong order
-      // We need to revise this for better concurrency
-      lock.lock();
-      try
+      MessageReference reference;
+
+      Iterator<MessageReference> iterator = null;
+
+      while (true)
       {
-         MessageReference reference;
-
-         Iterator<MessageReference> iterator = null;
-
-         while (true)
+         if (iterator == null)
          {
-            if (iterator == null)
+            reference = messageReferences.peekFirst();
+         }
+         else
+         {
+            if (iterator.hasNext())
             {
-               reference = messageReferences.peekFirst();
+               reference = iterator.next();
             }
             else
             {
-               if (iterator.hasNext())
-               {
-                  reference = iterator.next();
-               }
-               else
-               {
-                  reference = null;
-               }
-            }
-
-            if (reference == null)
-            {
-               if (iterator == null)
-               {
-                  // We delivered all the messages - go into direct delivery
-                  direct = true;
-
-                  promptDelivery = false;
-               }
-               return;
-            }
-
-            HandleStatus status = deliver(reference);
-
-            if (status == HandleStatus.HANDLED)
-            {
-               if (iterator == null)
-               {
-                  messageReferences.removeFirst();
-               }
-               else
-               {
-                  iterator.remove();
-               }
-            }
-            else if (status == HandleStatus.BUSY)
-            {
-               // All consumers busy - give up
-               break;
-            }
-            else if (status == HandleStatus.NO_MATCH && iterator == null)
-            {
-               // Consumers not all busy - but filter not accepting - iterate
-               // back
-               // through the queue
-               iterator = messageReferences.iterator();
+               reference = null;
             }
          }
-      }
-      finally
-      {
-         lock.unlock();
+
+         if (reference == null)
+         {
+            if (iterator == null)
+            {
+               // We delivered all the messages - go into direct delivery
+               direct = true;
+
+               promptDelivery = false;
+            }
+            return;
+         }
+
+         HandleStatus status = deliver(reference);
+
+         if (status == HandleStatus.HANDLED)
+         {
+            if (iterator == null)
+            {
+               messageReferences.removeFirst();
+            }
+            else
+            {
+               iterator.remove();
+            }
+         }
+         else if (status == HandleStatus.BUSY)
+         {
+            // All consumers busy - give up
+            break;
+         }
+         else if (status == HandleStatus.NO_MATCH && iterator == null)
+         {
+            // Consumers not all busy - but filter not accepting - iterate
+            // back
+            // through the queue
+            iterator = messageReferences.iterator();
+         }
       }
    }
 
@@ -637,16 +590,6 @@ public class QueueImpl implements Queue
       return false;
    }
 
-   public void lock()
-   {
-      lock.lock();
-   }
-
-   public void unlock()
-   {
-      lock.unlock();
-   }
-
    public boolean isBackup()
    {
       return backup;
@@ -655,7 +598,7 @@ public class QueueImpl implements Queue
    public void setBackup(final boolean backup)
    {
       this.backup = backup;
-      
+
       this.direct = false;
 
       if (!backup)

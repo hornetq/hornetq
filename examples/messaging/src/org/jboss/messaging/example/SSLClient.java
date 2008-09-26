@@ -49,7 +49,7 @@ public class SSLClient
          ClientSessionFactory sessionFactory =
             new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));  
          sessionFactory.getTransportParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
-         clientSession = sessionFactory.createSession(false, true, true, 1, false);
+         clientSession = sessionFactory.createSession(false, true, true, false);
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);
          ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, false, 0,
@@ -58,8 +58,8 @@ public class SSLClient
          clientProducer.send(message);
          ClientConsumer clientConsumer = clientSession.createConsumer(queue);
          clientSession.start();
-         Message msg = clientConsumer.receive(5000);
-         clientSession.acknowledge();
+         ClientMessage msg = clientConsumer.receive(5000);
+         msg.processed();
          System.out.println("msg.getPayload() = " + msg.getBody().getString());
       }
       catch(Exception e)

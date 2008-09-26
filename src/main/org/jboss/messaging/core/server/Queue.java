@@ -135,10 +135,6 @@ public interface Queue
    boolean moveMessage(long messageID, Binding toBinding,
          StorageManager storageManager, PostOffice postOffice) throws Exception;
 
-   void lock();
-   
-   void unlock();
-   
    void setBackup(boolean backup);
    
    boolean isBackup();

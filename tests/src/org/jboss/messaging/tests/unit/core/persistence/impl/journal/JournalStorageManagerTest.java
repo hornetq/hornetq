@@ -785,36 +785,18 @@ public class JournalStorageManagerTest extends UnitTestCase
 
    public void testGenerateMessageID()
    {
-
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
       JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
 
-      long id = jsm.generateID();
+      long id = jsm.generateUniqueID();
 
-      assertEquals(++id, jsm.generateID());
-      assertEquals(++id, jsm.generateID());
-      assertEquals(++id, jsm.generateID());
-      assertEquals(++id, jsm.generateID());
-      assertEquals(++id, jsm.generateID());
-   }
-
-   public void testGenerateTransactionID()
-   {
-      Journal messageJournal = EasyMock.createStrictMock(Journal.class);
-      Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
-
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
-
-      long id = 1212;
-      EasyMock.expect(messageJournal.getTransactionID()).andReturn(id);
-
-      EasyMock.replay(messageJournal, bindingsJournal);
-
-      assertEquals(id, jsm.generateTransactionID());
-
-      EasyMock.verify(messageJournal, bindingsJournal);
+      assertEquals(++id, jsm.generateUniqueID());
+      assertEquals(++id, jsm.generateUniqueID());
+      assertEquals(++id, jsm.generateUniqueID());
+      assertEquals(++id, jsm.generateUniqueID());
+      assertEquals(++id, jsm.generateUniqueID());
    }
 
    public void testConstructor()

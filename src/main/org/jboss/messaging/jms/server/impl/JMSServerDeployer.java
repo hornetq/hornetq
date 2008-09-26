@@ -1,22 +1,12 @@
 /*
- * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat
- * Middleware LLC, and individual contributors by the @authors tag. See the
- * copyright.txt in the distribution for a full listing of individual
- * contributors.
- * 
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- * 
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors by
+ * the @authors tag. See the copyright.txt in the distribution for a full listing of individual contributors. This is
+ * free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. You should have received a copy of the GNU Lesser General Public License along with this software; if not,
+ * write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
 
@@ -29,6 +19,7 @@ import java.util.Map;
 
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.core.logging.Logger;
@@ -89,21 +80,22 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String TOPIC_NODE_NAME = "topic";
 
-   public JMSServerDeployer(DeploymentManager deploymentManager)
+   public JMSServerDeployer(final DeploymentManager deploymentManager)
    {
       super(deploymentManager);
    }
 
-   public void setJmsServerManager(JMSServerManager jmsServerManager)
+   public void setJmsServerManager(final JMSServerManager jmsServerManager)
    {
       this.jmsServerManager = jmsServerManager;
    }
 
    /**
     * the names of the elements to deploy
-    *
+    * 
     * @return the names of the elements todeploy
     */
+   @Override
    public String[] getElementTagName()
    {
       return new String[] { QUEUE_NODE_NAME, TOPIC_NODE_NAME, CONNECTION_FACTORY_NODE_NAME };
@@ -111,10 +103,11 @@ public class JMSServerDeployer extends XmlDeployer
 
    /**
     * deploy an element
-    *
+    * 
     * @param node the element to deploy
     * @throws Exception .
     */
+   @Override
    public void deploy(final Node node) throws Exception
    {
       createAndBindObject(node);
@@ -122,7 +115,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    /**
     * creates the object to bind, this will either be a JBossConnectionFActory, JBossQueue or JBossTopic
-    *
+    * 
     * @param node the config
     * @throws Exception .
     */
@@ -133,7 +126,7 @@ public class JMSServerDeployer extends XmlDeployer
          NodeList children = node.getChildNodes();
 
          long pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
-         long callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
+         long callTimeout = ConfigurationImpl.DEFAULT_CALL_TIMEOUT;
          String clientID = null;
          int dupsOKBatchSize = DEFAULT_DUPS_OK_BATCH_SIZE;
          int consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
@@ -436,10 +429,11 @@ public class JMSServerDeployer extends XmlDeployer
 
    /**
     * undeploys an element
-    *
+    * 
     * @param node the element to undeploy
     * @throws Exception .
     */
+   @Override
    public void undeploy(final Node node) throws Exception
    {
       if (node.getNodeName().equals(CONNECTION_FACTORY_NODE_NAME))
@@ -463,7 +457,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    /**
     * The name of the configuration file name to look for for deployment
-    *
+    * 
     * @return The name of the config file
     */
    public String getConfigFileName()

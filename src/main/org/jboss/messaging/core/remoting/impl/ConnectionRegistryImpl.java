@@ -48,35 +48,35 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
 
    public static final Logger log = Logger.getLogger(ConnectionRegistryImpl.class);
 
-
    // Attributes ----------------------------------------------------
 
    private final Map<RegistryKey, ConnectionHolder> connections = new ConcurrentHashMap<RegistryKey, ConnectionHolder>();
 
    private final Map<Object, RegistryKey> reverseMap = new ConcurrentHashMap<Object, RegistryKey>();
 
-   //TODO - core pool size should be configurable
-   private final ScheduledThreadPoolExecutor pingExecutor =
-      new ScheduledThreadPoolExecutor(10, new JBMThreadFactory("jbm-pinger-threads"));
+   // TODO - core pool size should be configurable
+   private final ScheduledThreadPoolExecutor pingExecutor = new ScheduledThreadPoolExecutor(10,
+                                                                                            new JBMThreadFactory("jbm-pinger-threads"));
 
    // Static --------------------------------------------------------
-   
+
    public static ConnectionRegistry instance = new ConnectionRegistryImpl();
 
    // ConnectionRegistry implementation -----------------------------
-      
+
    public synchronized RemotingConnection getConnection(final ConnectorFactory connectorFactory,
-            final Map<String, Object> params,
-            final long pingInterval, final long callTimeout)
+                                                        final Map<String, Object> params,
+                                                        final long pingInterval,
+                                                        final long callTimeout)
    {
       RegistryKey key = new RegistryKey(connectorFactory, params);
 
       ConnectionHolder holder = connections.get(key);
-      
+
       if (holder != null)
       {
          holder.increment();
-         
+
          RemotingConnection connection = holder.getConnection();
 
          return connection;
@@ -84,27 +84,33 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       else
       {
          DelegatingBufferHandler handler = new DelegatingBufferHandler();
-         
+
          Connector connector = connectorFactory.createConnector(params, handler, this);
-         
+
          connector.start();
-            
+
          Connection tc = connector.createConnection();
 
          if (tc == null)
          {
             throw new IllegalStateException("Failed to connect");
          }
-         
-         RemotingConnection connection =
-            new RemotingConnectionImpl(tc, callTimeout, pingInterval, null, pingExecutor, null, null, true);
-         
+
+         RemotingConnection connection = new RemotingConnectionImpl(tc,
+                                                                    callTimeout,
+                                                                    pingInterval,
+                                                                    null,
+                                                                    pingExecutor,
+                                                                    null,
+                                                                    null,
+                                                                    true);
+
          handler.conn = connection;
-         
+
          connection.startPinger();
-                 
+
          holder = new ConnectionHolder(connection, connector);
-  
+
          connections.put(key, holder);
 
          reverseMap.put(tc.getID(), key);
@@ -112,59 +118,68 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
          return connection;
       }
    }
-   
-   public RemotingConnection getConnectionNoCache(ConnectorFactory connectorFactory, Map<String, Object> params,
-                                                  long pingInterval, long callTimeout)
+
+   public RemotingConnection getConnectionNoCache(final ConnectorFactory connectorFactory,
+                                                  final Map<String, Object> params,
+                                                  final long pingInterval,
+                                                  final long callTimeout)
    {
       DelegatingBufferHandler handler = new DelegatingBufferHandler();
-      
-      NoCacheConnectionLifeCycleListener listener = new NoCacheConnectionLifeCycleListener(); 
-      
+
+      NoCacheConnectionLifeCycleListener listener = new NoCacheConnectionLifeCycleListener();
+
       Connector connector = connectorFactory.createConnector(params, handler, listener);
-      
+
       connector.start();
-         
+
       Connection tc = connector.createConnection();
 
       if (tc == null)
       {
          throw new IllegalStateException("Failed to connect");
       }
-      
-      RemotingConnection connection =
-         new RemotingConnectionImpl(tc, callTimeout, pingInterval, null, pingExecutor, null, null, true);
-      
+
+      RemotingConnection connection = new RemotingConnectionImpl(tc,
+                                                                 callTimeout,
+                                                                 pingInterval,
+                                                                 null,
+                                                                 pingExecutor,
+                                                                 null,
+                                                                 null,
+                                                                 true);
+
       handler.conn = connection;
-      
+
       listener.conn = connection;
-      
+
       connection.startPinger();
-              
+
       return connection;
    }
 
    public synchronized void returnConnection(final Object connectionID)
    {
       RegistryKey key = reverseMap.get(connectionID);
-      
+
       if (key == null)
       {
-         //This is ok and might happen if conn is returned after an error occurred on it in which
-         //case it will have already automatically been closed and removed
+         // This is ok and might happen if conn is returned after an error
+         // occurred on it in which
+         // case it will have already automatically been closed and removed
          log.warn("Connection not found when returning - probably conn has failed and been automatically removed");
          return;
       }
-      
+
       ConnectionHolder holder = connections.get(key);
-      
+
       if (holder.getCount() == 1)
-      {           
+      {
          RemotingConnection conn = holder.getConnection();
-           
+
          reverseMap.remove(connectionID);
-         
+
          connections.remove(key);
-         
+
          conn.destroy();
 
          holder.getConnector().close();
@@ -183,9 +198,9 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
    public synchronized int getCount(final ConnectorFactory connectorFactory, final Map<String, Object> params)
    {
       RegistryKey key = new RegistryKey(connectorFactory, params);
-      
+
       ConnectionHolder holder = connections.get(key);
-       
+
       if (holder != null)
       {
          return holder.getCount();
@@ -195,15 +210,15 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
          return 0;
       }
    }
-   
+
    public void clear()
    {
       connections.clear();
    }
-   
+
    public void dump()
    {
-      for (ConnectionHolder holder: connections.values())
+      for (ConnectionHolder holder : connections.values())
       {
          log.info("connection " + System.identityHashCode(holder.connection) + " count " + holder.count);
       }
@@ -222,21 +237,22 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
    public void connectionDestroyed(final Object connectionID)
    {
       RegistryKey key = reverseMap.remove(connectionID);
-               
+
       if (key != null)
       {
          ConnectionHolder holder = connections.remove(key);
-                 
-         //If conn still exists here this means that the underlying transport conn has been closed from the server side without
-         //being returned from the client side so we need to fail the conn and call it's listeners
-         MessagingException me = new MessagingException(MessagingException.OBJECT_CLOSED,
-                                                        "The conn has been closed.");
+
+         // If conn still exists here this means that the underlying transport
+         // conn has been closed from the server side without
+         // being returned from the client side so we need to fail the conn and
+         // call it's listeners
+         MessagingException me = new MessagingException(MessagingException.OBJECT_CLOSED, "The conn has been closed.");
          holder.getConnection().fail(me);
       }
    }
 
    public void connectionException(final Object connectionID, final MessagingException me)
-   { 
+   {
       RegistryKey key = reverseMap.remove(connectionID);
 
       if (key == null)
@@ -248,7 +264,7 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
 
       holder.getConnection().fail(me);
    }
-     
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -260,13 +276,13 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
    private static class NoCacheConnectionLifeCycleListener implements ConnectionLifeCycleListener
    {
       private RemotingConnection conn;
-      
+
       public void connectionCreated(final Connection connection)
       {
       }
 
       public void connectionDestroyed(final Object connectionID)
-      {  
+      {
          if (conn != null)
          {
             conn.destroy();
@@ -279,9 +295,9 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
          {
             conn.fail(me);
          }
-      }      
+      }
    }
-   
+
    private static class ConnectionHolder
    {
       private final RemotingConnection connection;
@@ -324,27 +340,28 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
          return connector;
       }
    }
-   
+
    private class RegistryKey
    {
       private final String connectorFactoryClassName;
-      
+
       private final Map<String, Object> params;
-      
+
       RegistryKey(final ConnectorFactory connectorFactory, final Map<String, Object> params)
       {
-         this.connectorFactoryClassName = connectorFactory.getClass().getName();
-         
+         connectorFactoryClassName = connectorFactory.getClass().getName();
+
          this.params = params;
       }
-      
-      public boolean equals(Object other)
+
+      @Override
+      public boolean equals(final Object other)
       {
          RegistryKey kother = (RegistryKey)other;
 
-         if (this.connectorFactoryClassName.equals(kother.connectorFactoryClassName))
+         if (connectorFactoryClassName.equals(kother.connectorFactoryClassName))
          {
-            if (this.params == null)
+            if (params == null)
             {
                return kother.params == null;
             }
@@ -353,15 +370,15 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
                if (kother.params == null)
                {
                   return false;
-               }               
-               else if (this.params.size() == kother.params.size())
+               }
+               else if (params.size() == kother.params.size())
                {
-                  for (Map.Entry<String, Object> entry: this.params.entrySet())
+                  for (Map.Entry<String, Object> entry : params.entrySet())
                   {
                      Object thisVal = entry.getValue();
-                     
+
                      Object otherVal = kother.params.get(entry.getKey());
-                     
+
                      if (otherVal == null || !otherVal.equals(thisVal))
                      {
                         return false;
@@ -380,20 +397,21 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
             return false;
          }
       }
-      
+
+      @Override
       public int hashCode()
       {
          return connectorFactoryClassName.hashCode();
       }
    }
-   
+
    private class DelegatingBufferHandler extends AbstractBufferHandler
    {
       RemotingConnection conn;
-      
+
       public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
-      {         
+      {
          conn.bufferReceived(connectionID, buffer);
-      }            
+      }
    }
 }

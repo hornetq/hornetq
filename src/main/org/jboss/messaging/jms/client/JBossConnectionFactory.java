@@ -1,24 +1,14 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors by
+ * the @authors tag. See the copyright.txt in the distribution for a full listing of individual contributors. This is
+ * free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. You should have received a copy of the GNU Lesser General Public License along with this software; if not,
+ * write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
+ */
 
 package org.jboss.messaging.jms.client;
 
@@ -52,39 +42,38 @@ import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
- *
- * $Id$
+ * @version <tt>$Revision$</tt> $Id$
  */
-public class JBossConnectionFactory implements
-   ConnectionFactory, QueueConnectionFactory, TopicConnectionFactory,
-   XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory,
-   Serializable/*, Referenceable http://jira.jboss.org/jira/browse/JBMESSAGING-395*/
+public class JBossConnectionFactory implements ConnectionFactory, QueueConnectionFactory, TopicConnectionFactory,
+         XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory, Serializable/*
+                                                                                                 * , Referenceable
+                                                                                                 * http://jira.jboss.org/jira/browse/JBMESSAGING-395
+                                                                                                 */
 {
    // Constants ------------------------------------------------------------------------------------
-   
+
    private final static long serialVersionUID = -2810634789345348326L;
-   
+
    private static final Logger log = Logger.getLogger(JBossConnectionFactory.class);
 
    // Static ---------------------------------------------------------------------------------------
-   
+
    // Attributes -----------------------------------------------------------------------------------
-   
+
    private transient volatile ClientSessionFactory sessionFactory;
-   
+
    private final TransportConfiguration connectorConfig;
-   
+
    private final TransportConfiguration backupConnectorConfig;
-   
+
    private final String clientID;
-   
+
    private final int dupsOKBatchSize;
 
    private final long pingPeriod;
 
    private final long callTimeout;
-   
+
    private final int consumerWindowSize;
 
    private final int consumerMaxRate;
@@ -92,21 +81,21 @@ public class JBossConnectionFactory implements
    private final int producerWindowSize;
 
    private final int producerMaxRate;
-   
+
    private final boolean blockOnAcknowledge;
-   
+
    private final boolean blockOnNonPersistentSend;
-   
+
    private final boolean blockOnPersistentSend;
 
    // Constructors ---------------------------------------------------------------------------------
-   
+
    public JBossConnectionFactory(final TransportConfiguration connectorConfig,
                                  final TransportConfiguration backupConnectorConfig,
                                  final long pingPeriod,
                                  final long callTimeout,
                                  final String clientID,
-   		                        final int dupsOKBatchSize,                                                         
+                                 final int dupsOKBatchSize,
                                  final int consumerWindowSize,
                                  final int consumerMaxRate,
                                  final int producerWindowSize,
@@ -129,101 +118,91 @@ public class JBossConnectionFactory implements
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
       this.blockOnPersistentSend = blockOnPersistentSend;
    }
-   
+
    // ConnectionFactory implementation -------------------------------------------------------------
-   
+
    public Connection createConnection() throws JMSException
    {
       return createConnection(null, null);
    }
-   
+
    public Connection createConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, false,
-                                      JBossConnection.TYPE_GENERIC_CONNECTION);
+      return createConnectionInternal(username, password, false, JBossConnection.TYPE_GENERIC_CONNECTION);
    }
-   
+
    // QueueConnectionFactory implementation --------------------------------------------------------
-   
+
    public QueueConnection createQueueConnection() throws JMSException
    {
       return createQueueConnection(null, null);
    }
-   
-   public QueueConnection createQueueConnection(final String username, final String password)
-      throws JMSException
+
+   public QueueConnection createQueueConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, false,
-                                      JBossConnection.TYPE_QUEUE_CONNECTION);
+      return createConnectionInternal(username, password, false, JBossConnection.TYPE_QUEUE_CONNECTION);
    }
-   
+
    // TopicConnectionFactory implementation --------------------------------------------------------
-   
+
    public TopicConnection createTopicConnection() throws JMSException
    {
       return createTopicConnection(null, null);
    }
-   
-   public TopicConnection createTopicConnection(final String username, final String password)
-      throws JMSException
+
+   public TopicConnection createTopicConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, false,
-                                      JBossConnection.TYPE_TOPIC_CONNECTION);
+      return createConnectionInternal(username, password, false, JBossConnection.TYPE_TOPIC_CONNECTION);
    }
-   
+
    // XAConnectionFactory implementation -----------------------------------------------------------
-   
+
    public XAConnection createXAConnection() throws JMSException
    {
       return createXAConnection(null, null);
    }
-   
+
    public XAConnection createXAConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, true,
-                                      JBossConnection.TYPE_GENERIC_CONNECTION);
+      return createConnectionInternal(username, password, true, JBossConnection.TYPE_GENERIC_CONNECTION);
    }
-   
+
    // XAQueueConnectionFactory implementation ------------------------------------------------------
-   
+
    public XAQueueConnection createXAQueueConnection() throws JMSException
    {
       return createXAQueueConnection(null, null);
    }
-   
-   public XAQueueConnection createXAQueueConnection(final String username, final String password)
-      throws JMSException
+
+   public XAQueueConnection createXAQueueConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, true,
-                                      JBossConnection.TYPE_QUEUE_CONNECTION);
+      return createConnectionInternal(username, password, true, JBossConnection.TYPE_QUEUE_CONNECTION);
    }
-   
+
    // XATopicConnectionFactory implementation ------------------------------------------------------
-   
+
    public XATopicConnection createXATopicConnection() throws JMSException
    {
       return createXATopicConnection(null, null);
    }
-   
-   public XATopicConnection createXATopicConnection(final String username, final String password)
-      throws JMSException
+
+   public XATopicConnection createXATopicConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, true,
-                                      JBossConnection.TYPE_TOPIC_CONNECTION);
+      return createConnectionInternal(username, password, true, JBossConnection.TYPE_TOPIC_CONNECTION);
    }
-   
+
    // Referenceable implementation -----------------------------------------------------------------
-   
+
    public Reference getReference() throws NamingException
    {
       return new Reference(this.getClass().getCanonicalName(),
-               new SerializableObjectRefAddr("JBM-CF", this),
-               ConnectionFactoryObjectFactory.class.getCanonicalName(),
-               null);
+                           new SerializableObjectRefAddr("JBM-CF", this),
+                           ConnectionFactoryObjectFactory.class.getCanonicalName(),
+                           null);
    }
-   
+
    // Public ---------------------------------------------------------------------------------------
-   
+
    public TransportConfiguration getConnectorFactory()
    {
       return connectorConfig;
@@ -233,22 +212,22 @@ public class JBossConnectionFactory implements
    {
       return pingPeriod;
    }
-   
+
    public long getCallTimeout()
    {
       return callTimeout;
    }
-   
+
    public String getClientID()
    {
       return clientID;
    }
-   
+
    public int getDupsOKBatchSize()
    {
       return dupsOKBatchSize;
    }
-     
+
    public int getConsumerWindowSize()
    {
       return consumerWindowSize;
@@ -283,43 +262,42 @@ public class JBossConnectionFactory implements
    {
       return blockOnPersistentSend;
    }
-      
+
    // Package protected ----------------------------------------------------------------------------
-   
+
    // Protected ------------------------------------------------------------------------------------
-   
-   protected JBossConnection createConnectionInternal(final String username, final String password,
-                                                      final boolean isXA, final int type)
-      throws JMSException
+
+   protected JBossConnection createConnectionInternal(final String username,
+                                                      final String password,
+                                                      final boolean isXA,
+                                                      final int type) throws JMSException
    {
       if (sessionFactory == null)
       {
-         //It doesn't matter if more than one is created due to a race
-         sessionFactory = new ClientSessionFactoryImpl(
-               connectorConfig,
-               backupConnectorConfig,
-               pingPeriod,
-               callTimeout,
-               consumerWindowSize,
-               consumerMaxRate,
-               producerWindowSize,
-               producerMaxRate,
-               blockOnAcknowledge,
-               blockOnNonPersistentSend,
-               blockOnPersistentSend);
+         // It doesn't matter if more than one is created due to a race
+         sessionFactory = new ClientSessionFactoryImpl(connectorConfig,
+                                                       backupConnectorConfig,
+                                                       pingPeriod,
+                                                       callTimeout,
+                                                       consumerWindowSize,
+                                                       consumerMaxRate,
+                                                       producerWindowSize,
+                                                       producerMaxRate,
+                                                       blockOnAcknowledge,
+                                                       blockOnNonPersistentSend,
+                                                       blockOnPersistentSend);
 
-      }      
-                  
+      }
+
       if (username != null)
-      {      
-         //Since core has no connection concept, we need to create a session in order to authenticate at this time
-         
+      {
+         // Since core has no connection concept, we need to create a session in order to authenticate at this time
+
          ClientSession sess = null;
-         
+
          try
          {
-            sess = sessionFactory.createSession(username, password, false, false,
-                                         false, -1, false);
+            sess = sessionFactory.createSession(username, password, false, false, false, false);
          }
          catch (MessagingException e)
          {
@@ -334,16 +312,16 @@ public class JBossConnectionFactory implements
                   sess.close();
                }
                catch (Throwable ignore)
-               {                  
+               {
                }
             }
          }
       }
-        
+
       return new JBossConnection(username, password, type, clientID, dupsOKBatchSize, sessionFactory);
    }
 
    // Private --------------------------------------------------------------------------------------
-      
+
    // Inner classes --------------------------------------------------------------------------------
 }

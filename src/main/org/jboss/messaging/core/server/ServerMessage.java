@@ -34,9 +34,7 @@ import org.jboss.messaging.core.message.Message;
  *
  */
 public interface ServerMessage extends Message, EncodingSupport
-{
-   long getMessageID();
-   
+{      
    void setMessageID(long id);
 
    MessageReference createReference(Queue queue);   

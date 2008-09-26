@@ -18,44 +18,21 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
-package org.jboss.messaging.core.remoting.impl.wireformat;
 
+package org.jboss.messaging.core.remoting;
 
 /**
+ * A ResponseNotifier
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * @version <tt>$Revision$</tt>
+ * Created 26 Sep 2008 10:57:15
+ *
+ *
  */
-public class SessionNullResponseMessage extends PacketImpl
+public interface ResponseNotifier
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   public SessionNullResponseMessage()
-   {
-      super(SESS_NULL_RESPONSE);
-   }
-
-   // Public --------------------------------------------------------
-
-   public boolean isResponse()
-   {
-      return true;
-   }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   void onResponseReceived();
 }
-

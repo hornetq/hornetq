@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.server;
 
-
 /**
  * 
  * A Delivery
@@ -34,9 +33,5 @@ public interface Delivery
 {
    MessageReference getReference();
    
-   long getDeliveryID();
-   
    long getConsumerID();
-   
-   void deliver();
 }

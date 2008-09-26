@@ -1,24 +1,14 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors by
+ * the @authors tag. See the copyright.txt in the distribution for a full listing of individual contributors. This is
+ * free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. You should have received a copy of the GNU Lesser General Public License along with this software; if not,
+ * write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
+ */
 
 package org.jboss.messaging.core.transaction.impl;
 
@@ -42,7 +32,7 @@ import java.util.*;
 
 /**
  * A TransactionImpl
- *
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class TransactionImpl implements Transaction
@@ -73,8 +63,7 @@ public class TransactionImpl implements Transaction
 
    private MessagingException messagingException;
 
-   public TransactionImpl(final StorageManager storageManager,
-                          final PostOffice postOffice)
+   public TransactionImpl(final StorageManager storageManager, final PostOffice postOffice)
    {
       this.storageManager = storageManager;
 
@@ -91,11 +80,10 @@ public class TransactionImpl implements Transaction
 
       this.xid = null;
 
-      this.id = storageManager.generateTransactionID();
+      this.id = storageManager.generateUniqueID();
    }
 
-   public TransactionImpl(final Xid xid, final StorageManager storageManager,
-                          final PostOffice postOffice)
+   public TransactionImpl(final Xid xid, final StorageManager storageManager, final PostOffice postOffice)
    {
       this.storageManager = storageManager;
 
@@ -110,14 +98,12 @@ public class TransactionImpl implements Transaction
          this.pagingManager = postOffice.getPagingManager();
       }
 
-
       this.xid = xid;
 
-      this.id = storageManager.generateTransactionID();
+      this.id = storageManager.generateUniqueID();
    }
 
-   public TransactionImpl(final long id, final Xid xid, final StorageManager storageManager,
-                          final PostOffice postOffice)
+   public TransactionImpl(final long id, final Xid xid, final StorageManager storageManager, final PostOffice postOffice)
    {
       this.storageManager = storageManager;
 
@@ -162,8 +148,7 @@ public class TransactionImpl implements Transaction
       }
    }
 
-   public void addAcknowledgement(final MessageReference acknowledgement)
-           throws Exception
+   public void addAcknowledgement(final MessageReference acknowledgement) throws Exception
    {
       if (state != State.ACTIVE)
       {
@@ -262,7 +247,6 @@ public class TransactionImpl implements Transaction
          }
       }
 
-
       if (state != State.PREPARED)
       {
          pageMessages();
@@ -278,7 +262,8 @@ public class TransactionImpl implements Transaction
          ref.getQueue().addLast(ref);
       }
 
-      // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the transaction until all the messages were added to the queue
+      // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
+      // transaction until all the messages were added to the queue
       // or else we could deliver the messages out of order
       if (pageTransaction != null)
       {
@@ -316,7 +301,7 @@ public class TransactionImpl implements Transaction
       {
          storageManager.rollback(id);
       }
-      
+
       if (state == State.PREPARED && pageTransaction != null)
       {
          pageTransaction.forget();
@@ -333,7 +318,6 @@ public class TransactionImpl implements Transaction
          Queue queue = ref.getQueue();
 
          ServerMessage message = ref.getMessage();
-
 
          // Putting back the size on pagingManager, and reverting the counters
          if (message.incrementReference(message.isDurable() && queue.isDurable()) == 1)
@@ -356,8 +340,7 @@ public class TransactionImpl implements Transaction
          }
       }
 
-      for (Map.Entry<Queue, LinkedList<MessageReference>> entry : queueMap
-              .entrySet())
+      for (Map.Entry<Queue, LinkedList<MessageReference>> entry : queueMap.entrySet())
       {
          LinkedList<MessageReference> refs = entry.getValue();
 
@@ -419,13 +402,16 @@ public class TransactionImpl implements Transaction
       this.messagingException = messagingException;
    }
 
-   public void replay(List<MessageReference> messages, List<MessageReference> acknowledgements, PageTransactionInfo pageTransaction, State prepared) throws Exception
+   public void replay(List<MessageReference> messages,
+                      List<MessageReference> acknowledgements,
+                      PageTransactionInfo pageTransaction,
+                      State prepared) throws Exception
    {
       containsPersistent = true;
       refsToAdd.addAll(messages);
       this.acknowledgements.addAll(acknowledgements);
       this.pageTransaction = pageTransaction;
-      
+
       if (this.pageTransaction != null)
       {
          pagingManager.addTransaction(this.pageTransaction);
@@ -444,13 +430,6 @@ public class TransactionImpl implements Transaction
 
    private void route(final ServerMessage message) throws Exception
    {
-      // We only set the messageID after we are sure the message is not being paged
-      // Paged messages won't have an ID until they are depaged
-      if (message.getMessageID() == 0l)
-      {
-         message.setMessageID(storageManager.generateID());
-      }
-
       List<MessageReference> refs = postOffice.route(message);
 
       refsToAdd.addAll(refs);
@@ -474,13 +453,13 @@ public class TransactionImpl implements Transaction
          if (pageTransaction == null)
          {
             pageTransaction = new PageTransactionInfoImpl(this.id);
-            // To avoid a race condition where depage happens before the transaction is completed, we need to inform the pager about this transaction is being processed
+            // To avoid a race condition where depage happens before the transaction is completed, we need to inform the
+            // pager about this transaction is being processed
             pagingManager.addTransaction(pageTransaction);
          }
       }
 
-
-      for (ServerMessage message: pagedMessages)
+      for (ServerMessage message : pagedMessages)
       {
 
          // http://wiki.jboss.org/auth/wiki/JBossMessaging2Paging

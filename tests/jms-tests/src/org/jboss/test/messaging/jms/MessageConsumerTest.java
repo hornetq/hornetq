@@ -142,6 +142,8 @@ public class MessageConsumerTest extends JMSTestCase
          conn.start();
 
          final Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         final MessageProducer prod = sess.createProducer(queue2);
 
          MessageConsumer cons = sess.createConsumer(queue1);
 
@@ -157,8 +159,6 @@ public class MessageConsumerTest extends JMSTestCase
             {
                try
                {
-                  MessageProducer prod = sess.createProducer(queue2);
-
                   prod.send(m);
 
                   count++;
@@ -186,12 +186,14 @@ public class MessageConsumerTest extends JMSTestCase
          MyListener listener = new MyListener();
 
          cons.setMessageListener(listener);
+         
+         final Session sess2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sess.createProducer(queue1);
+         MessageProducer prod2 = sess2.createProducer(queue1);
 
          for (int i = 0; i < numMessages; i++)
          {
-            prod.send(sess.createMessage());
+            prod2.send(sess2.createMessage());
          }
 
          listener.waitForMessages();
@@ -263,6 +265,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          // this should cancel message and cause delivery to other consumer
 
+         log.info("**clsosing consumer");
          sessConsume1.close();
 
          TextMessage tm3 = (TextMessage) cons2.receive(1000);

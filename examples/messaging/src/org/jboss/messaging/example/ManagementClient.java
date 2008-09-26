@@ -46,7 +46,7 @@ public class ManagementClient
    {
       SimpleString replytoQueue = new SimpleString("replyto.adminQueue");
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));
-      final ClientSession clientSession = sessionFactory.createSession(false, true, true, 1, false);
+      final ClientSession clientSession = sessionFactory.createSession(false, true, true, false);
       SimpleString queue = new SimpleString("queuejms.testQueue");
 
       sendMessages(clientSession, queue);
@@ -95,7 +95,7 @@ public class ManagementClient
             }
             try
             {
-               clientSession.acknowledge();
+               message.processed();
             }
             catch (MessagingException e)
             {
@@ -170,7 +170,7 @@ public class ManagementClient
       do
       {
          m = clientConsumer.receive(5000);
-         clientSession.acknowledge();
+         m.processed();
       }
       while (m != null);
       clientSession.commit();

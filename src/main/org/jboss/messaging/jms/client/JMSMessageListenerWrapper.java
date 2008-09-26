@@ -70,20 +70,20 @@ public class JMSMessageListenerWrapper implements MessageHandler
       }
       catch (Exception e)
       {
-         log.error("Failed to prepare message", e);
+         log.error("Failed to prepare message for receipt", e);
          
          return;
       }
       
-      if (transactedOrClientAck)
+      if (this.transactedOrClientAck)
       {
          try
          {
-            session.getCoreSession().acknowledge();
+            message.processed();
          }
          catch (MessagingException e)
          {
-            log.error("Failed to deliver message", e);
+            log.error("Failed to process message", e);
          }
       }
       
@@ -112,19 +112,19 @@ public class JMSMessageListenerWrapper implements MessageHandler
          }
       }            
       
-      if (!session.isRecoverCalled() && !transactedOrClientAck)
+      if (!session.isRecoverCalled())
       {
          try
          {
             //We don't want to call this if the connection/session was closed from inside onMessage
-            if (!session.getCoreSession().isClosed())
+            if (!session.getCoreSession().isClosed() && !this.transactedOrClientAck)
             {
-               session.getCoreSession().acknowledge();
+               message.processed();
             }
          }
          catch (MessagingException e)
          {
-            log.error("Failed to deliver message", e);
+            log.error("Failed to process message", e);
          }
       }
       

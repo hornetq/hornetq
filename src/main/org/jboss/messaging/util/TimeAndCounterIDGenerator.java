@@ -25,21 +25,21 @@ package org.jboss.messaging.util;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * A SequenceGenerator
+ * A TimeAndCounterIDGenerator
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
-  * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
  * Created Sep 24, 2008 11:54:10 AM
  *
  *
  */
-public class SequenceGenerator
-{
-
+public class TimeAndCounterIDGenerator implements IDGenerator
+{   
    // (0x7fffffff) We take one bit out, as we don't want negative numbers
    // (take out the signal bit before merging the numbers)
    private static final long MASK_TIME = Integer.MAX_VALUE;
-
+   
    // Attributes ----------------------------------------------------
 
    /**
@@ -53,16 +53,19 @@ public class SequenceGenerator
 
    // Constructors --------------------------------------------------
 
-   public SequenceGenerator()
+   public TimeAndCounterIDGenerator()
    {
       refresh();
    }
 
    // Public --------------------------------------------------------
 
-   public long generateID()
+   //TODO - I have temporarily sychronized this since there is a race condition otherwise.
+   //Since tmMark could get reset by another thread between entering this method and the tmMark|value being evaluated
+   //at the end
+   //The fix is simple - don't evaulate the bitwise or every time, but no time to do it right now
+   public synchronized long generateID()
    {
-
       long value = counter.incrementAndGet();
 
       if (value >= Integer.MAX_VALUE)
@@ -79,6 +82,11 @@ public class SequenceGenerator
 
       return tmMark | value;
    }
+   
+   public long getCurrentID()
+   {
+      return tmMark | counter.get();
+   }
 
    public void setInternalID(final long id)
    {
@@ -89,17 +97,13 @@ public class SequenceGenerator
    {
       long newTm = newTM();
 
-      // To avoid quick restarts.
-      // This shouldn't ever happen.
-      // I doubt any system will be able to generate more than Integer.MAX_VALUE
-      // ids per millisecond.
-      // This would be used only on testcases validating the logic of the class
+      // To avoid quick restarts. We need to ensure that not more than Integer.MAX_VALUE aren't produced
+      // for some value of time
       while (newTm <= tmMark)
       {
-         System.out.println("Equals!!!!");
          try
          {
-            Thread.sleep(20);
+            Thread.sleep(1);
          }
          catch (InterruptedException e)
          {
@@ -113,7 +117,7 @@ public class SequenceGenerator
    @Override
    public String toString()
    {
-      return "SequenceGenerator(tmMark=" + String.format("%1$X", tmMark) + ", counter = " + counter.get() + ")";
+      return "TimeAndCounterIDGenerator(tmMark=" + String.format("%1$X", tmMark) + ", counter = " + counter.get() + ")";
    }
 
    // Package protected ---------------------------------------------
