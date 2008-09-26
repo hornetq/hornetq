@@ -36,15 +36,22 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class TimeAndCounterIDGenerator implements IDGenerator
 {   
-   // (0x7fffffff) We take one bit out, as we don't want negative numbers
-   // (take out the signal bit before merging the numbers)
-   private static final long MASK_TIME = Integer.MAX_VALUE;
-   
-   // Attributes ----------------------------------------------------
+   // Constants ----------------------------------------------------
 
    /**
-    * Using a long just to avoid making cast conversions on every ID generated
+    * Bits to move the date accordingly to MASK_TIME
     */
+   private static final int BITS_TO_MOVE = 28;
+
+   // We take one bit out, as we don't want negative numbers
+   // With 4 bytes + 4 bits, we would minimize the possibility of duplicate IDs.
+   // The date portion would be repeated on every 397 days
+   //
+   // 4 bytes + 4 bits without the signal bit
+   public static final long MASK_TIME = 0x7ffffffffl;
+
+   // Attributes ----------------------------------------------------
+
    private final AtomicLong counter = new AtomicLong(0);
 
    private volatile long tmMark;
@@ -60,50 +67,59 @@ public class TimeAndCounterIDGenerator implements IDGenerator
 
    // Public --------------------------------------------------------
 
-   //TODO - I have temporarily sychronized this since there is a race condition otherwise.
-   //Since tmMark could get reset by another thread between entering this method and the tmMark|value being evaluated
-   //at the end
-   //The fix is simple - don't evaulate the bitwise or every time, but no time to do it right now
-   public synchronized long generateID()
-   {
-      long value = counter.incrementAndGet();
+   // Public --------------------------------------------------------
 
-      if (value >= Integer.MAX_VALUE)
+   public long generateID()
+   {
+
+      long retValue = counter.incrementAndGet();
+
+      // The probability of a negative is very low.
+      // The server has to be started at the exact millisecond (or very close) to when
+      // System.currentTimeMillis() == **7ffffffffl or **fffffffffl(what would
+      // happen every 397 days and few hours), for instance:
+      // (117FFFFFFFF = Sat Feb 09 15:00:42 GMT-06:00 2008).
+      // But I still wanted to verify this for correctness.
+      while (retValue < 0)
       {
-         synchronized (this)
-         {
-            if (counter.get() >= Integer.MAX_VALUE)
-            {
-               refresh();
-            }
-            value = counter.incrementAndGet();
-         }
+         refresh();
+         retValue = counter.incrementAndGet();
       }
 
-      return tmMark | value;
-   }
-   
-   public long getCurrentID()
-   {
-      return tmMark | counter.get();
+      return retValue;
    }
 
+   public long getCurrentID()
+   {
+      return counter.get();
+   }
+   // for use in testcases
    public void setInternalID(final long id)
    {
-      counter.set(id);
+      counter.set(tmMark | id);
+   }
+
+   // for use in testcases
+   public void setInternalDate(final long date)
+   {
+      tmMark = (date & MASK_TIME) << BITS_TO_MOVE;
+      counter.set(tmMark);
    }
 
    public synchronized void refresh()
    {
+      long oldTm = counter.get() >> BITS_TO_MOVE;
       long newTm = newTM();
 
-      // To avoid quick restarts. We need to ensure that not more than Integer.MAX_VALUE aren't produced
-      // for some value of time
-      while (newTm <= tmMark)
+      // To avoid quick restarts on testcases.
+      // In a real scenario this will never happen, as refresh is called only on constructor or when the first bit on the counter explodes
+      // And that would happen only at one specific millisecond every 368 days, and that would never hit a situation where
+      // newTM == oldTM
+      while (newTm == oldTm)
       {
          try
          {
-            Thread.sleep(1);
+            Thread.sleep(20);
          }
          catch (InterruptedException e)
          {
@@ -111,13 +127,19 @@ public class TimeAndCounterIDGenerator implements IDGenerator
          newTm = newTM();
       }
       tmMark = newTm;
-      counter.set(0);
+      counter.set(tmMark);
    }
 
    @Override
    public String toString()
    {
-      return "TimeAndCounterIDGenerator(tmMark=" + String.format("%1$X", tmMark) + ", counter = " + counter.get() + ")";
+      long currentCounter = counter.get();
+      return "SequenceGenerator(tmMark=" + hex(tmMark) +
+             ", CurrentCounter = " +
+             currentCounter +
+             ", HexCurrentCounter = " +
+             hex(currentCounter) +
+             ")";
    }
 
    // Package protected ---------------------------------------------
@@ -128,9 +150,12 @@ public class TimeAndCounterIDGenerator implements IDGenerator
 
    private long newTM()
    {
-      return (System.currentTimeMillis() & MASK_TIME) << 32;
+      return (System.currentTimeMillis() & MASK_TIME) << BITS_TO_MOVE;
    }
 
-   // Inner classes -------------------------------------------------
+   private String hex(final long x)
+   {
+      return String.format("%1$X", x);
+   }
 
 }

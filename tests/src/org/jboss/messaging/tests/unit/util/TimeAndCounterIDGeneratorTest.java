@@ -88,7 +88,7 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
 
       final TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
 
-      seq.setInternalID(Integer.MAX_VALUE - 50);
+      seq.setInternalID(0xfffffffl - 1);
 
       final int NUMBER_OF_THREADS = 100;
 
@@ -155,10 +155,31 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
       hashSet.clear();
 
    }
+   
+   public void testEdgeCaseOnDate()
+   {
+      long date = 0x117FFFFFFFFl;
+
+      final TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
+
+      seq.setInternalDate(date);
+
+      seq.setInternalID(0xfffffffl);
+
+      long newID = seq.generateID();
+
+      assertTrue("should be a positive number", newID > 0);
+
+      assertEquals("Counter part on ID should be 0x0000001, but it was " + (hex(newID & 0xfffffffl)),
+                   1,
+                   newID & 0xfffffffl);
+
+   }
 
    private static String hex(final long value)
    {
       return String.format("%1$X", value);
    }
 
+   
 }
