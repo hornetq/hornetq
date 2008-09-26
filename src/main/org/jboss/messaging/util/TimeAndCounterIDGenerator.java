@@ -26,16 +26,18 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * A TimeAndCounterIDGenerator
- *
- * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * <p>
+ * Note: This sequence generator is valid as long as you generate less than 268435455 (fffffff) IDs per millisecond
+ * </p>
+ * <p>
+ * (what is impossible at this point, This class alone will probably take a few seconds to generate this many IDs)
+ * </p>
  * 
- * Created Sep 24, 2008 11:54:10 AM
- *
- *
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> Created Sep 24, 2008 11:54:10 AM
  */
 public class TimeAndCounterIDGenerator implements IDGenerator
-{   
+{
    // Constants ----------------------------------------------------
 
    /**
@@ -93,6 +95,7 @@ public class TimeAndCounterIDGenerator implements IDGenerator
    {
       return counter.get();
    }
+
    // for use in testcases
    public void setInternalID(final long id)
    {
@@ -112,9 +115,9 @@ public class TimeAndCounterIDGenerator implements IDGenerator
       long newTm = newTM();
 
       // To avoid quick restarts on testcases.
-      // In a real scenario this will never happen, as refresh is called only on constructor or when the first bit on the counter explodes
-      // And that would happen only at one specific millisecond every 368 days, and that would never hit a situation where
-      // newTM == oldTM
+      // In a real scenario this will never happen, as refresh is called only on constructor or when the first bit on
+      // the counter explodes
+      // And that would happen only at one specific millisecond every 368 days, and that would never hit this case
       while (newTm == oldTm)
       {
          try

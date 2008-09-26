@@ -30,12 +30,8 @@ import org.jboss.messaging.util.TimeAndCounterIDGenerator;
 
 /**
  * A TimeAndCounterIDGeneratorTest
- *
- * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * 
- * Created 24-Sep-08 3:42:25 PM
- *
- *
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a> Created 24-Sep-08 3:42:25 PM
  */
 public class TimeAndCounterIDGeneratorTest extends UnitTestCase
 {
@@ -155,7 +151,7 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
       hashSet.clear();
 
    }
-   
+
    public void testEdgeCaseOnDate()
    {
       long date = 0x117FFFFFFFFl;
@@ -181,5 +177,4 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
       return String.format("%1$X", value);
    }
 
-   
 }
