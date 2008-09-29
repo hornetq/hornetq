@@ -194,6 +194,10 @@
       <ant antfile="build-messaging.xml" target="wildcardExample"/>
    </target>
 
+   <target name="messageGroupingExample" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="messageGroupingExample"/>
+   </target>
+
    <target name="perfListener" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="perfListener"/>
    </target>

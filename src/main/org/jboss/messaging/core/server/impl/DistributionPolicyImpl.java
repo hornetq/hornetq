@@ -18,26 +18,42 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
+package org.jboss.messaging.core.server.impl;
 
-package org.jboss.messaging.core.server;
+import org.jboss.messaging.core.server.Consumer;
+import org.jboss.messaging.core.server.DistributionPolicy;
+import org.jboss.messaging.core.server.ServerMessage;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * 
- * A DistributionPolicy
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public interface DistributionPolicy
+public abstract class DistributionPolicyImpl implements DistributionPolicy
 {
-   Consumer select(ServerMessage message, boolean redeliver);
+   protected final List<Consumer> consumers = new ArrayList<Consumer>();
 
-   void addConsumer(Consumer consumer);
+   public abstract Consumer select(ServerMessage message, boolean redeliver);
 
-   boolean removeConsumer(Consumer consumer);
+   public void addConsumer(Consumer consumer)
+   {
+      consumers.add(consumer);
+   }
 
-   int getConsumerCount();
+   public boolean removeConsumer(Consumer consumer)
+   {
+      return consumers.remove(consumer);
+   }
 
-   boolean hasConsumers();
+   public int getConsumerCount()
+   {
+      return consumers.size();
+   }
+
+   public boolean hasConsumers()
+   {
+      return !consumers.isEmpty();
+   }
 }

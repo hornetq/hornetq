@@ -22,14 +22,14 @@
 
 package org.jboss.messaging.tests.unit.core.server.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.DistributionPolicy;
 import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.jboss.messaging.tests.util.UnitTestCase;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
@@ -47,50 +47,51 @@ public class RoundRobinDistributionPolicyTest extends UnitTestCase
       
       DistributionPolicy dp = new RoundRobinDistributionPolicy();
       
-      int pos = dp.select(consumers, -1);
+      Consumer c = dp.select(null, false);
       
-      assertEquals(0, pos);
+      assertEquals(null, c);
    }
    
    public void testConsumers()
    {
-      List<Consumer> consumers = new ArrayList<Consumer>();
-      
-      consumers.add(new FakeConsumer());
-      consumers.add(new FakeConsumer());
-      consumers.add(new FakeConsumer());
+      FakeConsumer c1 = new FakeConsumer();
+      FakeConsumer c2 = new FakeConsumer();
+      FakeConsumer c3 = new FakeConsumer();
       
       DistributionPolicy dp = new RoundRobinDistributionPolicy();
+      dp.addConsumer(c1);
+      dp.addConsumer(c2);
+      dp.addConsumer(c3);
             
-      int pos = -1;
+      Consumer c = null;
       
-      pos = dp.select(consumers, pos);
+      c = dp.select( null, false);
       
-      assertEquals(0, pos);
+      assertEquals(c1, c);
       
-      pos = dp.select(consumers, pos);
+      c = dp.select(null, false);
       
-      assertEquals(1, pos);
+      assertEquals(c2, c);
       
-      pos = dp.select(consumers, pos);
+      c = dp.select(null, false);
       
-      assertEquals(2, pos);
+      assertEquals(c3, c);
       
-      pos = dp.select(consumers, pos);
+      c = dp.select( null, false);
       
-      assertEquals(0, pos);
+      assertEquals(c1, c);
       
-      pos = dp.select(consumers, pos);
+      c = dp.select( null, false);
       
-      assertEquals(1, pos);
+      assertEquals(c2, c);
       
-      pos = dp.select(consumers, pos);
+      c = dp.select( null, false);
       
-      assertEquals(2, pos);
+      assertEquals(c3, c);
       
-      pos = dp.select(consumers, pos);
+      c = dp.select(null, false);
       
-      assertEquals(0, pos);
+      assertEquals(c1, c);
    }
    
 }

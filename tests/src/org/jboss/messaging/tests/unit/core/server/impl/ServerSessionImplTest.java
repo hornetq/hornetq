@@ -948,7 +948,7 @@ public class ServerSessionImplTest extends UnitTestCase
 //      Xid xid = createStrictMock(Xid.class);
 //      expect(rm.getTransaction(xid)).andReturn(tx);
 //      expect(tx.getState()).andReturn(Transaction.State.ACTIVE);
-//      expect(tx.isEmpty()).andReturn(false);
+//      expect(tx.hasConsumers()).andReturn(false);
 //      tx.prepare();
 //      replay(rc, sm, po, qs, rm, ss, pd, cm, server, executor, xid, tx);
 //      SessionXAResponseMessage message = session.XAPrepare(xid);
@@ -963,7 +963,7 @@ public class ServerSessionImplTest extends UnitTestCase
 //      Xid xid = createStrictMock(Xid.class);
 //      expect(rm.getTransaction(xid)).andReturn(tx);
 //      expect(tx.getState()).andReturn(Transaction.State.ACTIVE);
-//      expect(tx.isEmpty()).andReturn(true);
+//      expect(tx.hasConsumers()).andReturn(true);
 //      expect(rm.removeTransaction(xid)).andReturn(true);
 //      replay(rc, sm, po, qs, rm, ss, pd, cm, server, executor, xid, tx);
 //      SessionXAResponseMessage message = session.XAPrepare(xid);
@@ -978,7 +978,7 @@ public class ServerSessionImplTest extends UnitTestCase
 //      Xid xid = createStrictMock(Xid.class);
 //      expect(rm.getTransaction(xid)).andReturn(tx);
 //      expect(tx.getState()).andReturn(Transaction.State.ACTIVE);
-//      expect(tx.isEmpty()).andReturn(true);
+//      expect(tx.hasConsumers()).andReturn(true);
 //      expect(rm.removeTransaction(xid)).andReturn(false);
 //      replay(rc, sm, po, qs, rm, ss, pd, cm, server, executor, xid, tx);
 //      SessionXAResponseMessage message = session.XAPrepare(xid);

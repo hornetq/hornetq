@@ -21,15 +21,24 @@
  */
 
 package org.jboss.messaging.tests.unit.core.server.impl;
- 
-import static org.easymock.EasyMock.anyLong;
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.eq;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.isA;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
+
+import org.easymock.EasyMock;
+import static org.easymock.EasyMock.*;
+import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.paging.PagingManager;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.server.*;
+import org.jboss.messaging.core.server.impl.QueueImpl;
+import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeConsumer;
+import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeFilter;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.util.SimpleString;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -38,27 +47,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
-import org.easymock.EasyMock;
-import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.paging.PagingManager;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.Consumer;
-import org.jboss.messaging.core.server.DistributionPolicy;
-import org.jboss.messaging.core.server.HandleStatus;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.server.impl.QueueImpl;
-import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
-import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeConsumer;
-import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeFilter;
-import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * A QueueTest
@@ -1450,9 +1438,30 @@ public class QueueImplTest extends UnitTestCase
 
    class DummyDistributionPolicy implements DistributionPolicy
    {
-      public int select(List<Consumer> consumers, int lastPos)
+      Consumer consumer;
+      public Consumer select(ServerMessage message, boolean redeliver)
       {
-         return 0;
+         return null;
+      }
+
+      public void addConsumer(Consumer consumer)
+      {
+         this.consumer = consumer;
+      }
+
+      public boolean removeConsumer(Consumer consumer)
+      {
+         return false;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public int getConsumerCount()
+      {
+         return 0;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public boolean hasConsumers()
+      {
+         return false;  //To change body of implemented methods use File | Settings | File Templates.
       }
    }
 

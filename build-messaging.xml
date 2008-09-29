@@ -964,6 +964,10 @@
       <ant dir="${examples.dir}/jms" antfile="build.xml" target="wildcardExample"/>
    </target>
 
+    <target name="messageGroupingExample" depends="client-jar">
+      <ant dir="${examples.dir}/jms" antfile="build.xml" target="messageGroupingExample"/>
+   </target>
+
    <target name="SimpleClient" depends="client-jar">
       <ant dir="${examples.dir}/messaging" antfile="build.xml" target="SimpleClient"/>
    </target>

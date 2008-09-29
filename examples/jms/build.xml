@@ -127,6 +127,13 @@
       </java>
    </target>
 
+   <target name="messageGroupingExample" depends="compile"
+           description="-> publish/subscribe example using a topic and a durable subscriber">
+      <java classname="org.jboss.jms.example.MessageGroupingExample" fork="true">
+         <classpath refid="runtime.classpath"/>
+      </java>
+   </target>
+
    <target name="echo-params">
       <echo>
 ***********************************************************************************

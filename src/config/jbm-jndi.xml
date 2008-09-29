@@ -118,6 +118,9 @@
    <queue name="testQueue">
       <entry name="/queue/testQueue"/>
    </queue>
+   <queue name="testGroupQueue">
+      <entry name="/queue/testGroupQueue"/>
+   </queue>
    <queue name="testPerfQueue">
       <entry name="/queue/testPerfQueue"/>
    </queue>

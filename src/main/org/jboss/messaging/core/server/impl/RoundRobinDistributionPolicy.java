@@ -22,10 +22,8 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import java.util.List;
-
 import org.jboss.messaging.core.server.Consumer;
-import org.jboss.messaging.core.server.DistributionPolicy;
+import org.jboss.messaging.core.server.ServerMessage;
 
 /**
  * 
@@ -34,10 +32,16 @@ import org.jboss.messaging.core.server.DistributionPolicy;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class RoundRobinDistributionPolicy implements DistributionPolicy
-{   
-   public int select(final List<Consumer> consumers, int pos)
+public class RoundRobinDistributionPolicy extends DistributionPolicyImpl
+{
+   int pos = -1;
+
+   public Consumer select(ServerMessage message, boolean redeliver)
    {     
+      if(consumers.isEmpty())
+      {
+         return null;
+      }
       if (pos == -1)
       {
          //First time
@@ -52,7 +56,7 @@ public class RoundRobinDistributionPolicy implements DistributionPolicy
             pos = 0;
          }
       }
-      
-      return pos;
+
+      return consumers.get(pos);
    }
 }

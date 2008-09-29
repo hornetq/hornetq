@@ -12,20 +12,6 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
@@ -34,17 +20,21 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.Consumer;
-import org.jboss.messaging.core.server.DistributionPolicy;
-import org.jboss.messaging.core.server.HandleStatus;
-import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.*;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.SimpleString;
+
+import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implementation of a Queue TODO use Java 5 concurrent queue
@@ -80,7 +70,7 @@ public class QueueImpl implements Queue
 
    private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(NUM_PRIORITIES);
 
-   private final List<Consumer> consumers = new ArrayList<Consumer>();
+   //private final List<Consumer> consumers = new ArrayList<Consumer>();
 
    private final Set<ScheduledDeliveryRunnable> scheduledRunnables = new LinkedHashSet<ScheduledDeliveryRunnable>();
 
@@ -90,7 +80,9 @@ public class QueueImpl implements Queue
 
    private boolean promptDelivery;
 
-   private int pos;
+   //private int pos = -1;
+
+   private Consumer currentConsumer = null;
 
    private AtomicInteger sizeBytes = new AtomicInteger(0);
 
@@ -270,19 +262,18 @@ public class QueueImpl implements Queue
 
    public synchronized void addConsumer(final Consumer consumer)
    {
-      consumers.add(consumer);
+      distributionPolicy.addConsumer(consumer);
    }
 
    public synchronized boolean removeConsumer(final Consumer consumer) throws Exception
    {
-      boolean removed = consumers.remove(consumer);
-
-      if (pos == consumers.size())
+      boolean removed = distributionPolicy.removeConsumer(consumer);
+      if(removed)
       {
-         pos = 0;
+         distributionPolicy.removeConsumer(consumer);
       }
 
-      if (consumers.isEmpty())
+      if (!distributionPolicy.hasConsumers())
       {
          promptDelivery = false;
       }
@@ -292,7 +283,7 @@ public class QueueImpl implements Queue
 
    public synchronized int getConsumerCount()
    {
-      return consumers.size();
+      return distributionPolicy.getConsumerCount();
    }
 
    public synchronized List<MessageReference> list(final Filter filter)
@@ -747,23 +738,30 @@ public class QueueImpl implements Queue
 
    private HandleStatus deliver(final MessageReference reference)
    {
-      if (consumers.isEmpty())
+      if (!distributionPolicy.hasConsumers())
       {
          return HandleStatus.BUSY;
       }
 
-      int startPos = pos;
-
       boolean filterRejected = false;
 
-      while (true)
+      HandleStatus status = null;
+      int pos = 0;
+      while (pos <= distributionPolicy.getConsumerCount())
       {
-         Consumer consumer = consumers.get(pos);
-
-         pos = distributionPolicy.select(consumers, pos);
-
-         HandleStatus status;
-
+         Consumer consumer = distributionPolicy.select(reference.getMessage(), status != null);
+         if(consumer == null)
+         {
+            if (filterRejected)
+            {
+               return HandleStatus.NO_MATCH;
+            }
+            else
+            {
+               // Give up - all consumers busy
+               return HandleStatus.BUSY;
+            }
+         }
          try
          {
             status = consumer.handle(reference);
@@ -805,20 +803,17 @@ public class QueueImpl implements Queue
 
             filterRejected = true;
          }
-
-         if (pos == startPos)
-         {
-            // Tried all of them
-            if (filterRejected)
-            {
-               return HandleStatus.NO_MATCH;
-            }
-            else
-            {
-               // Give up - all consumers busy
-               return HandleStatus.BUSY;
-            }
-         }
+         pos++;
+      }
+      // Tried all of them
+      if (filterRejected)
+      {
+         return HandleStatus.NO_MATCH;
+      }
+      else
+      {
+         // Give up - all consumers busy
+         return HandleStatus.BUSY;
       }
    }
 
