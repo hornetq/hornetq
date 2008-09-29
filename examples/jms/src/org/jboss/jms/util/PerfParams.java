@@ -46,6 +46,7 @@ public class PerfParams implements Serializable
    private String connectionFactoryLookup = "/ConnectionFactory";
    private boolean dupsOk;
    private int throttleRate;
+   private String throughputQueue;
 
    public int getNoOfMessagesToSend()
    {
@@ -156,6 +157,16 @@ public class PerfParams implements Serializable
    {
       this.throttleRate = throttleRate;
    }
+   
+   public String getThroughputQueue()
+   {
+      return throughputQueue;
+   }
+
+   public void setThroughputQueue(String throughputQueue)
+   {
+      this.throughputQueue = throughputQueue;
+   }
 
    public String toString()
    {
@@ -164,7 +175,7 @@ public class PerfParams implements Serializable
               (isSessionTransacted ? ", transaction batch size = " + transactionBatchSize : "") + ", drain queue = " + drainQueue +
               ", queue lookup = " + queueLookup + ", connection factory lookup = " + connectionFactoryLookup +
               ", Session Acknowledge mode = " + (dupsOk ? "DUPS_OK_ACKNOWLEDGE" : "AUTO_ACKNOWLEDGE") + 
-              ", Throttle rate = " + throttleRate;
+              ", Throttle rate = " + throttleRate + ", throughputQueue = " + throughputQueue;
    }
 
 

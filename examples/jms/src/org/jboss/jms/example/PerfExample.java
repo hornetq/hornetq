@@ -59,6 +59,8 @@ public class PerfExample
    private static Logger log = Logger.getLogger(PerfExample.class);
 
    private Queue queue;
+   
+   private Queue throughputQueue;
 
    private Connection connection;
 
@@ -81,6 +83,7 @@ public class PerfExample
       String queueLookup = args[9];
       String connectionFactoryLookup = args[10];
       int throttleRate = Integer.parseInt(args[11]);
+      String throughputQueue = args[12];
 
       PerfParams perfParams = new PerfParams();
       perfParams.setNoOfMessagesToSend(noOfMessages);
@@ -94,6 +97,7 @@ public class PerfExample
       perfParams.setQueueLookup(queueLookup);
       perfParams.setConnectionFactoryLookup(connectionFactoryLookup);
       perfParams.setThrottleRate(throttleRate);
+      perfParams.setThroughputQueue(throughputQueue);
 
       if (args[0].equalsIgnoreCase("-l"))
       {
@@ -107,11 +111,16 @@ public class PerfExample
 
    private void init(final boolean transacted,
                      final String queueLookup,
+                     final String throughputQueue,
                      final String connectionFactoryLookup,
                      final boolean dupsOk) throws Exception
    {
       InitialContext initialContext = new InitialContext();
       queue = (Queue)initialContext.lookup(queueLookup);
+      if (!throughputQueue.equals("NONE"))
+      {
+         this.throughputQueue = (Queue)initialContext.lookup(throughputQueue);
+      }
       ConnectionFactory cf = (ConnectionFactory)initialContext.lookup(connectionFactoryLookup);
       connection = cf.createConnection();
       session = connection.createSession(transacted, transacted ? Session.SESSION_TRANSACTED
@@ -133,6 +142,7 @@ public class PerfExample
          log.info("params = " + perfParams);
          init(perfParams.isSessionTransacted(),
               perfParams.getQueueLookup(),
+              perfParams.getThroughputQueue(),
               perfParams.getConnectionFactoryLookup(),
               perfParams.isDupsOk());
          start = System.currentTimeMillis();
@@ -182,11 +192,17 @@ public class PerfExample
 
    private void displayThrouput(final PerfParams perfParams, final long start) throws JMSException
    {
-      MessageConsumer consumer = session.createConsumer(queue);
+      
+      if (throughputQueue == null)
+      {
+         return;
+      }
+      
+      MessageConsumer consumer = session.createConsumer(throughputQueue);
 
       connection.start();
 
-      Message msg = consumer.receive(10000);
+      Message msg = consumer.receive(60000);
 
       if (perfParams.isSessionTransacted())
       {
@@ -273,8 +289,10 @@ public class PerfExample
       {
          init(perfParams.isSessionTransacted(),
               perfParams.getQueueLookup(),
+              perfParams.getThroughputQueue(),
               perfParams.getConnectionFactoryLookup(),
               perfParams.isDupsOk());
+         
          MessageConsumer messageConsumer = session.createConsumer(queue);
          connection.start();
 
@@ -323,13 +341,16 @@ public class PerfExample
 
    private void answerThroughput(final PerfParams perfParams, final long end) throws JMSException
    {
-      MessageProducer producer = session.createProducer(queue);
-      Message msg = session.createMessage();
-      msg.setLongProperty(THROUGHPUT_DATA_PROPERTY_NAME, end);
-      producer.send(msg);
-      if (perfParams.isSessionTransacted())
+      if (throughputQueue != null)
       {
-         session.commit();
+         MessageProducer producer = session.createProducer(throughputQueue);
+         Message msg = session.createMessage();
+         msg.setLongProperty(THROUGHPUT_DATA_PROPERTY_NAME, end);
+         producer.send(msg);
+         if (perfParams.isSessionTransacted())
+         {
+            session.commit();
+         }
       }
    }
 

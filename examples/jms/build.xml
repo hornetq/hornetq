@@ -54,6 +54,7 @@
    <property name="queue.lookup" value="MyQueue"/>
    <property name="cf.lookup" value="ConnectionFactory"/>
    <property name="throttle.rate" value="-1"/>
+   <property name="throughput.queue" value="NONE"/>
 
    <path id="other.system.client.classpath">
        <fileset dir="${other.system.client.dir}">
@@ -152,6 +153,7 @@
 * queue.lookup         ${queue.lookup} (MyQueue)         Queue JNDI lookup               
 * cf.lookup            ${cf.lookup} (ConnectionFactory)  ConnectionFactory JNDI lookup   
 * throttle.rate        ${throttle.rate} (-1)             The max rate to throttle senders to in msgs/sec, -1 = no throttle
+* throughput.queue     ${throughput.queue} (NONE)        The queue used to calculate throughput on consuming messages
 ***********************************************************************************
       </echo>
    </target>
@@ -177,6 +179,7 @@
          <arg value="${queue.lookup}"/>
          <arg value="${cf.lookup}"/>
          <arg value="${throttle.rate}"/>
+         <arg value="${throughput.queue}"/>
       </java>
    </target>
 
@@ -201,6 +204,7 @@
          <arg value="${queue.lookup}"/>
          <arg value="${cf.lookup}"/>
          <arg value="${throttle.rate}"/>
+         <arg value="${throughput.queue}"/>
       </java>
    </target>
 
