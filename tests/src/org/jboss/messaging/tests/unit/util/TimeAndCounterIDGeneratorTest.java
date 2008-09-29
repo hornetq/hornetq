@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.tests.unit.util;
 
+import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -49,17 +50,12 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
    public void testCalculation()
    {
       TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
-      long max = 100000;
+      long max = 11000;
 
       long lastNr = 0;
 
       for (long i = 0; i < max; i++)
       {
-         if (i % 1 == 1000)
-         {
-            seq.refresh();
-         }
-
          long seqNr = seq.generateID();
 
          assertTrue("The sequence generator should aways generate crescent numbers", seqNr > lastNr);
@@ -69,20 +65,33 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
 
    }
 
-   public void testCalculationOnMultiThread() throws Throwable
+   public void testCalculationRefresh()
    {
+      TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
+      
+      long id1 = seq.generateID();
+      assertEquals(1, id1 & 0xffff);
+      assertEquals(2, seq.generateID() & 0xffff);
+      
+      seq.refresh();
+      
+      long id2 = seq.generateID();
+      
+      assertTrue(id2 > id1);
+      
+      assertEquals(1, id2 & 0xffff);
+      
+      
 
-      for (int i = 0; i < 10; i++)
-      {
-         internaltestCalculationOnMultiThread();
-      }
    }
 
-   public void internaltestCalculationOnMultiThread() throws Throwable
+   public void testCalculationOnMultiThread() throws Throwable
    {
       final ConcurrentHashSet<Long> hashSet = new ConcurrentHashSet<Long>();
 
       final TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
+      
+      System.out.println("Time = " + hex(System.currentTimeMillis()) + ", " + seq);
 
       seq.setInternalID(0xfffffffl - 1);
 
@@ -149,26 +158,6 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
       assertEquals(NUMBER_OF_THREADS * NUMBER_OF_IDS, hashSet.size());
 
       hashSet.clear();
-
-   }
-
-   public void testEdgeCaseOnDate()
-   {
-      long date = 0x117FFFFFFFFl;
-
-      final TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
-
-      seq.setInternalDate(date);
-
-      seq.setInternalID(0xfffffffl);
-
-      long newID = seq.generateID();
-
-      assertTrue("should be a positive number", newID > 0);
-
-      assertEquals("Counter part on ID should be 0x0000001, but it was " + (hex(newID & 0xfffffffl)),
-                   1,
-                   newID & 0xfffffffl);
 
    }
 
