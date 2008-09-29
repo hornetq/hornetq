@@ -23,7 +23,6 @@
 package org.jboss.messaging.tests.unit.core.settings.impl;
 
 import junit.framework.TestCase;
-
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
 
@@ -35,7 +34,7 @@ public class QueueSettingsTest extends TestCase
    public void testDefaults()
    {
       QueueSettings queueSettings = new QueueSettings();
-      assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS.getClass());
+      assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
       assertEquals(queueSettings.getDistributionPolicyClass(), null);
       assertEquals(queueSettings.getDLQ(), null);
       assertEquals(queueSettings.isClustered(), Boolean.valueOf(false));
@@ -64,7 +63,7 @@ public class QueueSettingsTest extends TestCase
       queueSettingsToMerge.setRedeliveryDelay((long)1003);
       queueSettingsToMerge.setPageSizeBytes(1004);
       queueSettings.merge(queueSettingsToMerge);
-      assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS.getClass());
+      assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
       assertEquals(queueSettings.getDistributionPolicyClass(), null);
       assertEquals(queueSettings.isClustered(), Boolean.valueOf(true));
       assertEquals(queueSettings.getDLQ(), DLQ);
@@ -99,7 +98,7 @@ public class QueueSettingsTest extends TestCase
       queueSettingsToMerge2.setRedeliveryDelay((long)2003);
       queueSettings.merge(queueSettingsToMerge2);
 
-      assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS.getClass());
+      assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
       assertEquals(queueSettings.getDistributionPolicyClass(), null);
       assertEquals(queueSettings.isClustered(), Boolean.valueOf(true));
       assertEquals(queueSettings.getDLQ(), DLQ);
@@ -135,7 +134,7 @@ public class QueueSettingsTest extends TestCase
       queueSettingsToMerge2.setRedeliveryDelay((long)2003);
       queueSettings.merge(queueSettingsToMerge2);
 
-      assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS.getClass());
+      assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
       assertEquals(queueSettings.getDistributionPolicyClass(), null);
       assertEquals(queueSettings.isClustered(), Boolean.valueOf(true));
       assertEquals(queueSettings.getDLQ(), DLQ);

@@ -30,8 +30,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * This example sends 20 messages setting the groupid so that a specific consumer will receive each message.
  * setting the property 'JMSXGroupID' will bind a consumer to the value given, from this point on the same consumer will
- * receive any message that has the same JMSXGroupID value. setting the property 'JMSXGroupSeq' to 0 will release the
- * binding after that message has been delivered.  
+ * receive any message that has the same JMSXGroupID value.
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public class MessageGroupingExample
@@ -57,11 +56,15 @@ public class MessageGroupingExample
          {
             if (i < messages.length/2)
             {
-               messages[i] = session.createTextMessage("This is a text message from groupid1!");
-               messages[i].setStringProperty("JMSXGroupID", "groupid1");
-               if(i == 4)
+               if(i % 2 == 1)
                {
-                  messages[i].setIntProperty("JMSXGroupSeq", 0);  
+                  messages[i] = session.createTextMessage("This is a text message from groupid1!");
+                  messages[i].setStringProperty("JMSXGroupID", "groupid1");
+               }
+               else
+               {
+                  messages[i] = session.createTextMessage("This is a text message from groupid3!");
+                  messages[i].setStringProperty("JMSXGroupID", "groupid3");
                }
             }
             else

@@ -22,45 +22,26 @@
 
 package org.jboss.messaging.tests.unit.jms.client;
 
-import static org.easymock.EasyMock.createNiceMock;
-import static org.easymock.EasyMock.createStrictMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
-import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
-import static org.jboss.messaging.tests.util.RandomUtil.randomBytes;
-import static org.jboss.messaging.tests.util.RandomUtil.randomDouble;
-import static org.jboss.messaging.tests.util.RandomUtil.randomFloat;
-import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
-import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
-import static org.jboss.messaging.tests.util.RandomUtil.randomShort;
-import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import java.nio.ByteBuffer;
-import java.util.Collections;
+import junit.framework.TestCase;
+import org.easymock.EasyMock;
+import static org.easymock.EasyMock.*;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.jms.client.*;
+import static org.jboss.messaging.tests.util.RandomUtil.*;
+import org.jboss.messaging.util.SimpleString;
 
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageFormatException;
-
-import junit.framework.TestCase;
-
-import org.easymock.EasyMock;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.impl.ClientMessageImpl;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
-import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.jms.client.JBossBytesMessage;
-import org.jboss.messaging.jms.client.JBossMapMessage;
-import org.jboss.messaging.jms.client.JBossMessage;
-import org.jboss.messaging.jms.client.JBossObjectMessage;
-import org.jboss.messaging.jms.client.JBossStreamMessage;
-import org.jboss.messaging.jms.client.JBossTextMessage;
-import org.jboss.messaging.util.SimpleString;
+import java.nio.ByteBuffer;
+import java.util.Collections;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -377,6 +358,29 @@ public class JBossMessageTest extends TestCase
       
       message.getCoreMessage().setExpiration(expiration);
       assertEquals(expiration, message.getJMSExpiration());
+   }
+
+   public void testJMSXGroupIDPropertyNull() throws Exception
+   {
+      JBossMessage message = new JBossMessage();
+      assertFalse(message.propertyExists(JBossMessage.JMSXGROUPID));
+      assertNull(message.getStringProperty(JBossMessage.JMSXGROUPID));
+   }
+
+   public void testSetJMSXGroupIDProperty() throws Exception
+   {
+      JBossMessage message = new JBossMessage();
+      message.setStringProperty(JBossMessage.JMSXGROUPID, "testid");
+      assertTrue(message.propertyExists(JBossMessage.JMSXGROUPID));
+      assertEquals(new SimpleString("testid"), message.getCoreMessage().getProperty(MessageImpl.GROUP_ID));
+   }
+
+   public void testGetJMSXGroupIDProperty() throws Exception
+   {
+      JBossMessage message = new JBossMessage();
+      message.getCoreMessage().putStringProperty(MessageImpl.GROUP_ID, new SimpleString("testid"));
+      assertTrue(message.propertyExists(JBossMessage.JMSXGROUPID));
+      assertEquals("testid", message.getStringProperty(JBossMessage.JMSXGROUPID));
    }
 
    public void testSetJMSMessageID() throws Exception

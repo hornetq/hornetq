@@ -12,31 +12,20 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.InvalidDestinationException;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageFormatException;
-import javax.jms.MessageNotReadableException;
-import javax.jms.MessageNotWriteableException;
-
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.util.SimpleString;
+
+import javax.jms.*;
+import java.nio.ByteBuffer;
+import java.util.*;
 
 /**
  * Implementation of a JMS Message JMS Messages only live on the client side - the server only deals with MessageImpl
@@ -71,6 +60,8 @@ public class JBossMessage implements javax.jms.Message
    private static final SimpleString JMS_ = new SimpleString("JMS_");
 
    public static final String JMSXDELIVERYCOUNT = "JMSXDeliveryCount";
+
+   public static final String JMSXGROUPID = "JMSXGroupID";
 
    // Used when bridging a message
    public static final String JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST = "JBM_BRIDGE_MSG_ID_LIST";
@@ -542,7 +533,8 @@ public class JBossMessage implements javax.jms.Message
 
    public boolean propertyExists(final String name) throws JMSException
    {
-      return message.containsProperty(new SimpleString(name)) || name.equals(JMSXDELIVERYCOUNT);
+      return message.containsProperty(new SimpleString(name)) || name.equals(JMSXDELIVERYCOUNT)
+            || (JMSXGROUPID.equals(name) && message.containsProperty(MessageImpl.GROUP_ID));
    }
 
    public boolean getBooleanProperty(final String name) throws JMSException
@@ -701,7 +693,15 @@ public class JBossMessage implements javax.jms.Message
       {
          return String.valueOf(message.getDeliveryCount());
       }
-      Object value = message.getProperty(new SimpleString(name));
+      Object value;
+      if(JMSXGROUPID.equals(name))
+      {
+         value = message.getProperty(MessageImpl.GROUP_ID);
+      }
+      else
+      {
+         value = message.getProperty(new SimpleString(name));
+      }
       if (value == null)
          return null;
 
@@ -826,7 +826,14 @@ public class JBossMessage implements javax.jms.Message
    public void setStringProperty(final String name, final String value) throws JMSException
    {
       checkProperty(name, value);
-      message.putStringProperty(new SimpleString(name), new SimpleString(value));
+      if(JMSXGROUPID.equals(name))
+      {
+         message.putStringProperty(MessageImpl.GROUP_ID, new SimpleString(value));
+      }
+      else
+      {
+         message.putStringProperty(new SimpleString(name), new SimpleString(value));
+      }
    }
 
    public void setObjectProperty(final String name, final Object value) throws JMSException

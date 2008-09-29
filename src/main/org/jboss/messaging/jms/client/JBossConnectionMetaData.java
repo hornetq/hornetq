@@ -22,13 +22,12 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.util.Enumeration;
-import java.util.Vector;
+import org.jboss.messaging.core.version.Version;
 
 import javax.jms.ConnectionMetaData;
 import javax.jms.JMSException;
-
-import org.jboss.messaging.core.version.Version;
+import java.util.Enumeration;
+import java.util.Vector;
 
 /**
  * Connection metadata
@@ -101,7 +100,7 @@ public class JBossConnectionMetaData implements ConnectionMetaData
    {
       Vector v = new Vector();
       v.add("JMSXGroupID");
-      v.add("JMSXGroupSeq");
+      //v.add("JMSXGroupSeq");
       v.add("JMSXDeliveryCount");
       return v.elements();
    }

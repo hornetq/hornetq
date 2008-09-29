@@ -21,7 +21,7 @@
  */
 package org.jboss.messaging.core.server.impl;
 
-import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
@@ -34,9 +34,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Distributes message based on the message property 'JMSXGroupID'. Once a message has been successfully delivered to a
  * consumer that consumer is then bound to that group. Any message that has the same group id set will always be
- * delivered to the same consumer. This sequence is broken only when a message with the same group id has the property
- * 'JMSXGroupSeq' set to 0 or if the consumer is removed, that is it is not passed down in the select consumers list.
- * The Initial consumer is th efirst consumer found, using the round robin policy, that hasn't been bound to a group, If
+ * delivered to the same consumer.
+ * The Initial consumer is the first consumer found, using the round robin policy, that hasn't been bound to a group, If
  * there are no consumers left that have not been bound to a group then the next consumer will be bound to 2 groups and
  * so on.
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -45,54 +44,40 @@ public class GroupingRoundRobinDistributionPolicy extends RoundRobinDistribution
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(GroupingRoundRobinDistributionPolicy.class);
-
-
-   // for convenience, the Group ID is directly mapped to the
-   // JMS JMSXGroupID & JMSXGroupSeq header names.
-   // It does not imply any dependency on JMS whatsoever
-   public static final SimpleString GROUP_ID = new SimpleString("JMSXGroupID");
-
-   public static final SimpleString GROUP_SEQ = new SimpleString("JMSXGroupSeq");
-
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    // Map with GroupID as a key and a Consumer as value.
-   private Map<SimpleString, ConsumerState> consumers = new ConcurrentHashMap<SimpleString, ConsumerState>();
+   private final Map<SimpleString, ConsumerState> consumers = new ConcurrentHashMap<SimpleString, ConsumerState>();
 
-   //we hold the state of each consumer, i.e., is it bound etc
-   private Map<Consumer, ConsumerState> consumerStateMap = new ConcurrentHashMap<Consumer, ConsumerState>();
+   // we hold the state of each consumer, i.e., is it bound etc
+   private final Map<Consumer, ConsumerState> consumerStateMap = new ConcurrentHashMap<Consumer, ConsumerState>();
+
    // Distributor implementation ------------------------------------
 
-   public Consumer select(ServerMessage message, boolean redeliver)
+   @Override
+   public Consumer select(final ServerMessage message, final boolean redeliver)
    {
-      if (message.getProperty(GROUP_ID) != null)
+      if (message.getProperty(MessageImpl.GROUP_ID) != null)
       {
-         SimpleString groupId = (SimpleString) message.getProperty(GROUP_ID);
-         Integer groupSeq = (Integer) message.getProperty(GROUP_SEQ);
-         if (consumers.get(groupId) != null)
+         final SimpleString groupId = (SimpleString)message.getProperty(MessageImpl.GROUP_ID);
+         final ConsumerState consumerState = consumers.get(groupId);
+         if (consumerState != null)
          {
-            ConsumerState consumerState = consumers.get(groupId);
-            //if this is a redelivery and the group is bound we wait.
-            if(redeliver && consumerState.isBound())
+            // if this is a redelivery and the group is bound we wait.
+            if (redeliver && consumerState.isBound())
             {
                return null;
             }
-            //if we need to reset which consumer to use, this will take play from the next invocation with the same groupid.
-            if (groupSeq != null && groupSeq.equals(0))
-            {
-               removeBinding(groupId, consumerState);
-            }
-            //if this is a redelivery and it was its first attempt we can look for another consumer and use that
-            else if(redeliver && !consumerState.isBound())
+            // if this is a redelivery and it was its first attempt we can look for another consumer and use that
+            else if (redeliver && !consumerState.isBound())
             {
                removeBinding(groupId, consumerState);
                return getNextPositionAndBind(message, redeliver, groupId).getConsumer();
             }
-            //we bind after we know that the first message has been successfully consumed
-            else if(!consumerState.isBound())
+            // we bind after we know that the first message has been successfully consumed
+            else if (!consumerState.isBound())
             {
                consumerState.setBound(true);
             }
@@ -111,20 +96,21 @@ public class GroupingRoundRobinDistributionPolicy extends RoundRobinDistribution
       }
    }
 
-   public synchronized void addConsumer(Consumer consumer)
+   @Override
+   public synchronized void addConsumer(final Consumer consumer)
    {
       super.addConsumer(consumer);
-      ConsumerState cs = new ConsumerState(consumer);
-      consumerStateMap.put(consumer, cs);
+      consumerStateMap.put(consumer, new ConsumerState(consumer));
    }
 
-   public synchronized boolean removeConsumer(Consumer consumer)
+   @Override
+   public synchronized boolean removeConsumer(final Consumer consumer)
    {
-      boolean removed = super.removeConsumer(consumer);
-      if(removed)
+      final boolean removed = super.removeConsumer(consumer);
+      if (removed)
       {
-         ConsumerState cs = consumerStateMap.remove(consumer);
-         for (SimpleString ss : cs.getGroupIds())
+         final ConsumerState cs = consumerStateMap.remove(consumer);
+         for (final SimpleString ss : cs.getGroupIds())
          {
             consumers.remove(ss);
          }
@@ -141,12 +127,14 @@ public class GroupingRoundRobinDistributionPolicy extends RoundRobinDistribution
     * @param groupId
     * @return
     */
-   private ConsumerState getNextPositionAndBind(ServerMessage message, boolean redeliver, SimpleString groupId)
+   private ConsumerState getNextPositionAndBind(final ServerMessage message,
+                                                final boolean redeliver,
+                                                final SimpleString groupId)
    {
       Consumer consumer = super.select(message, redeliver);
-      ConsumerState cs = consumerStateMap.get(consumer);
-      //if there is only one return it
-      if(getConsumerCount() == 1 || cs.isAvailable())
+      final ConsumerState cs = consumerStateMap.get(consumer);
+      // if there is only one return it
+      if (getConsumerCount() == 1 || cs.isAvailable())
       {
          consumers.put(groupId, cs);
          cs.getGroupIds().add(groupId);
@@ -156,11 +144,11 @@ public class GroupingRoundRobinDistributionPolicy extends RoundRobinDistribution
       {
          consumer = super.select(message, redeliver);
          ConsumerState ncs = consumerStateMap.get(consumer);
-         while(!ncs.isAvailable())
+         while (!ncs.isAvailable())
          {
             consumer = super.select(message, redeliver);
             ncs = consumerStateMap.get(consumer);
-            if(ncs == cs)
+            if (ncs == cs)
             {
                cs.getGroupIds().add(groupId);
                return cs;
@@ -171,7 +159,7 @@ public class GroupingRoundRobinDistributionPolicy extends RoundRobinDistribution
       }
    }
 
-   private void removeBinding(SimpleString groupId, ConsumerState consumerState)
+   private void removeBinding(final SimpleString groupId, final ConsumerState consumerState)
    {
       consumerState.setAvailable(true);
       consumerState.getGroupIds().remove(groupId);
@@ -184,11 +172,14 @@ public class GroupingRoundRobinDistributionPolicy extends RoundRobinDistribution
    class ConsumerState
    {
       private final Consumer consumer;
-      private volatile boolean isBound = false;
-      private volatile boolean available = true;
-      private List<SimpleString> groupIds = new ArrayList<SimpleString>();
 
-      public ConsumerState(Consumer consumer)
+      private volatile boolean isBound = false;
+
+      private volatile boolean available = true;
+
+      private final List<SimpleString> groupIds = new ArrayList<SimpleString>();
+
+      public ConsumerState(final Consumer consumer)
       {
          this.consumer = consumer;
       }
@@ -198,18 +189,17 @@ public class GroupingRoundRobinDistributionPolicy extends RoundRobinDistribution
          return isBound;
       }
 
-      public void setBound(boolean bound)
+      public void setBound(final boolean bound)
       {
          isBound = bound;
       }
-
 
       public boolean isAvailable()
       {
          return available;
       }
 
-      public void setAvailable(boolean available)
+      public void setAvailable(final boolean available)
       {
          this.available = available;
       }
@@ -224,7 +214,8 @@ public class GroupingRoundRobinDistributionPolicy extends RoundRobinDistribution
          return groupIds;
       }
 
-      public boolean equals(Object o)
+      @Override
+      public boolean equals(final Object o)
       {
          if (this == o)
          {
@@ -235,7 +226,7 @@ public class GroupingRoundRobinDistributionPolicy extends RoundRobinDistribution
             return false;
          }
 
-         ConsumerState that = (ConsumerState) o;
+         final ConsumerState that = (ConsumerState)o;
 
          if (!consumer.equals(that.consumer))
          {
@@ -245,11 +236,11 @@ public class GroupingRoundRobinDistributionPolicy extends RoundRobinDistribution
          return true;
       }
 
+      @Override
       public int hashCode()
       {
          return consumer.hashCode();
       }
-
 
    }
 }

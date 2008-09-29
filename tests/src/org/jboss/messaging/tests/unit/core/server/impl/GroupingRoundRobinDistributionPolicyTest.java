@@ -22,6 +22,7 @@
 package org.jboss.messaging.tests.unit.core.server.impl;
 
 import org.easymock.EasyMock;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributionPolicy;
@@ -50,8 +51,7 @@ public class GroupingRoundRobinDistributionPolicyTest extends UnitTestCase
       Consumer consumer = EasyMock.createStrictMock(Consumer.class);
       policy.addConsumer(consumer);
       ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid1"));
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid1"));
       EasyMock.replay(consumer, serverMessage);
       assertEquals(consumer, policy.select( serverMessage, false));
       assertEquals(consumer, policy.select(serverMessage, false));
@@ -67,8 +67,7 @@ public class GroupingRoundRobinDistributionPolicyTest extends UnitTestCase
       policy.addConsumer(consumer2);
       policy.addConsumer(consumer3);
       ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid1"));
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid1"));
       EasyMock.replay(consumer, consumer2, consumer3, serverMessage);
       assertEquals(consumer, policy.select(serverMessage, false));
       assertEquals(consumer, policy.select(serverMessage, false));
@@ -80,11 +79,9 @@ public class GroupingRoundRobinDistributionPolicyTest extends UnitTestCase
       Consumer consumer = EasyMock.createStrictMock(Consumer.class);
       policy.addConsumer(consumer);
       ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid1"));
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid1"));
       ServerMessage serverMessage2 = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage2.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid2"));
-      EasyMock.expect(serverMessage2.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage2.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid2"));
       EasyMock.replay(consumer, serverMessage, serverMessage2);
       assertEquals(consumer, policy.select(serverMessage, false));
       assertEquals(consumer, policy.select(serverMessage2, false));
@@ -100,11 +97,9 @@ public class GroupingRoundRobinDistributionPolicyTest extends UnitTestCase
       policy.addConsumer(consumer2);
       policy.addConsumer(consumer3);
       ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid1"));
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid1"));
       ServerMessage serverMessage2 = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage2.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid2"));
-      EasyMock.expect(serverMessage2.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage2.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid2"));
       EasyMock.replay(consumer, consumer2, consumer3, serverMessage, serverMessage2);
       assertEquals(consumer, policy.select(serverMessage, false));
       assertEquals(consumer2, policy.select(serverMessage2, false));
@@ -122,8 +117,7 @@ public class GroupingRoundRobinDistributionPolicyTest extends UnitTestCase
       policy.addConsumer(consumer2);
       policy.addConsumer(consumer3);
       ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid1"));
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid1"));
       EasyMock.replay(consumer, consumer2, consumer3, serverMessage);
       assertEquals(consumer, policy.select(serverMessage, false));
       assertEquals(consumer2, policy.select(serverMessage, true));
@@ -139,8 +133,7 @@ public class GroupingRoundRobinDistributionPolicyTest extends UnitTestCase
       policy.addConsumer(consumer2);
       policy.addConsumer(consumer3);
       ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid1"));
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid1"));
       EasyMock.replay(consumer, consumer2, consumer3, serverMessage);
       assertEquals(consumer, policy.select(serverMessage, false));
       assertEquals(consumer, policy.select(serverMessage, false));
@@ -157,32 +150,23 @@ public class GroupingRoundRobinDistributionPolicyTest extends UnitTestCase
       policy.addConsumer(consumer2);
       policy.addConsumer(consumer3);
       ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid1"));
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid1"));
       ServerMessage serverMessage2 = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage2.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid2"));
-      EasyMock.expect(serverMessage2.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage2.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid2"));
       ServerMessage serverMessage3 = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage3.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid3"));
-      EasyMock.expect(serverMessage3.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage3.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid3"));
       ServerMessage serverMessage4 = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage4.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid4"));
-      EasyMock.expect(serverMessage4.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage4.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid4"));
       ServerMessage serverMessage5 = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage5.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid5"));
-      EasyMock.expect(serverMessage5.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage5.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid5"));
       ServerMessage serverMessage6 = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage6.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid6"));
-      EasyMock.expect(serverMessage6.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage6.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid6"));
       ServerMessage serverMessage7 = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage7.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid7"));
-      EasyMock.expect(serverMessage7.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage7.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid7"));
       ServerMessage serverMessage8 = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage8.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid8"));
-      EasyMock.expect(serverMessage8.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage8.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid8"));
       ServerMessage serverMessage9 = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage9.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid9"));
-      EasyMock.expect(serverMessage9.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage9.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid9"));
       EasyMock.replay(consumer, consumer2, consumer3, serverMessage, serverMessage2, serverMessage3, serverMessage4,
                       serverMessage5, serverMessage6, serverMessage7, serverMessage8, serverMessage9);
       assertEquals(consumer, policy.select(serverMessage, false));
@@ -210,14 +194,11 @@ public class GroupingRoundRobinDistributionPolicyTest extends UnitTestCase
       policy.addConsumer(consumer3);
       policy.addConsumer(consumer4);
       ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid1"));
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid1"));
       ServerMessage serverMessage2 = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage2.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid2"));
-      EasyMock.expect(serverMessage2.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage2.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid2"));
       ServerMessage serverMessage3 = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage3.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid3"));
-      EasyMock.expect(serverMessage3.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
+      EasyMock.expect(serverMessage3.getProperty(MessageImpl.GROUP_ID)).andStubReturn(new SimpleString("gid3"));
       EasyMock.replay(consumer, consumer2, consumer3, consumer4, serverMessage, serverMessage2, serverMessage3);
       assertEquals(consumer, policy.select(serverMessage, false));
       assertEquals(consumer2, policy.select(serverMessage2, false));
@@ -227,34 +208,5 @@ public class GroupingRoundRobinDistributionPolicyTest extends UnitTestCase
       EasyMock.verify(consumer, consumer2, consumer3, consumer4, serverMessage, serverMessage2, serverMessage3);
    }
 
-   public void testMultipleConsumersResetReceived()
-   {
-      Consumer consumer = EasyMock.createStrictMock(Consumer.class);
-      Consumer consumer2 = EasyMock.createStrictMock(Consumer.class);
-      Consumer consumer3 = EasyMock.createStrictMock(Consumer.class);
-      Consumer consumer4 = EasyMock.createStrictMock(Consumer.class);
-      policy.addConsumer(consumer);
-      policy.addConsumer(consumer2);
-      policy.addConsumer(consumer3);
-      policy.addConsumer(consumer4);
-      ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid1"));
-      EasyMock.expect(serverMessage.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
-      ServerMessage serverMessage2 = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage2.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid2"));
-      EasyMock.expect(serverMessage2.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andReturn(null);
-      EasyMock.expect(serverMessage2.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andReturn(0);
-      EasyMock.expect(serverMessage2.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andReturn(null);
-      ServerMessage serverMessage3 = EasyMock.createStrictMock(ServerMessage.class);
-      EasyMock.expect(serverMessage3.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_ID)).andStubReturn(new SimpleString("gid3"));
-      EasyMock.expect(serverMessage3.getProperty(GroupingRoundRobinDistributionPolicy.GROUP_SEQ)).andStubReturn(null);
-      EasyMock.replay(consumer, consumer2, consumer3, consumer4, serverMessage, serverMessage2, serverMessage3);
-      assertEquals(consumer, policy.select(serverMessage, false));
-      assertEquals(consumer2, policy.select(serverMessage2, false));
-      assertEquals(consumer3, policy.select(serverMessage3, false));
-      assertEquals(consumer2, policy.select(serverMessage2, false));
-      assertEquals(consumer4, policy.select(serverMessage2, false));
-      EasyMock.verify(consumer, consumer2, consumer3, consumer4, serverMessage, serverMessage2, serverMessage3);
-   }
 
 }

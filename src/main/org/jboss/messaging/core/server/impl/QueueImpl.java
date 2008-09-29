@@ -70,8 +70,6 @@ public class QueueImpl implements Queue
 
    private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(NUM_PRIORITIES);
 
-   //private final List<Consumer> consumers = new ArrayList<Consumer>();
-
    private final Set<ScheduledDeliveryRunnable> scheduledRunnables = new LinkedHashSet<ScheduledDeliveryRunnable>();
 
    private volatile DistributionPolicy distributionPolicy = new RoundRobinDistributionPolicy();
@@ -79,10 +77,6 @@ public class QueueImpl implements Queue
    private boolean direct;
 
    private boolean promptDelivery;
-
-   //private int pos = -1;
-
-   private Consumer currentConsumer = null;
 
    private AtomicInteger sizeBytes = new AtomicInteger(0);
 
