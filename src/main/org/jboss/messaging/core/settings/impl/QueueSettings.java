@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.settings.impl;
 
@@ -37,38 +37,57 @@ import org.jboss.messaging.util.SimpleString;
 public class QueueSettings implements Mergeable<QueueSettings>
 {
    private static Logger log = Logger.getLogger(QueueSettings.class);
+
    /**
     * defaults used if null, this allows merging
     */
-   public static final DistributionPolicy DEFAULT_DISTRIBUTION_POLICY = new RoundRobinDistributionPolicy();
+   public static final Class DEFAULT_DISTRIBUTION_POLICY_CLASS = new RoundRobinDistributionPolicy().getClass();
+
    public static final Boolean DEFAULT_CLUSTERED = false;
+
    public static final Integer DEFAULT_MAX_SIZE_BYTES = -1;
+
    public static final Boolean DEFAULT_DROP_MESSAGES_WHEN_FULL = Boolean.FALSE;
+
    public static final Integer DEFAULT_PAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10M Bytes
+
    public static final Integer DEFAULT_MAX_DELIVERY_ATTEMPTS = 10;
+
    public static final Integer DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT = 0;
-   public static final Long DEFAULT_REDELIVER_DELAY = (long) 500;
-   
+
+   public static final Long DEFAULT_REDELIVER_DELAY = (long)500;
 
    private Boolean clustered = null;
-   private Integer maxSizeBytes = null;
-   private Integer pageSizeBytes = null;
-   private Boolean dropMessagesWhenFull = null;
-   private String distributionPolicyClass = null;
-   private Integer maxDeliveryAttempts = null;
-   private Integer messageCounterHistoryDayLimit = null;
-   private Long redeliveryDelay = null;
-   private SimpleString DLQ = null;
-   private SimpleString ExpiryQueue = null;
-   private Integer consumerWindowSize = null;
-   private Integer consumerMaxRate = null;
-   private Integer producerWindowSize = null;
-   private Integer producerMaxRate = null;
 
+   private Integer maxSizeBytes = null;
+
+   private Integer pageSizeBytes = null;
+
+   private Boolean dropMessagesWhenFull = null;
+
+   private String distributionPolicyClass = null;
+
+   private Integer maxDeliveryAttempts = null;
+
+   private Integer messageCounterHistoryDayLimit = null;
+
+   private Long redeliveryDelay = null;
+
+   private SimpleString DLQ = null;
+
+   private SimpleString ExpiryQueue = null;
+
+   private Integer consumerWindowSize = null;
+
+   private Integer consumerMaxRate = null;
+
+   private Integer producerWindowSize = null;
+
+   private Integer producerMaxRate = null;
 
    public Boolean isClustered()
    {
-      return clustered != null?clustered:DEFAULT_CLUSTERED;
+      return clustered != null ? clustered : DEFAULT_CLUSTERED;
    }
 
    public void setClustered(Boolean clustered)
@@ -80,26 +99,25 @@ public class QueueSettings implements Mergeable<QueueSettings>
    {
       return pageSizeBytes != null ? pageSizeBytes : DEFAULT_PAGE_SIZE_BYTES;
    }
-   
-   
+
    public Boolean isDropMessagesWhenFull()
    {
       return dropMessagesWhenFull != null ? this.dropMessagesWhenFull : DEFAULT_DROP_MESSAGES_WHEN_FULL;
    }
-   
+
    public void setDropMessagesWhenFull(Boolean value)
    {
       this.dropMessagesWhenFull = value;
    }
-   
+
    public void setPageSizeBytes(Integer pageSize)
    {
       this.pageSizeBytes = pageSize;
    }
-   
+
    public Integer getMaxSizeBytes()
    {
-      return maxSizeBytes != null ? maxSizeBytes:DEFAULT_MAX_SIZE_BYTES;
+      return maxSizeBytes != null ? maxSizeBytes : DEFAULT_MAX_SIZE_BYTES;
    }
 
    public void setMaxSizeBytes(Integer maxSizeBytes)
@@ -109,7 +127,7 @@ public class QueueSettings implements Mergeable<QueueSettings>
 
    public Integer getMaxDeliveryAttempts()
    {
-      return maxDeliveryAttempts != null?maxDeliveryAttempts:DEFAULT_MAX_DELIVERY_ATTEMPTS;
+      return maxDeliveryAttempts != null ? maxDeliveryAttempts : DEFAULT_MAX_DELIVERY_ATTEMPTS;
    }
 
    public void setMaxDeliveryAttempts(Integer maxDeliveryAttempts)
@@ -119,7 +137,8 @@ public class QueueSettings implements Mergeable<QueueSettings>
 
    public Integer getMessageCounterHistoryDayLimit()
    {
-      return messageCounterHistoryDayLimit!=null?messageCounterHistoryDayLimit:DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
+      return messageCounterHistoryDayLimit != null ? messageCounterHistoryDayLimit
+                                                  : DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
    }
 
    public void setMessageCounterHistoryDayLimit(Integer messageCounterHistoryDayLimit)
@@ -129,7 +148,7 @@ public class QueueSettings implements Mergeable<QueueSettings>
 
    public Long getRedeliveryDelay()
    {
-      return redeliveryDelay!=null?redeliveryDelay:DEFAULT_REDELIVER_DELAY;
+      return redeliveryDelay != null ? redeliveryDelay : DEFAULT_REDELIVER_DELAY;
    }
 
    public void setRedeliveryDelay(Long redeliveryDelay)
@@ -169,60 +188,62 @@ public class QueueSettings implements Mergeable<QueueSettings>
 
    public DistributionPolicy getDistributionPolicy()
    {
-      if(distributionPolicyClass != null)
+      try
       {
-         try
+         if (distributionPolicyClass != null)
          {
-            return (DistributionPolicy) getClass().getClassLoader().loadClass(distributionPolicyClass).newInstance();
+            return (DistributionPolicy)getClass().getClassLoader().loadClass(distributionPolicyClass).newInstance();
          }
-         catch (Exception e)
+         else
          {
-            log.warn("unable to create Distribution Policy using default", e);
+            return (DistributionPolicy)DEFAULT_DISTRIBUTION_POLICY_CLASS.newInstance();
          }
       }
-      return DEFAULT_DISTRIBUTION_POLICY;
+      catch (Exception e)
+      {
+         throw new IllegalArgumentException("Error instantiating distribution policy '" + e + " '");
+      }
    }
 
    public Integer getConsumerWindowSize()
-	{
-		return consumerWindowSize;
-	}
+   {
+      return consumerWindowSize;
+   }
 
-	public void setConsumerWindowSize(Integer consumerWindowSize)
-	{
-		this.consumerWindowSize = consumerWindowSize;
-	}
+   public void setConsumerWindowSize(Integer consumerWindowSize)
+   {
+      this.consumerWindowSize = consumerWindowSize;
+   }
 
-	public Integer getConsumerMaxRate()
-	{
-		return consumerMaxRate;
-	}
+   public Integer getConsumerMaxRate()
+   {
+      return consumerMaxRate;
+   }
 
-	public void setConsumerMaxRate(Integer consumerMaxRate)
-	{
-		this.consumerMaxRate = consumerMaxRate;
-	}
+   public void setConsumerMaxRate(Integer consumerMaxRate)
+   {
+      this.consumerMaxRate = consumerMaxRate;
+   }
 
-	public Integer getProducerWindowSize()
-	{
-		return producerWindowSize;
-	}
+   public Integer getProducerWindowSize()
+   {
+      return producerWindowSize;
+   }
 
-	public void setProducerWindowSize(Integer producerWindowSize)
-	{
-		this.producerWindowSize = producerWindowSize;
-	}
+   public void setProducerWindowSize(Integer producerWindowSize)
+   {
+      this.producerWindowSize = producerWindowSize;
+   }
 
-	public Integer getProducerMaxRate()
-	{
-		return producerMaxRate;
-	}
+   public Integer getProducerMaxRate()
+   {
+      return producerMaxRate;
+   }
 
-	public void setProducerMaxRate(Integer producerMaxRate)
-	{
-		this.producerMaxRate = producerMaxRate;
-	}
-   
+   public void setProducerMaxRate(Integer producerMaxRate)
+   {
+      this.producerMaxRate = producerMaxRate;
+   }
 
    /**
     * merge 2 objects in to 1
@@ -230,11 +251,11 @@ public class QueueSettings implements Mergeable<QueueSettings>
     */
    public void merge(QueueSettings merged)
    {
-      if(clustered == null)
+      if (clustered == null)
       {
          clustered = merged.clustered;
       }
-      if(maxDeliveryAttempts == null)
+      if (maxDeliveryAttempts == null)
       {
          maxDeliveryAttempts = merged.maxDeliveryAttempts;
       }
@@ -242,7 +263,7 @@ public class QueueSettings implements Mergeable<QueueSettings>
       {
          dropMessagesWhenFull = merged.dropMessagesWhenFull;
       }
-      if(maxSizeBytes == null)
+      if (maxSizeBytes == null)
       {
          maxSizeBytes = merged.maxSizeBytes;
       }
@@ -250,43 +271,42 @@ public class QueueSettings implements Mergeable<QueueSettings>
       {
          pageSizeBytes = merged.getPageSizeBytes();
       }
-      if(messageCounterHistoryDayLimit == null)
+      if (messageCounterHistoryDayLimit == null)
       {
          messageCounterHistoryDayLimit = merged.messageCounterHistoryDayLimit;
       }
-      if(redeliveryDelay == null)
+      if (redeliveryDelay == null)
       {
          redeliveryDelay = merged.redeliveryDelay;
       }
-      if(distributionPolicyClass == null)
+      if (distributionPolicyClass == null)
       {
          distributionPolicyClass = merged.distributionPolicyClass;
       }
-      if(DLQ == null)
+      if (DLQ == null)
       {
          DLQ = merged.DLQ;
       }
-      if(ExpiryQueue == null)
+      if (ExpiryQueue == null)
       {
          ExpiryQueue = merged.ExpiryQueue;
       }
       if (consumerWindowSize == null)
       {
-      	consumerWindowSize = merged.consumerWindowSize;
+         consumerWindowSize = merged.consumerWindowSize;
       }
       if (consumerMaxRate == null)
       {
-      	consumerMaxRate = merged.consumerMaxRate;
+         consumerMaxRate = merged.consumerMaxRate;
       }
       if (producerWindowSize == null)
       {
-      	producerWindowSize = merged.producerWindowSize;
+         producerWindowSize = merged.producerWindowSize;
       }
       if (producerMaxRate == null)
       {
-      	producerMaxRate = merged.producerMaxRate;
+         producerMaxRate = merged.producerMaxRate;
       }
    }
 
-	
 }
