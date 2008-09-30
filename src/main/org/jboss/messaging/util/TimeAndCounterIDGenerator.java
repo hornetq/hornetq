@@ -45,7 +45,7 @@ public class TimeAndCounterIDGenerator implements IDGenerator
     */
    private static final int BITS_TO_MOVE = 20;
 
-    public static final long MASK_TIME = 0xFFFFFFFFF00l;
+   public static final long MASK_TIME = 0xEFFFFFFFF00l;
 
    // Attributes ----------------------------------------------------
 
