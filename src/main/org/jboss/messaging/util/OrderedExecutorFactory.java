@@ -18,72 +18,109 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.util;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Set;
 import java.util.concurrent.Executor;
 
 /**
- * This factory creates a hierarchy of Executor which shares the threads of the
- * parent Executor (typically, the root parent is a Thread pool).
- * 
- * @author <a href="david.lloyd@jboss.com">David Lloyd</a>
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
- * @version <tt>$Revision$</tt>
+ * A OrderedExecutorFactory2
+ *
+ * @author <a href="mailto:david.lloyd@jboss.com">David LLoyd</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  */
 public final class OrderedExecutorFactory implements ExecutorFactory
 {
    private final Executor parent;
-   private final Set<ChildExecutor> runningChildren = Collections.synchronizedSet(new HashSet<ChildExecutor>());
 
+   /**
+    * Construct a new instance delegating to the given parent executor.
+    *
+    * @param parent the parent executor
+    */
    public OrderedExecutorFactory(final Executor parent)
    {
       this.parent = parent;
    }
 
+   /**
+    * Get an executor that always executes tasks in order.
+    *
+    * @return an ordered executor
+    */
    public Executor getExecutor()
    {
-      return new ChildExecutor();
+      return new OrderedExecutor(parent);
    }
 
-   private final class ChildExecutor implements Executor, Runnable
+   private static final class OrderedExecutor implements Executor
    {
+      // @protectedby tasks
       private final LinkedList<Runnable> tasks = new LinkedList<Runnable>();
 
+      // @protectedby tasks
+      private boolean running;
+
+      private final Executor parent;
+
+      private final Runnable runner;
+
+      /**
+       * Construct a new instance.
+       *
+       * @param parent the parent executor
+       */
+      public OrderedExecutor(final Executor parent)
+      {
+         this.parent = parent;
+         
+         runner = new Runnable()
+         {
+            public void run()
+            {
+               for (;;)
+               {
+                  final Runnable task;
+                  synchronized (tasks)
+                  {
+                     task = tasks.poll();
+                     if (task == null)
+                     {
+                        running = false;
+                        return;
+                     }
+                  }
+                  try
+                  {
+                     task.run();
+                  }
+                  catch (Throwable t)
+                  {
+                     // eat it!
+                  }
+               }
+            }
+         };
+      }
+
+      /**
+       * Run a task.
+       *
+       * @param command the task to run.
+       */
       public void execute(Runnable command)
       {
          synchronized (tasks)
          {
             tasks.add(command);
-            if (tasks.size() == 1 && runningChildren.add(this))
+            if (!running)
             {
-               parent.execute(this);
+               running = true;
+               parent.execute(runner);
             }
-         }
-      }
-
-      public void run()
-      {
-         for (;;)
-         {
-            final Runnable task;
-            synchronized (tasks)
-            {
-               task = tasks.poll();
-               if (task == null)
-               {
-                  runningChildren.remove(this);
-                  return;
-               }
-            }
-            task.run();
          }
       }
    }
