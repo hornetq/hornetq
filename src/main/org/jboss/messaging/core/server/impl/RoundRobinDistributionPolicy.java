@@ -51,7 +51,7 @@ public class RoundRobinDistributionPolicy extends DistributionPolicyImpl
       {
          pos++;
          
-         if (pos == consumers.size())
+         if (pos == consumers.size() - 1)
          {
             pos = 0;
          }
