@@ -26,6 +26,7 @@ import org.jboss.messaging.core.paging.PageMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * 
@@ -82,21 +83,19 @@ public class PageMessageImpl implements PageMessage
    public void decode(final MessagingBuffer buffer)
    {
       transactionID = buffer.getLong();
-      message.setMessageID(buffer.getLong());
       message.decode(buffer);
    }
 
    public void encode(final MessagingBuffer buffer)
    {
       buffer.putLong(transactionID);
-      buffer.putLong(message.getMessageID());
       message.encode(buffer);
    }
 
    public int getEncodeSize()
    {
 
-      return 8 * 2 + message.getEncodeSize();
+      return DataConstants.SIZE_LONG  + message.getEncodeSize();
    }
 
    // Package protected ---------------------------------------------
