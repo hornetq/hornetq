@@ -160,6 +160,37 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
       hashSet.clear();
 
    }
+   
+   public void testWrapID() throws Throwable
+   {
+      final ConcurrentHashSet<Long> hashSet = new ConcurrentHashSet<Long>();
+
+      final TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
+
+      System.out.println("Current Time = " + hex(System.currentTimeMillis()));
+      
+      seq.setInternalDate(System.currentTimeMillis() + 10000l); // 10 seconds in the future
+
+      seq.setInternalID(TimeAndCounterIDGenerator.ID_MASK -1); // 1 ID about to explode
+     
+      try
+      {
+         // This is simulating a situation where we generated more than 268 million messages on the same time interval
+         seq.generateID();
+         fail("It was supposed to throw an exception, as the counter was set to explode on this test");
+      }
+      catch (Exception e)
+      {
+      }
+
+      
+      seq.setInternalDate(System.currentTimeMillis() - 10000l); // 10 seconds in the past
+
+      seq.setInternalID(TimeAndCounterIDGenerator.ID_MASK -1); // 1 ID about to explode
+      
+      // This is ok... the time portion would be added to the next one generated 10 seconds ago
+      seq.generateID();
+   }
 
    private static String hex(final long value)
    {

@@ -27,10 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * A TimeAndCounterIDGenerator
  * <p>
- * Note: This sequence generator is valid as long as you generate less than 268435455 (fffffff) IDs per 250 millisecond
- * </p>
- * <p>
- * (what is impossible at this point, This class alone will probably take a few seconds to generate this many IDs)
+ * This IDGenerator doesn't support more than 268435455 IDs per 250 millisecond. It would throw an exception if this happens.
  * </p>
  * 
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -45,7 +42,11 @@ public class TimeAndCounterIDGenerator implements IDGenerator
     */
    private static final int BITS_TO_MOVE = 20;
 
-   public static final long MASK_TIME = 0xEFFFFFFFF00l;
+   public static final long MASK_TIME = 0xeffffffff00l;
+
+   public static final long ID_MASK = 0xfffffffl;
+
+   private static final long TIME_ID_MASK = 0xeffffffff0000000l;
 
    // Attributes ----------------------------------------------------
 
@@ -68,7 +69,33 @@ public class TimeAndCounterIDGenerator implements IDGenerator
 
    public long generateID()
    {
-      return counter.incrementAndGet();
+      long idReturn = counter.incrementAndGet();
+
+      if ((idReturn & ID_MASK) == ID_MASK)
+      {
+         final long timePortion = (idReturn & TIME_ID_MASK); 
+         
+         // Wrapping ID logic
+
+         if (timePortion > newTM())
+         {
+            // Unlikely too happen
+            
+            // This will only happen if a computer can generate more than ID_MASK ids (268.43 million IDs per 250 milliseconds)
+            // If this wrapping code starts to happen too often, it needs revision as we need to wait until the time component is updated
+            throw new IllegalStateException("The IDGenerator is being overlaped, and it needs revision as the system generated more than " + (idReturn & ID_MASK) +
+                     " ids per 250 milliseconds which exceeded the IDgenerator limit");
+         }
+         else
+         {
+            // Else.. no worry... we will just accept the new time portion being added
+            // This time-mark would have been generated some time ago, so this is ok.
+            // tmMark is just a cache to validate the MaxIDs, so there is no need to 
+            tmMark = timePortion;
+         }
+      }
+
+      return idReturn;
    }
 
    public long getCurrentID()
@@ -94,7 +121,7 @@ public class TimeAndCounterIDGenerator implements IDGenerator
       long oldTm = tmMark;
       long newTm = newTM();
 
-      while (newTm == oldTm)
+      while (newTm <= oldTm)
       {
          newTm = newTM();
       }
