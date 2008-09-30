@@ -165,7 +165,7 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
    {
       final ConcurrentHashSet<Long> hashSet = new ConcurrentHashSet<Long>();
 
-      final TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
+      TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
 
       System.out.println("Current Time = " + hex(System.currentTimeMillis()));
       
@@ -183,6 +183,7 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
       {
       }
 
+      seq = new TimeAndCounterIDGenerator();
       
       seq.setInternalDate(System.currentTimeMillis() - 10000l); // 10 seconds in the past
 

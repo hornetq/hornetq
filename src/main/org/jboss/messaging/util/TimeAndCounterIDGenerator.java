@@ -52,6 +52,8 @@ public class TimeAndCounterIDGenerator implements IDGenerator
 
    private final AtomicLong counter = new AtomicLong(0);
 
+   private volatile boolean wrapped = false;
+
    private volatile long tmMark;
 
    // Static --------------------------------------------------------
@@ -73,18 +75,16 @@ public class TimeAndCounterIDGenerator implements IDGenerator
 
       if ((idReturn & ID_MASK) == ID_MASK)
       {
-         final long timePortion = (idReturn & TIME_ID_MASK); 
-         
+         final long timePortion = idReturn & TIME_ID_MASK;
+
          // Wrapping ID logic
 
          if (timePortion > newTM())
          {
             // Unlikely too happen
-            
-            // This will only happen if a computer can generate more than ID_MASK ids (268.43 million IDs per 250 milliseconds)
-            // If this wrapping code starts to happen too often, it needs revision as we need to wait until the time component is updated
-            throw new IllegalStateException("The IDGenerator is being overlaped, and it needs revision as the system generated more than " + (idReturn & ID_MASK) +
-                     " ids per 250 milliseconds which exceeded the IDgenerator limit");
+
+            wrapped = true;
+
          }
          else
          {
@@ -93,6 +93,15 @@ public class TimeAndCounterIDGenerator implements IDGenerator
             // tmMark is just a cache to validate the MaxIDs, so there is no need to make it atomic (synchronized)
             tmMark = timePortion;
          }
+      }
+
+      if (wrapped)
+      {
+         // This will only happen if a computer can generate more than ID_MASK ids (268.43 million IDs per 250
+         // milliseconds)
+         // If this wrapping code starts to happen, it needs revision
+         throw new IllegalStateException("The IDGenerator is being overlaped, and it needs revision as the system generated more than " + (idReturn & ID_MASK) +
+                                         " ids per 250 milliseconds which exceeded the IDgenerator limit");
       }
 
       return idReturn;
