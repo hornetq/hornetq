@@ -46,17 +46,31 @@ public class RoundRobinDistributionPolicy extends DistributionPolicyImpl
       {
          //First time
          pos = 0;
+         return consumers.get(pos);   
       }
       else
       {
          pos++;
          
-         if (pos == consumers.size() - 1)
+         if (pos == consumers.size())
          {
             pos = 0;
          }
       }
 
       return consumers.get(pos);
+   }
+
+   public synchronized void addConsumer(Consumer consumer)
+   {
+      pos = -1;
+      super.addConsumer(consumer);
+   }
+
+   public synchronized boolean removeConsumer(Consumer consumer)
+   {
+
+      pos = -1;
+      return super.removeConsumer(consumer);
    }
 }
