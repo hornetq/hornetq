@@ -40,7 +40,7 @@ import org.jboss.messaging.core.server.ServerMessage;
  *
  */
 public class ServerMessageImpl extends MessageImpl implements ServerMessage
-{  
+{
    private final AtomicInteger durableRefCount = new AtomicInteger(0);
 
    /** Global reference counts for paging control */
@@ -60,7 +60,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       super(messageID);
    }
-   
+
    public ServerMessageImpl(final ServerMessageImpl other)
    {
       super(other);
@@ -74,14 +74,14 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
                             final long expiration,
                             final long timestamp,
                             final byte priority,
-                            MessagingBuffer buffer)
+                            final MessagingBuffer buffer)
    {
       super(type, durable, expiration, timestamp, priority, buffer);
    }
 
    public void setMessageID(final long id)
    {
-      this.messageID = id;
+      messageID = id;
    }
 
    public MessageReference createReference(final Queue queue)
@@ -108,7 +108,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return durableRefCount.decrementAndGet();
    }
 
-   public int incrementReference(boolean durable)
+   public int incrementReference(final boolean durable)
    {
       if (durable)
       {
@@ -133,23 +133,23 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       // This is just an estimate...
       // due to memory alignments and JVM implementation this could be very
       // different from reality
-      return getEncodeSize() + (16 + 4) * 2 + // Each AtomicInteger consumes
-                                                // 16 bytes for the Object and
-                                                // ObjectReference + 4 bytes for
-                                                // the internal integer
-             8; // MessageID
+      return getEncodeSize() + (16 + 4) * 2;
 
    }
 
    public ServerMessage copy()
    {
       return new ServerMessageImpl(this);
-   }  
-   
+   }
+
    @Override
    public String toString()
    {
-      return "ServerMessage[messageID=" + messageID + ", durable=" + durable
-            + ", destination=" + getDestination() + "]";
+      return "ServerMessage[messageID=" + messageID +
+             ", durable=" +
+             durable +
+             ", destination=" +
+             getDestination() +
+             "]";
    }
 }
