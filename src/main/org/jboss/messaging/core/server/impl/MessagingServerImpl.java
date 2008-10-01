@@ -12,17 +12,6 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -57,10 +46,12 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.util.ExecutorFactory;
-import org.jboss.messaging.util.JBMThreadFactory;
-import org.jboss.messaging.util.OrderedExecutorFactory;
-import org.jboss.messaging.util.VersionLoader;
+import org.jboss.messaging.util.*;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.*;
 
 /**
  * The messaging server implementation
@@ -127,6 +118,8 @@ public class MessagingServerImpl implements MessagingServer
    private Configuration configuration;
 
    private ManagementService managementService;
+
+   private final SimpleStringIdGenerator simpleStringIdGenerator = new GroupIdGenerator(new SimpleString("AutoGroupId-"));
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -474,7 +467,7 @@ public class MessagingServerImpl implements MessagingServer
                                                               executorFactory.getExecutor(),
                                                               channel,
                                                               managementService,
-                                                              this);
+                                                              simpleStringIdGenerator);
 
       // If the session already exists that's fine - create session must be idempotent
       // This is because if server failures occurring during a create session call we need to

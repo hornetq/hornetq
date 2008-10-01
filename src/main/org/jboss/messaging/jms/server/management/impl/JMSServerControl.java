@@ -22,25 +22,15 @@
 
 package org.jboss.messaging.jms.server.management.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.management.ListenerNotFoundException;
-import javax.management.MBeanInfo;
-import javax.management.MBeanNotificationInfo;
-import javax.management.NotCompliantMBeanException;
-import javax.management.Notification;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.NotificationEmitter;
-import javax.management.NotificationFilter;
-import javax.management.NotificationListener;
-import javax.management.StandardMBean;
-
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
+
+import javax.management.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -83,7 +73,7 @@ public class JMSServerControl extends StandardMBean implements
          int producerWindowSize, int producerMaxRate,
          boolean blockOnAcknowledge,
          boolean blockOnNonPersistentSend,
-         boolean blockOnPersistentSend, String jndiBinding) throws Exception
+         boolean blockOnPersistentSend, boolean autoGroupId, String jndiBinding) throws Exception
    {
       List<String> bindings = new ArrayList<String>();
       bindings.add(jndiBinding);
@@ -93,7 +83,7 @@ public class JMSServerControl extends StandardMBean implements
                   pingPeriod, callTimeout, clientID, dupsOKBatchSize, 
                consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, 
                blockOnAcknowledge, blockOnNonPersistentSend, 
-               blockOnPersistentSend, jndiBinding);
+               blockOnPersistentSend, autoGroupId, jndiBinding);
       if (created)
       {
          sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);

@@ -12,24 +12,6 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.io.Serializable;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.XAConnection;
-import javax.jms.XAConnectionFactory;
-import javax.jms.XAQueueConnection;
-import javax.jms.XAQueueConnectionFactory;
-import javax.jms.XATopicConnection;
-import javax.jms.XATopicConnectionFactory;
-import javax.naming.NamingException;
-import javax.naming.Reference;
-
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
@@ -38,6 +20,11 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
+
+import javax.jms.*;
+import javax.naming.NamingException;
+import javax.naming.Reference;
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -88,6 +75,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    private final boolean blockOnPersistentSend;
 
+   private final boolean autoGroupId;
+
    // Constructors ---------------------------------------------------------------------------------
 
    public JBossConnectionFactory(final TransportConfiguration connectorConfig,
@@ -102,7 +91,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  final int producerMaxRate,
                                  final boolean blockOnAcknowledge,
                                  final boolean blockOnNonPersistentSend,
-                                 final boolean blockOnPersistentSend)
+                                 final boolean blockOnPersistentSend,
+                                 final boolean autoGroupId)
    {
       this.connectorConfig = connectorConfig;
       this.backupConnectorConfig = backupConnectorConfig;
@@ -117,6 +107,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.blockOnAcknowledge = blockOnAcknowledge;
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
       this.blockOnPersistentSend = blockOnPersistentSend;
+      this.autoGroupId = autoGroupId;
    }
 
    // ConnectionFactory implementation -------------------------------------------------------------
@@ -263,7 +254,12 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       return blockOnPersistentSend;
    }
 
-   // Package protected ----------------------------------------------------------------------------
+   public boolean isAutoGroupId()
+   {
+      return autoGroupId;
+   }
+
+// Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
 
@@ -285,7 +281,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                        producerMaxRate,
                                                        blockOnAcknowledge,
                                                        blockOnNonPersistentSend,
-                                                       blockOnPersistentSend);
+                                                       blockOnPersistentSend,
+                                                       autoGroupId);
 
       }
 

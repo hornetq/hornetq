@@ -21,26 +21,6 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import java.io.File;
-import java.lang.management.ManagementFactory;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.management.MBeanServerInvocationHandler;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
-
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
@@ -60,6 +40,20 @@ import org.jboss.test.messaging.tools.ConfigurationHelper;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.tm.TransactionManagerLocator;
+
+import javax.management.MBeanServerInvocationHandler;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -530,7 +524,7 @@ public class LocalTestServer implements Server, Runnable
       getJMSServerManager().createConnectionFactory(objectName,
                new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"), null, 5000, 5000,      
                clientId, dupsOkBatchSize,
-      		prefetchSize, -1, 1000, -1, blockOnAcknowledge, true, true, jndiBindings);
+      		prefetchSize, -1, 1000, -1, blockOnAcknowledge, true, true, false, jndiBindings);
    }
 
 

@@ -22,10 +22,10 @@
 
 package org.jboss.messaging.core.client;
 
-import java.util.Map;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
+
+import java.util.Map;
 
 
 /**
@@ -72,6 +72,10 @@ public interface ClientSessionFactory
    boolean isBlockOnAcknowledge();
    
    void setBlockOnAcknowledge(final boolean blocking);
+
+   boolean isAutoGroupId();
+
+   void setAutoGroupId(boolean autoGroupId);
    
    ConnectorFactory getConnectorFactory();
 

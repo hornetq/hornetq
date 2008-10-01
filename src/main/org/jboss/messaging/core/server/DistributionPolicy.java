@@ -40,4 +40,6 @@ public interface DistributionPolicy
    int getConsumerCount();
 
    boolean hasConsumers();
+
+   int getCurrentPosition();
 }

@@ -737,13 +737,16 @@ public class QueueImpl implements Queue
          return HandleStatus.BUSY;
       }
 
+      int startPos = distributionPolicy.getCurrentPosition();
+
       boolean filterRejected = false;
 
       HandleStatus status = null;
-      int pos = 0;
-      while (pos <= distributionPolicy.getConsumerCount())
+      int pos;
+      while (true)
       {
          Consumer consumer = distributionPolicy.select(reference.getMessage(), status != null);
+         pos = distributionPolicy.getCurrentPosition();
          if(consumer == null)
          {
             if (filterRejected)
@@ -797,18 +800,25 @@ public class QueueImpl implements Queue
 
             filterRejected = true;
          }
-         pos++;
+         if(startPos > distributionPolicy.getConsumerCount() - 1)
+         {
+            startPos = distributionPolicy.getConsumerCount() - 1;
+         }
+         if(startPos == pos)
+         {
+            // Tried all of them
+            if (filterRejected)
+            {
+               return HandleStatus.NO_MATCH;
+            }
+            else
+            {
+               // Give up - all consumers busy
+               return HandleStatus.BUSY;
+            }   
+         }
       }
-      // Tried all of them
-      if (filterRejected)
-      {
-         return HandleStatus.NO_MATCH;
-      }
-      else
-      {
-         // Give up - all consumers busy
-         return HandleStatus.BUSY;
-      }
+
    }
 
    // Inner classes
@@ -821,7 +831,10 @@ public class QueueImpl implements Queue
          // Must be set to false *before* executing to avoid race
          waitingToDeliver.set(false);
 
-         deliver();
+         synchronized (QueueImpl.this)
+         {
+            deliver();
+         }
       }
    }
 

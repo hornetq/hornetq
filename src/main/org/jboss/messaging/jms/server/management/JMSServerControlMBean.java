@@ -22,11 +22,11 @@
 
 package org.jboss.messaging.jms.server.management;
 
-import static javax.management.MBeanOperationInfo.ACTION;
-
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.Operation;
 import org.jboss.messaging.core.management.Parameter;
+
+import static javax.management.MBeanOperationInfo.ACTION;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -82,6 +82,7 @@ public interface JMSServerControlMBean
          @Parameter(name = "blockOnAcknowledge", desc = "Does acknowlegment block?") boolean blockOnAcknowledge,
          @Parameter(name = "blockOnNonPersistentSend", desc = "Does sending non persistent messages block?") boolean blockOnNonPersistentSend,
          @Parameter(name = "blockOnPersistentSend", desc = "Does sending persistent messages block") boolean blockOnPersistentSend,
+         @Parameter(name = "autoGroupId", desc = "Any Messages sent via this factories connections will automatically set th eproperty 'JMSXGroupId'") boolean autoGroupId,
          @Parameter(name = "jndiBinding", desc = "JNDI Binding") String jndiBinding)         
                   throws Exception;
 

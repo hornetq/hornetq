@@ -65,6 +65,8 @@
       <send-np-messages-synchronously>true</send-np-messages-synchronously>
       <!--Whether we send persistent messages synchronously-->
       <send-p-messages-synchronously>true</send-p-messages-synchronously>
+      <!--If true, any connections will automatically set a unique group id (per producer) on every message sent-->
+      <auto-group-id>true</auto-group-id>
    </connection-factory>
    
    <connection-factory name="TestInVMConnectionFactory">

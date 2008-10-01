@@ -12,11 +12,6 @@
 
 package org.jboss.messaging.jms.server.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -27,6 +22,11 @@ import org.jboss.messaging.jms.server.JMSServerManager;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -61,6 +61,8 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String SEND_NP_MESSAGES_SYNCHRONOUSLY_ELEMENT = "send-np-messages-synchronously";
 
    private static final String SEND_P_MESSAGES_SYNCHRONOUSLY_ELEMENT = "send-p-messages-synchronously";
+
+   private static final String AUTO_GROUP_ID__ELEMENT = "auto-group-id";
 
    private static final String CONNECTOR_ELEMENT = "connector";
 
@@ -136,7 +138,7 @@ public class JMSServerDeployer extends XmlDeployer
          boolean blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
          boolean blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
          boolean blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-
+         boolean autoGroupId = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP_ID;
          List<String> jndiBindings = new ArrayList<String>();
          String connectorFactoryClassName = null;
          Map<String, Object> params = new HashMap<String, Object>();
@@ -188,6 +190,10 @@ public class JMSServerDeployer extends XmlDeployer
             else if (SEND_P_MESSAGES_SYNCHRONOUSLY_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
                blockOnPersistentSend = Boolean.parseBoolean(children.item(j).getTextContent().trim());
+            }
+            else if(AUTO_GROUP_ID__ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               autoGroupId = Boolean.parseBoolean(children.item(j).getTextContent().trim());
             }
             else if (ENTRY_NODE_NAME.equalsIgnoreCase(children.item(j).getNodeName()))
             {
@@ -392,6 +398,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                   blockOnAcknowledge,
                                                   blockOnNonPersistentSend,
                                                   blockOnPersistentSend,
+                                                  autoGroupId,
                                                   jndiBindings);
       }
       else if (node.getNodeName().equals(QUEUE_NODE_NAME))

@@ -18,54 +18,13 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
-
-package org.jboss.messaging.core.server.impl;
-
-import org.jboss.messaging.core.server.Consumer;
-import org.jboss.messaging.core.server.ServerMessage;
+ */
+package org.jboss.messaging.util;
 
 /**
- * 
- * A RoundRobinDistributionPolicy
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class RoundRobinDistributionPolicy extends DistributionPolicyImpl
+public interface SimpleStringIdGenerator
 {
-   int pos = 0;
-
-   public Consumer select(ServerMessage message, boolean redeliver)
-   {     
-      if(consumers.isEmpty())
-      {
-         return null;
-      }
-      int startPos = pos++;
-
-      if (pos == consumers.size())
-      {
-         pos = 0;
-      }
-      return consumers.get(startPos);
-   }
-
-   public synchronized void addConsumer(Consumer consumer)
-   {
-      pos = 0;
-      super.addConsumer(consumer);
-   }
-
-   public synchronized boolean removeConsumer(Consumer consumer)
-   {
-
-      pos = 0;
-      return super.removeConsumer(consumer);
-   }
-
-   public int getCurrentPosition()
-   {
-      return pos;
-   }
+   SimpleString generateID();
 }

@@ -11,20 +11,12 @@
  */
 package org.jboss.messaging.core.client.impl;
 
-import java.util.Map;
-import java.util.Set;
-
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.ChannelHandler;
-import org.jboss.messaging.core.remoting.ConnectionRegistry;
-import org.jboss.messaging.core.remoting.FailureListener;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.*;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
@@ -33,6 +25,9 @@ import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.UUIDGenerator;
 import org.jboss.messaging.util.VersionLoader;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -65,6 +60,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    public static final boolean DEFAULT_BLOCK_ON_PERSISTENT_SEND = false;
 
    public static final boolean DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND = false;
+
+   public static final boolean DEFAULT_AUTO_GROUP_ID = false;
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -104,6 +101,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
    private final Set<ClientSessionInternal> sessions = new ConcurrentHashSet<ClientSessionInternal>();
 
+   private volatile boolean autoGroupId;
+
    // Static
    // ---------------------------------------------------------------------------------------
 
@@ -123,7 +122,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                    final int producerMaxRate,
                                    final boolean blockOnAcknowledge,
                                    final boolean blockOnNonPersistentSend,
-                                   final boolean blockOnPersistentSend)
+                                   final boolean blockOnPersistentSend,
+                                   final boolean autoGroupId)
    {
       connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
       transportParams = connectorConfig.getParams();
@@ -141,6 +141,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       this.blockOnAcknowledge = blockOnAcknowledge;
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
       this.blockOnPersistentSend = blockOnPersistentSend;
+      this.autoGroupId = autoGroupId;
       connectionRegistry = ConnectionRegistryImpl.instance;
    }
 
@@ -163,6 +164,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
       blockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
       blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+      autoGroupId = DEFAULT_AUTO_GROUP_ID;
       connectionRegistry = ConnectionRegistryImpl.instance;
    }
 
@@ -182,6 +184,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
       blockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
       blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+      autoGroupId = DEFAULT_AUTO_GROUP_ID;
       connectionRegistry = ConnectionRegistryImpl.instance;
    }
 
@@ -279,6 +282,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    public void setBlockOnAcknowledge(final boolean blocking)
    {
       blockOnAcknowledge = blocking;
+   }
+
+   public boolean isAutoGroupId()
+   {
+      return autoGroupId;
+   }
+
+   public void setAutoGroupId(boolean autoGroupId)
+   {
+      this.autoGroupId = autoGroupId;
    }
 
    public ConnectorFactory getConnectorFactory()
@@ -499,6 +512,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                                autoCommitSends,
                                                                autoCommitAcks,
                                                                blockOnAcknowledge,
+                                                               autoGroupId,
                                                                connection,
                                                                this,
                                                                response.getServerVersion(),

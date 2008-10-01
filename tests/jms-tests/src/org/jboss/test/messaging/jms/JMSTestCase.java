@@ -1,11 +1,10 @@
 package org.jboss.test.messaging.jms;
 
-import javax.naming.InitialContext;
-
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
+
+import javax.naming.InitialContext;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -40,7 +39,7 @@ public class JMSTestCase extends JBMServerTestCase
       
       getJmsServerManager().createConnectionFactory("testsuitecf",
                new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"), null, 5000, 5000,      
-               null, 1000, 1024 * 1024, -1, 1000, -1, true, true, true, "/testsuitecf");
+               null, 1000, 1024 * 1024, -1, 1000, -1, true, true, true, false, "/testsuitecf");
       
       cf = (JBossConnectionFactory) getInitialContext().lookup("/testsuitecf");      
    }

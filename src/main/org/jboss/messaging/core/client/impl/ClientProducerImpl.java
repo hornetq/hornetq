@@ -12,18 +12,19 @@
 
 package org.jboss.messaging.core.client.impl;
 
-import java.util.concurrent.Semaphore;
-
 import org.jboss.messaging.core.client.AcknowledgementHandler;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiter;
+
+import java.util.concurrent.Semaphore;
 
 /**
  * The client-side Producer connectionFactory class.
@@ -69,6 +70,8 @@ public class ClientProducerImpl implements ClientProducerInternal
 
    private final int initialWindowSize;
 
+   private final SimpleString autoGroupId;
+
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
@@ -79,6 +82,7 @@ public class ClientProducerImpl implements ClientProducerInternal
                              final TokenBucketLimiter rateLimiter,
                              final boolean blockOnNonPersistentSend,
                              final boolean blockOnPersistentSend,
+                             final SimpleString autoGroupId,
                              final int initialCredits,
                              final Channel channel)
    {
@@ -95,6 +99,8 @@ public class ClientProducerImpl implements ClientProducerInternal
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
 
       this.blockOnPersistentSend = blockOnPersistentSend;
+
+      this.autoGroupId = autoGroupId;
 
       availableCredits = new Semaphore(initialCredits);
 
@@ -282,6 +288,11 @@ public class ClientProducerImpl implements ClientProducerInternal
          // Rate flow control
 
          rateLimiter.limit();
+      }
+
+      if(autoGroupId != null)
+      {
+         msg.putStringProperty(MessageImpl.GROUP_ID, autoGroupId);
       }
 
       boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;

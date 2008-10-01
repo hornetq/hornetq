@@ -22,15 +22,6 @@
 
 package org.jboss.messaging.jms.server.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
@@ -45,6 +36,14 @@ import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSManagementService;
 import org.jboss.messaging.util.JNDIUtil;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A Deployer used to create and add to JNDI queues, topics and connection
@@ -200,6 +199,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                           boolean blockOnAcknowledge,
                                           boolean blockOnNonPersistentSend,
                                           boolean blockOnPersistentSend,
+                                          boolean autoGroupId,
                                           String jndiBinding) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
@@ -217,7 +217,8 @@ public class JMSServerManagerImpl implements JMSServerManager
                                          producerMaxRate,
                                          blockOnAcknowledge,
                                          blockOnNonPersistentSend,
-                                         blockOnPersistentSend);
+                                         blockOnPersistentSend,
+                                         autoGroupId);
          connectionFactories.put(name, cf);
       }
       if (!bindToJndi(jndiBinding, cf))
@@ -251,6 +252,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                           boolean blockOnAcknowledge,
                                           boolean blockOnNonPersistentSend,
                                           boolean blockOnPersistentSend,
+                                          boolean autoGroupId,
                                           List<String> jndiBindings) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
@@ -268,7 +270,8 @@ public class JMSServerManagerImpl implements JMSServerManager
                                          producerMaxRate,
                                          blockOnAcknowledge,
                                          blockOnNonPersistentSend,
-                                         blockOnPersistentSend);
+                                         blockOnPersistentSend,
+                                         autoGroupId);
       }
       for (String jndiBinding : jndiBindings)
       {

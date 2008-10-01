@@ -12,21 +12,6 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-
-import javax.management.Notification;
-import javax.management.NotificationListener;
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
@@ -42,22 +27,11 @@ import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.*;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.*;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.ServerConsumer;
-import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.server.ServerProducer;
-import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
@@ -66,6 +40,17 @@ import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.SimpleIDGenerator;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.SimpleStringIdGenerator;
+
+import javax.management.Notification;
+import javax.management.NotificationListener;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+import java.nio.ByteBuffer;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 
 /*
  * Session implementation 
@@ -131,6 +116,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
    private final IDGenerator idGenerator = new SimpleIDGenerator(0);
 
+   private final SimpleStringIdGenerator simpleStringIdGenerator;
+
    // Constructors ---------------------------------------------------------------------------------
 
    public ServerSessionImpl(final String name,
@@ -149,7 +136,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
                             final Executor executor,
                             final Channel channel,
                             final ManagementService managementService,
-                            final MessagingServer server) throws Exception
+                            final SimpleStringIdGenerator simpleStringIdGenerator) throws Exception
    {
       this.id = id;
 
@@ -185,6 +172,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       this.channel = channel;
 
       this.managementService = managementService;
+
+      this.simpleStringIdGenerator = simpleStringIdGenerator;
    }
 
    // ServerSession implementation ----------------------------------------------------------------------------
@@ -959,7 +948,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
     */
    public SessionCreateProducerResponseMessage createProducer(final SimpleString address,
                                                               final int windowSize,
-                                                              final int maxRate) throws Exception
+                                                              final int maxRate,
+                                                              final boolean autoGroupId) throws Exception
    {
       FlowController flowController = null;
 
@@ -991,7 +981,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       int initialCredits = flowController == null ? -1 : flowController.getInitialCredits(windowToUse, producer);
 
-      return new SessionCreateProducerResponseMessage(initialCredits, maxRateToUse);
+      SimpleString groupId = null;
+      if(autoGroupId)
+      {
+         groupId = simpleStringIdGenerator.generateID();
+      }
+      return new SessionCreateProducerResponseMessage(initialCredits, maxRateToUse, groupId);
    }
 
    public boolean browserHasNextMessage(final long browserID) throws Exception

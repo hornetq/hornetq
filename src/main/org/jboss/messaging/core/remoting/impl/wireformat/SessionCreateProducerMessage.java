@@ -42,12 +42,14 @@ public class SessionCreateProducerMessage extends PacketImpl
    private int windowSize;
    
    private int maxRate;
+
+   private boolean autoGroupId;
       
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateProducerMessage(final SimpleString address, final int windowSize, final int maxRate)
+   public SessionCreateProducerMessage(final SimpleString address, final int windowSize, final int maxRate, final boolean autoGroupId)
    {
       super(SESS_CREATEPRODUCER);
   
@@ -56,6 +58,8 @@ public class SessionCreateProducerMessage extends PacketImpl
       this.windowSize = windowSize;
       
       this.maxRate = maxRate;
+
+      this.autoGroupId = autoGroupId;
    }
    
    public SessionCreateProducerMessage()
@@ -72,6 +76,7 @@ public class SessionCreateProducerMessage extends PacketImpl
       buff.append(", address=" + address);
       buff.append(", windowSize=" + windowSize);
       buff.append(", maxrate=" + maxRate);
+      buff.append(", autoGroupId=" + autoGroupId);
       buff.append("]");
       return buff.toString();
    }
@@ -90,12 +95,18 @@ public class SessionCreateProducerMessage extends PacketImpl
    {
    	return maxRate;
    }
-   
+
+   public boolean isAutoGroupId()
+   {
+      return autoGroupId;
+   }
+
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putNullableSimpleString(address);
       buffer.putInt(windowSize);
       buffer.putInt(maxRate);
+      buffer.putBoolean(autoGroupId);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
@@ -103,6 +114,7 @@ public class SessionCreateProducerMessage extends PacketImpl
       address = buffer.getNullableSimpleString();      
       windowSize = buffer.getInt();      
       maxRate = buffer.getInt();
+      autoGroupId = buffer.getBoolean();
    }
    
    public boolean equals(Object other)
@@ -117,7 +129,8 @@ public class SessionCreateProducerMessage extends PacketImpl
       return super.equals(other) &&
              this.address == null ? r.address == null : this.address.equals(r.address) &&
              this.windowSize == r.windowSize &&
-             this.maxRate == r.maxRate;                  
+             this.maxRate == r.maxRate &&
+             this.autoGroupId == autoGroupId;                  
    }
 
    // Package protected ---------------------------------------------

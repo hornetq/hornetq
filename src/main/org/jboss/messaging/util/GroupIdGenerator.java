@@ -18,54 +18,29 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
+package org.jboss.messaging.util;
 
-package org.jboss.messaging.core.server.impl;
-
-import org.jboss.messaging.core.server.Consumer;
-import org.jboss.messaging.core.server.ServerMessage;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 
- * A RoundRobinDistributionPolicy
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class RoundRobinDistributionPolicy extends DistributionPolicyImpl
+public class GroupIdGenerator implements SimpleStringIdGenerator
 {
-   int pos = 0;
+   private final AtomicInteger ai = new AtomicInteger(1);
 
-   public Consumer select(ServerMessage message, boolean redeliver)
-   {     
-      if(consumers.isEmpty())
-      {
-         return null;
-      }
-      int startPos = pos++;
+   private final SimpleString prefix;
 
-      if (pos == consumers.size())
-      {
-         pos = 0;
-      }
-      return consumers.get(startPos);
-   }
-
-   public synchronized void addConsumer(Consumer consumer)
+   public GroupIdGenerator(final SimpleString prefix)
    {
-      pos = 0;
-      super.addConsumer(consumer);
+      this.prefix = prefix;
    }
 
-   public synchronized boolean removeConsumer(Consumer consumer)
+   public SimpleString generateID()
    {
-
-      pos = 0;
-      return super.removeConsumer(consumer);
+      SimpleString suffix = new SimpleString("" + ai.getAndIncrement());
+      return prefix.concat(suffix);
    }
 
-   public int getCurrentPosition()
-   {
-      return pos;
-   }
 }

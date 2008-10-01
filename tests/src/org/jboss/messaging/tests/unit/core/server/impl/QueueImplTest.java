@@ -1451,17 +1451,22 @@ public class QueueImplTest extends UnitTestCase
 
       public boolean removeConsumer(Consumer consumer)
       {
-         return false;  //To change body of implemented methods use File | Settings | File Templates.
+         return false;
       }
 
       public int getConsumerCount()
       {
-         return 0;  //To change body of implemented methods use File | Settings | File Templates.
+         return 0;
       }
 
       public boolean hasConsumers()
       {
-         return false;  //To change body of implemented methods use File | Settings | File Templates.
+         return false;
+      }
+
+      public int getCurrentPosition()
+      {
+         return 0;  
       }
    }
 

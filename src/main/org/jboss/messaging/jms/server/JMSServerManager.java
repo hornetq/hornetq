@@ -22,11 +22,9 @@
 
 package org.jboss.messaging.jms.server;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
+
+import java.util.List;
 
 /**
  * The JMS Management interface.
@@ -114,7 +112,7 @@ public interface JMSServerManager
          int producerWindowSize, int producerMaxRate,
          boolean blockOnAcknowledge,
          boolean blockOnNonPersistentSend,
-         boolean blockOnPersistentSend, String jndiBinding)
+         boolean blockOnPersistentSend, boolean autoGroupId, String jndiBinding)
          throws Exception;
 
 
@@ -125,7 +123,7 @@ public interface JMSServerManager
          int producerWindowSize, int producerMaxRate,
          boolean blockOnAcknowledge,
          boolean blockOnNonPersistentSend,
-         boolean blockOnPersistentSend, List<String> jndiBinding)
+         boolean blockOnPersistentSend, boolean autoGroupId,  List<String> jndiBinding)
          throws Exception;
 
    /**
