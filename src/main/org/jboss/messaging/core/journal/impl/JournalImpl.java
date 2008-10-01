@@ -1995,8 +1995,9 @@ public class JournalImpl implements TestableJournal
    }
 
    /** 
-    * This method will instantly return the opened file, and schedule opening and reclaiming.
-    * In case there are no cached opened files, this method will block until the file was opened. (what would happen only if the system is under load).
+    * <p>This method will instantly return the opened file, and schedule opening and reclaiming.</p>
+    * <p>In case there are no cached opened files, this method will block until the file was opened,
+    * what would happen only if the system is under heavy load by another system (like a backup system, or a DB sharing the same box as JBM).</p> 
     * */
    private JournalFile enqueueOpenFile() throws InterruptedException
    {
