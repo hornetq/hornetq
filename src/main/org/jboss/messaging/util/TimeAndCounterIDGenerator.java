@@ -79,9 +79,9 @@ public class TimeAndCounterIDGenerator implements IDGenerator
 
          // Wrapping ID logic
 
-         if (timePortion > newTM())
+         if (timePortion >= newTM())
          {
-            // Unlikely too happen
+            // Unlikely to happen
 
             wrapped = true;
 

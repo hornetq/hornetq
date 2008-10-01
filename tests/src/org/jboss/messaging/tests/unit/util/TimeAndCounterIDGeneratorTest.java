@@ -93,8 +93,6 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
       
       System.out.println("Time = " + hex(System.currentTimeMillis()) + ", " + seq);
 
-      seq.setInternalID(0xfffffffl - 1);
-
       final int NUMBER_OF_THREADS = 100;
 
       final int NUMBER_OF_IDS = 10;
