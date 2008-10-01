@@ -148,8 +148,8 @@ public class JMSServerManagerImpl implements JMSServerManager
       managementService.registerTopic(jBossTopic, jndiBinding, postOffice, storageManager);
       return added;
    }
-
-   public boolean destroyQueue(final String name) throws Exception
+   
+   public boolean undeployDestination(String name) throws Exception
    {
       List<String> jndiBindings = destinations.get(name);
       if (jndiBindings == null || jndiBindings.size() == 0)
@@ -160,6 +160,13 @@ public class JMSServerManagerImpl implements JMSServerManager
       {
          initialContext.unbind(jndiBinding);
       }
+      return true;
+   }
+
+   public boolean destroyQueue(final String name) throws Exception
+   {
+      undeployDestination(name);
+      
       destinations.remove(name);
       managementService.unregisterQueue(name);
       postOffice.removeDestination(JBossQueue.createAddressFromName(name), false);
@@ -170,15 +177,8 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public boolean destroyTopic(final String name) throws Exception
    {
-      List<String> jndiBindings = destinations.get(name);
-      if (jndiBindings == null || jndiBindings.size() == 0)
-      {
-         return false;
-      }
-      for (String jndiBinding : jndiBindings)
-      {
-         initialContext.unbind(jndiBinding);
-      }
+      undeployDestination(name);
+
       destinations.remove(name);
       managementService.unregisterTopic(name);
       postOffice.removeDestination(JBossTopic.createAddressFromName(name), false);

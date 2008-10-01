@@ -74,6 +74,18 @@ public interface JMSServerManager
    boolean createTopic(String topicName, String jndiBinding) throws Exception;
 
    /**
+    * Remove the destination from JNDI.
+    * Calling this method does <em>not</em> destroy the destination.
+    * 
+    * @param name
+    *           the name of the destination to remove from JNDI
+    * @return true if removed
+    * @throws Exception
+    *            if a problem occurred removing the destination
+    */
+   boolean undeployDestination(String name) throws Exception;
+   
+   /**
     * destroys a queue and removes it from JNDI
     * 
     * @param name
