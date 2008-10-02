@@ -95,6 +95,11 @@ public class ReattachSessionMessage extends PacketImpl
       return super.equals(other) && this.name.equals(r.name) &&
              this.lastReceivedCommandID == r.lastReceivedCommandID;
    }
+   
+   public final boolean isRequiresConfirmations()
+   {
+      return false;
+   }
 
    // Package protected ---------------------------------------------
 

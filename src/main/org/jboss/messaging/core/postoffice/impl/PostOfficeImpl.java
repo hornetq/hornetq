@@ -87,7 +87,8 @@ public class PostOfficeImpl implements PostOffice
                          final ManagementService managementService,
                          final boolean checkAllowable,
                          final ResourceManager resourceManager,
-                         final boolean enableWildCardRouting)
+                         final boolean enableWildCardRouting,
+                         final boolean backup)
    {
       this.storageManager = storageManager;
 
@@ -109,6 +110,8 @@ public class PostOfficeImpl implements PostOffice
       {
          addressManager = new SimpleAddressManager();
       }
+      
+      this.backup = backup;
    }
 
    // MessagingComponent implementation ---------------------------------------
@@ -195,7 +198,8 @@ public class PostOfficeImpl implements PostOffice
    public Binding addBinding(final SimpleString address,
                              final SimpleString queueName,
                              final Filter filter,
-                             final boolean durable, boolean temporary) throws Exception
+                             final boolean durable,
+                             boolean temporary) throws Exception
    {
       Binding binding = createBinding(address, queueName, filter, durable, temporary);
 
@@ -289,29 +293,6 @@ public class PostOfficeImpl implements PostOffice
 
    }
 
-   // public void routeFromCluster(final String address, final Message message)
-   // throws Exception
-   // {
-   // List<Binding> bindings = mappings.get(address);
-   //      
-   // for (Binding binding: bindings)
-   // {
-   // Queue queue = binding.getQueue();
-   //         
-   // if (binding.getNodeID() == nodeID)
-   // {
-   // if (queue.getFilter() == null || queue.getFilter().match(message))
-   // {
-   // MessageReference ref = message.createReference(queue);
-   //
-   // //We never route durably from other nodes - so no need to persist
-   //
-   // queue.addLast(ref);
-   // }
-   // }
-   // }
-   // }
-
    public PagingManager getPagingManager()
    {
       return pagingManager;
@@ -327,19 +308,16 @@ public class PostOfficeImpl implements PostOffice
       return flowControllers.get(address);
    }
 
-   public void setBackup(final boolean backup)
+   public void activate()
    {
-      if (this.backup != backup)
+      this.backup = false;
+      
+      Map<SimpleString, Binding> nameMap = addressManager.getBindings();
+
+      for (Binding binding : nameMap.values())
       {
-         this.backup = backup;
-
-         Map<SimpleString, Binding> nameMap = addressManager.getBindings();
-
-         for (Binding binding : nameMap.values())
-         {
-            binding.getQueue().setBackup(backup);
-         }
-      }
+         binding.getQueue().activate();
+      }            
    }
 
    // Private -----------------------------------------------------------------
@@ -347,11 +325,15 @@ public class PostOfficeImpl implements PostOffice
    private Binding createBinding(final SimpleString address,
                                  final SimpleString name,
                                  final Filter filter,
-                                 final boolean durable, final boolean temporary) throws Exception
+                                 final boolean durable,
+                                 final boolean temporary) throws Exception
    {
       Queue queue = queueFactory.createQueue(-1, name, filter, durable, false);
 
-      queue.setBackup(backup);
+      if (backup)
+      {
+         queue.setBackup();
+      }
 
       Binding binding = new BindingImpl(address, queue);
 

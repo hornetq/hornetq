@@ -44,5 +44,7 @@ public interface ServerConsumer extends Consumer
 	
 	Queue getQueue();
 
-	MessageReference getReference(long messageID) throws Exception;
+	MessageReference waitForReference(long messageID) throws Exception;
+	
+	void failedOver();
 }

@@ -75,7 +75,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
          return;
       }
       
-      if (this.transactedOrClientAck)
+      if (transactedOrClientAck)
       {
          try
          {

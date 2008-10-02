@@ -77,6 +77,11 @@ public class Pong extends PacketImpl
    {
       newPeriod = buffer.getLong();
    }
+   
+   public boolean isWriteAlways()
+   {
+      return true;
+   }
 
    @Override
    public String toString()
@@ -97,6 +102,11 @@ public class Pong extends PacketImpl
       Pong r = (Pong)other;
       
       return super.equals(other) && this.newPeriod == r.newPeriod;
+   }
+   
+   public final boolean isRequiresConfirmations()
+   {
+      return false;
    }
 
    // Package protected ---------------------------------------------

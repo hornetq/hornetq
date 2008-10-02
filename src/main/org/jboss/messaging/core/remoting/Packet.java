@@ -44,4 +44,10 @@ public interface Packet
    void encode(MessagingBuffer buffer);
       
    void decode(MessagingBuffer buffer);
+   
+   boolean isRequiresConfirmations();
+   
+   boolean isReplicateBlocking();
+   
+   boolean isWriteAlways();
 }

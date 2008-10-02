@@ -83,7 +83,7 @@ public interface PostOffice extends MessagingComponent
 
    Set<SimpleString> listAllDestinations();
    
-   void setBackup(boolean backup);
+   void activate();
    
    PagingManager getPagingManager();
 }

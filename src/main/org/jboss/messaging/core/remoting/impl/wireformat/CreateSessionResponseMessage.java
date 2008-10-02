@@ -101,6 +101,11 @@ public class CreateSessionResponseMessage extends PacketImpl
       
       return matches;
    }
+   
+   public final boolean isRequiresConfirmations()
+   {
+      return false;
+   }
 
    // Package protected ---------------------------------------------
 

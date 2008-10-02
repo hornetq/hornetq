@@ -3763,7 +3763,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
-// http://jira.jboss.org/jira/browse/JBMESSAGING-1294 - commented out until 2.0 beta
+   // http://jira.jboss.org/jira/browse/JBMESSAGING-1294 - commented out until 2.0 beta
 //   public void testExceptionMessageListener1() throws Exception
 //   {
 //   	Connection conn = null;

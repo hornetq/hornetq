@@ -1,32 +1,93 @@
 /*
- * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors by
- * the @authors tag. See the copyright.txt in the distribution for a full listing of individual contributors. This is
- * free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.
- * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details. You should have received a copy of the GNU Lesser General Public License along with this software; if not,
- * write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
- * site: http://www.fsf.org.
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.jboss.messaging.core.client.impl;
 
-import org.jboss.messaging.core.client.*;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.*;
-import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.*;
-import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+
+import org.jboss.messaging.core.client.ClientBrowser;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.ConnectionRegistry;
+import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.ResponseNotifier;
+import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCloseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionProcessedMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetInDoubtXidsResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetTimeoutResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAJoinMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAPrepareMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResumeMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.util.ExecutorFactory;
+import org.jboss.messaging.util.IDGenerator;
+import org.jboss.messaging.util.JBMThreadFactory;
+import org.jboss.messaging.util.OrderedExecutorFactory;
+import org.jboss.messaging.util.SimpleIDGenerator;
+import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.TokenBucketLimiterImpl;
 
 /*
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -101,11 +162,11 @@ public class ClientSessionImpl implements ClientSessionInternal
 
    private final IDGenerator idGenerator = new SimpleIDGenerator(0);
 
-   // Constructors ----------------------------------------------------------------------------  
+   // Constructors ----------------------------------------------------------------------------
 
    public ClientSessionImpl(final ClientSessionFactoryInternal sessionFactory,
                             final String name,
-                            final boolean xa,         
+                            final boolean xa,
                             final boolean cacheProducers,
                             final boolean autoCommitSends,
                             final boolean autoCommitAcks,
@@ -410,27 +471,26 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       checkClosed();
 
-      //We need to make sure we don't get any inflight messages
+      // We need to make sure we don't get any inflight messages
       for (ClientConsumerInternal consumer : consumers.values())
       {
-         consumer.clear();                  
+         consumer.clear();
       }
-      
-      channel.sendBlocking(new PacketImpl(PacketImpl.SESS_ROLLBACK),
-                           new ResponseNotifier()
+
+      channel.sendBlocking(new PacketImpl(PacketImpl.SESS_ROLLBACK), new ResponseNotifier()
       {
          public void onResponseReceived()
          {
-            //This needs to be called on before the blocking thread is awoken
-            //hence the ResponseNotifier
+            // This needs to be called on before the blocking thread is awoken
+            // hence the ResponseNotifier
             for (ClientConsumerInternal consumer : consumers.values())
             {
                consumer.resume();
             }
          }
-      }); 
+      });
    }
-  
+
    public synchronized void close() throws MessagingException
    {
       if (closed)
@@ -444,9 +504,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       {
          closeChildren();
 
-         Channel channel1 = remotingConnection.getChannel(1, false, -1, true);
-
-         channel1.sendBlocking(new CloseSessionMessage(name));
+         channel.sendBlocking(new SessionCloseMessage());
       }
       catch (Throwable ignore)
       {
@@ -547,7 +605,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       return name;
    }
-   
+
    public void processed(final long consumerID, final long messageID) throws MessagingException
    {
       checkClosed();
@@ -561,7 +619,7 @@ public class ClientSessionImpl implements ClientSessionInternal
       else
       {
          channel.send(message);
-      }          
+      }
    }
 
    public void addConsumer(final ClientConsumerInternal consumer)
@@ -661,14 +719,18 @@ public class ClientSessionImpl implements ClientSessionInternal
    public void handleFailover(final RemotingConnection backupConnection)
    {
       // We lock the channel to prevent any packets to be added to the resend
-      // cache
-      // during the failover process
+      // cache during the failover process
       channel.lock();
 
       try
-      {
+      {         
          channel.transferConnection(backupConnection);
-
+         
+         for (ClientConsumerInternal consumer: consumers.values())
+         {
+            consumer.failover();
+         }
+         
          backupConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
 
          remotingConnection = backupConnection;
@@ -874,29 +936,33 @@ public class ClientSessionImpl implements ClientSessionInternal
    {
       checkXA();
 
-      //We need to make sure we don't get any inflight messages
+      // We need to make sure we don't get any inflight messages
       for (ClientConsumerInternal consumer : consumers.values())
       {
-         consumer.clear();                  
+         consumer.clear();
       }
-      
+
       SessionXARollbackMessage packet = new SessionXARollbackMessage(xid);
 
       try
       {
          SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet,
-                              new ResponseNotifier()
-         {
-            public void onResponseReceived()
-            {
-               //This needs to be called on before the blocking thread is awoken
-               //hence the ResponseNotifier
-               for (ClientConsumerInternal consumer : consumers.values())
-               {
-                  consumer.resume();
-               }
-            }
-         }); 
+                                                                                            new ResponseNotifier()
+                                                                                            {
+                                                                                               public void onResponseReceived()
+                                                                                               {
+                                                                                                  // This needs to be
+                                                                                                   // called on before
+                                                                                                   // the blocking
+                                                                                                   // thread is awoken
+                                                                                                  // hence the
+                                                                                                   // ResponseNotifier
+                                                                                                  for (ClientConsumerInternal consumer : consumers.values())
+                                                                                                  {
+                                                                                                     consumer.resume();
+                                                                                                  }
+                                                                                               }
+                                                                                            });
 
          if (response.isError())
          {
@@ -969,7 +1035,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    }
 
    // Public
-   //----------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------
 
    public void setForceNotSameRM(final boolean force)
    {
@@ -987,13 +1053,13 @@ public class ClientSessionImpl implements ClientSessionInternal
    }
 
    // Protected
-   //----------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------
 
    // Package Private
-   //----------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------
 
    // Private
-   //----------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------
 
    private void checkXA() throws XAException
    {
@@ -1067,7 +1133,7 @@ public class ClientSessionImpl implements ClientSessionInternal
          producerCache.clear();
       }
 
-      channel.close();
+      channel.close(false);
 
       connectionRegistry.returnConnection(remotingConnection.getID());
 

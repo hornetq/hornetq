@@ -24,6 +24,7 @@ package org.jboss.messaging.core.server;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.filter.Filter;
@@ -110,6 +111,8 @@ public interface Queue
   
    MessageReference removeReferenceWithID(long id);
    
+   MessageReference waitForReferenceWithID(long id, CountDownLatch latch);
+   
    MessageReference getReference(long id);
    
    void deleteAllReferences(StorageManager storageManager) throws Exception;
@@ -135,10 +138,13 @@ public interface Queue
    boolean moveMessage(long messageID, Binding toBinding,
          StorageManager storageManager, PostOffice postOffice) throws Exception;
 
-   void setBackup(boolean backup);
+   void setBackup();
+   
+   void activate();
    
    boolean isBackup();
    
    MessageReference removeFirst();
-
+   
+   boolean consumerFailedOver();   
 }

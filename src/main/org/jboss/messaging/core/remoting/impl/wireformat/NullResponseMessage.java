@@ -22,13 +22,17 @@ public class NullResponseMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
+   private final boolean writeAlways;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public NullResponseMessage()
+   public NullResponseMessage(final boolean writeAlways)
    {
       super(NULL_RESPONSE);
+
+      this.writeAlways = writeAlways;
    }
 
    // Public --------------------------------------------------------
@@ -37,6 +41,11 @@ public class NullResponseMessage extends PacketImpl
    public boolean isResponse()
    {
       return true;
+   }
+
+   public boolean isWriteAlways()
+   {
+      return writeAlways;
    }
 
    // Package protected ---------------------------------------------

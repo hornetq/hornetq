@@ -12,67 +12,41 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
-public class CloseSessionMessage extends PacketImpl
+public class SessionCloseMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private String name;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public CloseSessionMessage(final String name)
+   public SessionCloseMessage()
    {
-      super(CLOSE_SESSION);
-
-      this.name = name;
-   }
-
-   public CloseSessionMessage()
-   {
-      super(CLOSE_SESSION);
+      super(SESS_CLOSE);
    }
 
    // Public --------------------------------------------------------
 
-   public String getName()
-   {
-      return name;
-   }
-
-   @Override
-   public void encodeBody(final MessagingBuffer buffer)
-   {
-      buffer.putString(name);
-   }
-
-   @Override
-   public void decodeBody(final MessagingBuffer buffer)
-   {
-      name = buffer.getString();
-   }
-
    @Override
    public boolean equals(final Object other)
    {
-      if (other instanceof CloseSessionMessage == false)
+      if (other instanceof SessionCloseMessage == false)
       {
          return false;
       }
 
-      CloseSessionMessage r = (CloseSessionMessage)other;
+      SessionCloseMessage r = (SessionCloseMessage)other;
 
-      return super.equals(other) && name == r.name;
+      return super.equals(other);
    }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

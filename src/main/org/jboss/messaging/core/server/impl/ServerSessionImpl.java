@@ -116,6 +116,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
    private final IDGenerator idGenerator = new SimpleIDGenerator(0);
 
+   private volatile boolean closed;
+
+   private final String name;
+
+   private final MessagingServer server;
+
    private final SimpleStringIdGenerator simpleStringIdGenerator;
 
    // Constructors ---------------------------------------------------------------------------------
@@ -136,6 +142,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
                             final Executor executor,
                             final Channel channel,
                             final ManagementService managementService,
+                            final MessagingServer server,
                             final SimpleStringIdGenerator simpleStringIdGenerator) throws Exception
    {
       this.id = id;
@@ -172,6 +179,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       this.channel = channel;
 
       this.managementService = managementService;
+
+      this.name = name;
+
+      this.server = server;
 
       this.simpleStringIdGenerator = simpleStringIdGenerator;
    }
@@ -229,9 +240,23 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       started = s;
    }
 
+   public void failedOver() throws Exception
+   {
+      Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
+
+      for (ServerConsumer consumer : consumersClone)
+      {
+         consumer.failedOver();
+      }
+
+      started = true;
+   }
+
    public void close() throws Exception
    {
-      channel.close();
+      closed = true;
+
+      channel.close(true);
 
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
 
@@ -260,7 +285,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       producers.clear();
 
-      rollback();
+      rollback(false);
+
+      server.removeSession(name);
    }
 
    public void promptDelivery(final Queue queue)
@@ -305,13 +332,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       {
          tx.addMessage(msg);
       }
-
    }
 
    public void processed(final long consumerID, final long messageID) throws Exception
    {
-      MessageReference ref = consumers.get(consumerID).getReference(messageID);
-      
+      MessageReference ref = consumers.get(consumerID).waitForReference(messageID);
+
       // Ref = null would imply consumer is already closed so we could ignore it
       if (ref != null)
       {
@@ -328,9 +354,26 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             ref.incrementDeliveryCount();
          }
       }
+      else
+      {
+         if (!closed)
+         {
+            throw new IllegalStateException(System.identityHashCode(this) + " Could not find ref with id " + messageID);
+         }
+         else
+         {
+            // If closed then might not find ref since processed might come in before send and send
+            // didn't come in since closed
+         }
+      }
+   }
+   
+   public void rollback() throws Exception
+   {
+      rollback(true);
    }
 
-   public void rollback() throws Exception
+   private void rollback(final boolean sendResponse) throws Exception
    {
       if (tx == null)
       {
@@ -339,31 +382,34 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          tx = new TransactionImpl(storageManager, postOffice);
       }
 
-      //Need to write the response now - before redeliveries occur
-      channel.send(new NullResponseMessage());
-      
+      if (sendResponse)
+      {
+         // Need to write the response now - before redeliveries occur
+         channel.send(new NullResponseMessage(false));
+      }
+
       boolean wasStarted = started;
-      
+
       for (ServerConsumer consumer : consumers.values())
-      {            
+      {
          if (wasStarted)
          {
             consumer.setStarted(false);
          }
-         
+
          consumer.cancelRefs();
       }
-      
+
       tx.rollback(queueSettingsRepository);
-      
+
       if (wasStarted)
-      {         
+      {
          for (ServerConsumer consumer : consumers.values())
-         {            
+         {
             consumer.setStarted(true);
          }
       }
-      
+
       tx = new TransactionImpl(storageManager, postOffice);
    }
 
@@ -594,23 +640,23 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
 
       boolean wasStarted = started;
-      
+
       for (ServerConsumer consumer : consumers.values())
-      {            
+      {
          if (wasStarted)
          {
             consumer.setStarted(false);
          }
-         
+
          consumer.cancelRefs();
       }
-      
+
       theTx.rollback(queueSettingsRepository);
-      
+
       if (wasStarted)
       {
          for (ServerConsumer consumer : consumers.values())
-         {            
+         {
             consumer.setStarted(true);
          }
       }
@@ -1053,20 +1099,20 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    public void handleManagementMessage(final SessionSendManagementMessage message) throws Exception
    {
       ServerMessage serverMessage = message.getServerMessage();
-      
+
       if (serverMessage.containsProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS))
       {
          boolean subscribe = (Boolean)serverMessage.getProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS);
-         
+
          final SimpleString replyTo = (SimpleString)serverMessage.getProperty(ManagementHelper.HDR_JMX_REPLYTO);
-         
+
          if (subscribe)
          {
             if (log.isDebugEnabled())
             {
                log.debug("added notification listener " + this);
             }
-            
+
             managementService.addNotificationListener(this, null, replyTo);
          }
          else
@@ -1075,15 +1121,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             {
                log.debug("removed notification listener " + this);
             }
-            
+
             managementService.removeNotificationListener(this);
          }
          return;
       }
       managementService.handleMessage(message.getServerMessage());
-      
+
       serverMessage.setDestination((SimpleString)serverMessage.getProperty(ManagementHelper.HDR_JMX_REPLYTO));
-      
+
       send(serverMessage);
    }
 
@@ -1106,7 +1152,22 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             }
          }
 
-         close();
+         // We execute this on the session's serial executor, then we can avoid complex synchronization
+         // and ensure no operations are fielded on the session after it is closed
+         channel.getExecutor().execute(new Runnable()
+         {
+            public void run()
+            {
+               try
+               {
+                  close();
+               }
+               catch (Exception e)
+               {
+                  log.error("Failed to close session", e);
+               }
+            }
+         });
       }
       catch (Throwable t)
       {
@@ -1141,7 +1202,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    {
       return tx;
    }
-   
+
    // Private
    // ----------------------------------------------------------------------------
 

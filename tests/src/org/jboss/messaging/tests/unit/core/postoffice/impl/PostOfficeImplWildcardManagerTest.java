@@ -67,7 +67,7 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 
-      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true, null, wildCardRoutingEnabled);
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true, null, wildCardRoutingEnabled, false);
 
       qf.setPostOffice(postOffice);
 
@@ -81,7 +81,6 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       EasyMock.expect(message3.getDestination()).andStubReturn(address3);
       EasyMock.expect(qf.createQueue(-1, queueName, null, false, false)).andReturn(queue);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
-      queue.setBackup(false);
       queue.setFlowController(null);
       EasyMock.expect(queue.getFilter()).andStubReturn(null);
       EasyMock.expect(pgm.addSize(message)).andStubReturn(1000l);
@@ -130,7 +129,7 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 
-      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true, null, wildCardRoutingEnabled);
+      PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true, null, wildCardRoutingEnabled, false);
 
       qf.setPostOffice(postOffice);
 
@@ -148,8 +147,6 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       EasyMock.expect(qf.createQueue(-1, queueName2, null, false, false)).andReturn(queue2);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       EasyMock.expect(queue2.getName()).andStubReturn(queueName2);
-      queue.setBackup(false);
-      queue2.setBackup(false);
       queue.setFlowController(null);
       queue2.setFlowController(null);
       EasyMock.expect(queue.getFilter()).andStubReturn(null);

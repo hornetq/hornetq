@@ -73,7 +73,7 @@ public interface MessagingServer extends MessagingComponent
                                               boolean autoCommitAcks,
                                               boolean xa) throws Exception;
 
-   void closeSession(String name) throws Exception;
+   void removeSession(String name) throws Exception;
 
    boolean isStarted();
 

@@ -22,6 +22,12 @@
 
 package org.jboss.messaging.core.persistence.impl.nullpm;
 
+import java.util.List;
+import java.util.Map;
+
+import javax.transaction.xa.Xid;
+
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -32,12 +38,9 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.SimpleString;
-
-import javax.transaction.xa.Xid;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import org.jboss.messaging.util.TimeAndCounterIDGenerator;
 
 /**
  * 
@@ -49,10 +52,13 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class NullStorageManager implements StorageManager
 {
-	private final AtomicLong messageIDSequence = new AtomicLong(0);
-	
-	private final AtomicLong transactionIDSequence = new AtomicLong(0);
-	
+   private static final Logger log = Logger.getLogger(NullStorageManager.class);
+
+   
+   //FIXME - these need to use id generators from 1.4 null storage manager since is not unique across
+   //cluster
+	private final IDGenerator idGenerator = new TimeAndCounterIDGenerator();
+
 	private volatile boolean started;
 	
 	public void addBinding(Binding binding) throws Exception
@@ -136,20 +142,7 @@ public class NullStorageManager implements StorageManager
 	public long generateUniqueID()
 	{
 	   //FIXME - this needs to use Howard's ID generator from JBM 1.4
-		return messageIDSequence.getAndIncrement();
-	}
-	
-	public synchronized void setMaxID(final long id)
-   {
-      if (1 + id > messageIDSequence.get())
-      {
-         messageIDSequence.set(id + 1);
-      }
-   }
-	
-	public long generateTransactionID()
-	{
-		return transactionIDSequence.getAndIncrement();
+		return idGenerator.generateID();
 	}
 	
 	public synchronized void start() throws Exception

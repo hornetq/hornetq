@@ -210,7 +210,8 @@ public class MessagingServerImpl implements MessagingServer
                                       managementService,
                                       configuration.isRequireDestinations(),
                                       resourceManager,
-                                      configuration.isWildcardRoutingEnabled());
+                                      configuration.isWildcardRoutingEnabled(),
+                                      configuration.isBackup());
 
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
       securityRepository.setDefault(new HashSet<Role>());
@@ -224,7 +225,6 @@ public class MessagingServerImpl implements MessagingServer
                                                           this);
 
       postOffice.start();
-      postOffice.setBackup(configuration.isBackup());
 
       TransportConfiguration backupConnector = configuration.getBackupConnectorConfiguration();
 
@@ -396,7 +396,7 @@ public class MessagingServerImpl implements MessagingServer
 
       // Reconnect the channel to the new connection
       session.transferConnection(connection);
-
+      
       // This is necessary for invm since the replicating connection will be the
       // same connection
       // as the original replicating connection since the key is the same in the
@@ -406,7 +406,7 @@ public class MessagingServerImpl implements MessagingServer
 
       int serverLastReceivedCommandID = session.replayCommands(lastReceivedCommandID);
 
-      postOffice.setBackup(false);
+      postOffice.activate();
 
       configuration.setBackup(false);
 
@@ -414,8 +414,7 @@ public class MessagingServerImpl implements MessagingServer
 
       connection.setReplicating(false);
 
-      // Re-prompt delivery
-      session.setStarted(true);
+      session.failedOver();
 
       return new ReattachSessionResponseMessage(serverLastReceivedCommandID);
    }
@@ -467,6 +466,7 @@ public class MessagingServerImpl implements MessagingServer
                                                               executorFactory.getExecutor(),
                                                               channel,
                                                               managementService,
+                                                              this,
                                                               simpleStringIdGenerator);
 
       // If the session already exists that's fine - create session must be idempotent
@@ -486,15 +486,9 @@ public class MessagingServerImpl implements MessagingServer
                                               configuration.getPacketConfirmationBatchSize());
    }
 
-   // Must also be idempotent
-   public void closeSession(final String name) throws Exception
-   {
-      ServerSession session = sessions.remove(name);
-
-      if (session != null)
-      {
-         session.close();
-      }
+   public void removeSession(final String name) throws Exception
+   {      
+      sessions.remove(name);
    }
 
    public RemotingConnection getReplicatingConnection()

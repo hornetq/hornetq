@@ -39,7 +39,7 @@ public class JBMThreadFactory implements ThreadFactory
 
    public JBMThreadFactory(final String groupName)
    {
-      group = new ThreadGroup(groupName);
+      group = new ThreadGroup(groupName + "-" + System.identityHashCode(this));
    }
 
    public Thread newThread(final Runnable command)

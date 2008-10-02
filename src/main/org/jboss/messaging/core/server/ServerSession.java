@@ -130,4 +130,6 @@ public interface ServerSession
    int replayCommands(int lastReceivedCommandID);
 
    void handleManagementMessage(SessionSendManagementMessage message) throws Exception;
+   
+   void failedOver() throws Exception;
 }

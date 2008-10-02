@@ -12,11 +12,11 @@
 
 package org.jboss.messaging.core.remoting.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CLOSE_SESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EXCEPTION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NULL_RESPONSE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PACKETS_CONFIRMED;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PING;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PONG;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION;
@@ -29,6 +29,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_HASNEXTMESSAGE_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_NEXTMESSAGE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_RESET;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_COMMIT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEBROWSER;
@@ -40,14 +41,12 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_DELETE_QUEUE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FLOWTOKEN;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_MANAGEMENT_SEND;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_PACKETS_CONFIRMED;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_PROCESSED;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_PRODUCER_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVETOKENS;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_MSG;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECOVER;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REMOVE_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ROLLBACK;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_SEND;
@@ -94,7 +93,6 @@ import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.ResponseNotifier;
-import org.jboss.messaging.core.remoting.impl.wireformat.CloseSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
@@ -114,6 +112,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserResetMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
@@ -282,7 +281,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          pinger = null;
       }
    }
-
+   
    // RemotingConnection implementation
    // ------------------------------------------------------------
 
@@ -480,7 +479,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          future.cancel(false);
       }
 
-      pingChannel.close();
+      pingChannel.close(false);
 
       destroyed = true;
 
@@ -494,7 +493,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       for (Channel channel : channels.values())
       {
-         channel.close();
+         channel.close(false);
       }
    }
 
@@ -530,6 +529,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             packet = new MessagingExceptionMessage();
             break;
          }
+         case PACKETS_CONFIRMED:
+         {
+            packet = new PacketsConfirmedMessage();
+            break;
+         }
          case CREATESESSION:
          {
             packet = new CreateSessionMessage();
@@ -550,9 +554,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             packet = new ReattachSessionResponseMessage();
             break;
          }
-         case CLOSE_SESSION:
+         case SESS_CLOSE:
          {
-            packet = new CloseSessionMessage();
+            packet = new SessionCloseMessage();
             break;
          }
          case SESS_CREATECONSUMER:
@@ -583,11 +587,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          case SESS_PROCESSED:
          {
             packet = new SessionProcessedMessage();
-            break;
-         }
-         case SESS_RECOVER:
-         {
-            packet = new PacketImpl(PacketImpl.SESS_RECOVER);
             break;
          }
          case SESS_COMMIT:
@@ -775,11 +774,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             packet = new SessionReceiveMessage();
             break;
          }
-         case SESS_PACKETS_CONFIRMED:
-         {
-            packet = new PacketsConfirmedMessage();
-            break;
-         }
          case SESS_CONSUMER_CLOSE:
          {
             packet = new SessionConsumerCloseMessage();
@@ -797,7 +791,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
          case NULL_RESPONSE:
          {
-            packet = new NullResponseMessage();
+            packet = new NullResponseMessage(false);
             break;
          }
          case SESS_MANAGEMENT_SEND:
@@ -929,8 +923,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
             final byte packetType = packet.getType();
 
-            if (connection.writePackets || packetType == SESS_PACKETS_CONFIRMED ||
-                packetType == PONG)
+             if (connection.writePackets || packet.isWriteAlways())
             {
                connection.doWrite(packet);
             }
@@ -942,6 +935,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       private Thread blockThread;
       
       private ResponseNotifier responseNotifier;
+      
+      public Executor getExecutor()
+      {
+         return executor;
+      }
 
       // This must never called by more than one thread concurrently
       public Packet sendBlocking(final Packet packet) throws MessagingException
@@ -1039,11 +1037,26 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
       }
 
-      public void replicatePacket(final Packet packet)
+      public void replicatePacket(final Packet packet) throws MessagingException
       {
          if (replicatingChannel != null)
          {
-            replicatingChannel.send(packet);
+            if (packet.isReplicateBlocking())
+            {
+               replicatingChannel.sendBlocking(packet);
+            }
+            else
+            {
+               replicatingChannel.send(packet);
+            }
+         }
+      }
+      
+      public void replicatePacketBlocking(final Packet packet) throws MessagingException
+      {
+         if (replicatingChannel != null)
+         {
+            replicatingChannel.sendBlocking(packet);
          }
       }
 
@@ -1052,23 +1065,31 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          this.handler = handler;
       }
 
-      public void close()
+      public void close(boolean onExecutorThread)
       {
          if (closed)
          {
             return;
          }
 
-         if (!connection.destroyed && connection.channels.remove(id) == null)
-         {
-            throw new IllegalArgumentException("Cannot find channel with id " + id + " to close");
+         synchronized (connection)
+         {         
+            if (!connection.destroyed && connection.channels.remove(id) == null)
+            {
+               throw new IllegalArgumentException("Cannot find channel with id " + id + " to close");
+            }                        
          }
          
-         waitForExecutorToComplete();
-
+         if (!onExecutorThread)
+         {
+            waitForExecutorToComplete();
+         }
+         
          if (replicatingChannel != null)
          {
-            replicatingChannel.close();
+            replicatingChannel.close(false);
+            
+            replicatingChannel = null;
          }
 
          closed = true;
@@ -1158,7 +1179,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       private void handlePacket(final Packet packet)
       {
-         if (packet.getType() == PacketImpl.SESS_PACKETS_CONFIRMED)
+         if (packet.getType() == PACKETS_CONFIRMED)
          {
             if (resendCache != null)
             {
@@ -1187,7 +1208,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                }
             }
             else if (replicatingChannel != null)
-            {
+            {               
                replicatingChannel.send(packet);
             }
             else
@@ -1229,13 +1250,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
                   checkConfirmation(packet);
 
-                  // Shouldn't get responses back on replicating connections - since should never be written
-
-                  if (connection.replicating)
-                  {
-                     throw new IllegalStateException("Got response back on replicating connection " + packet.getType());
-                  }
-                  
                   if (responseNotifier != null)
                   {
                      responseNotifier.onResponseReceived();
@@ -1247,10 +1261,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             else if (handler != null)
             {
                if (executor == null)
-               {
+               {                  
                   checkConfirmation(packet);
-
-                  handler.handlePacket(packet);
+                  
+                  handler.handlePacket(packet);                                   
                }
                else
                {
@@ -1259,9 +1273,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                      public void run()
                      {
                         try
-                        {
+                        {     
                            checkConfirmation(packet);
-   
+                           
                            handler.handlePacket(packet);
                         }
                         catch (Exception e)
@@ -1281,7 +1295,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       private void checkConfirmation(final Packet packet)
       {                 
-         if (resendCache != null)
+         if (resendCache != null && packet.isRequiresConfirmations())
          {
             lastReceivedCommandID++;
             
@@ -1330,7 +1344,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       {
          public void handlePacket(final Packet packet)
          {
-            if (packet.getType() == SESS_PACKETS_CONFIRMED)
+            if (packet.getType() == PACKETS_CONFIRMED)
             {
                // Send it straight back to the client
                connection.doWrite(packet);

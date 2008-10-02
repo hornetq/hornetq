@@ -116,6 +116,11 @@ public class SessionReceiveMessage extends PacketImpl
       
       clientMessage.getBody().flip();
    }
+   
+   public final boolean isRequiresConfirmations()
+   {
+      return false;
+   }
 
    // Package protected ---------------------------------------------
 

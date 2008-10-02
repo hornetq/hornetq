@@ -92,6 +92,11 @@ public class Ping extends PacketImpl
       
       return super.equals(other) && this.expirePeriod == r.expirePeriod;
    }
+   
+   public final boolean isRequiresConfirmations()
+   {
+      return false;
+   }
 
    // Package protected ---------------------------------------------
 

@@ -12,7 +12,6 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CLOSE_SESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION;
 
@@ -22,10 +21,8 @@ import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.wireformat.CloseSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.jboss.messaging.core.server.MessagingServer;
 
@@ -58,12 +55,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
    }
 
    public void handlePacket(final Packet packet)
-   {
-      if (channel1.getReplicatingChannel() != null)
-      {
-         channel1.replicatePacket(packet);
-      }
-      
+   {            
       Packet response = null;
 
       byte type = packet.getType();
@@ -72,6 +64,8 @@ public class MessagingServerPacketHandler implements ChannelHandler
       // reliability replay functionality
       try
       {
+         channel1.replicatePacket(packet);
+                  
          switch (type)
          {
             case CREATESESSION:
@@ -94,16 +88,6 @@ public class MessagingServerPacketHandler implements ChannelHandler
                ReattachSessionMessage request = (ReattachSessionMessage)packet;
    
                response = server.reattachSession(connection, request.getName(), request.getLastReceivedCommandID());
-               
-               break;
-            }
-            case CLOSE_SESSION:
-            {
-               CloseSessionMessage request = (CloseSessionMessage)packet;
-   
-               server.closeSession(request.getName());
-   
-               response = new NullResponseMessage();
                
                break;
             }

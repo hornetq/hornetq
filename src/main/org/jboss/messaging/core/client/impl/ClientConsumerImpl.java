@@ -13,6 +13,7 @@
 package org.jboss.messaging.core.client.impl;
 
 import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.client.ClientMessage;
@@ -55,10 +56,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private final Executor sessionExecutor;
 
    private final int clientWindowSize;
-
-  // private final PriorityLinkedList<ClientMessage> buffer = new PriorityLinkedListImpl<ClientMessage>(10);
-   
-   private final LinkedList<ClientMessage> buffer = new LinkedList<ClientMessage>();
+ 
+   private final Queue<ClientMessage> buffer = new LinkedList<ClientMessage>();
 
    private final boolean direct;
 
@@ -75,6 +74,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private volatile int creditsToSend;
    
    private volatile boolean cleared;
+   
+   private volatile long lastMessageIDProcessed = -1;
+   
+   private volatile long ignoreMessageID = -1;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -148,7 +151,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
             if (!closed && !buffer.isEmpty())
             {
-               ClientMessage m = buffer.removeFirst();
+               ClientMessage m = buffer.poll();
+               
+               lastMessageIDProcessed = m.getMessageID();
 
                boolean expired = m.isExpired();
 
@@ -257,7 +262,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       return id;
    }
-
+   
    public void handleMessage(final ClientMessage message) throws Exception
    {
       if (closed)
@@ -271,6 +276,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // Ignore - the session is rolling back and these are inflight
          // messages
          return;         
+      }
+      
+      if (message.getMessageID() == ignoreMessageID)
+      {
+         //Ignore this - this is one resent after failover since was processing in onMessage
+         return;
       }
       
       message.onReceipt(session, id);
@@ -300,7 +311,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
             synchronized (this)
             {
-               buffer.addLast(message);
+               buffer.add(message);
             }
 
             queueExecutor();
@@ -311,7 +322,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // Add it to the buffer
          synchronized (this)
          {
-            buffer.addLast(message);
+            buffer.add(message);
 
             notify();
          }
@@ -344,18 +355,27 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       return creditsToSend;
    }
+   
+   public void failover()
+   {  
+      // We ignore any message that might be resent on redelivery after failover due to it being
+      // in onMessage and processed not having been called yet
+      ignoreMessageID = lastMessageIDProcessed;
+      
+      buffer.clear();  
+   }
 
    // Public
    // ---------------------------------------------------------------------------------------
 
    // Package protected
-   // ----------------------------------------------------------------------------
+   // ---------------------------------------------------------------------------------------
 
    // Protected
-   // ------------------------------------------------------------------------------------
+   // ---------------------------------------------------------------------------------------
 
    // Private
-   // --------------------------------------------------------------------------------------
+   // ---------------------------------------------------------------------------------------
 
    private void queueExecutor()
    {
@@ -409,7 +429,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          throw new MessagingException(MessagingException.OBJECT_CLOSED, "Consumer is closed");
       }
    }
-
+   
    private void callOnMessage()
    {
       try
@@ -427,7 +447,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          synchronized (this)
          {
-            message = buffer.removeFirst();
+            message = buffer.poll();
          }
 
          if (message != null)
@@ -439,6 +459,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             if (!expired)
             {
                onMessageThread = Thread.currentThread();
+               
+               lastMessageIDProcessed = message.getMessageID();
 
                handler.onMessage(message);
             }

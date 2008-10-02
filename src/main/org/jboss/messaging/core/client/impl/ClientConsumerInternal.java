@@ -49,4 +49,6 @@ public interface ClientConsumerInternal extends ClientConsumer
    int getCreditsToSend();
    
    void cleanUp() throws Exception;
+   
+   void failover();
 }

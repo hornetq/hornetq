@@ -12,6 +12,23 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
@@ -20,21 +37,17 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.*;
+import org.jboss.messaging.core.server.Consumer;
+import org.jboss.messaging.core.server.DistributionPolicy;
+import org.jboss.messaging.core.server.HandleStatus;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.*;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implementation of a Queue TODO use Java 5 concurrent queue
@@ -78,6 +91,8 @@ public class QueueImpl implements Queue
 
    private boolean promptDelivery;
 
+   private int pos;
+
    private AtomicInteger sizeBytes = new AtomicInteger(0);
 
    private AtomicInteger messagesAdded = new AtomicInteger(0);
@@ -91,6 +106,10 @@ public class QueueImpl implements Queue
    private final Runnable deliverRunner = new DeliverRunner();
 
    private volatile boolean backup;
+
+   private int consumersToFailover = -1;
+
+   private Map<Long, CountDownLatch> waitingIDMap = new ConcurrentHashMap<Long, CountDownLatch>();
 
    public QueueImpl(final long persistenceID,
                     final SimpleString name,
@@ -145,25 +164,33 @@ public class QueueImpl implements Queue
 
    public HandleStatus addLast(final MessageReference ref)
    {
-      return add(ref, false);
+      HandleStatus status = add(ref, false);
+
+      checkWaiting(ref.getMessage().getMessageID());
+
+      return status;
    }
 
    public HandleStatus addFirst(final MessageReference ref)
    {
       return add(ref, true);
    }
-
-   public void addListFirst(final LinkedList<MessageReference> list)
+   
+   public synchronized void addListFirst(final LinkedList<MessageReference> list)
    {
       ListIterator<MessageReference> iter = list.listIterator(list.size());
 
       while (iter.hasPrevious())
       {
          MessageReference ref = iter.previous();
+         
+         ServerMessage msg = ref.getMessage();
 
-         messageReferences.addFirst(ref, ref.getMessage().getPriority());
+         messageReferences.addFirst(ref, msg.getPriority());
+         
+         checkWaiting(msg.getMessageID());
       }
-      
+
       deliver();
    }
 
@@ -262,7 +289,8 @@ public class QueueImpl implements Queue
    public synchronized boolean removeConsumer(final Consumer consumer) throws Exception
    {
       boolean removed = distributionPolicy.removeConsumer(consumer);
-      if(removed)
+      
+      if (removed)
       {
          distributionPolicy.removeConsumer(consumer);
       }
@@ -580,24 +608,86 @@ public class QueueImpl implements Queue
       return backup;
    }
 
-   public void setBackup(final boolean backup)
+   public synchronized void setBackup()
    {
-      this.backup = backup;
+      this.backup = true;
 
       this.direct = false;
-
-      if (!backup)
-      {
-         for (ScheduledDeliveryRunnable runnable : scheduledRunnables)
-         {
-            scheduleDelivery(runnable, runnable.getReference().getScheduledDeliveryTime());
-         }
-      }
    }
 
    public MessageReference removeFirst()
    {
       return messageReferences.removeFirst();
+   }
+
+   public synchronized void activate()
+   {
+      consumersToFailover = distributionPolicy.getConsumerCount();
+
+      if (consumersToFailover == 0)
+      {
+         backup = false;
+      }
+   }
+
+   public synchronized boolean consumerFailedOver()
+   {
+      consumersToFailover--;
+
+      if (consumersToFailover == 0)
+      {
+         // All consumers for the queue have failed over, can re-activate it now
+
+         backup = false;
+
+         for (ScheduledDeliveryRunnable runnable : scheduledRunnables)
+         {
+            scheduleDelivery(runnable, runnable.getReference().getScheduledDeliveryTime());
+         }
+
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
+
+   public MessageReference waitForReferenceWithID(final long id, final CountDownLatch latch)
+   {
+      MessageReference ref;
+
+      synchronized (this)
+      {
+         ref = removeReferenceWithID(id);
+
+         if (ref == null)
+         {
+            waitingIDMap.put(id, latch);
+         }
+      }
+
+      if (ref == null)
+      {
+         boolean ok = false;
+
+         try
+         {
+            ok = latch.await(10000, TimeUnit.MILLISECONDS);
+         }
+         catch (InterruptedException e)
+         {
+         }
+
+         if (!ok)
+         {
+            throw new IllegalStateException("Timed out or interrupted waiting for ref to arrive on queue " + id);
+         }
+
+         ref = this.removeReferenceWithID(id);
+      }
+
+      return ref;
    }
 
    // Public
@@ -732,7 +822,7 @@ public class QueueImpl implements Queue
 
    private HandleStatus deliver(final MessageReference reference)
    {
-      if (!distributionPolicy.hasConsumers())
+      if (distributionPolicy.getConsumerCount() == 0)
       {
          return HandleStatus.BUSY;
       }
@@ -747,7 +837,7 @@ public class QueueImpl implements Queue
       {
          Consumer consumer = distributionPolicy.select(reference.getMessage(), status != null);
          pos = distributionPolicy.getCurrentPosition();
-         if(consumer == null)
+         if (consumer == null)
          {
             if (filterRejected)
             {
@@ -800,11 +890,11 @@ public class QueueImpl implements Queue
 
             filterRejected = true;
          }
-         if(startPos > distributionPolicy.getConsumerCount() - 1)
+         if (startPos > distributionPolicy.getConsumerCount() - 1)
          {
             startPos = distributionPolicy.getConsumerCount() - 1;
          }
-         if(startPos == pos)
+         if (startPos == pos)
          {
             // Tried all of them
             if (filterRejected)
@@ -815,10 +905,19 @@ public class QueueImpl implements Queue
             {
                // Give up - all consumers busy
                return HandleStatus.BUSY;
-            }   
+            }
          }
       }
+   }
+   
+   private void checkWaiting(final long messageID)
+   {
+      CountDownLatch latch = waitingIDMap.remove(messageID);
 
+      if (latch != null)
+      {
+         latch.countDown();
+      }
    }
 
    // Inner classes

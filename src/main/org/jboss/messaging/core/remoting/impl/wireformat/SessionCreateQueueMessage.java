@@ -121,6 +121,13 @@ public class SessionCreateQueueMessage extends PacketImpl
       temporary = buffer.getBoolean();
    }
    
+   //Needs to be true so we can ensure packet has reached backup before we start sending messages to it from another
+   //session
+   public boolean isReplicateBlocking()
+   {      
+      return true;
+   }
+   
    public boolean equals(Object other)
    {
       if (other instanceof SessionCreateQueueMessage == false)

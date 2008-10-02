@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.server.impl;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.filter.Filter;
@@ -84,11 +85,13 @@ public class ServerConsumerImpl implements ServerConsumer
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
 
    private final PostOffice postOffice;
-   
-   private final java.util.Queue<MessageReference> deliveringRefs = new ConcurrentLinkedQueue<MessageReference>();
-   
-   private final Channel channel;
 
+   private final java.util.Queue<MessageReference> deliveringRefs = new ConcurrentLinkedQueue<MessageReference>();
+
+   private final Channel channel;
+   
+   private volatile CountDownLatch waitingLatch;
+   
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -128,9 +131,9 @@ public class ServerConsumerImpl implements ServerConsumer
       this.queueSettingsRepository = queueSettingsRepository;
 
       this.postOffice = postOffice;
-      
+
       this.channel = channel;
-       
+
       messageQueue.addConsumer(this);
    }
 
@@ -142,10 +145,10 @@ public class ServerConsumerImpl implements ServerConsumer
       return id;
    }
 
-   public HandleStatus handle(MessageReference ref) throws Exception
+   public HandleStatus handle(final MessageReference ref) throws Exception
    {
       if (availableCredits != null && availableCredits.get() <= 0)
-      {
+      {       
          return HandleStatus.BUSY;
       }
 
@@ -177,35 +180,39 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             availableCredits.addAndGet(-message.getEncodeSize());
          }
+
+         deliveringRefs.add(ref);
          
-         deliveringRefs.add(ref);         
-         
-         SessionReceiveMessage packet =
-            new SessionReceiveMessage(id, ref.getMessage(), ref.getDeliveryCount() + 1);
-         
+         SessionReceiveMessage packet = new SessionReceiveMessage(id, ref.getMessage(), ref.getDeliveryCount() + 1);
+
          channel.send(packet);
-             
+
          return HandleStatus.HANDLED;
       }
    }
-
+   
    public void close() throws Exception
-   {
+   {     
       setStarted(false);
+      
+      if (waitingLatch != null)
+      {                
+         waitingLatch.countDown();
+      }
 
       messageQueue.removeConsumer(this);
 
       session.removeConsumer(this);
-      
+
       cancelRefs();
    }
-   
+
    public void cancelRefs() throws Exception
    {
       if (!deliveringRefs.isEmpty())
       {
          Transaction tx = new TransactionImpl(storageManager, postOffice);
-         
+
          for (MessageReference ref : deliveringRefs)
          {
             tx.addAcknowledgement(ref);
@@ -214,22 +221,18 @@ public class ServerConsumerImpl implements ServerConsumer
          deliveringRefs.clear();
 
          tx.rollback(queueSettingsRepository);
-      }      
+      }
    }
 
    public void setStarted(final boolean started)
    {
-      boolean useStarted;
-
       synchronized (startStopLock)
       {
          this.started = started;
-
-         useStarted = started;
       }
 
       // Outside the lock
-      if (useStarted)
+      if (started)
       {
          promptDelivery();
       }
@@ -240,11 +243,11 @@ public class ServerConsumerImpl implements ServerConsumer
       if (availableCredits != null)
       {
          int previous = availableCredits.getAndAdd(credits);
-
-         if (previous <= 0 && (previous + credits) > 0)
+         
+         if (previous <= 0 && previous + credits > 0)
          {
             promptDelivery();
-         }
+         }                 
       }
    }
 
@@ -252,59 +255,42 @@ public class ServerConsumerImpl implements ServerConsumer
    {
       return messageQueue;
    }
-
-   private MessageReference deliverMessage(final long messageID) throws Exception
+ 
+   public MessageReference waitForReference(final long messageID) throws Exception
    {
-      // Deliver a specific message from the queue - this is used when
-      // replicating delivery state
-      // We can't just deliver the next message since there may be multiple
-      // sessions on the same queue
-      // delivering concurrently
-      // and we could end up with different delivery state on backup compare to
-      // live
-      // So we need the message id so we can be sure the backup session has the
-      // same delivery state
-      MessageReference ref = messageQueue.removeReferenceWithID(messageID);
-
-      if (ref == null)
-      {
-         throw new IllegalStateException("Cannot find reference " + messageID);
-      }
-
-      HandleStatus handled = handle(ref);
-
-      if (handled != HandleStatus.HANDLED)
-      {
-         throw new IllegalStateException("Failed to handle replicated reference " + messageID);
-      }
-      
-      return ref;
-   }
-   
-   public MessageReference getReference(final long messageID) throws Exception
-   {
-//      MessageReference ref;
-//      do
-//      {
-//         ref = deliveringRefs.poll();
-//      }
-//      while (ref.getMessage().getMessageID() != messageID);
-      
       if (messageQueue.isBackup())
       {
-         return deliverMessage(messageID);
+         waitingLatch = new CountDownLatch(1);
+                                 
+         MessageReference ref = messageQueue.waitForReferenceWithID(messageID, waitingLatch);
+         
+         waitingLatch = null;
+         
+         return ref;
       }
       else
       {
-         
          MessageReference ref = deliveringRefs.poll();
-         
+
          if (ref.getMessage().getMessageID() != messageID)
          {
             throw new IllegalStateException("Invalid order");
          }
-   
+
          return ref;
+      }
+   }
+
+   public void failedOver()
+   {
+      synchronized (startStopLock)
+      {
+         started = true;
+      }
+
+      if (messageQueue.consumerFailedOver())
+      {
+         promptDelivery();
       }
    }
 

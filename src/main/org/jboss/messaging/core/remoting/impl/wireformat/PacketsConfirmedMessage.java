@@ -45,14 +45,14 @@ public class PacketsConfirmedMessage extends PacketImpl
 
    public PacketsConfirmedMessage(final int commandID)
    {
-      super(SESS_PACKETS_CONFIRMED);
+      super(PACKETS_CONFIRMED);
 
       this.commandID = commandID;
    }
    
    public PacketsConfirmedMessage()
    {
-      super(SESS_PACKETS_CONFIRMED);
+      super(PACKETS_CONFIRMED);
    }
 
    // Public --------------------------------------------------------
@@ -89,6 +89,17 @@ public class PacketsConfirmedMessage extends PacketImpl
       
       return super.equals(other) && this.commandID == r.commandID;
    }
+   
+   public final boolean isRequiresConfirmations()
+   {
+      return false;
+   }
+   
+   public boolean isWriteAlways()
+   {
+      return true;
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

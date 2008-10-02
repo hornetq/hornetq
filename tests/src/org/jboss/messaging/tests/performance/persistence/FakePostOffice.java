@@ -133,7 +133,7 @@ public class FakePostOffice implements PostOffice
       return null;
    }
    
-   public void setBackup(boolean backup)
+   public void activate()
    {
    }
 
