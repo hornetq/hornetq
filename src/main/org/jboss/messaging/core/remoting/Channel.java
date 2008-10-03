@@ -42,7 +42,7 @@ public interface Channel
 
    void transferConnection(RemotingConnection newConnection);
 
-   int replayCommands(int lastReceivedCommandID);
+   void replayCommands(int lastReceivedCommandID);
 
    int getLastReceivedCommandID();
 

@@ -384,8 +384,7 @@ public class MessagingServerImpl implements MessagingServer
    }
 
    public ReattachSessionResponseMessage reattachSession(final RemotingConnection connection,
-                                                         final String name,
-                                                         final int lastReceivedCommandID) throws Exception
+                                                         final String name) throws Exception
    {
       ServerSession session = sessions.get(name);
 
@@ -395,24 +394,15 @@ public class MessagingServerImpl implements MessagingServer
       }
       
       // Reconnect the channel to the new connection
-      session.transferConnection(connection);
+      int serverLastReceivedCommandID = session.transferConnection(connection);
       
-      // This is necessary for invm since the replicating connection will be the
-      // same connection
-      // as the original replicating connection since the key is the same in the
-      // registry, and that connection
-      // won't have any resend buffer etc
-      connection.setReplicating(false);
-
-      int serverLastReceivedCommandID = session.replayCommands(lastReceivedCommandID);
+      connection.activate();
 
       postOffice.activate();
 
       configuration.setBackup(false);
 
       remotingService.setBackup(false);
-
-      connection.setReplicating(false);
 
       session.failedOver();
 
@@ -448,7 +438,9 @@ public class MessagingServerImpl implements MessagingServer
 
       securityStore.authenticate(username, password);
 
-      Channel channel = connection.getChannel(channelID, true, configuration.getPacketConfirmationBatchSize(), false);
+      //Server side connections never have a resend cache
+      
+      Channel channel = connection.getChannel(channelID, true, configuration.getPacketConfirmationBatchSize(), false, false);
 
       final ServerSessionImpl session = new ServerSessionImpl(name,
                                                               channelID,
@@ -505,10 +497,7 @@ public class MessagingServerImpl implements MessagingServer
          RemotingConnection replicatingConnection = ConnectionRegistryImpl.instance.getConnectionNoCache(backupConnectorFactory,
                                                                                                          backupConnectorParams,
                                                                                                          -1,
-                                                                                                         30000);
-
-         replicatingConnection.setReplicating(true);
-
+                                                                                                         30000); 
          return replicatingConnection;
       }
       else

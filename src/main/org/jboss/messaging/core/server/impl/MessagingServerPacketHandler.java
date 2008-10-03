@@ -87,7 +87,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
             {
                ReattachSessionMessage request = (ReattachSessionMessage)packet;
    
-               response = server.reattachSession(connection, request.getName(), request.getLastReceivedCommandID());
+               response = server.reattachSession(connection, request.getName());
                
                break;
             }

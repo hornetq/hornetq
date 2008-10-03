@@ -474,7 +474,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                    autoCommitSends,
                                                    autoCommitAcks);
 
-         Channel channel1 = connection.getChannel(1, false, -1, true);
+         Channel channel1 = connection.getChannel(1, false, -1, false, true);
 
          try
          {
@@ -499,9 +499,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
          CreateSessionResponseMessage response = (CreateSessionResponseMessage)pResponse;
 
+         int packetConfirmationBatchSize = response.getPacketConfirmationBatchSize();
+         
+         //TODO - don't need packet confirmationbatch size on the client side - it's only really
+         //needed on the server side
+         //since confirmations are only sent from server to client
+         
          Channel sessionChannel = connection.getChannel(sessionChannelID,
                                                         false,
-                                                        response.getPacketConfirmationBatchSize(),
+                                                        -1,
+                                                        packetConfirmationBatchSize != -1,
                                                         !hasBackup);
 
          ClientSessionInternal session = new ClientSessionImpl(this,

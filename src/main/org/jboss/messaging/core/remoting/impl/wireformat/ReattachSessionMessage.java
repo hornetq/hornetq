@@ -39,19 +39,15 @@ public class ReattachSessionMessage extends PacketImpl
 
    private String name;
    
-   private int lastReceivedCommandID;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReattachSessionMessage(final String name, final int lastReceivedCommandID)
+   public ReattachSessionMessage(final String name)
    {
       super(REATTACH_SESSION);
 
       this.name = name;
-       
-      this.lastReceivedCommandID = lastReceivedCommandID;
    }
    
    public ReattachSessionMessage()
@@ -66,21 +62,14 @@ public class ReattachSessionMessage extends PacketImpl
       return name;
    }
    
-   public int getLastReceivedCommandID()
-   {
-      return lastReceivedCommandID;
-   }
-   
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putString(name);
-      buffer.putInt(lastReceivedCommandID);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
       name = buffer.getString();
-      lastReceivedCommandID = buffer.getInt();
    }
 
    public boolean equals(Object other)
@@ -92,8 +81,7 @@ public class ReattachSessionMessage extends PacketImpl
             
       ReattachSessionMessage r = (ReattachSessionMessage)other;
       
-      return super.equals(other) && this.name.equals(r.name) &&
-             this.lastReceivedCommandID == r.lastReceivedCommandID;
+      return super.equals(other) && this.name.equals(r.name);
    }
    
    public final boolean isRequiresConfirmations()

@@ -1075,7 +1075,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       producers.get(producerID).send(message);
    }
 
-   public void transferConnection(final RemotingConnection newConnection)
+   public int transferConnection(final RemotingConnection newConnection)
    {
       remotingConnection.removeFailureListener(this);
 
@@ -1089,11 +1089,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       remotingConnection = newConnection;
 
       remotingConnection.addFailureListener(this);
-   }
-
-   public int replayCommands(final int lastReceivedCommandID)
-   {
-      return channel.replayCommands(lastReceivedCommandID);
+      
+      int lastReceivedCommandID =  channel.getLastReceivedCommandID();
+     
+      //TODO resend any dup responses
+      
+      return lastReceivedCommandID;
    }
 
    public void handleManagementMessage(final SessionSendManagementMessage message) throws Exception

@@ -26,13 +26,10 @@ public interface RemotingConnection extends BufferHandler
 {
    Object getID();
 
-   Channel getChannel(long channelID, boolean ordered, int packetConfirmationBatchSize, boolean interruptBlockOnFailure);
+   Channel getChannel(long channelID, boolean ordered, int packetConfirmationBatchSize,
+                      boolean hasResendCache, boolean interruptBlockOnFailure);
 
    long generateChannelID();
-
-   public void setReplicating(boolean backup);
-
-   boolean isReplicating();
 
    void addFailureListener(FailureListener listener);
 
@@ -51,4 +48,6 @@ public interface RemotingConnection extends BufferHandler
    void syncIDGeneratorSequence(long id);
 
    long getIDGeneratorSequence();
+   
+   void activate();
 }

@@ -125,10 +125,8 @@ public interface ServerSession
    
    void browserReset(long browserID) throws Exception;
    
-   void transferConnection(RemotingConnection newConnection);
+   int transferConnection(RemotingConnection newConnection);
    
-   int replayCommands(int lastReceivedCommandID);
-
    void handleManagementMessage(SessionSendManagementMessage message) throws Exception;
    
    void failedOver() throws Exception;

@@ -735,9 +735,9 @@ public class ClientSessionImpl implements ClientSessionInternal
 
          remotingConnection = backupConnection;
 
-         Packet request = new ReattachSessionMessage(name, channel.getLastReceivedCommandID());
+         Packet request = new ReattachSessionMessage(name);
 
-         Channel channel1 = backupConnection.getChannel(1, false, -1, true);
+         Channel channel1 = backupConnection.getChannel(1, false, -1, false, true);
 
          ReattachSessionResponseMessage response = (ReattachSessionResponseMessage)channel1.sendBlocking(request);
 

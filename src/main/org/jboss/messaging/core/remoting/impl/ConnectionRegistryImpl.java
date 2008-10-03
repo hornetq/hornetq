@@ -103,7 +103,7 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
                                                                     pingExecutor,
                                                                     null,
                                                                     null,
-                                                                    true);
+                                                                    true);        
 
          handler.conn = connection;
 
@@ -146,7 +146,7 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
                                                                  pingExecutor,
                                                                  null,
                                                                  null,
-                                                                 true);
+                                                                 true);        
 
       handler.conn = connection;
 

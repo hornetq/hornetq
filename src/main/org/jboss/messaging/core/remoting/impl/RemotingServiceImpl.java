@@ -239,11 +239,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                                                          null,
                                                          interceptors,
                                                          replicatingConnection,
-                                                         false);
+                                                         !backup);
 
-      rc.setReplicating(backup);
-
-      Channel channel1 = rc.getChannel(1, false, -1, true);
+      Channel channel1 = rc.getChannel(1, false, -1, false, true);
 
       ChannelHandler handler = new MessagingServerPacketHandler(server, channel1, rc);
 
