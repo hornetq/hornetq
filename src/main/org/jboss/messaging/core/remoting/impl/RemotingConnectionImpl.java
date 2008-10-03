@@ -232,7 +232,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                                  final RemotingConnection replicatingConnection,
                                  final boolean client)
 
-   {    
+   {
       this.transportConnection = transportConnection;
 
       this.blockingCallTimeout = blockingCallTimeout;
@@ -281,7 +281,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          pinger = null;
       }
    }
-   
+
    // RemotingConnection implementation
    // ------------------------------------------------------------
 
@@ -869,8 +869,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          if (packetConfirmationBatchSize != -1 && ((connection.client && !connection.replicating) || (!connection.client && connection.replicatingConnection == null)))
          {
             resendCache = new ConcurrentLinkedQueue<Packet>();
-       
-            nextConfirmation = packetConfirmationBatchSize - 1;       
+
+            nextConfirmation = packetConfirmationBatchSize - 1;
          }
          else
          {
@@ -898,6 +898,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       public int getLastReceivedCommandID()
       {
+         //log.info("getting last received command id, last received packet is " + this.lastReceivedPacket);
          return lastReceivedCommandID;
       }
 
@@ -921,9 +922,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                lock.unlock();
             }
 
-            final byte packetType = packet.getType();
-
-             if (connection.writePackets || packet.isWriteAlways())
+            if (connection.writePackets || packet.isWriteAlways())
             {
                connection.doWrite(packet);
             }
@@ -933,9 +932,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       private final Object waitLock = new Object();
 
       private Thread blockThread;
-      
+
       private ResponseNotifier responseNotifier;
-      
+
       public Executor getExecutor()
       {
          return executor;
@@ -946,7 +945,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       {
          return sendBlocking(packet, null);
       }
-      
+
       // This must never called by more than one thread concurrently
       public Packet sendBlocking(final Packet packet, final ResponseNotifier notifier) throws MessagingException
       {
@@ -958,14 +957,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             try
             {
                blockThread = Thread.currentThread();
-               
-               responseNotifier = notifier;
 
-               if (connection.destroyed)
-               {
-                  throw new MessagingException(MessagingException.NOT_CONNECTED,
-                                               "Cannot write to connection - it is destroyed");
-               }
+               responseNotifier = notifier;
 
                response = null;
 
@@ -1016,7 +1009,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
                if (response == null)
                {
-                  throw new MessagingException(MessagingException.CONNECTION_TIMEDOUT, "Timed out waiting for response");
+                  throw new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
+                                               "Timed out waiting for response when sending packet " + packet.getType());
                }
 
                if (response.getType() == PacketImpl.EXCEPTION)
@@ -1051,7 +1045,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             }
          }
       }
-      
+
       public void replicatePacketBlocking(final Packet packet) throws MessagingException
       {
          if (replicatingChannel != null)
@@ -1073,22 +1067,22 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
 
          synchronized (connection)
-         {         
+         {
             if (!connection.destroyed && connection.channels.remove(id) == null)
             {
                throw new IllegalArgumentException("Cannot find channel with id " + id + " to close");
-            }                        
+            }
          }
-         
+
          if (!onExecutorThread)
          {
             waitForExecutorToComplete();
          }
-         
+
          if (replicatingChannel != null)
          {
             replicatingChannel.close(false);
-            
+
             replicatingChannel = null;
          }
 
@@ -1113,7 +1107,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       {
          return replicatingChannel;
       }
-      
+
       private void waitForExecutorToComplete()
       {
          if (executor != null)
@@ -1208,7 +1202,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                }
             }
             else if (replicatingChannel != null)
-            {               
+            {
                replicatingChannel.send(packet);
             }
             else
@@ -1261,10 +1255,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             else if (handler != null)
             {
                if (executor == null)
-               {                  
+               {
                   checkConfirmation(packet);
-                  
-                  handler.handlePacket(packet);                                   
+
+                  handler.handlePacket(packet);
                }
                else
                {
@@ -1273,9 +1267,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                      public void run()
                      {
                         try
-                        {     
+                        {
                            checkConfirmation(packet);
-                           
+
                            handler.handlePacket(packet);
                         }
                         catch (Exception e)
@@ -1293,12 +1287,16 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
       }
 
+      private volatile Packet lastReceivedPacket;
+      
       private void checkConfirmation(final Packet packet)
-      {                 
+      {
          if (resendCache != null && packet.isRequiresConfirmations())
          {
             lastReceivedCommandID++;
             
+            lastReceivedPacket = packet;
+
             if (lastReceivedCommandID == nextConfirmation)
             {
                final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
@@ -1319,7 +1317,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       }
 
       private void clearUpTo(final int lastReceivedCommandID)
-      {         
+      {
          final int numberToClear = 1 + lastReceivedCommandID - firstStoredCommandID;
 
          if (numberToClear == -1)
@@ -1333,7 +1331,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
             if (packet == null)
             {
-               throw new IllegalStateException("Can't find packet to clear");
+               throw new IllegalStateException("Can't find packet to clear, client: " + connection.client + 
+                                               " replicating: " + connection.replicating +
+                                               " last received command id " + lastReceivedCommandID +
+                                               " first stored command id " + firstStoredCommandID + 
+                                               " channel id " + id);
             }
          }
 
@@ -1376,7 +1378,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
          // Send ping
          final Packet ping = new Ping(expirePeriod);
-
+       
          pingChannel.send(ping);
       }
    }
@@ -1394,7 +1396,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             if (stopPinging)
             {
                future.cancel(true);
-            }
+            }            
          }
          else if (type == PING)
          {

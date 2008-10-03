@@ -181,7 +181,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             {
                SessionDeleteQueueMessage request = (SessionDeleteQueueMessage)packet;
                session.deleteQueue(request.getQueueName());
-               response = new NullResponseMessage(false);
+               response = new NullResponseMessage(true);
                break;
             }
             case SESS_QUEUEQUERY:
@@ -312,7 +312,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             {
                SessionRemoveDestinationMessage message = (SessionRemoveDestinationMessage)packet;
                session.removeDestination(message.getAddress(), message.isDurable());
-               response = new NullResponseMessage(false);
+               response = new NullResponseMessage(true);
                break;
             }
             case SESS_START:
@@ -336,7 +336,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             {
                SessionConsumerCloseMessage message = (SessionConsumerCloseMessage)packet;
                session.closeConsumer(message.getConsumerID());
-               response = new NullResponseMessage(false);
+               response = new NullResponseMessage(true);
                break;
             }
             case SESS_PRODUCER_CLOSE:

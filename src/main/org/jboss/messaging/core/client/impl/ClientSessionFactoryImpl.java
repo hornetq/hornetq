@@ -418,8 +418,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       for (ClientSessionInternal session : sessions)
       {
          // Need to get it once for each session to ensure ref count in
-         // holder is
-         // incremented properly
+         // holder is incremented properly
          RemotingConnection backupConnection = connectionRegistry.getConnection(backupConnectorFactory,
                                                                                 backupTransportParams,
                                                                                 pingPeriod,

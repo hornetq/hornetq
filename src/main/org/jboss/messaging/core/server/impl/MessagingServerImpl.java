@@ -393,7 +393,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          throw new IllegalArgumentException("Cannot find session with name " + name + " to reattach");
       }
-
+      
       // Reconnect the channel to the new connection
       session.transferConnection(connection);
       

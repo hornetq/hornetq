@@ -69,6 +69,14 @@ public class SessionConsumerCloseMessage extends PacketImpl
    {
       consumerID = buffer.getLong();
    }
+   
+   //Needs to be replicated blocking since otherwise if do a session.close(), then a session2.deletequeue
+   //from a different session, the session2.deletequeue can get to the backup before the close, and 
+   //the delete queue can fail with "can't delete it has consumers"
+   public boolean isReplicateBlocking()
+   {
+      return true;
+   }
 
    @Override
    public String toString()
