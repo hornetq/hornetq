@@ -31,7 +31,7 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionProducerFlowCreditMessage extends PacketImpl
+public class SessionProducerFlowCreditMessage extends DuplicablePacket
 {
    // Constants -----------------------------------------------------
 
@@ -73,12 +73,14 @@ public class SessionProducerFlowCreditMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
+      super.encodeBody(buffer);
       buffer.putLong(producerID);
       buffer.putInt(credits);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
+      super.decodeBody(buffer);
       producerID = buffer.getLong();
       credits = buffer.getInt();
    }

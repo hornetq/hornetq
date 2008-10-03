@@ -31,7 +31,7 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class SessionBrowserHasNextMessageResponseMessage extends PacketImpl
+public class SessionBrowserHasNextMessageResponseMessage extends DuplicablePacket
 {
    // Constants -----------------------------------------------------
 
@@ -69,11 +69,13 @@ public class SessionBrowserHasNextMessageResponseMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
+      super.encodeBody(buffer);
       buffer.putBoolean(hasNext);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
+      super.decodeBody(buffer);
       hasNext = buffer.getBoolean();       
    }
 

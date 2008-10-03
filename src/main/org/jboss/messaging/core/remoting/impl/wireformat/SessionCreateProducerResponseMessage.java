@@ -30,7 +30,7 @@ import org.jboss.messaging.util.SimpleString;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionCreateProducerResponseMessage extends PacketImpl
+public class SessionCreateProducerResponseMessage extends DuplicablePacket
 {
    // Constants -----------------------------------------------------
 
@@ -79,7 +79,6 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
    	return maxRate;
    }
 
-
    public SimpleString getAutoGroupId()
    {
       return autoGroupId;
@@ -87,6 +86,7 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
 
    public void encodeBody(final MessagingBuffer buffer)
    {
+      super.encodeBody(buffer);
       buffer.putInt(initialCredits);
       buffer.putInt(maxRate);
       buffer.putNullableSimpleString(autoGroupId);
@@ -94,6 +94,7 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
    
    public void decodeBody(final MessagingBuffer buffer)
    {     
+      super.decodeBody(buffer);
       initialCredits = buffer.getInt();
       maxRate = buffer.getInt();
       autoGroupId = buffer.getNullableSimpleString();

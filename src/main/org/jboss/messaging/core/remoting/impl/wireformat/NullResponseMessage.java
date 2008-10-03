@@ -12,22 +12,32 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
-public class NullResponseMessage extends PacketImpl
+public class NullResponseMessage extends DuplicablePacket
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
+   //This does not need to be written over the wire
    private final boolean writeAlways;
-
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
+   public NullResponseMessage()
+   {
+      super(NULL_RESPONSE);
+
+      this.writeAlways = false;
+   }
+   
    public NullResponseMessage(final boolean writeAlways)
    {
       super(NULL_RESPONSE);

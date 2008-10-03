@@ -64,7 +64,7 @@ public class CreateSessionResponseMessage extends PacketImpl
    {
       return true;
    }
- 
+   
    public int getServerVersion()
    {
       return serverVersion;

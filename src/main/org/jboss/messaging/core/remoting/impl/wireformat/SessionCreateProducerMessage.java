@@ -69,6 +69,11 @@ public class SessionCreateProducerMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
+   public boolean isReHandleResponseOnFailure()
+   {
+      return true;
+   }
+   
    @Override
    public String toString()
    {

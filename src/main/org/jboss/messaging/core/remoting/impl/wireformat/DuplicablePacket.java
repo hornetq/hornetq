@@ -18,67 +18,49 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
+
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.util.SimpleString;
-
 
 /**
- * 
- * A SessionQueueQueryMessage
- * 
+ * A DuplicablePacket
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * Created 3 Oct 2008 15:00:31
+ *
  *
  */
-public class SessionBindingQueryMessage extends PacketImpl
+public class DuplicablePacket extends PacketImpl
 {
-   private SimpleString address;
+   private boolean duplicate;
 
-   public SessionBindingQueryMessage(final SimpleString address)
+   public DuplicablePacket(final byte type)
    {
-      super(SESS_BINDINGQUERY);
+      super(type);
+   }
 
-      this.address = address;            
+   public boolean isDuplicate()
+   {
+      return duplicate;
    }
    
-   public SessionBindingQueryMessage()
+   public void setDuplicate(final boolean duplicate)
    {
-      super(SESS_BINDINGQUERY);          
-   }
-
-   public SimpleString getAddress()
-   {
-      return address;
+      this.duplicate = duplicate;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putSimpleString(address);
+      buffer.putBoolean(duplicate);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      address = buffer.getSimpleString();
+      duplicate = buffer.getBoolean();
    }
-   
-   public boolean isReHandleResponseOnFailure()
-   {
-      return true;
-   }
-   
-   public boolean equals(Object other)
-   {
-      if (other instanceof SessionBindingQueryMessage == false)
-      {
-         return false;
-      }
-            
-      SessionBindingQueryMessage r = (SessionBindingQueryMessage)other;
-      
-      return super.equals(other) && this.address.equals(r.address);
-   }
-   
+
 }

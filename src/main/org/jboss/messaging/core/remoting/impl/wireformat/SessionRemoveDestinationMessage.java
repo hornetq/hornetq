@@ -91,6 +91,11 @@ public class SessionRemoveDestinationMessage extends PacketImpl
    {      
       return true;
    }
+   
+   public boolean isReHandleResponseOnFailure()
+   {
+      return true;
+   }
       
    @Override
    public String toString()

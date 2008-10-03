@@ -58,6 +58,11 @@ public class SessionXAStartMessage extends PacketImpl
 
    // Public --------------------------------------------------------
    
+   public boolean isReHandleResponseOnFailure()
+   {
+      return true;
+   }
+   
    public Xid getXid()
    {
       return xid;

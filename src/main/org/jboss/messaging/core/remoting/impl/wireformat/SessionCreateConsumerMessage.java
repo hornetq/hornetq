@@ -63,10 +63,15 @@ public class SessionCreateConsumerMessage extends PacketImpl
    public SessionCreateConsumerMessage()
    {
       super(SESS_CREATECONSUMER);   
-   }
+   }   
 
    // Public --------------------------------------------------------
 
+   public boolean isReHandleResponseOnFailure()
+   {
+      return true;
+   }
+   
    @Override
    public String toString()
    {

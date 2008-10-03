@@ -61,6 +61,11 @@ public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
 
    // Public --------------------------------------------------------
  
+   public boolean isReHandleResponseOnFailure()
+   {
+      return true;
+   }
+   
    public boolean isResponse()
    {
       return true;

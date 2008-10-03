@@ -87,6 +87,11 @@ public class SessionDeleteQueueMessage extends PacketImpl
       return true;
    }
    
+   public boolean isReHandleResponseOnFailure()
+   {
+      return true;
+   }
+   
    public boolean equals(Object other)
    {
       if (other instanceof SessionDeleteQueueMessage == false)

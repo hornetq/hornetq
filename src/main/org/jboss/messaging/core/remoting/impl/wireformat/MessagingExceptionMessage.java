@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
@@ -32,7 +32,7 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class MessagingExceptionMessage extends PacketImpl
+public class MessagingExceptionMessage extends DuplicablePacket
 {
    // Constants -----------------------------------------------------
 
@@ -50,7 +50,7 @@ public class MessagingExceptionMessage extends PacketImpl
 
       this.exception = exception;
    }
-   
+
    public MessagingExceptionMessage()
    {
       super(EXCEPTION);
@@ -62,43 +62,45 @@ public class MessagingExceptionMessage extends PacketImpl
    {
       return true;
    }
-   
+
    public MessagingException getException()
    {
       return exception;
    }
-   
+
    public void encodeBody(final MessagingBuffer buffer)
    {
+      super.encodeBody(buffer);
       buffer.putInt(exception.getCode());
       buffer.putNullableString(exception.getMessage());
    }
-   
+
    public void decodeBody(final MessagingBuffer buffer)
    {
+      super.decodeBody(buffer);
       int code = buffer.getInt();
       String msg = buffer.getNullableString();
       exception = new MessagingException(code, msg);
    }
-   
+
    @Override
    public String toString()
    {
       return getParentString() + ", exception= " + exception + "]";
    }
-   
+
    public boolean equals(Object other)
    {
       if (other instanceof MessagingExceptionMessage == false)
       {
          return false;
       }
-            
+
       MessagingExceptionMessage r = (MessagingExceptionMessage)other;
-      
+
       return super.equals(other) && this.exception.equals(r.exception);
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

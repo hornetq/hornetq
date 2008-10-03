@@ -58,9 +58,14 @@ public class SessionCreateBrowserMessage extends PacketImpl
    {
       super(SESS_CREATEBROWSER);
    }
-
+   
    // Public --------------------------------------------------------
 
+   public boolean isReHandleResponseOnFailure()
+   {
+      return true;
+   }
+   
    public SimpleString getQueueName()
    {
       return queueName;

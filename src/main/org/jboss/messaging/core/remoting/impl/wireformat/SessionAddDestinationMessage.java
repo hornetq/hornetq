@@ -103,6 +103,11 @@ public class SessionAddDestinationMessage extends PacketImpl
       return true;
    }
    
+   public boolean isReHandleResponseOnFailure()
+   {
+      return true;
+   }
+   
    @Override
    public String toString()
    {

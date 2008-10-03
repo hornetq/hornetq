@@ -62,6 +62,11 @@ public class SessionXAEndMessage extends PacketImpl
 
    // Public --------------------------------------------------------
    
+   public boolean isReHandleResponseOnFailure()
+   {
+      return true;
+   }
+   
    public boolean isFailed()
    {
       return failed;

@@ -51,7 +51,7 @@ public class ClientSessionPacketHandler implements ChannelHandler
    {     
       this.clientSession = clientSesssion;
    }
-
+      
    public void handlePacket(final Packet packet)
    {
       byte type = packet.getType();
@@ -96,5 +96,9 @@ public class ClientSessionPacketHandler implements ChannelHandler
       {
          log.error("Failed to handle packet", e);
       }
+   }
+   
+   public void rehandlePacket(final Packet packet)
+   {      
    }
 }

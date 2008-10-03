@@ -95,6 +95,7 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.ResponseNotifier;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.DuplicablePacket;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
@@ -778,7 +779,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
          case NULL_RESPONSE:
          {
-            packet = new NullResponseMessage(false);
+            packet = new NullResponseMessage();
             break;
          }
          case SESS_MANAGEMENT_SEND:
@@ -837,6 +838,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       private Thread blockThread;
 
       private ResponseNotifier responseNotifier;
+      
+      private volatile boolean justFailedOver;
+      
+      private volatile Packet lastPacketReceived;
 
       private ChannelImpl(final RemotingConnectionImpl connection,
                           final long id,
@@ -895,8 +900,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       }
 
       public int getLastReceivedCommandID()
-      {
-         //log.info("getting last received command id, last received packet is " + this.lastReceivedPacket);
+      {        
          return lastReceivedCommandID;
       }
 
@@ -913,13 +917,15 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                try
                {
                   addToCache(packet);                  
+                  
+                  lastResponseSent = packet;               
+                  
+                  connection.doWrite(packet);              
                }
                finally
                {
                   lock.unlock();
-               }
-                  
-               connection.doWrite(packet);               
+               }                                 
             }
          }
       }
@@ -938,82 +944,82 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       // This must never called by more than one thread concurrently
       public Packet sendBlocking(final Packet packet, final ResponseNotifier notifier) throws MessagingException
       {
-         // For now we only allow one blocking request-response at a time per
-         // channel
-         // We can relax this but it will involve some kind of correlation id
-         synchronized (waitLock)
+         packet.setChannelID(id);
+
+         lock.lock();
+         try
          {
-            try
+            addToCache(packet);                  
+                  
+            // For now we only allow one blocking request-response at a time per
+            // channel
+            // We can relax this but it will involve some kind of correlation id
+            synchronized (waitLock)
             {
-               blockThread = Thread.currentThread();
-
-               responseNotifier = notifier;
-
-               response = null;
-
-               packet.setChannelID(id);
-
-               lock.lock();
                try
                {
-                  addToCache(packet);                  
+                  blockThread = Thread.currentThread();
+   
+                  responseNotifier = notifier;
+   
+                  response = null;
+                 
+                  connection.doWrite(packet);
+   
+                  long toWait = connection.blockingCallTimeout;
+   
+                  long start = System.currentTimeMillis();
+   
+                  while (response == null && toWait > 0)
+                  {
+                     try
+                     {
+                        waitLock.wait(toWait);
+                     }
+                     catch (final InterruptedException e)
+                     {
+                        if (interruptBlockOnFailure)
+                        {
+                           if (connection.destroyed)
+                           {
+                              throw new MessagingException(MessagingException.NOT_CONNECTED, "Connection failed");
+                           }
+                        }
+                     }
+   
+                     final long now = System.currentTimeMillis();
+   
+                     toWait -= now - start;
+   
+                     start = now;
+                  }
+   
+                  if (response == null)
+                  {
+                     throw new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
+                                                  "Timed out waiting for response when sending packet " + packet.getType());
+                  }
+   
+                  if (response.getType() == PacketImpl.EXCEPTION)
+                  {
+                     final MessagingExceptionMessage mem = (MessagingExceptionMessage)response;
+   
+                     throw mem.getException();
+                  }
+                  else
+                  {
+                     return response;
+                  }
                }
                finally
                {
-                  lock.unlock();
-               }
-
-               connection.doWrite(packet);
-
-               long toWait = connection.blockingCallTimeout;
-
-               long start = System.currentTimeMillis();
-
-               while (response == null && toWait > 0)
-               {
-                  try
-                  {
-                     waitLock.wait(toWait);
-                  }
-                  catch (final InterruptedException e)
-                  {
-                     if (interruptBlockOnFailure)
-                     {
-                        if (connection.destroyed)
-                        {
-                           throw new MessagingException(MessagingException.NOT_CONNECTED, "Connection failed");
-                        }
-                     }
-                  }
-
-                  final long now = System.currentTimeMillis();
-
-                  toWait -= now - start;
-
-                  start = now;
-               }
-
-               if (response == null)
-               {
-                  throw new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
-                                               "Timed out waiting for response when sending packet " + packet.getType());
-               }
-
-               if (response.getType() == PacketImpl.EXCEPTION)
-               {
-                  final MessagingExceptionMessage mem = (MessagingExceptionMessage)response;
-
-                  throw mem.getException();
-               }
-               else
-               {
-                  return response;
+                  blockThread = null;
                }
             }
-            finally
-            {
-               blockThread = null;
-            }
+         }
+         finally
+         {
+            lock.unlock();
          }
       }
 
@@ -1111,9 +1117,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             }
          }
       }
-
+      
+      private volatile Packet lastResponseSent;
+      
       public void transferConnection(final RemotingConnection newConnection)
-      {
+      {        
          // Needs to synchronize on the connection to make sure no packets from
          // the old connection
          // get processed after transfer has occurred
@@ -1132,6 +1140,21 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             connection = rnewConnection;
 
             replicatingChannel = null;
+            
+            justFailedOver = true;
+            
+            //Send back any blocking responses that may be required
+            
+            if (lastPacketReceived != null && lastPacketReceived.isReHandleResponseOnFailure())
+            {
+               if (lastResponseSent != null && lastResponseSent instanceof DuplicablePacket)
+               {
+                  lastResponseSent.setDuplicate(true);
+                  
+                  send(lastResponseSent);
+               }
+            }
+            
          }
       }
 
@@ -1157,6 +1180,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       private void handlePacket(final Packet packet)
       {
+         lastResponseSent = null;
+         
          if (packet.getType() == PACKETS_CONFIRMED)
          {
             if (resendCache != null)
@@ -1220,20 +1245,31 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                }
             }
 
+            lastPacketReceived = packet;
+            
             if (packet.isResponse())
-            {
-               synchronized (waitLock)
+            {              
+               if (packet.isDuplicate() && !justFailedOver)
                {
-                  response = packet;
-
-                  checkConfirmation(packet);
-
-                  if (responseNotifier != null)
+                  //Ignore it - duplicate packets can only come just after failover
+               }
+               else
+               {
+                  synchronized (waitLock)
                   {
-                     responseNotifier.onResponseReceived();
+                     response = packet;
+   
+                     checkConfirmation(packet);
+   
+                     if (responseNotifier != null)
+                     {
+                        responseNotifier.onResponseReceived();
+                     }
+   
+                     waitLock.notify();
                   }
-
-                  waitLock.notify();
+                  
+                  justFailedOver = false;
                }
             }
             else if (handler != null)
@@ -1393,7 +1429,5 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             throw new IllegalArgumentException("Invalid packet: " + packet);
          }
       }
-
    }
-
 }

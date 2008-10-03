@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.server;
 
@@ -39,28 +39,28 @@ import java.util.List;
  */
 public interface ServerSession
 {
-	long getID();
-	
-	String getUsername();
-	
-	String getPassword();
-	
-	void removeBrowser(ServerBrowserImpl browser) throws Exception;
-	
-	void removeConsumer(ServerConsumer consumer) throws Exception;
-	
-	void removeProducer(ServerProducer producer) throws Exception;
-	
-	void close() throws Exception;
-	
-	void setStarted(boolean started) throws Exception;
-	
-	void promptDelivery(Queue queue);
-	
-	void send(ServerMessage msg) throws Exception;
-		
-	void processed(final long consumerID, final long messageID) throws Exception;
-	
+   long getID();
+
+   String getUsername();
+
+   String getPassword();
+
+   void removeBrowser(ServerBrowserImpl browser) throws Exception;
+
+   void removeConsumer(ServerConsumer consumer) throws Exception;
+
+   void removeProducer(ServerProducer producer) throws Exception;
+
+   void close() throws Exception;
+
+   void setStarted(boolean started) throws Exception;
+
+   void promptDelivery(Queue queue);
+
+   void send(ServerMessage msg) throws Exception;
+
+   void processed(final long consumerID, final long messageID) throws Exception;
+
    void rollback() throws Exception;
 
    void commit() throws Exception;
@@ -82,7 +82,7 @@ public interface ServerSession
    SessionXAResponseMessage XAStart(Xid xid);
 
    SessionXAResponseMessage XASuspend() throws Exception;
-
+   
    List<Xid> getInDoubtXids() throws Exception;
 
    int getXATimeout();
@@ -93,41 +93,59 @@ public interface ServerSession
 
    void removeDestination(SimpleString address, boolean durable) throws Exception;
 
-   void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString,
-                    boolean durable, boolean temporary) throws Exception;
+   void createQueue(SimpleString address,
+                    SimpleString queueName,
+                    SimpleString filterString,
+                    boolean durable,
+                    boolean temporary) throws Exception;
 
    void deleteQueue(SimpleString queueName) throws Exception;
 
-   SessionCreateConsumerResponseMessage createConsumer(SimpleString queueName, SimpleString filterString,
-   		                                              int windowSize, int maxRate) throws Exception;
-   
-   SessionCreateProducerResponseMessage createProducer(SimpleString address, int windowSize, int maxRate, boolean autoGroupId) throws Exception;
+   SessionCreateConsumerResponseMessage createConsumer(SimpleString queueName,
+                                                       SimpleString filterString,
+                                                       int windowSize,
+                                                       int maxRate) throws Exception;
+
+//   SessionCreateConsumerResponseMessage recreateConsumer(SimpleString queueName,
+//                                                         SimpleString filterString,
+//                                                         int windowSize,
+//                                                         int maxRate) throws Exception;
+
+   SessionCreateProducerResponseMessage createProducer(SimpleString address,
+                                                       int windowSize,
+                                                       int maxRate,
+                                                       boolean autoGroupId) throws Exception;
+
+//   SessionCreateProducerResponseMessage recreateProducer(SimpleString address,
+//                                                         int windowSize,
+//                                                         int maxRate,
+//                                                         boolean autoGroupId) throws Exception;
 
    SessionQueueQueryResponseMessage executeQueueQuery(SimpleString queueName) throws Exception;
 
    SessionBindingQueryResponseMessage executeBindingQuery(SimpleString address) throws Exception;
 
    void createBrowser(SimpleString queueName, SimpleString filterString) throws Exception;
-   
+
    void closeConsumer(long consumerID) throws Exception;
-   
+
    void closeProducer(long producerID) throws Exception;
-   
+
    void closeBrowser(long browserID) throws Exception;
-   
+
    void receiveConsumerCredits(long consumerID, int credits) throws Exception;
-   
+
    void sendProducerMessage(long producerID, ServerMessage message) throws Exception;
-   
+
    boolean browserHasNextMessage(long browserID) throws Exception;
-   
+
    ServerMessage browserNextMessage(long browserID) throws Exception;
-   
+
    void browserReset(long browserID) throws Exception;
-   
+
    int transferConnection(RemotingConnection newConnection);
-   
+
    void handleManagementMessage(SessionSendManagementMessage message) throws Exception;
-   
+
    void failedOver() throws Exception;
 }

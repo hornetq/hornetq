@@ -35,7 +35,7 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionBindingQueryResponseMessage extends PacketImpl
+public class SessionBindingQueryResponseMessage extends DuplicablePacket
 {
    private boolean exists;
    
@@ -72,6 +72,7 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
+      super.encodeBody(buffer);
       buffer.putBoolean(exists);
       buffer.putInt(queueNames.size());      
       for (SimpleString queueName: queueNames)
@@ -82,6 +83,7 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
    
    public void decodeBody(final MessagingBuffer buffer)
    {
+      super.decodeBody(buffer);
       exists = buffer.getBoolean();      
       int numQueues = buffer.getInt();      
       queueNames = new ArrayList<SimpleString>(numQueues);      

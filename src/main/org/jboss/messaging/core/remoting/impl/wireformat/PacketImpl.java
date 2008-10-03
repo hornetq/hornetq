@@ -232,6 +232,20 @@ public class PacketImpl implements Packet
    {
       return false;
    }
+   
+   public boolean isReHandleResponseOnFailure()
+   {
+      return false;
+   }
+   
+   public boolean isDuplicate()
+   {
+      return false;
+   }
+   
+   public void setDuplicate(final boolean duplicate)
+   {      
+   }
 
    @Override
    public String toString()

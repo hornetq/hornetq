@@ -121,8 +121,7 @@ public class RandomFailoverTest extends TestCase
          
          ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                 new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                           backupParams));
-         
+                                                                                           backupParams));         
          do
          {         
             testA(sf);
@@ -131,6 +130,30 @@ public class RandomFailoverTest extends TestCase
                
          stop();
       }
+   }
+   
+   public void testAA(final ClientSessionFactory sf) throws Exception
+   {                       
+      ClientSession s = sf.createSession(false, false, false, false);
+      
+      s.createQueue(ADDRESS, ADDRESS, null, false, false);
+      
+      failer.session = s;
+                              
+      final int numConsumers = 100;
+         
+      for (int i = 0; i < numConsumers; i++)
+      {
+         ClientConsumer consumer = s.createConsumer(ADDRESS);
+         
+         consumer.close();
+      }
+      
+      s.deleteQueue(ADDRESS);
+      
+      s.close();
+      
+      log.info("done");
    }
    
    public void testA(final ClientSessionFactory sf) throws Exception

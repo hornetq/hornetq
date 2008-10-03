@@ -70,6 +70,11 @@ public class SessionBrowserNextMessageMessage extends PacketImpl
    {
       browserID = buffer.getLong();       
    }
+   
+   public boolean isReHandleResponseOnFailure()
+   {
+      return true;
+   }
 
    @Override
    public String toString()

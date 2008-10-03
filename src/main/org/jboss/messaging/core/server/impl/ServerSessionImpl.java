@@ -463,7 +463,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
    }
-
+   
    public SessionXAResponseMessage XAEnd(final Xid xid, final boolean failed) throws Exception
    {
       if (tx != null && tx.getXid().equals(xid))
@@ -504,7 +504,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
    }
-
+   
    public SessionXAResponseMessage XAForget(final Xid xid)
    {
       // Do nothing since we don't support heuristic commits / rollback from the
@@ -907,6 +907,34 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       return response;
    }
+   
+//   public SessionCreateConsumerResponseMessage recreateConsumer(final SimpleString queueName,
+//                                                              final SimpleString filterString,
+//                                                              int windowSize,
+//                                                              int maxRate) throws Exception
+//   {
+//      Binding binding = postOffice.getBinding(queueName);
+//
+//      if (binding == null)
+//      {
+//         throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
+//      }
+//
+//      securityStore.check(binding.getAddress(), CheckType.READ, this);
+//
+//      // Flow control values if specified on queue override those passed in from
+//      // client
+//
+//      QueueSettings qs = queueSettingsRepository.getMatch(queueName.toString());
+//
+//      Integer queueWindowSize = qs.getConsumerWindowSize();
+//
+//      windowSize = queueWindowSize != null ? queueWindowSize : windowSize;
+//
+//      SessionCreateConsumerResponseMessage response = new SessionCreateConsumerResponseMessage(windowSize);
+//
+//      return response;
+//   }
 
    public SessionQueueQueryResponseMessage executeQueueQuery(final SimpleString queueName) throws Exception
    {
@@ -1034,6 +1062,36 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
       return new SessionCreateProducerResponseMessage(initialCredits, maxRateToUse, groupId);
    }
+   
+//   public SessionCreateProducerResponseMessage recreateProducer(final SimpleString address,
+//                                                              final int windowSize,
+//                                                              final int maxRate,
+//                                                              final boolean autoGroupId) throws Exception
+//   {
+//      FlowController flowController = null;
+//
+//      final int maxRateToUse = maxRate;
+//
+//      if (address != null)
+//      {
+//         flowController = windowSize == -1 ? null : postOffice.getFlowController(address);
+//      }
+//
+//      final int windowToUse = flowController == null ? -1 : windowSize;
+//      
+//      // Get some initial credits to send to the producer - we try for
+//      // windowToUse
+//
+//      int initialCredits = flowController == null ? -1 : windowToUse;
+//
+//      SimpleString groupId = null;
+//      if(autoGroupId)
+//      {
+//         groupId = simpleStringIdGenerator.generateID();
+//      }
+//      
+//      return new SessionCreateProducerResponseMessage(initialCredits, maxRateToUse, groupId);
+//   }
 
    public boolean browserHasNextMessage(final long browserID) throws Exception
    {

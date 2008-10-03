@@ -50,4 +50,10 @@ public interface Packet
    boolean isReplicateBlocking();
    
    boolean isWriteAlways();
+   
+   boolean isReHandleResponseOnFailure();
+   
+   boolean isDuplicate();
+   
+   void setDuplicate(boolean duplicate);
 }
