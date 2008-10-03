@@ -97,8 +97,4 @@ public class ClientSessionPacketHandler implements ChannelHandler
          log.error("Failed to handle packet", e);
       }
    }
-   
-   public void rehandlePacket(final Packet packet)
-   {      
-   }
 }

@@ -30,6 +30,4 @@ package org.jboss.messaging.core.remoting;
 public interface ChannelHandler
 {
    void handlePacket(Packet packet);
-      
-   //void rehandlePacket(Packet packet);
 }

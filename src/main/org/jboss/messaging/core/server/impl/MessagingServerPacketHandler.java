@@ -118,8 +118,4 @@ public class MessagingServerPacketHandler implements ChannelHandler
 
       channel1.send(response);
    }
-//   
-//   public void rehandlePacket(final Packet packet)
-//   {      
-//   }
 }
