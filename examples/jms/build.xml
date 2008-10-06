@@ -135,6 +135,12 @@
       </java>
    </target>
 
+   <target name="scheduledExample" depends="compile" description="-> point to point example using a queue">
+      <java classname="org.jboss.jms.example.ScheduledExample" fork="true">
+         <classpath refid="runtime.classpath"/>
+      </java>
+   </target>
+
    <target name="echo-params">
       <echo>
 ***********************************************************************************

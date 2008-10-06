@@ -24,6 +24,7 @@ package org.jboss.messaging.core.paging;
 
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.util.TypedProperties;
 
 /**
  * 
@@ -38,5 +39,7 @@ public interface PageMessage extends EncodingSupport
    ServerMessage getMessage();
 
    long getTransactionID();
+
+   TypedProperties getProperties();
 
 }

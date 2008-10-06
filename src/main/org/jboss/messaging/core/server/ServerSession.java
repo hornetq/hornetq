@@ -23,7 +23,12 @@
 package org.jboss.messaging.core.server;
 
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.wireformat.*;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
 import org.jboss.messaging.core.server.impl.ServerBrowserImpl;
 import org.jboss.messaging.util.SimpleString;
 
@@ -31,10 +36,11 @@ import javax.transaction.xa.Xid;
 import java.util.List;
 
 /**
- * 
+ *
  * A ServerSession
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  *
  */
 public interface ServerSession
@@ -59,6 +65,8 @@ public interface ServerSession
 
    void send(ServerMessage msg) throws Exception;
 
+   void sendScheduled(ServerMessage serverMessage, long scheduledDeliveryTime) throws Exception;
+
    void processed(final long consumerID, final long messageID) throws Exception;
 
    void rollback() throws Exception;
@@ -82,7 +90,7 @@ public interface ServerSession
    SessionXAResponseMessage XAStart(Xid xid);
 
    SessionXAResponseMessage XASuspend() throws Exception;
-   
+
    List<Xid> getInDoubtXids() throws Exception;
 
    int getXATimeout();
@@ -136,6 +144,8 @@ public interface ServerSession
    void receiveConsumerCredits(long consumerID, int credits) throws Exception;
 
    void sendProducerMessage(long producerID, ServerMessage message) throws Exception;
+
+   void sendScheduledProducerMessage(long producerID, ServerMessage serverMessage, long scheduledDeliveryTime) throws Exception;
 
    boolean browserHasNextMessage(long browserID) throws Exception;
 

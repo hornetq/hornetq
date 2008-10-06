@@ -22,15 +22,6 @@
 
 package org.jboss.messaging.core.paging.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.PageMessage;
@@ -45,12 +36,23 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.TypedProperties;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  *  <p>Look at the <a href="http://wiki.jboss.org/auth/wiki/JBossMessaging2Paging">WIKI</a> for more information.</p>
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  *
  */
 public class PagingManagerImpl implements PagingManager
@@ -90,6 +92,8 @@ public class PagingManagerImpl implements PagingManager
 
    // private static final boolean isTrace = log.isTraceEnabled();
    private static final boolean isTrace = true;
+
+   private static final SimpleString SCHEDULED_DELIVERY_PROP = new SimpleString("JBM_SCHEDULED_DELIVERY_PROP");
 
    // This is just a debug tool method.
    // During debugs you could make log.trace as log.info, and change the
@@ -202,6 +206,7 @@ public class PagingManagerImpl implements PagingManager
       HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
 
       final List<MessageReference> refsToAdd = new ArrayList<MessageReference>();
+      final List<MessageReference> scheduledRefsToAdd = new ArrayList<MessageReference>();
 
       for (PageMessage msg : data)
       {
@@ -237,12 +242,30 @@ public class PagingManagerImpl implements PagingManager
                pageTransactionsToUpdate.add(pageTransactionInfo);
             }
          }
-
-         refsToAdd.addAll(postOffice.route(msg.getMessage()));
+         Long scheduledDeliveryTime = (Long) msg.getProperties().getProperty(SCHEDULED_DELIVERY_PROP);
+         //if this is a scheduled message we add it to the queue as just that
+         if(scheduledDeliveryTime == null)
+         {
+            refsToAdd.addAll(postOffice.route(msg.getMessage()));
+         }
+         else
+         {
+            List<MessageReference> refs = postOffice.route(msg.getMessage());
+            for (MessageReference ref : refs)
+            {
+               ref.setScheduledDeliveryTime(scheduledDeliveryTime);
+            }
+            scheduledRefsToAdd.addAll(refs);
+         }
 
          if (msg.getMessage().getDurableRefCount() != 0)
          {
             storageManager.storeMessageTransactional(depageTransactionID, msg.getMessage());
+            //write the scheduled message record if needed
+            if(scheduledDeliveryTime != null)
+            {
+               storageManager.storeMessageScheduledTransactional(depageTransactionID, msg.getMessage(), scheduledDeliveryTime);
+            }
          }
       }
 
@@ -268,6 +291,10 @@ public class PagingManagerImpl implements PagingManager
          ref.getQueue().addLast(ref);
       }
 
+      for (MessageReference ref : scheduledRefsToAdd)
+      {
+         ref.getQueue().addScheduledDelivery(ref);
+      }
       if (globalMode.get())
       {
          return globalSize.get() < maxGlobalSize - WATERMARK_GLOBAL_PAGE && pagingStore.getMaxSizeBytes() <= 0 ||
@@ -311,6 +338,20 @@ public class PagingManagerImpl implements PagingManager
    public boolean page(final ServerMessage message) throws Exception
    {
       return getPageStore(message.getDestination()).page(new PageMessageImpl(message));
+   }
+
+   public boolean pageScheduled(final ServerMessage message, final long scheduledDeliveryTime) throws Exception
+   {
+      TypedProperties properties = new TypedProperties();
+      properties.putLongProperty(SCHEDULED_DELIVERY_PROP, scheduledDeliveryTime);
+      return getPageStore(message.getDestination()).page(new PageMessageImpl(message, properties));
+   }
+
+   public boolean pageScheduled(final ServerMessage message, final long transactionId, final long scheduledDeliveryTime) throws Exception
+   {
+      TypedProperties properties = new TypedProperties();
+      properties.putLongProperty(SCHEDULED_DELIVERY_PROP, scheduledDeliveryTime);
+      return getPageStore(message.getDestination()).page(new PageMessageImpl(message, properties));
    }
 
    public void addTransaction(final PageTransactionInfo pageTransaction)

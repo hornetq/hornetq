@@ -968,6 +968,10 @@
       <ant dir="${examples.dir}/jms" antfile="build.xml" target="messageGroupingExample"/>
    </target>
 
+   <target name="scheduledExample" depends="client-jar">
+      <ant dir="${examples.dir}/jms" antfile="build.xml" target="scheduledExample"/>
+   </target>
+
    <target name="SimpleClient" depends="client-jar">
       <ant dir="${examples.dir}/messaging" antfile="build.xml" target="SimpleClient"/>
    </target>
@@ -986,8 +990,11 @@
        
    <target name="WildCardClient" depends="jar, client-jar">
          <ant dir="${examples.dir}/messaging" antfile="build.xml" target="WildCardClient"/>
-      </target>
+   </target>
 
+   <target name="ScheduledMessageExample" depends="jar, client-jar">
+         <ant dir="${examples.dir}/messaging" antfile="build.xml" target="ScheduledMessageExample"/>
+      </target>
    <!-- Performance examples -->
 
    <target name="perfListener" depends="client-jar">

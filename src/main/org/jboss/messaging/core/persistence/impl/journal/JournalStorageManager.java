@@ -22,17 +22,6 @@
 
 package org.jboss.messaging.core.persistence.impl.journal;
 
-import java.io.File;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.transaction.xa.Xid;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
@@ -69,6 +58,17 @@ import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TimeAndCounterIDGenerator;
+
+import javax.transaction.xa.Xid;
+import java.io.File;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 
@@ -222,6 +222,11 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendDeleteRecord(messageID);
    }
 
+   public void storeMessageScheduled(final ServerMessage message, final long scheduledDeliveryTime) throws Exception
+   {
+      messageJournal.appendUpdateRecord(message.getMessageID(), SET_SCHEDULED_DELIVERY_TIME,  new ScheduledDeliveryEncoding(message.getMessageID(), scheduledDeliveryTime));
+   }
+
    // Transactional operations
 
    public void storeMessageTransactional(final long txID, final ServerMessage message) throws Exception
@@ -270,6 +275,11 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendDeleteRecordTransactional(txID, recordID, null);
    }
 
+   public void storeMessageScheduledTransactional(final long txID,final ServerMessage message, final long scheduledDeliveryTime) throws Exception
+   {
+      messageJournal.appendUpdateRecordTransactional(txID, message.getMessageID(), SET_SCHEDULED_DELIVERY_TIME,  new ScheduledDeliveryEncoding(message.getMessageID(), scheduledDeliveryTime));
+   }
+
    public void storeDeleteMessageTransactional(final long txID, final long queueID, final long messageID) throws Exception
    {
       messageJournal.appendDeleteRecordTransactional(txID, messageID, new DeleteEncoding(queueID));
@@ -309,7 +319,7 @@ public class JournalStorageManager implements StorageManager
       List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 
       messageJournal.load(records, preparedTransactions);
-
+      Map<Long, List<MessageReference>> routedRefs = new HashMap<Long, List<MessageReference>>();
       for (RecordInfo record : records)
       {
          byte[] data = record.data;
@@ -335,6 +345,7 @@ public class JournalStorageManager implements StorageManager
                   ref.getQueue().addLast(ref);
                }
 
+               routedRefs.put(record.id, refs);
                break;
             }
             case ACKNOWLEDGE_REF:
@@ -417,7 +428,18 @@ public class JournalStorageManager implements StorageManager
             }
             case SET_SCHEDULED_DELIVERY_TIME:
             {
-               // TODO
+               ScheduledDeliveryEncoding scheduledDeliveryEncoding = new ScheduledDeliveryEncoding(record.id);
+               scheduledDeliveryEncoding.decode(buff);
+               List<MessageReference> refs = routedRefs.get(record.id);
+               //for any references that have already been routed, we need to remove them from t he queue and re add them as scheduled
+               for (MessageReference ref : refs)
+               {
+                  ref.getQueue().removeReferenceWithID(record.id);
+                  ref.setScheduledDeliveryTime(scheduledDeliveryEncoding.getScheduledDeliveryTime());
+                  ref.getQueue().addScheduledDelivery(ref);
+               }
+
+               break;
             }
             default:
             {
@@ -633,7 +655,11 @@ public class JournalStorageManager implements StorageManager
 
          List<MessageReference> messages = new ArrayList<MessageReference>();
 
+         List<MessageReference> scheduledMessages = new ArrayList<MessageReference>();
+
          List<MessageReference> messagesToAck = new ArrayList<MessageReference>();
+
+         Map<Long, List<MessageReference>> routedRefs = new HashMap<Long, List<MessageReference>>();
 
          PageTransactionInfoImpl pageTransactionInfo = null;
 
@@ -659,6 +685,8 @@ public class JournalStorageManager implements StorageManager
                   List<MessageReference> refs = postOffice.route(message);
 
                   messages.addAll(refs);
+
+                  routedRefs.put(record.id, refs);
 
                   break;
                }
@@ -696,6 +724,19 @@ public class JournalStorageManager implements StorageManager
 
                   pageTransactionInfo.markIncomplete();
 
+                  break;
+               }
+               case SET_SCHEDULED_DELIVERY_TIME:
+               {
+                  ScheduledDeliveryEncoding scheduledDeliveryEncoding = new ScheduledDeliveryEncoding(record.id);
+                  scheduledDeliveryEncoding.decode(buff);
+                  List<MessageReference> refs = routedRefs.get(record.id);
+                  //for any references that have already been routed, we need to remove them from the queue and re add them as scheduled
+                  for (MessageReference ref : refs)
+                  {
+                     ref.setScheduledDeliveryTime(scheduledDeliveryEncoding.getScheduledDeliveryTime());
+                     scheduledMessages.add(ref);
+                  }
                   break;
                }
                default:
@@ -736,7 +777,7 @@ public class JournalStorageManager implements StorageManager
          }
 
          // now we recreate the state of the tx and add to the resource manager
-         tx.replay(messages, messagesToAck, pageTransactionInfo, Transaction.State.PREPARED);
+         tx.replay(messages, scheduledMessages, messagesToAck, pageTransactionInfo, Transaction.State.PREPARED);
 
          resourceManager.putTransaction(xid, tx);
       }
@@ -966,6 +1007,42 @@ public class JournalStorageManager implements StorageManager
       public ACKEncoding(final long queueID)
       {
          super(queueID);
+      }
+   }
+   private static class ScheduledDeliveryEncoding implements EncodingSupport
+   {
+      long messageId;
+      long scheduledDeliveryTime;
+
+      private ScheduledDeliveryEncoding(long messageId, long scheduledDeliveryTime)
+      {
+         this.messageId = messageId;
+         this.scheduledDeliveryTime = scheduledDeliveryTime;
+      }
+
+      public ScheduledDeliveryEncoding(long messageId)
+      {
+         this.messageId = messageId;
+      }
+
+      public int getEncodeSize()
+      {
+         return 8;
+      }
+
+      public void encode(MessagingBuffer buffer)
+      {
+         buffer.putLong(scheduledDeliveryTime);
+      }
+
+      public void decode(MessagingBuffer buffer)
+      {
+         scheduledDeliveryTime = buffer.getLong();
+      }
+
+      public long getScheduledDeliveryTime()
+      {
+         return scheduledDeliveryTime;
       }
    }
 }

@@ -22,7 +22,14 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.util.concurrent.atomic.AtomicLong;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.jms.JBossDestination;
+import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.UUIDGenerator;
 
 import javax.jms.BytesMessage;
 import javax.jms.DeliveryMode;
@@ -40,15 +47,7 @@ import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicPublisher;
-
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.JBossDestination;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.UUIDGenerator;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -448,10 +447,18 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
       {
          coreMessage.putStringProperty(JBossConnection.CONNECTION_ID_PROPERTY_NAME, connID);
       }
-      
+
       try
       {      	
-      	producer.send(address, coreMessage);      		      	
+      	//check to see if this message needs to be scheduled
+         if(jbm.getScheduledDeliveryTime() > 0)
+         {
+            producer.send(address, coreMessage, jbm.getScheduledDeliveryTime());
+         }
+         else
+         {
+            producer.send(address, coreMessage);
+         }
       }
       catch (MessagingException e)
       {

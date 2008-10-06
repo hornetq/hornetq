@@ -22,11 +22,6 @@
 
 package org.jboss.messaging.core.persistence;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.transaction.xa.Xid;
-
 import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -39,11 +34,16 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
 
+import javax.transaction.xa.Xid;
+import java.util.List;
+import java.util.Map;
+
 /**
  * 
  * A StorageManager
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  *
  */
 public interface StorageManager extends MessagingComponent
@@ -58,9 +58,13 @@ public interface StorageManager extends MessagingComponent
 
    void storeDelete(long messageID) throws Exception;
 
+   void storeMessageScheduled(final ServerMessage message, final long scheduledDeliveryTime) throws Exception;
+
    void storeMessageTransactional(long txID, ServerMessage message) throws Exception;
 
    void storeAcknowledgeTransactional(long txID, long queueID, long messageiD) throws Exception;
+
+   void storeMessageScheduledTransactional(final long txID,final ServerMessage message, final long scheduledDeliveryTime) throws Exception;
 
    void storeDeleteMessageTransactional(long txID, long queueID, long messageID) throws Exception;
 

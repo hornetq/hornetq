@@ -36,6 +36,10 @@ public interface ClientProducer
 	void send(ClientMessage message) throws MessagingException;
 	
    void send(SimpleString address, ClientMessage message) throws MessagingException;
+   
+   void send(final ClientMessage msg, long scheduleDeliveryTime) throws MessagingException;
+
+   void send(final SimpleString address, final ClientMessage msg, long scheduleDeliveryTime) throws MessagingException;
 
    void sendManagement(ClientMessage mngmntMessage) throws MessagingException;
 

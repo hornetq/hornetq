@@ -28,6 +28,7 @@ package org.jboss.messaging.core.server;
  * A ServerProducer
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  *
  */
 public interface ServerProducer
@@ -37,6 +38,8 @@ public interface ServerProducer
 	void close() throws Exception;
 	
 	void send(ServerMessage msg) throws Exception;
+
+   void sendScheduled(ServerMessage message, long scheduledDeliveryTime) throws Exception;
 	
 	void requestAndSendCredits() throws Exception;
 	

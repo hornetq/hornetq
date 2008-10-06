@@ -36,6 +36,7 @@ import java.util.List;
  * A JBoss Messaging internal transaction
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  */
 public interface Transaction
 {
@@ -67,7 +68,9 @@ public interface Transaction
 
    void markAsRollbackOnly(MessagingException messagingException);
 
-   void replay(List<MessageReference> messages, List<MessageReference> acknowledgements, PageTransactionInfo pageTransaction, State prepared) throws Exception;
+   void replay(List<MessageReference> messages, List<MessageReference> scheduledMessages, List<MessageReference> acknowledgements, PageTransactionInfo pageTransaction, State prepared) throws Exception;
+
+   void addScheduledMessage(ServerMessage msg, long scheduledDeliveryTime) throws Exception;
 
    static enum State
    {

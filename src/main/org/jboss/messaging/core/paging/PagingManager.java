@@ -22,13 +22,13 @@
 
 package org.jboss.messaging.core.paging;
 
-import java.util.Collection;
-
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
+
+import java.util.Collection;
 
 /**
  * 
@@ -52,6 +52,7 @@ import org.jboss.messaging.util.SimpleString;
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  *
  */
 public interface PagingManager extends MessagingComponent
@@ -91,7 +92,21 @@ public interface PagingManager extends MessagingComponent
     * @param message
     * @return false if destination is not on page mode
     */
+   boolean pageScheduled(ServerMessage message, long scheduledDeliveryTime) throws Exception;
+
+   /**
+    * Page, only if destination is in page mode.
+    * @param message
+    * @return false if destination is not on page mode
+    */
    boolean page(ServerMessage message, long transactionId) throws Exception;
+
+    /**
+    * Page, only if destination is in page mode.
+    * @param message
+    * @return false if destination is not on page mode
+    */
+   boolean pageScheduled(ServerMessage message, long transactionId, long scheduledDeliveryTime) throws Exception;
 
    /**
     * Point to inform/restoring Transactions used when the messages were added into paging

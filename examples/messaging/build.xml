@@ -109,4 +109,10 @@
       </java>
    </target>
 
+   <target name="ScheduledMessageExample" depends="compile">
+      <java classname="org.jboss.messaging.example.ScheduledMessageExample" fork="true">
+         <classpath refid="runtime.classpath"/>
+      </java>
+   </target>
+
 </project>

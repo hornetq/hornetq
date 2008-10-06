@@ -27,12 +27,14 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.util.TypedProperties;
 
 /**
  * 
  * This class is used to encapsulate ServerMessage and TransactionID on Paging
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  *
  */
 public class PageMessageImpl implements PageMessage
@@ -52,20 +54,37 @@ public class PageMessageImpl implements PageMessage
 
    private long transactionID = -1;
 
+   private final TypedProperties properties;
+
    public PageMessageImpl(final ServerMessage message, final long transactionID)
    {
       this.message = message;
       this.transactionID = transactionID;
+      properties = new TypedProperties();
    }
 
    public PageMessageImpl(final ServerMessage message)
    {
       this.message = message;
+      properties = new TypedProperties();
    }
 
    public PageMessageImpl()
    {
       this(new ServerMessageImpl());
+   }
+
+   public PageMessageImpl(final ServerMessage message, final TypedProperties properties)
+   {
+      this.message = message;
+      this.properties = properties;
+   }
+
+   public PageMessageImpl(final ServerMessage message, final TypedProperties properties, final long transactionID)
+   {
+      this.message = message;
+      this.transactionID = transactionID;
+      this.properties = properties;
    }
 
    public ServerMessage getMessage()
@@ -78,24 +97,30 @@ public class PageMessageImpl implements PageMessage
       return transactionID;
    }
 
+   public TypedProperties getProperties()
+   {
+      return properties;
+   }
+
    // EncodingSupport implementation --------------------------------
 
    public void decode(final MessagingBuffer buffer)
    {
       transactionID = buffer.getLong();
       message.decode(buffer);
+      properties.decode(buffer);
    }
 
    public void encode(final MessagingBuffer buffer)
    {
       buffer.putLong(transactionID);
       message.encode(buffer);
+      properties.encode(buffer);
    }
 
    public int getEncodeSize()
    {
-
-      return DataConstants.SIZE_LONG  + message.getEncodeSize();
+      return DataConstants.SIZE_LONG  + message.getEncodeSize() + properties.getEncodeSize();
    }
 
    // Package protected ---------------------------------------------

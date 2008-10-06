@@ -27,11 +27,22 @@ import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
-import org.jboss.messaging.core.remoting.impl.wireformat.*;
+import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
-import org.jboss.messaging.core.server.*;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.ServerConsumer;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.ServerProducer;
+import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
@@ -48,7 +59,11 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
@@ -58,6 +73,7 @@ import java.util.concurrent.Executor;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a> 
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  */
 
 public class ServerSessionImpl implements ServerSession, FailureListener, NotificationListener
@@ -298,18 +314,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    public void send(final ServerMessage msg) throws Exception
    {
       // check the user has write access to this address.
-      try
-      {
-         securityStore.check(msg.getDestination(), CheckType.WRITE, this);
-      }
-      catch (MessagingException e)
-      {
-         if (!autoCommitSends)
-         {
-            tx.markAsRollbackOnly(e);
-         }
-         throw e;
-      }
+      doSecurity(msg);
 
       if (autoCommitSends)
       {
@@ -333,6 +338,37 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          tx.addMessage(msg);
       }
    }
+
+
+   public void sendScheduled(final ServerMessage msg, final long scheduledDeliveryTime) throws Exception
+   {
+      doSecurity(msg);
+
+      if (autoCommitSends)
+      {
+         if (!pager.pageScheduled(msg, scheduledDeliveryTime))
+         {
+            List<MessageReference> refs = postOffice.route(msg);
+
+            if (msg.getDurableRefCount() != 0)
+            {
+               storageManager.storeMessage(msg);
+               storageManager.storeMessageScheduled(msg, scheduledDeliveryTime);
+            }
+
+            for (MessageReference ref : refs)
+            {
+               ref.setScheduledDeliveryTime(scheduledDeliveryTime);
+               ref.getQueue().addScheduledDelivery(ref);
+            }
+         }
+      }
+      else
+      {
+         tx.addScheduledMessage(msg, scheduledDeliveryTime);
+      }
+   }
+
 
    public void processed(final long consumerID, final long messageID) throws Exception
    {
@@ -367,7 +403,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
    }
-   
+
    public void rollback() throws Exception
    {
       rollback(true);
@@ -463,7 +499,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
    }
-   
+
    public SessionXAResponseMessage XAEnd(final Xid xid, final boolean failed) throws Exception
    {
       if (tx != null && tx.getXid().equals(xid))
@@ -504,7 +540,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
    }
-   
+
    public SessionXAResponseMessage XAForget(final Xid xid)
    {
       // Do nothing since we don't support heuristic commits / rollback from the
@@ -907,7 +943,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       return response;
    }
-   
+
 //   public SessionCreateConsumerResponseMessage recreateConsumer(final SimpleString queueName,
 //                                                              final SimpleString filterString,
 //                                                              int windowSize,
@@ -1014,7 +1050,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
    /**
     * Create a producer for the specified address
-    * 
+    *
     * @param address The address to produce too
     * @param windowSize - the producer window size to use for flow control. Specify -1 to disable flow control
     *           completely The actual window size used may be less than the specified window size if it is overridden by
@@ -1062,7 +1098,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
       return new SessionCreateProducerResponseMessage(initialCredits, maxRateToUse, groupId);
    }
-   
+
 //   public SessionCreateProducerResponseMessage recreateProducer(final SimpleString address,
 //                                                              final int windowSize,
 //                                                              final int maxRate,
@@ -1078,7 +1114,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 //      }
 //
 //      final int windowToUse = flowController == null ? -1 : windowSize;
-//      
+//
 //      // Get some initial credits to send to the producer - we try for
 //      // windowToUse
 //
@@ -1133,6 +1169,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       producers.get(producerID).send(message);
    }
 
+   public void sendScheduledProducerMessage(final long producerID, final ServerMessage message, final long scheduledDeliveryTime) throws Exception
+   {
+       producers.get(producerID).sendScheduled(message, scheduledDeliveryTime);  
+   }
+
    public int transferConnection(final RemotingConnection newConnection)
    {
       remotingConnection.removeFailureListener(this);
@@ -1147,11 +1188,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       remotingConnection = newConnection;
 
       remotingConnection.addFailureListener(this);
-      
+
       int lastReceivedCommandID =  channel.getLastReceivedCommandID();
-     
+
       //TODO resend any dup responses
-      
+
       return lastReceivedCommandID;
    }
 
@@ -1293,4 +1334,20 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       queue.referenceAcknowledged(ref);
    }
 
+
+   private void doSecurity(final ServerMessage msg) throws Exception
+   {
+      try
+      {
+         securityStore.check(msg.getDestination(), CheckType.WRITE, this);
+      }
+      catch (MessagingException e)
+      {
+         if (!autoCommitSends)
+         {
+            tx.markAsRollbackOnly(e);
+         }
+         throw e;
+      }
+   }
 }

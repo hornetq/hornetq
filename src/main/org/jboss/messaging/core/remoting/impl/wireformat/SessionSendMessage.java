@@ -70,6 +70,22 @@ public class SessionSendMessage extends PacketImpl
       super(SESS_SEND);
    }
 
+   protected SessionSendMessage(final byte type, final long producerID, final ClientMessage message, final boolean requiresResponse)
+   {
+      super(type);
+
+      this.producerID = producerID;
+
+      this.clientMessage = message;
+
+      this.requiresResponse = requiresResponse;
+   }
+
+   protected SessionSendMessage(byte type)
+   {
+      super(type);
+   }
+
    // Public --------------------------------------------------------
 
    public boolean isReHandleResponseOnFailure()

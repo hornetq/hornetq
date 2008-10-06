@@ -22,10 +22,6 @@
 
 package org.jboss.messaging.tests.unit.core.paging.impl;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PageMessage;
@@ -36,6 +32,10 @@ import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.jboss.messaging.util.SimpleString;
+
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
@@ -97,6 +97,45 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
       PageMessageImpl msg = createMessage(destination, buffer);
 
+      assertTrue(storeImpl.isPaging());
+
+      assertTrue(storeImpl.page(msg));
+
+      assertEquals(1, storeImpl.getNumberOfPages());
+
+      storeImpl.sync();
+
+      storeImpl = new PagingStoreImpl(null, factory, destinationTestName, new QueueSettings(), executor);
+
+      storeImpl.start();
+
+      assertEquals(2, storeImpl.getNumberOfPages());
+
+   }
+
+   public void testStoreWithProperty() throws Exception
+   {
+      SequentialFileFactory factory = new FakeSequentialFileFactory();
+
+      PagingStore storeImpl = new PagingStoreImpl(null, factory, destinationTestName, new QueueSettings(), executor);
+
+      storeImpl.start();
+
+      assertEquals(0, storeImpl.getNumberOfPages());
+
+      storeImpl.startPaging();
+
+      assertEquals(1, storeImpl.getNumberOfPages());
+
+      List<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
+
+      ByteBuffer buffer = createRandomBuffer(0, 10);
+
+      buffers.add(buffer);
+      SimpleString destination = new SimpleString("test");
+
+      PageMessageImpl msg = createMessage(destination, buffer);
+      msg.getProperties().putLongProperty(new SimpleString("test-property"), 12345l);
       assertTrue(storeImpl.isPaging());
 
       assertTrue(storeImpl.page(msg));

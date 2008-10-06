@@ -23,13 +23,24 @@
 package org.jboss.messaging.tests.unit.core.server.impl;
 
 import org.easymock.EasyMock;
-import static org.easymock.EasyMock.*;
+import static org.easymock.EasyMock.anyLong;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.isA;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.*;
+import org.jboss.messaging.core.server.Consumer;
+import org.jboss.messaging.core.server.DistributionPolicy;
+import org.jboss.messaging.core.server.HandleStatus;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.QueueImpl;
 import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -741,7 +752,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addScheduledDelivery(ref);
       }
 
 

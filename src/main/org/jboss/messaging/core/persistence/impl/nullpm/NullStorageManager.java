@@ -22,11 +22,6 @@
 
 package org.jboss.messaging.core.persistence.impl.nullpm;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.transaction.xa.Xid;
-
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
@@ -41,6 +36,10 @@ import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TimeAndCounterIDGenerator;
+
+import javax.transaction.xa.Xid;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 
@@ -110,7 +109,11 @@ public class NullStorageManager implements StorageManager
 	{
 	}
 
-	public void storeDelete(long messageID) throws Exception
+   public void storeMessageScheduled(ServerMessage message, long scheduledDeliveryTime) throws Exception
+   {
+   }
+
+   public void storeDelete(long messageID) throws Exception
 	{
 	}
 
@@ -127,7 +130,11 @@ public class NullStorageManager implements StorageManager
 	{
 	}
 
-	public void storePageTransaction(long txID, PageTransactionInfo pageTransaction) throws Exception
+   public void storeMessageScheduledTransactional(long txID, ServerMessage message, long scheduledDeliveryTime) throws Exception
+   {
+   }
+
+   public void storePageTransaction(long txID, PageTransactionInfo pageTransaction) throws Exception
    {
    }
 

@@ -19,6 +19,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionScheduledSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.util.SimpleString;
@@ -120,17 +121,31 @@ public class ClientProducerImpl implements ClientProducerInternal
    {
       checkClosed();
 
-      doSend(null, msg);
+      doSend(null, msg, 0);
    }
 
    public void send(final SimpleString address, final ClientMessage msg) throws MessagingException
    {
       checkClosed();
 
-      doSend(address, msg);
+      doSend(address, msg, 0);
    }
 
-   // use a special wireformat packet to send management message (on the server-side they are
+    public void send(final ClientMessage msg, long scheduleDeliveryTime) throws MessagingException
+   {
+      checkClosed();
+
+      doSend(null, msg, scheduleDeliveryTime);
+   }
+
+   public void send(final SimpleString address, final ClientMessage msg, long scheduleDeliveryTime) throws MessagingException
+   {
+      checkClosed();
+
+      doSend(address, msg, scheduleDeliveryTime);
+   }
+
+   // use a special wireformat packet to sendScheduled management message (on the server-side they are
    // handled by the server session differently from regular Client Message)
    public void sendManagement(final ClientMessage msg) throws MessagingException
    {
@@ -272,7 +287,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       closed = true;
    }
 
-   private void doSend(final SimpleString address, final ClientMessage msg) throws MessagingException
+   private void doSend(final SimpleString address, final ClientMessage msg, long scheduledDeliveryTime) throws MessagingException
    {
       if (address != null)
       {
@@ -297,7 +312,17 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
 
-      SessionSendMessage message = new SessionSendMessage(id, msg, sendBlocking);
+      SessionSendMessage message;
+      //check to see if this message need to be scheduled.
+      if(scheduledDeliveryTime <= 0)
+      {
+         message = new SessionSendMessage(id, msg, sendBlocking);
+      }
+      else
+      {
+         message = new SessionScheduledSendMessage(id, msg, sendBlocking, scheduledDeliveryTime);
+      }
+
 
       if (sendBlocking)
       {

@@ -12,23 +12,6 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
@@ -48,6 +31,23 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.SimpleString;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implementation of a Queue TODO use Java 5 concurrent queue
@@ -690,6 +690,13 @@ public class QueueImpl implements Queue
       return ref;
    }
 
+   public void addScheduledDelivery(MessageReference ref)
+   {
+      ScheduledDeliveryRunnable runner = new ScheduledDeliveryRunnable(ref);
+      scheduledRunnables.add(runner);
+      scheduleDelivery(runner, ref.getScheduledDeliveryTime());
+   }
+
    // Public
    // -----------------------------------------------------------------------------
 
@@ -720,11 +727,6 @@ public class QueueImpl implements Queue
          messagesAdded.incrementAndGet();
 
          sizeBytes.addAndGet(ref.getMessage().getEncodeSize());
-      }
-
-      if (checkAndSchedule(ref))
-      {
-         return HandleStatus.HANDLED;
       }
 
       boolean add = false;
@@ -782,31 +784,6 @@ public class QueueImpl implements Queue
       }
 
       return HandleStatus.HANDLED;
-   }
-
-   private boolean checkAndSchedule(final MessageReference ref)
-   {
-      long deliveryTime = ref.getScheduledDeliveryTime();
-
-      if (deliveryTime != 0 && scheduledExecutor != null)
-      {
-         if (trace)
-         {
-            log.trace("Scheduling delivery for " + ref + " to occur at " + deliveryTime);
-         }
-
-         ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(ref);
-
-         scheduledRunnables.add(runnable);
-
-         if (!backup)
-         {
-            scheduleDelivery(runnable, deliveryTime);
-         }
-
-         return true;
-      }
-      return false;
    }
 
    private void scheduleDelivery(final ScheduledDeliveryRunnable runnable, final long deliveryTime)

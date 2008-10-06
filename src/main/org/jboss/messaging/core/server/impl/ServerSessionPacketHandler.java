@@ -12,6 +12,14 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.ChannelHandler;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ADD_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_CLOSE;
@@ -33,6 +41,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REMOVE_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ROLLBACK;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_SCHEDULED_SEND;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_SEND;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_START;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_STOP;
@@ -48,19 +57,6 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SET_TIMEOUT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_START;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SUSPEND;
-
-import java.util.List;
-
-import javax.transaction.xa.Xid;
-
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.ChannelHandler;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowseMessage;
@@ -80,6 +76,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionProcessedMessage
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionScheduledSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
@@ -97,11 +94,15 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
 
+import javax.transaction.xa.Xid;
+import java.util.List;
+
 /**
  * A ServerSessionPacketHandler
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  */
 public class ServerSessionPacketHandler implements ChannelHandler
 {
@@ -134,12 +135,12 @@ public class ServerSessionPacketHandler implements ChannelHandler
    {
       byte type = packet.getType();
 
-      if (type == SESS_SEND)
+      if (type == SESS_SEND || type == SESS_SCHEDULED_SEND)
       {
          SessionSendMessage send = (SessionSendMessage)packet;
 
          ServerMessage msg = send.getServerMessage();
-         
+
          if (msg.getMessageID() == 0L)
          {
             // must generate message id here, so we know they are in sync
@@ -148,13 +149,13 @@ public class ServerSessionPacketHandler implements ChannelHandler
             send.getServerMessage().setMessageID(id);
          }
       }
-      
+
       Packet response = null;
 
       try
       {
-         channel.replicatePacket(packet);         
-         
+         channel.replicatePacket(packet);
+
          switch (type)
          {
             case SESS_CREATECONSUMER:
@@ -227,7 +228,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             }
             case SESS_ROLLBACK:
             {
-               session.rollback();    
+               session.rollback();
                //Rollback response is handled in the rollback() method
                break;
             }
@@ -366,6 +367,16 @@ public class ServerSessionPacketHandler implements ChannelHandler
                if (message.isRequiresResponse())
                {
                   response = new NullResponseMessage(false);
+               }
+               break;
+            }
+            case SESS_SCHEDULED_SEND:
+            {
+               SessionScheduledSendMessage message = (SessionScheduledSendMessage)packet;
+               session.sendScheduledProducerMessage(message.getProducerID(), message.getServerMessage(), message.getScheduledDeliveryTime());
+               if (message.isRequiresResponse())
+               {
+                  response = new NullResponseMessage();
                }
                break;
             }

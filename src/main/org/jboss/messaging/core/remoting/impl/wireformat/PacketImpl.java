@@ -45,7 +45,7 @@ public class PacketImpl implements Packet
    public static final byte EXCEPTION = 20;
 
    public static final byte NULL_RESPONSE = 21;
-   
+
    public static final byte PACKETS_CONFIRMED = 22;
 
 
@@ -53,7 +53,7 @@ public class PacketImpl implements Packet
    public static final byte CREATESESSION = 30;
 
    public static final byte CREATESESSION_RESP = 31;
-   
+
    public static final byte REATTACH_SESSION = 32;
 
    public static final byte REATTACH_SESSION_RESP = 33;
@@ -76,7 +76,7 @@ public class PacketImpl implements Packet
    public static final byte SESS_COMMIT = 47;
 
    public static final byte SESS_ROLLBACK = 48;
-   
+
    public static final byte SESS_QUEUEQUERY = 49;
 
    public static final byte SESS_QUEUEQUERY_RESP = 50;
@@ -135,10 +135,10 @@ public class PacketImpl implements Packet
 
    public static final byte SESS_XA_GET_TIMEOUT_RESP = 77;
 
-   public static final byte SESS_START = 78; 
+   public static final byte SESS_START = 78;
 
    public static final byte SESS_STOP = 79;
-   
+
    public static final byte SESS_CLOSE = 80;
 
    public static final byte SESS_FLOWTOKEN = 81;
@@ -156,7 +156,9 @@ public class PacketImpl implements Packet
    public static final byte SESS_RECEIVE_MSG = 87;
 
    public static final byte SESS_MANAGEMENT_SEND = 88;
-   
+
+   public static final byte SESS_SCHEDULED_SEND = 91;
+
    // Static --------------------------------------------------------
 
    public PacketImpl(final byte type)
@@ -217,34 +219,34 @@ public class PacketImpl implements Packet
    public void decodeBody(final MessagingBuffer buffer)
    {
    }
-   
+
    public boolean isRequiresConfirmations()
    {
       return true;
    }
-   
+
    public boolean isReplicateBlocking()
    {
       return false;
    }
-   
+
    public boolean isWriteAlways()
    {
       return false;
    }
-   
+
    public boolean isReHandleResponseOnFailure()
    {
       return false;
    }
-   
+
    public boolean isDuplicate()
    {
       return false;
    }
-   
+
    public void setDuplicate(final boolean duplicate)
-   {      
+   {
    }
 
    @Override
@@ -265,7 +267,7 @@ public class PacketImpl implements Packet
 
       return r.type == type && r.channelID == channelID;
    }
-      
+
    // Package protected ---------------------------------------------
 
    protected String getParentString()
