@@ -24,9 +24,12 @@ package org.jboss.messaging.tests.unit.core.server.impl;
 
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.DistributionPolicy;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.easymock.EasyMock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,55 +46,86 @@ public class RoundRobinDistributionPolicyTest extends UnitTestCase
 
    public void testNoConsumers()
    {
-      List<Consumer> consumers = new ArrayList<Consumer>();
+      MessageReference messageReference = EasyMock.createStrictMock(MessageReference.class);
       
       DistributionPolicy dp = new RoundRobinDistributionPolicy();
-      
-      Consumer c = dp.select(null, false);
-      
-      assertEquals(null, c);
+
+      EasyMock.replay(messageReference);
+      HandleStatus status = dp.distribute(messageReference);
+      EasyMock.verify(messageReference);
+      assertEquals(status, HandleStatus.BUSY);
    }
    
-   public void testConsumers()
+   public void testConsumers() throws Exception
    {
-      FakeConsumer c1 = new FakeConsumer();
-      FakeConsumer c2 = new FakeConsumer();
-      FakeConsumer c3 = new FakeConsumer();
+      MessageReference messageReference = EasyMock.createStrictMock(MessageReference.class);
+      Consumer c1 = EasyMock.createStrictMock(Consumer.class);
+      Consumer c2 = EasyMock.createStrictMock(Consumer.class);
+      Consumer c3 = EasyMock.createStrictMock(Consumer.class);
       
       DistributionPolicy dp = new RoundRobinDistributionPolicy();
       dp.addConsumer(c1);
       dp.addConsumer(c2);
       dp.addConsumer(c3);
-            
-      Consumer c = null;
+      EasyMock.expect(c1.handle(messageReference)).andReturn(HandleStatus.HANDLED);
+      EasyMock.expect(c2.handle(messageReference)).andReturn(HandleStatus.HANDLED);
+      EasyMock.expect(c3.handle(messageReference)).andReturn(HandleStatus.HANDLED);
+      EasyMock.expect(c1.handle(messageReference)).andReturn(HandleStatus.HANDLED);
+      EasyMock.expect(c2.handle(messageReference)).andReturn(HandleStatus.HANDLED);
+      EasyMock.expect(c3.handle(messageReference)).andReturn(HandleStatus.HANDLED);
+      EasyMock.expect(c1.handle(messageReference)).andReturn(HandleStatus.HANDLED);
+      EasyMock.replay(messageReference, c1, c2, c3);
       
-      c = dp.select( null, false);
-      
-      assertEquals(c1, c);
-      
-      c = dp.select(null, false);
-      
-      assertEquals(c2, c);
-      
-      c = dp.select(null, false);
-      
-      assertEquals(c3, c);
-      
-      c = dp.select( null, false);
-      
-      assertEquals(c1, c);
-      
-      c = dp.select( null, false);
-      
-      assertEquals(c2, c);
-      
-      c = dp.select( null, false);
-      
-      assertEquals(c3, c);
-      
-      c = dp.select(null, false);
-      
-      assertEquals(c1, c);
+      dp.distribute(messageReference);
+      dp.distribute(messageReference);
+      dp.distribute(messageReference);
+      dp.distribute(messageReference);
+      dp.distribute(messageReference);
+      dp.distribute(messageReference);
+      dp.distribute(messageReference);
+      EasyMock.verify(messageReference, c1, c2, c3);
    }
+
+   public void testRunOutOfConsumers() throws Exception
+   {
+      MessageReference messageReference = EasyMock.createStrictMock(MessageReference.class);
+      Consumer c1 = EasyMock.createStrictMock(Consumer.class);
+      Consumer c2 = EasyMock.createStrictMock(Consumer.class);
+      Consumer c3 = EasyMock.createStrictMock(Consumer.class);
+
+      DistributionPolicy dp = new RoundRobinDistributionPolicy();
+      dp.addConsumer(c1);
+      dp.addConsumer(c2);
+      dp.addConsumer(c3);
+      EasyMock.expect(c1.handle(messageReference)).andReturn(HandleStatus.BUSY);
+      EasyMock.expect(c2.handle(messageReference)).andReturn(HandleStatus.BUSY);
+      EasyMock.expect(c3.handle(messageReference)).andReturn(HandleStatus.BUSY);
+      EasyMock.replay(messageReference, c1, c2, c3);
+
+      HandleStatus status = dp.distribute(messageReference);
+      assertEquals(status, HandleStatus.BUSY);
+      EasyMock.verify(messageReference, c1, c2, c3);
+   }
+   public void testRunOutOfConsumersNoMatch() throws Exception
+   {
+      MessageReference messageReference = EasyMock.createStrictMock(MessageReference.class);
+      Consumer c1 = EasyMock.createStrictMock(Consumer.class);
+      Consumer c2 = EasyMock.createStrictMock(Consumer.class);
+      Consumer c3 = EasyMock.createStrictMock(Consumer.class);
+
+      DistributionPolicy dp = new RoundRobinDistributionPolicy();
+      dp.addConsumer(c1);
+      dp.addConsumer(c2);
+      dp.addConsumer(c3);
+      EasyMock.expect(c1.handle(messageReference)).andReturn(HandleStatus.NO_MATCH);
+      EasyMock.expect(c2.handle(messageReference)).andReturn(HandleStatus.NO_MATCH);
+      EasyMock.expect(c3.handle(messageReference)).andReturn(HandleStatus.NO_MATCH);
+      EasyMock.replay(messageReference, c1, c2, c3);
+
+      HandleStatus status = dp.distribute(messageReference);
+      assertEquals(status, HandleStatus.NO_MATCH);
+      EasyMock.verify(messageReference, c1, c2, c3);
+   }
+
    
 }

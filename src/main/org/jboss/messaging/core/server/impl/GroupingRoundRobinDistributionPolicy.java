@@ -24,6 +24,8 @@ package org.jboss.messaging.core.server.impl;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.HandleStatus;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.util.SimpleString;
 
 import java.util.ArrayList;
@@ -38,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * The Initial consumer is the first consumer found, using the round robin policy, that hasn't been bound to a group, If
  * there are no consumers left that have not been bound to a group then the next consumer will be bound to 2 groups and
  * so on.
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public class GroupingRoundRobinDistributionPolicy extends RoundRobinDistributionPolicy
@@ -48,199 +51,90 @@ public class GroupingRoundRobinDistributionPolicy extends RoundRobinDistribution
 
    // Attributes ----------------------------------------------------
 
-   // Map with GroupID as a key and a Consumer as value.
-   private final Map<SimpleString, ConsumerState> consumers = new ConcurrentHashMap<SimpleString, ConsumerState>();
+   private ConcurrentHashMap<SimpleString, Consumer> cons = new ConcurrentHashMap<SimpleString, Consumer>();
 
-   // we hold the state of each consumer, i.e., is it bound etc
-   private final Map<Consumer, ConsumerState> consumerStateMap = new ConcurrentHashMap<Consumer, ConsumerState>();
 
    // Distributor implementation ------------------------------------
 
-   @Override
-   public Consumer select(final ServerMessage message, final boolean redeliver)
+   public HandleStatus distribute(MessageReference reference)
    {
-      if (message.getProperty(MessageImpl.GROUP_ID) != null)
+      final SimpleString groupId = (SimpleString) reference.getMessage().getProperty(MessageImpl.GROUP_ID);
+      if (groupId != null)
       {
-         final SimpleString groupId = (SimpleString)message.getProperty(MessageImpl.GROUP_ID);
-         final ConsumerState consumerState = consumers.get(groupId);
-         if (consumerState != null)
-         {
-            // if this is a redelivery and the group is bound we wait.
-            if (redeliver && consumerState.isBound())
-            {
-               return null;
-            }
-            // if this is a redelivery and it was its first attempt we can look for another consumer and use that
-            else if (redeliver && !consumerState.isBound())
-            {
-               removeBinding(groupId, consumerState);
-               return getNextPositionAndBind(message, redeliver, groupId).getConsumer();
-            }
-            // we bind after we know that the first message has been successfully consumed
-            else if (!consumerState.isBound())
-            {
-               consumerState.setBound(true);
-            }
-            consumerState.setAvailable(false);
+         boolean bound;
+         int startPos = pos;
+         boolean filterRejected = false;
 
-            return consumerState.getConsumer();
-         }
-         else
+         while (true)
          {
-            return getNextPositionAndBind(message, redeliver, groupId).getConsumer();
+            Consumer consumer = cons.putIfAbsent(groupId, consumers.get(pos));
+            if (consumer == null)
+            {
+               incrementPosition();
+               consumer = cons.get(groupId);
+               bound = false;
+            }
+            else
+            {
+               bound = true;
+            }
+            HandleStatus status = handle(reference, consumer);
+            if (status == HandleStatus.HANDLED)
+            {
+               return HandleStatus.HANDLED;
+            }
+            else if (status == HandleStatus.NO_MATCH)
+            {
+               filterRejected = true;
+            }
+            else if (status == HandleStatus.BUSY)
+            {
+               //if we were previously bound, we can remove and try the next consumer
+               if (bound)
+               {
+                  return HandleStatus.BUSY;
+               }
+               else
+               {
+                  cons.remove(groupId);
+               }
+            }
+            //if we've tried all of them
+            if (startPos == pos)
+            {
+               // Tried all of them
+               if (filterRejected)
+               {
+                  return HandleStatus.NO_MATCH;
+               }
+               else
+               {
+                  // Give up - all consumers busy
+                  return HandleStatus.BUSY;
+               }
+            }
          }
       }
       else
       {
-         return super.select(message, redeliver);
+         return super.distribute(reference);
       }
    }
 
-   @Override
-   public synchronized void addConsumer(final Consumer consumer)
+   public synchronized boolean removeConsumer(Consumer consumer)
    {
-      super.addConsumer(consumer);
-      consumerStateMap.put(consumer, new ConsumerState(consumer));
-   }
-
-   @Override
-   public synchronized boolean removeConsumer(final Consumer consumer)
-   {
-      final boolean removed = super.removeConsumer(consumer);
+      boolean removed = super.removeConsumer(consumer);
       if (removed)
       {
-         final ConsumerState cs = consumerStateMap.remove(consumer);
-         for (final SimpleString ss : cs.getGroupIds())
+         for (SimpleString group : cons.keySet())
          {
-            consumers.remove(ss);
-         }
-
-      }
-      return removed;
-   }
-
-   /**
-    * we need to find the next available consumer that doesn't have a binding. If there are no free we use the next
-    * available in the normal Round Robin fashion.
-    * @param message
-    * @param redeliver
-    * @param groupId
-    * @return
-    */
-   private ConsumerState getNextPositionAndBind(final ServerMessage message,
-                                                final boolean redeliver,
-                                                final SimpleString groupId)
-   {
-      Consumer consumer = super.select(message, redeliver);
-      final ConsumerState cs = consumerStateMap.get(consumer);
-      // if there is only one return it
-      if (getConsumerCount() == 1 || cs.isAvailable())
-      {
-         consumers.put(groupId, cs);
-         cs.getGroupIds().add(groupId);
-         return cs;
-      }
-      else
-      {
-         consumer = super.select(message, redeliver);
-         ConsumerState ncs = consumerStateMap.get(consumer);
-         while (!ncs.isAvailable())
-         {
-            consumer = super.select(message, redeliver);
-            ncs = consumerStateMap.get(consumer);
-            if (ncs == cs)
+            if (consumer == cons.get(group))
             {
-               cs.getGroupIds().add(groupId);
-               return cs;
+               cons.remove(group);
+               break;
             }
          }
-         ncs.getGroupIds().add(groupId);
-         return ncs;
       }
-   }
-
-   private void removeBinding(final SimpleString groupId, final ConsumerState consumerState)
-   {
-      consumerState.setAvailable(true);
-      consumerState.getGroupIds().remove(groupId);
-      consumers.remove(groupId);
-   }
-
-   /**
-    * holds the current state of a consumer, is it available, what groups it is bound to etc.
-    */
-   class ConsumerState
-   {
-      private final Consumer consumer;
-
-      private volatile boolean isBound = false;
-
-      private volatile boolean available = true;
-
-      private final List<SimpleString> groupIds = new ArrayList<SimpleString>();
-
-      public ConsumerState(final Consumer consumer)
-      {
-         this.consumer = consumer;
-      }
-
-      public boolean isBound()
-      {
-         return isBound;
-      }
-
-      public void setBound(final boolean bound)
-      {
-         isBound = bound;
-      }
-
-      public boolean isAvailable()
-      {
-         return available;
-      }
-
-      public void setAvailable(final boolean available)
-      {
-         this.available = available;
-      }
-
-      public Consumer getConsumer()
-      {
-         return consumer;
-      }
-
-      public List<SimpleString> getGroupIds()
-      {
-         return groupIds;
-      }
-
-      @Override
-      public boolean equals(final Object o)
-      {
-         if (this == o)
-         {
-            return true;
-         }
-         if (o == null || getClass() != o.getClass())
-         {
-            return false;
-         }
-
-         final ConsumerState that = (ConsumerState)o;
-
-         if (!consumer.equals(that.consumer))
-         {
-            return false;
-         }
-
-         return true;
-      }
-
-      @Override
-      public int hashCode()
-      {
-         return consumer.hashCode();
-      }
-
+      return removed;
    }
 }

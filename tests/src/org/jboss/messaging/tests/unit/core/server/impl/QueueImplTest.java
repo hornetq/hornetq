@@ -1444,6 +1444,18 @@ public class QueueImplTest extends UnitTestCase
          return null;
       }
 
+      public HandleStatus distribute(MessageReference reference)
+      {
+         try
+         {
+            return consumer.handle(reference);
+         }
+         catch (Exception e)
+         {
+            return HandleStatus.BUSY;
+         }
+      }
+
       public void addConsumer(Consumer consumer)
       {
          this.consumer = consumer;

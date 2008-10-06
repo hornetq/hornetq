@@ -361,6 +361,9 @@
     <option name="GENERATE_IIOP_STUBS" value="false" />
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
   </component>
+  <component name="SvnBranchConfigurationManager">
+    <option name="myVersion" value="123" />
+  </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="" />
     <mapping directory="$PROJECT_DIR$" vcs="svn" />
@@ -453,13 +456,14 @@
         <root url="file://$PROJECT_DIR$/tests/config" />
         <root url="file://$PROJECT_DIR$/tests/jms-tests/config" />
         <root url="file://$PROJECT_DIR$/src/config" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-mina/lib/mina-core-2.0.0-M2-20080520.004618-19.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/easymock/lib/easymock.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/easymock-classextension/lib/easymockclassextension.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/cglib/lib/cglib.jar!/" />
         <root url="jar://$PROJECT_DIR$/tools/lib/jbossbuild.jar!/" />
-        <root url="jar:///home/andy/devtools/apache-ant-1.7.0/lib/ant-junit.jar!/" />
-        <root url="jar:///home/andy/devtools/apache-ant-1.7.0/lib/ant.jar!/" />
+        <root url="jar://$ANT_HOME$/lib/ant-junit.jar!/" />
+        <root url="jar://$ANT_HOME$/lib/ant.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/apache-mina/lib/mina-core-2.0.0-M3-20080730.120633-1.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/netty/lib/netty-3.0.0.CR4.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
@@ -471,5 +475,8 @@
       <jarDirectory url="file://$PROJECT_DIR$/tests/jms-tests/etc" recursive="false" />
     </library>
   </component>
+  <UsedPathMacros>
+    <macro name="ANT_HOME" />
+  </UsedPathMacros>
 </project>
 

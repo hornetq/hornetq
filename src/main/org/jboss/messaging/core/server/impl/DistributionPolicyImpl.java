@@ -35,8 +35,6 @@ public abstract class DistributionPolicyImpl implements DistributionPolicy
 {
    protected final List<Consumer> consumers = new ArrayList<Consumer>();
 
-   public abstract Consumer select(ServerMessage message, boolean redeliver);
-
    public void addConsumer(Consumer consumer)
    {
       consumers.add(consumer);

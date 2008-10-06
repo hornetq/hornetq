@@ -31,7 +31,7 @@ package org.jboss.messaging.core.server;
  */
 public interface DistributionPolicy
 {
-   Consumer select(ServerMessage message, boolean redeliver);
+   HandleStatus distribute(final MessageReference reference);
 
    void addConsumer(Consumer consumer);
 
@@ -40,6 +40,4 @@ public interface DistributionPolicy
    int getConsumerCount();
 
    boolean hasConsumers();
-
-   int getCurrentPosition();
 }

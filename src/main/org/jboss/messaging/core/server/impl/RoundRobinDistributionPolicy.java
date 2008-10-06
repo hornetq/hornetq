@@ -18,38 +18,28 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.server.impl;
 
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.HandleStatus;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.logging.Logger;
 
 /**
- * 
  * A RoundRobinDistributionPolicy
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public class RoundRobinDistributionPolicy extends DistributionPolicyImpl
 {
-   int pos = 0;
+   Logger log = Logger.getLogger(RoundRobinDistributionPolicy.class);
 
-   public Consumer select(ServerMessage message, boolean redeliver)
-   {     
-      if(consumers.isEmpty())
-      {
-         return null;
-      }
-      int startPos = pos++;
+   protected int pos = 0;
 
-      if (pos == consumers.size())
-      {
-         pos = 0;
-      }
-      return consumers.get(startPos);
-   }
 
    public synchronized void addConsumer(Consumer consumer)
    {
@@ -64,8 +54,90 @@ public class RoundRobinDistributionPolicy extends DistributionPolicyImpl
       return super.removeConsumer(consumer);
    }
 
-   public int getCurrentPosition()
+   public HandleStatus distribute(final MessageReference reference)
    {
-      return pos;
+      if (getConsumerCount() == 0)
+      {
+         return HandleStatus.BUSY;
+      }
+      int startPos = pos;
+      boolean filterRejected = false;
+      HandleStatus status;
+      while (true)
+      {
+         status = handle(reference, getNextConsumer());
+
+         if (status == HandleStatus.HANDLED)
+         {
+            return HandleStatus.HANDLED;
+         }
+         else if (status == HandleStatus.NO_MATCH)
+         {
+            filterRejected = true;
+         }
+         if (startPos == pos)
+         {
+            // Tried all of them
+            if (filterRejected)
+            {
+               return HandleStatus.NO_MATCH;
+            }
+            else
+            {
+               // Give up - all consumers busy
+               return HandleStatus.BUSY;
+            }
+         }
+      }
+   }
+
+   protected Consumer getNextConsumer()
+   {
+      Consumer consumer = consumers.get(pos);
+      incrementPosition();
+      return consumer;
+   }
+
+   protected void incrementPosition()
+   {
+      pos++;
+      if (pos == consumers.size())
+      {
+         pos = 0;
+      }
+   }
+
+   protected HandleStatus handle(MessageReference reference, Consumer consumer)
+   {
+      HandleStatus status;
+      try
+      {
+         status = consumer.handle(reference);
+      }
+      catch (Throwable t)
+      {
+         log.warn("removing consumer which did not handle a message, " + "consumer=" +
+                  consumer +
+                  ", message=" +
+                  reference, t);
+
+         // If the consumer throws an exception we remove the consumer
+         try
+         {
+            removeConsumer(consumer);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to remove consumer", e);
+         }
+
+         return HandleStatus.BUSY;
+      }
+
+      if (status == null)
+      {
+         throw new IllegalStateException("ClientConsumer.handle() should never return null");
+      }
+      return status;
    }
 }

@@ -51,7 +51,7 @@ import org.jboss.messaging.util.SimpleString;
 
 /**
  * Implementation of a Queue TODO use Java 5 concurrent queue
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
@@ -175,7 +175,7 @@ public class QueueImpl implements Queue
    {
       return add(ref, true);
    }
-   
+
    public synchronized void addListFirst(final LinkedList<MessageReference> list)
    {
       ListIterator<MessageReference> iter = list.listIterator(list.size());
@@ -183,11 +183,11 @@ public class QueueImpl implements Queue
       while (iter.hasPrevious())
       {
          MessageReference ref = iter.previous();
-         
+
          ServerMessage msg = ref.getMessage();
 
          messageReferences.addFirst(ref, msg.getPriority());
-         
+
          checkWaiting(msg.getMessageID());
       }
 
@@ -289,7 +289,7 @@ public class QueueImpl implements Queue
    public synchronized boolean removeConsumer(final Consumer consumer) throws Exception
    {
       boolean removed = distributionPolicy.removeConsumer(consumer);
-      
+
       if (removed)
       {
          distributionPolicy.removeConsumer(consumer);
@@ -700,7 +700,7 @@ public class QueueImpl implements Queue
          return true;
       }
 
-      QueueImpl qother = (QueueImpl)other;
+      QueueImpl qother = (QueueImpl) other;
 
       return name.equals(qother.name);
    }
@@ -822,94 +822,20 @@ public class QueueImpl implements Queue
 
    private HandleStatus deliver(final MessageReference reference)
    {
-      if (distributionPolicy.getConsumerCount() == 0)
+      HandleStatus status = distributionPolicy.distribute(reference);
+      if (status == HandleStatus.HANDLED)
       {
-         return HandleStatus.BUSY;
+         deliveringCount.incrementAndGet();
+
+         return HandleStatus.HANDLED;
       }
-
-      int startPos = distributionPolicy.getCurrentPosition();
-
-      boolean filterRejected = false;
-
-      HandleStatus status = null;
-      int pos;
-      while (true)
+      else if (status == HandleStatus.NO_MATCH)
       {
-         Consumer consumer = distributionPolicy.select(reference.getMessage(), status != null);
-         pos = distributionPolicy.getCurrentPosition();
-         if (consumer == null)
-         {
-            if (filterRejected)
-            {
-               return HandleStatus.NO_MATCH;
-            }
-            else
-            {
-               // Give up - all consumers busy
-               return HandleStatus.BUSY;
-            }
-         }
-         try
-         {
-            status = consumer.handle(reference);
-         }
-         catch (Throwable t)
-         {
-            log.warn("removing consumer which did not handle a message, " + "consumer=" +
-                     consumer +
-                     ", message=" +
-                     reference, t);
-
-            // If the consumer throws an exception we remove the consumer
-            try
-            {
-               removeConsumer(consumer);
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to remove consumer", e);
-            }
-
-            return HandleStatus.BUSY;
-         }
-
-         if (status == null)
-         {
-            throw new IllegalStateException("ClientConsumer.handle() should never return null");
-         }
-
-         if (status == HandleStatus.HANDLED)
-         {
-            deliveringCount.incrementAndGet();
-
-            return HandleStatus.HANDLED;
-         }
-         else if (status == HandleStatus.NO_MATCH)
-         {
-            promptDelivery = true;
-
-            filterRejected = true;
-         }
-         if (startPos > distributionPolicy.getConsumerCount() - 1)
-         {
-            startPos = distributionPolicy.getConsumerCount() - 1;
-         }
-         if (startPos == pos)
-         {
-            // Tried all of them
-            if (filterRejected)
-            {
-               return HandleStatus.NO_MATCH;
-            }
-            else
-            {
-               // Give up - all consumers busy
-               return HandleStatus.BUSY;
-            }
-         }
+         promptDelivery = true;
       }
+      return status;
    }
-   
+
    private void checkWaiting(final long messageID)
    {
       CountDownLatch latch = waitingIDMap.remove(messageID);
