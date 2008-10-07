@@ -53,7 +53,12 @@ import java.lang.management.ManagementFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -603,6 +608,20 @@ public class LocalTestServer implements Server, Runnable
       return (JMSServerManager) bootstrap.getKernel().getRegistry().getEntry("JMSServerManager").getTarget();
    }
 
+   public void addQueueSettings(String name, long redeliveryDelay)
+   {
+      QueueSettings qs = getMessagingServer().getQueueSettingsRepository().getMatch("*");
+      QueueSettings newSets = new QueueSettings();
+      newSets.setRedeliveryDelay(redeliveryDelay);
+      newSets.merge(qs);
+      getMessagingServer().getQueueSettingsRepository().addMatch(name, newSets);
+   }
+
+   public void removeQueueSettings(String name)
+   {
+      getMessagingServer().getQueueSettingsRepository().removeMatch(name);
+   }
+
    public InitialContext getInitialContext() throws Exception
    {
       Properties props = new Properties();
@@ -682,7 +701,7 @@ public class LocalTestServer implements Server, Runnable
       QueueSettings queueSettings = new QueueSettings();
       queueSettings.setRedeliveryDelay(delay);
       //FIXME we need to expose queue attributes in another way
-//      getMessagingServer().getServerManagement().setQueueAttributes(condition, queueSettings);      
+//      getMessagingServer().getServerManagement().setQueueAttributes(condition, queueSettings);
    }
 
 

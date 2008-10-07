@@ -21,22 +21,6 @@
    */
 package org.jboss.test.messaging;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.jms.Queue;
-import javax.jms.Topic;
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.JBossQueue;
@@ -48,6 +32,21 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.DatabaseClearer;
 import org.jboss.test.messaging.tools.container.Server;
 import org.jboss.tm.TransactionManagerLocator;
+
+import javax.jms.Queue;
+import javax.jms.Topic;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
@@ -828,9 +827,14 @@ public class JBMServerTestCase extends JBMBaseTestCase
       servers.get(0).configureSecurityForDestination(s, b, lockedConf);
    }
 
-   protected void setRedeliveryDelayOnDestination(String dest, boolean isQueue, long delay) throws Exception
+   protected void addQueueSettings(String name, long scheduledDeliveryTime)
    {
-      servers.get(0).setRedeliveryDelayOnDestination(dest, isQueue, delay);
+      servers.get(0).addQueueSettings("queuejms." + name, scheduledDeliveryTime);
+   }
+
+   protected void removeQueueSettings(String name)
+   {
+      servers.get(0).removeQueueSettings(name);   
    }
 
    protected void kill(int i) throws Exception

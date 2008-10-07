@@ -434,7 +434,7 @@ public class JournalStorageManager implements StorageManager
                //for any references that have already been routed, we need to remove them from t he queue and re add them as scheduled
                for (MessageReference ref : refs)
                {
-                  ref.getQueue().removeReferenceWithID(record.id);
+                  ref.getQueue().removeReferenceWithID(ref.getMessage().getMessageID());
                   ref.setScheduledDeliveryTime(scheduledDeliveryEncoding.getScheduledDeliveryTime());
                   ref.getQueue().addScheduledDelivery(ref);
                }

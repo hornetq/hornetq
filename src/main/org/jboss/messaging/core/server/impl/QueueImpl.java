@@ -185,8 +185,14 @@ public class QueueImpl implements Queue
          MessageReference ref = iter.previous();
 
          ServerMessage msg = ref.getMessage();
-
-         messageReferences.addFirst(ref, msg.getPriority());
+         if(ref.getScheduledDeliveryTime() <= 0)
+         {
+            messageReferences.addFirst(ref, msg.getPriority());
+         }
+         else
+         {
+            addScheduledDelivery(ref);
+         }
 
          checkWaiting(msg.getMessageID());
       }
@@ -909,6 +915,7 @@ public class QueueImpl implements Queue
 
             // TODO - need to replicate this so backup node also adds back to
             // front of queue
+
 
             addFirst(ref);
          }

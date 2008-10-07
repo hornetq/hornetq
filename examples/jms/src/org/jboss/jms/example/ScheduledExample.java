@@ -63,7 +63,7 @@ public class ScheduledExample
          log.info("current time " + df.format(cal.getTime()));
          cal.roll(Calendar.SECOND, 5);
          log.info("message scheduled for " + df.format(cal.getTime()));
-         message.setLongProperty("JBM_SCHEDULED_DELIVERY_TIME", cal.getTimeInMillis());
+         message.setLongProperty("JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME", cal.getTimeInMillis());
          log.info("sending message to queue");
          producer.send(message);
 

@@ -21,22 +21,21 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import java.rmi.Remote;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
-import javax.transaction.UserTransaction;
-
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;
+
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+import javax.transaction.UserTransaction;
+import java.rmi.Remote;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The remote interface exposed by TestServer.
@@ -268,8 +267,10 @@ public interface Server extends Remote
 
    //void setSecurityConfigOnManager(boolean b, String s, Set<Role> lockedConf) throws Exception;
 
-   void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception;
-
    //void setDefaultRedeliveryDelay(long delay) throws Exception;
    JMSServerManager getJMSServerManager() throws Exception;
+
+   void addQueueSettings(String name, long redeliveryDelay);
+
+   void removeQueueSettings(String name);
 }

@@ -77,7 +77,7 @@ public class JBossMessage implements javax.jms.Message
    // Used when bridging a message
    public static final String JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST = "JBM_BRIDGE_MSG_ID_LIST";
 
-   public static final String JBM_SCHEDULED_DELIVERY_TIME = "JBM_SCHEDULED_DELIVERY_TIME";
+   public static final String JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME = "JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME";
 
    public static final byte TYPE = 0;
 
@@ -385,7 +385,7 @@ public class JBossMessage implements javax.jms.Message
 
    public void setScheduledDeliveryTime(long scheduledDeliveryTime)
    {
-      message.putLongProperty(new SimpleString(JBM_SCHEDULED_DELIVERY_TIME), scheduledDeliveryTime);
+      message.putLongProperty(new SimpleString(JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME), scheduledDeliveryTime);
       this.scheduledDeliveryTime = scheduledDeliveryTime;
    }
 
@@ -832,7 +832,7 @@ public class JBossMessage implements javax.jms.Message
    {
       Long l = new Long(value);
       checkProperty(name, l);
-      if(JBM_SCHEDULED_DELIVERY_TIME.equals(name))
+      if(JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME.equals(name))
       {
          scheduledDeliveryTime = l;
       }

@@ -130,8 +130,9 @@ public class MessageReferenceImpl implements MessageReference
          persistenceManager.updateDeliveryCount(this);
       }
 
-      int maxDeliveries = queueSettingsRepository.getMatch(
-            queue.getName().toString()).getMaxDeliveryAttempts();
+      QueueSettings queueSettings = queueSettingsRepository.getMatch(
+            queue.getName().toString());
+      int maxDeliveries = queueSettings.getMaxDeliveryAttempts();
 
       if (maxDeliveries > 0 && deliveryCount >= maxDeliveries)
       {
@@ -142,6 +143,12 @@ public class MessageReferenceImpl implements MessageReference
       } 
       else
       {
+         long redeliveryDelay = queueSettings.getRedeliveryDelay();
+
+         if(redeliveryDelay > 0)
+         {
+            scheduledDeliveryTime = System.currentTimeMillis() + redeliveryDelay;
+         }
          queue.referenceCancelled();
 
          return true;
