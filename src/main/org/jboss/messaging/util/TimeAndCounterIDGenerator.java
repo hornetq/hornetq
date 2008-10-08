@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * A TimeAndCounterIDGenerator
  * <p>
- * This IDGenerator doesn't support more than 268435455 IDs per 250 millisecond. It would throw an exception if this happens.
+ * This IDGenerator doesn't support more than 16777215 IDs per 16 millisecond. It would throw an exception if this happens.
  * </p>
  * 
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -42,11 +42,11 @@ public class TimeAndCounterIDGenerator implements IDGenerator
     */
    private static final int BITS_TO_MOVE = 20;
 
-   public static final long MASK_TIME = 0xeffffffff00l;
+   public static final long MASK_TIME = 0x7fffffffff0l;
 
-   public static final long ID_MASK = 0xfffffffl;
+   public static final long ID_MASK = 0xffffffl;
 
-   private static final long TIME_ID_MASK = 0xeffffffff0000000l;
+   private static final long TIME_ID_MASK = 0x7fffffffff000000l;
 
    // Attributes ----------------------------------------------------
 
@@ -73,7 +73,7 @@ public class TimeAndCounterIDGenerator implements IDGenerator
    {
       long idReturn = counter.incrementAndGet();
 
-      if ((idReturn & ID_MASK) == ID_MASK)
+      if ((idReturn & ID_MASK) == 0)
       {
          final long timePortion = idReturn & TIME_ID_MASK;
 
@@ -97,11 +97,11 @@ public class TimeAndCounterIDGenerator implements IDGenerator
 
       if (wrapped)
       {
-         // This will only happen if a computer can generate more than ID_MASK ids (268.43 million IDs per 250
+         // This will only happen if a computer can generate more than ID_MASK ids (16 million IDs per 16
          // milliseconds)
          // If this wrapping code starts to happen, it needs revision
-         throw new IllegalStateException("The IDGenerator is being overlaped, and it needs revision as the system generated more than " + (idReturn & ID_MASK) +
-                                         " ids per 250 milliseconds which exceeded the IDgenerator limit");
+         throw new IllegalStateException("The IDGenerator is being overlaped, and it needs revision as the system generated more than " + ID_MASK +
+                                         " ids per 16 milliseconds which exceeded the IDgenerator limit");
       }
 
       return idReturn;
@@ -112,6 +112,13 @@ public class TimeAndCounterIDGenerator implements IDGenerator
       return counter.get();
    }
 
+   
+   // for use in testcases
+   public long getInternalTimeMark()
+   {
+      return tmMark;
+   }
+   
    // for use in testcases
    public void setInternalID(final long id)
    {
