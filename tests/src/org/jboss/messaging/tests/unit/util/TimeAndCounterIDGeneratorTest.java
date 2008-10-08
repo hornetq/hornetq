@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.tests.unit.util;
 
-import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -165,11 +164,11 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
 
       TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
 
-      System.out.println("Current Time = " + hex(System.currentTimeMillis()));
+      System.out.println("Current Time = " + hex(System.currentTimeMillis()) + " " + seq);
       
       seq.setInternalDate(System.currentTimeMillis() + 10000l); // 10 seconds in the future
 
-      seq.setInternalID(TimeAndCounterIDGenerator.ID_MASK -1); // 1 ID about to explode
+      seq.setInternalID(TimeAndCounterIDGenerator.ID_MASK); // 1 ID about to explode
      
       try
       {
@@ -184,11 +183,15 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
       seq = new TimeAndCounterIDGenerator();
       
       seq.setInternalDate(System.currentTimeMillis() - 10000l); // 10 seconds in the past
+      
+      long timeMark = seq.getInternalTimeMark();
 
-      seq.setInternalID(TimeAndCounterIDGenerator.ID_MASK -1); // 1 ID about to explode
+      seq.setInternalID(TimeAndCounterIDGenerator.ID_MASK); // 1 ID about to explode
       
       // This is ok... the time portion would be added to the next one generated 10 seconds ago
       seq.generateID();
+
+      assertTrue (hex(timeMark) + " < " + hex(seq.getInternalTimeMark()), timeMark < seq.getInternalTimeMark());
    }
 
    private static String hex(final long value)
