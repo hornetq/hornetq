@@ -365,7 +365,10 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       try
       {
-         currentPage.sync();
+         if (currentPage != null)
+         {
+            currentPage.sync();
+         }
       }
       finally
       {
