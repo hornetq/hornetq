@@ -353,13 +353,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             if (msg.getDurableRefCount() != 0)
             {
                storageManager.storeMessage(msg);
-               storageManager.storeMessageScheduled(msg, scheduledDeliveryTime);
             }
 
             for (MessageReference ref : refs)
             {
+               if(ref.getQueue().isDurable())
+               {
+                  storageManager.storeMessageReferenceScheduled(ref.getQueue().getPersistenceID(), msg.getMessageID(), scheduledDeliveryTime);
+               }
                ref.setScheduledDeliveryTime(scheduledDeliveryTime);
-               ref.getQueue().addScheduledDelivery(ref);
+               ref.getQueue().addLast(ref);
             }
          }
       }

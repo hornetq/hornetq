@@ -185,13 +185,9 @@ public class QueueImpl implements Queue
          MessageReference ref = iter.previous();
 
          ServerMessage msg = ref.getMessage();
-         if(ref.getScheduledDeliveryTime() <= 0)
+         if(!checkAndSchedule(ref))
          {
             messageReferences.addFirst(ref, msg.getPriority());
-         }
-         else
-         {
-            addScheduledDelivery(ref);
          }
 
          checkWaiting(msg.getMessageID());
@@ -696,13 +692,6 @@ public class QueueImpl implements Queue
       return ref;
    }
 
-   public void addScheduledDelivery(MessageReference ref)
-   {
-      ScheduledDeliveryRunnable runner = new ScheduledDeliveryRunnable(ref);
-      scheduledRunnables.add(runner);
-      scheduleDelivery(runner, ref.getScheduledDeliveryTime());
-   }
-
    // Public
    // -----------------------------------------------------------------------------
 
@@ -733,6 +722,11 @@ public class QueueImpl implements Queue
          messagesAdded.incrementAndGet();
 
          sizeBytes.addAndGet(ref.getMessage().getEncodeSize());
+      }
+
+      if (checkAndSchedule(ref))
+      {
+         return HandleStatus.HANDLED;
       }
 
       boolean add = false;
@@ -792,6 +786,31 @@ public class QueueImpl implements Queue
       return HandleStatus.HANDLED;
    }
 
+   private boolean checkAndSchedule(final MessageReference ref)
+   {
+      long deliveryTime = ref.getScheduledDeliveryTime();
+
+      if (deliveryTime != 0 && scheduledExecutor != null)
+      {
+         if (trace)
+         {
+            log.trace("Scheduling delivery for " + ref + " to occur at " + deliveryTime);
+         }
+
+         ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(ref);
+
+         scheduledRunnables.add(runnable);
+
+         if (!backup)
+         {
+            scheduleDelivery(runnable, deliveryTime);
+         }
+
+         return true;
+      }
+      return false;
+   }
+
    private void scheduleDelivery(final ScheduledDeliveryRunnable runnable, final long deliveryTime)
    {
       long now = System.currentTimeMillis();
@@ -809,7 +828,6 @@ public class QueueImpl implements Queue
       if (status == HandleStatus.HANDLED)
       {
          deliveringCount.incrementAndGet();
-
          return HandleStatus.HANDLED;
       }
       else if (status == HandleStatus.NO_MATCH)

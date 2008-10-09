@@ -61,7 +61,7 @@ public class ScheduledExample
          Message message = session.createTextMessage("This is a text message!");
          Calendar cal = Calendar.getInstance();
          log.info("current time " + df.format(cal.getTime()));
-         cal.roll(Calendar.SECOND, 5);
+         cal.add(Calendar.SECOND, 5);
          log.info("message scheduled for " + df.format(cal.getTime()));
          message.setLongProperty("JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME", cal.getTimeInMillis());
          log.info("sending message to queue");

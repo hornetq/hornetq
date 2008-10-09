@@ -147,5 +147,4 @@ public interface Queue
    MessageReference removeFirst();
    
    boolean consumerFailedOver();   
-   void addScheduledDelivery(MessageReference ref);
 }

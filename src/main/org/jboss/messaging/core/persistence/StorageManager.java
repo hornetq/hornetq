@@ -58,13 +58,13 @@ public interface StorageManager extends MessagingComponent
 
    void storeDelete(long messageID) throws Exception;
 
-   void storeMessageScheduled(final ServerMessage message, final long scheduledDeliveryTime) throws Exception;
+   void storeMessageReferenceScheduled(final long queueID, final long messageID, final long scheduledDeliveryTime) throws Exception;
 
    void storeMessageTransactional(long txID, ServerMessage message) throws Exception;
 
    void storeAcknowledgeTransactional(long txID, long queueID, long messageiD) throws Exception;
 
-   void storeMessageScheduledTransactional(final long txID,final ServerMessage message, final long scheduledDeliveryTime) throws Exception;
+   void storeMessageReferenceScheduledTransactional(final long txID, final long queueID, final long messageID, final long scheduledDeliveryTime) throws Exception;
 
    void storeDeleteMessageTransactional(long txID, long queueID, long messageID) throws Exception;
 

@@ -170,7 +170,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
          assertEquals(tm9.getText(), rm5.getText());
 
          //Now the scheduled
-         TextMessage rm6 = (TextMessage)cons.receive(3250);
+         TextMessage rm6 = (TextMessage)cons.receive(15250);
          assertNotNull(rm6);
          assertEquals(tm7.getText(), rm6.getText());
 
@@ -179,7 +179,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
          assertTrue(now2 - now >= 3000);
 
 
-         TextMessage rm7 = (TextMessage)cons.receive(1250);
+         TextMessage rm7 = (TextMessage)cons.receive(16250);
          assertNotNull(rm7);
          assertEquals(tm6.getText(), rm7.getText());
 
@@ -188,7 +188,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
          assertTrue(now2 - now >= 4000);
 
 
-         TextMessage rm8 = (TextMessage)cons.receive(1250);
+         TextMessage rm8 = (TextMessage)cons.receive(17250);
          assertNotNull(rm8);
          assertEquals(tm5.getText(), rm8.getText());
 
@@ -197,7 +197,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
          assertTrue(now2 - now >= 5000);
 
 
-         TextMessage rm9 = (TextMessage)cons.receive(1250);
+         TextMessage rm9 = (TextMessage)cons.receive(18250);
          assertNotNull(rm9);
          assertEquals(tm8.getText(), rm9.getText());
 
@@ -206,7 +206,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
          assertTrue(now2 - now >= 6000);
 
 
-         TextMessage rm10 = (TextMessage)cons.receive(1250);
+         TextMessage rm10 = (TextMessage)cons.receive(19250);
          assertNotNull(rm10);
          assertEquals(tm1.getText(), rm10.getText());
 

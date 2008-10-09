@@ -752,7 +752,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.addScheduledDelivery(ref);
+         queue.addLast(ref);
       }
 
 

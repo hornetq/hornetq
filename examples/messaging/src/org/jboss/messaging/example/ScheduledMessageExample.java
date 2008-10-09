@@ -59,7 +59,7 @@ public class ScheduledMessageExample
          message.getBody().putString("Hello!");
          Calendar cal = Calendar.getInstance();
          log.info("current time " + df.format(cal.getTime()));
-         cal.roll(Calendar.SECOND, 5);
+         cal.add(Calendar.SECOND, 5);
          log.info("message scheduled for " + df.format(cal.getTime()));
          clientProducer.send(message, cal.getTimeInMillis());
          ClientConsumer clientConsumer = clientSession.createConsumer(queue);

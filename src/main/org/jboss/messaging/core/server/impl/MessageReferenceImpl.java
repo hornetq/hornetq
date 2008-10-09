@@ -148,6 +148,7 @@ public class MessageReferenceImpl implements MessageReference
          if(redeliveryDelay > 0)
          {
             scheduledDeliveryTime = System.currentTimeMillis() + redeliveryDelay;
+            persistenceManager.storeMessageReferenceScheduled(queue.getPersistenceID(), message.getMessageID(), scheduledDeliveryTime);
          }
          queue.referenceCancelled();
 

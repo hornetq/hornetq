@@ -173,13 +173,13 @@ public class TransactionImpl implements Transaction
       {
          List<MessageReference> refs = route(message);
 
-         if (message.getDurableRefCount() != 0)
-         {
-            storageManager.storeMessageScheduledTransactional(id, message, scheduledDeliveryTime);
-         }
          for (MessageReference ref : refs)
          {
             scheduledReferences.put(ref, scheduledDeliveryTime);
+            if(ref.getQueue().isDurable())
+            {
+               storageManager.storeMessageReferenceScheduledTransactional(id, ref.getQueue().getPersistenceID(), message.getMessageID(), scheduledDeliveryTime);
+            }
          }
       }
    }
@@ -303,7 +303,7 @@ public class TransactionImpl implements Transaction
          else
          {
             ref.setScheduledDeliveryTime(scheduled);
-            ref.getQueue().addScheduledDelivery(ref);
+            ref.getQueue().addLast(ref);
          }
       }
 
@@ -552,13 +552,13 @@ public class TransactionImpl implements Transaction
             // This could happen when the PageStore left the pageState
             List<MessageReference> refs = route(message);
 
-            if (message.getDurableRefCount() != 0)
-            {
-               storageManager.storeMessageScheduledTransactional(id, message, scheduledDeliveryTime);
-            }
             for (MessageReference ref : refs)
             {
                scheduledReferences.put(ref, scheduledDeliveryTime);
+               if(ref.getQueue().isDurable())
+               {
+                  storageManager.storeMessageReferenceScheduledTransactional(id, ref.getQueue().getPersistenceID(), message.getMessageID(), scheduledDeliveryTime);
+               }
             }
          }
       }

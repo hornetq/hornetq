@@ -63,7 +63,6 @@ import javax.transaction.xa.Xid;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -222,9 +221,10 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendDeleteRecord(messageID);
    }
 
-   public void storeMessageScheduled(final ServerMessage message, final long scheduledDeliveryTime) throws Exception
+   public void storeMessageReferenceScheduled(final long queueID, final long messageID, final long scheduledDeliveryTime) throws Exception
    {
-      messageJournal.appendUpdateRecord(message.getMessageID(), SET_SCHEDULED_DELIVERY_TIME,  new ScheduledDeliveryEncoding(message.getMessageID(), scheduledDeliveryTime));
+      ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding(scheduledDeliveryTime, queueID);
+      messageJournal.appendUpdateRecord(messageID, SET_SCHEDULED_DELIVERY_TIME, encoding);
    }
 
    // Transactional operations
@@ -275,9 +275,10 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendDeleteRecordTransactional(txID, recordID, null);
    }
 
-   public void storeMessageScheduledTransactional(final long txID,final ServerMessage message, final long scheduledDeliveryTime) throws Exception
+   public void storeMessageReferenceScheduledTransactional(final long txID, final long queueID, final long messageID, final long scheduledDeliveryTime) throws Exception
    {
-      messageJournal.appendUpdateRecordTransactional(txID, message.getMessageID(), SET_SCHEDULED_DELIVERY_TIME,  new ScheduledDeliveryEncoding(message.getMessageID(), scheduledDeliveryTime));
+      ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding(scheduledDeliveryTime, queueID);
+      messageJournal.appendUpdateRecordTransactional(txID, messageID, SET_SCHEDULED_DELIVERY_TIME,  encoding);
    }
 
    public void storeDeleteMessageTransactional(final long txID, final long queueID, final long messageID) throws Exception
@@ -319,7 +320,6 @@ public class JournalStorageManager implements StorageManager
       List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 
       messageJournal.load(records, preparedTransactions);
-      Map<Long, List<MessageReference>> routedRefs = new HashMap<Long, List<MessageReference>>();
       for (RecordInfo record : records)
       {
          byte[] data = record.data;
@@ -345,7 +345,6 @@ public class JournalStorageManager implements StorageManager
                   ref.getQueue().addLast(ref);
                }
 
-               routedRefs.put(record.id, refs);
                break;
             }
             case ACKNOWLEDGE_REF:
@@ -428,16 +427,24 @@ public class JournalStorageManager implements StorageManager
             }
             case SET_SCHEDULED_DELIVERY_TIME:
             {
-               ScheduledDeliveryEncoding scheduledDeliveryEncoding = new ScheduledDeliveryEncoding(record.id);
-               scheduledDeliveryEncoding.decode(buff);
-               List<MessageReference> refs = routedRefs.get(record.id);
-               //for any references that have already been routed, we need to remove them from t he queue and re add them as scheduled
-               for (MessageReference ref : refs)
-               {
-                  ref.getQueue().removeReferenceWithID(ref.getMessage().getMessageID());
-                  ref.setScheduledDeliveryTime(scheduledDeliveryEncoding.getScheduledDeliveryTime());
-                  ref.getQueue().addScheduledDelivery(ref);
-               }
+               long messageID = record.id;
+
+               ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding();
+
+               encoding.decode(buff);
+
+               Queue queue = queues.get(encoding.queueID);
+
+                  if (queue == null)
+                  {
+                     throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
+                  }
+                  //remove the reference and then add it back in with the scheduled time set.
+                  MessageReference removed = queue.removeReferenceWithID(messageID);
+
+                  removed.setScheduledDeliveryTime(encoding.scheduledDeliveryTime);
+
+                  queue.addLast(removed);
 
                break;
             }
@@ -659,7 +666,6 @@ public class JournalStorageManager implements StorageManager
 
          List<MessageReference> messagesToAck = new ArrayList<MessageReference>();
 
-         Map<Long, List<MessageReference>> routedRefs = new HashMap<Long, List<MessageReference>>();
 
          PageTransactionInfoImpl pageTransactionInfo = null;
 
@@ -685,8 +691,6 @@ public class JournalStorageManager implements StorageManager
                   List<MessageReference> refs = postOffice.route(message);
 
                   messages.addAll(refs);
-
-                  routedRefs.put(record.id, refs);
 
                   break;
                }
@@ -728,15 +732,29 @@ public class JournalStorageManager implements StorageManager
                }
                case SET_SCHEDULED_DELIVERY_TIME:
                {
-                  ScheduledDeliveryEncoding scheduledDeliveryEncoding = new ScheduledDeliveryEncoding(record.id);
-                  scheduledDeliveryEncoding.decode(buff);
-                  List<MessageReference> refs = routedRefs.get(record.id);
-                  //for any references that have already been routed, we need to remove them from the queue and re add them as scheduled
-                  for (MessageReference ref : refs)
+                  long messageID = record.id;
+
+                  ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding();
+
+                  encoding.decode(buff);
+
+                  Queue queue = queues.get(encoding.queueID);
+
+                  if (queue == null)
                   {
-                     ref.setScheduledDeliveryTime(scheduledDeliveryEncoding.getScheduledDeliveryTime());
-                     scheduledMessages.add(ref);
+                     throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
                   }
+
+                  for (MessageReference ref : messages)
+                  {
+                     if(ref.getQueue().getPersistenceID() == encoding.queueID &&
+                           ref.getMessage().getMessageID() == messageID)
+                     {
+                        ref.setScheduledDeliveryTime(encoding.scheduledDeliveryTime);
+                        scheduledMessages.add(ref);
+                     }
+                  }
+
                   break;
                }
                default:
@@ -1009,40 +1027,36 @@ public class JournalStorageManager implements StorageManager
          super(queueID);
       }
    }
-   private static class ScheduledDeliveryEncoding implements EncodingSupport
+   private static class ScheduledDeliveryEncoding extends QueueEncoding
    {
-      long messageId;
       long scheduledDeliveryTime;
 
-      private ScheduledDeliveryEncoding(long messageId, long scheduledDeliveryTime)
+      private ScheduledDeliveryEncoding(long scheduledDeliveryTime, long queueID)
       {
-         this.messageId = messageId;
+         super(queueID);
          this.scheduledDeliveryTime = scheduledDeliveryTime;
       }
 
-      public ScheduledDeliveryEncoding(long messageId)
+      public ScheduledDeliveryEncoding()
       {
-         this.messageId = messageId;
+
       }
 
       public int getEncodeSize()
       {
-         return 8;
+         return super.getEncodeSize() + 8;
       }
 
       public void encode(MessagingBuffer buffer)
       {
+         super.encode(buffer);
          buffer.putLong(scheduledDeliveryTime);
       }
 
       public void decode(MessagingBuffer buffer)
       {
+         super.decode(buffer);
          scheduledDeliveryTime = buffer.getLong();
-      }
-
-      public long getScheduledDeliveryTime()
-      {
-         return scheduledDeliveryTime;
       }
    }
 }

@@ -254,6 +254,10 @@ public class PagingManagerImpl implements PagingManager
             for (MessageReference ref : refs)
             {
                ref.setScheduledDeliveryTime(scheduledDeliveryTime);
+               if(ref.getQueue().isDurable())
+               {
+                  storageManager.storeMessageReferenceScheduledTransactional(depageTransactionID, ref.getQueue().getPersistenceID(), msg.getMessage().getMessageID(), scheduledDeliveryTime);
+               }
             }
             scheduledRefsToAdd.addAll(refs);
          }
@@ -261,11 +265,6 @@ public class PagingManagerImpl implements PagingManager
          if (msg.getMessage().getDurableRefCount() != 0)
          {
             storageManager.storeMessageTransactional(depageTransactionID, msg.getMessage());
-            //write the scheduled message record if needed
-            if(scheduledDeliveryTime != null)
-            {
-               storageManager.storeMessageScheduledTransactional(depageTransactionID, msg.getMessage(), scheduledDeliveryTime);
-            }
          }
       }
 
@@ -293,7 +292,7 @@ public class PagingManagerImpl implements PagingManager
 
       for (MessageReference ref : scheduledRefsToAdd)
       {
-         ref.getQueue().addScheduledDelivery(ref);
+         ref.getQueue().addLast(ref);
       }
       if (globalMode.get())
       {

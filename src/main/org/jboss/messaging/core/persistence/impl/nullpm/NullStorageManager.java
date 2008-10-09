@@ -104,14 +104,15 @@ public class NullStorageManager implements StorageManager
 	{
 	}
 
-	public void storeAcknowledgeTransactional(long txID, long queueID,
+   public void storeMessageReferenceScheduled(long queueID, long messageID, long scheduledDeliveryTime) throws Exception
+   {
+   }
+
+   public void storeAcknowledgeTransactional(long txID, long queueID,
 			long messageiD) throws Exception
 	{
 	}
 
-   public void storeMessageScheduled(ServerMessage message, long scheduledDeliveryTime) throws Exception
-   {
-   }
 
    public void storeDelete(long messageID) throws Exception
 	{
@@ -130,7 +131,7 @@ public class NullStorageManager implements StorageManager
 	{
 	}
 
-   public void storeMessageScheduledTransactional(long txID, ServerMessage message, long scheduledDeliveryTime) throws Exception
+   public void storeMessageReferenceScheduledTransactional(long txID, long queueID, long messageID, long scheduledDeliveryTime) throws Exception
    {
    }
 
