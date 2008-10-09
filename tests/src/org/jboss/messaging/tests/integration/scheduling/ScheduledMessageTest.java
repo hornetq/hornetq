@@ -605,6 +605,7 @@ public class ScheduledMessageTest extends UnitTestCase
    public void testTxMessageDeliveredCorrectly(boolean recover) throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid2 = new XidImpl("xa2".getBytes(), 1, new GUID().toString().getBytes());
       TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
       messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
@@ -646,12 +647,16 @@ public class ScheduledMessageTest extends UnitTestCase
       ClientConsumer consumer = session.createConsumer(atestq);
 
       session.start();
-
+      session.start(xid2, XAResource.TMNOFLAGS);
       ClientMessage message2 = consumer.receive(10000);
       assertTrue(System.currentTimeMillis() >= cal.getTimeInMillis());
+      assertNotNull(message2);
       assertEquals("testINVMCoreClient", message2.getBody().getString());
 
       message2.processed();
+      session.end(xid2, XAResource.TMSUCCESS);
+      session.prepare(xid2);
+      session.commit(xid2, true);
       consumer.close();
       // Make sure no more messages
       consumer = session.createConsumer(atestq);
