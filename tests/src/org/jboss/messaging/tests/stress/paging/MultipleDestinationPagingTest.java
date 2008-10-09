@@ -160,9 +160,9 @@ public class MultipleDestinationPagingTest extends IntegrationTestBase
       do
       {
          msg = consumer.receive(1000);
-         msg.processed();
          if (msg != null)
          {
+            msg.processed();
             if (++msgs % 10000 == 0)
             {
                System.out.println("received " + msgs);
