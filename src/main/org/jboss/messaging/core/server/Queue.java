@@ -22,6 +22,10 @@
 
 package org.jboss.messaging.core.server;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.Executor;
+
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -30,11 +34,6 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
 
 
 /**
@@ -110,8 +109,6 @@ public interface Queue
    void setFlowController(FlowController flowController);
   
    MessageReference removeReferenceWithID(long id);
-   
-   MessageReference waitForReferenceWithID(long id, CountDownLatch latch);
    
    MessageReference getReference(long id);
    

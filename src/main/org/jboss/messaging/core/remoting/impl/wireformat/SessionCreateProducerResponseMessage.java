@@ -30,7 +30,7 @@ import org.jboss.messaging.util.SimpleString;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionCreateProducerResponseMessage extends DuplicablePacket
+public class SessionCreateProducerResponseMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
@@ -86,7 +86,6 @@ public class SessionCreateProducerResponseMessage extends DuplicablePacket
 
    public void encodeBody(final MessagingBuffer buffer)
    {
-      super.encodeBody(buffer);
       buffer.putInt(initialCredits);
       buffer.putInt(maxRate);
       buffer.putNullableSimpleString(autoGroupId);
@@ -94,7 +93,6 @@ public class SessionCreateProducerResponseMessage extends DuplicablePacket
    
    public void decodeBody(final MessagingBuffer buffer)
    {     
-      super.decodeBody(buffer);
       initialCredits = buffer.getInt();
       maxRate = buffer.getInt();
       autoGroupId = buffer.getNullableSimpleString();

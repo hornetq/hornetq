@@ -32,7 +32,7 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionQueueQueryResponseMessage extends DuplicablePacket
+public class SessionQueueQueryResponseMessage extends PacketImpl
 {
    private boolean exists;
 
@@ -119,7 +119,6 @@ public class SessionQueueQueryResponseMessage extends DuplicablePacket
 
    public void encodeBody(final MessagingBuffer buffer)
    {
-      super.encodeBody(buffer);
       buffer.putBoolean(exists);
       buffer.putBoolean(durable);
       buffer.putInt(consumerCount);
@@ -130,7 +129,6 @@ public class SessionQueueQueryResponseMessage extends DuplicablePacket
 
    public void decodeBody(final MessagingBuffer buffer)
    {
-      super.decodeBody(buffer);
       exists = buffer.getBoolean();
       durable = buffer.getBoolean();
       consumerCount = buffer.getInt();

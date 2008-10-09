@@ -26,86 +26,64 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
  * 
- * A ReattachSessionResponseMessage
+ * A SessionFailoverCompleteMessage
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class ReattachSessionResponseMessage extends PacketImpl
+public class SessionFailoverCompleteMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private int lastReceivedCommandID;
-   
-   //Is this flag really necessary - try removing it
-   private boolean removed;
+   private String name;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReattachSessionResponseMessage(final int lastReceivedCommandID, final boolean removed)
+   public SessionFailoverCompleteMessage(final String name)
    {
-      super(REATTACH_SESSION_RESP);
+      super(SESS_FAILOVER_COMPLETE);
 
-      this.lastReceivedCommandID = lastReceivedCommandID;
-      
-      this.removed = removed;
+      this.name = name;
    }
    
-   public ReattachSessionResponseMessage()
+   public SessionFailoverCompleteMessage()
    {
-      super(REATTACH_SESSION_RESP);
+      super(SESS_FAILOVER_COMPLETE);
    }
 
    // Public --------------------------------------------------------
 
-   public int getLastReceivedCommandID()
+   public String getName()
    {
-      return lastReceivedCommandID;
-   }
-   
-   public boolean isRemoved()
-   {
-      return removed;
+      return name;
    }
    
    public void encodeBody(final MessagingBuffer buffer)
-   { 
-      buffer.putInt(lastReceivedCommandID);
-      buffer.putBoolean(removed);
+   {
+      buffer.putString(name);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
-   { 
-      lastReceivedCommandID = buffer.getInt();
-      removed = buffer.getBoolean();
-   }
-   
-   public boolean isResponse()
-   {      
-      return true;
+   {
+      name = buffer.getString();
    }
 
    public boolean equals(Object other)
    {
-      if (other instanceof ReattachSessionResponseMessage == false)
+      if (other instanceof SessionFailoverCompleteMessage == false)
       {
          return false;
       }
             
-      ReattachSessionResponseMessage r = (ReattachSessionResponseMessage)other;
+      SessionFailoverCompleteMessage r = (SessionFailoverCompleteMessage)other;
       
-      return super.equals(other) && this.lastReceivedCommandID == r.lastReceivedCommandID;
+      return super.equals(other) && this.name.equals(r.name);
    }
    
-   public final boolean isRequiresConfirmations()
-   {
-      return false;
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

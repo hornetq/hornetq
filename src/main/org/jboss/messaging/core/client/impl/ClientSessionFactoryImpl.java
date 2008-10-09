@@ -11,12 +11,20 @@
  */
 package org.jboss.messaging.core.client.impl;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.*;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.ChannelHandler;
+import org.jboss.messaging.core.remoting.ConnectionRegistry;
+import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
@@ -25,9 +33,6 @@ import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.UUIDGenerator;
 import org.jboss.messaging.util.VersionLoader;
-
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -378,6 +383,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    {
       return failedOver;
    }
+   
+   public int getSessionCount()
+   {
+      return sessions.size();
+   }
 
    // ClientSessionFactoryInternal implementation
    // ------------------------------------------
@@ -424,7 +434,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                                                 pingPeriod,
                                                                                 callTimeout);         
 
-         session.handleFailover(backupConnection);
+         boolean ok = session.handleFailover(backupConnection);
+         
+         if (!ok)
+         {
+            //Already closed - so return it
+            connectionRegistry.returnConnection(backupConnection.getID());
+         }
       }
 
       connectorFactory = backupConnectorFactory;
@@ -474,7 +490,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                    autoCommitSends,
                                                    autoCommitAcks);
 
-         Channel channel1 = connection.getChannel(1, false, -1, false, true);
+         Channel channel1 = connection.getChannel(1, false, -1, true);
 
          try
          {
@@ -501,14 +517,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
          int packetConfirmationBatchSize = response.getPacketConfirmationBatchSize();
          
-         //TODO - don't need packet confirmationbatch size on the client side - it's only really
-         //needed on the server side
-         //since confirmations are only sent from server to client
-         
          Channel sessionChannel = connection.getChannel(sessionChannelID,
                                                         false,
-                                                        -1,
-                                                        packetConfirmationBatchSize != -1,
+                                                        packetConfirmationBatchSize,                                               
                                                         !hasBackup);
 
          ClientSessionInternal session = new ClientSessionImpl(this,

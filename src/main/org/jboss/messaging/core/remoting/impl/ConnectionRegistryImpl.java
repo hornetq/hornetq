@@ -76,7 +76,7 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       if (holder != null)
       {
          holder.increment();
-
+         
          RemotingConnection connection = holder.getConnection();
 
          return connection;
@@ -159,6 +159,7 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
 
    public synchronized void returnConnection(final Object connectionID)
    {
+      
       RegistryKey key = reverseMap.get(connectionID);
 
       if (key == null)
@@ -171,7 +172,7 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       }
 
       ConnectionHolder holder = connections.get(key);
-
+      
       if (holder.getCount() == 1)
       {
          RemotingConnection conn = holder.getConnection();
@@ -191,7 +192,7 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
    }
 
    public synchronized int size()
-   {
+   {  
       return connections.size();
    }
 
@@ -211,16 +212,23 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       }
    }
 
-   public void clear()
+   public synchronized void clear()
    {
       connections.clear();
+      
+      reverseMap.clear();
    }
 
    public void dump()
    {
       for (ConnectionHolder holder : connections.values())
       {
+         log.info("=============================");
          log.info("connection " + System.identityHashCode(holder.connection) + " count " + holder.count);
+         for (StackTraceElement elem: holder.trace)
+         {
+            log.info(elem.toString());
+         }
       }
    }
 
@@ -241,13 +249,16 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       if (key != null)
       {
          ConnectionHolder holder = connections.remove(key);
-
-         // If conn still exists here this means that the underlying transport
-         // conn has been closed from the server side without
-         // being returned from the client side so we need to fail the conn and
-         // call it's listeners
-         MessagingException me = new MessagingException(MessagingException.OBJECT_CLOSED, "The conn has been closed.");
-         holder.getConnection().fail(me);
+         
+         if (holder != null)
+         {
+            // If conn still exists here this means that the underlying transport
+            // conn has been closed from the server side without
+            // being returned from the client side so we need to fail the conn and
+            // call it's listeners
+            MessagingException me = new MessagingException(MessagingException.OBJECT_CLOSED, "The conn has been closed.");
+            holder.getConnection().fail(me);
+         }
       }
    }
 
@@ -261,8 +272,11 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       }
 
       ConnectionHolder holder = connections.remove(key);
-
-      holder.getConnection().fail(me);
+      
+      if (holder != null)
+      {
+         holder.getConnection().fail(me);
+      }
    }
 
    // Package protected ---------------------------------------------
@@ -305,6 +319,8 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
       private final Connector connector;
 
       private int count;
+      
+      private StackTraceElement[] trace;
 
       public ConnectionHolder(final RemotingConnection connection, final Connector connector)
       {
@@ -313,6 +329,8 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
          this.connection = connection;
          this.connector = connector;
          count = 1;
+         
+         trace = Thread.currentThread().getStackTrace();
       }
 
       public void increment()

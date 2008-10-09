@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.server.impl;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.filter.Filter;
@@ -32,6 +31,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
@@ -90,8 +90,6 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final Channel channel;
    
-   private volatile CountDownLatch waitingLatch;
-   
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -108,7 +106,7 @@ public class ServerConsumerImpl implements ServerConsumer
                              final Channel channel)
    {
       this.id = id;
-
+      
       this.messageQueue = messageQueue;
 
       this.filter = filter;
@@ -151,8 +149,10 @@ public class ServerConsumerImpl implements ServerConsumer
       {       
          return HandleStatus.BUSY;
       }
+      
+      final ServerMessage message = ref.getMessage();
 
-      if (ref.getMessage().isExpired())
+      if (message.isExpired())
       {
          ref.expire(storageManager, postOffice, queueSettingsRepository);
 
@@ -169,8 +169,6 @@ public class ServerConsumerImpl implements ServerConsumer
             return HandleStatus.BUSY;
          }
 
-         ServerMessage message = ref.getMessage();
-
          if (filter != null && !filter.match(message))
          {
             return HandleStatus.NO_MATCH;
@@ -180,13 +178,21 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             availableCredits.addAndGet(-message.getEncodeSize());
          }
-
-         deliveringRefs.add(ref);
          
-         SessionReceiveMessage packet = new SessionReceiveMessage(id, ref.getMessage(), ref.getDeliveryCount() + 1);
-
-         channel.send(packet);
-
+         final SessionReceiveMessage packet = new SessionReceiveMessage(id, message, ref.getDeliveryCount() + 1);
+         
+         Runnable run = new Runnable()
+         {
+            public void run()
+            {
+               deliveringRefs.add(ref);
+                                            
+               channel.send(packet);
+            }
+         };
+         
+         channel.replicatePacket(new SessionReplicateDeliveryMessage(id, message.getMessageID()), run);
+        
          return HandleStatus.HANDLED;
       }
    }
@@ -195,11 +201,6 @@ public class ServerConsumerImpl implements ServerConsumer
    {     
       setStarted(false);
       
-      if (waitingLatch != null)
-      {                
-         waitingLatch.countDown();
-      }
-
       messageQueue.removeConsumer(this);
 
       session.removeConsumer(this);
@@ -256,28 +257,27 @@ public class ServerConsumerImpl implements ServerConsumer
       return messageQueue;
    }
  
-   public MessageReference waitForReference(final long messageID) throws Exception
+   public MessageReference getReference(final long messageID) throws Exception
+   {     
+      MessageReference ref = deliveringRefs.poll();
+            
+      return ref;      
+   }
+   
+   public void deliver(final long messageID) throws Exception
    {
-      if (messageQueue.isBackup())
+      MessageReference ref = messageQueue.removeReferenceWithID(messageID);
+         
+      if (ref == null)
       {
-         waitingLatch = new CountDownLatch(1);
-                                 
-         MessageReference ref = messageQueue.waitForReferenceWithID(messageID, waitingLatch);
-         
-         waitingLatch = null;
-         
-         return ref;
+         throw new IllegalStateException("Cannot find ref to deliver " + ref);
       }
-      else
+      
+      HandleStatus status = handle(ref);
+      
+      if (status != HandleStatus.HANDLED)
       {
-         MessageReference ref = deliveringRefs.poll();
-
-         if (ref.getMessage().getMessageID() != messageID)
-         {
-            throw new IllegalStateException("Invalid order");
-         }
-
-         return ref;
+         throw new IllegalStateException("ref " + ref + " was not handled");
       }
    }
 

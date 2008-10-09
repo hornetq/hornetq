@@ -73,12 +73,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private volatile int creditsToSend;
    
-   private volatile boolean cleared;
+   private boolean cleared;
    
-   private volatile long lastMessageIDProcessed = -1;
-   
-   private volatile long ignoreMessageID = -1;
-
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -152,8 +148,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             if (!closed && !buffer.isEmpty())
             {
                ClientMessage m = buffer.poll();
-               
-               lastMessageIDProcessed = m.getMessageID();
 
                boolean expired = m.isExpired();
 
@@ -263,7 +257,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return id;
    }
    
-   public void handleMessage(final ClientMessage message) throws Exception
+   public synchronized void handleMessage(final ClientMessage message) throws Exception
    {
       if (closed)
       {
@@ -277,13 +271,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // messages
          return;         
       }
-      
-      if (message.getMessageID() == ignoreMessageID)
-      {
-         //Ignore this - this is one resent after failover since was processing in onMessage
-         return;
-      }
-      
+            
       message.onReceipt(session, id);
 
       if (handler != null)
@@ -309,10 +297,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             // Execute using executor
 
-            synchronized (this)
-            {
-               buffer.add(message);
-            }
+            buffer.add(message);
 
             queueExecutor();
          }
@@ -320,23 +305,20 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       else
       {
          // Add it to the buffer
-         synchronized (this)
-         {
-            buffer.add(message);
+         buffer.add(message);
 
-            notify();
-         }
+         notify();
       }
    }
 
-   public void clear()
+   public synchronized void clear()
    {
       cleared = true;
       
       buffer.clear();
    }
    
-   public void resume()
+   public synchronized void resume()
    {
       cleared = false;
    }
@@ -356,15 +338,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return creditsToSend;
    }
    
-   public void failover()
-   {  
-      // We ignore any message that might be resent on redelivery after failover due to it being
-      // in onMessage and processed not having been called yet
-      ignoreMessageID = lastMessageIDProcessed;
-      
-      buffer.clear();  
-   }
-
    // Public
    // ---------------------------------------------------------------------------------------
 
@@ -460,8 +433,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             {
                onMessageThread = Thread.currentThread();
                
-               lastMessageIDProcessed = message.getMessageID();
-
                handler.onMessage(message);
             }
             else

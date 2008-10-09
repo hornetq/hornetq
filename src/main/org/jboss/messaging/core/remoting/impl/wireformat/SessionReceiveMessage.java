@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
@@ -38,36 +38,36 @@ import org.jboss.messaging.core.server.ServerMessage;
 public class SessionReceiveMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
-   
+
    private static final Logger log = Logger.getLogger(SessionReceiveMessage.class);
 
    // Attributes ----------------------------------------------------
 
    private long consumerID;
-   
+
    private ClientMessage clientMessage;
-   
+
    private ServerMessage serverMessage;
-   
+
    private int deliveryCount;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   
+
    public SessionReceiveMessage(final long consumerID, final ServerMessage message, final int deliveryCount)
    {
       super(SESS_RECEIVE_MSG);
-      
+
       this.consumerID = consumerID;
 
       this.serverMessage = message;
-      
+
       this.clientMessage = null;
-      
+
       this.deliveryCount = deliveryCount;
    }
-   
+
    public SessionReceiveMessage()
    {
       super(SESS_RECEIVE_MSG);
@@ -79,12 +79,12 @@ public class SessionReceiveMessage extends PacketImpl
    {
       return consumerID;
    }
-   
+
    public ClientMessage getClientMessage()
    {
       return clientMessage;
    }
-   
+
    public ServerMessage getServerMessage()
    {
       return serverMessage;
@@ -94,32 +94,27 @@ public class SessionReceiveMessage extends PacketImpl
    {
       return deliveryCount;
    }
-   
+
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putLong(consumerID);
       buffer.putInt(deliveryCount);
       serverMessage.encode(buffer);
    }
-   
+
    public void decodeBody(final MessagingBuffer buffer)
    {
-      //TODO can be optimised
-      
+      // TODO can be optimised
+
       consumerID = buffer.getLong();
-      
+
       deliveryCount = buffer.getInt();
 
       clientMessage = new ClientMessageImpl(deliveryCount);
-      
+
       clientMessage.decode(buffer);
-      
+
       clientMessage.getBody().flip();
-   }
-   
-   public final boolean isRequiresConfirmations()
-   {
-      return false;
    }
 
    // Package protected ---------------------------------------------

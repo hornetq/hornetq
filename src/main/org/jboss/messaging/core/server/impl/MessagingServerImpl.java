@@ -384,18 +384,14 @@ public class MessagingServerImpl implements MessagingServer
    }
 
    public ReattachSessionResponseMessage reattachSession(final RemotingConnection connection,
-                                                         final String name) throws Exception
+                                                         final String name,
+                                                         final int lastReceivedCommandID) throws Exception
    {
       ServerSession session = sessions.get(name);
 
-      if (session == null)
-      {
-         throw new IllegalArgumentException("Cannot find session with name " + name + " to reattach");
-      }
-      
-      // Reconnect the channel to the new connection
-      int serverLastReceivedCommandID = session.transferConnection(connection);
-      
+      // Need to activate the connection even if session can't be found - since otherwise response
+      // will never get back
+
       connection.activate();
 
       postOffice.activate();
@@ -404,11 +400,19 @@ public class MessagingServerImpl implements MessagingServer
 
       remotingService.setBackup(false);
 
-      session.failedOver();
-
-      return new ReattachSessionResponseMessage(serverLastReceivedCommandID);
+      if (session == null)
+      {
+         return new ReattachSessionResponseMessage(-1, true);
+      }
+      else
+      {
+         // Reconnect the channel to the new connection
+         int serverLastReceivedCommandID = session.transferConnection(connection, lastReceivedCommandID);
+                         
+         return new ReattachSessionResponseMessage(serverLastReceivedCommandID, false);
+      }
    }
-
+   
    public CreateSessionResponseMessage createSession(final String name,
                                                      final long channelID,
                                                      final String username,
@@ -437,10 +441,11 @@ public class MessagingServerImpl implements MessagingServer
       // being corrupted.
 
       securityStore.authenticate(username, password);
-
-      //Server side connections never have a resend cache
-      
-      Channel channel = connection.getChannel(channelID, true, configuration.getPacketConfirmationBatchSize(), false, false);
+ 
+      Channel channel = connection.getChannel(channelID,
+                                              true,
+                                              configuration.getPacketConfirmationBatchSize(),                                             
+                                              false);
 
       final ServerSessionImpl session = new ServerSessionImpl(name,
                                                               channelID,
@@ -479,7 +484,7 @@ public class MessagingServerImpl implements MessagingServer
    }
 
    public void removeSession(final String name) throws Exception
-   {      
+   {
       sessions.remove(name);
    }
 
@@ -497,7 +502,7 @@ public class MessagingServerImpl implements MessagingServer
          RemotingConnection replicatingConnection = ConnectionRegistryImpl.instance.getConnectionNoCache(backupConnectorFactory,
                                                                                                          backupConnectorParams,
                                                                                                          -1,
-                                                                                                         30000); 
+                                                                                                         2000);
          return replicatingConnection;
       }
       else

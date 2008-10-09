@@ -57,11 +57,6 @@ public class SessionXASetTimeoutMessage extends PacketImpl
    
    // Public --------------------------------------------------------
    
-   public boolean isReHandleResponseOnFailure()
-   {
-      return true;
-   }
-   
    public int getTimeoutSeconds()
    {
       return this.timeoutSeconds;

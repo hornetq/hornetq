@@ -12,6 +12,20 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
@@ -31,23 +45,6 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implementation of a Queue TODO use Java 5 concurrent queue
@@ -91,8 +88,6 @@ public class QueueImpl implements Queue
 
    private boolean promptDelivery;
 
-   private int pos;
-
    private AtomicInteger sizeBytes = new AtomicInteger(0);
 
    private AtomicInteger messagesAdded = new AtomicInteger(0);
@@ -108,8 +103,6 @@ public class QueueImpl implements Queue
    private volatile boolean backup;
 
    private int consumersToFailover = -1;
-
-   private Map<Long, CountDownLatch> waitingIDMap = new ConcurrentHashMap<Long, CountDownLatch>();
 
    public QueueImpl(final long persistenceID,
                     final SimpleString name,
@@ -166,8 +159,6 @@ public class QueueImpl implements Queue
    {
       HandleStatus status = add(ref, false);
 
-      checkWaiting(ref.getMessage().getMessageID());
-
       return status;
    }
 
@@ -185,12 +176,11 @@ public class QueueImpl implements Queue
          MessageReference ref = iter.previous();
 
          ServerMessage msg = ref.getMessage();
-         if(!checkAndSchedule(ref))
+
+         if (!checkAndSchedule(ref))
          {
             messageReferences.addFirst(ref, msg.getPriority());
          }
-
-         checkWaiting(msg.getMessageID());
       }
 
       deliver();
@@ -655,43 +645,6 @@ public class QueueImpl implements Queue
       }
    }
 
-   public MessageReference waitForReferenceWithID(final long id, final CountDownLatch latch)
-   {
-      MessageReference ref;
-
-      synchronized (this)
-      {
-         ref = removeReferenceWithID(id);
-
-         if (ref == null)
-         {
-            waitingIDMap.put(id, latch);
-         }
-      }
-
-      if (ref == null)
-      {
-         boolean ok = false;
-
-         try
-         {
-            ok = latch.await(10000, TimeUnit.MILLISECONDS);
-         }
-         catch (InterruptedException e)
-         {
-         }
-
-         if (!ok)
-         {
-            throw new IllegalStateException("Timed out or interrupted waiting for ref to arrive on queue " + id);
-         }
-
-         ref = this.removeReferenceWithID(id);
-      }
-
-      return ref;
-   }
-
    // Public
    // -----------------------------------------------------------------------------
 
@@ -702,7 +655,7 @@ public class QueueImpl implements Queue
          return true;
       }
 
-      QueueImpl qother = (QueueImpl) other;
+      QueueImpl qother = (QueueImpl)other;
 
       return name.equals(qother.name);
    }
@@ -837,16 +790,6 @@ public class QueueImpl implements Queue
       return status;
    }
 
-   private void checkWaiting(final long messageID)
-   {
-      CountDownLatch latch = waitingIDMap.remove(messageID);
-
-      if (latch != null)
-      {
-         latch.countDown();
-      }
-   }
-
    // Inner classes
    // --------------------------------------------------------------------------
 
@@ -933,7 +876,6 @@ public class QueueImpl implements Queue
 
             // TODO - need to replicate this so backup node also adds back to
             // front of queue
-
 
             addFirst(ref);
          }

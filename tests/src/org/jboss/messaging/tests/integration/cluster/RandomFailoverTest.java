@@ -36,7 +36,6 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
@@ -56,7 +55,7 @@ public class RandomFailoverTest extends TestCase
    private static final Logger log = Logger.getLogger(SimpleAutomaticFailoverTest.class);
 
    // Constants -----------------------------------------------------
-   
+
    private static final int RECEIVE_TIMEOUT = 5000;
 
    // Attributes ----------------------------------------------------
@@ -75,137 +74,262 @@ public class RandomFailoverTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   //private volatile Thread failThread;
-   
    private Timer timer = new Timer();
-   
+
    private volatile Failer failer;
-   
-   private void startFailer(final long time)
-   {      
-      failer = new Failer();
-      
-      timer.schedule(failer, (long)(time * Math.random()), Long.MAX_VALUE);
+
+   private void startFailer(final long time, final ClientSession session)
+   {
+      failer = new Failer(session);
+
+      timer.schedule(failer, (long)(time * Math.random()), 100);
    }
 
-   private static class Failer extends TimerTask
+   private class Failer extends TimerTask
    {
-      volatile ClientSession session;
-                    
-      public void run()
+      private final ClientSession session;
+
+      private boolean executed;
+
+      public Failer(final ClientSession session)
       {
-         if (session != null)
-         {
-            log.info("** Failing connection");
-            
-            RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionImpl)session).getConnection();
-            
-            conn.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
-            
-            log.info("** Fail complete");
-            
-            session = null;
-            
-            cancel();
-         }
+         this.session = session;
+      }
+
+      public synchronized void run()
+      {
+         log.info("** Failing connection");
+
+         RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionImpl)session).getConnection();
+
+         conn.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
+
+         log.info("** Fail complete");
+
+         cancel();
+
+         executed = true;
+      }
+
+      public synchronized boolean isExecuted()
+      {
+         return executed;
       }
    }
    
-   public void testFailureA() throws Exception
+   private interface RunnableTest
    {
-      for (int its = 0; its < 1000; its++)
-      {      
-         start();                  
-                           
-         startFailer(3000);
-         
-         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                           backupParams));         
-         do
-         {         
+      void run(final ClientSessionFactory sf) throws Exception;      
+   }
+   
+   public void testA() throws Exception
+   {
+      runTest(new RunnableTest()
+      {
+         public void run(final ClientSessionFactory sf) throws Exception
+         {
             testA(sf);
          }
-         while (failer.session != null);
-               
+      });
+   }
+   
+   public void testB() throws Exception
+   {
+      runTest(new RunnableTest()
+      {
+         public void run(final ClientSessionFactory sf) throws Exception
+         {
+            testB(sf);
+         }
+      });
+   }
+   
+   public void testC() throws Exception
+   {
+      runTest(new RunnableTest()
+      {
+         public void run(final ClientSessionFactory sf) throws Exception
+         {
+            testC(sf);
+         }
+      });
+   }
+   
+   public void testD() throws Exception
+   {
+      runTest(new RunnableTest()
+      {
+         public void run(final ClientSessionFactory sf) throws Exception
+         {
+            testD(sf);
+         }
+      });
+   }
+   
+   public void testE() throws Exception
+   {
+      runTest(new RunnableTest()
+      {
+         public void run(final ClientSessionFactory sf) throws Exception
+         {
+            testE(sf);
+         }
+      });
+   }
+   
+   public void testF() throws Exception
+   {
+      runTest(new RunnableTest()
+      {
+         public void run(final ClientSessionFactory sf) throws Exception
+         {
+            testF(sf);
+         }
+      });
+   }
+   
+   public void testG() throws Exception
+   {
+      runTest(new RunnableTest()
+      {
+         public void run(final ClientSessionFactory sf) throws Exception
+         {
+            testG(sf);
+         }
+      });
+   }
+   
+   public void testH() throws Exception
+   {
+      runTest(new RunnableTest()
+      {
+         public void run(final ClientSessionFactory sf) throws Exception
+         {
+            testH(sf);
+         }
+      });
+   }
+   
+   public void testI() throws Exception
+   {
+      runTest(new RunnableTest()
+      {
+         public void run(final ClientSessionFactory sf) throws Exception
+         {
+            testI(sf);
+         }
+      });
+   }
+   
+   public void testJ() throws Exception
+   {
+      runTest(new RunnableTest()
+      {
+         public void run(final ClientSessionFactory sf) throws Exception
+         {
+            testJ(sf);
+         }
+      });
+   }
+   
+   public void testK() throws Exception
+   {
+      runTest(new RunnableTest()
+      {
+         public void run(final ClientSessionFactory sf) throws Exception
+         {
+            testK(sf);
+         }
+      });
+   }
+   
+   public void testL() throws Exception
+   {
+      runTest(new RunnableTest()
+      {
+         public void run(final ClientSessionFactory sf) throws Exception
+         {
+            testK(sf);
+         }
+      });
+   }
+
+   public void runTest(final RunnableTest runnable) throws Exception
+   {
+      final int numIts = 100;
+      
+      for (int its = 0; its < numIts; its++)
+      {
+         start();
+
+         ClientSessionFactoryImpl sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                    new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                               backupParams));
+
+         ClientSession session = sf.createSession(false, false, false, false);
+
+         startFailer(1000, session);
+
+         do
+         {
+            runnable.run(sf);
+         }
+         while (!failer.isExecuted());
+
+         session.close();
+
+         assertEquals(0, sf.getSessionCount());
+
          stop();
       }
    }
-   
-   public void testAA(final ClientSessionFactory sf) throws Exception
-   {                       
-      ClientSession s = sf.createSession(false, false, false, false);
-      
-      s.createQueue(ADDRESS, ADDRESS, null, false, false);
-      
-      failer.session = s;
-                              
-      final int numConsumers = 100;
-         
-      for (int i = 0; i < numConsumers; i++)
-      {
-         ClientConsumer consumer = s.createConsumer(ADDRESS);
-         
-         consumer.close();
-      }
-      
-      s.deleteQueue(ADDRESS);
-      
-      s.close();
-      
-      log.info("done");
-   }
-   
+
    public void testA(final ClientSessionFactory sf) throws Exception
-   {      
+   {
       long start = System.currentTimeMillis();
-                        
+
       ClientSession s = sf.createSession(false, false, false, false);
-      
-      failer.session = s;
-                              
+
       final int numMessages = 100;
 
       final int numSessions = 50;
 
       Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
       Set<ClientSession> sessions = new HashSet<ClientSession>();
-                 
+
       for (int i = 0; i < numSessions; i++)
       {
          SimpleString subName = new SimpleString("sub" + i);
-         
+
          ClientSession sessConsume = sf.createSession(false, true, true, false);
-         
+
          sessConsume.start();
-         
+
          sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
          consumers.add(consumer);
-         
+
          sessions.add(sessConsume);
       }
-      
-      ClientSession sessSend = sf.createSession(false, true, true, false);         
+
+      ClientSession sessSend = sf.createSession(false, true, true, false);
 
       ClientProducer producer = sessSend.createProducer(ADDRESS);
 
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                              false,
+                                                              0,
+                                                              System.currentTimeMillis(),
+                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBody().flip();
          producer.send(message);
       }
-      
-     // log.info("sent messages");
-            
+
       class MyHandler implements MessageHandler
       {
          final CountDownLatch latch = new CountDownLatch(1);
@@ -218,10 +342,19 @@ public class RandomFailoverTest extends TestCase
             {
                fail("Too many messages");
             }
-            
+
             assertEquals(count, message.getProperty(new SimpleString("count")));
 
             count++;
+
+            try
+            {
+               message.processed();
+            }
+            catch (MessagingException me)
+            {
+               log.error("Failed to process", me);
+            }
 
             if (count == numMessages)
             {
@@ -243,85 +376,80 @@ public class RandomFailoverTest extends TestCase
 
       for (MyHandler handler : handlers)
       {
-         boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
+         boolean ok = handler.latch.await(5000, TimeUnit.MILLISECONDS);
 
-         assertTrue(ok);
+         assertTrue("Didn't receive all messages", ok);
       }
 
       sessSend.close();
-      for (ClientSession session: sessions)
+      for (ClientSession session : sessions)
       {
          session.close();
       }
-      
+
       for (int i = 0; i < numSessions; i++)
       {
          SimpleString subName = new SimpleString("sub" + i);
-                                 
+
          s.deleteQueue(subName);
       }
-      
+
       s.close();
-                         
+
       long end = System.currentTimeMillis();
 
       log.info("duration " + (end - start));
-        
    }
-   
-   public void testB() throws Exception
-   {
-      start();
 
+   public void testB(final ClientSessionFactory sf) throws Exception
+   {
       long start = System.currentTimeMillis();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                        backupParams));
+      ClientSession s = sf.createSession(false, false, false, false);
 
-      final int numMessages = 1000;
+      final int numMessages = 100;
 
-      final int numSessions = 100;
+      final int numSessions = 50;
 
       Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
       Set<ClientSession> sessions = new HashSet<ClientSession>();
-                 
+
       for (int i = 0; i < numSessions; i++)
       {
          SimpleString subName = new SimpleString("sub" + i);
-         
+
          ClientSession sessConsume = sf.createSession(false, true, true, false);
-         
+
          sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
          consumers.add(consumer);
-         
+
          sessions.add(sessConsume);
       }
-      
-      ClientSession sessSend = sf.createSession(false, true, true, false);         
+
+      ClientSession sessSend = sf.createSession(false, true, true, false);
 
       ClientProducer producer = sessSend.createProducer(ADDRESS);
 
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                              false,
+                                                              0,
+                                                              System.currentTimeMillis(),
+                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBody().flip();
          producer.send(message);
       }
-      
-      for (ClientSession session: sessions)
+
+      for (ClientSession session : sessions)
       {
          session.start();
       }
-            
+
       class MyHandler implements MessageHandler
       {
          final CountDownLatch latch = new CountDownLatch(1);
@@ -334,7 +462,7 @@ public class RandomFailoverTest extends TestCase
             {
                fail("Too many messages");
             }
-            
+
             assertEquals(count, message.getProperty(new SimpleString("count")));
 
             count++;
@@ -365,87 +493,89 @@ public class RandomFailoverTest extends TestCase
       }
 
       sessSend.close();
-      
-      for (ClientSession session: sessions)
+
+      for (ClientSession session : sessions)
       {
          session.close();
       }
+
+      for (int i = 0; i < numSessions; i++)
+      {
+         SimpleString subName = new SimpleString("sub" + i);
+
+         s.deleteQueue(subName);
+      }
+
+      s.close();
 
       long end = System.currentTimeMillis();
 
       log.info("duration " + (end - start));
 
-      // this.waitForFailThread();
-
-      stop();
    }
-   
-   public void testC() throws Exception
-   {
-      start();
 
+   public void testC(final ClientSessionFactory sf) throws Exception
+   {
       long start = System.currentTimeMillis();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                        backupParams));
+      ClientSession s = sf.createSession(false, false, false, false);
 
-      final int numMessages = 1000;
+      final int numMessages = 100;
 
-      final int numSessions = 100;
+      final int numSessions = 50;
 
       Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
       Set<ClientSession> sessions = new HashSet<ClientSession>();
-                 
+
       for (int i = 0; i < numSessions; i++)
       {
          SimpleString subName = new SimpleString("sub" + i);
-         
+
          ClientSession sessConsume = sf.createSession(false, false, false, false);
-         
+
          sessConsume.start();
-         
+
          sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
          consumers.add(consumer);
-         
+
          sessions.add(sessConsume);
       }
-      
-      ClientSession sessSend = sf.createSession(false, true, true, false);         
+
+      ClientSession sessSend = sf.createSession(false, true, true, false);
 
       ClientProducer producer = sessSend.createProducer(ADDRESS);
 
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                              false,
+                                                              0,
+                                                              System.currentTimeMillis(),
+                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBody().flip();
          producer.send(message);
       }
-      
+
       sessSend.rollback();
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                              false,
+                                                              0,
+                                                              System.currentTimeMillis(),
+                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBody().flip();
          producer.send(message);
       }
-      
+
       sessSend.commit();
-                  
+
       class MyHandler implements MessageHandler
       {
          final CountDownLatch latch = new CountDownLatch(1);
@@ -458,7 +588,7 @@ public class RandomFailoverTest extends TestCase
             {
                fail("Too many messages");
             }
-            
+
             assertEquals(count, message.getProperty(new SimpleString("count")));
 
             count++;
@@ -487,10 +617,10 @@ public class RandomFailoverTest extends TestCase
 
          assertTrue(ok);
       }
-      
+
       handlers.clear();
-      
-      //New handlers
+
+      // New handlers
       for (ClientConsumer consumer : consumers)
       {
          MyHandler handler = new MyHandler();
@@ -499,48 +629,49 @@ public class RandomFailoverTest extends TestCase
 
          handlers.add(handler);
       }
-      
-      for (ClientSession session: sessions)
+
+      for (ClientSession session : sessions)
       {
          session.rollback();
       }
-      
+
       for (MyHandler handler : handlers)
       {
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
 
          assertTrue(ok);
       }
-      
-      for (ClientSession session: sessions)
+
+      for (ClientSession session : sessions)
       {
          session.commit();
       }
 
       sessSend.close();
-      for (ClientSession session: sessions)
+      for (ClientSession session : sessions)
       {
          session.close();
       }
 
+      for (int i = 0; i < numSessions; i++)
+      {
+         SimpleString subName = new SimpleString("sub" + i);
+
+         s.deleteQueue(subName);
+      }
+
+      s.close();
+
       long end = System.currentTimeMillis();
 
       log.info("duration " + (end - start));
-
-      // this.waitForFailThread();
-
-      stop();
    }
-   
-   public void testD() throws Exception
-   {
-      start();
 
+   public void testD(final ClientSessionFactory sf) throws Exception
+   {
       long start = System.currentTimeMillis();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                        backupParams));
+      ClientSession s = sf.createSession(false, false, false, false);
 
       final int numMessages = 100;
 
@@ -548,59 +679,59 @@ public class RandomFailoverTest extends TestCase
 
       Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
       Set<ClientSession> sessions = new HashSet<ClientSession>();
-                 
+
       for (int i = 0; i < numSessions; i++)
       {
          SimpleString subName = new SimpleString("sub" + i);
-         
+
          ClientSession sessConsume = sf.createSession(false, false, false, false);
-         
+
          sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
          consumers.add(consumer);
-         
+
          sessions.add(sessConsume);
       }
-      
-      ClientSession sessSend = sf.createSession(false, true, true, false);         
+
+      ClientSession sessSend = sf.createSession(false, true, true, false);
 
       ClientProducer producer = sessSend.createProducer(ADDRESS);
 
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                              false,
+                                                              0,
+                                                              System.currentTimeMillis(),
+                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBody().flip();
          producer.send(message);
       }
-      
+
       sessSend.rollback();
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                              false,
+                                                              0,
+                                                              System.currentTimeMillis(),
+                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBody().flip();
          producer.send(message);
       }
-      
+
       sessSend.commit();
-      
-      for (ClientSession session: sessions)
+
+      for (ClientSession session : sessions)
       {
          session.start();
       }
-                  
+
       class MyHandler implements MessageHandler
       {
          final CountDownLatch latch = new CountDownLatch(1);
@@ -613,7 +744,7 @@ public class RandomFailoverTest extends TestCase
             {
                fail("Too many messages");
             }
-            
+
             assertEquals(count, message.getProperty(new SimpleString("count")));
 
             count++;
@@ -642,10 +773,10 @@ public class RandomFailoverTest extends TestCase
 
          assertTrue(ok);
       }
-      
+
       handlers.clear();
-      
-      //New handlers
+
+      // New handlers
       for (ClientConsumer consumer : consumers)
       {
          MyHandler handler = new MyHandler();
@@ -654,232 +785,51 @@ public class RandomFailoverTest extends TestCase
 
          handlers.add(handler);
       }
-      
-      for (ClientSession session: sessions)
+
+      for (ClientSession session : sessions)
       {
          session.rollback();
       }
-      
+
       for (MyHandler handler : handlers)
       {
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
 
          assertTrue(ok);
       }
-      
-      for (ClientSession session: sessions)
+
+      for (ClientSession session : sessions)
       {
          session.commit();
       }
 
       sessSend.close();
-      for (ClientSession session: sessions)
+      for (ClientSession session : sessions)
       {
          session.close();
       }
 
+      for (int i = 0; i < numSessions; i++)
+      {
+         SimpleString subName = new SimpleString("sub" + i);
+
+         s.deleteQueue(subName);
+      }
+
+      s.close();
+
       long end = System.currentTimeMillis();
 
       log.info("duration " + (end - start));
-
-      // this.waitForFailThread();
-
-      stop();
    }
-   
+
    // Now with synchronous receive()
-   
-   
-   public void testE() throws Exception
-   {
-      start();
 
+   public void testE(final ClientSessionFactory sf) throws Exception
+   {
       long start = System.currentTimeMillis();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                        backupParams));
-
-      final int numMessages = 1000;
-
-      final int numSessions = 100;
-
-      Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
-      Set<ClientSession> sessions = new HashSet<ClientSession>();
-                 
-      for (int i = 0; i < numSessions; i++)
-      {
-         SimpleString subName = new SimpleString("sub" + i);
-         
-         ClientSession sessConsume = sf.createSession(false, true, true, false);
-         
-         sessConsume.start();
-         
-         sessConsume.createQueue(ADDRESS, subName, null, false, false);
-
-         ClientConsumer consumer = sessConsume.createConsumer(subName);
-
-         consumers.add(consumer);
-         
-         sessions.add(sessConsume);
-      }
-      
-      ClientSession sessSend = sf.createSession(false, true, true, false);         
-
-      ClientProducer producer = sessSend.createProducer(ADDRESS);
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
-         message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().flip();
-         producer.send(message);
-      }
-            
-      for (int i = 0; i < numMessages; i++)
-      {
-         for (ClientConsumer consumer : consumers)
-         {
-            ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
-            
-            assertNotNull(msg);
-            
-            assertEquals(i, msg.getProperty(new SimpleString("count")));
-            
-            msg.processed();
-         }
-      }
-      
-      for (int i = 0; i < numMessages; i++)
-      {
-         for (ClientConsumer consumer : consumers)
-         {
-            ClientMessage msg = consumer.receiveImmediate();
-            
-            assertNull(msg);
-         }
-      }
-      
-      sessSend.close();
-      for (ClientSession session: sessions)
-      {
-         session.close();
-      }
-
-      long end = System.currentTimeMillis();
-
-      log.info("duration " + (end - start));
-
-      // this.waitForFailThread();
-
-      stop();
-   }
-   
-   public void testF() throws Exception
-   {
-      start();
-
-      long start = System.currentTimeMillis();
-
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                        backupParams));
-
-      final int numMessages = 1000;
-
-      final int numSessions = 100;
-
-      Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
-      Set<ClientSession> sessions = new HashSet<ClientSession>();
-                 
-      for (int i = 0; i < numSessions; i++)
-      {
-         SimpleString subName = new SimpleString("sub" + i);
-         
-         ClientSession sessConsume = sf.createSession(false, true, true, false);
-         
-         sessConsume.createQueue(ADDRESS, subName, null, false, false);
-
-         ClientConsumer consumer = sessConsume.createConsumer(subName);
-
-         consumers.add(consumer);
-         
-         sessions.add(sessConsume);
-      }
-      
-      ClientSession sessSend = sf.createSession(false, true, true, false);         
-
-      ClientProducer producer = sessSend.createProducer(ADDRESS);
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
-         message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().flip();
-         producer.send(message);
-      }
-      
-      for (ClientSession session: sessions)
-      {
-         session.start();
-      }
-            
-      for (int i = 0; i < numMessages; i++)
-      {
-         for (ClientConsumer consumer : consumers)
-         {
-            ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
-            
-            assertNotNull(msg);
-            
-            assertEquals(i, msg.getProperty(new SimpleString("count")));
-            
-            msg.processed();
-         }
-      }
-      
-      for (int i = 0; i < numMessages; i++)
-      {
-         for (ClientConsumer consumer : consumers)
-         {
-            ClientMessage msg = consumer.receiveImmediate();
-            
-            assertNull(msg);
-         }
-      }
-      
-      sessSend.close();
-      for (ClientSession session: sessions)
-      {
-         session.close();
-      }
-
-      long end = System.currentTimeMillis();
-
-      log.info("duration " + (end - start));
-
-      // this.waitForFailThread();
-
-      stop();
-   }
-   
-   public void testG() throws Exception
-   {
-      start();
-
-      long start = System.currentTimeMillis();
-
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                        backupParams));
+      ClientSession s = sf.createSession(false, false, false, false);
 
       final int numMessages = 100;
 
@@ -887,139 +837,89 @@ public class RandomFailoverTest extends TestCase
 
       Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
       Set<ClientSession> sessions = new HashSet<ClientSession>();
-                 
+
       for (int i = 0; i < numSessions; i++)
       {
          SimpleString subName = new SimpleString("sub" + i);
-         
-         ClientSession sessConsume = sf.createSession(false, false, false, false);
-         
+
+         ClientSession sessConsume = sf.createSession(false, true, true, false);
+
          sessConsume.start();
-         
+
          sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
          consumers.add(consumer);
-         
+
          sessions.add(sessConsume);
       }
-      
-      ClientSession sessSend = sf.createSession(false, false, false, false);         
+
+      ClientSession sessSend = sf.createSession(false, true, true, false);
 
       ClientProducer producer = sessSend.createProducer(ADDRESS);
 
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                              false,
+                                                              0,
+                                                              System.currentTimeMillis(),
+                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBody().flip();
          producer.send(message);
       }
-      
-      sessSend.rollback();
-      
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
-         message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().flip();
-         producer.send(message);
-      }
-      
-      sessSend.commit();
-                  
+
       for (int i = 0; i < numMessages; i++)
       {
          for (ClientConsumer consumer : consumers)
          {
             ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
-            
+
             assertNotNull(msg);
-            
+
             assertEquals(i, msg.getProperty(new SimpleString("count")));
-            
+
             msg.processed();
          }
       }
-                  
+
       for (int i = 0; i < numMessages; i++)
       {
          for (ClientConsumer consumer : consumers)
          {
             ClientMessage msg = consumer.receiveImmediate();
-            
+
             assertNull(msg);
          }
       }
-      
-      for (ClientSession session: sessions)
-      {
-         session.rollback();
-      }
-      
-      for (int i = 0; i < numMessages; i++)
-      {
-         for (ClientConsumer consumer : consumers)
-         {
-            ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
-            
-            assertNotNull(msg);
-            
-            assertEquals(i, msg.getProperty(new SimpleString("count")));
-            
-            msg.processed();
-         }
-      }
-                  
-      for (int i = 0; i < numMessages; i++)
-      {
-         for (ClientConsumer consumer : consumers)
-         {
-            ClientMessage msg = consumer.receiveImmediate();
-            
-            assertNull(msg);
-         }
-      }
-         
-      for (ClientSession session: sessions)
-      {
-         session.commit();
-      }
-      
+
       sessSend.close();
-      for (ClientSession session: sessions)
+      for (ClientSession session : sessions)
       {
          session.close();
       }
 
+      for (int i = 0; i < numSessions; i++)
+      {
+         SimpleString subName = new SimpleString("sub" + i);
+
+         s.deleteQueue(subName);
+      }
+
+      s.close();
+
       long end = System.currentTimeMillis();
 
       log.info("duration " + (end - start));
-
-      // this.waitForFailThread();
-
-      stop();
    }
-   
-      
-   public void testH() throws Exception
-   {
-      start();
 
+   public void testF(final ClientSessionFactory sf) throws Exception
+   {
       long start = System.currentTimeMillis();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                        backupParams));
+      ClientSession s = sf.createSession(false, false, false, false);
 
       final int numMessages = 100;
 
@@ -1027,250 +927,474 @@ public class RandomFailoverTest extends TestCase
 
       Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
       Set<ClientSession> sessions = new HashSet<ClientSession>();
-                 
+
       for (int i = 0; i < numSessions; i++)
       {
          SimpleString subName = new SimpleString("sub" + i);
-         
-         ClientSession sessConsume = sf.createSession(false, false, false, false);
-         
+
+         ClientSession sessConsume = sf.createSession(false, true, true, false);
+
          sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
          consumers.add(consumer);
-         
+
          sessions.add(sessConsume);
       }
-      
-      ClientSession sessSend = sf.createSession(false, false, false, false);         
+
+      ClientSession sessSend = sf.createSession(false, true, true, false);
 
       ClientProducer producer = sessSend.createProducer(ADDRESS);
 
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                              false,
+                                                              0,
+                                                              System.currentTimeMillis(),
+                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBody().flip();
          producer.send(message);
       }
-      
-      sessSend.rollback();
-      
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
-         message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().flip();
-         producer.send(message);
-      }
-      
-      sessSend.commit();
-      
-      for (ClientSession session: sessions)
+
+      for (ClientSession session : sessions)
       {
          session.start();
       }
-                  
+
       for (int i = 0; i < numMessages; i++)
       {
          for (ClientConsumer consumer : consumers)
          {
             ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
-            
+
             assertNotNull(msg);
-            
+
             assertEquals(i, msg.getProperty(new SimpleString("count")));
-            
+
             msg.processed();
          }
       }
-                  
+
       for (int i = 0; i < numMessages; i++)
       {
          for (ClientConsumer consumer : consumers)
          {
             ClientMessage msg = consumer.receiveImmediate();
-            
+
             assertNull(msg);
          }
       }
-      
-      for (ClientSession session: sessions)
-      {
-         session.rollback();
-      }
-      
-      for (int i = 0; i < numMessages; i++)
-      {
-         for (ClientConsumer consumer : consumers)
-         {
-            ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
-            
-            assertNotNull(msg);
-            
-            assertEquals(i, msg.getProperty(new SimpleString("count")));
-            
-            msg.processed();
-         }
-      }
-                  
-      for (int i = 0; i < numMessages; i++)
-      {
-         for (ClientConsumer consumer : consumers)
-         {
-            ClientMessage msg = consumer.receiveImmediate();
-            
-            assertNull(msg);
-         }
-      }
-         
-      for (ClientSession session: sessions)
-      {
-         session.commit();
-      }
-      
+
       sessSend.close();
-      for (ClientSession session: sessions)
+      for (ClientSession session : sessions)
       {
          session.close();
       }
 
+      for (int i = 0; i < numSessions; i++)
+      {
+         SimpleString subName = new SimpleString("sub" + i);
+
+         s.deleteQueue(subName);
+      }
+
+      s.close();
+
       long end = System.currentTimeMillis();
 
       log.info("duration " + (end - start));
-
-      // this.waitForFailThread();
-
-      stop();
    }
-   
-   public void testI() throws Exception
-   {
-      start();
 
+   public void testG(final ClientSessionFactory sf) throws Exception
+   {
       long start = System.currentTimeMillis();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                        backupParams));
+      ClientSession s = sf.createSession(false, false, false, false);
 
-      final int numIts = 1000;
-            
-      for (int i = 0; i < numIts; i++)
-      {      
-         //log.info("iteration " + i);
-         ClientSession sessCreate = sf.createSession(false, true, true, false);
-         
-         sessCreate.createQueue(ADDRESS, ADDRESS, null, false, false);
-         
-         
-         
-         ClientSession sess = sf.createSession(false, true, true, false);
-         
-         sess.start();
-                  
-         ClientConsumer consumer = sess.createConsumer(ADDRESS);
-         
-         ClientProducer producer = sess.createProducer(ADDRESS);
-         
-         ClientMessage message = sess.createClientMessage(JBossTextMessage.TYPE,
+      final int numMessages = 100;
+
+      final int numSessions = 10;
+
+      Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
+      Set<ClientSession> sessions = new HashSet<ClientSession>();
+
+      for (int i = 0; i < numSessions; i++)
+      {
+         SimpleString subName = new SimpleString("sub" + i);
+
+         ClientSession sessConsume = sf.createSession(false, false, false, false);
+
+         sessConsume.start();
+
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
+
+         ClientConsumer consumer = sessConsume.createConsumer(subName);
+
+         consumers.add(consumer);
+
+         sessions.add(sessConsume);
+      }
+
+      ClientSession sessSend = sf.createSession(false, false, false, false);
+
+      ClientProducer producer = sessSend.createProducer(ADDRESS);
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
                                                               (byte)1);
+         message.putIntProperty(new SimpleString("count"), i);
          message.getBody().flip();
-         
          producer.send(message);
-         
-         ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
-         
-         assertNotNull(message2);
-         
-         message2.processed();
-         
-         sess.close();
-         
-         sessCreate.deleteQueue(ADDRESS);
-         
-         sessCreate.close();
-                  
       }
 
-      // this.waitForFailThread();
+      sessSend.rollback();
 
-      stop();
-   }
-   
-   public void testJ() throws Exception
-   {
-      start();
-
-      long start = System.currentTimeMillis();
-
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                        backupParams));
-
-      ClientSession sessHold = sf.createSession(false, true, true, false);
-      
-      final int numIts = 1000;
-            
-      for (int i = 0; i < numIts; i++)
-      {      
-         //log.info("iteration " + i);
-         ClientSession sessCreate = sf.createSession(false, true, true, false);
-         
-         sessCreate.createQueue(ADDRESS, ADDRESS, null, false, false);
-         
-         
-         
-         ClientSession sess = sf.createSession(false, true, true, false);
-         
-         sess.start();
-                  
-         ClientConsumer consumer = sess.createConsumer(ADDRESS);
-         
-         ClientProducer producer = sess.createProducer(ADDRESS);
-         
-         ClientMessage message = sess.createClientMessage(JBossTextMessage.TYPE,
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
                                                               (byte)1);
+         message.putIntProperty(new SimpleString("count"), i);
          message.getBody().flip();
-         
          producer.send(message);
-         
-         ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
-         
-         assertNotNull(message2);
-         
-         message2.processed();
-         
-         sess.close();
-         
-         sessCreate.deleteQueue(ADDRESS);
-         
-         sessCreate.close();
-                  
       }
-      
-      sessHold.close();
 
-      // this.waitForFailThread();
+      sessSend.commit();
 
-      stop();
+      for (int i = 0; i < numMessages; i++)
+      {
+         for (ClientConsumer consumer : consumers)
+         {
+            ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
+
+            assertNotNull(msg);
+
+            assertEquals(i, msg.getProperty(new SimpleString("count")));
+
+            msg.processed();
+         }
+      }
+
+      for (ClientConsumer consumer : consumers)
+      {
+         ClientMessage msg = consumer.receiveImmediate();
+
+         assertNull(msg);
+      }
+
+      for (ClientSession session : sessions)
+      {
+         session.rollback();
+      }
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         for (ClientConsumer consumer : consumers)
+         {
+            ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
+
+            assertNotNull(msg);
+
+            assertEquals(i, msg.getProperty(new SimpleString("count")));
+
+            msg.processed();
+         }
+      }
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         for (ClientConsumer consumer : consumers)
+         {
+            ClientMessage msg = consumer.receiveImmediate();
+
+            assertNull(msg);
+         }
+      }
+
+      for (ClientSession session : sessions)
+      {
+         session.commit();
+      }
+
+      sessSend.close();
+      for (ClientSession session : sessions)
+      {
+         session.close();
+      }
+
+      for (int i = 0; i < numSessions; i++)
+      {
+         SimpleString subName = new SimpleString("sub" + i);
+
+         s.deleteQueue(subName);
+      }
+
+      s.close();
+
+      long end = System.currentTimeMillis();
+
+      log.info("duration " + (end - start));
    }
-   
+
+   public void testH(final ClientSessionFactory sf) throws Exception
+   {
+      long start = System.currentTimeMillis();
+
+      ClientSession s = sf.createSession(false, false, false, false);
+
+      final int numMessages = 100;
+
+      final int numSessions = 10;
+
+      Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
+      Set<ClientSession> sessions = new HashSet<ClientSession>();
+
+      for (int i = 0; i < numSessions; i++)
+      {
+         SimpleString subName = new SimpleString("sub" + i);
+
+         ClientSession sessConsume = sf.createSession(false, false, false, false);
+
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
+
+         ClientConsumer consumer = sessConsume.createConsumer(subName);
+
+         consumers.add(consumer);
+
+         sessions.add(sessConsume);
+      }
+
+      ClientSession sessSend = sf.createSession(false, false, false, false);
+
+      ClientProducer producer = sessSend.createProducer(ADDRESS);
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
+                                                              false,
+                                                              0,
+                                                              System.currentTimeMillis(),
+                                                              (byte)1);
+         message.putIntProperty(new SimpleString("count"), i);
+         message.getBody().flip();
+         producer.send(message);
+      }
+
+      sessSend.rollback();
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
+                                                              false,
+                                                              0,
+                                                              System.currentTimeMillis(),
+                                                              (byte)1);
+         message.putIntProperty(new SimpleString("count"), i);
+         message.getBody().flip();
+         producer.send(message);
+      }
+
+      sessSend.commit();
+
+      for (ClientSession session : sessions)
+      {
+         session.start();
+      }
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         for (ClientConsumer consumer : consumers)
+         {
+            ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
+
+            assertNotNull(msg);
+
+            assertEquals(i, msg.getProperty(new SimpleString("count")));
+
+            msg.processed();
+         }
+      }
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         for (ClientConsumer consumer : consumers)
+         {
+            ClientMessage msg = consumer.receiveImmediate();
+
+            assertNull(msg);
+         }
+      }
+
+      for (ClientSession session : sessions)
+      {
+         session.rollback();
+      }
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         for (ClientConsumer consumer : consumers)
+         {
+            ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
+
+            assertNotNull(msg);
+
+            assertEquals(i, msg.getProperty(new SimpleString("count")));
+
+            msg.processed();
+         }
+      }
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         for (ClientConsumer consumer : consumers)
+         {
+            ClientMessage msg = consumer.receiveImmediate();
+
+            assertNull(msg);
+         }
+      }
+
+      for (ClientSession session : sessions)
+      {
+         session.commit();
+      }
+
+      sessSend.close();
+      for (ClientSession session : sessions)
+      {
+         session.close();
+      }
+
+      for (int i = 0; i < numSessions; i++)
+      {
+         SimpleString subName = new SimpleString("sub" + i);
+
+         s.deleteQueue(subName);
+      }
+
+      s.close();
+
+      long end = System.currentTimeMillis();
+
+      log.info("duration " + (end - start));
+   }
+
+   public void testI(final ClientSessionFactory sf) throws Exception
+   {
+      ClientSession sessCreate = sf.createSession(false, true, true, false);
+
+      sessCreate.createQueue(ADDRESS, ADDRESS, null, false, false);
+
+      ClientSession sess = sf.createSession(false, true, true, false);
+
+      sess.start();
+
+      ClientConsumer consumer = sess.createConsumer(ADDRESS);
+
+      ClientProducer producer = sess.createProducer(ADDRESS);
+
+      ClientMessage message = sess.createClientMessage(JBossTextMessage.TYPE,
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
+      message.getBody().flip();
+
+      producer.send(message);
+
+      ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
+
+      assertNotNull(message2);
+
+      message2.processed();
+
+      sess.close();
+
+      sessCreate.deleteQueue(ADDRESS);
+
+      sessCreate.close();     
+   }
+
+   public void testJ(final ClientSessionFactory sf) throws Exception
+   {
+      ClientSession sessCreate = sf.createSession(false, true, true, false);
+
+      sessCreate.createQueue(ADDRESS, ADDRESS, null, false, false);
+
+      ClientSession sess = sf.createSession(false, true, true, false);
+
+      sess.start();
+
+      ClientConsumer consumer = sess.createConsumer(ADDRESS);
+
+      ClientProducer producer = sess.createProducer(ADDRESS);
+
+      ClientMessage message = sess.createClientMessage(JBossTextMessage.TYPE,
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
+      message.getBody().flip();
+
+      producer.send(message);
+
+      ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
+
+      assertNotNull(message2);
+
+      message2.processed();
+
+      sess.close();
+
+      sessCreate.deleteQueue(ADDRESS);
+
+      sessCreate.close();
+   }
+
+   public void testK(final ClientSessionFactory sf) throws Exception
+   {
+      ClientSession s = sf.createSession(false, false, false, false);
+
+      s.createQueue(ADDRESS, ADDRESS, null, false, false);
+
+      final int numConsumers = 100;
+
+      for (int i = 0; i < numConsumers; i++)
+      {
+         ClientConsumer consumer = s.createConsumer(ADDRESS);
+
+         consumer.close();
+      }
+
+      s.deleteQueue(ADDRESS);
+
+      s.close();
+   }
+
+   public void testL(final ClientSessionFactory sf) throws Exception
+   {
+      ClientSession s = sf.createSession(false, false, false, false);
+
+      final int numSessions = 100;
+
+      for (int i = 0; i < numSessions; i++)
+      {
+         ClientSession session = sf.createSession(false, false, false, false);
+
+         session.close();
+      }
+
+      s.close();
+   }
 
    // Package protected ---------------------------------------------
 
@@ -1289,6 +1413,10 @@ public class RandomFailoverTest extends TestCase
       backupService = MessagingServiceImpl.newNullStorageMessagingServer(backupConf);
       backupService.start();
 
+      // We need to sleep > 16 ms otherwise the id generators on live and backup could be initialised
+      // with the same time component
+      Thread.sleep(17);
+
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
       liveConf.setPacketConfirmationBatchSize(10);
@@ -1305,6 +1433,8 @@ public class RandomFailoverTest extends TestCase
       ConnectionRegistryImpl.instance.dump();
 
       assertEquals(0, ConnectionRegistryImpl.instance.size());
+
+      // ConnectionRegistryImpl.instance.clear();
 
       assertEquals(0, backupService.getServer().getRemotingService().getConnections().size());
 

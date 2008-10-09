@@ -54,11 +54,6 @@ public class SessionQueueQueryMessage extends PacketImpl
       return queueName;
    }
    
-   public boolean isReHandleResponseOnFailure()
-   {
-      return true;
-   }
-   
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putSimpleString(queueName);

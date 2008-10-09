@@ -64,11 +64,6 @@ public class SessionBindingQueryMessage extends PacketImpl
       address = buffer.getSimpleString();
    }
    
-   public boolean isReHandleResponseOnFailure()
-   {
-      return true;
-   }
-   
    public boolean equals(Object other)
    {
       if (other instanceof SessionBindingQueryMessage == false)

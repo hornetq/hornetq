@@ -27,11 +27,13 @@ public interface Channel
    void send(Packet packet);
 
    Packet sendBlocking(Packet packet) throws MessagingException;
-   
+
    Packet sendBlocking(Packet packet, ResponseNotifier notifier) throws MessagingException;
 
-   void replicatePacket(Packet packet) throws MessagingException;
+   void replicatePacket(Packet packet, Runnable responseAction);
    
+   void replicateComplete();
+
    void setHandler(ChannelHandler handler);
 
    void close(boolean onExecutorThread);
@@ -41,7 +43,7 @@ public interface Channel
    Channel getReplicatingChannel();
 
    void transferConnection(RemotingConnection newConnection);
-
+   
    void replayCommands(int lastReceivedCommandID);
 
    int getLastReceivedCommandID();
@@ -49,6 +51,8 @@ public interface Channel
    void lock();
 
    void unlock();
-   
+
    Executor getExecutor();
+
+   void interruptBlocking();
 }

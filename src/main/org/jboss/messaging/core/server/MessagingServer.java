@@ -61,7 +61,7 @@ public interface MessagingServer extends MessagingComponent
 
    Version getVersion();
 
-   ReattachSessionResponseMessage reattachSession(RemotingConnection connection, String name) throws Exception;
+   ReattachSessionResponseMessage reattachSession(RemotingConnection connection, String name, int lastReceivedCommandID) throws Exception;
 
    CreateSessionResponseMessage createSession(String name,
                                               long channelID,

@@ -63,6 +63,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionFailoverCompleteMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProcessedMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
@@ -305,7 +306,7 @@ public class ClientSessionImpl implements ClientSessionInternal
                                         final int maxRate) throws MessagingException
    {
       checkClosed();
-
+      
       SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(queueName,
                                                                               filterString,
                                                                               windowSize,
@@ -427,7 +428,10 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       if (producer == null)
       {
-         SessionCreateProducerMessage request = new SessionCreateProducerMessage(address, windowSize, maxRate, autoGroupId);
+         SessionCreateProducerMessage request = new SessionCreateProducerMessage(address,
+                                                                                 windowSize,
+                                                                                 maxRate,
+                                                                                 autoGroupId);
 
          SessionCreateProducerResponseMessage response = (SessionCreateProducerResponseMessage)channel.sendBlocking(request);
 
@@ -489,29 +493,6 @@ public class ClientSessionImpl implements ClientSessionInternal
             }
          }
       });
-   }
-
-   public synchronized void close() throws MessagingException
-   {
-      if (closed)
-      {
-         return;
-      }
-
-      sessionFactory.removeSession(this);
-
-      try
-      {
-         closeChildren();
-
-         channel.sendBlocking(new SessionCloseMessage());
-      }
-      catch (Throwable ignore)
-      {
-         // Session close should always return without exception
-      }
-
-      doCleanup();
    }
 
    public ClientMessage createClientMessage(final byte type,
@@ -609,7 +590,7 @@ public class ClientSessionImpl implements ClientSessionInternal
    public void processed(final long consumerID, final long messageID) throws MessagingException
    {
       checkClosed();
-      
+
       SessionProcessedMessage message = new SessionProcessedMessage(consumerID, messageID, blockOnAcknowledge);
 
       if (blockOnAcknowledge)
@@ -677,25 +658,6 @@ public class ClientSessionImpl implements ClientSessionInternal
       return new HashMap<SimpleString, ClientProducerInternal>(producerCache);
    }
 
-   public synchronized void cleanUp() throws Exception
-   {
-      if (closed)
-      {
-         return;
-      }
-
-      sessionFactory.removeSession(this);
-
-      try
-      {
-         cleanUpChildren();
-      }
-      finally
-      {
-         doCleanup();
-      }
-   }
-
    public void handleReceiveMessage(final long consumerID, final ClientMessage message) throws Exception
    {
       ClientConsumerInternal consumer = consumers.get(consumerID);
@@ -715,42 +677,95 @@ public class ClientSessionImpl implements ClientSessionInternal
          producer.receiveCredits(credits);
       }
    }
-
-   public void handleFailover(final RemotingConnection backupConnection)
+     
+   public void close() throws MessagingException
    {
+      if (closed)
+      {
+         return;
+      }
+
+      try
+      {
+         closeChildren();
+
+         channel.sendBlocking(new SessionCloseMessage());
+      }
+      catch (Throwable ignore)
+      {
+         // Session close should always return without exception
+      }
+
+      doCleanup();
+
+      sessionFactory.removeSession(this);
+   }
+   
+   public synchronized void cleanUp() throws Exception
+   {
+      if (closed)
+      {
+         return;
+      }
+      
+      cleanUpChildren();
+      
+      doCleanup();      
+      
+      sessionFactory.removeSession(this);
+   }
+   
+   //Needs to be synchronized to prevent issues with occurring concurrently with close()
+   public synchronized boolean handleFailover(final RemotingConnection backupConnection)
+   {
+      if (closed)
+      {
+         return false;
+      }
+
       // We lock the channel to prevent any packets to be added to the resend
       // cache during the failover process
       channel.lock();
 
       try
-      {         
+      {
          channel.transferConnection(backupConnection);
-         
-         for (ClientConsumerInternal consumer: consumers.values())
-         {
-            consumer.failover();
-         }
-         
+
          backupConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
 
          remotingConnection = backupConnection;
 
-         Packet request = new ReattachSessionMessage(name);
+         Packet request = new ReattachSessionMessage(name, channel.getLastReceivedCommandID());
 
-         Channel channel1 = backupConnection.getChannel(1, false, -1, false, true);
+         Channel channel1 = backupConnection.getChannel(1, false, -1, true);
 
          ReattachSessionResponseMessage response = (ReattachSessionResponseMessage)channel1.sendBlocking(request);
 
-         channel.replayCommands(response.getLastReceivedCommandID());
+         if (!response.isRemoved())
+         {
+            channel.replayCommands(response.getLastReceivedCommandID());
+         }
+         else
+         {
+            // There may be a create session call blocking - the response will never come because the session has been
+            // closed on the server so we need to interrupt it
+            channel.interruptBlocking();
+         }
       }
       catch (Throwable t)
       {
          log.error("Failed to handle failover", t);
+         
+         return false;
       }
       finally
       {
          channel.unlock();
       }
+      
+      channel.send(new SessionFailoverCompleteMessage(name));
+      
+      return true;
    }
 
    // XAResource implementation
@@ -952,11 +967,11 @@ public class ClientSessionImpl implements ClientSessionInternal
                                                                                                public void onResponseReceived()
                                                                                                {
                                                                                                   // This needs to be
-                                                                                                   // called on before
-                                                                                                   // the blocking
-                                                                                                   // thread is awoken
+                                                                                                  // called on before
+                                                                                                  // the blocking
+                                                                                                  // thread is awoken
                                                                                                   // hence the
-                                                                                                   // ResponseNotifier
+                                                                                                  // ResponseNotifier
                                                                                                   for (ClientConsumerInternal consumer : consumers.values())
                                                                                                   {
                                                                                                      consumer.resume();
@@ -1077,6 +1092,47 @@ public class ClientSessionImpl implements ClientSessionInternal
          throw new MessagingException(MessagingException.OBJECT_CLOSED, "Session is closed");
       }
    }
+   
+   private void doCleanup()
+   {
+      if (cacheProducers)
+      {
+         producerCache.clear();
+      }
+
+      channel.close(false);
+
+      synchronized (this)
+      {
+         closed = true;
+
+         connectionRegistry.returnConnection(remotingConnection.getID());
+      }
+   }
+   
+   private void cleanUpChildren() throws Exception
+   {
+      Set<ClientConsumerInternal> consumersClone = new HashSet<ClientConsumerInternal>(consumers.values());
+
+      for (ClientConsumerInternal consumer : consumersClone)
+      {
+         consumer.cleanUp();
+      }
+
+      Set<ClientProducerInternal> producersClone = new HashSet<ClientProducerInternal>(producers.values());
+
+      for (ClientProducerInternal producer : producersClone)
+      {
+         producer.cleanUp();
+      }
+
+      Set<ClientBrowser> browsersClone = new HashSet<ClientBrowser>(browsers.values());
+
+      for (ClientBrowser browser : browsersClone)
+      {
+         browser.cleanUp();
+      }
+   }
 
    private void closeChildren() throws MessagingException
    {
@@ -1102,41 +1158,4 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
    }
 
-   private void cleanUpChildren() throws Exception
-   {
-      Set<ClientConsumerInternal> consumersClone = new HashSet<ClientConsumerInternal>(consumers.values());
-
-      for (ClientConsumerInternal consumer : consumersClone)
-      {
-         consumer.cleanUp();
-      }
-
-      Set<ClientProducerInternal> producersClone = new HashSet<ClientProducerInternal>(producers.values());
-
-      for (ClientProducerInternal producer : producersClone)
-      {
-         producer.cleanUp();
-      }
-
-      Set<ClientBrowser> browsersClone = new HashSet<ClientBrowser>(browsers.values());
-
-      for (ClientBrowser browser : browsersClone)
-      {
-         browser.cleanUp();
-      }
-   }
-
-   private void doCleanup()
-   {
-      if (cacheProducers)
-      {
-         producerCache.clear();
-      }
-
-      channel.close(false);
-
-      connectionRegistry.returnConnection(remotingConnection.getID());
-
-      closed = true;
-   }
 }

@@ -53,11 +53,11 @@ public interface ClientSessionInternal extends ClientSession
 
    Map<SimpleString, ClientProducerInternal> getProducerCache();
 
-   void cleanUp() throws Exception;
+   //void cleanUp() throws Exception;
 
    void receiveProducerCredits(long producerID, int credits) throws Exception;
 
    void handleReceiveMessage(long consumerID, ClientMessage message) throws Exception;
 
-   void handleFailover(final RemotingConnection backupConnection);
+   boolean handleFailover(final RemotingConnection backupConnection);
 }

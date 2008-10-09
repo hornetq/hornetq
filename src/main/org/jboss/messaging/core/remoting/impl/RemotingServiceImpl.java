@@ -241,7 +241,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                                                          replicatingConnection,
                                                          !backup);
 
-      Channel channel1 = rc.getChannel(1, false, -1, false, true);
+      Channel channel1 = rc.getChannel(1, false, -1, false);
 
       ChannelHandler handler = new MessagingServerPacketHandler(server, channel1, rc);
 
@@ -256,24 +256,20 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    {
       RemotingConnection conn = connections.remove(connectionID);
 
-      if (conn == null)
+      if (conn != null)
       {
-         throw new IllegalStateException("Cannot find connection with id " + connectionID);
-      }
-
-      conn.destroy();
+         conn.destroy();
+      }      
    }
 
    public void connectionException(final Object connectionID, final MessagingException me)
    {
       RemotingConnection rc = connections.remove(connectionID);
 
-      if (rc == null)
+      if (rc != null)
       {
-         throw new IllegalStateException("Cannot find connection with id " + connectionID);
-      }
-
-      rc.fail(me);
+         rc.fail(me);
+      }     
    }
 
    public void addInterceptor(final Interceptor interceptor)

@@ -12,14 +12,6 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.ChannelHandler;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ADD_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_CLOSE;
@@ -34,6 +26,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEPRODUCER;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEQUEUE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_DELETE_QUEUE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FAILOVER_COMPLETE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FLOWTOKEN;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_MANAGEMENT_SEND;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_PROCESSED;
@@ -57,6 +50,20 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SET_TIMEOUT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_START;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SUSPEND;
+
+import java.util.List;
+
+import javax.transaction.xa.Xid;
+
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.ChannelHandler;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowseMessage;
@@ -76,6 +83,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionProcessedMessage
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionScheduledSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
@@ -93,9 +101,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResp
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
-
-import javax.transaction.xa.Xid;
-import java.util.List;
 
 /**
  * A ServerSessionPacketHandler
@@ -150,11 +155,22 @@ public class ServerSessionPacketHandler implements ChannelHandler
          }
       }
 
+      channel.replicatePacket(packet, new Runnable()
+      {
+         public void run()
+         {
+            doHandle(packet);
+         }
+      });
+   }
+
+   private void doHandle(final Packet packet)
+   {
       Packet response = null;
 
       try
       {
-         channel.replicatePacket(packet);
+         byte type = packet.getType();
 
          switch (type)
          {
@@ -175,14 +191,14 @@ public class ServerSessionPacketHandler implements ChannelHandler
                                    request.getFilterString(),
                                    request.isDurable(),
                                    request.isTemporary());
-               response = new NullResponseMessage(true);
+               response = new NullResponseMessage();
                break;
             }
             case SESS_DELETE_QUEUE:
             {
                SessionDeleteQueueMessage request = (SessionDeleteQueueMessage)packet;
                session.deleteQueue(request.getQueueName());
-               response = new NullResponseMessage(true);
+               response = new NullResponseMessage();
                break;
             }
             case SESS_QUEUEQUERY:
@@ -201,13 +217,16 @@ public class ServerSessionPacketHandler implements ChannelHandler
             {
                SessionCreateBrowserMessage request = (SessionCreateBrowserMessage)packet;
                session.createBrowser(request.getQueueName(), request.getFilterString());
-               response = new NullResponseMessage(false);
+               response = new NullResponseMessage();
                break;
             }
             case SESS_CREATEPRODUCER:
             {
                SessionCreateProducerMessage request = (SessionCreateProducerMessage)packet;
-               response = session.createProducer(request.getAddress(), request.getWindowSize(), request.getMaxRate(), request.isAutoGroupId());
+               response = session.createProducer(request.getAddress(),
+                                                 request.getWindowSize(),
+                                                 request.getMaxRate(),
+                                                 request.isAutoGroupId());
                break;
             }
             case SESS_PROCESSED:
@@ -216,20 +235,20 @@ public class ServerSessionPacketHandler implements ChannelHandler
                session.processed(message.getConsumerID(), message.getMessageID());
                if (message.isRequiresResponse())
                {
-                  response = new NullResponseMessage(false);
+                  response = new NullResponseMessage();
                }
                break;
             }
             case SESS_COMMIT:
             {
                session.commit();
-               response = new NullResponseMessage(false);
+               response = new NullResponseMessage();
                break;
             }
             case SESS_ROLLBACK:
             {
                session.rollback();
-               //Rollback response is handled in the rollback() method
+               // Rollback response is handled in the rollback() method
                break;
             }
             case SESS_XA_COMMIT:
@@ -306,14 +325,14 @@ public class ServerSessionPacketHandler implements ChannelHandler
             {
                SessionAddDestinationMessage message = (SessionAddDestinationMessage)packet;
                session.addDestination(message.getAddress(), message.isDurable(), message.isTemporary());
-               response = new NullResponseMessage(true);
+               response = new NullResponseMessage();
                break;
             }
             case SESS_REMOVE_DESTINATION:
             {
                SessionRemoveDestinationMessage message = (SessionRemoveDestinationMessage)packet;
                session.removeDestination(message.getAddress(), message.isDurable());
-               response = new NullResponseMessage(true);
+               response = new NullResponseMessage();
                break;
             }
             case SESS_START:
@@ -321,37 +340,42 @@ public class ServerSessionPacketHandler implements ChannelHandler
                session.setStarted(true);
                break;
             }
+            case SESS_FAILOVER_COMPLETE:
+            {
+               session.failedOver();
+               break;
+            }
             case SESS_STOP:
             {
                session.setStarted(false);
-               response = new NullResponseMessage(false);
+               response = new NullResponseMessage();
                break;
             }
             case SESS_CLOSE:
             {
                session.close();
-               response = new NullResponseMessage(false);
+               response = new NullResponseMessage();
                break;
             }
             case SESS_CONSUMER_CLOSE:
             {
                SessionConsumerCloseMessage message = (SessionConsumerCloseMessage)packet;
                session.closeConsumer(message.getConsumerID());
-               response = new NullResponseMessage(true);
+               response = new NullResponseMessage();
                break;
             }
             case SESS_PRODUCER_CLOSE:
             {
                SessionProducerCloseMessage message = (SessionProducerCloseMessage)packet;
                session.closeProducer(message.getProducerID());
-               response = new NullResponseMessage(false);
+               response = new NullResponseMessage();
                break;
             }
             case SESS_BROWSER_CLOSE:
             {
                SessionBrowserCloseMessage message = (SessionBrowserCloseMessage)packet;
                session.closeBrowser(message.getBrowserID());
-               response = new NullResponseMessage(false);
+               response = new NullResponseMessage();
                break;
             }
             case SESS_FLOWTOKEN:
@@ -366,14 +390,16 @@ public class ServerSessionPacketHandler implements ChannelHandler
                session.sendProducerMessage(message.getProducerID(), message.getServerMessage());
                if (message.isRequiresResponse())
                {
-                  response = new NullResponseMessage(false);
+                  response = new NullResponseMessage();
                }
                break;
             }
             case SESS_SCHEDULED_SEND:
             {
                SessionScheduledSendMessage message = (SessionScheduledSendMessage)packet;
-               session.sendScheduledProducerMessage(message.getProducerID(), message.getServerMessage(), message.getScheduledDeliveryTime());
+               session.sendScheduledProducerMessage(message.getProducerID(),
+                                                    message.getServerMessage(),
+                                                    message.getScheduledDeliveryTime());
                if (message.isRequiresResponse())
                {
                   response = new NullResponseMessage();
@@ -397,13 +423,19 @@ public class ServerSessionPacketHandler implements ChannelHandler
             {
                SessionBrowserResetMessage message = (SessionBrowserResetMessage)packet;
                session.browserReset(message.getBrowserID());
-               response = new NullResponseMessage(false);
+               response = new NullResponseMessage();
                break;
             }
             case SESS_MANAGEMENT_SEND:
             {
                SessionSendManagementMessage message = (SessionSendManagementMessage)packet;
                session.handleManagementMessage(message);
+               break;
+            }
+            case PacketImpl.SESS_REPLICATE_DELIVERY:
+            {
+               SessionReplicateDeliveryMessage message = (SessionReplicateDeliveryMessage)packet;
+               session.handleReplicatedDelivery(message.getConsumerID(), message.getMessageID());
                break;
             }
             default:
@@ -435,5 +467,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
       {
          channel.send(response);
       }
-   }   
+
+      channel.replicateComplete();
+   }
 }

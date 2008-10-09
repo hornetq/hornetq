@@ -87,7 +87,7 @@ public class SessionProcessedMessage extends PacketImpl
 
    public boolean equals(Object other)
    {
-      if (other instanceof SessionProducerCloseMessage == false)
+      if (other instanceof SessionProcessedMessage == false)
       {
          return false;
       }

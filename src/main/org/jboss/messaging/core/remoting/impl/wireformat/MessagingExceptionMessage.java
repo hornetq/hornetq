@@ -32,7 +32,7 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class MessagingExceptionMessage extends DuplicablePacket
+public class MessagingExceptionMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
@@ -70,14 +70,12 @@ public class MessagingExceptionMessage extends DuplicablePacket
 
    public void encodeBody(final MessagingBuffer buffer)
    {
-      super.encodeBody(buffer);
       buffer.putInt(exception.getCode());
       buffer.putNullableString(exception.getMessage());
    }
 
    public void decodeBody(final MessagingBuffer buffer)
    {
-      super.decodeBody(buffer);
       int code = buffer.getInt();
       String msg = buffer.getNullableString();
       exception = new MessagingException(code, msg);

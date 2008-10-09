@@ -30,7 +30,7 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionCreateConsumerResponseMessage extends DuplicablePacket
+public class SessionCreateConsumerResponseMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
@@ -68,13 +68,11 @@ public class SessionCreateConsumerResponseMessage extends DuplicablePacket
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      super.encodeBody(buffer);
       buffer.putInt(windowSize);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      super.decodeBody(buffer);
       windowSize = buffer.getInt();
    }
 

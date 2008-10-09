@@ -22,11 +22,10 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.Consumer;
-import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.logging.Logger;
 
 /**
  * A RoundRobinDistributionPolicy

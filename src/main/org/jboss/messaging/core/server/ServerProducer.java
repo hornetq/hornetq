@@ -41,8 +41,6 @@ public interface ServerProducer
 
    void sendScheduled(ServerMessage message, long scheduledDeliveryTime) throws Exception;
 	
-	void requestAndSendCredits() throws Exception;
-	
 	void sendCredits(int credits) throws Exception;
 	
 	void setWaiting(boolean waiting);

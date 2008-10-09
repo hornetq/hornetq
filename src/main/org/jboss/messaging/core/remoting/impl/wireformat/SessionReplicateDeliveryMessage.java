@@ -12,34 +12,83 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
-public class NullResponseMessage extends PacketImpl
+public class SessionReplicateDeliveryMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
+   private long consumerID;
+
+   private long messageID;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public NullResponseMessage()
+   public SessionReplicateDeliveryMessage(final long consumerID, final long messageID)
    {
-      super(NULL_RESPONSE);
+      super(SESS_REPLICATE_DELIVERY);
+
+      this.consumerID = consumerID;
+
+      this.messageID = messageID;
    }
-   
+
+   public SessionReplicateDeliveryMessage()
+   {
+      super(SESS_REPLICATE_DELIVERY);
+   }
+
    // Public --------------------------------------------------------
 
-   @Override
-   public boolean isResponse()
+   public long getConsumerID()
    {
-      return true;
+      return consumerID;
    }
 
+   public long getMessageID()
+   {
+      return messageID;
+   }
+
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putLong(consumerID);
+
+      buffer.putLong(messageID);
+   }
+
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      consumerID = buffer.getLong();
+
+      messageID = buffer.getLong();
+   }
+   
+   public boolean isRequiresConfirmations()
+   {      
+      return false;
+   }
+
+   public boolean equals(Object other)
+   {
+      if (other instanceof SessionReplicateDeliveryMessage == false)
+      {
+         return false;
+      }
+
+      SessionReplicateDeliveryMessage r = (SessionReplicateDeliveryMessage)other;
+
+      return super.equals(other) && this.consumerID == r.consumerID && this.messageID == r.messageID;
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

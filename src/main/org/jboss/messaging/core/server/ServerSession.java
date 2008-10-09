@@ -22,6 +22,10 @@
 
 package org.jboss.messaging.core.server;
 
+import java.util.List;
+
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
@@ -31,9 +35,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
 import org.jboss.messaging.core.server.impl.ServerBrowserImpl;
 import org.jboss.messaging.util.SimpleString;
-
-import javax.transaction.xa.Xid;
-import java.util.List;
 
 /**
  *
@@ -114,20 +115,10 @@ public interface ServerSession
                                                        int windowSize,
                                                        int maxRate) throws Exception;
 
-//   SessionCreateConsumerResponseMessage recreateConsumer(SimpleString queueName,
-//                                                         SimpleString filterString,
-//                                                         int windowSize,
-//                                                         int maxRate) throws Exception;
-
    SessionCreateProducerResponseMessage createProducer(SimpleString address,
                                                        int windowSize,
                                                        int maxRate,
                                                        boolean autoGroupId) throws Exception;
-
-//   SessionCreateProducerResponseMessage recreateProducer(SimpleString address,
-//                                                         int windowSize,
-//                                                         int maxRate,
-//                                                         boolean autoGroupId) throws Exception;
 
    SessionQueueQueryResponseMessage executeQueueQuery(SimpleString queueName) throws Exception;
 
@@ -153,9 +144,11 @@ public interface ServerSession
 
    void browserReset(long browserID) throws Exception;
 
-   int transferConnection(RemotingConnection newConnection);
+   int transferConnection(RemotingConnection newConnection, int lastReceivedCommandID);
 
    void handleManagementMessage(SessionSendManagementMessage message) throws Exception;
 
    void failedOver() throws Exception;
+   
+   void handleReplicatedDelivery(long consumerID, long messageID) throws Exception;
 }

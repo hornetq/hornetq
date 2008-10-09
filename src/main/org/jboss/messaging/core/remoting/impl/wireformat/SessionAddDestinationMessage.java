@@ -96,18 +96,6 @@ public class SessionAddDestinationMessage extends PacketImpl
       temporary = buffer.getBoolean();
    }
    
-   //Needs to be true so we can ensure packet has reached backup before we start sending messages to it from another
-   //session
-   public boolean isReplicateBlocking()
-   {      
-      return true;
-   }
-   
-   public boolean isReHandleResponseOnFailure()
-   {
-      return true;
-   }
-   
    @Override
    public String toString()
    {

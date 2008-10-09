@@ -33,12 +33,7 @@ public class SessionCloseMessage extends PacketImpl
    }
 
    // Public --------------------------------------------------------
-
-   public boolean isReHandleResponseOnFailure()
-   {
-      return true;
-   }
-   
+ 
    @Override
    public boolean equals(final Object other)
    {
@@ -50,9 +45,7 @@ public class SessionCloseMessage extends PacketImpl
       SessionCloseMessage r = (SessionCloseMessage)other;
 
       return super.equals(other);
-   }
-   
-   
+   }     
    
    // Package protected ---------------------------------------------
 

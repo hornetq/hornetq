@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.client.impl;
 
@@ -33,22 +33,20 @@ import org.jboss.messaging.core.client.ClientMessage;
  *
  */
 public interface ClientConsumerInternal extends ClientConsumer
-{   
+{
    long getID();
-   
+
    void handleMessage(ClientMessage message) throws Exception;
-   
+
    void clear();
-   
+
    void resume();
-   
+
    int getClientWindowSize();
-   
+
    int getBufferSize();
-   
+
    int getCreditsToSend();
-   
+
    void cleanUp() throws Exception;
-   
-   void failover();
 }

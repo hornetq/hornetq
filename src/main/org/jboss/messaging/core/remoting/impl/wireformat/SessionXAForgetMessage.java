@@ -58,11 +58,6 @@ public class SessionXAForgetMessage extends PacketImpl
 
    // Public --------------------------------------------------------
    
-   public boolean isReHandleResponseOnFailure()
-   {
-      return true;
-   }
-   
    public Xid getXid()
    {
       return xid;

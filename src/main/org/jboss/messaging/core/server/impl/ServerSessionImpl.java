@@ -12,6 +12,21 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+
+import javax.management.Notification;
+import javax.management.NotificationListener;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
@@ -25,6 +40,7 @@ import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
@@ -52,20 +68,6 @@ import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.SimpleIDGenerator;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.SimpleStringIdGenerator;
-
-import javax.management.Notification;
-import javax.management.NotificationListener;
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 
 /*
  * Session implementation 
@@ -255,7 +257,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       started = s;
    }
-
+   
    public void failedOver() throws Exception
    {
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
@@ -329,7 +331,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
             for (MessageReference ref : refs)
             {
-               ref.getQueue().addLast(ref);
+               ref.getQueue().addLast(ref);         
             }
          }
       }
@@ -375,11 +377,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
    public void processed(final long consumerID, final long messageID) throws Exception
    {
-      MessageReference ref = consumers.get(consumerID).waitForReference(messageID);
+      MessageReference ref = consumers.get(consumerID).getReference(messageID);
 
       // Ref = null would imply consumer is already closed so we could ignore it
       if (ref != null)
       {
+         if (ref.getMessage().getMessageID() != messageID)
+         {
+            throw new IllegalStateException("Invalid order " + ref.getMessage().getMessageID());
+         }
+
          if (autoCommitAcks)
          {
             doAck(ref);
@@ -423,8 +430,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       if (sendResponse)
       {
+         Packet response = new NullResponseMessage();
+         
          // Need to write the response now - before redeliveries occur
-         channel.send(new NullResponseMessage(false));
+         channel.send(response);
       }
 
       boolean wasStarted = started;
@@ -947,34 +956,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       return response;
    }
 
-//   public SessionCreateConsumerResponseMessage recreateConsumer(final SimpleString queueName,
-//                                                              final SimpleString filterString,
-//                                                              int windowSize,
-//                                                              int maxRate) throws Exception
-//   {
-//      Binding binding = postOffice.getBinding(queueName);
-//
-//      if (binding == null)
-//      {
-//         throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
-//      }
-//
-//      securityStore.check(binding.getAddress(), CheckType.READ, this);
-//
-//      // Flow control values if specified on queue override those passed in from
-//      // client
-//
-//      QueueSettings qs = queueSettingsRepository.getMatch(queueName.toString());
-//
-//      Integer queueWindowSize = qs.getConsumerWindowSize();
-//
-//      windowSize = queueWindowSize != null ? queueWindowSize : windowSize;
-//
-//      SessionCreateConsumerResponseMessage response = new SessionCreateConsumerResponseMessage(windowSize);
-//
-//      return response;
-//   }
-
    public SessionQueueQueryResponseMessage executeQueueQuery(final SimpleString queueName) throws Exception
    {
       if (queueName == null)
@@ -1095,42 +1076,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       int initialCredits = flowController == null ? -1 : flowController.getInitialCredits(windowToUse, producer);
 
       SimpleString groupId = null;
-      if(autoGroupId)
+      if (autoGroupId)
       {
          groupId = simpleStringIdGenerator.generateID();
       }
       return new SessionCreateProducerResponseMessage(initialCredits, maxRateToUse, groupId);
    }
-
-//   public SessionCreateProducerResponseMessage recreateProducer(final SimpleString address,
-//                                                              final int windowSize,
-//                                                              final int maxRate,
-//                                                              final boolean autoGroupId) throws Exception
-//   {
-//      FlowController flowController = null;
-//
-//      final int maxRateToUse = maxRate;
-//
-//      if (address != null)
-//      {
-//         flowController = windowSize == -1 ? null : postOffice.getFlowController(address);
-//      }
-//
-//      final int windowToUse = flowController == null ? -1 : windowSize;
-//
-//      // Get some initial credits to send to the producer - we try for
-//      // windowToUse
-//
-//      int initialCredits = flowController == null ? -1 : windowToUse;
-//
-//      SimpleString groupId = null;
-//      if(autoGroupId)
-//      {
-//         groupId = simpleStringIdGenerator.generateID();
-//      }
-//      
-//      return new SessionCreateProducerResponseMessage(initialCredits, maxRateToUse, groupId);
-//   }
 
    public boolean browserHasNextMessage(final long browserID) throws Exception
    {
@@ -1177,7 +1128,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
        producers.get(producerID).sendScheduled(message, scheduledDeliveryTime);  
    }
 
-   public int transferConnection(final RemotingConnection newConnection)
+   public int transferConnection(final RemotingConnection newConnection, final int lastReceivedCommandID)
    {
       remotingConnection.removeFailureListener(this);
 
@@ -1191,12 +1142,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       remotingConnection = newConnection;
 
       remotingConnection.addFailureListener(this);
+      
+      int serverLastReceivedCommandID = channel.getLastReceivedCommandID();
 
-      int lastReceivedCommandID =  channel.getLastReceivedCommandID();
+      channel.replayCommands(lastReceivedCommandID);
 
-      //TODO resend any dup responses
-
-      return lastReceivedCommandID;
+      return serverLastReceivedCommandID;
    }
 
    public void handleManagementMessage(final SessionSendManagementMessage message) throws Exception
@@ -1234,6 +1185,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       serverMessage.setDestination((SimpleString)serverMessage.getProperty(ManagementHelper.HDR_JMX_REPLYTO));
 
       send(serverMessage);
+   }
+   
+   public void handleReplicatedDelivery(long consumerID, long messageID) throws Exception
+   {
+      consumers.get(consumerID).deliver(messageID);
    }
 
    // FailureListener implementation

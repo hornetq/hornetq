@@ -71,11 +71,6 @@ public class SessionSendManagementMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public boolean isReHandleResponseOnFailure()
-   {
-      return true;
-   }
-   
    public long getProducerID()
    {
       return producerID;

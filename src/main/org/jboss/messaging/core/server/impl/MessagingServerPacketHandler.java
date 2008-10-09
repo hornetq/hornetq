@@ -13,6 +13,7 @@
 package org.jboss.messaging.core.server.impl;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FAILOVER_COMPLETE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION;
 
 import org.jboss.messaging.core.exception.MessagingException;
@@ -22,6 +23,7 @@ import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionFailoverCompleteMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -56,16 +58,25 @@ public class MessagingServerPacketHandler implements ChannelHandler
 
    public void handlePacket(final Packet packet)
    {            
+      channel1.replicatePacket(packet, new Runnable()
+      {
+         public void run()
+         {
+            doHandle(packet);
+         }
+      });      
+   }
+   
+   private void doHandle(final Packet packet)
+   {
       Packet response = null;
-
+      
       byte type = packet.getType();
 
       // All these operations need to be idempotent since they are outside of the session
       // reliability replay functionality
       try
-      {
-         channel1.replicatePacket(packet);
-                  
+      {                
          switch (type)
          {
             case CREATESESSION:
@@ -87,7 +98,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
             {
                ReattachSessionMessage request = (ReattachSessionMessage)packet;
    
-               response = server.reattachSession(connection, request.getName());
+               response = server.reattachSession(connection, request.getName(), request.getLastReceivedCommandID());
                
                break;
             }
@@ -115,7 +126,12 @@ public class MessagingServerPacketHandler implements ChannelHandler
 
          response = new MessagingExceptionMessage(me);
       }
-
-      channel1.send(response);
+      
+      if (response != null)
+      {
+         channel1.send(response);
+      }
+      
+      channel1.replicateComplete();
    }
 }

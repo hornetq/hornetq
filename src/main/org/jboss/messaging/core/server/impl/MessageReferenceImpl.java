@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.server.impl;
 
@@ -45,61 +45,61 @@ import org.jboss.messaging.util.SimpleString;
  * MessageReferenceImpl.java,v 1.3 2006/02/23 17:45:57 timfox Exp
  */
 public class MessageReferenceImpl implements MessageReference
-{   
+{
    private static final Logger log = Logger.getLogger(MessageReferenceImpl.class);
-   
+
    // Attributes ----------------------------------------------------
-   
-   private volatile int deliveryCount;   
-   
+
+   private volatile int deliveryCount;
+
    private long scheduledDeliveryTime;
-   
+
    private ServerMessage message;
-   
+
    private Queue queue;
-   
+
    // Constructors --------------------------------------------------
 
    public MessageReferenceImpl(final MessageReferenceImpl other, final Queue queue)
    {
       this.deliveryCount = other.deliveryCount;
-      
-      this.scheduledDeliveryTime = other.scheduledDeliveryTime;       
-      
+
+      this.scheduledDeliveryTime = other.scheduledDeliveryTime;
+
       this.message = other.message;
-      
+
       this.queue = queue;
    }
-   
+
    protected MessageReferenceImpl(final ServerMessage message, final Queue queue)
    {
-   	this.message = message;
-   	
-   	this.queue = queue;
-   }   
-   
+      this.message = message;
+
+      this.queue = queue;
+   }
+
    // MessageReference implementation -------------------------------
-   
+
    public MessageReference copy(final Queue queue)
    {
-   	return new MessageReferenceImpl(this, queue);
+      return new MessageReferenceImpl(this, queue);
    }
-   
+
    public int getDeliveryCount()
    {
       return deliveryCount;
    }
-   
+
    public void setDeliveryCount(final int deliveryCount)
    {
       this.deliveryCount = deliveryCount;
    }
-   
+
    public void incrementDeliveryCount()
    {
       deliveryCount++;
    }
-   
+
    public long getScheduledDeliveryTime()
    {
       return scheduledDeliveryTime;
@@ -109,43 +109,41 @@ public class MessageReferenceImpl implements MessageReference
    {
       this.scheduledDeliveryTime = scheduledDeliveryTime;
    }
-      
+
    public ServerMessage getMessage()
    {
       return message;
-   }         
-   
+   }
+
    public Queue getQueue()
    {
       return queue;
    }
-   
+
    public boolean cancel(final StorageManager persistenceManager,
-         final PostOffice postOffice,
-         final HierarchicalRepository<QueueSettings> queueSettingsRepository)
-         throws Exception
+                         final PostOffice postOffice,
+                         final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       if (message.isDurable() && queue.isDurable())
       {
          persistenceManager.updateDeliveryCount(this);
       }
 
-      QueueSettings queueSettings = queueSettingsRepository.getMatch(
-            queue.getName().toString());
+      QueueSettings queueSettings = queueSettingsRepository.getMatch(queue.getName().toString());
       int maxDeliveries = queueSettings.getMaxDeliveryAttempts();
 
       if (maxDeliveries > 0 && deliveryCount >= maxDeliveries)
       {
          log.warn("Message has reached maximum delivery attempts, sending it to DLQ");
          sendToDLQ(persistenceManager, postOffice, queueSettingsRepository);
-         
+
          return false;
-      } 
+      }
       else
       {
          long redeliveryDelay = queueSettings.getRedeliveryDelay();
 
-         if(redeliveryDelay > 0)
+         if (redeliveryDelay > 0)
          {
             scheduledDeliveryTime = System.currentTimeMillis() + redeliveryDelay;
             persistenceManager.storeMessageReferenceScheduled(queue.getPersistenceID(), message.getMessageID(), scheduledDeliveryTime);
@@ -157,12 +155,10 @@ public class MessageReferenceImpl implements MessageReference
    }
 
    public void sendToDLQ(final StorageManager persistenceManager,
-         final PostOffice postOffice,
-         final HierarchicalRepository<QueueSettings> queueSettingsRepository)
-         throws Exception
+                         final PostOffice postOffice,
+                         final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
-      SimpleString dlq = queueSettingsRepository.getMatch(
-            queue.getName().toString()).getDLQ();
+      SimpleString dlq = queueSettingsRepository.getMatch(queue.getName().toString()).getDLQ();
 
       if (dlq != null)
       {
@@ -174,20 +170,18 @@ public class MessageReferenceImpl implements MessageReference
          }
 
          move(dlqBinding, persistenceManager, postOffice, false);
-      } else
+      }
+      else
       {
-         throw new IllegalStateException("No DLQ configured for queue "
-               + queue.getName() + ", so dropping it");
+         throw new IllegalStateException("No DLQ configured for queue " + queue.getName() + ", so dropping it");
       }
    }
-   
+
    public void expire(final StorageManager persistenceManager,
-         final PostOffice postOffice,
-         final HierarchicalRepository<QueueSettings> queueSettingsRepository)
-         throws Exception
+                      final PostOffice postOffice,
+                      final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
-      SimpleString expiryQueue = queueSettingsRepository.getMatch(
-            queue.getName().toString()).getExpiryQueue();
+      SimpleString expiryQueue = queueSettingsRepository.getMatch(queue.getName().toString()).getExpiryQueue();
 
       if (expiryQueue != null)
       {
@@ -195,16 +189,14 @@ public class MessageReferenceImpl implements MessageReference
 
          if (expiryBinding == null)
          {
-            expiryBinding = postOffice.addBinding(expiryQueue, expiryQueue, null,
-                  true, false);
+            expiryBinding = postOffice.addBinding(expiryQueue, expiryQueue, null, true, false);
          }
-         
+
          move(expiryBinding, persistenceManager, postOffice, true);
-      } 
+      }
       else
       {
-         log
-               .warn("Message has expired, no expiry queue is configured so dropping it");
+         log.warn("Message has expired, no expiry queue is configured so dropping it");
 
          Transaction tx = new TransactionImpl(persistenceManager, postOffice);
          tx.addAcknowledgement(this);
@@ -212,10 +204,8 @@ public class MessageReferenceImpl implements MessageReference
       }
 
    }
-   
-   public void move(final Binding otherBinding,
-         final StorageManager persistenceManager, final PostOffice postOffice)
-   throws Exception
+
+   public void move(final Binding otherBinding, final StorageManager persistenceManager, final PostOffice postOffice) throws Exception
    {
       move(otherBinding, persistenceManager, postOffice, false);
    }
@@ -224,18 +214,21 @@ public class MessageReferenceImpl implements MessageReference
 
    public String toString()
    {
-      return "Reference[" + getMessage().getMessageID() + "]:" + (getMessage().isDurable() ? "RELIABLE" : "NON-RELIABLE");
+      return "Reference[" + getMessage().getMessageID() +
+             "]:" +
+             (getMessage().isDurable() ? "RELIABLE" : "NON-RELIABLE");
    }
 
    // Package protected ---------------------------------------------
 
-   // Protected -----------------------------------------------------   
-   
+   // Protected -----------------------------------------------------
+
    // Private -------------------------------------------------------
-   
+
    private void move(final Binding otherBinding,
-         final StorageManager persistenceManager, final PostOffice postOffice, final boolean expiry)
-         throws Exception
+                     final StorageManager persistenceManager,
+                     final PostOffice postOffice,
+                     final boolean expiry) throws Exception
    {
       Transaction tx = new TransactionImpl(persistenceManager, postOffice);
 
@@ -248,7 +241,7 @@ public class MessageReferenceImpl implements MessageReference
 
       tx.commit();
    }
-   
+
    private ServerMessage makeCopy(final boolean expiry, final StorageManager pm) throws Exception
    {
       /*
@@ -261,13 +254,13 @@ public class MessageReferenceImpl implements MessageReference
       */
 
       ServerMessage copy = message.copy();
-      
-      //FIXME - this won't work with replication!!!!!!!!!!!
+
+      // FIXME - this won't work with replication!!!!!!!!!!!
       long newMessageId = pm.generateUniqueID();
-      
+
       copy.setMessageID(newMessageId);
-      
-      SimpleString originalQueue = copy.getDestination();      
+
+      SimpleString originalQueue = copy.getDestination();
       copy.putStringProperty(MessageImpl.HDR_ORIGIN_QUEUE, originalQueue);
 
       // reset expiry
@@ -275,13 +268,13 @@ public class MessageReferenceImpl implements MessageReference
       if (expiry)
       {
          long actualExpiryTime = System.currentTimeMillis();
-      
+
          copy.putLongProperty(MessageImpl.HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
       }
-      
+
       return copy;
    }
 
    // Inner classes -------------------------------------------------
-   
+
 }

@@ -91,7 +91,7 @@ public class InVMConnection implements Connection
 
       executor.execute(future);
 
-      boolean ok = future.await(10000);
+      boolean ok = future.await(1000);
 
       if (!ok)
       {

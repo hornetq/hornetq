@@ -59,6 +59,7 @@ public class ScheduledMessageTest extends UnitTestCase
    private String pageDir = System.getProperty("java.io.tmpdir", "/tmp") + "/ScheduledMessageRecoveryTest/page";
 
    private SimpleString atestq = new SimpleString("ascheduledtestq");
+
    private SimpleString atestq2 = new SimpleString("ascheduledtestq2");
 
    private MessagingService messagingService;
@@ -93,7 +94,7 @@ public class ScheduledMessageTest extends UnitTestCase
          }
          catch (Exception e)
          {
-            //ignore
+            // ignore
          }
       }
       new File(journalDir).delete();
@@ -158,20 +159,19 @@ public class ScheduledMessageTest extends UnitTestCase
       configuration.getAcceptorConfigurations().add(transportConfig);
       configuration.setPagingMaxGlobalSizeBytes(0);
       messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
-      //start the server
+      // start the server
       messagingService.start();
-      //then we create a client as normal
+      // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
       ClientSession session = sessionFactory.createSession(false, true, false, false);
       session.createQueue(atestq, atestq, null, true, true);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage message = createMessage(session, "m1");
       long time = System.currentTimeMillis();
-      time+=10000;
+      time += 10000;
       producer.send(message, time);
 
       producer.close();
-
 
       ClientConsumer consumer = session.createConsumer(atestq);
 
@@ -182,6 +182,12 @@ public class ScheduledMessageTest extends UnitTestCase
       assertEquals("m1", message2.getBody().getString());
 
       message2.processed();
+
+      // Make sure no more messages
+      consumer.close();
+      consumer = session.createConsumer(atestq);
+      assertNull(consumer.receive(1000));
+
       session.close();
    }
 
@@ -192,12 +198,12 @@ public class ScheduledMessageTest extends UnitTestCase
       configuration.getAcceptorConfigurations().add(transportConfig);
       configuration.setPagingMaxGlobalSizeBytes(0);
       messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
-      //start the server
+      // start the server
       messagingService.start();
       QueueSettings qs = new QueueSettings();
       qs.setRedeliveryDelay(5000l);
       messagingService.getServer().getQueueSettingsRepository().addMatch(atestq2.toString(), qs);
-      //then we create a client as normal
+      // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
       ClientSession session = sessionFactory.createSession(false, true, false, false);
       session.createQueue(atestq, atestq, null, true, true);
@@ -208,7 +214,6 @@ public class ScheduledMessageTest extends UnitTestCase
 
       producer.close();
 
-
       ClientConsumer consumer = session.createConsumer(atestq);
       ClientConsumer consumer2 = session.createConsumer(atestq2);
 
@@ -218,19 +223,26 @@ public class ScheduledMessageTest extends UnitTestCase
       assertEquals("m1", message3.getBody().getString());
       assertEquals("m1", message2.getBody().getString());
       long time = System.currentTimeMillis();
-      //force redelivery
+      // force redelivery
       consumer.close();
       consumer2.close();
       consumer = session.createConsumer(atestq);
       consumer2 = session.createConsumer(atestq2);
       message3 = consumer.receive(1000);
       message2 = consumer2.receive(5250);
-      time+=5000;
+      time += 5000;
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m1", message3.getBody().getString());
       assertEquals("m1", message2.getBody().getString());
       message2.processed();
       message3.processed();
+
+      // Make sure no more messages
+      consumer.close();
+      consumer2.close();
+      consumer = session.createConsumer(atestq);
+      assertNull(consumer.receive(1000));
+
       session.close();
    }
 
@@ -241,12 +253,12 @@ public class ScheduledMessageTest extends UnitTestCase
       configuration.getAcceptorConfigurations().add(transportConfig);
       configuration.setPagingMaxGlobalSizeBytes(0);
       messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
-      //start the server
+      // start the server
       messagingService.start();
       QueueSettings qs = new QueueSettings();
       qs.setRedeliveryDelay(5000l);
       messagingService.getServer().getQueueSettingsRepository().addMatch(atestq2.toString(), qs);
-      //then we create a client as normal
+      // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
       ClientSession session = sessionFactory.createSession(false, true, false, false);
       session.createQueue(atestq, atestq, null, true, true);
@@ -257,7 +269,6 @@ public class ScheduledMessageTest extends UnitTestCase
 
       producer.close();
 
-
       ClientConsumer consumer = session.createConsumer(atestq);
       ClientConsumer consumer2 = session.createConsumer(atestq2);
 
@@ -267,7 +278,7 @@ public class ScheduledMessageTest extends UnitTestCase
       assertEquals("m1", message3.getBody().getString());
       assertEquals("m1", message2.getBody().getString());
       long time = System.currentTimeMillis();
-      //force redelivery
+      // force redelivery
       consumer.close();
       consumer2.close();
       producer.close();
@@ -283,34 +294,45 @@ public class ScheduledMessageTest extends UnitTestCase
       session.start();
       message3 = consumer.receive(1000);
       message2 = consumer2.receive(5250);
-      time+=5000;
+      time += 5000;
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m1", message3.getBody().getString());
       assertEquals("m1", message2.getBody().getString());
       message2.processed();
       message3.processed();
+      
+      // Make sure no more messages
+      consumer.close();
+      consumer2.close();
+      consumer = session.createConsumer(atestq);
+      assertNull(consumer.receive(1000));
+      
       session.close();
    }
+
    public void testMessageDeliveredCorrectly(boolean recover) throws Exception
    {
 
       TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
       messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
-      //start the server
+      // start the server
       messagingService.start();
-      //then we create a client as normal
+      // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
       ClientSession session = sessionFactory.createSession(false, true, false, false);
       session.createQueue(atestq, atestq, null, true, true);
       ClientProducer producer = session.createProducer(atestq);
-      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
-                                                          System.currentTimeMillis(), (byte) 1);
+      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+                                                          false,
+                                                          0,
+                                                          System.currentTimeMillis(),
+                                                          (byte)1);
       message.getBody().putString("testINVMCoreClient");
       message.getBody().flip();
       message.setDurable(true);
       long time = System.currentTimeMillis();
-      time+=10000;
+      time += 10000;
       producer.send(message, time);
 
       if (recover)
@@ -333,6 +355,12 @@ public class ScheduledMessageTest extends UnitTestCase
       assertEquals("testINVMCoreClient", message2.getBody().getString());
 
       message2.processed();
+      
+      // Make sure no more messages
+      consumer.close();   
+      consumer = session.createConsumer(atestq);
+      assertNull(consumer.receive(1000));
+      
       session.close();
    }
 
@@ -342,9 +370,9 @@ public class ScheduledMessageTest extends UnitTestCase
       TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
       messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
-      //start the server
+      // start the server
       messagingService.start();
-      //then we create a client as normal
+      // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
       ClientSession session = sessionFactory.createSession(false, true, false, false);
       session.createQueue(atestq, atestq, null, true, true);
@@ -355,17 +383,17 @@ public class ScheduledMessageTest extends UnitTestCase
       ClientMessage m4 = createMessage(session, "m4");
       ClientMessage m5 = createMessage(session, "m5");
       long time = System.currentTimeMillis();
-      time+=10000;
+      time += 10000;
       producer.send(m1, time);
-      time+=1000;
+      time += 1000;
       producer.send(m2, time);
-      time+=1000;
+      time += 1000;
       producer.send(m3, time);
-      time+=1000;
+      time += 1000;
       producer.send(m4, time);
-      time+=1000;
+      time += 1000;
       producer.send(m5, time);
-      time-=4000;
+      time -= 4000;
       if (recover)
       {
          producer.close();
@@ -388,26 +416,32 @@ public class ScheduledMessageTest extends UnitTestCase
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m1", message.getBody().getString());
       message.processed();
-      time+=1000;
+      time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m2", message.getBody().getString());
       message.processed();
-      time+=1000;
+      time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m3", message.getBody().getString());
       message.processed();
-      time+=1000;
+      time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m4", message.getBody().getString());
       message.processed();
-      time+=1000;
+      time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m5", message.getBody().getString());
       message.processed();
+      
+      // Make sure no more messages
+      consumer.close();
+      consumer = session.createConsumer(atestq);
+      assertNull(consumer.receive(1000));
+      
       session.close();
    }
 
@@ -417,9 +451,9 @@ public class ScheduledMessageTest extends UnitTestCase
       TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
       messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
-      //start the server
+      // start the server
       messagingService.start();
-      //then we create a client as normal
+      // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
       ClientSession session = sessionFactory.createSession(false, true, false, false);
       session.createQueue(atestq, atestq, null, true, true);
@@ -430,17 +464,17 @@ public class ScheduledMessageTest extends UnitTestCase
       ClientMessage m4 = createMessage(session, "m4");
       ClientMessage m5 = createMessage(session, "m5");
       long time = System.currentTimeMillis();
-      time+=10000;
+      time += 10000;
       producer.send(m1, time);
-      time+=3000;
+      time += 3000;
       producer.send(m2, time);
-      time-=2000;
+      time -= 2000;
       producer.send(m3, time);
-      time+=3000;
+      time += 3000;
       producer.send(m4, time);
-      time-=2000;
+      time -= 2000;
       producer.send(m5, time);
-      time-=2000;
+      time -= 2000;
       ClientConsumer consumer = null;
       if (recover)
       {
@@ -464,26 +498,32 @@ public class ScheduledMessageTest extends UnitTestCase
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m1", message.getBody().getString());
       message.processed();
-      time+=1000;
+      time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m3", message.getBody().getString());
       message.processed();
-      time+=1000;
+      time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m5", message.getBody().getString());
       message.processed();
-      time+=1000;
+      time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m2", message.getBody().getString());
       message.processed();
-      time+=1000;
+      time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m4", message.getBody().getString());
       message.processed();
+      
+      // Make sure no more messages
+      consumer.close();
+      consumer = session.createConsumer(atestq);
+      assertNull(consumer.receive(1000));
+      
       session.close();
    }
 
@@ -493,9 +533,9 @@ public class ScheduledMessageTest extends UnitTestCase
       TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
       messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
-      //start the server
+      // start the server
       messagingService.start();
-      //then we create a client as normal
+      // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
       ClientSession session = sessionFactory.createSession(false, true, false, false);
       session.createQueue(atestq, atestq, null, true, true);
@@ -506,15 +546,15 @@ public class ScheduledMessageTest extends UnitTestCase
       ClientMessage m4 = createMessage(session, "m4");
       ClientMessage m5 = createMessage(session, "m5");
       long time = System.currentTimeMillis();
-      time+=10000;
+      time += 10000;
       producer.send(m1, time);
       producer.send(m2);
-      time+=1000;
+      time += 1000;
       producer.send(m3, time);
       producer.send(m4);
-      time+=1000;
+      time += 1000;
       producer.send(m5, time);
-      time-=2000;
+      time -= 2000;
       ClientConsumer consumer = null;
       if (recover)
       {
@@ -543,16 +583,22 @@ public class ScheduledMessageTest extends UnitTestCase
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m1", message.getBody().getString());
       message.processed();
-      time+=1000;
+      time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m3", message.getBody().getString());
       message.processed();
-      time+=1000;
+      time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m5", message.getBody().getString());
       message.processed();
+      
+      // Make sure no more messages
+      consumer.close();
+      consumer = session.createConsumer(atestq);
+      assertNull(consumer.receive(1000));
+      
       session.close();
    }
 
@@ -562,16 +608,19 @@ public class ScheduledMessageTest extends UnitTestCase
       TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
       messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
-      //start the server
+      // start the server
       messagingService.start();
-      //then we create a client as normal
+      // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
       ClientSession session = sessionFactory.createSession(true, false, false, false);
       session.createQueue(atestq, atestq, null, true, false);
       session.start(xid, XAResource.TMNOFLAGS);
       ClientProducer producer = session.createProducer(atestq);
-      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
-                                                          System.currentTimeMillis(), (byte) 1);
+      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+                                                          false,
+                                                          0,
+                                                          System.currentTimeMillis(),
+                                                          (byte)1);
       message.getBody().putString("testINVMCoreClient");
       message.getBody().flip();
       message.setDurable(true);
@@ -603,14 +652,20 @@ public class ScheduledMessageTest extends UnitTestCase
       assertEquals("testINVMCoreClient", message2.getBody().getString());
 
       message2.processed();
+      consumer.close();
+      // Make sure no more messages
+      consumer = session.createConsumer(atestq);
+      assertNull(consumer.receive(1000));
       session.close();
    }
 
-
    private ClientMessage createMessage(ClientSession session, String body)
    {
-      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
-                                                          System.currentTimeMillis(), (byte) 1);
+      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+                                                          false,
+                                                          0,
+                                                          System.currentTimeMillis(),
+                                                          (byte)1);
       message.getBody().putString(body);
       message.getBody().flip();
       message.setDurable(true);

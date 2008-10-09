@@ -47,7 +47,9 @@ public class PacketImpl implements Packet
    public static final byte NULL_RESPONSE = 21;
 
    public static final byte PACKETS_CONFIRMED = 22;
-
+   
+   public static final byte REPLICATION_RESPONSE = 23;
+   
 
    // Server
    public static final byte CREATESESSION = 30;
@@ -57,7 +59,7 @@ public class PacketImpl implements Packet
    public static final byte REATTACH_SESSION = 32;
 
    public static final byte REATTACH_SESSION_RESP = 33;
-
+   
    // Session
    public static final byte SESS_CREATECONSUMER = 40;
 
@@ -157,7 +159,11 @@ public class PacketImpl implements Packet
 
    public static final byte SESS_MANAGEMENT_SEND = 88;
 
-   public static final byte SESS_SCHEDULED_SEND = 91;
+   public static final byte SESS_SCHEDULED_SEND = 89;
+   
+   public static final byte SESS_FAILOVER_COMPLETE = 90;
+   
+   public static final byte SESS_REPLICATE_DELIVERY = 91;
 
    // Static --------------------------------------------------------
 
@@ -189,6 +195,7 @@ public class PacketImpl implements Packet
       buffer.putInt(0); // The length gets filled in at the end
       buffer.putByte(type);
       buffer.putLong(channelID);
+     // buffer.putInt(replicateID);
 
       encodeBody(buffer);
 
@@ -203,6 +210,8 @@ public class PacketImpl implements Packet
    public void decode(final MessagingBuffer buffer)
    {
       channelID = buffer.getLong();
+      
+    //  replicateID = buffer.getInt();
 
       decodeBody(buffer);
    }
@@ -225,11 +234,6 @@ public class PacketImpl implements Packet
       return true;
    }
 
-   public boolean isReplicateBlocking()
-   {
-      return false;
-   }
-
    public boolean isWriteAlways()
    {
       return false;
@@ -238,15 +242,6 @@ public class PacketImpl implements Packet
    public boolean isReHandleResponseOnFailure()
    {
       return false;
-   }
-
-   public boolean isDuplicate()
-   {
-      return false;
-   }
-
-   public void setDuplicate(final boolean duplicate)
-   {
    }
 
    @Override
@@ -280,5 +275,17 @@ public class PacketImpl implements Packet
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+   
+//   private int replicateID;
+//   
+//   public int getReplicateID()
+//   {
+//      return replicateID;
+//   }
+//   
+//   public void setReplicateID(int id)
+//   {
+//      this.replicateID = id;
+//   }
 
 }

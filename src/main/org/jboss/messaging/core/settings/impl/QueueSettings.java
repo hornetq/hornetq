@@ -41,7 +41,7 @@ public class QueueSettings implements Mergeable<QueueSettings>
    /**
     * defaults used if null, this allows merging
     */
-   public static final Class DEFAULT_DISTRIBUTION_POLICY_CLASS = new RoundRobinDistributionPolicy().getClass();
+   public static final Class<?> DEFAULT_DISTRIBUTION_POLICY_CLASS = new RoundRobinDistributionPolicy().getClass();
 
    public static final Boolean DEFAULT_CLUSTERED = false;
 
@@ -55,7 +55,7 @@ public class QueueSettings implements Mergeable<QueueSettings>
 
    public static final Integer DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT = 0;
 
-   public static final Long DEFAULT_REDELIVER_DELAY = (long)500;
+   public static final Long DEFAULT_REDELIVER_DELAY = 0L;
 
    private Boolean clustered = null;
 

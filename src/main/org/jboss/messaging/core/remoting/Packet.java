@@ -47,13 +47,10 @@ public interface Packet
    
    boolean isRequiresConfirmations();
    
-   boolean isReplicateBlocking();
-   
    boolean isWriteAlways();
    
-   boolean isReHandleResponseOnFailure();
    
-   boolean isDuplicate();
-   
-   void setDuplicate(boolean duplicate);
+//   int getReplicateID();
+//   
+//   void setReplicateID(int id);
 }

@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.remoting.Channel;
@@ -31,8 +33,6 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerProducer;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 
@@ -91,7 +91,7 @@ public class ServerProducerImpl implements ServerProducer
 	}
 	
 	public void close() throws Exception
-	{
+	{	   
 		session.removeProducer(this);
 	}
 	
@@ -101,14 +101,14 @@ public class ServerProducerImpl implements ServerProducer
 
       session.send(message);  		
 	}
-
-   public void sendScheduled(final ServerMessage message, final long scheduledDeliveryTime) throws Exception
+	
+	public void sendScheduled(final ServerMessage message, final long scheduledDeliveryTime) throws Exception
    {
       doFlowControl(message);
 
       session.sendScheduled(message, scheduledDeliveryTime);
    }
-
+	
    public void requestAndSendCredits() throws Exception
 	{	 
 	   if (!waiting)
@@ -123,7 +123,7 @@ public class ServerProducerImpl implements ServerProducer
 	   
 		Packet packet = new SessionProducerFlowCreditMessage(id, credits);
 		
-		channel.send( packet);	
+		channel.send(packet);	
 	}
 	
 	public void setWaiting(final boolean waiting)
