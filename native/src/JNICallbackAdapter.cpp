@@ -22,7 +22,7 @@
 #include <iostream>
 #include "JavaUtilities.h"
 
-JNICallbackAdapter::JNICallbackAdapter(AIOController * _controller, jobject _callback, jobject _fileController, jobject _bufferReference) : CallbackAdapter(), refs(1)
+JNICallbackAdapter::JNICallbackAdapter(AIOController * _controller, jobject _callback, jobject _fileController, jobject _bufferReference) : CallbackAdapter()
 {
 	controller = _controller;
 	callback = _callback;
@@ -37,7 +37,7 @@ JNICallbackAdapter::~JNICallbackAdapter()
 void JNICallbackAdapter::done(THREAD_CONTEXT threadContext)
 {
 	JNI_ENV(threadContext)->CallVoidMethod(fileController, controller->done, callback, bufferReference); 
-	return;
+	release(threadContext);
 }
 
 void JNICallbackAdapter::onError(THREAD_CONTEXT threadContext, long errorCode, std::string error)
@@ -45,11 +45,6 @@ void JNICallbackAdapter::onError(THREAD_CONTEXT threadContext, long errorCode, s
 	controller->log(threadContext, 0, "Libaio event generated errors, callback object was informed about it");
 	jstring strError = JNI_ENV(threadContext)->NewStringUTF(error.data());
 	JNI_ENV(threadContext)->CallVoidMethod(fileController, controller->error, callback, (jint)errorCode, strError);
+	release(threadContext);
 }
 
-void JNICallbackAdapter::destroy(THREAD_CONTEXT threadContext)
-{
-	JNI_ENV(threadContext)->DeleteGlobalRef(callback);
-	JNI_ENV(threadContext)->DeleteGlobalRef(fileController);
-	JNI_ENV(threadContext)->DeleteGlobalRef(bufferReference);
-}

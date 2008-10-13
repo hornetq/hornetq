@@ -27,12 +27,9 @@
 class CallbackAdapter
 {
 private:
-    // The number of pages that are expected to be used by this Buffer
-    int blocks;
 
-    virtual void destroy(THREAD_CONTEXT threadContext) = 0;
 public:
-	CallbackAdapter() : blocks(1)
+	CallbackAdapter()
 	{
 		
 	}
@@ -41,28 +38,6 @@ public:
 		
 	}
 	
-	void setBlocks(int _blocks)
-	{
-		blocks = _blocks;
-	}
-	
-	void addBlock()
-	{
-		// TODO: Do I need to mutex here?
-		blocks++;
-	}
-	
-	void completeBlock(THREAD_CONTEXT threadContext)
-	{
-		// TODO: Do I need to mutex here?
-		if (--blocks <= 0)
-		{
-			done(threadContext);
-		}
-	}
-	
-	virtual void addref(THREAD_CONTEXT ) = 0;
-	virtual void deleteRef(THREAD_CONTEXT ) = 0;
 	virtual void done(THREAD_CONTEXT ) = 0;
 	virtual void onError(THREAD_CONTEXT , long , std::string )=0;
 };

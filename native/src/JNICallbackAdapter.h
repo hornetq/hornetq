@@ -34,32 +34,26 @@ private:
 	jobject callback;
 	jobject fileController;
 	jobject bufferReference;
-	int refs;
-    void destroy(THREAD_CONTEXT threadContext);
+
+	void release(THREAD_CONTEXT threadContext)
+	{
+		JNI_ENV(threadContext)->DeleteGlobalRef(callback);
+		JNI_ENV(threadContext)->DeleteGlobalRef(fileController);
+		JNI_ENV(threadContext)->DeleteGlobalRef(bufferReference);
+		delete this;
+		return;
+	}
+	
 	
 public:
 	// _ob must be a global Reference (use createGloblReferente before calling the constructor)
 	JNICallbackAdapter(AIOController * _controller, jobject _callback, jobject _fileController, jobject _bufferReference);
 	virtual ~JNICallbackAdapter();
+
 	void done(THREAD_CONTEXT threadContext);
+
 	void onError(THREAD_CONTEXT , long , std::string );
-	
-	void addref(THREAD_CONTEXT )
-	{
-		// As long as there is only one thread polling events, we are safe with this
-		refs++;
-	}
-	
-	void deleteRef(THREAD_CONTEXT threadContext)
-	{
-		// As long as there is only one thread polling events, we are safe with this
-		if (--refs <= 0)
-		{
-			destroy(threadContext);
-			delete this;
-		}
-	}
-	
+
 	
 };
 #endif /*JNIBUFFERADAPTER_H_*/

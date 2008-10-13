@@ -166,8 +166,7 @@ void AsyncFile::pollEvents(THREAD_CONTEXT threadContext)
 				}
 				else
 				{
-					adapter->completeBlock(threadContext);
-					adapter->deleteRef(threadContext);
+					adapter->done(threadContext);
 				}
 			}
 			

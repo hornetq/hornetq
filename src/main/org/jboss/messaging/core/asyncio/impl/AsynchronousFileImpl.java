@@ -53,7 +53,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private static boolean loaded = false;
 
-   private static int EXPECTED_NATIVE_VERSION = 14;
+   private static int EXPECTED_NATIVE_VERSION = 15;
 
    static void addMax(final int io)
    {
@@ -84,6 +84,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       }
       catch (Throwable e)
       {
+         e.printStackTrace();
          log.trace(name + " -> error loading the native library", e);
          return false;
       }
