@@ -84,7 +84,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
       }
       catch (Throwable e)
       {
-         e.printStackTrace();
          log.trace(name + " -> error loading the native library", e);
          return false;
       }
