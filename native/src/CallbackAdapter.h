@@ -61,9 +61,9 @@ public:
 		}
 	}
 	
-	virtual void addref(THREAD_CONTEXT threadContext) = 0;
-	virtual void deleteRef(THREAD_CONTEXT threadContext) = 0;
-	virtual void done(THREAD_CONTEXT threadContext) = 0;
-	virtual void onError(THREAD_CONTEXT threadContext, long error, std::string error)=0;
+	virtual void addref(THREAD_CONTEXT ) = 0;
+	virtual void deleteRef(THREAD_CONTEXT ) = 0;
+	virtual void done(THREAD_CONTEXT ) = 0;
+	virtual void onError(THREAD_CONTEXT , long , std::string )=0;
 };
 #endif /*BUFFERADAPTER_H_*/

@@ -42,7 +42,7 @@ public:
 	JNICallbackAdapter(AIOController * _controller, jobject _callback, jobject _fileController, jobject _bufferReference);
 	virtual ~JNICallbackAdapter();
 	void done(THREAD_CONTEXT threadContext);
-	void onError(THREAD_CONTEXT threadContext, long error, std::string error);
+	void onError(THREAD_CONTEXT , long , std::string );
 	
 	void addref(THREAD_CONTEXT )
 	{

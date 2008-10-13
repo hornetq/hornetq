@@ -22,6 +22,7 @@
 
 #include <string>
 #include <libaio.h>
+#include <stdlib.h>
 #include <pthread.h>
 #include "JAIODatatypes.h"
 #include "AIOException.h"
