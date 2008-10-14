@@ -972,28 +972,28 @@
       <ant dir="${examples.dir}/jms" antfile="build.xml" target="scheduledExample"/>
    </target>
 
-   <target name="SimpleClient" depends="client-jar">
-      <ant dir="${examples.dir}/messaging" antfile="build.xml" target="SimpleClient"/>
+   <target name="simpleClient" depends="client-jar">
+      <ant dir="${examples.dir}/messaging" antfile="build.xml" target="simpleClient"/>
    </target>
 
-   <target name="SSLClient" depends="client-jar">
-      <ant dir="${examples.dir}/messaging" antfile="build.xml" target="SSLClient"/>
+   <target name="ssslClient" depends="client-jar">
+      <ant dir="${examples.dir}/messaging" antfile="build.xml" target="sslClient"/>
    </target>
 
-   <target name="SimpleExample" depends="jar, client-jar">
-      <ant dir="${examples.dir}/messaging" antfile="build.xml" target="SimpleExample"/>
+   <target name="simpleExample" depends="jar, client-jar">
+      <ant dir="${examples.dir}/messaging" antfile="build.xml" target="simpleExample"/>
    </target>
 
-    <target name="ManagementClient" depends="client-jar">
-       <ant dir="${examples.dir}/messaging" antfile="build.xml" target="ManagementClient"/>
+    <target name="managementClient" depends="client-jar">
+       <ant dir="${examples.dir}/messaging" antfile="build.xml" target="managementClient"/>
     </target>
        
-   <target name="WildCardClient" depends="jar, client-jar">
-         <ant dir="${examples.dir}/messaging" antfile="build.xml" target="WildCardClient"/>
+   <target name="wildCardClient" depends="jar, client-jar">
+         <ant dir="${examples.dir}/messaging" antfile="build.xml" target="wildCardClient"/>
    </target>
 
-   <target name="ScheduledMessageExample" depends="jar, client-jar">
-         <ant dir="${examples.dir}/messaging" antfile="build.xml" target="ScheduledMessageExample"/>
+   <target name="scheduledMessageExample" depends="jar, client-jar">
+         <ant dir="${examples.dir}/messaging" antfile="build.xml" target="scheduledMessageExample"/>
       </target>
    <!-- Performance examples -->
 

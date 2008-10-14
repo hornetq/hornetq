@@ -194,8 +194,8 @@
       <ant antfile="build-messaging.xml" target="wildcardExample"/>
    </target>
 
-   <target name="ScheduledMessageExample" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="ScheduledMessageExample"/>
+   <target name="scheduledMessageExample" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="scheduledMessageExample"/>
    </target>
 
    <target name="messageGroupingExample" depends="createthirdparty">
@@ -234,23 +234,23 @@
       <ant antfile="build-messaging.xml" target="perfTransactionalSender"/>
    </target>
 
-   <target name="SimpleClient" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="SimpleClient"/>
+   <target name="simpleClient" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="simpleClient"/>
    </target>
 
-   <target name="SSLClient" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="SSLClient"/>
+   <target name="sslClient" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="sslClient"/>
    </target>
 
-   <target name="SimpleExample" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="SimpleExample"/>
+   <target name="simpleExample" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="simpleExample"/>
    </target>
 
-    <target name="ManagementClient" depends="createthirdparty">
-       <ant antfile="build-messaging.xml" target="ManagementClient"/>
+    <target name="managementClient" depends="createthirdparty">
+       <ant antfile="build-messaging.xml" target="managementClient"/>
     </target>
 
-   <target name="WildCardClient" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="WildCardClient"/>
+   <target name="wildCardClient" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="wildCardClient"/>
    </target>
 </project>

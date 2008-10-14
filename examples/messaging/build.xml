@@ -79,37 +79,37 @@
       </javac>
    </target>
 
-   <target name="SimpleClient" depends="compile">
+   <target name="simpleClient" depends="compile">
       <java classname="org.jboss.messaging.example.SimpleClient" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
    </target>
 
-   <target name="SSLClient" depends="compile">
+   <target name="sslClient" depends="compile">
       <java classname="org.jboss.messaging.example.SSLClient" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
    </target>
 
-   <target name="SimpleExample" depends="compile">
+   <target name="simpleExample" depends="compile">
       <java classname="org.jboss.messaging.example.SimpleExample" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
    </target>
 
-   <target name="ManagementClient" depends="compile">
+   <target name="managementClient" depends="compile">
       <java classname="org.jboss.messaging.example.ManagementClient" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
    </target>
 
-   <target name="WildCardClient" depends="compile">
+   <target name="wildCardClient" depends="compile">
       <java classname="org.jboss.messaging.example.WildCardClient" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
    </target>
 
-   <target name="ScheduledMessageExample" depends="compile">
+   <target name="scheduledMessageExample" depends="compile">
       <java classname="org.jboss.messaging.example.ScheduledMessageExample" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
