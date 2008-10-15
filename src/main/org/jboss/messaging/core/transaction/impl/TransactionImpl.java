@@ -513,7 +513,7 @@ public class TransactionImpl implements Transaction
       for (ServerMessage message : pagedMessages)
       {
 
-         // http://wiki.jboss.org/auth/wiki/JBossMessaging2Paging
+         // http://wiki.jboss.org/wiki/JBossMessaging2Paging
          // Explained under Transaction On Paging. (This is the item B)
          if (pagingManager.page(message, id))
          {
@@ -535,7 +535,7 @@ public class TransactionImpl implements Transaction
       for (ServerMessage message : scheduledPagedMessages.keySet())
       {
          long scheduledDeliveryTime = scheduledPagedMessages.get(message);
-         // http://wiki.jboss.org/auth/wiki/JBossMessaging2Paging
+         // http://wiki.jboss.org/wiki/JBossMessaging2Paging
          // Explained under Transaction On Paging. (This is the item B)
          if (pagingManager.pageScheduled(message, id, scheduledDeliveryTime))
          {

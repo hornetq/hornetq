@@ -48,7 +48,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- *  <p>Look at the <a href="http://wiki.jboss.org/auth/wiki/JBossMessaging2Paging">WIKI</a> for more information.</p>
+ *  <p>Look at the <a href="http://wiki.jboss.org/wiki/JBossMessaging2Paging">WIKI</a> for more information.</p>
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -215,7 +215,7 @@ public class PagingManagerImpl implements PagingManager
          {
             final PageTransactionInfo pageTransactionInfo = transactions.get(transactionIdDuringPaging);
 
-            // http://wiki.jboss.org/auth/wiki/JBossMessaging2Paging
+            // http://wiki.jboss.org/wiki/JBossMessaging2Paging
             // This is the Step D described on the "Transactions on Paging"
             // section
             if (pageTransactionInfo == null)
@@ -272,7 +272,7 @@ public class PagingManagerImpl implements PagingManager
       {
          if (pageWithTransaction.getNumberOfMessages() == 0)
          {
-            // http://wiki.jboss.org/auth/wiki/JBossMessaging2Paging
+            // http://wiki.jboss.org/wiki/JBossMessaging2Paging
             // numberOfReads==numberOfWrites -> We delete the record
             storageManager.storeDeleteTransactional(depageTransactionID, pageWithTransaction.getRecordID());
             transactions.remove(pageWithTransaction.getTransactionID());

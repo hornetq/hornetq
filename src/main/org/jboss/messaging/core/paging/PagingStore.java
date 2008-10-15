@@ -31,7 +31,7 @@ import org.jboss.messaging.util.SimpleString;
  * <p>The producers will write directly to PagingStore and that will decide what
  * Page file should be used based on configured size</p>
  * 
- * <p>Look at the <a href="http://wiki.jboss.org/auth/wiki/JBossMessaging2Paging">WIKI</a> for more information.</p>
+ * <p>Look at the <a href="http://wiki.jboss.org/wiki/JBossMessaging2Paging">WIKI</a> for more information.</p>
  * @see PagingManager
 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>

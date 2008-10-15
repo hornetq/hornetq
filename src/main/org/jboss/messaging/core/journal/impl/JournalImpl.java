@@ -68,7 +68,7 @@ import org.jboss.messaging.util.VariableLatch;
  * 
  * <p>A JournalImpl</p
  * 
- * <p>WIKI Page: <a href="http://wiki.jboss.org/auth/wiki/JBossMessaging2Journal"> http://wiki.jboss.org/auth/wiki/JBossMessaging2Journal</a></p>
+ * <p>WIKI Page: <a href="http://wiki.jboss.org/wiki/JBossMessaging2Journal"> http://wiki.jboss.org/wiki/JBossMessaging2Journal</a></p>
  * 
  * 
  * <p>Look at {@link JournalImpl#load(LoadManager)} for the file layout
