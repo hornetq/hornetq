@@ -12,16 +12,21 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.ChannelHandler;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ADD_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_HASNEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_NEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_RESET;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_COMMIT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEBROWSER;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_START;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_STOP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATECONSUMER;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEPRODUCER;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEQUEUE;
@@ -33,6 +38,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_PRODUCER_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REMOVE_DESTINATION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REPLICATE_DELIVERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ROLLBACK;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_SCHEDULED_SEND;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_SEND;
@@ -50,31 +56,12 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SET_TIMEOUT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_START;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SUSPEND;
-
-import java.util.List;
-
-import javax.transaction.xa.Xid;
-
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.ChannelHandler;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserCloseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserResetMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerStartMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerStopMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
@@ -101,6 +88,9 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResp
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
+
+import javax.transaction.xa.Xid;
+import java.util.List;
 
 /**
  * A ServerSessionPacketHandler
@@ -180,7 +170,8 @@ public class ServerSessionPacketHandler implements ChannelHandler
                response = session.createConsumer(request.getQueueName(),
                                                  request.getFilterString(),
                                                  request.getWindowSize(),
-                                                 request.getMaxRate());
+                                                 request.getMaxRate(),
+                                                 request.isBrowser());
                break;
             }
             case SESS_CREATEQUEUE:
@@ -213,13 +204,6 @@ public class ServerSessionPacketHandler implements ChannelHandler
                response = session.executeBindingQuery(request.getAddress());
                break;
             }
-            case SESS_CREATEBROWSER:
-            {
-               SessionCreateBrowserMessage request = (SessionCreateBrowserMessage)packet;
-               session.createBrowser(request.getQueueName(), request.getFilterString());
-               response = new NullResponseMessage();
-               break;
-            }
             case SESS_CREATEPRODUCER:
             {
                SessionCreateProducerMessage request = (SessionCreateProducerMessage)packet;
@@ -227,6 +211,20 @@ public class ServerSessionPacketHandler implements ChannelHandler
                                                  request.getWindowSize(),
                                                  request.getMaxRate(),
                                                  request.isAutoGroupId());
+               break;
+            }
+            case SESS_CONSUMER_STOP:
+            {
+               SessionConsumerStopMessage request = (SessionConsumerStopMessage) packet;
+               session.resetConsumer(request.getConsumerId());
+               response = new NullResponseMessage();
+               break;
+            }
+            case SESS_CONSUMER_START:
+            {
+               SessionConsumerStartMessage request = (SessionConsumerStartMessage) packet;
+               session.reStartConsumer(request.getConsumerId());
+               response = new NullResponseMessage();
                break;
             }
             case SESS_PROCESSED:
@@ -371,13 +369,6 @@ public class ServerSessionPacketHandler implements ChannelHandler
                response = new NullResponseMessage();
                break;
             }
-            case SESS_BROWSER_CLOSE:
-            {
-               SessionBrowserCloseMessage message = (SessionBrowserCloseMessage)packet;
-               session.closeBrowser(message.getBrowserID());
-               response = new NullResponseMessage();
-               break;
-            }
             case SESS_FLOWTOKEN:
             {
                SessionConsumerFlowCreditMessage message = (SessionConsumerFlowCreditMessage)packet;
@@ -406,33 +397,13 @@ public class ServerSessionPacketHandler implements ChannelHandler
                }
                break;
             }
-            case SESS_BROWSER_HASNEXTMESSAGE:
-            {
-               SessionBrowserHasNextMessageMessage message = (SessionBrowserHasNextMessageMessage)packet;
-               response = new SessionBrowserHasNextMessageResponseMessage(session.browserHasNextMessage(message.getBrowserID()));
-               break;
-            }
-            case SESS_BROWSER_NEXTMESSAGE:
-            {
-               SessionBrowserNextMessageMessage message = (SessionBrowserNextMessageMessage)packet;
-               ServerMessage smsg = session.browserNextMessage(message.getBrowserID());
-               response = new SessionBrowseMessage(smsg);
-               break;
-            }
-            case SESS_BROWSER_RESET:
-            {
-               SessionBrowserResetMessage message = (SessionBrowserResetMessage)packet;
-               session.browserReset(message.getBrowserID());
-               response = new NullResponseMessage();
-               break;
-            }
             case SESS_MANAGEMENT_SEND:
             {
                SessionSendManagementMessage message = (SessionSendManagementMessage)packet;
                session.handleManagementMessage(message);
                break;
             }
-            case PacketImpl.SESS_REPLICATE_DELIVERY:
+            case SESS_REPLICATE_DELIVERY:
             {
                SessionReplicateDeliveryMessage message = (SessionReplicateDeliveryMessage)packet;
                session.handleReplicatedDelivery(message.getConsumerID(), message.getMessageID());

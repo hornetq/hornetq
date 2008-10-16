@@ -27,7 +27,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public interface ClientConsumer
 {      
@@ -45,5 +45,13 @@ public interface ClientConsumer
    
    boolean isClosed();   
    
-   boolean isDirect();   
+   boolean isDirect();
+
+   boolean awaitMessage(long timeOut) throws Exception;
+
+   void stop() throws MessagingException;
+
+   void start() throws MessagingException;
+
+   void restart() throws MessagingException;
 }

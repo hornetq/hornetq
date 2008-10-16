@@ -12,9 +12,24 @@
 
 package org.jboss.messaging.core.remoting.impl;
 
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.ChannelHandler;
+import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.ResponseNotifier;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EXCEPTION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.INITIAL_BUFFER_SIZE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NULL_RESPONSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PACKETS_CONFIRMED;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PING;
@@ -25,21 +40,18 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REPLI
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ADD_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_HASNEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_HASNEXTMESSAGE_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_NEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_RESET;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_COMMIT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEBROWSER;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_START;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_STOP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATECONSUMER;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATECONSUMER_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEPRODUCER;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEPRODUCER_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEQUEUE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_DELETE_QUEUE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_DELIVERY_COMPLETE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FAILOVER_COMPLETE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FLOWTOKEN;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_MANAGEMENT_SEND;
@@ -72,39 +84,6 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SET_TIMEOUT_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_START;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SUSPEND;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.ChannelHandler;
-import org.jboss.messaging.core.remoting.FailureListener;
-import org.jboss.messaging.core.remoting.Interceptor;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.ResponseNotifier;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketsConfirmedMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
@@ -113,22 +92,18 @@ import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponse
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserCloseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserResetMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerStartMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerStopMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeliveryCompleteMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionFailoverCompleteMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProcessedMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
@@ -161,9 +136,28 @@ import org.jboss.messaging.util.Future;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.SimpleIDGenerator;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * 
  * @version <tt>$Revision$</tt> $Id$
  */
 public class RemotingConnectionImpl extends AbstractBufferHandler implements RemotingConnection
@@ -495,7 +489,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    private void doWrite(final Packet packet)
    {
-      final MessagingBuffer buffer = transportConnection.createBuffer(PacketImpl.INITIAL_BUFFER_SIZE);
+      final MessagingBuffer buffer = transportConnection.createBuffer(INITIAL_BUFFER_SIZE);
 
       packet.encode(buffer);
 
@@ -517,7 +511,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
          case PONG:
          {
-            packet = new PacketImpl(PacketImpl.PONG);
+            packet = new PacketImpl(PONG);
             break;
          }
          case EXCEPTION:
@@ -585,9 +579,14 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             packet = new SessionCreateProducerResponseMessage();
             break;
          }
-         case SESS_CREATEBROWSER:
+         case SESS_CONSUMER_STOP:
          {
-            packet = new SessionCreateBrowserMessage();
+            packet = new SessionConsumerStopMessage();
+            break;
+         }
+         case SESS_CONSUMER_START:
+         {
+            packet = new SessionConsumerStartMessage();
             break;
          }
          case SESS_PROCESSED:
@@ -597,12 +596,12 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
          case SESS_COMMIT:
          {
-            packet = new PacketImpl(PacketImpl.SESS_COMMIT);
+            packet = new PacketImpl(SESS_COMMIT);
             break;
          }
          case SESS_ROLLBACK:
          {
-            packet = new PacketImpl(PacketImpl.SESS_ROLLBACK);
+            packet = new PacketImpl(SESS_ROLLBACK);
             break;
          }
          case SESS_QUEUEQUERY:
@@ -645,31 +644,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             packet = new SessionBindingQueryResponseMessage();
             break;
          }
-         case PacketImpl.SESS_BROWSER_MESSAGE:
-         {
-            packet = new SessionBrowseMessage();
-            break;
-         }
-         case SESS_BROWSER_RESET:
-         {
-            packet = new SessionBrowserResetMessage();
-            break;
-         }
-         case SESS_BROWSER_HASNEXTMESSAGE:
-         {
-            packet = new SessionBrowserHasNextMessageMessage();
-            break;
-         }
-         case SESS_BROWSER_HASNEXTMESSAGE_RESP:
-         {
-            packet = new SessionBrowserHasNextMessageResponseMessage();
-            break;
-         }
-         case SESS_BROWSER_NEXTMESSAGE:
-         {
-            packet = new SessionBrowserNextMessageMessage();
-            break;
-         }
          case SESS_XA_START:
          {
             packet = new SessionXAStartMessage();
@@ -707,7 +681,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
          case SESS_XA_SUSPEND:
          {
-            packet = new PacketImpl(PacketImpl.SESS_XA_SUSPEND);
+            packet = new PacketImpl(SESS_XA_SUSPEND);
             break;
          }
          case SESS_XA_RESUME:
@@ -722,7 +696,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
          case SESS_XA_INDOUBT_XIDS:
          {
-            packet = new PacketImpl(PacketImpl.SESS_XA_INDOUBT_XIDS);
+            packet = new PacketImpl(SESS_XA_INDOUBT_XIDS);
             break;
          }
          case SESS_XA_INDOUBT_XIDS_RESP:
@@ -742,7 +716,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
          case SESS_XA_GET_TIMEOUT:
          {
-            packet = new PacketImpl(PacketImpl.SESS_XA_GET_TIMEOUT);
+            packet = new PacketImpl(SESS_XA_GET_TIMEOUT);
             break;
          }
          case SESS_XA_GET_TIMEOUT_RESP:
@@ -752,12 +726,12 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
          case SESS_START:
          {
-            packet = new PacketImpl(PacketImpl.SESS_START);
+            packet = new PacketImpl(SESS_START);
             break;
          }
          case SESS_STOP:
          {
-            packet = new PacketImpl(PacketImpl.SESS_STOP);
+            packet = new PacketImpl(SESS_STOP);
             break;
          }
          case SESS_FLOWTOKEN:
@@ -790,9 +764,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             packet = new SessionProducerCloseMessage();
             break;
          }
-         case SESS_BROWSER_CLOSE:
+         case SESS_DELIVERY_COMPLETE:
          {
-            packet = new SessionBrowserCloseMessage();
+            packet = new SessionDeliveryCompleteMessage();
             break;
          }
          case SESS_SCHEDULED_SEND:
@@ -1064,7 +1038,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                                             "Timed out waiting for response when sending packet " + packet.getType());
             }
 
-            if (response.getType() == PacketImpl.EXCEPTION)
+            if (response.getType() == EXCEPTION)
             {
                final MessagingExceptionMessage mem = (MessagingExceptionMessage)response;
 
@@ -1348,7 +1322,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                if (executor == null)
                {
                   checkConfirmation(packet);
-
                   handler.handlePacket(packet);
                }
                else

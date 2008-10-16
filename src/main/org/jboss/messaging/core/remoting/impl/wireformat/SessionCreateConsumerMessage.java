@@ -28,6 +28,7 @@ import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *
  * @version <tt>$Revision$</tt>
  */
@@ -44,13 +45,15 @@ public class SessionCreateConsumerMessage extends PacketImpl
    private int windowSize;
    
    private int maxRate;
-      
+
+   private boolean isBrowser;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public SessionCreateConsumerMessage(final SimpleString queueName, final SimpleString filterString,   		                              
-   		                              final int windowSize, final int maxRate)
+   		                              final int windowSize, final int maxRate, final boolean isBrowser)
    {
       super(SESS_CREATECONSUMER);
 
@@ -58,6 +61,7 @@ public class SessionCreateConsumerMessage extends PacketImpl
       this.filterString = filterString;
       this.windowSize = windowSize;
       this.maxRate = maxRate;
+      this.isBrowser = isBrowser;
    }
    
    public SessionCreateConsumerMessage()
@@ -98,13 +102,19 @@ public class SessionCreateConsumerMessage extends PacketImpl
    {
    	return maxRate;
    }
-   
+
+   public boolean isBrowser()
+   {
+      return isBrowser;
+   }
+
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putSimpleString(queueName);
       buffer.putNullableSimpleString(filterString);
       buffer.putInt(windowSize);
       buffer.putInt(maxRate);
+      buffer.putBoolean(isBrowser);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
@@ -113,6 +123,7 @@ public class SessionCreateConsumerMessage extends PacketImpl
       filterString = buffer.getNullableSimpleString();
       windowSize = buffer.getInt();
       maxRate = buffer.getInt();
+      isBrowser = buffer.getBoolean();
    }
 
    public boolean equals(Object other)

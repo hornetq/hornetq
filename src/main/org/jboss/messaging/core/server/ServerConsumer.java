@@ -22,12 +22,15 @@
 
 package org.jboss.messaging.core.server;
 
+import java.util.concurrent.Executor;
+
 
 /**
  * 
  * A ServerConsumer
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *
  */
 public interface ServerConsumer extends Consumer
@@ -49,4 +52,10 @@ public interface ServerConsumer extends Consumer
 	void failedOver();
 	
 	void deliver(final long messageID) throws Exception;
+
+   void deliver(Executor executor);
+
+   void stop() throws Exception;
+
+   void start();
 }

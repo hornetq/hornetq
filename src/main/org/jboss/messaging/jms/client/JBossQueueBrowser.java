@@ -22,19 +22,20 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.util.Enumeration;
-
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.QueueBrowser;
-
-import org.jboss.messaging.core.client.ClientBrowser;
+import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.QueueBrowser;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
+
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *
  * $Id$
  */
@@ -44,19 +45,22 @@ public class JBossQueueBrowser implements QueueBrowser
 
    private static final Logger log = Logger.getLogger(JBossQueueBrowser.class);
 
+   private static final long NEXT_MESSAGE_TIMEOUT = 5000;
+
    // Static ---------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private ClientBrowser browser;
+   private ClientConsumer consumer;
    private Queue queue;
    private String messageSelector;
+   private boolean firstTime = true;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public JBossQueueBrowser(Queue queue, String messageSelector, ClientBrowser browser)
+   public JBossQueueBrowser(Queue queue, String messageSelector, ClientConsumer consumer)
    {
-      this.browser = browser;
+      this.consumer = consumer;
       this.queue = queue;
       this.messageSelector = messageSelector;
    }
@@ -67,7 +71,7 @@ public class JBossQueueBrowser implements QueueBrowser
    {
       try
       {
-         browser.close();
+         consumer.close();
       }
       catch (MessagingException e)
       {
@@ -79,12 +83,20 @@ public class JBossQueueBrowser implements QueueBrowser
    {
       try
       {
-         browser.reset();
+         if(firstTime)
+         {
+            consumer.start();
+            firstTime = false;
+         }
+         else
+         {
+            consumer.restart();
+         }
          return new BrowserEnumeration();
       }
       catch (MessagingException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);     
+         throw JMSExceptionHelper.convertFromMessagingException(e);
       }
    }
 
@@ -102,7 +114,7 @@ public class JBossQueueBrowser implements QueueBrowser
 
    public String toString()
    {
-      return "JBossQueueBrowser->" + browser;
+      return "JBossQueueBrowser->" + consumer;
    }
 
    // Package protected ----------------------------------------------------------------------------
@@ -119,9 +131,9 @@ public class JBossQueueBrowser implements QueueBrowser
       {
          try
          {            
-            return browser.hasNextMessage();
+            return consumer.awaitMessage(NEXT_MESSAGE_TIMEOUT);
          }
-         catch (MessagingException e)
+         catch (Exception e)
          {
             throw new IllegalStateException(e.getMessage());
          }
@@ -131,7 +143,17 @@ public class JBossQueueBrowser implements QueueBrowser
       {
          try
          {
-            ClientMessage message = browser.nextMessage();
+            if(!hasMoreElements())
+            {
+               throw new NoSuchElementException();  
+            }
+
+            ClientMessage message = consumer.receiveImmediate();
+
+            if(message == null)
+            {
+               throw new NoSuchElementException();
+            }
 
             JBossMessage jbm = JBossMessage.createMessage(message, null);
             

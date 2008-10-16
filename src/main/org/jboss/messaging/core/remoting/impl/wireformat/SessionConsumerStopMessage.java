@@ -19,37 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.messaging.core.remoting.impl.wireformat;
 
-package org.jboss.messaging.core.client.impl;
-
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
- * 
- * A ClientConsumerInternal
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="andy.taylor@jboss.org">Andy Taylor</a>
- *
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public interface ClientConsumerInternal extends ClientConsumer
+public class SessionConsumerStopMessage extends PacketImpl
 {
-   long getID();
+   private long consumerId;
 
-   void handleMessage(ClientMessage message) throws Exception;
+   public SessionConsumerStopMessage(long consumerId)
+   {
+      super(SESS_CONSUMER_STOP);
+      this.consumerId = consumerId;
+   }
 
-   void clear();
+   public SessionConsumerStopMessage()
+   {
+      super(SESS_CONSUMER_STOP);
+   }
 
-   void resume();
+   public long getConsumerId()
+   {
+      return consumerId;
+   }
 
-   int getClientWindowSize();
+   public void encodeBody(MessagingBuffer buffer)
+   {
+      buffer.putLong(consumerId);
+   }
 
-   int getBufferSize();
-
-   int getCreditsToSend();
-
-   void cleanUp() throws Exception;
-
-   void deliveryComplete();
+   public void decodeBody(MessagingBuffer buffer)
+   {
+      consumerId = buffer.getLong();
+   }
 }

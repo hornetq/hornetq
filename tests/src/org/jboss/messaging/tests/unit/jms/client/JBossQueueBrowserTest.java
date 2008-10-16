@@ -22,28 +22,25 @@
 
 package org.jboss.messaging.tests.unit.jms.client;
 
+import junit.framework.TestCase;
 import static org.easymock.EasyMock.createStrictMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import java.util.Enumeration;
-
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Queue;
-
-import junit.framework.TestCase;
-
-import org.jboss.messaging.core.client.ClientBrowser;
+import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.JBossQueueBrowser;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Queue;
+import java.util.Enumeration;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -67,7 +64,7 @@ public class JBossQueueBrowserTest extends TestCase
    {
       String messageSelector = "color = 'green'";
       Queue queue = new JBossQueue(randomString());
-      ClientBrowser clientBrowser = createStrictMock(ClientBrowser.class);
+      ClientConsumer clientBrowser = createStrictMock(ClientConsumer.class);
       replay(clientBrowser);
 
       JBossQueueBrowser browser = new JBossQueueBrowser(queue, messageSelector,
@@ -80,7 +77,7 @@ public class JBossQueueBrowserTest extends TestCase
    public void testGetQueue() throws Exception
    {
       Queue queue = new JBossQueue(randomString());
-      ClientBrowser clientBrowser = createStrictMock(ClientBrowser.class);
+      ClientConsumer clientBrowser = createStrictMock(ClientConsumer.class);
       replay(clientBrowser);
 
       JBossQueueBrowser browser = new JBossQueueBrowser(queue, null,
@@ -93,7 +90,7 @@ public class JBossQueueBrowserTest extends TestCase
    public void testClose() throws Exception
    {
       Queue queue = new JBossQueue(randomString());
-      ClientBrowser clientBrowser = createStrictMock(ClientBrowser.class);
+      ClientConsumer clientBrowser = createStrictMock(ClientConsumer.class);
       clientBrowser.close();
       replay(clientBrowser);
 
@@ -108,7 +105,7 @@ public class JBossQueueBrowserTest extends TestCase
    public void testCloseThrowsException() throws Exception
    {
       Queue queue = new JBossQueue(randomString());
-      ClientBrowser clientBrowser = createStrictMock(ClientBrowser.class);
+      ClientConsumer clientBrowser = createStrictMock(ClientConsumer.class);
       clientBrowser.close();
       expectLastCall().andThrow(new MessagingException());
 
@@ -131,8 +128,8 @@ public class JBossQueueBrowserTest extends TestCase
    public void testGetEnumeration() throws Exception
    {
       Queue queue = new JBossQueue(randomString());
-      ClientBrowser clientBrowser = createStrictMock(ClientBrowser.class);
-      clientBrowser.reset();
+      ClientConsumer clientBrowser = createStrictMock(ClientConsumer.class);
+      clientBrowser.start();
       replay(clientBrowser);
 
       JBossQueueBrowser browser = new JBossQueueBrowser(queue, null,
@@ -144,40 +141,18 @@ public class JBossQueueBrowserTest extends TestCase
       verify(clientBrowser);
    }
 
-   public void testGetEnumerationThrowsException() throws Exception
-   {
-      Queue queue = new JBossQueue(randomString());
-      ClientBrowser clientBrowser = createStrictMock(ClientBrowser.class);
-      clientBrowser.reset();
-      expectLastCall().andThrow(new MessagingException());
-      replay(clientBrowser);
-
-      JBossQueueBrowser browser = new JBossQueueBrowser(queue, null,
-            clientBrowser);
-
-      try
-      {
-         browser.getEnumeration();
-         fail("JMSException");
-      } catch (JMSException e)
-      {
-      }
-
-      verify(clientBrowser);
-   }
-
    public void testGetEnumerationWithOneMessage() throws Exception
    {
       Queue queue = new JBossQueue(randomString());
-      ClientBrowser clientBrowser = createStrictMock(ClientBrowser.class);
+      ClientConsumer clientBrowser = createStrictMock(ClientConsumer.class);
       ClientMessage clientMessage = createStrictMock(ClientMessage.class);
       MessagingBuffer buffer = createStrictMock(MessagingBuffer.class);
-      clientBrowser.reset();
-      expect(clientBrowser.hasNextMessage()).andReturn(true);
+      clientBrowser.start();
+      expect(clientBrowser.awaitMessage(5000)).andStubReturn(true);
       expect(clientMessage.getType()).andReturn(JBossMessage.TYPE);
       expect(clientMessage.getBody()).andStubReturn(buffer);
-      expect(clientBrowser.nextMessage()).andReturn(clientMessage);
-      expect(clientBrowser.hasNextMessage()).andReturn(false);
+      expect(clientBrowser.receiveImmediate()).andReturn(clientMessage);
+      expect(clientBrowser.awaitMessage(5000)).andReturn(false);
       replay(clientMessage, clientBrowser);
 
       JBossQueueBrowser browser = new JBossQueueBrowser(queue, null,
@@ -196,9 +171,9 @@ public class JBossQueueBrowserTest extends TestCase
          throws Exception
    {
       Queue queue = new JBossQueue(randomString());
-      ClientBrowser clientBrowser = createStrictMock(ClientBrowser.class);
-      clientBrowser.reset();
-      expect(clientBrowser.hasNextMessage()).andThrow(new MessagingException());
+      ClientConsumer clientBrowser = createStrictMock(ClientConsumer.class);
+      clientBrowser.start();
+      expect(clientBrowser.awaitMessage(5000)).andThrow(new MessagingException());
       replay(clientBrowser);
 
       JBossQueueBrowser browser = new JBossQueueBrowser(queue, null,
@@ -221,10 +196,10 @@ public class JBossQueueBrowserTest extends TestCase
    public void testGetEnumerationWithNextThrowsException() throws Exception
    {
       Queue queue = new JBossQueue(randomString());
-      ClientBrowser clientBrowser = createStrictMock(ClientBrowser.class);
-      clientBrowser.reset();
-      expect(clientBrowser.hasNextMessage()).andReturn(true);
-      expect(clientBrowser.nextMessage()).andThrow(new MessagingException());
+      ClientConsumer clientBrowser = createStrictMock(ClientConsumer.class);
+      clientBrowser.start();
+      expect(clientBrowser.awaitMessage(5000)).andStubReturn(true);
+      expect(clientBrowser.receiveImmediate()).andThrow(new MessagingException());
       replay(clientBrowser);
 
       JBossQueueBrowser browser = new JBossQueueBrowser(queue, null,

@@ -22,10 +22,6 @@
 
 package org.jboss.messaging.core.server;
 
-import java.util.List;
-
-import javax.transaction.xa.Xid;
-
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
@@ -33,8 +29,10 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerRe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
-import org.jboss.messaging.core.server.impl.ServerBrowserImpl;
 import org.jboss.messaging.util.SimpleString;
+
+import javax.transaction.xa.Xid;
+import java.util.List;
 
 /**
  *
@@ -51,8 +49,6 @@ public interface ServerSession
    String getUsername();
 
    String getPassword();
-
-   void removeBrowser(ServerBrowserImpl browser) throws Exception;
 
    void removeConsumer(ServerConsumer consumer) throws Exception;
 
@@ -113,7 +109,8 @@ public interface ServerSession
    SessionCreateConsumerResponseMessage createConsumer(SimpleString queueName,
                                                        SimpleString filterString,
                                                        int windowSize,
-                                                       int maxRate) throws Exception;
+                                                       int maxRate,
+                                                       boolean isBrowser) throws Exception;
 
    SessionCreateProducerResponseMessage createProducer(SimpleString address,
                                                        int windowSize,
@@ -124,25 +121,15 @@ public interface ServerSession
 
    SessionBindingQueryResponseMessage executeBindingQuery(SimpleString address) throws Exception;
 
-   void createBrowser(SimpleString queueName, SimpleString filterString) throws Exception;
-
    void closeConsumer(long consumerID) throws Exception;
 
    void closeProducer(long producerID) throws Exception;
-
-   void closeBrowser(long browserID) throws Exception;
 
    void receiveConsumerCredits(long consumerID, int credits) throws Exception;
 
    void sendProducerMessage(long producerID, ServerMessage message) throws Exception;
 
    void sendScheduledProducerMessage(long producerID, ServerMessage serverMessage, long scheduledDeliveryTime) throws Exception;
-
-   boolean browserHasNextMessage(long browserID) throws Exception;
-
-   ServerMessage browserNextMessage(long browserID) throws Exception;
-
-   void browserReset(long browserID) throws Exception;
 
    int transferConnection(RemotingConnection newConnection, int lastReceivedCommandID);
 
@@ -151,4 +138,10 @@ public interface ServerSession
    void failedOver() throws Exception;
    
    void handleReplicatedDelivery(long consumerID, long messageID) throws Exception;
+
+   void promptDelivery(ServerConsumer browser);
+
+   void resetConsumer(long consumerID) throws Exception;
+
+   void reStartConsumer(long consumerId);
 }
