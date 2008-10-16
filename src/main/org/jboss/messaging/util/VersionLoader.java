@@ -36,7 +36,7 @@ import org.jboss.messaging.core.version.impl.VersionImpl;
  */
 public class VersionLoader
 {
-   public static synchronized Version load()
+   public static Version load()
    {
       Properties versionProps = new Properties();
       InputStream in = VersionImpl.class.getClassLoader().getResourceAsStream("version.properties");
