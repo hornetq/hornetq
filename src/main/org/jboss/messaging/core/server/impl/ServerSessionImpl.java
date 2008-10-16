@@ -12,6 +12,23 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+
+import javax.management.Notification;
+import javax.management.NotificationListener;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
@@ -25,10 +42,8 @@ import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.FailureListener;
-import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
@@ -53,20 +68,6 @@ import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.SimpleIDGenerator;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.SimpleStringIdGenerator;
-
-import javax.management.Notification;
-import javax.management.NotificationListener;
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 
 /*
  * Session implementation 
@@ -130,8 +131,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    private final List<Runnable> failureRunners = new ArrayList<Runnable>();
 
    private final IDGenerator idGenerator = new SimpleIDGenerator(0);
-
-   private volatile boolean closed;
 
    private final String name;
 
@@ -246,7 +245,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       started = s;
    }
-   
+
    public void failedOver() throws Exception
    {
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
@@ -255,15 +254,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       {
          consumer.failedOver();
       }
-
-      started = true;
    }
 
    public void close() throws Exception
    {
-      closed = true;
-
-      channel.close(true);
+      rollback(false);
 
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
 
@@ -282,8 +277,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
 
       producers.clear();
-
-      rollback(false);
 
       server.removeSession(name);
    }
@@ -305,7 +298,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
    public void reStartConsumer(long consumerID)
    {
-       consumers.get(consumerID).start();
+      consumers.get(consumerID).start();
    }
 
    public void send(final ServerMessage msg) throws Exception
@@ -326,7 +319,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
             for (MessageReference ref : refs)
             {
-               ref.getQueue().addLast(ref);         
+               ref.getQueue().addLast(ref);
             }
          }
       }
@@ -335,7 +328,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          tx.addMessage(msg);
       }
    }
-
 
    public void sendScheduled(final ServerMessage msg, final long scheduledDeliveryTime) throws Exception
    {
@@ -354,9 +346,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
             for (MessageReference ref : refs)
             {
-               if(ref.getQueue().isDurable())
+               if (ref.getQueue().isDurable())
                {
-                  storageManager.storeMessageReferenceScheduled(ref.getQueue().getPersistenceID(), msg.getMessageID(), scheduledDeliveryTime);
+                  storageManager.storeMessageReferenceScheduled(ref.getQueue().getPersistenceID(),
+                                                                msg.getMessageID(),
+                                                                scheduledDeliveryTime);
                }
                ref.setScheduledDeliveryTime(scheduledDeliveryTime);
                ref.getQueue().addLast(ref);
@@ -369,49 +363,84 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
    }
 
-
-   public void processed(final long consumerID, final long messageID) throws Exception
+   public void acknowledge(final long consumerID, final long messageID) throws Exception
    {
       MessageReference ref = consumers.get(consumerID).getReference(messageID);
 
-      // Ref = null would imply consumer is already closed so we could ignore it
-      if (ref != null)
+      if (autoCommitAcks)
       {
-         if (ref.getMessage().getMessageID() != messageID)
-         {
-            throw new IllegalStateException("Invalid order " + ref.getMessage().getMessageID());
-         }
-
-         if (autoCommitAcks)
-         {
-            doAck(ref);
-         }
-         else
-         {
-            tx.addAcknowledgement(ref);
-
-            // Del count is not actually updated in storage unless it's
-            // cancelled
-            ref.incrementDeliveryCount();
-         }
+         doAck(ref);
       }
       else
       {
-         if (!closed)
-         {
-            throw new IllegalStateException(System.identityHashCode(this) + " Could not find ref with id " + messageID);
-         }
-         else
-         {
-            // If closed then might not find ref since processed might come in before send and send
-            // didn't come in since closed
-         }
+         tx.addAcknowledgement(ref);
+
+         // Del count is not actually updated in storage unless it's
+         // cancelled
+         ref.incrementDeliveryCount();
       }
    }
 
    public void rollback() throws Exception
    {
       rollback(true);
+   }
+
+   private void doRollback(final Transaction theTx) throws Exception
+   {
+      boolean wasStarted = started;
+
+      List<MessageReference> toCancel = new ArrayList<MessageReference>();
+
+      for (ServerConsumer consumer : consumers.values())
+      {
+         if (wasStarted)
+         {
+            consumer.setStarted(false);
+         }
+
+         toCancel.addAll(consumer.cancelRefs());
+      }
+
+      List<MessageReference> rolledBack = theTx.rollback(queueSettingsRepository);
+
+      rolledBack.addAll(toCancel);
+
+      if (wasStarted)
+      {
+         for (ServerConsumer consumer : consumers.values())
+         {
+            consumer.setStarted(true);
+         }
+      }
+
+      // Now cancel the refs back to the queue(s), we sort into queues and cancel back atomically to
+      // preserve order
+
+      Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
+
+      for (MessageReference ref : rolledBack)
+      {
+         Queue queue = ref.getQueue();
+
+         LinkedList<MessageReference> list = queueMap.get(queue);
+
+         if (list == null)
+         {
+            list = new LinkedList<MessageReference>();
+
+            queueMap.put(queue, list);
+         }
+
+         list.add(ref);
+      }
+
+      for (Map.Entry<Queue, LinkedList<MessageReference>> entry : queueMap.entrySet())
+      {
+         LinkedList<MessageReference> refs = entry.getValue();
+
+         entry.getKey().addListFirst(refs);
+      }
    }
 
    private void rollback(final boolean sendResponse) throws Exception
@@ -423,35 +452,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          tx = new TransactionImpl(storageManager, postOffice);
       }
 
-      if (sendResponse)
-      {
-         Packet response = new NullResponseMessage();
-         
-         // Need to write the response now - before redeliveries occur
-         channel.send(response);
-      }
-
-      boolean wasStarted = started;
-
-      for (ServerConsumer consumer : consumers.values())
-      {
-         if (wasStarted)
-         {
-            consumer.setStarted(false);
-         }
-
-         consumer.cancelRefs();
-      }
-
-      tx.rollback(queueSettingsRepository);
-
-      if (wasStarted)
-      {
-         for (ServerConsumer consumer : consumers.values())
-         {
-            consumer.setStarted(true);
-         }
-      }
+      doRollback(tx);
 
       tx = new TransactionImpl(storageManager, postOffice);
    }
@@ -477,7 +478,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
       }
 
-      Transaction theTx = resourceManager.getTransaction(xid);
+      Transaction theTx = resourceManager.removeTransaction(xid);
 
       if (theTx == null)
       {
@@ -488,21 +489,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       if (theTx.getState() == Transaction.State.SUSPENDED)
       {
+         // Put it back
+         resourceManager.putTransaction(xid, tx);
+
          return new SessionXAResponseMessage(true,
                                              XAException.XAER_PROTO,
                                              "Cannot commit transaction, it is suspended " + xid);
       }
 
       theTx.commit();
-
-      boolean removed = resourceManager.removeTransaction(xid);
-
-      if (!removed)
-      {
-         final String msg = "Failed to remove transaction: " + xid;
-
-         return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
-      }
 
       return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
    }
@@ -586,7 +581,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
       }
 
-      Transaction theTx = resourceManager.getTransaction(xid);
+      Transaction theTx = resourceManager.removeTransaction(xid);
 
       if (theTx == null)
       {
@@ -597,6 +592,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       if (theTx.getState() == Transaction.State.SUSPENDED)
       {
+         // Put it back
+
+         resourceManager.putTransaction(xid, tx);
+
          return new SessionXAResponseMessage(true,
                                              XAException.XAER_PROTO,
                                              "Cannot prepare transaction, it is suspended " + xid);
@@ -604,17 +603,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       if (theTx.isEmpty())
       {
-         // Nothing to do - remove it
-
-         boolean removed = resourceManager.removeTransaction(xid);
-
-         if (!removed)
-         {
-            final String msg = "Failed to remove transaction: " + xid;
-
-            return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
-         }
-
          return new SessionXAResponseMessage(false, XAResource.XA_RDONLY, null);
       }
       else
@@ -666,7 +654,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
       }
 
-      Transaction theTx = resourceManager.getTransaction(xid);
+      Transaction theTx = resourceManager.removeTransaction(xid);
 
       if (theTx == null)
       {
@@ -677,41 +665,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       if (theTx.getState() == Transaction.State.SUSPENDED)
       {
+         // Put it back
+         resourceManager.putTransaction(xid, tx);
+
          return new SessionXAResponseMessage(true,
                                              XAException.XAER_PROTO,
                                              "Cannot rollback transaction, it is suspended " + xid);
       }
 
-      boolean wasStarted = started;
-
-      for (ServerConsumer consumer : consumers.values())
-      {
-         if (wasStarted)
-         {
-            consumer.setStarted(false);
-         }
-
-         consumer.cancelRefs();
-      }
-
-      theTx.rollback(queueSettingsRepository);
-
-      if (wasStarted)
-      {
-         for (ServerConsumer consumer : consumers.values())
-         {
-            consumer.setStarted(true);
-         }
-      }
-
-      boolean removed = resourceManager.removeTransaction(xid);
-
-      if (!removed)
-      {
-         final String msg = "Failed to remove transaction: " + xid;
-
-         return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
-      }
+      doRollback(theTx);
 
       return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
    }
@@ -832,7 +794,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       {
          securityStore.check(address, CheckType.CREATE, this);
       }
-
       Binding binding = postOffice.getBinding(queueName);
 
       if (binding != null)
@@ -902,7 +863,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
                                                               final SimpleString filterString,
                                                               int windowSize,
                                                               int maxRate,
-                                                              boolean isBrowser) throws Exception
+                                                              final boolean isBrowser) throws Exception
    {
       Binding binding = postOffice.getBinding(queueName);
 
@@ -943,7 +904,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
                                                        storageManager,
                                                        queueSettingsRepository,
                                                        postOffice,
-                                                       channel, isBrowser);
+                                                       channel,
+                                                       isBrowser);
 
       SessionCreateConsumerResponseMessage response = new SessionCreateConsumerResponseMessage(windowSize);
 
@@ -1080,9 +1042,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       producers.get(producerID).send(message);
    }
 
-   public void sendScheduledProducerMessage(final long producerID, final ServerMessage message, final long scheduledDeliveryTime) throws Exception
+   public void sendScheduledProducerMessage(final long producerID,
+                                            final ServerMessage message,
+                                            final long scheduledDeliveryTime) throws Exception
    {
-       producers.get(producerID).sendScheduled(message, scheduledDeliveryTime);  
+      producers.get(producerID).sendScheduled(message, scheduledDeliveryTime);
    }
 
    public int transferConnection(final RemotingConnection newConnection, final int lastReceivedCommandID)
@@ -1099,7 +1063,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       remotingConnection = newConnection;
 
       remotingConnection.addFailureListener(this);
-      
+
       int serverLastReceivedCommandID = channel.getLastReceivedCommandID();
 
       channel.replayCommands(lastReceivedCommandID);
@@ -1143,10 +1107,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       send(serverMessage);
    }
-   
+
    public void handleReplicatedDelivery(long consumerID, long messageID) throws Exception
    {
-      consumers.get(consumerID).deliver(messageID);
+      ServerConsumer consumer = consumers.get(consumerID);
+
+      if (consumer != null)
+      {
+         consumer.deliverReplicated(messageID);
+      }
    }
 
    // FailureListener implementation
@@ -1168,22 +1137,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             }
          }
 
-         // We execute this on the session's serial executor, then we can avoid complex synchronization
-         // and ensure no operations are fielded on the session after it is closed
-         channel.getExecutor().execute(new Runnable()
-         {
-            public void run()
-            {
-               try
-               {
-                  close();
-               }
-               catch (Exception e)
-               {
-                  log.error("Failed to close session", e);
-               }
-            }
-         });
+         close();
       }
       catch (Throwable t)
       {
@@ -1249,7 +1203,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       queue.referenceAcknowledged(ref);
    }
-
 
    private void doSecurity(final ServerMessage msg) throws Exception
    {

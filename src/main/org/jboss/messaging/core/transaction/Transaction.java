@@ -44,12 +44,12 @@ public interface Transaction
 
    void commit() throws Exception;
 
-   void rollback(HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+   List<MessageReference> rollback(HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
 
    void addMessage(ServerMessage message) throws Exception;
 
    void addAcknowledgement(MessageReference acknowledgement) throws Exception;
-
+   
    int getAcknowledgementsCount();
 
    long getID();

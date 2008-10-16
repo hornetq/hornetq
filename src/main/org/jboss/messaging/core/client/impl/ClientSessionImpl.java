@@ -32,11 +32,11 @@ import org.jboss.messaging.core.remoting.ConnectionRegistry;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.ResponseNotifier;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
@@ -49,7 +49,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerRe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionFailoverCompleteMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionProcessedMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
@@ -103,7 +102,7 @@ import java.util.concurrent.Executors;
  * $Id: ClientSessionImpl.java 3603 2008-01-21 18:49:20Z timfox $
  * 
  */
-public class ClientSessionImpl implements ClientSessionInternal
+public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 {
    // Constants ----------------------------------------------------------------------------
 
@@ -157,6 +156,10 @@ public class ClientSessionImpl implements ClientSessionInternal
    private boolean forceNotSameRM;
 
    private final IDGenerator idGenerator = new SimpleIDGenerator(0);
+   
+   private volatile boolean failedOver;
+   
+   private volatile boolean started;
 
    // Constructors ----------------------------------------------------------------------------
 
@@ -209,6 +212,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       this.version = version;
 
       connectionRegistry = ConnectionRegistryImpl.instance;
+      
+      remotingConnection.addFailureListener(this);
    }
 
    // ClientSession implementation
@@ -221,7 +226,7 @@ public class ClientSessionImpl implements ClientSessionInternal
                            final boolean temp) throws MessagingException
    {
       checkClosed();
-
+      
       SessionCreateQueueMessage request = new SessionCreateQueueMessage(address, queueName, filterString, durable, temp);
 
       channel.sendBlocking(request);
@@ -468,25 +473,31 @@ public class ClientSessionImpl implements ClientSessionInternal
    public void rollback() throws MessagingException
    {
       checkClosed();
-
+      
+      //We do a "JMS style" rollback where the session is stopped, and the buffer is cancelled back
+      //first before rolling back
+      //This ensures messages are received in the same order after rollback w.r.t. to messages in the buffer
+      //For core we could just do a straight rollback, it really depends if we want JMS style semantics or not...
+      
+      boolean wasStarted = started;
+      
+      if (wasStarted)
+      {
+         stop();
+      }
+      
       // We need to make sure we don't get any inflight messages
       for (ClientConsumerInternal consumer : consumers.values())
       {
          consumer.clear();
       }
 
-      channel.sendBlocking(new PacketImpl(PacketImpl.SESS_ROLLBACK), new ResponseNotifier()
+      channel.sendBlocking(new PacketImpl(PacketImpl.SESS_ROLLBACK));
+      
+      if (wasStarted)
       {
-         public void onResponseReceived()
-         {
-            // This needs to be called on before the blocking thread is awoken
-            // hence the ResponseNotifier
-            for (ClientConsumerInternal consumer : consumers.values())
-            {
-               consumer.resume();
-            }
-         }
-      });
+         start();
+      }
    }
 
    public ClientMessage createClientMessage(final byte type,
@@ -547,15 +558,25 @@ public class ClientSessionImpl implements ClientSessionInternal
    public void start() throws MessagingException
    {
       checkClosed();
-
-      channel.send(new PacketImpl(PacketImpl.SESS_START));
+      
+      if (!started)
+      {           
+         channel.send(new PacketImpl(PacketImpl.SESS_START));
+         
+         started = true;
+      }
    }
 
    public void stop() throws MessagingException
    {
       checkClosed();
-
-      channel.sendBlocking(new PacketImpl(PacketImpl.SESS_STOP));
+      
+      if (started)
+      {
+         channel.sendBlocking(new PacketImpl(PacketImpl.SESS_STOP));
+         
+         started = false;
+      }
    }
 
    public void addFailureListener(final FailureListener listener)
@@ -581,12 +602,13 @@ public class ClientSessionImpl implements ClientSessionInternal
       return name;
    }
 
-   public void processed(final long consumerID, final long messageID) throws MessagingException
+   // This acknowledges all messages received by the consumer so far
+   public void acknowledge(final long consumerID, final long messageID) throws MessagingException
    {
       checkClosed();
 
-      SessionProcessedMessage message = new SessionProcessedMessage(consumerID, messageID, blockOnAcknowledge);
-
+      SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(consumerID, messageID, blockOnAcknowledge);
+  
       if (blockOnAcknowledge)
       {
          channel.sendBlocking(message);
@@ -688,8 +710,6 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
 
       doCleanup();
-
-      sessionFactory.removeSession(this);
    }
    
    public synchronized void cleanUp() throws Exception
@@ -702,8 +722,6 @@ public class ClientSessionImpl implements ClientSessionInternal
       cleanUpChildren();
       
       doCleanup();      
-      
-      sessionFactory.removeSession(this);
    }
    
    //Needs to be synchronized to prevent issues with occurring concurrently with close()
@@ -728,7 +746,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
          Packet request = new ReattachSessionMessage(name, channel.getLastReceivedCommandID());
 
-         Channel channel1 = backupConnection.getChannel(1, false, -1, true);
+         Channel channel1 = backupConnection.getChannel(1, -1, true);
 
          ReattachSessionResponseMessage response = (ReattachSessionResponseMessage)channel1.sendBlocking(request);
 
@@ -755,6 +773,8 @@ public class ClientSessionImpl implements ClientSessionInternal
       }
       
       channel.send(new SessionFailoverCompleteMessage(name));
+      
+      failedOver = true;
       
       return true;
    }
@@ -952,23 +972,7 @@ public class ClientSessionImpl implements ClientSessionInternal
 
       try
       {
-         SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet,
-                                                                                            new ResponseNotifier()
-                                                                                            {
-                                                                                               public void onResponseReceived()
-                                                                                               {
-                                                                                                  // This needs to be
-                                                                                                  // called on before
-                                                                                                  // the blocking
-                                                                                                  // thread is awoken
-                                                                                                  // hence the
-                                                                                                  // ResponseNotifier
-                                                                                                  for (ClientConsumerInternal consumer : consumers.values())
-                                                                                                  {
-                                                                                                     consumer.resume();
-                                                                                                  }
-                                                                                               }
-                                                                                            });
+         SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
 
          if (response.isError())
          {
@@ -1039,6 +1043,26 @@ public class ClientSessionImpl implements ClientSessionInternal
          throw new XAException(XAException.XAER_RMERR);
       }
    }
+   
+   // FailureListener implementation --------------------------------------------
+   
+   public void connectionFailed(final MessagingException me)
+   {
+      if (!sessionFactory.checkFailover(me))
+      {
+         if (!failedOver)
+         {
+            try
+            {
+               cleanUp();
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to cleanup session");
+            }
+         }
+      }
+   }
 
    // Public
    // ----------------------------------------------------------------------------
@@ -1091,7 +1115,9 @@ public class ClientSessionImpl implements ClientSessionInternal
          producerCache.clear();
       }
 
-      channel.close(false);
+      channel.close();
+      
+      remotingConnection.removeFailureListener(this);
 
       synchronized (this)
       {
@@ -1099,6 +1125,8 @@ public class ClientSessionImpl implements ClientSessionInternal
 
          connectionRegistry.returnConnection(remotingConnection.getID());
       }
+      
+      sessionFactory.removeSession(this);
    }
    
    private void cleanUpChildren() throws Exception

@@ -180,17 +180,17 @@ public class ClientProducerImpl implements ClientProducerInternal
          channel.send(message);
       }      
       
-      //We only flow control with non-anonymous producers
-      if (address == null && creditFlowControl)
-      {
-         try
-         {
-            availableCredits.acquire(message.getClientMessage().getEncodeSize());
-         }
-         catch (InterruptedException e)
-         {           
-         }         
-      }
+//      //We only flow control with non-anonymous producers
+//      if (address == null && creditFlowControl)
+//      {
+//         try
+//         {
+//            availableCredits.acquire(message.getClientMessage().getEncodeSize());
+//         }
+//         catch (InterruptedException e)
+//         {           
+//         }         
+//      }
    }
 
    public void registerAcknowledgementHandler(final AcknowledgementHandler handler)
@@ -333,17 +333,17 @@ public class ClientProducerImpl implements ClientProducerInternal
          channel.send(message);
       }
 
-      // We only flow control with non-anonymous producers
-      if (address == null && creditFlowControl)
-      {
-         try
-         {
-            availableCredits.acquire(message.getClientMessage().getEncodeSize());
-         }
-         catch (InterruptedException e)
-         {
-         }
-      }
+//      // We only flow control with non-anonymous producers
+//      if (address == null && creditFlowControl)
+//      {
+//         try
+//         {
+//            availableCredits.acquire(message.getClientMessage().getEncodeSize());
+//         }
+//         catch (InterruptedException e)
+//         {
+//         }
+//      }
    }
 
    private void checkClosed() throws MessagingException

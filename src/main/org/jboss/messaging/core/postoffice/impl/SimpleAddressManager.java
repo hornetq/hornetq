@@ -69,6 +69,7 @@ public  class SimpleAddressManager implements AddressManager
       bindings.add(binding);
       return prevBindings != null;
    }
+   
    public List<Binding> getBindings(final SimpleString address)
    {
       return mappings.get(address);
@@ -116,7 +117,6 @@ public  class SimpleAddressManager implements AddressManager
       return mappings;
    }
 
-
    public Binding removeBinding(final SimpleString queueName)
    {
       Binding binding = nameMap.remove(queueName);
@@ -131,6 +131,7 @@ public  class SimpleAddressManager implements AddressManager
    public boolean removeMapping(final SimpleString address, final SimpleString queueName)
    {
       List<Binding> bindings = mappings.get(address);
+      
       Binding binding = removeMapping(queueName, bindings);
 
       if(bindings.isEmpty())
@@ -143,6 +144,7 @@ public  class SimpleAddressManager implements AddressManager
    protected Binding removeMapping(final SimpleString queueName, final List<Binding> bindings)
    {
       Binding binding = null;
+      
       for (Iterator<Binding> iter = bindings.iterator(); iter.hasNext();)
       {
          Binding b = iter.next();
@@ -161,7 +163,7 @@ public  class SimpleAddressManager implements AddressManager
       }
 
       bindings.remove(binding);
+      
       return binding;
    }
-
 }

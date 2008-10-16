@@ -39,10 +39,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class WildcardAddressManager extends SimpleAddressManager
 {
    static final char SINGLE_WORD = '*';
+
    static final char ANY_WORDS = '#';
+
    static final char DELIM = '.';
+
    static final SimpleString SINGLE_WORD_SIMPLESTRING = new SimpleString("*");
+
    static final SimpleString ANY_WORDS_SIMPLESTRING = new SimpleString("#");
+
    /**
     * This is the actual wild card binding, for every binding added here 1 or more actual bindings will be added.
     * i.e. A binding for A.* will bind the same queue to A.B and A.C if they are its linked addresses
@@ -70,14 +75,14 @@ public class WildcardAddressManager extends SimpleAddressManager
    public boolean addMapping(final SimpleString address, final Binding binding)
    {
       Address add = wildcardDestinations.get(address);
-      //if this isnt a wildcard destination then just add normally
+      // if this isnt a wildcard destination then just add normally
       if (add == null)
       {
          return super.addMapping(address, binding);
       }
       else
       {
-         //add this as a wildcard binding and add a new binding to any linked addresses.
+         // add this as a wildcard binding and add a new binding to any linked addresses.
          for (Address destination : add.getLinkedAddresses())
          {
             BindingImpl binding1 = new BindingImpl(destination.getAddress(), binding.getQueue());
@@ -107,7 +112,7 @@ public class WildcardAddressManager extends SimpleAddressManager
    public boolean removeMapping(final SimpleString address, final SimpleString queueName)
    {
       Address add = wildcardDestinations.get(address);
-      //if this isnt a wildcard binding just remove normally
+      // if this isnt a wildcard binding just remove normally
       if (add == null)
       {
          return super.removeMapping(address, queueName);
@@ -146,14 +151,14 @@ public class WildcardAddressManager extends SimpleAddressManager
    public boolean addDestination(final SimpleString address)
    {
       boolean added = super.addDestination(address);
-      //if this is a new destination we compute any wilcard addresses that would match and add if necessary
+      // if this is a new destination we compute any wilcard addresses that would match and add if necessary
       synchronized (actualDestinations)
       {
          if (added)
          {
             Address add = new AddressImpl(address);
             Address prevAddress = actualDestinations.putIfAbsent(address, add);
-            if(prevAddress != null)
+            if (prevAddress != null)
             {
                add = prevAddress;
             }
@@ -239,7 +244,7 @@ public class WildcardAddressManager extends SimpleAddressManager
       }
       if (pos + 1 < address.getAddressParts().length)
       {
-         return addPart(newAddresses, address, pos+1);
+         return addPart(newAddresses, address, pos + 1);
       }
       else
       {
@@ -259,9 +264,9 @@ public class WildcardAddressManager extends SimpleAddressManager
          for (int i = 0; i < address.getAddressParts().length; i++)
          {
             SimpleString current = address.getAddressParts()[i];
-            if(i < address.getAddressParts().length-1)
+            if (i < address.getAddressParts().length - 1)
             {
-               next = address.getAddressParts()[i+1];
+               next = address.getAddressParts()[i + 1];
             }
             else
             {
@@ -270,33 +275,33 @@ public class WildcardAddressManager extends SimpleAddressManager
             if (current.equals(SINGLE_WORD_SIMPLESTRING) && (ANY_WORDS_SIMPLESTRING.equals(next)))
             {
                address.removeAddressPart(i);
-               prev=null;
-               i=-1;
+               prev = null;
+               i = -1;
             }
             else if (current.equals(ANY_WORDS_SIMPLESTRING) && (ANY_WORDS_SIMPLESTRING.equals(next)))
             {
                address.removeAddressPart(i);
-               prev=null;
-               i=-1;
+               prev = null;
+               i = -1;
             }
             else if (current.equals(ANY_WORDS_SIMPLESTRING) && (SINGLE_WORD_SIMPLESTRING.equals(next)))
             {
-               address.removeAddressPart(i+1);
-               prev=null;
-               i=-1;
+               address.removeAddressPart(i + 1);
+               prev = null;
+               i = -1;
             }
             else if (current.equals(ANY_WORDS_SIMPLESTRING) && (ANY_WORDS_SIMPLESTRING.equals(prev)))
             {
-               address.removeAddressPart(i+1);
-               prev=null;
-               i=-1;
+               address.removeAddressPart(i + 1);
+               prev = null;
+               i = -1;
             }
             else
             {
                prev = current;
             }
          }
-         if(!newAddresses.contains(address.getAddress()))
+         if (!newAddresses.contains(address.getAddress()))
          {
             newAddresses.add(address.getAddress());
          }

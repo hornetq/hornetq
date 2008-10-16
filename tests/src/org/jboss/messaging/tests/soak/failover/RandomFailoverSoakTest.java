@@ -21,18 +21,25 @@
  */
 
 
-package org.jboss.messaging.core.remoting;
+package org.jboss.messaging.tests.soak.failover;
+
+import org.jboss.messaging.tests.integration.cluster.RandomFailoverTest;
 
 /**
- * A ResponseNotifier
+ * A RandomFailoverSoakTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 26 Sep 2008 10:57:15
+ * Created 9 Oct 2008 17:33:05
  *
  *
  */
-public interface ResponseNotifier
+public class RandomFailoverSoakTest extends RandomFailoverTest
 {
-   void onResponseReceived();
+
+   protected int getNumIterations()
+   {
+      return 500;
+   }
+  
 }

@@ -22,11 +22,19 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.DelayedResult;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeliveryCompleteMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
@@ -38,14 +46,6 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
-import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.core.transaction.impl.TransactionImpl;
-
-import java.util.Iterator;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Concrete implementation of a ClientConsumer. 
@@ -104,7 +104,7 @@ public class ServerConsumerImpl implements ServerConsumer
    private AtomicBoolean waitingToDeliver = new AtomicBoolean(false);
 
    private boolean delivering = false;
-   
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -149,8 +149,8 @@ public class ServerConsumerImpl implements ServerConsumer
       this.postOffice = postOffice;
 
       this.channel = channel;
-      
-      if(!browseOnly)
+
+      if (!browseOnly)
       {
          messageQueue.addConsumer(this);
       }
@@ -167,14 +167,15 @@ public class ServerConsumerImpl implements ServerConsumer
    public HandleStatus handle(final MessageReference ref) throws Exception
    {
       if (availableCredits != null && availableCredits.get() <= 0)
-      {       
+      {
          return HandleStatus.BUSY;
       }
-      
+
       final ServerMessage message = ref.getMessage();
 
       if (message.isExpired())
       {
+         // TODO need to replicate expires
          ref.expire(storageManager, postOffice, queueSettingsRepository);
 
          return HandleStatus.HANDLED;
@@ -199,51 +200,67 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             availableCredits.addAndGet(-message.getEncodeSize());
          }
-         
+
          final SessionReceiveMessage packet = new SessionReceiveMessage(id, message, ref.getDeliveryCount() + 1);
-         
-         Runnable run = new Runnable()
+
+         DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id, message.getMessageID()));
+
+         deliveringRefs.add(ref);
+
+         if (result == null)
          {
-            public void run()
+            // Not replicated - just send now
+            channel.send(packet);
+         }
+         else
+         {
+            // Send when replicate delivery response comes back
+            result.setResultRunner(new Runnable()
             {
-               deliveringRefs.add(ref);
-                                            
-               channel.send(packet);
-            }
-         };
-         
-         channel.replicatePacket(new SessionReplicateDeliveryMessage(id, message.getMessageID()), run);
-        
+               public void run()
+               {
+                  channel.send(packet);
+               }
+            });
+         }
+
          return HandleStatus.HANDLED;
       }
    }
-   
+
    public void close() throws Exception
-   {     
+   {
       setStarted(false);
-      
+
       messageQueue.removeConsumer(this);
 
       session.removeConsumer(this);
 
-      cancelRefs();
+      LinkedList<MessageReference> refs = cancelRefs();
+
+      if (!refs.isEmpty())
+      {
+         messageQueue.addListFirst(refs);
+      }
    }
 
-   public void cancelRefs() throws Exception
+   public LinkedList<MessageReference> cancelRefs() throws Exception
    {
+      LinkedList<MessageReference> refs = new LinkedList<MessageReference>();
+
       if (!deliveringRefs.isEmpty())
       {
-         Transaction tx = new TransactionImpl(storageManager, postOffice);
-
          for (MessageReference ref : deliveringRefs)
          {
-            tx.addAcknowledgement(ref);
+            refs.add(ref);
+
+            ref.getQueue().referenceCancelled();
          }
 
          deliveringRefs.clear();
-
-         tx.rollback(queueSettingsRepository);
       }
+
+      return refs;
    }
 
    public void setStarted(final boolean started)
@@ -265,11 +282,11 @@ public class ServerConsumerImpl implements ServerConsumer
       if (availableCredits != null)
       {
          int previous = availableCredits.getAndAdd(credits);
-         
+
          if (previous <= 0 && previous + credits > 0)
          {
             promptDelivery();
-         }                 
+         }
       }
    }
 
@@ -277,41 +294,51 @@ public class ServerConsumerImpl implements ServerConsumer
    {
       return messageQueue;
    }
- 
+
    public MessageReference getReference(final long messageID) throws Exception
-   {     
-      MessageReference ref = deliveringRefs.poll();
-            
-      return ref;      
-   }
-   
-   public void deliver(final long messageID) throws Exception
    {
-      MessageReference ref = messageQueue.removeReferenceWithID(messageID);
-         
-      if (ref == null)
+      // Acknowledge acknowledges all refs delivered by the consumer up to and including the one explicitly
+      // acknowledged
+
+      MessageReference ref;
+      do
       {
-         throw new IllegalStateException("Cannot find ref to deliver " + ref);
+         ref = deliveringRefs.poll();
+
+         if (ref == null)
+         {
+            throw new IllegalStateException("Could not find reference with id " + messageID +
+                                            " backup " +
+                                            messageQueue.isBackup());
+         }
       }
-      
-      HandleStatus status = handle(ref);
-      
-      if (status != HandleStatus.HANDLED)
+      while (ref.getMessage().getMessageID() != messageID);
+
+      return ref;
+   }
+
+   public void deliverReplicated(final long messageID) throws Exception
+   {
+      // It may not be the first in the queue - since there may be multiple producers
+      // sending to the queue
+      MessageReference ref = messageQueue.removeReferenceWithID(messageID);
+
+      HandleStatus handled = this.handle(ref);
+
+      if (handled != HandleStatus.HANDLED)
       {
-         throw new IllegalStateException("ref " + ref + " was not handled");
+         throw new IllegalStateException("Reference was not handled " + ref + " " + handled);
       }
    }
 
    public void failedOver()
    {
-      synchronized (startStopLock)
-      {
-         started = true;
-      }
-
       if (messageQueue.consumerFailedOver())
       {
-         promptDelivery();
+         if (started)
+         {
+            promptDelivery();
+         }
       }
    }
 
@@ -343,7 +370,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private void promptDelivery()
    {
-      if(browseOnly)
+      if (browseOnly)
       {
          session.promptDelivery(this);
       }
@@ -355,7 +382,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    // Inner classes
    // ------------------------------------------------------------------------
-      private class DeliveryRunner implements Runnable
+   private class DeliveryRunner implements Runnable
    {
       public void run()
       {
@@ -373,8 +400,8 @@ public class ServerConsumerImpl implements ServerConsumer
                }
                channel.send(new SessionReceiveMessage(id, ref.getMessage(), 1));
             }
-            //inform the client there are no more messages
-            if(!iterator.hasNext() || !delivering)
+            // inform the client there are no more messages
+            if (!iterator.hasNext() || !delivering)
             {
                channel.send(new SessionDeliveryCompleteMessage(id));
                iterator = null;

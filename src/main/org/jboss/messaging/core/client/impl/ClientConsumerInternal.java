@@ -41,8 +41,6 @@ public interface ClientConsumerInternal extends ClientConsumer
 
    void clear();
 
-   void resume();
-
    int getClientWindowSize();
 
    int getBufferSize();

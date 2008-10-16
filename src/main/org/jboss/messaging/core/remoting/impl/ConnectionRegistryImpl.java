@@ -98,12 +98,12 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
 
          RemotingConnection connection = new RemotingConnectionImpl(tc,
                                                                     callTimeout,
-                                                                    pingInterval,
-                                                                    null,
+                                                                    pingInterval,                                                             
                                                                     pingExecutor,
                                                                     null,
                                                                     null,
-                                                                    true);        
+                                                                    true,
+                                                                    null);        
 
          handler.conn = connection;
 
@@ -141,12 +141,12 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
 
       RemotingConnection connection = new RemotingConnectionImpl(tc,
                                                                  callTimeout,
-                                                                 pingInterval,
-                                                                 null,
+                                                                 pingInterval,                                                            
                                                                  pingExecutor,
                                                                  null,
                                                                  null,
-                                                                 true);        
+                                                                 true,
+                                                                 null);        
 
       handler.conn = connection;
 

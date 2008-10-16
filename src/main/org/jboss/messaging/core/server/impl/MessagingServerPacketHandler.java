@@ -13,17 +13,16 @@
 package org.jboss.messaging.core.server.impl;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FAILOVER_COMPLETE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
+import org.jboss.messaging.core.remoting.DelayedResult;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionFailoverCompleteMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -57,18 +56,9 @@ public class MessagingServerPacketHandler implements ChannelHandler
    }
 
    public void handlePacket(final Packet packet)
-   {            
-      channel1.replicatePacket(packet, new Runnable()
-      {
-         public void run()
-         {
-            doHandle(packet);
-         }
-      });      
-   }
-   
-   private void doHandle(final Packet packet)
-   {
+   {  
+      DelayedResult result = channel1.replicatePacket(packet);
+      
       Packet response = null;
       
       byte type = packet.getType();
@@ -129,7 +119,22 @@ public class MessagingServerPacketHandler implements ChannelHandler
       
       if (response != null)
       {
-         channel1.send(response);
+         if (result == null)
+         {
+            channel1.send(response);
+         }
+         else
+         {
+            final Packet theResponse = response;
+            
+            result.setResultRunner(new Runnable()
+            {
+               public void run()
+               {
+                  channel1.send(theResponse);
+               }
+            });
+         }
       }
       
       channel1.replicateComplete();

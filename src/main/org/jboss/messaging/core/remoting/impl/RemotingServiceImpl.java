@@ -20,9 +20,8 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -41,7 +40,6 @@ import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerPacketHandler;
-import org.jboss.messaging.util.JBMThreadFactory;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -65,8 +63,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final Set<Acceptor> acceptors = new HashSet<Acceptor>();
 
-   private final ExecutorService remotingExecutor;
-
    private final long callTimeout;
 
    private final Map<Object, RemotingConnection> connections = new ConcurrentHashMap<Object, RemotingConnection>();
@@ -82,6 +78,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    private volatile boolean backup;
 
    private volatile MessagingServer server;
+   
+   private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock(true);
 
    // Static --------------------------------------------------------
 
@@ -89,8 +87,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public RemotingServiceImpl(final Configuration config)
    {
-      remotingExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-session-ordering-threads"));
-
       transportConfigs = config.getAcceptorConfigurations();
 
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -174,20 +170,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          acceptor.stop();
       }
 
-      remotingExecutor.shutdown();
-
-      try
-      {
-         if (!remotingExecutor.awaitTermination(10000, TimeUnit.MILLISECONDS))
-         {
-            log.warn("Timed out waiting for pool to terminate");
-         }
-      }
-      catch (InterruptedException e)
-      {
-         // Ignore
-      }
-
       started = false;
    }
 
@@ -234,14 +216,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       RemotingConnection rc = new RemotingConnectionImpl(connection,
                                                          callTimeout,
-                                                         -1,
-                                                         remotingExecutor,
+                                                         -1,                            
                                                          null,
                                                          interceptors,
                                                          replicatingConnection,
-                                                         !backup);
+                                                         !backup,
+                                                         readWriteLock);
 
-      Channel channel1 = rc.getChannel(1, false, -1, false);
+      Channel channel1 = rc.getChannel(1,  -1, false);
 
       ChannelHandler handler = new MessagingServerPacketHandler(server, channel1, rc);
 

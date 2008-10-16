@@ -137,6 +137,7 @@ public class SimpleManualFailoverTest extends TestCase
       {
          public void connectionFailed(MessagingException me)
          {
+            log.info("*** connection failed");
             latch.countDown();
          }
       }

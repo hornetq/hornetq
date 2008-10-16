@@ -28,7 +28,6 @@ import java.util.Set;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.paging.PagingManager;
-import org.jboss.messaging.core.paging.impl.PageMessageImpl;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.ServerMessage;

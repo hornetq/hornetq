@@ -39,7 +39,7 @@ public interface ResourceManager
    
    Transaction getTransaction(Xid xid);
    
-   boolean removeTransaction(Xid xid);
+   Transaction removeTransaction(Xid xid);
    
    int getTimeoutSeconds();
    

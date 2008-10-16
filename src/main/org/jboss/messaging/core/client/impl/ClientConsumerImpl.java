@@ -58,7 +58,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private final Executor sessionExecutor;
 
    private final int clientWindowSize;
- 
+
    private final Queue<ClientMessage> buffer = new LinkedList<ClientMessage>();
 
    private final boolean direct;
@@ -76,11 +76,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private volatile boolean closed;
 
    private volatile int creditsToSend;
-   
-   private boolean cleared;
 
    private boolean messagesWaiting = true;
-   
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -89,7 +87,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                              final int clientWindowSize,
                              final boolean direct,
                              final Executor executor,
-                             final Channel channel, final boolean isBrowser)
+                             final Channel channel,
+                             final boolean isBrowser)
    {
       this.id = id;
 
@@ -163,8 +162,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
                if (expired)
                {
-                  session.processed(id, m.getMessageID());
-                  
+                  session.acknowledge(id, m.getMessageID());
+
                   if (toWait > 0)
                   {
                      continue;
@@ -173,7 +172,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                   {
                      return null;
                   }
-               }               
+               }
 
                return m;
             }
@@ -210,7 +209,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       checkClosed();
 
-      if(isBrowser)
+      if (isBrowser)
       {
          throw new MessagingException(MessagingException.ILLEGAL_STATE,
                                       "Cannot set MessageHandler - consumer is in browser mode");
@@ -240,7 +239,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       doCleanUp(true);
    }
 
-   public synchronized void cleanUp()
+   public void cleanUp()
    {
       try
       {
@@ -279,20 +278,20 @@ public class ClientConsumerImpl implements ClientConsumerInternal
     */
    public boolean awaitMessage(long timeOut) throws Exception
    {
-      if(!buffer.isEmpty())
+      if (!buffer.isEmpty())
       {
          return true;
       }
       else
       {
-         //we only need to syncronize if the buffer is empty
+         // we only need to syncronize if the buffer is empty
          synchronized (this)
          {
-            if(!buffer.isEmpty())
+            if (!buffer.isEmpty())
             {
                return true;
             }
-            if(messagesWaiting)
+            if (messagesWaiting)
             {
                wait(timeOut);
             }
@@ -303,17 +302,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public void stop() throws MessagingException
    {
-      if(!isBrowser)
+      if (!isBrowser)
       {
-          throw new MessagingException(MessagingException.ILLEGAL_STATE,
-                                      "Cannot stop Consumer in non browser mode");
+         throw new MessagingException(MessagingException.ILLEGAL_STATE, "Cannot stop Consumer in non browser mode");
       }
       synchronized (this)
       {
-         //if there are still messages in transit tell the server to stop and wait
-         if(messagesWaiting)
+         // if there are still messages in transit tell the server to stop and wait
+         if (messagesWaiting)
          {
-            //tell the server to stop
+            // tell the server to stop
             channel.send(new SessionConsumerStopMessage(id));
             do
             {
@@ -326,7 +324,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                   throw new IllegalStateException(e.getMessage());
                }
             }
-            while(messagesWaiting);
+            while (messagesWaiting);
          }
          buffer.clear();
       }
@@ -334,10 +332,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public void start() throws MessagingException
    {
-      if(!isBrowser)
+      if (!isBrowser)
       {
-          throw new MessagingException(MessagingException.ILLEGAL_STATE,
-                                      "Cannot stop Consumer in non browser mode");
+         throw new MessagingException(MessagingException.ILLEGAL_STATE, "Cannot stop Consumer in non browser mode");
       }
       messagesWaiting = true;
       channel.send(new SessionConsumerStartMessage(id));
@@ -356,7 +353,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       return id;
    }
-   
+
    public synchronized void handleMessage(final ClientMessage message) throws Exception
    {
       if (closed)
@@ -365,13 +362,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          return;
       }
 
-      if (cleared)
-      {
-         // Ignore - the session is rolling back and these are inflight
-         // messages
-         return;         
-      }
-            
       message.onReceipt(session, id);
 
       if (handler != null)
@@ -390,7 +380,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             }
             else
             {
-               session.processed(id, message.getMessageID());
+               session.acknowledge(id, message.getMessageID());
             }
          }
          else
@@ -413,14 +403,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public synchronized void clear()
    {
-      cleared = true;
-      
+      waitForOnMessageToComplete();
+
       buffer.clear();
-   }
-   
-   public synchronized void resume()
-   {
-      cleared = false;
    }
 
    public int getClientWindowSize()
@@ -502,7 +487,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          throw new MessagingException(MessagingException.OBJECT_CLOSED, "Consumer is closed");
       }
    }
-   
+
    private void callOnMessage()
    {
       try
@@ -526,18 +511,18 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          if (message != null)
          {
             boolean expired = message.isExpired();
-           
+
             flowControl(message.getEncodeSize());
 
             if (!expired)
             {
                onMessageThread = Thread.currentThread();
-               
+
                handler.onMessage(message);
             }
             else
             {
-               session.processed(id, message.getMessageID());
+               session.acknowledge(id, message.getMessageID());
             }
          }
       }
@@ -553,31 +538,35 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private void doCleanUp(final boolean sendCloseMessage) throws MessagingException
    {
-      if (closed)
-      {
-         return;
-      }
-
       try
       {
-         // Now we wait for any current handler runners to run.
-         waitForOnMessageToComplete();
+         if (closed)
+         {
+            return;
+         }
 
          closed = true;
 
-         if (receiverThread != null)
+         // Now we wait for any current handler runners to run.
+         waitForOnMessageToComplete();
+
+         synchronized (this)
          {
-            synchronized (this)
+            if (receiverThread != null)
             {
+               // Wake up any receive() thread that might be waiting
+               notify();
+
                messagesWaiting = false;
+               
                // Wake up any receive() thread that might be waiting
                notify();
             }
+
+            handler = null;
+
+            receiverThread = null;
          }
-
-         handler = null;
-
-         receiverThread = null;
 
          if (sendCloseMessage)
          {

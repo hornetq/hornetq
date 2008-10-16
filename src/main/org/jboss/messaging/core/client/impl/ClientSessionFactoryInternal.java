@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.exception.MessagingException;
 
 /**
  * A ClientSessionFactoryInternal
@@ -32,4 +33,6 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 public interface ClientSessionFactoryInternal extends ClientSessionFactory
 {
    void removeSession(ClientSessionInternal session);
+   
+   boolean checkFailover(MessagingException me);
 }

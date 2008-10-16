@@ -11,8 +11,6 @@
  */
 package org.jboss.messaging.core.remoting;
 
-import java.util.concurrent.Executor;
-
 import org.jboss.messaging.core.exception.MessagingException;
 
 /**
@@ -28,15 +26,13 @@ public interface Channel
 
    Packet sendBlocking(Packet packet) throws MessagingException;
 
-   Packet sendBlocking(Packet packet, ResponseNotifier notifier) throws MessagingException;
-
-   void replicatePacket(Packet packet, Runnable responseAction);
+   DelayedResult replicatePacket(Packet packet);
    
    void replicateComplete();
 
    void setHandler(ChannelHandler handler);
 
-   void close(boolean onExecutorThread);
+   void close();
 
    void fail();
 
@@ -51,8 +47,6 @@ public interface Channel
    void lock();
 
    void unlock();
-
-   Executor getExecutor();
 
    void interruptBlocking();
 }

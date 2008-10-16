@@ -69,6 +69,11 @@ public class SessionDeleteQueueMessage extends PacketImpl
    {
       return queueName;
    }
+      
+   public boolean isRequiresGlobalOrdering()
+   {
+      return true;
+   }
    
    public void encodeBody(final MessagingBuffer buffer)
    {

@@ -12,6 +12,17 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -46,12 +57,13 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.util.*;
-
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.*;
+import org.jboss.messaging.util.ExecutorFactory;
+import org.jboss.messaging.util.GroupIdGenerator;
+import org.jboss.messaging.util.JBMThreadFactory;
+import org.jboss.messaging.util.OrderedExecutorFactory;
+import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.SimpleStringIdGenerator;
+import org.jboss.messaging.util.VersionLoader;
 
 /**
  * The messaging server implementation
@@ -106,7 +118,7 @@ public class MessagingServerImpl implements MessagingServer
    private ConnectorFactory backupConnectorFactory;
 
    private Map<String, Object> backupConnectorParams;
-
+   
    // plugins
 
    private StorageManager storageManager;
@@ -442,8 +454,7 @@ public class MessagingServerImpl implements MessagingServer
 
       securityStore.authenticate(username, password);
  
-      Channel channel = connection.getChannel(channelID,
-                                              true,
+      Channel channel = connection.getChannel(channelID,                                             
                                               configuration.getPacketConfirmationBatchSize(),                                             
                                               false);
 
@@ -510,7 +521,7 @@ public class MessagingServerImpl implements MessagingServer
          return null;
       }
    }
-
+   
    public MessagingServerControlMBean getServerManagement()
    {
       return serverManagement;

@@ -64,7 +64,7 @@ public interface ServerSession
 
    void sendScheduled(ServerMessage serverMessage, long scheduledDeliveryTime) throws Exception;
 
-   void processed(final long consumerID, final long messageID) throws Exception;
+   void acknowledge(final long consumerID, final long messageID) throws Exception;
 
    void rollback() throws Exception;
 
@@ -137,7 +137,7 @@ public interface ServerSession
 
    void failedOver() throws Exception;
    
-   void handleReplicatedDelivery(long consumerID, long messageID) throws Exception;
+   void handleReplicatedDelivery(long consumerID, long messageID) throws Exception;   
 
    void promptDelivery(ServerConsumer browser);
 

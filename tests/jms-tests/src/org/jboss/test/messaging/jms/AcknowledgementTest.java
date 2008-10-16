@@ -128,27 +128,27 @@ public class AcknowledgementTest extends JMSTestCase
 
       try
       {
-         // conn = cf.createTopicConnection();
-         // TopicSession sess = conn.createTopicSession(true, 0);
-         // TopicPublisher pub = sess.createPublisher(topic1);
-         // TopicSubscriber cons = sess.createSubscriber(topic1);
-         // conn.start();
-         //
-         // Message m = sess.createTextMessage("testing123");
-         // pub.publish(m);
-         // sess.commit();
-         //
-         // TextMessage m2 = (TextMessage) cons.receive(3000);
-         // assertNotNull(m2);
-         // assertEquals("testing123", m2.getText());
-         //
-         // sess.rollback();
-         //
-         // m2 = (TextMessage) cons.receive(3000);
-         // assertNotNull(m2);
-         // assertEquals("testing123", m2.getText());
-         //
-         // conn.close();
+         conn = cf.createTopicConnection();
+         TopicSession sess = conn.createTopicSession(true, 0);
+         TopicPublisher pub = sess.createPublisher(topic1);
+         TopicSubscriber cons = sess.createSubscriber(topic1);
+         conn.start();
+
+         Message m = sess.createTextMessage("testing123");
+         pub.publish(m);
+         sess.commit();
+
+         TextMessage m2 = (TextMessage)cons.receive(3000);
+         assertNotNull(m2);
+         assertEquals("testing123", m2.getText());
+
+         sess.rollback();
+
+         m2 = (TextMessage)cons.receive(3000);
+         assertNotNull(m2);
+         assertEquals("testing123", m2.getText());
+
+         conn.close();
 
          conn = cf.createTopicConnection();
          conn.start();
@@ -1046,7 +1046,7 @@ public class AcknowledgementTest extends JMSTestCase
          log.trace("Set message listener");
 
          listener.waitForMessages();
-         
+
          log.info("Waited for messages");
 
          // Recover forces an ack so there will be one
@@ -1206,7 +1206,7 @@ public class AcknowledgementTest extends JMSTestCase
             count++;
 
             TextMessage tm = (TextMessage)m;
-            
+
             log.info("got message " + tm.getText());
 
             // Receive first three messages then recover() session
@@ -1280,7 +1280,7 @@ public class AcknowledgementTest extends JMSTestCase
             count++;
 
             TextMessage tm = (TextMessage)m;
-            
+
             log.info("Got message " + tm.getText());
 
             // Receive first three messages then recover() session
@@ -1341,7 +1341,6 @@ public class AcknowledgementTest extends JMSTestCase
 
    private class MessageListenerClientAck extends LatchListener
    {
-
       MessageListenerClientAck(final Session sess)
       {
          super(sess);
@@ -1355,7 +1354,7 @@ public class AcknowledgementTest extends JMSTestCase
             count++;
 
             TextMessage tm = (TextMessage)m;
-            
+
             log.info("Got message " + tm.getText());
 
             if (count == 1)

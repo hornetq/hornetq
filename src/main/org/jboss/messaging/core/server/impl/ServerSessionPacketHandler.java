@@ -12,14 +12,8 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.ChannelHandler;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
+
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ACKNOWLEDGE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ADD_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CLOSE;
@@ -34,7 +28,6 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FAILOVER_COMPLETE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FLOWTOKEN;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_MANAGEMENT_SEND;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_PROCESSED;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_PRODUCER_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REMOVE_DESTINATION;
@@ -56,6 +49,21 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SET_TIMEOUT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_START;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SUSPEND;
+
+import java.util.List;
+
+import javax.transaction.xa.Xid;
+
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.ChannelHandler;
+import org.jboss.messaging.core.remoting.DelayedResult;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
@@ -66,7 +74,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionProcessedMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
@@ -89,9 +96,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
 
-import javax.transaction.xa.Xid;
-import java.util.List;
-
 /**
  * A ServerSessionPacketHandler
  *
@@ -108,7 +112,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
    private final Channel channel;
 
    private final StorageManager storageManager;
-
+   
    public ServerSessionPacketHandler(final ServerSession session,
                                      final Channel channel,
                                      final StorageManager storageManager)
@@ -129,7 +133,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
    public void handlePacket(final Packet packet)
    {
       byte type = packet.getType();
-
+      
       if (type == SESS_SEND || type == SESS_SCHEDULED_SEND)
       {
          SessionSendMessage send = (SessionSendMessage)packet;
@@ -138,30 +142,19 @@ public class ServerSessionPacketHandler implements ChannelHandler
 
          if (msg.getMessageID() == 0L)
          {
-            // must generate message id here, so we know they are in sync
+            // must generate message id here, so we know they are in sync on live and backup
             long id = storageManager.generateUniqueID();
 
             send.getServerMessage().setMessageID(id);
          }
       }
 
-      channel.replicatePacket(packet, new Runnable()
-      {
-         public void run()
-         {
-            doHandle(packet);
-         }
-      });
-   }
-
-   private void doHandle(final Packet packet)
-   {
       Packet response = null;
-
+      
+      DelayedResult result = channel.replicatePacket(packet);
+      
       try
       {
-         byte type = packet.getType();
-
          switch (type)
          {
             case SESS_CREATECONSUMER:
@@ -227,10 +220,10 @@ public class ServerSessionPacketHandler implements ChannelHandler
                response = new NullResponseMessage();
                break;
             }
-            case SESS_PROCESSED:
+            case SESS_ACKNOWLEDGE:
             {
-               SessionProcessedMessage message = (SessionProcessedMessage)packet;
-               session.processed(message.getConsumerID(), message.getMessageID());
+               SessionAcknowledgeMessage message = (SessionAcknowledgeMessage)packet;
+               session.acknowledge(message.getConsumerID(), message.getMessageID());
                if (message.isRequiresResponse())
                {
                   response = new NullResponseMessage();
@@ -246,7 +239,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             case SESS_ROLLBACK:
             {
                session.rollback();
-               // Rollback response is handled in the rollback() method
+               response = new NullResponseMessage();
                break;
             }
             case SESS_XA_COMMIT:
@@ -281,7 +274,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             }
             case SESS_XA_ROLLBACK:
             {
-               SessionXARollbackMessage message = (SessionXARollbackMessage)packet;
+               SessionXARollbackMessage message = (SessionXARollbackMessage)packet;              
                response = session.XARollback(message.getXid());
                break;
             }
@@ -436,7 +429,35 @@ public class ServerSessionPacketHandler implements ChannelHandler
 
       if (response != null)
       {
-         channel.send(response);
+         final boolean closeChannel = type == SESS_CLOSE;
+         
+         if (result == null)
+         {
+            //Not clustered - just send now
+            channel.send(response);              
+            
+            if (closeChannel)
+            {
+               channel.close();
+            }
+         }
+         else
+         {
+            final Packet theResponse = response;
+            
+            result.setResultRunner(new Runnable()
+            {
+               public void run()
+               {
+                  channel.send(theResponse);
+                  
+                  if (closeChannel)
+                  {
+                     channel.close();
+                  }
+               }
+            });
+         }
       }
 
       channel.replicateComplete();

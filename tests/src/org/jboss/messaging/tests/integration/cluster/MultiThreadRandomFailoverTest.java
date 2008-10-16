@@ -12,8 +12,10 @@
 
 package org.jboss.messaging.tests.integration.cluster;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
@@ -46,20 +48,21 @@ import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- * A RandomFailoverSoakTest
+ * A MultiThreadRandomFailoverTest
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class RandomFailoverTest extends TestCase
+public class MultiThreadRandomFailoverTest extends TestCase
 {
-   private static final Logger log = Logger.getLogger(SimpleAutomaticFailoverTest.class);
+   private static final Logger log = Logger.getLogger(MultiThreadRandomFailoverTest.class);
 
    // Constants -----------------------------------------------------
 
    private static final int RECEIVE_TIMEOUT = 5000;
+   
+   private static final int NUM_THREADS = 10;
 
    // Attributes ----------------------------------------------------
-
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
    private MessagingService liveService;
@@ -67,7 +70,7 @@ public class RandomFailoverTest extends TestCase
    private MessagingService backupService;
 
    private final Map<String, Object> backupParams = new HashMap<String, Object>();
-   
+
    private Timer timer = new Timer();
 
    // Static --------------------------------------------------------
@@ -76,174 +79,144 @@ public class RandomFailoverTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   
+
    public void testA() throws Exception
    {
-      runTest(new RunnableTest()
+      runTestMultipleThreads(new RunnableTest()
       {
-         public void run(final ClientSessionFactory sf) throws Exception
+         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
          {
-            doTestA(sf);
+            doTestA(sf, threadNum);
          }
-      });
+      }, NUM_THREADS);
    }
    
    public void testB() throws Exception
    {
-      runTest(new RunnableTest()
+      runTestMultipleThreads(new RunnableTest()
       {
-         public void run(final ClientSessionFactory sf) throws Exception
+         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
          {
-            doTestB(sf);
+            doTestB(sf, threadNum);
          }
-      });
+      }, NUM_THREADS);
    }
    
    public void testC() throws Exception
    {
-      runTest(new RunnableTest()
+      runTestMultipleThreads(new RunnableTest()
       {
-         public void run(final ClientSessionFactory sf) throws Exception
+         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
          {
-            doTestC(sf);
+            doTestC(sf, threadNum);
          }
-      });
+      }, NUM_THREADS);
    }
    
    public void testD() throws Exception
    {
-      runTest(new RunnableTest()
+      runTestMultipleThreads(new RunnableTest()
       {
-         public void run(final ClientSessionFactory sf) throws Exception
+         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
          {
-            doTestD(sf);
+            doTestD(sf, threadNum);
          }
-      });
+      }, NUM_THREADS);
    }
-   
+
    public void testE() throws Exception
    {
-      runTest(new RunnableTest()
+      runTestMultipleThreads(new RunnableTest()
       {
-         public void run(final ClientSessionFactory sf) throws Exception
+         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
          {
-            doTestE(sf);
+            doTestE(sf, threadNum);
          }
-      });
+      }, NUM_THREADS);
    }
-   
+
    public void testF() throws Exception
    {
-      runTest(new RunnableTest()
+      runTestMultipleThreads(new RunnableTest()
       {
-         public void run(final ClientSessionFactory sf) throws Exception
+         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
          {
-            doTestF(sf);
+            doTestF(sf, threadNum);
          }
-      });
+      }, NUM_THREADS);
    }
-   
+
    public void testG() throws Exception
    {
-      runTest(new RunnableTest()
+      runTestMultipleThreads(new RunnableTest()
       {
-         public void run(final ClientSessionFactory sf) throws Exception
+         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
          {
-            doTestG(sf);
+            doTestG(sf, threadNum);
          }
-      });
+      }, NUM_THREADS);
    }
    
    public void testH() throws Exception
    {
-      runTest(new RunnableTest()
+      runTestMultipleThreads(new RunnableTest()
       {
-         public void run(final ClientSessionFactory sf) throws Exception
+         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
          {
-            doTestH(sf);
+            doTestH(sf, threadNum);
          }
-      });
+      }, NUM_THREADS);
    }
    
    public void testI() throws Exception
    {
-      runTest(new RunnableTest()
+      runTestMultipleThreads(new RunnableTest()
       {
-         public void run(final ClientSessionFactory sf) throws Exception
+         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
          {
-            doTestI(sf);
+            doTestI(sf, threadNum);
          }
-      });
+      }, NUM_THREADS);
    }
    
    public void testJ() throws Exception
    {
-      runTest(new RunnableTest()
+      runTestMultipleThreads(new RunnableTest()
       {
-         public void run(final ClientSessionFactory sf) throws Exception
+         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
          {
-            doTestJ(sf);
+            doTestJ(sf, threadNum);
          }
-      });
+      }, NUM_THREADS);
    }
    
    public void testK() throws Exception
    {
-      runTest(new RunnableTest()
+      runTestMultipleThreads(new RunnableTest()
       {
-         public void run(final ClientSessionFactory sf) throws Exception
+         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
          {
-            doTestK(sf);
+            doTestK(sf, threadNum);
          }
-      });
+      }, NUM_THREADS);
    }
    
    public void testL() throws Exception
    {
-      runTest(new RunnableTest()
+      runTestMultipleThreads(new RunnableTest()
       {
-         public void run(final ClientSessionFactory sf) throws Exception
+         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
          {
-            doTestK(sf);
+            doTestL(sf);
          }
-      });
+      }, NUM_THREADS);
    }
-
-   public void runTest(final RunnableTest runnable) throws Exception
-   {
-      final int numIts = getNumIterations();
-      
-      for (int its = 0; its < numIts; its++)
-      {
-         start();
-
-         ClientSessionFactoryImpl sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                    new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                               backupParams));
-
-         ClientSession session = sf.createSession(false, false, false, false);
-
-         Failer failer = startFailer(1000, session);
-
-         do
-         {
-            runnable.run(sf);
-         }
-         while (!failer.isExecuted());
-
-         session.close();
-
-         assertEquals(0, sf.getSessionCount());
-
-         stop();
-      }
-   }
-       
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
    
-   protected void doTestA(final ClientSessionFactory sf) throws Exception
+   protected void doTestA(final ClientSessionFactory sf, final int threadNum) throws Exception
    {
       long start = System.currentTimeMillis();
 
@@ -251,14 +224,14 @@ public class RandomFailoverTest extends TestCase
 
       final int numMessages = 100;
 
-      final int numSessions = 50;
+      final int numSessions = 10;
 
       Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
       Set<ClientSession> sessions = new HashSet<ClientSession>();
 
       for (int i = 0; i < numSessions; i++)
       {
-         SimpleString subName = new SimpleString("sub" + i);
+         SimpleString subName = new SimpleString(threadNum + "sub" + i);
 
          ClientSession sessConsume = sf.createSession(false, true, true, false);
 
@@ -297,15 +270,6 @@ public class RandomFailoverTest extends TestCase
 
          public void onMessage(ClientMessage message)
          {
-            if (count == numMessages)
-            {
-               fail("Too many messages");
-            }
-
-            assertEquals(count, message.getProperty(new SimpleString("count")));
-
-            count++;
-
             try
             {
                message.processed();
@@ -314,7 +278,14 @@ public class RandomFailoverTest extends TestCase
             {
                log.error("Failed to process", me);
             }
+            
+            if (count >= numMessages)
+            {
+               return;
+            }
 
+            count++;
+            
             if (count == numMessages)
             {
                latch.countDown();
@@ -348,7 +319,7 @@ public class RandomFailoverTest extends TestCase
 
       for (int i = 0; i < numSessions; i++)
       {
-         SimpleString subName = new SimpleString("sub" + i);
+         SimpleString subName = new SimpleString(threadNum + "sub" + i);
 
          s.deleteQueue(subName);
       }
@@ -360,7 +331,7 @@ public class RandomFailoverTest extends TestCase
       log.info("duration " + (end - start));
    }
 
-   protected void doTestB(final ClientSessionFactory sf) throws Exception
+   protected void doTestB(final ClientSessionFactory sf, final int threadNum) throws Exception
    {
       long start = System.currentTimeMillis();
 
@@ -368,14 +339,14 @@ public class RandomFailoverTest extends TestCase
 
       final int numMessages = 100;
 
-      final int numSessions = 50;
+      final int numSessions = 10;
 
       Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
       Set<ClientSession> sessions = new HashSet<ClientSession>();
 
       for (int i = 0; i < numSessions; i++)
       {
-         SimpleString subName = new SimpleString("sub" + i);
+         SimpleString subName = new SimpleString(threadNum + "sub" + i);
 
          ClientSession sessConsume = sf.createSession(false, true, true, false);
 
@@ -417,15 +388,22 @@ public class RandomFailoverTest extends TestCase
 
          public void onMessage(ClientMessage message)
          {
-            if (count == numMessages)
+            try
             {
-               fail("Too many messages");
+               message.processed();
+            }
+            catch (MessagingException me)
+            {
+               log.error("Failed to process", me);
+            }
+            
+            if (count >= numMessages)
+            {
+               return;
             }
 
-            assertEquals(count, message.getProperty(new SimpleString("count")));
-
             count++;
-
+            
             if (count == numMessages)
             {
                latch.countDown();
@@ -460,7 +438,7 @@ public class RandomFailoverTest extends TestCase
 
       for (int i = 0; i < numSessions; i++)
       {
-         SimpleString subName = new SimpleString("sub" + i);
+         SimpleString subName = new SimpleString(threadNum + "sub" + i);
 
          s.deleteQueue(subName);
       }
@@ -473,7 +451,7 @@ public class RandomFailoverTest extends TestCase
 
    }
 
-   protected void doTestC(final ClientSessionFactory sf) throws Exception
+   protected void doTestC(final ClientSessionFactory sf, final int threadNum) throws Exception
    {
       long start = System.currentTimeMillis();
 
@@ -481,14 +459,14 @@ public class RandomFailoverTest extends TestCase
 
       final int numMessages = 100;
 
-      final int numSessions = 50;
+      final int numSessions = 10;
 
       Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
       Set<ClientSession> sessions = new HashSet<ClientSession>();
 
       for (int i = 0; i < numSessions; i++)
       {
-         SimpleString subName = new SimpleString("sub" + i);
+         SimpleString subName = new SimpleString(threadNum + "sub" + i);
 
          ClientSession sessConsume = sf.createSession(false, false, false, false);
 
@@ -543,15 +521,22 @@ public class RandomFailoverTest extends TestCase
 
          public void onMessage(ClientMessage message)
          {
-            if (count == numMessages)
+            try
             {
-               fail("Too many messages");
+               message.processed();
+            }
+            catch (MessagingException me)
+            {
+               log.error("Failed to process", me);
+            }
+            
+            if (count >= numMessages)
+            {
+               return;
             }
 
-            assertEquals(count, message.getProperty(new SimpleString("count")));
-
             count++;
-
+            
             if (count == numMessages)
             {
                latch.countDown();
@@ -614,7 +599,7 @@ public class RandomFailoverTest extends TestCase
 
       for (int i = 0; i < numSessions; i++)
       {
-         SimpleString subName = new SimpleString("sub" + i);
+         SimpleString subName = new SimpleString(threadNum + "sub" + i);
 
          s.deleteQueue(subName);
       }
@@ -626,7 +611,7 @@ public class RandomFailoverTest extends TestCase
       log.info("duration " + (end - start));
    }
 
-   protected void doTestD(final ClientSessionFactory sf) throws Exception
+   protected void doTestD(final ClientSessionFactory sf, final int threadNum) throws Exception
    {
       long start = System.currentTimeMillis();
 
@@ -641,7 +626,7 @@ public class RandomFailoverTest extends TestCase
 
       for (int i = 0; i < numSessions; i++)
       {
-         SimpleString subName = new SimpleString("sub" + i);
+         SimpleString subName = new SimpleString(threadNum + " sub" + i);
 
          ClientSession sessConsume = sf.createSession(false, false, false, false);
 
@@ -699,15 +684,22 @@ public class RandomFailoverTest extends TestCase
 
          public void onMessage(ClientMessage message)
          {
-            if (count == numMessages)
+            try
             {
-               fail("Too many messages");
+               message.processed();
+            }
+            catch (MessagingException me)
+            {
+               log.error("Failed to process", me);
+            }
+            
+            if (count >= numMessages)
+            {
+               return;
             }
 
-            assertEquals(count, message.getProperty(new SimpleString("count")));
-
             count++;
-
+            
             if (count == numMessages)
             {
                latch.countDown();
@@ -770,7 +762,7 @@ public class RandomFailoverTest extends TestCase
 
       for (int i = 0; i < numSessions; i++)
       {
-         SimpleString subName = new SimpleString("sub" + i);
+         SimpleString subName = new SimpleString(threadNum + " sub" + i);
 
          s.deleteQueue(subName);
       }
@@ -784,7 +776,7 @@ public class RandomFailoverTest extends TestCase
 
    // Now with synchronous receive()
 
-   protected void doTestE(final ClientSessionFactory sf) throws Exception
+   protected void doTestE(final ClientSessionFactory sf, final int threadNum) throws Exception
    {
       long start = System.currentTimeMillis();
 
@@ -799,7 +791,7 @@ public class RandomFailoverTest extends TestCase
 
       for (int i = 0; i < numSessions; i++)
       {
-         SimpleString subName = new SimpleString("sub" + i);
+         SimpleString subName = new SimpleString(threadNum + "sub" + i);
 
          ClientSession sessConsume = sf.createSession(false, true, true, false);
 
@@ -838,19 +830,7 @@ public class RandomFailoverTest extends TestCase
 
             assertNotNull(msg);
 
-            assertEquals(i, msg.getProperty(new SimpleString("count")));
-
             msg.processed();
-         }
-      }
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         for (ClientConsumer consumer : consumers)
-         {
-            ClientMessage msg = consumer.receiveImmediate();
-
-            assertNull(msg);
          }
       }
 
@@ -862,7 +842,7 @@ public class RandomFailoverTest extends TestCase
 
       for (int i = 0; i < numSessions; i++)
       {
-         SimpleString subName = new SimpleString("sub" + i);
+         SimpleString subName = new SimpleString(threadNum + "sub" + i);
 
          s.deleteQueue(subName);
       }
@@ -874,7 +854,7 @@ public class RandomFailoverTest extends TestCase
       log.info("duration " + (end - start));
    }
 
-   protected void doTestF(final ClientSessionFactory sf) throws Exception
+   protected void doTestF(final ClientSessionFactory sf, final int threadNum) throws Exception
    {
       long start = System.currentTimeMillis();
 
@@ -889,7 +869,7 @@ public class RandomFailoverTest extends TestCase
 
       for (int i = 0; i < numSessions; i++)
       {
-         SimpleString subName = new SimpleString("sub" + i);
+         SimpleString subName = new SimpleString(threadNum + "sub" + i);
 
          ClientSession sessConsume = sf.createSession(false, true, true, false);
 
@@ -931,19 +911,7 @@ public class RandomFailoverTest extends TestCase
 
             assertNotNull(msg);
 
-            assertEquals(i, msg.getProperty(new SimpleString("count")));
-
             msg.processed();
-         }
-      }
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         for (ClientConsumer consumer : consumers)
-         {
-            ClientMessage msg = consumer.receiveImmediate();
-
-            assertNull(msg);
          }
       }
 
@@ -955,7 +923,7 @@ public class RandomFailoverTest extends TestCase
 
       for (int i = 0; i < numSessions; i++)
       {
-         SimpleString subName = new SimpleString("sub" + i);
+         SimpleString subName = new SimpleString(threadNum + "sub" + i);
 
          s.deleteQueue(subName);
       }
@@ -967,7 +935,7 @@ public class RandomFailoverTest extends TestCase
       log.info("duration " + (end - start));
    }
 
-   protected void doTestG(final ClientSessionFactory sf) throws Exception
+   protected void doTestG(final ClientSessionFactory sf, final int threadNum) throws Exception
    {
       long start = System.currentTimeMillis();
 
@@ -982,7 +950,7 @@ public class RandomFailoverTest extends TestCase
 
       for (int i = 0; i < numSessions; i++)
       {
-         SimpleString subName = new SimpleString("sub" + i);
+         SimpleString subName = new SimpleString(threadNum + "sub" + i);
 
          ClientSession sessConsume = sf.createSession(false, false, false, false);
 
@@ -1037,17 +1005,8 @@ public class RandomFailoverTest extends TestCase
 
             assertNotNull(msg);
 
-            assertEquals(i, msg.getProperty(new SimpleString("count")));
-
             msg.processed();
          }
-      }
-
-      for (ClientConsumer consumer : consumers)
-      {
-         ClientMessage msg = consumer.receiveImmediate();
-
-         assertNull(msg);
       }
 
       for (ClientSession session : sessions)
@@ -1063,21 +1022,10 @@ public class RandomFailoverTest extends TestCase
 
             assertNotNull(msg);
 
-            assertEquals(i, msg.getProperty(new SimpleString("count")));
-
             msg.processed();
          }
       }
 
-      for (int i = 0; i < numMessages; i++)
-      {
-         for (ClientConsumer consumer : consumers)
-         {
-            ClientMessage msg = consumer.receiveImmediate();
-
-            assertNull(msg);
-         }
-      }
 
       for (ClientSession session : sessions)
       {
@@ -1092,7 +1040,7 @@ public class RandomFailoverTest extends TestCase
 
       for (int i = 0; i < numSessions; i++)
       {
-         SimpleString subName = new SimpleString("sub" + i);
+         SimpleString subName = new SimpleString(threadNum + "sub" + i);
 
          s.deleteQueue(subName);
       }
@@ -1104,7 +1052,7 @@ public class RandomFailoverTest extends TestCase
       log.info("duration " + (end - start));
    }
 
-   protected void doTestH(final ClientSessionFactory sf) throws Exception
+   protected void doTestH(final ClientSessionFactory sf, final int threadNum) throws Exception
    {
       long start = System.currentTimeMillis();
 
@@ -1119,7 +1067,7 @@ public class RandomFailoverTest extends TestCase
 
       for (int i = 0; i < numSessions; i++)
       {
-         SimpleString subName = new SimpleString("sub" + i);
+         SimpleString subName = new SimpleString(threadNum + "sub" + i);
 
          ClientSession sessConsume = sf.createSession(false, false, false, false);
 
@@ -1172,24 +1120,10 @@ public class RandomFailoverTest extends TestCase
       for (int i = 0; i < numMessages; i++)
       {
          for (ClientConsumer consumer : consumers)
-         {
+         {            
             ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
 
-            assertNotNull(msg);
-
-            assertEquals(i, msg.getProperty(new SimpleString("count")));
-
             msg.processed();
-         }
-      }
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         for (ClientConsumer consumer : consumers)
-         {
-            ClientMessage msg = consumer.receiveImmediate();
-
-            assertNull(msg);
          }
       }
 
@@ -1204,21 +1138,7 @@ public class RandomFailoverTest extends TestCase
          {
             ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
 
-            assertNotNull(msg);
-
-            assertEquals(i, msg.getProperty(new SimpleString("count")));
-
             msg.processed();
-         }
-      }
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         for (ClientConsumer consumer : consumers)
-         {
-            ClientMessage msg = consumer.receiveImmediate();
-
-            assertNull(msg);
          }
       }
 
@@ -1235,7 +1155,7 @@ public class RandomFailoverTest extends TestCase
 
       for (int i = 0; i < numSessions; i++)
       {
-         SimpleString subName = new SimpleString("sub" + i);
+         SimpleString subName = new SimpleString(threadNum + "sub" + i);
 
          s.deleteQueue(subName);
       }
@@ -1247,17 +1167,17 @@ public class RandomFailoverTest extends TestCase
       log.info("duration " + (end - start));
    }
 
-   protected void doTestI(final ClientSessionFactory sf) throws Exception
+   protected void doTestI(final ClientSessionFactory sf, final int threadNum) throws Exception
    {
       ClientSession sessCreate = sf.createSession(false, true, true, false);
 
-      sessCreate.createQueue(ADDRESS, ADDRESS, null, false, false);
+      sessCreate.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false);
 
       ClientSession sess = sf.createSession(false, true, true, false);
 
       sess.start();
 
-      ClientConsumer consumer = sess.createConsumer(ADDRESS);
+      ClientConsumer consumer = sess.createConsumer(new SimpleString(threadNum + ADDRESS.toString()));
 
       ClientProducer producer = sess.createProducer(ADDRESS);
 
@@ -1278,63 +1198,63 @@ public class RandomFailoverTest extends TestCase
 
       sess.close();
 
-      sessCreate.deleteQueue(ADDRESS);
-
-      sessCreate.close();     
-   }
-
-   protected void doTestJ(final ClientSessionFactory sf) throws Exception
-   {
-      ClientSession sessCreate = sf.createSession(false, true, true, false);
-
-      sessCreate.createQueue(ADDRESS, ADDRESS, null, false, false);
-
-      ClientSession sess = sf.createSession(false, true, true, false);
-
-      sess.start();
-
-      ClientConsumer consumer = sess.createConsumer(ADDRESS);
-
-      ClientProducer producer = sess.createProducer(ADDRESS);
-
-      ClientMessage message = sess.createClientMessage(JBossTextMessage.TYPE,
-                                                       false,
-                                                       0,
-                                                       System.currentTimeMillis(),
-                                                       (byte)1);
-      message.getBody().flip();
-
-      producer.send(message);
-
-      ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
-
-      assertNotNull(message2);
-
-      message2.processed();
-
-      sess.close();
-
-      sessCreate.deleteQueue(ADDRESS);
+      sessCreate.deleteQueue(new SimpleString(threadNum + ADDRESS.toString()));
 
       sessCreate.close();
    }
 
-   protected void doTestK(final ClientSessionFactory sf) throws Exception
+   protected void doTestJ(final ClientSessionFactory sf, final int threadNum) throws Exception
+   {
+      ClientSession sessCreate = sf.createSession(false, true, true, false);
+
+      sessCreate.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false);
+
+      ClientSession sess = sf.createSession(false, true, true, false);
+
+      sess.start();
+
+      ClientConsumer consumer = sess.createConsumer(new SimpleString(threadNum + ADDRESS.toString()));
+
+      ClientProducer producer = sess.createProducer(ADDRESS);
+
+      ClientMessage message = sess.createClientMessage(JBossTextMessage.TYPE,
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
+      message.getBody().flip();
+
+      producer.send(message);
+
+      ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
+
+      assertNotNull(message2);
+
+      message2.processed();
+
+      sess.close();
+
+      sessCreate.deleteQueue(new SimpleString(threadNum + ADDRESS.toString()));
+
+      sessCreate.close();
+   }
+
+   protected void doTestK(final ClientSessionFactory sf, final int threadNum) throws Exception
    {
       ClientSession s = sf.createSession(false, false, false, false);
 
-      s.createQueue(ADDRESS, ADDRESS, null, false, false);
+      s.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false);
 
       final int numConsumers = 100;
 
       for (int i = 0; i < numConsumers; i++)
       {
-         ClientConsumer consumer = s.createConsumer(ADDRESS);
+         ClientConsumer consumer = s.createConsumer(new SimpleString(threadNum + ADDRESS.toString()));
 
          consumer.close();
       }
 
-      s.deleteQueue(ADDRESS);
+      s.deleteQueue(new SimpleString(threadNum + ADDRESS.toString()));
 
       s.close();
    }
@@ -1354,14 +1274,99 @@ public class RandomFailoverTest extends TestCase
 
       s.close();
    }
-   
+
    protected int getNumIterations()
    {
-      return 10;
+      return 20;
    }
    
-  
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      
+      log.info("************ Starting test " + this.getName());
+   }
+
    // Private -------------------------------------------------------
+
+   private void runTestMultipleThreads(final RunnableTest runnable, final int numThreads) throws Exception
+   {
+      final int numIts = getNumIterations();
+
+      for (int its = 0; its < numIts; its++)
+      {
+         log.info("************ ITERATION: " + its);
+         start();
+
+         final ClientSessionFactoryImpl sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                          new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                     backupParams));
+
+         ClientSession session = sf.createSession(false, false, false, false);
+
+         Failer failer = startFailer(1000, session);
+
+         class Runner extends Thread
+         {
+            private volatile Throwable throwable;
+
+            private final RunnableTest test;
+
+            private final int threadNum;
+
+            Runner(final RunnableTest test, final int threadNum)
+            {
+               this.test = test;
+
+               this.threadNum = threadNum;
+            }
+
+            public void run()
+            {
+               try
+               {
+                  test.run(sf, threadNum);
+               }
+               catch (Throwable t)
+               {
+                  throwable = t;
+
+                  log.error("Failed to run test", t);
+               }
+            }
+         }
+         
+         do
+         {
+            List<Runner> threads = new ArrayList<Runner>();
+            
+            for (int i = 0; i < numThreads; i++)
+            {
+               Runner runner = new Runner(runnable, i);
+
+               threads.add(runner);
+
+               runner.start();
+            }
+            
+            for (Runner thread : threads)
+            {
+               thread.join();               
+
+               assertNull(thread.throwable);
+            }
+            
+            runnable.checkFail();
+         }
+         while (!failer.isExecuted());
+         
+         session.close();
+
+         assertEquals(0, sf.getSessionCount());
+
+         stop();
+      }
+   }
    
    private Failer startFailer(final long time, final ClientSession session)
    {
@@ -1371,9 +1376,9 @@ public class RandomFailoverTest extends TestCase
       
       return failer;
    }
-   
+
    private void start() throws Exception
-   {
+   {      
       Configuration backupConf = new ConfigurationImpl();
       backupConf.setSecurityEnabled(false);
       backupConf.setPacketConfirmationBatchSize(10);
@@ -1418,9 +1423,9 @@ public class RandomFailoverTest extends TestCase
 
       assertEquals(0, InVMRegistry.instance.size());
    }
-  
+
    // Inner classes -------------------------------------------------
-   
+
    class Failer extends TimerTask
    {
       private final ClientSession session;
@@ -1452,9 +1457,29 @@ public class RandomFailoverTest extends TestCase
          return executed;
       }
    }
-   
-   public abstract class RunnableTest
+
+   public abstract class RunnableTest extends Thread
    {
-      abstract void run(final ClientSessionFactory sf) throws Exception;      
+      private volatile String failReason;
+      private volatile Throwable throwable;
+      
+      public void setFailed(final String reason, final Throwable throwable)
+      {
+         this.failReason = reason;
+         this.throwable = throwable;
+      }
+      
+      public void checkFail()
+      {
+         if (throwable != null)
+         {
+            log.error("Test failed: " + failReason, throwable);
+         }
+         if (failReason != null)
+         {
+            fail(failReason);
+         }
+      }
+      public abstract void run(final ClientSessionFactory sf, final int threadNum) throws Exception;
    }
 }

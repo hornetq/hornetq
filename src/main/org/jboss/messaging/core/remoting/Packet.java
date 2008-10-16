@@ -49,8 +49,5 @@ public interface Packet
    
    boolean isWriteAlways();
    
-   
-//   int getReplicateID();
-//   
-//   void setReplicateID(int id);
+   boolean isRequiresGlobalOrdering();      
 }

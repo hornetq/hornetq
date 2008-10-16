@@ -12,6 +12,15 @@
 
 package org.jboss.messaging.core.transaction.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
@@ -26,14 +35,6 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.util.SimpleString;
-
-import javax.transaction.xa.Xid;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * A TransactionImpl
@@ -195,14 +196,11 @@ public class TransactionImpl implements Transaction
 
       ServerMessage message = acknowledgement.getMessage();
 
-      if (message.decrementRefCount() == 0)
+      if (message.decrementRefCount() == 0 && pagingManager != null)
       {
-         if (pagingManager != null)
-         {
-            pagingManager.messageDone(message);
-         }
+         pagingManager.messageDone(message);
       }
-
+      
       if (message.isDurable())
       {
          Queue queue = acknowledgement.getQueue();
@@ -325,7 +323,7 @@ public class TransactionImpl implements Transaction
       state = State.COMMITTED;
    }
 
-   public void rollback(final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   public List<MessageReference> rollback(final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       if (xid != null)
       {
@@ -352,12 +350,8 @@ public class TransactionImpl implements Transaction
          pageTransaction.forget();
       }
 
-      Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
-
-      // We sort into lists - one for each queue involved.
-      // Then we cancel back atomicly for each queue adding list on front to
-      // guarantee ordering is preserved
-
+      LinkedList<MessageReference> toCancel = new LinkedList<MessageReference>();
+      
       for (MessageReference ref : acknowledgements)
       {
          Queue queue = ref.getQueue();
@@ -370,31 +364,17 @@ public class TransactionImpl implements Transaction
             pagingManager.addSize(message);
          }
 
-         LinkedList<MessageReference> list = queueMap.get(queue);
-
-         if (list == null)
-         {
-            list = new LinkedList<MessageReference>();
-
-            queueMap.put(queue, list);
-         }
-
          if (ref.cancel(storageManager, postOffice, queueSettingsRepository))
          {
-            list.add(ref);
-         }
+            toCancel.add(ref);
+         } 
       }
-
-      for (Map.Entry<Queue, LinkedList<MessageReference>> entry : queueMap.entrySet())
-      {
-         LinkedList<MessageReference> refs = entry.getValue();
-
-         entry.getKey().addListFirst(refs);
-      }
-
+      
       clear();
 
       state = State.ROLLEDBACK;
+      
+      return toCancel;
    }
 
    public int getAcknowledgementsCount()

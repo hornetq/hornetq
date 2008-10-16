@@ -74,7 +74,7 @@ public class PacketImpl implements Packet
 
    public static final byte SESS_CONSUMER_START = 45;
 
-   public static final byte SESS_PROCESSED = 46;
+   public static final byte SESS_ACKNOWLEDGE = 46;
 
    public static final byte SESS_COMMIT = 47;
 
@@ -186,7 +186,6 @@ public class PacketImpl implements Packet
       buffer.putInt(0); // The length gets filled in at the end
       buffer.putByte(type);
       buffer.putLong(channelID);
-     // buffer.putInt(replicateID);
 
       encodeBody(buffer);
 
@@ -202,8 +201,6 @@ public class PacketImpl implements Packet
    {
       channelID = buffer.getLong();
       
-    //  replicateID = buffer.getInt();
-
       decodeBody(buffer);
    }
 
@@ -230,7 +227,7 @@ public class PacketImpl implements Packet
       return false;
    }
 
-   public boolean isReHandleResponseOnFailure()
+   public boolean isRequiresGlobalOrdering()
    {
       return false;
    }
@@ -266,17 +263,5 @@ public class PacketImpl implements Packet
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-   
-//   private int replicateID;
-//   
-//   public int getReplicateID()
-//   {
-//      return replicateID;
-//   }
-//   
-//   public void setReplicateID(int id)
-//   {
-//      this.replicateID = id;
-//   }
 
 }

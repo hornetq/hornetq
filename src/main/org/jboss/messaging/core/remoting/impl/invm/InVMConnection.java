@@ -53,9 +53,10 @@ public class InVMConnection implements Connection
 
    private final String id;
 
-   private volatile boolean started;
+   private boolean closed;
 
-   private static final ExecutorFactory factory = new OrderedExecutorFactory(Executors.newCachedThreadPool(new JBMThreadFactory("JBM-InVM-Transport-Threads")));
+   private static final ExecutorFactory factory =
+      new OrderedExecutorFactory(Executors.newCachedThreadPool(new JBMThreadFactory("JBM-InVM-Transport-Threads")));
 
    private final Executor executor;
 
@@ -75,32 +76,23 @@ public class InVMConnection implements Connection
       executor = factory.getExecutor();
 
       listener.connectionCreated(this);
-
-      started = true;
    }
 
-   public void close()
+   public synchronized void close()
    {
-      if (!started)
+      if (closed)
       {
          return;
       }
-
-      // Wait for writes to be processed
-      Future future = new Future();
-
-      executor.execute(future);
-
-      boolean ok = future.await(1000);
-
-      if (!ok)
-      {
-         log.warn("Timed out waiting for connection writes to be processed");
-      }
+      
+      //We can't wait for the executor to finish processing, since if the connection is closed on failover on the server
+      //and there are other replication requests still in progress and blocked because of the failover
+      //then it will time out waiting for close.
+      //Instead we let the executor complete after close but ignore the actions
 
       listener.connectionDestroyed(id);
 
-      started = false;
+      closed = true;
    }
 
    public MessagingBuffer createBuffer(final int size)
@@ -121,8 +113,15 @@ public class InVMConnection implements Connection
          {
             try
             {
-               buffer.getInt(); // read and discard
-               handler.bufferReceived(id, buffer);
+               if (!closed)
+               {
+                  buffer.getInt(); // read and discard
+                  handler.bufferReceived(id, buffer);
+               }
+               else
+               {
+                  //Ignore - buffer came in after connection is closed
+               }               
             }
             catch (Exception e)
             {

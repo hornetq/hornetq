@@ -121,9 +121,9 @@ public class ServerProducerImpl implements ServerProducer
 	{
 	   creditsToSend.addAndGet(-credits);
 	   
-		Packet packet = new SessionProducerFlowCreditMessage(id, credits);
-		
-		channel.send(packet);	
+//		Packet packet = new SessionProducerFlowCreditMessage(id, credits);
+//		
+//		channel.send(packet);	
 	}
 	
 	public void setWaiting(final boolean waiting)

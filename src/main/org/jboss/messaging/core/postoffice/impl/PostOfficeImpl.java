@@ -151,7 +151,7 @@ public class PostOfficeImpl implements PostOffice
 
    public boolean addDestination(final SimpleString address, final boolean durable) throws Exception
    {
-      boolean added = addressManager.addDestination(address);// destinations.addIfAbsent(address);
+      boolean added = addressManager.addDestination(address);
 
       if (added)
       {
@@ -268,7 +268,7 @@ public class PostOfficeImpl implements PostOffice
          }
 
          List<Binding> bindings = addressManager.getBindings(address);
-
+         
          List<MessageReference> refs = new ArrayList<MessageReference>();
 
          if (bindings != null)
@@ -406,5 +406,4 @@ public class PostOfficeImpl implements PostOffice
          }
       }
    }
-
 }

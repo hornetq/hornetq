@@ -102,7 +102,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
    {
       if (session != null)
       {
-         session.processed(consumerID, messageID);
+         session.acknowledge(consumerID, messageID);
       }
    }
 }

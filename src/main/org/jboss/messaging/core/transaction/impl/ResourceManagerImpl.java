@@ -65,9 +65,9 @@ public class ResourceManagerImpl implements ResourceManager
       return transactions.putIfAbsent(xid, tx) == null;
    }
 
-   public boolean removeTransaction(final Xid xid)
+   public Transaction removeTransaction(final Xid xid)
    {
-      return transactions.remove(xid) != null;
+      return transactions.remove(xid);
    }
    
    public int getTimeoutSeconds()

@@ -22,7 +22,6 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.ConnectionRegistry;
-import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
@@ -41,7 +40,7 @@ import org.jboss.messaging.util.VersionLoader;
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision: 3602 $</tt>
  */
-public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, FailureListener
+public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
 {
    // Constants
    // ------------------------------------------------------------------------------------
@@ -50,7 +49,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
    private static final Logger log = Logger.getLogger(ClientSessionFactoryImpl.class);
 
-   public static final long DEFAULT_PING_PERIOD = 2000;
+   public static final long DEFAULT_PING_PERIOD = 5000;
 
    public static final int DEFAULT_CONSUMER_WINDOW_SIZE = 1024 * 1024;
 
@@ -398,6 +397,20 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    {
       sessions.remove(session);
    }
+   
+   public boolean checkFailover(final MessagingException me)
+   {
+      if (backupConnectorFactory != null)
+      {
+         handleFailover(me);
+         
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
 
    // Public
    // ---------------------------------------------------------------------------------------
@@ -468,11 +481,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       {
          connection = connectionRegistry.getConnection(connectorFactory, transportParams, pingPeriod, callTimeout);
 
-         if (backupConnectorFactory != null)
-         {
-            connection.addFailureListener(this);
-         }
-
          String name = UUIDGenerator.getInstance().generateSimpleStringUUID().toString();
 
          long sessionChannelID = connection.generateChannelID();
@@ -490,7 +498,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                    autoCommitSends,
                                                    autoCommitAcks);
 
-         Channel channel1 = connection.getChannel(1, false, -1, true);
+         Channel channel1 = connection.getChannel(1, -1, true);
 
          try
          {
@@ -517,8 +525,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
          int packetConfirmationBatchSize = response.getPacketConfirmationBatchSize();
          
-         Channel sessionChannel = connection.getChannel(sessionChannelID,
-                                                        false,
+         Channel sessionChannel = connection.getChannel(sessionChannelID,                                               
                                                         packetConfirmationBatchSize,                                               
                                                         !hasBackup);
 
@@ -585,11 +592,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
          throw new IllegalArgumentException("Error instantiating connector factory \"" + connectorFactoryClassName +
                                             "\"", e);
       }
-   }
-
-   public void connectionFailed(final MessagingException me)
-   {
-      handleFailover(me);
    }
 
 }

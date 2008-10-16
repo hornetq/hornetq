@@ -174,7 +174,7 @@ public class QueueImpl implements Queue
       while (iter.hasPrevious())
       {
          MessageReference ref = iter.previous();
-
+         
          ServerMessage msg = ref.getMessage();
 
          if (!checkAndSchedule(ref))

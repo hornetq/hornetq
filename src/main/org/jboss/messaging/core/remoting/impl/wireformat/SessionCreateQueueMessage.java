@@ -103,6 +103,11 @@ public class SessionCreateQueueMessage extends PacketImpl
       return temporary;
    }
    
+   public boolean isRequiresGlobalOrdering()
+   {
+      return true;
+   }
+   
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putSimpleString(address);

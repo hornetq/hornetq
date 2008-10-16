@@ -22,7 +22,10 @@
 
 package org.jboss.messaging.core.server;
 
+
+import java.util.List;
 import java.util.concurrent.Executor;
+
 
 
 /**
@@ -38,8 +41,8 @@ public interface ServerConsumer extends Consumer
 	long getID();
 	
 	void close() throws Exception;
-	
-	void cancelRefs() throws Exception;
+
+	List<MessageReference> cancelRefs() throws Exception;
 	
 	void setStarted(boolean started) throws Exception;
 	
@@ -51,7 +54,7 @@ public interface ServerConsumer extends Consumer
 	
 	void failedOver();
 	
-	void deliver(final long messageID) throws Exception;
+	void deliverReplicated(final long messageID) throws Exception;
 
    void deliver(Executor executor);
 

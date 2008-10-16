@@ -18,7 +18,7 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
-public class SessionProcessedMessage extends PacketImpl
+public class SessionAcknowledgeMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
@@ -34,9 +34,9 @@ public class SessionProcessedMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionProcessedMessage(final long consumerID, final long messageID, final boolean requiresResponse)
+   public SessionAcknowledgeMessage(final long consumerID, final long messageID, final boolean requiresResponse)
    {
-      super(SESS_PROCESSED);
+      super(SESS_ACKNOWLEDGE);
 
       this.consumerID = consumerID;
 
@@ -45,9 +45,9 @@ public class SessionProcessedMessage extends PacketImpl
       this.requiresResponse = requiresResponse;
    }
 
-   public SessionProcessedMessage()
+   public SessionAcknowledgeMessage()
    {
-      super(SESS_PROCESSED);
+      super(SESS_ACKNOWLEDGE);
    }
 
    // Public --------------------------------------------------------
@@ -87,12 +87,12 @@ public class SessionProcessedMessage extends PacketImpl
 
    public boolean equals(Object other)
    {
-      if (other instanceof SessionProcessedMessage == false)
+      if (other instanceof SessionAcknowledgeMessage == false)
       {
          return false;
       }
 
-      SessionProcessedMessage r = (SessionProcessedMessage)other;
+      SessionAcknowledgeMessage r = (SessionAcknowledgeMessage)other;
 
       return super.equals(other) && this.consumerID == r.consumerID &&
              this.messageID == r.messageID &&
