@@ -51,7 +51,7 @@ public class VersionLoaderTest extends TestCase
 
    public void testLoadVersion() throws Exception
    {
-      Version version = VersionLoader.load();
+      Version version = VersionLoader.getVersion();
       Properties props = new Properties();
       props.load(ClassLoader.getSystemResourceAsStream("version.properties"));
    

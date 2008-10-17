@@ -140,7 +140,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       // We need to hard code the version information into a source file
 
-      version = VersionLoader.load();
+      version = VersionLoader.getVersion();
    }
 
    // lifecycle methods

@@ -138,7 +138,7 @@ public class JBossConnection implements
       
       uid = UUIDGenerator.getInstance().generateSimpleStringUUID();    
       
-      thisVersion = VersionLoader.load();
+      thisVersion = VersionLoader.getVersion();
    }
 
    // Connection implementation --------------------------------------------------------------------

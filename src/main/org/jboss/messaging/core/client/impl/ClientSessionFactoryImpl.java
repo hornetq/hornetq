@@ -474,7 +474,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
                                                             final boolean autoCommitAcks,                                                            
                                                             final boolean cacheProducers) throws MessagingException
    {
-      Version clientVersion = VersionLoader.load();
+      Version clientVersion = VersionLoader.getVersion();
 
       RemotingConnection connection = null;
       try

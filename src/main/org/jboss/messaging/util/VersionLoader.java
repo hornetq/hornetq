@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.core.version.impl.VersionImpl;
 
@@ -37,7 +38,36 @@ import org.jboss.messaging.core.version.impl.VersionImpl;
 public class VersionLoader
 {
 
-   public static Version load()
+   private static final Logger log = Logger.getLogger(VersionLoader.class);
+
+   
+   private static Version version;
+   
+   static
+   {
+      try
+      {
+         version = load();
+      }
+      catch (Throwable e)
+      {
+         version = null;
+         log.error(e.getMessage(), e);
+      }
+      
+   }
+
+   public static Version getVersion()
+   {
+      if (version == null)
+      {
+         throw new RuntimeException("version.properties is not available");
+      }
+      
+      return version;
+   }
+   
+   private static Version load()
    {
       Properties versionProps = new Properties();
       InputStream in = VersionImpl.class.getClassLoader().getResourceAsStream("version.properties");
