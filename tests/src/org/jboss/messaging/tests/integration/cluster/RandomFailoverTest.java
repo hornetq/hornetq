@@ -68,7 +68,7 @@ public class RandomFailoverTest extends TestCase
 
    private final Map<String, Object> backupParams = new HashMap<String, Object>();
    
-   private Timer timer = new Timer();
+   private Timer timer;
 
    // Static --------------------------------------------------------
 
@@ -79,7 +79,7 @@ public class RandomFailoverTest extends TestCase
    
    public void testA() throws Exception
    {
-      runTest(new RunnableTest()
+      runTest(new RunnableT()
       {
          public void run(final ClientSessionFactory sf) throws Exception
          {
@@ -90,7 +90,7 @@ public class RandomFailoverTest extends TestCase
    
    public void testB() throws Exception
    {
-      runTest(new RunnableTest()
+      runTest(new RunnableT()
       {
          public void run(final ClientSessionFactory sf) throws Exception
          {
@@ -101,7 +101,7 @@ public class RandomFailoverTest extends TestCase
    
    public void testC() throws Exception
    {
-      runTest(new RunnableTest()
+      runTest(new RunnableT()
       {
          public void run(final ClientSessionFactory sf) throws Exception
          {
@@ -112,7 +112,7 @@ public class RandomFailoverTest extends TestCase
    
    public void testD() throws Exception
    {
-      runTest(new RunnableTest()
+      runTest(new RunnableT()
       {
          public void run(final ClientSessionFactory sf) throws Exception
          {
@@ -123,7 +123,7 @@ public class RandomFailoverTest extends TestCase
    
    public void testE() throws Exception
    {
-      runTest(new RunnableTest()
+      runTest(new RunnableT()
       {
          public void run(final ClientSessionFactory sf) throws Exception
          {
@@ -134,7 +134,7 @@ public class RandomFailoverTest extends TestCase
    
    public void testF() throws Exception
    {
-      runTest(new RunnableTest()
+      runTest(new RunnableT()
       {
          public void run(final ClientSessionFactory sf) throws Exception
          {
@@ -145,7 +145,7 @@ public class RandomFailoverTest extends TestCase
    
    public void testG() throws Exception
    {
-      runTest(new RunnableTest()
+      runTest(new RunnableT()
       {
          public void run(final ClientSessionFactory sf) throws Exception
          {
@@ -156,7 +156,7 @@ public class RandomFailoverTest extends TestCase
    
    public void testH() throws Exception
    {
-      runTest(new RunnableTest()
+      runTest(new RunnableT()
       {
          public void run(final ClientSessionFactory sf) throws Exception
          {
@@ -167,7 +167,7 @@ public class RandomFailoverTest extends TestCase
    
    public void testI() throws Exception
    {
-      runTest(new RunnableTest()
+      runTest(new RunnableT()
       {
          public void run(final ClientSessionFactory sf) throws Exception
          {
@@ -178,7 +178,7 @@ public class RandomFailoverTest extends TestCase
    
    public void testJ() throws Exception
    {
-      runTest(new RunnableTest()
+      runTest(new RunnableT()
       {
          public void run(final ClientSessionFactory sf) throws Exception
          {
@@ -189,7 +189,7 @@ public class RandomFailoverTest extends TestCase
    
    public void testK() throws Exception
    {
-      runTest(new RunnableTest()
+      runTest(new RunnableT()
       {
          public void run(final ClientSessionFactory sf) throws Exception
          {
@@ -200,7 +200,7 @@ public class RandomFailoverTest extends TestCase
    
    public void testL() throws Exception
    {
-      runTest(new RunnableTest()
+      runTest(new RunnableT()
       {
          public void run(final ClientSessionFactory sf) throws Exception
          {
@@ -209,7 +209,7 @@ public class RandomFailoverTest extends TestCase
       });
    }
 
-   public void runTest(final RunnableTest runnable) throws Exception
+   public void runTest(final RunnableT runnable) throws Exception
    {
       final int numIts = getNumIterations();
       
@@ -1360,7 +1360,24 @@ public class RandomFailoverTest extends TestCase
       return 10;
    }
    
-  
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      
+      timer = new Timer();
+      
+      log.info("************ Starting test " + this.getName());
+   }
+   
+   protected void tearDown() throws Exception
+   {
+      timer.cancel();
+      
+      log.info("************ Ended test " + this.getName());
+      
+      super.tearDown();
+   }
+     
    // Private -------------------------------------------------------
    
    private Failer startFailer(final long time, final ClientSession session)
@@ -1453,7 +1470,7 @@ public class RandomFailoverTest extends TestCase
       }
    }
    
-   public abstract class RunnableTest
+   public abstract class RunnableT
    {
       abstract void run(final ClientSessionFactory sf) throws Exception;      
    }

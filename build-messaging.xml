@@ -701,6 +701,7 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${test.classes.dir}">
                <include name="${tests.param}"/>
+	       <exclude name="**/integration/cluster/**/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>
