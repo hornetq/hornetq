@@ -1277,7 +1277,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
    protected int getNumIterations()
    {
-      return 20;
+      return 5;
    }
    
    protected void setUp() throws Exception
