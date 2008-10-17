@@ -27,39 +27,61 @@ import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+
  * @version <tt>$Revision$</tt>
- * 
  */
-public class SessionCreateBrowserMessage extends PacketImpl
+public class SessionCreateQueueCopyMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
+   private SimpleString queueCopyName;
    private SimpleString queueName;
-   
    private SimpleString filterString;
+   private boolean durable;
+   private boolean temporary;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateBrowserMessage(final SimpleString queueName, final SimpleString filterString)
+   public SessionCreateQueueCopyMessage(final SimpleString queueCopyName, final SimpleString queueName,
+   		final SimpleString filterString, final boolean durable, final boolean temporary)
    {
-      super(SESS_CREATEBROWSER);
+      super(SESS_CREATEQUEUECOPY);
 
+      this.queueCopyName = queueCopyName;
       this.queueName = queueName;
       this.filterString = filterString;
+      this.durable = durable;
+      this.temporary = temporary;
    }
-   
-   public SessionCreateBrowserMessage()
+
+   public SessionCreateQueueCopyMessage()
    {
-      super(SESS_CREATEBROWSER);
+      super(SESS_CREATEQUEUECOPY);
    }
-   
+
    // Public --------------------------------------------------------
+
+   @Override
+   public String toString()
+   {
+      StringBuffer buff = new StringBuffer(getParentString());
+      buff.append(", queueCopyName=" + queueCopyName);
+      buff.append(", queueName=" + queueName);
+      buff.append(", filterString=" + filterString);
+      buff.append(", durable=" + durable);
+      buff.append(", temporary=" + temporary);
+      buff.append("]");
+      return buff.toString();
+   }
+
+   public SimpleString getQueueCopyName()
+   {
+      return queueCopyName;
+   }
 
    public SimpleString getQueueName()
    {
@@ -70,37 +92,54 @@ public class SessionCreateBrowserMessage extends PacketImpl
    {
       return filterString;
    }
-   
-   public void encodeBody(final MessagingBuffer buffer)
+
+   public boolean isDurable()
    {
-      buffer.putSimpleString(queueName);
-      buffer.putNullableSimpleString(filterString);
-   }
-   
-   public void decodeBody(final MessagingBuffer buffer)
-   {
-      queueName = buffer.getSimpleString();
-      filterString = buffer.getNullableSimpleString();
+      return durable;
    }
 
-   @Override
-   public String toString()
+   public boolean isTemporary()
    {
-      return getParentString() + ", queueName=" + queueName + ", filterString="
-            + filterString + "]";
+      return temporary;
    }
-   
+
+   public boolean isRequiresGlobalOrdering()
+   {
+      return true;
+   }
+
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putSimpleString(queueCopyName);
+      buffer.putSimpleString(queueName);
+      buffer.putNullableSimpleString(filterString);
+      buffer.putBoolean(durable);
+      buffer.putBoolean(temporary);
+   }
+
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      queueCopyName = buffer.getSimpleString();
+      queueName = buffer.getSimpleString();
+      filterString = buffer.getNullableSimpleString();
+      durable = buffer.getBoolean();
+      temporary = buffer.getBoolean();
+   }
+
    public boolean equals(Object other)
    {
-      if (other instanceof SessionCreateBrowserMessage == false)
+      if (other instanceof SessionCreateQueueCopyMessage == false)
       {
          return false;
       }
-            
-      SessionCreateBrowserMessage r = (SessionCreateBrowserMessage)other;
-      
-      return super.equals(other) && this.queueName.equals(r.queueName) &&
-             this.filterString == null ? r.filterString == null : this.filterString.equals(r.filterString);
+
+      SessionCreateQueueCopyMessage r = (SessionCreateQueueCopyMessage)other;
+
+      return super.equals(other) && r.queueCopyName.equals(this.queueCopyName) && 
+             r.queueName.equals(this.queueName) &&
+             (r.filterString == null ? this.filterString == null : r.filterString.equals(this.filterString)) &&
+             r.durable == this.durable &&
+             r.temporary == this.temporary;
    }
 
    // Package protected ---------------------------------------------

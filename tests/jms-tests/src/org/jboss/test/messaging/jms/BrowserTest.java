@@ -21,7 +21,7 @@
   */
 package org.jboss.test.messaging.jms;
 
-import java.util.Enumeration;
+import org.jboss.messaging.jms.JBossQueue;
 
 import javax.jms.Connection;
 import javax.jms.InvalidDestinationException;
@@ -31,8 +31,7 @@ import javax.jms.MessageProducer;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-
-import org.jboss.messaging.jms.JBossQueue;
+import java.util.Enumeration;
 
 
 /**
@@ -138,7 +137,7 @@ public class BrowserTest extends JMSTestCase
 			}
 
 			QueueBrowser browser = session.createBrowser(queue1);
-			
+
 			assertEquals(browser.getQueue(), queue1);
 
 			assertNull(browser.getMessageSelector());

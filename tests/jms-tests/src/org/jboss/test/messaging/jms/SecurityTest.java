@@ -21,9 +21,9 @@
   */
 package org.jboss.test.messaging.jms;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -36,10 +36,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
-
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.security.Role;
-import org.jboss.test.messaging.tools.ServerManagement;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Test JMS Security.
@@ -370,7 +369,7 @@ public class SecurityTest extends JMSTestCase
       {
          conn = cf.createConnection("nobody", "nobody");
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         sess.createBrowser(queue1);
+         sess.createBrowser(queue1).getEnumeration();
          fail("should throw JMSSecurityException");
       }
       catch (JMSSecurityException e)

@@ -18,25 +18,30 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.jms.client;
 
-import java.util.Enumeration;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.jms.JBossQueue;
+import org.jboss.messaging.util.SimpleString;
 
 import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
-
-import org.jboss.messaging.core.client.ClientBrowser;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * $Id$
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ *         <p/>
+ *         $Id$
  */
 public class JBossQueueBrowser implements QueueBrowser
 {
@@ -44,34 +49,49 @@ public class JBossQueueBrowser implements QueueBrowser
 
    private static final Logger log = Logger.getLogger(JBossQueueBrowser.class);
 
+   private static final long NEXT_MESSAGE_TIMEOUT = 1000;
+
    // Static ---------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private ClientBrowser browser;
-   private Queue queue;
-   private String messageSelector;
+   private ClientSession session;
+
+   private ClientConsumer consumer;
+
+   private JBossQueue queue;
+
+   private SimpleString messageSelector;
+
+   private SimpleString queueName;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public JBossQueueBrowser(Queue queue, String messageSelector, ClientBrowser browser)
+   public JBossQueueBrowser(JBossQueue queue, String messageSelector, ClientSession session)
    {
-      this.browser = browser;
+      this.session = session;
       this.queue = queue;
-      this.messageSelector = messageSelector;
+      if(messageSelector != null)
+      {
+        this. messageSelector = new SimpleString(SelectorTranslator.convertToJBMFilterString(messageSelector));
+      }
    }
 
    // QueueBrowser implementation -------------------------------------------------------------------
 
    public void close() throws JMSException
    {
-      try
+      if (consumer != null)
       {
-         browser.close();
-      }
-      catch (MessagingException e)
-      {
-         throw JMSExceptionHelper.convertFromMessagingException(e);     
+         try
+         {
+            consumer.close();
+            session.deleteQueue(queueName);
+         }
+         catch (MessagingException e)
+         {
+            throw JMSExceptionHelper.convertFromMessagingException(e);
+         }
       }
    }
 
@@ -79,18 +99,22 @@ public class JBossQueueBrowser implements QueueBrowser
    {
       try
       {
-         browser.reset();
+         close();
+         queueName = new SimpleString(UUID.randomUUID().toString());
+         session.createQueueCopy(queue.getSimpleAddress(), queueName, messageSelector, false, true);
+         consumer = session.createConsumer(queueName, null, false, true);
          return new BrowserEnumeration();
       }
       catch (MessagingException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);     
+         throw JMSExceptionHelper.convertFromMessagingException(e);
       }
+
    }
 
    public String getMessageSelector() throws JMSException
    {
-      return messageSelector;
+      return messageSelector == null?null:messageSelector.toString();
    }
 
    public Queue getQueue() throws JMSException
@@ -102,7 +126,7 @@ public class JBossQueueBrowser implements QueueBrowser
 
    public String toString()
    {
-      return "JBossQueueBrowser->" + browser;
+      return "JBossQueueBrowser->" + consumer;
    }
 
    // Package protected ----------------------------------------------------------------------------
@@ -115,33 +139,48 @@ public class JBossQueueBrowser implements QueueBrowser
 
    private class BrowserEnumeration implements Enumeration
    {
+      ClientMessage current = null;
+
       public boolean hasMoreElements()
       {
-         try
-         {            
-            return browser.hasNextMessage();
-         }
-         catch (MessagingException e)
+         if (current == null)
          {
-            throw new IllegalStateException(e.getMessage());
+            try
+            {
+               //todo change this to consumer.receiveImmediate() once https://jira.jboss.org/jira/browse/JBMESSAGING-1432 is completed
+               current = consumer.receive(NEXT_MESSAGE_TIMEOUT);
+            }
+            catch (MessagingException e)
+            {
+               return false;
+            }
          }
+         return current != null;
       }
 
       public Object nextElement()
       {
-         try
+         JBossMessage jbm;
+         if (hasMoreElements())
          {
-            ClientMessage message = browser.nextMessage();
+            ClientMessage next = current;
+            current = null;
+            jbm = JBossMessage.createMessage(next, session);
+            try
+            {
+               jbm.doBeforeReceive();
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to prepare message", e);
 
-            JBossMessage jbm = JBossMessage.createMessage(message, null);
-            
-            jbm.doBeforeReceive();                        
-            
+               return null;
+            }
             return jbm;
          }
-         catch (Exception e)
+         else
          {
-            throw new IllegalStateException(e.getMessage());
+            throw new NoSuchElementException();
          }
       }
    }

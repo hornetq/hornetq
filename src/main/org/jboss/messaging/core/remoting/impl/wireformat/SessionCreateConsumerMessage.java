@@ -38,19 +38,22 @@ public class SessionCreateConsumerMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private SimpleString queueName;
-   
+
    private SimpleString filterString;
-   
+
    private int windowSize;
-   
+
    private int maxRate;
-      
+
+   private boolean browseOnly;
+
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateConsumerMessage(final SimpleString queueName, final SimpleString filterString,   		                              
-   		                              final int windowSize, final int maxRate)
+   public SessionCreateConsumerMessage(final SimpleString queueName, final SimpleString filterString,
+   		                              final int windowSize, final int maxRate, final boolean browseOnly)
    {
       super(SESS_CREATECONSUMER);
 
@@ -58,12 +61,13 @@ public class SessionCreateConsumerMessage extends PacketImpl
       this.filterString = filterString;
       this.windowSize = windowSize;
       this.maxRate = maxRate;
+      this.browseOnly = browseOnly;
    }
-   
+
    public SessionCreateConsumerMessage()
    {
-      super(SESS_CREATECONSUMER);   
-   }   
+      super(SESS_CREATECONSUMER);
+   }
 
    // Public --------------------------------------------------------
 
@@ -93,26 +97,33 @@ public class SessionCreateConsumerMessage extends PacketImpl
    {
    	return windowSize;
    }
-   
+
    public int getMaxRate()
    {
    	return maxRate;
    }
-   
+
+   public boolean isBrowseOnly()
+   {
+      return browseOnly;
+   }
+
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putSimpleString(queueName);
       buffer.putNullableSimpleString(filterString);
       buffer.putInt(windowSize);
       buffer.putInt(maxRate);
+      buffer.putBoolean(browseOnly);
    }
-   
+
    public void decodeBody(final MessagingBuffer buffer)
    {
       queueName = buffer.getSimpleString();
       filterString = buffer.getNullableSimpleString();
       windowSize = buffer.getInt();
       maxRate = buffer.getInt();
+      browseOnly = buffer.getBoolean();
    }
 
    public boolean equals(Object other)

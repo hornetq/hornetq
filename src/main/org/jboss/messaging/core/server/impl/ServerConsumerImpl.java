@@ -22,11 +22,6 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -44,12 +39,17 @@ import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
- * Concrete implementation of a ClientConsumer. 
- * 
+ * Concrete implementation of a ClientConsumer.
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision: 3783 $</tt> $Id: ServerConsumerImpl.java 3783 2008-02-25 12:15:14Z timfox $
  */
 public class ServerConsumerImpl implements ServerConsumer
@@ -81,6 +81,11 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private boolean started;
 
+   /**
+    * if we are a browse only consumer we don't need to worry about acknowledgemenets or being started/stopeed by the session.
+    */
+   private boolean browseOnly;
+
    private final StorageManager storageManager;
 
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
@@ -101,20 +106,23 @@ public class ServerConsumerImpl implements ServerConsumer
                              final boolean enableFlowControl,
                              final int maxRate,
                              final boolean started,
+                             final boolean browseOnly,
                              final StorageManager storageManager,
                              final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                              final PostOffice postOffice,
                              final Channel channel)
    {
       this.id = id;
-      
+
       this.messageQueue = messageQueue;
 
       this.filter = filter;
 
       this.session = session;
 
-      this.started = started;
+      this.started = browseOnly || started;
+
+      this.browseOnly = browseOnly;
 
       if (enableFlowControl)
       {
@@ -185,7 +193,10 @@ public class ServerConsumerImpl implements ServerConsumer
 
          DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id, message.getMessageID()));
 
-         deliveringRefs.add(ref);
+         if(!browseOnly)
+         {
+            deliveringRefs.add(ref);
+         }
 
          if (result == null)
          {
@@ -210,6 +221,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public void close() throws Exception
    {
+      browseOnly = false;
+
       setStarted(false);
 
       messageQueue.removeConsumer(this);
@@ -257,7 +270,7 @@ public class ServerConsumerImpl implements ServerConsumer
    {
       synchronized (startStopLock)
       {
-         this.started = started;
+         this.started = browseOnly || started;
       }
 
       // Outside the lock

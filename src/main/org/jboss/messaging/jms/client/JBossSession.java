@@ -22,10 +22,19 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.jms.JBossDestination;
+import org.jboss.messaging.jms.JBossQueue;
+import org.jboss.messaging.jms.JBossTemporaryQueue;
+import org.jboss.messaging.jms.JBossTemporaryTopic;
+import org.jboss.messaging.jms.JBossTopic;
+import org.jboss.messaging.util.SimpleString;
 
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
@@ -58,33 +67,22 @@ import javax.jms.XAQueueSession;
 import javax.jms.XASession;
 import javax.jms.XATopicSession;
 import javax.transaction.xa.XAResource;
-
-import org.jboss.messaging.core.client.ClientBrowser;
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.jms.JBossDestination;
-import org.jboss.messaging.jms.JBossQueue;
-import org.jboss.messaging.jms.JBossTemporaryQueue;
-import org.jboss.messaging.jms.JBossTemporaryTopic;
-import org.jboss.messaging.jms.JBossTopic;
-import org.jboss.messaging.util.SimpleString;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
- * 
+ *
  * Note that we *do not* support JMS ASF (Application Server Facilities) optional
  * constructs such as ConnectionConsumer
- * 
+ *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  * $Id$
  */
 public class JBossSession implements Session, XASession, QueueSession, XAQueueSession, TopicSession, XATopicSession
@@ -638,17 +636,19 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
       try
       {
-         String coreSelector = SelectorTranslator.convertToJBMFilterString(filterString);
-
-         ClientBrowser browser = session.createBrowser(jbq.getSimpleAddress(),
-                                                       coreSelector == null ? null : new SimpleString(coreSelector));
-
-         return new JBossQueueBrowser(queue, filterString, browser);
+         SessionBindingQueryResponseMessage message  = session.bindingQuery(new SimpleString(jbq.getAddress()));
+         if(!message.isExists())
+         {
+            throw new InvalidDestinationException(jbq.getAddress() + " does not exist");
+         }
       }
       catch (MessagingException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         JMSExceptionHelper.convertFromMessagingException(e);
       }
+
+      return new JBossQueueBrowser(jbq, filterString, session);
+
    }
 
    public TemporaryQueue createTemporaryQueue() throws JMSException

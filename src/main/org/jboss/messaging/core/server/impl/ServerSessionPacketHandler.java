@@ -13,20 +13,25 @@
 package org.jboss.messaging.core.server.impl;
 
 
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.ChannelHandler;
+import org.jboss.messaging.core.remoting.DelayedResult;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ACKNOWLEDGE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ADD_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_HASNEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_NEXTMESSAGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BROWSER_RESET;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_COMMIT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_CLOSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEBROWSER;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATECONSUMER;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEPRODUCER;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEQUEUE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEQUEUECOPY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_DELETE_QUEUE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FAILOVER_COMPLETE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FLOWTOKEN;
@@ -34,6 +39,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_PRODUCER_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REMOVE_DESTINATION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REPLICATE_DELIVERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ROLLBACK;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_SCHEDULED_SEND;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_SEND;
@@ -51,35 +57,14 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SET_TIMEOUT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_START;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SUSPEND;
-
-import java.util.List;
-
-import javax.transaction.xa.Xid;
-
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.ChannelHandler;
-import org.jboss.messaging.core.remoting.DelayedResult;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserCloseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserHasNextMessageResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserNextMessageMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBrowserResetMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueCopyMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
@@ -104,6 +89,9 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
 
+import javax.transaction.xa.Xid;
+import java.util.List;
+
 /**
  * A ServerSessionPacketHandler
  *
@@ -120,7 +108,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
    private final Channel channel;
 
    private final StorageManager storageManager;
-   
+
    public ServerSessionPacketHandler(final ServerSession session,
                                      final Channel channel,
                                      final StorageManager storageManager)
@@ -141,7 +129,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
    public void handlePacket(final Packet packet)
    {
       byte type = packet.getType();
-      
+
       if (type == SESS_SEND || type == SESS_SCHEDULED_SEND)
       {
          SessionSendMessage send = (SessionSendMessage)packet;
@@ -158,9 +146,9 @@ public class ServerSessionPacketHandler implements ChannelHandler
       }
 
       Packet response = null;
-      
+
       DelayedResult result = channel.replicatePacket(packet);
-      
+
       try
       {
          switch (type)
@@ -171,7 +159,8 @@ public class ServerSessionPacketHandler implements ChannelHandler
                response = session.createConsumer(request.getQueueName(),
                                                  request.getFilterString(),
                                                  request.getWindowSize(),
-                                                 request.getMaxRate());
+                                                 request.getMaxRate(),
+                                                 request.isBrowseOnly());
                break;
             }
             case SESS_CREATEQUEUE:
@@ -179,6 +168,17 @@ public class ServerSessionPacketHandler implements ChannelHandler
                SessionCreateQueueMessage request = (SessionCreateQueueMessage)packet;
                session.createQueue(request.getAddress(),
                                    request.getQueueName(),
+                                   request.getFilterString(),
+                                   request.isDurable(),
+                                   request.isTemporary());
+               response = new NullResponseMessage();
+               break;
+            }
+            case SESS_CREATEQUEUECOPY:
+            {
+               SessionCreateQueueCopyMessage request = (SessionCreateQueueCopyMessage)packet;
+               session.createQueueCopy(request.getQueueName(),
+                                   request.getQueueCopyName(),
                                    request.getFilterString(),
                                    request.isDurable(),
                                    request.isTemporary());
@@ -202,13 +202,6 @@ public class ServerSessionPacketHandler implements ChannelHandler
             {
                SessionBindingQueryMessage request = (SessionBindingQueryMessage)packet;
                response = session.executeBindingQuery(request.getAddress());
-               break;
-            }
-            case SESS_CREATEBROWSER:
-            {
-               SessionCreateBrowserMessage request = (SessionCreateBrowserMessage)packet;
-               session.createBrowser(request.getQueueName(), request.getFilterString());
-               response = new NullResponseMessage();
                break;
             }
             case SESS_CREATEPRODUCER:
@@ -274,7 +267,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             }
             case SESS_XA_ROLLBACK:
             {
-               SessionXARollbackMessage message = (SessionXARollbackMessage)packet;              
+               SessionXARollbackMessage message = (SessionXARollbackMessage)packet;
                response = session.XARollback(message.getXid());
                break;
             }
@@ -362,13 +355,6 @@ public class ServerSessionPacketHandler implements ChannelHandler
                response = new NullResponseMessage();
                break;
             }
-            case SESS_BROWSER_CLOSE:
-            {
-               SessionBrowserCloseMessage message = (SessionBrowserCloseMessage)packet;
-               session.closeBrowser(message.getBrowserID());
-               response = new NullResponseMessage();
-               break;
-            }
             case SESS_FLOWTOKEN:
             {
                SessionConsumerFlowCreditMessage message = (SessionConsumerFlowCreditMessage)packet;
@@ -397,33 +383,13 @@ public class ServerSessionPacketHandler implements ChannelHandler
                }
                break;
             }
-            case SESS_BROWSER_HASNEXTMESSAGE:
-            {
-               SessionBrowserHasNextMessageMessage message = (SessionBrowserHasNextMessageMessage)packet;
-               response = new SessionBrowserHasNextMessageResponseMessage(session.browserHasNextMessage(message.getBrowserID()));
-               break;
-            }
-            case SESS_BROWSER_NEXTMESSAGE:
-            {
-               SessionBrowserNextMessageMessage message = (SessionBrowserNextMessageMessage)packet;
-               ServerMessage smsg = session.browserNextMessage(message.getBrowserID());
-               response = new SessionBrowseMessage(smsg);
-               break;
-            }
-            case SESS_BROWSER_RESET:
-            {
-               SessionBrowserResetMessage message = (SessionBrowserResetMessage)packet;
-               session.browserReset(message.getBrowserID());
-               response = new NullResponseMessage();
-               break;
-            }
             case SESS_MANAGEMENT_SEND:
             {
                SessionSendManagementMessage message = (SessionSendManagementMessage)packet;
                session.handleManagementMessage(message);
                break;
             }
-            case PacketImpl.SESS_REPLICATE_DELIVERY:
+            case SESS_REPLICATE_DELIVERY:
             {
                SessionReplicateDeliveryMessage message = (SessionReplicateDeliveryMessage)packet;
                session.handleReplicatedDelivery(message.getConsumerID(), message.getMessageID());
@@ -457,7 +423,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
       if (response != null)
       {
          final boolean closeChannel = type == SESS_CLOSE;
-         
+
          if (result == null)
          {
             // Not clustered - just send now

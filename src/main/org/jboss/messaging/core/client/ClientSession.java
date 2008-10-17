@@ -22,13 +22,13 @@
 
 package org.jboss.messaging.core.client;
 
-import javax.transaction.xa.XAResource;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.util.SimpleString;
+
+import javax.transaction.xa.XAResource;
 
 /*
  * 
@@ -60,15 +60,14 @@ public interface ClientSession extends XAResource
 
    ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean direct) throws MessagingException;
 
+   ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean direct, boolean browseOnly) throws MessagingException;
+
    ClientConsumer createConsumer(SimpleString queueName,
                                  SimpleString filterString,
                                  boolean direct,
                                  int windowSize,
-                                 int maxRate) throws MessagingException;
-
-   ClientBrowser createBrowser(SimpleString queueName, SimpleString filterString) throws MessagingException;
-
-   ClientBrowser createBrowser(SimpleString queueName) throws MessagingException;
+                                 int maxRate,
+                                 boolean browseOnly) throws MessagingException;
 
    ClientProducer createProducer(SimpleString address) throws MessagingException;
 
@@ -121,4 +120,6 @@ public interface ClientSession extends XAResource
    boolean removeFailureListener(FailureListener listener);
 
    int getVersion();
+
+    void createQueueCopy(SimpleString queueName, SimpleString queueCopyName, SimpleString coreSelector, boolean durable, boolean temporary) throws MessagingException;
 }
