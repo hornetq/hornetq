@@ -28,7 +28,7 @@ import org.jboss.messaging.util.VariableLatch;
  * @author <a href="csuconic@redhat.com">Clebert Suconic</a>
  */
 public class VariableLatchTest extends UnitTestCase
-{    
+{
    public void testTimeout() throws Exception
    {
       VariableLatch latch = new VariableLatch();
@@ -39,7 +39,6 @@ public class VariableLatchTest extends UnitTestCase
       assertFalse(latch.waitCompletion(1000));
       long end = System.currentTimeMillis();
 
-      assertTrue("Timeout didn't work correctly", end - start >= 1000
-            && end - start < 2000);
+      assertTrue("Timeout didn't work correctly", end - start >= 1000 && end - start < 2000);
    }
 }

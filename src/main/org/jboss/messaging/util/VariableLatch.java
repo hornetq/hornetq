@@ -18,13 +18,12 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.util;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
-
 
 /**
  * 
@@ -48,22 +47,23 @@ public class VariableLatch
     * @see AbstractQueuedSynchronizer*/
    @SuppressWarnings("serial")
    private static class CountSync extends AbstractQueuedSynchronizer
-   {      
-      public CountSync ()
+   {
+      public CountSync()
       {
          setState(0);
       }
-            
+
       public int getCount()
       {
          return getState();
       }
-      
+
+      @Override
       public int tryAcquireShared(final int numberOfAqcquires)
       {
-         return getState()==0 ? 1 : -1;
+         return getState() == 0 ? 1 : -1;
       }
-      
+
       public void add()
       {
          for (;;)
@@ -76,7 +76,8 @@ public class VariableLatch
             }
          }
       }
-            
+
+      @Override
       public boolean tryReleaseShared(final int numberOfReleases)
       {
          for (;;)
@@ -86,39 +87,39 @@ public class VariableLatch
             {
                return true;
             }
-            
+
             int newState = actualState - numberOfReleases;
-            
+
             if (compareAndSetState(actualState, newState))
             {
-               return newState == 0; 
+               return newState == 0;
             }
          }
       }
    }
-   
+
    private final CountSync control = new CountSync();
-      
+
    public int getCount()
    {
       return control.getCount();
    }
-   
+
    public void up()
    {
       control.add();
    }
-   
+
    public void down()
    {
       control.releaseShared(1);
    }
-   
+
    public void waitCompletion() throws InterruptedException
    {
       control.acquireSharedInterruptibly(1);
    }
-   
+
    public boolean waitCompletion(final long milliseconds) throws InterruptedException
    {
       return control.tryAcquireSharedNanos(1, TimeUnit.MILLISECONDS.toNanos(milliseconds));
