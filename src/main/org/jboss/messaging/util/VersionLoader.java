@@ -34,6 +34,7 @@ import org.jboss.messaging.core.version.impl.VersionImpl;
  * This loads the version info in from a version.properties file.
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="csuconic@redhat.com">Clebert Suconic</a>
  */
 public class VersionLoader
 {
