@@ -244,9 +244,7 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          for (MessageReference ref : deliveringRefs)
          {
-            refs.add(ref);
-
-            ref.getQueue().referenceCancelled();
+            refs.add(ref);            
          }
 
          deliveringRefs.clear();

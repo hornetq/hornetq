@@ -806,7 +806,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          if (response.isError())
          {
-            log.info(response.getMessage() + ":" + response.getResponseCode());
             throw new XAException(response.getResponseCode());
          }
       }

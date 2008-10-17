@@ -129,8 +129,6 @@ public class MessageReferenceImpl implements MessageReference
          persistenceManager.updateDeliveryCount(this);
       }
       
-      log.info("cancelling ref " + this);
-
       QueueSettings queueSettings = queueSettingsRepository.getMatch(queue.getName().toString());
       int maxDeliveries = queueSettings.getMaxDeliveryAttempts();
 
@@ -145,8 +143,6 @@ public class MessageReferenceImpl implements MessageReference
       {
          long redeliveryDelay = queueSettings.getRedeliveryDelay();
          
-         log.info("redelivery delay " + redeliveryDelay);
-
          if (redeliveryDelay > 0)
          {
             scheduledDeliveryTime = System.currentTimeMillis() + redeliveryDelay;

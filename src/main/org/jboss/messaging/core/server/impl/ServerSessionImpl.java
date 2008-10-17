@@ -392,8 +392,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
    private void doRollback(final Transaction theTx) throws Exception
    {
-      log.info("rolling back");
-      
       boolean wasStarted = started;
 
       List<MessageReference> toCancel = new ArrayList<MessageReference>();
