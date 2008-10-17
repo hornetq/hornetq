@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.util;
 
@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.core.version.impl.VersionImpl;
 
@@ -37,38 +36,48 @@ import org.jboss.messaging.core.version.impl.VersionImpl;
  */
 public class VersionLoader
 {
-   private static final Logger log = Logger.getLogger(VersionLoader.class);
 
    public static Version load()
    {
       Properties versionProps = new Properties();
       InputStream in = VersionImpl.class.getClassLoader().getResourceAsStream("version.properties");
-      if (in == null)
-      {
-         //throw new RuntimeException("version.properties is not available");
-         
-         //FIXME
-         
-         log.warn("version.properties is not available");
-         
-         //FIXME - this is here temporarily because of a JUnit issue where the classloader seems to change??
-         return new VersionImpl("JBM 2.0.0 alpha", 2, 0, 0, 100, "Stilton");
-      }
       try
       {
-         versionProps.load(in);
-         String versionName = versionProps.getProperty("messaging.version.versionName");
-         int majorVersion = Integer.valueOf(versionProps.getProperty("messaging.version.majorVersion"));
-         int minorVersion = Integer.valueOf(versionProps.getProperty("messaging.version.minorVersion"));
-         int microVersion = Integer.valueOf(versionProps.getProperty("messaging.version.microVersion"));
-         int incrementingVersion = Integer.valueOf(versionProps.getProperty("messaging.version.incrementingVersion"));
-         String versionSuffix = versionProps.getProperty("messaging.version.versionSuffix");
-         return new VersionImpl(versionName, majorVersion, minorVersion, microVersion, incrementingVersion, versionSuffix);
+         if (in == null)
+         {
+            throw new RuntimeException("version.properties is not available");
+         }
+         try
+         {
+            versionProps.load(in);
+            String versionName = versionProps.getProperty("messaging.version.versionName");
+            int majorVersion = Integer.valueOf(versionProps.getProperty("messaging.version.majorVersion"));
+            int minorVersion = Integer.valueOf(versionProps.getProperty("messaging.version.minorVersion"));
+            int microVersion = Integer.valueOf(versionProps.getProperty("messaging.version.microVersion"));
+            int incrementingVersion = Integer.valueOf(versionProps.getProperty("messaging.version.incrementingVersion"));
+            String versionSuffix = versionProps.getProperty("messaging.version.versionSuffix");
+            return new VersionImpl(versionName,
+                                   majorVersion,
+                                   minorVersion,
+                                   microVersion,
+                                   incrementingVersion,
+                                   versionSuffix);
+         }
+         catch (IOException e)
+         {
+            //if we get here then the messaging hasnt been built properly and the version.properties is skewed in some way
+            throw new RuntimeException("unable to load version.properties", e);
+         }
       }
-      catch (IOException e)
+      finally
       {
-         //if we get here then the messaging hasnt been built properly and the version.properties is skewed in some way
-         throw new RuntimeException("unable to load version.properties", e);
+         try
+         {
+            in.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
       }
 
    }
