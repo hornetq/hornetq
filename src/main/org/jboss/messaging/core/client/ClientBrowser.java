@@ -18,41 +18,31 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
-package org.jboss.messaging.core.remoting.impl.wireformat;
+ */ 
 
-import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+package org.jboss.messaging.core.client;
+
+import org.jboss.messaging.core.exception.MessagingException;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  */
-public class SessionConsumerStartMessage extends PacketImpl
+public interface ClientBrowser
 {
-   private long consumerId;
+   long getID();
+   
+   void reset() throws MessagingException;
 
-   public SessionConsumerStartMessage(long consumerId)
-   {
-      super(SESS_CONSUMER_START);
-      this.consumerId = consumerId;
-   }
+   ClientMessage nextMessage() throws MessagingException;
+   
+   boolean hasNextMessage() throws MessagingException;
+      
+   void close() throws MessagingException;
+   
+   boolean isClosed();
 
-   public SessionConsumerStartMessage()
-   {
-      super(SESS_CONSUMER_START);
-   }
-
-   public long getConsumerId()
-   {
-      return consumerId;
-   }
-
-   public void encodeBody(MessagingBuffer buffer)
-   {
-      buffer.putLong(consumerId);
-   }
-
-   public void decodeBody(MessagingBuffer buffer)
-   {
-      consumerId = buffer.getLong();
-   }
+   void cleanUp();
 }

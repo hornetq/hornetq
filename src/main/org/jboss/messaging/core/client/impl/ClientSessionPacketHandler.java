@@ -22,15 +22,15 @@
 
 package org.jboss.messaging.core.client.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EXCEPTION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVETOKENS;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_MSG;
+
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EXCEPTION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_DELIVERY_COMPLETE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVETOKENS;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_MSG;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeliveryCompleteMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 
@@ -39,7 +39,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
  * A ClientSessionPacketHandler
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *
  */
 public class ClientSessionPacketHandler implements ChannelHandler
@@ -75,14 +74,6 @@ public class ClientSessionPacketHandler implements ChannelHandler
       
                clientSession.handleReceiveMessage(message.getConsumerID(), message.getClientMessage());
                
-               break;
-            }
-            case SESS_DELIVERY_COMPLETE:
-            {
-               SessionDeliveryCompleteMessage message = (SessionDeliveryCompleteMessage) packet;
-
-               clientSession.deliveryComplete(message.getConsumerID());
-
                break;
             }
             case EXCEPTION:

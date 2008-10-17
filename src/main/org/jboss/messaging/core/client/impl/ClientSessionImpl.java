@@ -21,6 +21,20 @@
  */
 package org.jboss.messaging.core.client.impl;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
+import org.jboss.messaging.core.client.ClientBrowser;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -42,6 +56,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMess
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateBrowserMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
@@ -74,18 +89,6 @@ import org.jboss.messaging.util.SimpleIDGenerator;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiterImpl;
 
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
 /*
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
@@ -95,7 +98,7 @@ import java.util.concurrent.Executors;
  * 
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * 
  * @version <tt>$Revision: 3603 $</tt> $Id: ClientSessionImpl.java 3603 2008-01-21 18:49:20Z timfox $
  * 
@@ -127,6 +130,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final Executor executor;
 
    private volatile RemotingConnection remotingConnection;
+
+   private final Map<Long, ClientBrowser> browsers = new ConcurrentHashMap<Long, ClientBrowser>();
 
    private final Map<Long, ClientProducerInternal> producers = new ConcurrentHashMap<Long, ClientProducerInternal>();
 
@@ -296,24 +301,21 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             filterString,
                             direct,
                             connectionFactory.getConsumerWindowSize(),
-                            connectionFactory.getConsumerMaxRate(),
-                            false);
+                            connectionFactory.getConsumerMaxRate());
    }
 
    public ClientConsumer createConsumer(final SimpleString queueName,
                                         final SimpleString filterString,
                                         final boolean direct,
                                         final int windowSize,
-                                        final int maxRate,
-                                        final boolean isBrowser) throws MessagingException
+                                        final int maxRate) throws MessagingException
    {
       checkClosed();
       
       SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(queueName,
                                                                               filterString,
                                                                               windowSize,
-                                                                              maxRate,
-                                                                              isBrowser);
+                                                                              maxRate);
 
       SessionCreateConsumerResponseMessage response = (SessionCreateConsumerResponseMessage)channel.sendBlocking(request);
 
@@ -351,8 +353,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                clientWindowSize,
                                                                direct,
                                                                executor,
-                                                               channel,
-                                                               isBrowser);
+                                                               channel);
 
       addConsumer(consumer);
 
@@ -365,19 +366,24 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return consumer;
    }
 
-   public ClientConsumer createBrowser(final SimpleString queueName) throws MessagingException
+   public ClientBrowser createBrowser(final SimpleString queueName) throws MessagingException
    {
       return createBrowser(queueName, null);
    }
 
-   public ClientConsumer createBrowser(final SimpleString queueName, final SimpleString filterString) throws MessagingException
+   public ClientBrowser createBrowser(final SimpleString queueName, final SimpleString filterString) throws MessagingException
    {
-      return createConsumer(queueName,
-                            filterString,
-                            false,
-                            connectionFactory.getConsumerWindowSize(),
-                            connectionFactory.getConsumerMaxRate(),
-                            true);
+      checkClosed();
+
+      SessionCreateBrowserMessage request = new SessionCreateBrowserMessage(queueName, filterString);
+
+      channel.sendBlocking(request);
+
+      ClientBrowser browser = new ClientBrowserImpl(this, idGenerator.generateID(), channel);
+
+      addBrowser(browser);
+
+      return browser;
    }
 
    public ClientProducer createProducer(final SimpleString address) throws MessagingException
@@ -629,6 +635,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       producers.put(producer.getID(), producer);
    }
 
+   public void addBrowser(final ClientBrowser browser)
+   {
+      browsers.put(browser.getID(), browser);
+   }
 
    public void removeConsumer(final ClientConsumerInternal consumer) throws MessagingException
    {
@@ -645,6 +655,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
    }
 
+   public void removeBrowser(final ClientBrowser browser)
+   {
+      browsers.remove(browser.getID());
+   }
+
    public Set<ClientProducerInternal> getProducers()
    {
       return new HashSet<ClientProducerInternal>(producers.values());
@@ -655,6 +670,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return new HashSet<ClientConsumerInternal>(consumers.values());
    }
 
+   public Set<ClientBrowser> getBrowsers()
+   {
+      return new HashSet<ClientBrowser>(browsers.values());
+   }
 
    public Map<SimpleString, ClientProducerInternal> getProducerCache()
    {
@@ -668,16 +687,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       if (consumer != null)
       {
          consumer.handleMessage(message);
-      }
-   }
-
-   public void deliveryComplete(long consumerID)
-   {
-      ClientConsumerInternal consumer = consumers.get(consumerID);
-
-      if (consumer != null)
-      {
-         consumer.deliveryComplete();
       }
    }
 
@@ -1144,6 +1153,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          producer.cleanUp();
       }
+
+      Set<ClientBrowser> browsersClone = new HashSet<ClientBrowser>(browsers.values());
+
+      for (ClientBrowser browser : browsersClone)
+      {
+         browser.cleanUp();
+      }
    }
 
    private void closeChildren() throws MessagingException
@@ -1160,6 +1176,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       for (ClientProducer producer : producersClone)
       {
          producer.close();
+      }
+
+      Set<ClientBrowser> browsersClone = new HashSet<ClientBrowser>(browsers.values());
+
+      for (ClientBrowser browser : browsersClone)
+      {
+         browser.close();
       }
    }
 

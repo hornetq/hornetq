@@ -12,6 +12,10 @@
 
 package org.jboss.messaging.core.client.impl;
 
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.Executor;
+
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -19,20 +23,14 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerStartMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerStopMessage;
 import org.jboss.messaging.util.Future;
-
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.concurrent.Executor;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision: 3603 $</tt> $Id: ClientConsumerImpl.java 3603 2008-01-21 18:49:20Z timfox $
  */
 public class ClientConsumerImpl implements ClientConsumerInternal
@@ -65,8 +63,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private final Runner runner = new Runner();
 
-   private final boolean isBrowser;
-
    private volatile Thread receiverThread;
 
    private volatile Thread onMessageThread;
@@ -77,8 +73,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private volatile int creditsToSend;
 
-   private boolean messagesWaiting = true;
-
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -87,8 +81,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                              final int clientWindowSize,
                              final boolean direct,
                              final Executor executor,
-                             final Channel channel,
-                             final boolean isBrowser)
+                             final Channel channel)
    {
       this.id = id;
 
@@ -101,8 +94,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       this.clientWindowSize = clientWindowSize;
 
       this.direct = direct;
-
-      this.isBrowser = isBrowser;
    }
 
    // ClientConsumer implementation
@@ -209,11 +200,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       checkClosed();
 
-      if (isBrowser)
-      {
-         throw new MessagingException(MessagingException.ILLEGAL_STATE,
-                                      "Cannot set MessageHandler - consumer is in browser mode");
-      }
       if (receiverThread != null)
       {
          throw new MessagingException(MessagingException.ILLEGAL_STATE,
@@ -251,15 +237,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   public void deliveryComplete()
-   {
-      synchronized (this)
-      {
-         messagesWaiting = false;
-         notify();
-      }
-   }
-
    public boolean isClosed()
    {
       return closed;
@@ -268,82 +245,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public boolean isDirect()
    {
       return direct;
-   }
-
-   /**
-    * if there are messages in the buffer then we just return true. If we have received all of the messages being sent we
-    * return false. If there are no messages in the buffer and still some in transit then we wait until they have been delivered.
-    * @return
-    * @throws Exception
-    */
-   public boolean awaitMessage(long timeOut) throws Exception
-   {
-      if (!buffer.isEmpty())
-      {
-         return true;
-      }
-      else
-      {
-         // we only need to syncronize if the buffer is empty
-         synchronized (this)
-         {
-            if (!buffer.isEmpty())
-            {
-               return true;
-            }
-            if (messagesWaiting)
-            {
-               wait(timeOut);
-            }
-            return !buffer.isEmpty();
-         }
-      }
-   }
-
-   public void stop() throws MessagingException
-   {
-      if (!isBrowser)
-      {
-         throw new MessagingException(MessagingException.ILLEGAL_STATE, "Cannot stop Consumer in non browser mode");
-      }
-      synchronized (this)
-      {
-         // if there are still messages in transit tell the server to stop and wait
-         if (messagesWaiting)
-         {
-            // tell the server to stop
-            channel.send(new SessionConsumerStopMessage(id));
-            do
-            {
-               try
-               {
-                  wait();
-               }
-               catch (InterruptedException e)
-               {
-                  throw new IllegalStateException(e.getMessage());
-               }
-            }
-            while (messagesWaiting);
-         }
-         buffer.clear();
-      }
-   }
-
-   public void start() throws MessagingException
-   {
-      if (!isBrowser)
-      {
-         throw new MessagingException(MessagingException.ILLEGAL_STATE, "Cannot stop Consumer in non browser mode");
-      }
-      messagesWaiting = true;
-      channel.send(new SessionConsumerStartMessage(id));
-   }
-
-   public void restart() throws MessagingException
-   {
-      stop();
-      start();
    }
 
    // ClientConsumerInternal implementation
@@ -422,7 +323,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       return creditsToSend;
    }
-
+   
    // Public
    // ---------------------------------------------------------------------------------------
 
@@ -553,12 +454,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          synchronized (this)
          {
             if (receiverThread != null)
-            {
-               // Wake up any receive() thread that might be waiting
-               notify();
-
-               messagesWaiting = false;
-               
+            {              
                // Wake up any receive() thread that might be waiting
                notify();
             }

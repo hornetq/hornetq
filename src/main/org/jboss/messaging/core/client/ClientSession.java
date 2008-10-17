@@ -22,13 +22,13 @@
 
 package org.jboss.messaging.core.client;
 
+import javax.transaction.xa.XAResource;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.util.SimpleString;
-
-import javax.transaction.xa.XAResource;
 
 /*
  * 
@@ -36,7 +36,7 @@ import javax.transaction.xa.XAResource;
  * 
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * 
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  */
 public interface ClientSession extends XAResource
 {
@@ -64,12 +64,11 @@ public interface ClientSession extends XAResource
                                  SimpleString filterString,
                                  boolean direct,
                                  int windowSize,
-                                 int maxRate,
-                                 boolean isBrowser) throws MessagingException;
+                                 int maxRate) throws MessagingException;
 
-   ClientConsumer createBrowser(SimpleString queueName, SimpleString filterString) throws MessagingException;
+   ClientBrowser createBrowser(SimpleString queueName, SimpleString filterString) throws MessagingException;
 
-   ClientConsumer createBrowser(SimpleString queueName) throws MessagingException;
+   ClientBrowser createBrowser(SimpleString queueName) throws MessagingException;
 
    ClientProducer createProducer(SimpleString address) throws MessagingException;
 

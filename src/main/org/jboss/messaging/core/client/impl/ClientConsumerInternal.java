@@ -30,7 +30,6 @@ import org.jboss.messaging.core.client.ClientMessage;
  * A ClientConsumerInternal
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="andy.taylor@jboss.org">Andy Taylor</a>
  *
  */
 public interface ClientConsumerInternal extends ClientConsumer
@@ -48,6 +47,4 @@ public interface ClientConsumerInternal extends ClientConsumer
    int getCreditsToSend();
 
    void cleanUp() throws Exception;
-
-   void deliveryComplete();
 }

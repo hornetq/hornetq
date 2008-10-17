@@ -25,13 +25,14 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 
-
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * 
  * @version <tt>$Revision$</tt>
+ * 
  */
-public class SessionCreateConsumerMessage extends PacketImpl
+public class SessionCreateBrowserMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
@@ -40,44 +41,25 @@ public class SessionCreateConsumerMessage extends PacketImpl
    private SimpleString queueName;
    
    private SimpleString filterString;
-   
-   private int windowSize;
-   
-   private int maxRate;
-      
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateConsumerMessage(final SimpleString queueName, final SimpleString filterString,   		                              
-   		                              final int windowSize, final int maxRate)
+   public SessionCreateBrowserMessage(final SimpleString queueName, final SimpleString filterString)
    {
-      super(SESS_CREATECONSUMER);
+      super(SESS_CREATEBROWSER);
 
       this.queueName = queueName;
       this.filterString = filterString;
-      this.windowSize = windowSize;
-      this.maxRate = maxRate;
    }
    
-   public SessionCreateConsumerMessage()
+   public SessionCreateBrowserMessage()
    {
-      super(SESS_CREATECONSUMER);   
-   }   
-
-   // Public --------------------------------------------------------
-
-   @Override
-   public String toString()
-   {
-      StringBuffer buff = new StringBuffer(getParentString());
-      buff.append(", queueName=" + queueName);
-      buff.append(", filterString=" + filterString);
-      buff.append(", windowSize=" + windowSize);
-      buff.append(", maxRate=" + maxRate);
-      buff.append("]");
-      return buff.toString();
+      super(SESS_CREATEBROWSER);
    }
+   
+   // Public --------------------------------------------------------
 
    public SimpleString getQueueName()
    {
@@ -88,49 +70,39 @@ public class SessionCreateConsumerMessage extends PacketImpl
    {
       return filterString;
    }
-
-   public int getWindowSize()
-   {
-   	return windowSize;
-   }
-   
-   public int getMaxRate()
-   {
-   	return maxRate;
-   }
    
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putSimpleString(queueName);
       buffer.putNullableSimpleString(filterString);
-      buffer.putInt(windowSize);
-      buffer.putInt(maxRate);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
       queueName = buffer.getSimpleString();
       filterString = buffer.getNullableSimpleString();
-      windowSize = buffer.getInt();
-      maxRate = buffer.getInt();
    }
 
+   @Override
+   public String toString()
+   {
+      return getParentString() + ", queueName=" + queueName + ", filterString="
+            + filterString + "]";
+   }
+   
    public boolean equals(Object other)
    {
-      if (other instanceof SessionCreateConsumerMessage == false)
+      if (other instanceof SessionCreateBrowserMessage == false)
       {
          return false;
       }
             
-      SessionCreateConsumerMessage r = (SessionCreateConsumerMessage)other;
+      SessionCreateBrowserMessage r = (SessionCreateBrowserMessage)other;
       
-      return super.equals(other) && 
-             this.queueName.equals(r.queueName) &&
-             this.filterString == null ? r.filterString == null : this.filterString.equals(r.filterString) &&
-             this.windowSize == r.windowSize &&
-             this.maxRate == r.maxRate;                  
+      return super.equals(other) && this.queueName.equals(r.queueName) &&
+             this.filterString == null ? r.filterString == null : this.filterString.equals(r.filterString);
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -79,137 +79,237 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
    // Public --------------------------------------------------------
 
+   class RunnableTestA extends RunnableTest
+   {
+      public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
+      {
+         doTestA(sf, threadNum);
+      }
+   }
+   
+   class RunnableTestB extends RunnableTest
+   {
+      public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
+      {
+         doTestB(sf, threadNum);
+      }
+   }
+   
+   class RunnableTestC extends RunnableTest
+   {
+      public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
+      {
+         doTestC(sf, threadNum);
+      }
+   }
+   
+   class RunnableTestD extends RunnableTest
+   {
+      public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
+      {
+         doTestD(sf, threadNum);
+      }
+   }
+   
+   class RunnableTestE extends RunnableTest
+   {
+      public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
+      {
+         doTestE(sf, threadNum);
+      }
+   }
+   
+   class RunnableTestF extends RunnableTest
+   {
+      public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
+      {
+         doTestF(sf, threadNum);
+      }
+   }
+   
+   class RunnableTestG extends RunnableTest
+   {
+      public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
+      {
+         doTestG(sf, threadNum);
+      }
+   }
+   
+   class RunnableTestH extends RunnableTest
+   {
+      public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
+      {
+         doTestH(sf, threadNum);
+      }
+   }
+   
+   class RunnableTestI extends RunnableTest
+   {
+      public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
+      {
+         doTestI(sf, threadNum);
+      }
+   }
+   
+   class RunnableTestJ extends RunnableTest
+   {
+      public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
+      {
+         doTestJ(sf, threadNum);
+      }
+   }
+   
+   class RunnableTestK extends RunnableTest
+   {
+      public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
+      {
+         doTestK(sf, threadNum);
+      }
+   }
+   
+   class RunnableTestL extends RunnableTest
+   {
+      public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
+      {
+         doTestL(sf);
+      }
+   }
+   
+   public static void main(String[] args)
+   {
+      log.info("Starting tests");
+      
+      try
+      {
+         MultiThreadRandomFailoverTest test = new MultiThreadRandomFailoverTest(); 
+         
+         log.info("starting a");
+         test.setUp();
+         test.testA();
+         test.tearDown();
+         
+         log.info("starting b");
+         test.setUp();
+         test.testB();
+         test.tearDown();
+         
+         log.info("starting c");
+         test.setUp();
+         test.testC();
+         test.tearDown();
+         
+         log.info("starting d");
+         test.setUp();
+         test.testD();
+         test.tearDown();
+         
+         log.info("starting e");
+         test.setUp();
+         test.testE();
+         test.tearDown();
+         
+         log.info("starting f");
+         test.setUp();
+         test.testF();
+         test.tearDown();
+         
+         log.info("starting g");
+         test.setUp();
+         test.testG();
+         test.tearDown();
+         
+         log.info("starting h");
+         test.setUp();
+         test.testH();
+         test.tearDown();
+         
+         log.info("starting i");
+         test.setUp();
+         test.testI();
+         test.tearDown();
+         
+         log.info("starting j");
+         test.setUp();
+         test.testJ();
+         test.tearDown();
+         
+         log.info("starting k");
+         test.setUp();
+         test.testK();
+         test.tearDown();
+         
+         log.info("starting l");
+         test.setUp();
+         test.testL();
+         test.tearDown();
+         
+         log.info("done");
+      }
+      catch (Throwable t)
+      {
+         log.error("Tests failed", t);
+      }
+   }
+
 
    public void testA() throws Exception
    {
-      runTestMultipleThreads(new RunnableTest()
-      {
-         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
-         {
-            doTestA(sf, threadNum);
-         }
-      }, NUM_THREADS);
+      runTestMultipleThreads(new RunnableTestA(), NUM_THREADS);
    }
    
    public void testB() throws Exception
    {
-      runTestMultipleThreads(new RunnableTest()
-      {
-         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
-         {
-            doTestB(sf, threadNum);
-         }
-      }, NUM_THREADS);
+      runTestMultipleThreads(new RunnableTestB(), NUM_THREADS);
    }
    
    public void testC() throws Exception
    {
-      runTestMultipleThreads(new RunnableTest()
-      {
-         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
-         {
-            doTestC(sf, threadNum);
-         }
-      }, NUM_THREADS);
+      runTestMultipleThreads(new RunnableTestC(), NUM_THREADS);
    }
    
    public void testD() throws Exception
    {
-      runTestMultipleThreads(new RunnableTest()
-      {
-         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
-         {
-            doTestD(sf, threadNum);
-         }
-      }, NUM_THREADS);
+      runTestMultipleThreads(new RunnableTestD(), NUM_THREADS);
    }
-
+   
    public void testE() throws Exception
    {
-      runTestMultipleThreads(new RunnableTest()
-      {
-         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
-         {
-            doTestE(sf, threadNum);
-         }
-      }, NUM_THREADS);
+      runTestMultipleThreads(new RunnableTestE(), NUM_THREADS);
    }
-
+   
    public void testF() throws Exception
    {
-      runTestMultipleThreads(new RunnableTest()
-      {
-         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
-         {
-            doTestF(sf, threadNum);
-         }
-      }, NUM_THREADS);
+      runTestMultipleThreads(new RunnableTestF(), NUM_THREADS);
    }
-
+   
    public void testG() throws Exception
    {
-      runTestMultipleThreads(new RunnableTest()
-      {
-         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
-         {
-            doTestG(sf, threadNum);
-         }
-      }, NUM_THREADS);
+      runTestMultipleThreads(new RunnableTestG(), NUM_THREADS);
    }
    
    public void testH() throws Exception
    {
-      runTestMultipleThreads(new RunnableTest()
-      {
-         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
-         {
-            doTestH(sf, threadNum);
-         }
-      }, NUM_THREADS);
+      runTestMultipleThreads(new RunnableTestH(), NUM_THREADS);
    }
    
    public void testI() throws Exception
    {
-      runTestMultipleThreads(new RunnableTest()
-      {
-         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
-         {
-            doTestI(sf, threadNum);
-         }
-      }, NUM_THREADS);
+      runTestMultipleThreads(new RunnableTestI(), NUM_THREADS);
    }
    
    public void testJ() throws Exception
    {
-      runTestMultipleThreads(new RunnableTest()
-      {
-         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
-         {
-            doTestJ(sf, threadNum);
-         }
-      }, NUM_THREADS);
+      runTestMultipleThreads(new RunnableTestJ(), NUM_THREADS);
    }
    
    public void testK() throws Exception
    {
-      runTestMultipleThreads(new RunnableTest()
-      {
-         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
-         {
-            doTestK(sf, threadNum);
-         }
-      }, NUM_THREADS);
+      runTestMultipleThreads(new RunnableTestK(), NUM_THREADS);
    }
    
    public void testL() throws Exception
    {
-      runTestMultipleThreads(new RunnableTest()
-      {
-         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
-         {
-            doTestL(sf);
-         }
-      }, NUM_THREADS);
+      runTestMultipleThreads(new RunnableTestL(), NUM_THREADS);
    }
    
    // Package protected ---------------------------------------------
@@ -1277,7 +1377,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
    protected int getNumIterations()
    {
-      return 20;
+      return 2;
    }
    
    protected void setUp() throws Exception

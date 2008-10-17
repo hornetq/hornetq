@@ -22,11 +22,8 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.filter.Filter;
@@ -35,7 +32,6 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.DelayedResult;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeliveryCompleteMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
 import org.jboss.messaging.core.server.HandleStatus;
@@ -52,7 +48,6 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * 
  * @version <tt>$Revision: 3783 $</tt> $Id: ServerConsumerImpl.java 3783 2008-02-25 12:15:14Z timfox $
  */
@@ -75,13 +70,13 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final Queue messageQueue;
 
-   protected final Filter filter;
+   private final Filter filter;
 
-   protected final ServerSession session;
+   private final ServerSession session;
 
    private final Object startStopLock = new Object();
 
-   protected final AtomicInteger availableCredits;
+   private final AtomicInteger availableCredits;
 
    private boolean started;
 
@@ -93,17 +88,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final java.util.Queue<MessageReference> deliveringRefs = new ConcurrentLinkedQueue<MessageReference>();
 
-   protected final Channel channel;
-
-   private boolean browseOnly;
-
-   private Iterator<MessageReference> iterator;
-
-   private DeliveryRunner deliveryRunner = new DeliveryRunner();
-
-   private AtomicBoolean waitingToDeliver = new AtomicBoolean(false);
-
-   private boolean delivering = false;
+   private final Channel channel;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -118,13 +103,10 @@ public class ServerConsumerImpl implements ServerConsumer
                              final StorageManager storageManager,
                              final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                              final PostOffice postOffice,
-                             final Channel channel,
-                             final boolean browseOnly)
+                             final Channel channel)
    {
       this.id = id;
-
-      this.browseOnly = browseOnly;
-
+      
       this.messageQueue = messageQueue;
 
       this.filter = filter;
@@ -150,10 +132,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       this.channel = channel;
 
-      if (!browseOnly)
-      {
-         messageQueue.addConsumer(this);
-      }
+      messageQueue.addConsumer(this);
    }
 
    // ServerConsumer implementation
@@ -342,26 +321,6 @@ public class ServerConsumerImpl implements ServerConsumer
       }
    }
 
-   public void stop() throws Exception
-   {
-      delivering = false;
-   }
-
-   public void start()
-   {
-      iterator = getQueue().list(filter).iterator();
-      delivering = true;
-      promptDelivery();
-   }
-
-   public void deliver(Executor executor)
-   {
-      if (delivering && waitingToDeliver.compareAndSet(false, true))
-      {
-         executor.execute(deliveryRunner);
-      }
-   }
-
    // Public
    // -----------------------------------------------------------------------------
 
@@ -370,44 +329,10 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private void promptDelivery()
    {
-      if (browseOnly)
-      {
-         session.promptDelivery(this);
-      }
-      else
-      {
-         session.promptDelivery(messageQueue);
-      }
+      session.promptDelivery(messageQueue);
    }
 
    // Inner classes
    // ------------------------------------------------------------------------
-   private class DeliveryRunner implements Runnable
-   {
-      public void run()
-      {
 
-         waitingToDeliver.set(false);
-
-         synchronized (ServerConsumerImpl.this)
-         {
-            while (delivering && iterator.hasNext() && !(availableCredits != null && availableCredits.get() <= 0))
-            {
-               MessageReference ref = iterator.next();
-               if (availableCredits != null)
-               {
-                  availableCredits.addAndGet(-ref.getMessage().getEncodeSize());
-               }
-               channel.send(new SessionReceiveMessage(id, ref.getMessage(), 1));
-            }
-            // inform the client there are no more messages
-            if (!iterator.hasNext() || !delivering)
-            {
-               channel.send(new SessionDeliveryCompleteMessage(id));
-               iterator = null;
-            }
-         }
-
-      }
-   }
 }

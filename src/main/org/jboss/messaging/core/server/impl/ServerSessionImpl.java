@@ -104,6 +104,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
    private final Map<Long, ServerConsumer> consumers = new ConcurrentHashMap<Long, ServerConsumer>();
 
+   private final Map<Long, ServerBrowserImpl> browsers = new ConcurrentHashMap<Long, ServerBrowserImpl>();
+
    private final Map<Long, ServerProducer> producers = new ConcurrentHashMap<Long, ServerProducer>();
 
    private final Executor executor;
@@ -218,6 +220,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       return id;
    }
 
+   public void removeBrowser(final ServerBrowserImpl browser) throws Exception
+   {
+      if (browsers.remove(browser.getID()) == null)
+      {
+         throw new IllegalStateException("Cannot find browser with id " + browser.getID() + " to remove");
+      }
+   }
+
    public void removeConsumer(final ServerConsumer consumer) throws Exception
    {
       if (consumers.remove(consumer.getID()) == null)
@@ -269,6 +279,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       consumers.clear();
 
+      Set<ServerBrowserImpl> browsersClone = new HashSet<ServerBrowserImpl>(browsers.values());
+
+      for (ServerBrowserImpl browser : browsersClone)
+      {
+         browser.close();
+      }
+
+      browsers.clear();
+
       Set<ServerProducer> producersClone = new HashSet<ServerProducer>(producers.values());
 
       for (ServerProducer producer : producersClone)
@@ -284,21 +303,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    public void promptDelivery(final Queue queue)
    {
       queue.deliverAsync(executor);
-   }
-
-   public void promptDelivery(ServerConsumer consumer)
-   {
-      consumer.deliver(executor);
-   }
-
-   public void resetConsumer(long consumerID) throws Exception
-   {
-      consumers.get(consumerID).stop();
-   }
-
-   public void reStartConsumer(long consumerID)
-   {
-      consumers.get(consumerID).start();
    }
 
    public void send(final ServerMessage msg) throws Exception
@@ -862,8 +866,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    public SessionCreateConsumerResponseMessage createConsumer(final SimpleString queueName,
                                                               final SimpleString filterString,
                                                               int windowSize,
-                                                              int maxRate,
-                                                              final boolean isBrowser) throws Exception
+                                                              int maxRate) throws Exception
    {
       Binding binding = postOffice.getBinding(queueName);
 
@@ -904,8 +907,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
                                                        storageManager,
                                                        queueSettingsRepository,
                                                        postOffice,
-                                                       channel,
-                                                       isBrowser);
+                                                       channel);
 
       SessionCreateConsumerResponseMessage response = new SessionCreateConsumerResponseMessage(windowSize);
 
@@ -971,6 +973,25 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       return new SessionBindingQueryResponseMessage(exists, queueNames);
    }
 
+   public void createBrowser(final SimpleString queueName, final SimpleString filterString) throws Exception
+   {
+      Binding binding = postOffice.getBinding(queueName);
+
+      if (binding == null)
+      {
+         throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
+      }
+
+      securityStore.check(binding.getAddress(), CheckType.READ, this);
+
+      ServerBrowserImpl browser = new ServerBrowserImpl(idGenerator.generateID(),
+                                                        this,
+                                                        binding.getQueue(),
+                                                        filterString == null ? null : filterString.toString());
+
+      browsers.put(browser.getID(), browser);
+   }
+
    /**
     * Create a producer for the specified address
     *
@@ -1020,6 +1041,26 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          groupId = simpleStringIdGenerator.generateID();
       }
       return new SessionCreateProducerResponseMessage(initialCredits, maxRateToUse, groupId);
+   }
+
+   public boolean browserHasNextMessage(final long browserID) throws Exception
+   {
+      return browsers.get(browserID).hasNextMessage();
+   }
+
+   public ServerMessage browserNextMessage(final long browserID) throws Exception
+   {
+      return browsers.get(browserID).nextMessage();
+   }
+
+   public void browserReset(final long browserID) throws Exception
+   {
+      browsers.get(browserID).reset();
+   }
+
+   public void closeBrowser(final long browserID) throws Exception
+   {
+      browsers.get(browserID).close();
    }
 
    public void closeConsumer(final long consumerID) throws Exception

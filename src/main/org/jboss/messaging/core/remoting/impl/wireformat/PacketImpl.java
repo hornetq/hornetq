@@ -20,7 +20,6 @@ import org.jboss.messaging.util.DataConstants;
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @version <tt>$Revision$</tt>
  */
 public class PacketImpl implements Packet
@@ -70,9 +69,9 @@ public class PacketImpl implements Packet
 
    public static final byte SESS_CREATEPRODUCER_RESP = 43;
 
-   public static final byte SESS_CONSUMER_STOP = 44;
+   public static final byte SESS_CREATEBROWSER = 44;
 
-   public static final byte SESS_CONSUMER_START = 45;
+   public static final byte SESS_CREATEBROWSER_RESP = 45;
 
    public static final byte SESS_ACKNOWLEDGE = 46;
 
@@ -95,6 +94,16 @@ public class PacketImpl implements Packet
    public static final byte SESS_BINDINGQUERY = 55;
 
    public static final byte SESS_BINDINGQUERY_RESP = 56;
+
+   public static final byte SESS_BROWSER_MESSAGE = 57;
+
+   public static final byte SESS_BROWSER_RESET = 58;
+
+   public static final byte SESS_BROWSER_HASNEXTMESSAGE = 59;
+
+   public static final byte SESS_BROWSER_HASNEXTMESSAGE_RESP = 60;
+
+   public static final byte SESS_BROWSER_NEXTMESSAGE = 61;
 
    public static final byte SESS_XA_START = 62;
 
@@ -144,6 +153,8 @@ public class PacketImpl implements Packet
 
    public static final byte SESS_PRODUCER_CLOSE = 85;
 
+   public static final byte SESS_BROWSER_CLOSE = 86;
+
    public static final byte SESS_RECEIVE_MSG = 87;
 
    public static final byte SESS_MANAGEMENT_SEND = 88;
@@ -153,8 +164,6 @@ public class PacketImpl implements Packet
    public static final byte SESS_FAILOVER_COMPLETE = 90;
    
    public static final byte SESS_REPLICATE_DELIVERY = 91;
-
-   public static final byte SESS_DELIVERY_COMPLETE = 92;
 
    // Static --------------------------------------------------------
 
