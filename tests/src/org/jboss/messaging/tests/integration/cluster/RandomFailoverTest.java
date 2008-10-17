@@ -308,7 +308,7 @@ public class RandomFailoverTest extends TestCase
 
             try
             {
-               message.processed();
+               message.acknowledge();
             }
             catch (MessagingException me)
             {
@@ -840,7 +840,7 @@ public class RandomFailoverTest extends TestCase
 
             assertEquals(i, msg.getProperty(new SimpleString("count")));
 
-            msg.processed();
+            msg.acknowledge();
          }
       }
 
@@ -933,7 +933,7 @@ public class RandomFailoverTest extends TestCase
 
             assertEquals(i, msg.getProperty(new SimpleString("count")));
 
-            msg.processed();
+            msg.acknowledge();
          }
       }
 
@@ -1039,7 +1039,7 @@ public class RandomFailoverTest extends TestCase
 
             assertEquals(i, msg.getProperty(new SimpleString("count")));
 
-            msg.processed();
+            msg.acknowledge();
          }
       }
 
@@ -1065,7 +1065,7 @@ public class RandomFailoverTest extends TestCase
 
             assertEquals(i, msg.getProperty(new SimpleString("count")));
 
-            msg.processed();
+            msg.acknowledge();
          }
       }
 
@@ -1179,7 +1179,7 @@ public class RandomFailoverTest extends TestCase
 
             assertEquals(i, msg.getProperty(new SimpleString("count")));
 
-            msg.processed();
+            msg.acknowledge();
          }
       }
 
@@ -1208,7 +1208,7 @@ public class RandomFailoverTest extends TestCase
 
             assertEquals(i, msg.getProperty(new SimpleString("count")));
 
-            msg.processed();
+            msg.acknowledge();
          }
       }
 
@@ -1274,7 +1274,7 @@ public class RandomFailoverTest extends TestCase
 
       assertNotNull(message2);
 
-      message2.processed();
+      message2.acknowledge();
 
       sess.close();
 
@@ -1310,7 +1310,7 @@ public class RandomFailoverTest extends TestCase
 
       assertNotNull(message2);
 
-      message2.processed();
+      message2.acknowledge();
 
       sess.close();
 

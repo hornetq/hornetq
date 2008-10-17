@@ -105,7 +105,7 @@ public class CoreClientTest extends TestCase
 
          assertEquals("testINVMCoreClient", message2.getBody().getString());
          
-         message2.processed();
+         message2.acknowledge();
       }
       
       session.close();

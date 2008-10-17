@@ -79,7 +79,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
       {
          try
          {
-            message.processed();
+            message.acknowledge();
          }
          catch (MessagingException e)
          {
@@ -119,7 +119,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
             //We don't want to call this if the connection/session was closed from inside onMessage
             if (!session.getCoreSession().isClosed() && !this.transactedOrClientAck)
             {
-               message.processed();
+               message.acknowledge();
             }
          }
          catch (MessagingException e)

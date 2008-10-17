@@ -243,7 +243,7 @@ public class AutoGroupClientTest extends TestCase
          messagesReceived++;
          try
          {
-            message.processed();
+            message.acknowledge();
          }
          catch (MessagingException e)
          {

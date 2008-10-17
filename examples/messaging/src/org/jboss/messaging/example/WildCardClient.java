@@ -66,10 +66,10 @@ public class WildCardClient
          log.info("message sent to " + queue2);
          clientSession.start();
          ClientMessage msg = clientConsumer.receive(5000);
-         msg.processed();
+         msg.acknowledge();
          log.info("message received: " + msg.getBody().getString());
          ClientMessage msg2 = clientConsumer.receive(5000);
-         msg2.processed();
+         msg2.acknowledge();
          log.info("message received: " + msg2.getBody().getString());
       }
       catch(Exception e)

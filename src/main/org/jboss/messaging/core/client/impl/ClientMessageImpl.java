@@ -50,10 +50,6 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
    {      
       super();
       
-      this.session = session;
-      
-      this.consumerID = consumerID;
-      
       this.deliveryCount = deliveryCount;
    }
    
@@ -98,7 +94,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
       return this.deliveryCount;
    }
    
-   public void processed() throws MessagingException
+   public void acknowledge() throws MessagingException
    {
       if (session != null)
       {

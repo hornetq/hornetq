@@ -272,7 +272,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
          {
             try
             {
-               message.processed();
+               message.acknowledge();
             }
             catch (MessagingException me)
             {
@@ -390,7 +390,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
          {
             try
             {
-               message.processed();
+               message.acknowledge();
             }
             catch (MessagingException me)
             {
@@ -523,7 +523,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
          {
             try
             {
-               message.processed();
+               message.acknowledge();
             }
             catch (MessagingException me)
             {
@@ -686,7 +686,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
          {
             try
             {
-               message.processed();
+               message.acknowledge();
             }
             catch (MessagingException me)
             {
@@ -830,7 +830,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
             assertNotNull(msg);
 
-            msg.processed();
+            msg.acknowledge();
          }
       }
 
@@ -911,7 +911,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
             assertNotNull(msg);
 
-            msg.processed();
+            msg.acknowledge();
          }
       }
 
@@ -1005,7 +1005,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
             assertNotNull(msg);
 
-            msg.processed();
+            msg.acknowledge();
          }
       }
 
@@ -1022,7 +1022,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
             assertNotNull(msg);
 
-            msg.processed();
+            msg.acknowledge();
          }
       }
 
@@ -1123,7 +1123,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
          {            
             ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
 
-            msg.processed();
+            msg.acknowledge();
          }
       }
 
@@ -1138,7 +1138,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
          {
             ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
 
-            msg.processed();
+            msg.acknowledge();
          }
       }
 
@@ -1194,7 +1194,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
       assertNotNull(message2);
 
-      message2.processed();
+      message2.acknowledge();
 
       sess.close();
 
@@ -1230,7 +1230,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
       assertNotNull(message2);
 
-      message2.processed();
+      message2.acknowledge();
 
       sess.close();
 

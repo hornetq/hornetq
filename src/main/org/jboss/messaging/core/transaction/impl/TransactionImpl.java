@@ -354,20 +354,20 @@ public class TransactionImpl implements Transaction
       
       for (MessageReference ref : acknowledgements)
       {
-         Queue queue = ref.getQueue();
-
-         ServerMessage message = ref.getMessage();
+//         Queue queue = ref.getQueue();
+//
+//         ServerMessage message = ref.getMessage();
 
          // Putting back the size on pagingManager, and reverting the counters
-         if (message.incrementReference(message.isDurable() && queue.isDurable()) == 1)
-         {
-            pagingManager.addSize(message);
-         }
+         
+         //FIXME - why????
+         //Surely paging happens before routing, so cancellation shouldn't effect anything......
+//         if (message.incrementReference(message.isDurable() && queue.isDurable()) == 1)
+//         {
+//            pagingManager.addSize(message);
+//         }
 
-         if (ref.cancel(storageManager, postOffice, queueSettingsRepository))
-         {
-            toCancel.add(ref);
-         } 
+         toCancel.add(ref);         
       }
       
       clear();

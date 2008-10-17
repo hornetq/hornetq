@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -216,6 +217,18 @@ public class ServerConsumerImpl implements ServerConsumer
       session.removeConsumer(this);
 
       LinkedList<MessageReference> refs = cancelRefs();
+      
+      Iterator<MessageReference> iter = refs.iterator();
+      
+      while (iter.hasNext())
+      {
+         MessageReference ref = iter.next();
+         
+         if (!ref.cancel(storageManager, postOffice, queueSettingsRepository))
+         {
+            iter.remove();
+         }
+      }
 
       if (!refs.isEmpty())
       {

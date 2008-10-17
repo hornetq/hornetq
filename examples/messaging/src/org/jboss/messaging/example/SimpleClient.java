@@ -58,7 +58,7 @@ public class SimpleClient
          clientSession.start();
          ClientMessage msg = clientConsumer.receive(5000);
          System.out.println("msg.getPayload() = " + msg.getBody().getString());
-         msg.processed();
+         msg.acknowledge();
       }
       catch(Exception e)
       {

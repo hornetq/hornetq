@@ -125,7 +125,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
          assertEquals("aardvarks", message2.getBody().getString());
          assertEquals(i, message2.getProperty(new SimpleString("count")));
 
-         message2.processed();
+         message2.acknowledge();
       }
 
       //ClientMessage message3 = consumer.receive(250);
@@ -179,7 +179,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
          assertEquals(i, message2.getProperty(new SimpleString("count")));
 
-         message2.processed();
+         message2.acknowledge();
       }
 
       session.close();
@@ -198,7 +198,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
          assertEquals(i, message2.getProperty(new SimpleString("count")));
 
-         message2.processed();
+         message2.acknowledge();
       }
 
       ClientMessage message3 = consumer.receive(250);
@@ -252,7 +252,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
          assertEquals(i, message2.getProperty(new SimpleString("count")));
 
-         message2.processed();
+         message2.acknowledge();
       }
 
       session.close();
@@ -274,7 +274,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
          assertEquals(i, message2.getProperty(new SimpleString("count")));
 
-         message2.processed();
+         message2.acknowledge();
       }
 
       ClientMessage message3 = consumer.receive(250);
@@ -328,7 +328,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
          assertEquals(i, message2.getProperty(new SimpleString("count")));
 
-         message2.processed();
+         message2.acknowledge();
       }
 
       session.close();
@@ -391,7 +391,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
          assertEquals(i, message2.getProperty(new SimpleString("count")));
 
-         message2.processed();
+         message2.acknowledge();
       }
 
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
@@ -472,7 +472,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
          assertEquals(i, message2.getProperty(new SimpleString("count")));
 
-         message2.processed();
+         message2.acknowledge();
       }
 
       session.close();
@@ -560,7 +560,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
             
             
 
-            message2.processed();
+            message2.acknowledge();
          }
 
          ClientMessage message3 = cons.receive(250);
@@ -696,7 +696,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
          assertEquals(i, message2.getProperty(new SimpleString("count")));
 
-         message2.processed();
+         message2.acknowledge();
       }
 
       RemotingConnection conn2 = ((ClientSessionImpl)session).getConnection();

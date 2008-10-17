@@ -95,7 +95,7 @@ public class ManagementClient
             }
             try
             {
-               message.processed();
+               message.acknowledge();
             }
             catch (MessagingException e)
             {
@@ -170,7 +170,7 @@ public class ManagementClient
       do
       {
          m = clientConsumer.receive(5000);
-         m.processed();
+         m.acknowledge();
       }
       while (m != null);
       clientSession.commit();

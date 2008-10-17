@@ -361,7 +361,7 @@ public class JBossMessageConsumerTest extends TestCase
       expect(session.getCoreSession()).andStubReturn(clientSession);
       ClientConsumer clientConsumer = createStrictMock(ClientConsumer.class);
       ClientMessage clientMessage = createStrictMock(ClientMessage.class);
-      clientMessage.processed();
+      clientMessage.acknowledge();
       expect(clientMessage.getType()).andReturn(JBossMessage.TYPE);
       MessagingBuffer body = createStrictMock(MessagingBuffer.class);
       expect(clientMessage.getBody()).andStubReturn(body );

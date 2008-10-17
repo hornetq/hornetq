@@ -66,7 +66,7 @@ public class ScheduledMessageExample
          clientSession.start();
          ClientMessage msg = clientConsumer.receive(7000);
          log.info("message received at " + df.format(Calendar.getInstance().getTime()));
-         msg.processed();
+         msg.acknowledge();
       }
       catch(Exception e)
       {

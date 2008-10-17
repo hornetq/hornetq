@@ -392,6 +392,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
    private void doRollback(final Transaction theTx) throws Exception
    {
+      log.info("rolling back");
+      
       boolean wasStarted = started;
 
       List<MessageReference> toCancel = new ArrayList<MessageReference>();
@@ -425,18 +427,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       for (MessageReference ref : rolledBack)
       {
-         Queue queue = ref.getQueue();
-
-         LinkedList<MessageReference> list = queueMap.get(queue);
-
-         if (list == null)
+         if (ref.cancel(storageManager, postOffice, queueSettingsRepository))
          {
-            list = new LinkedList<MessageReference>();
-
-            queueMap.put(queue, list);
+            Queue queue = ref.getQueue();
+   
+            LinkedList<MessageReference> list = queueMap.get(queue);
+   
+            if (list == null)
+            {
+               list = new LinkedList<MessageReference>();
+   
+               queueMap.put(queue, list);
+            }
+   
+            list.add(ref);
          }
-
-         list.add(ref);
       }
 
       for (Map.Entry<Queue, LinkedList<MessageReference>> entry : queueMap.entrySet())
@@ -585,7 +590,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
       }
 
-      Transaction theTx = resourceManager.removeTransaction(xid);
+      Transaction theTx = resourceManager.getTransaction(xid);
 
       if (theTx == null)
       {
@@ -596,10 +601,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       if (theTx.getState() == Transaction.State.SUSPENDED)
       {
-         // Put it back
-
-         resourceManager.putTransaction(xid, tx);
-
          return new SessionXAResponseMessage(true,
                                              XAException.XAER_PROTO,
                                              "Cannot prepare transaction, it is suspended " + xid);

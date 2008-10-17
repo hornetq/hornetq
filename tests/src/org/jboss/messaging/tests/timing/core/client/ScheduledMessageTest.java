@@ -139,7 +139,7 @@ public class ScheduledMessageTest extends UnitTestCase
       assertTrue(System.currentTimeMillis() >= cal.getTimeInMillis());
       assertEquals("testINVMCoreClient", message2.getBody().getString());
 
-      message2.processed();
+      message2.acknowledge();
       session.close();
    }
 
@@ -186,7 +186,7 @@ public class ScheduledMessageTest extends UnitTestCase
       assertTrue(System.currentTimeMillis() >= cal.getTimeInMillis());
       assertEquals("testINVMCoreClient", message2.getBody().getString());
 
-      message2.processed();
+      message2.acknowledge();
       session.close();
    }
 
@@ -224,7 +224,7 @@ public class ScheduledMessageTest extends UnitTestCase
       assertTrue(System.currentTimeMillis() >= cal.getTimeInMillis());
       assertEquals("testINVMCoreClient", message2.getBody().getString());
 
-      message2.processed();
+      message2.acknowledge();
       session.close();
    }
 }

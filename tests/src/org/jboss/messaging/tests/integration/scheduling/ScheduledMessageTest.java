@@ -21,6 +21,12 @@
  */
 package org.jboss.messaging.tests.integration.scheduling;
 
+import java.io.File;
+import java.util.Calendar;
+
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -29,6 +35,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -38,16 +45,14 @@ import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.util.id.GUID;
 
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.io.File;
-import java.util.Calendar;
-
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public class ScheduledMessageTest extends UnitTestCase
 {
+   private static final Logger log = Logger.getLogger(ScheduledMessageTest.class);
+
+   
    private static final String ACCEPTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory";
 
    private static final String CONNECTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory";
@@ -181,7 +186,7 @@ public class ScheduledMessageTest extends UnitTestCase
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m1", message2.getBody().getString());
 
-      message2.processed();
+      message2.acknowledge();
 
       // Make sure no more messages
       consumer.close();
@@ -193,7 +198,6 @@ public class ScheduledMessageTest extends UnitTestCase
 
    public void testPagedMessageDeliveredMultipleConsumersCorrectly() throws Exception
    {
-
       TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
       configuration.setPagingMaxGlobalSizeBytes(0);
@@ -232,10 +236,11 @@ public class ScheduledMessageTest extends UnitTestCase
       message2 = consumer2.receive(5250);
       time += 5000;
       assertTrue(System.currentTimeMillis() >= time);
+      log.info(message3.getBody().getString());
       assertEquals("m1", message3.getBody().getString());
       assertEquals("m1", message2.getBody().getString());
-      message2.processed();
-      message3.processed();
+      message2.acknowledge();
+      message3.acknowledge();
 
       // Make sure no more messages
       consumer.close();
@@ -298,8 +303,8 @@ public class ScheduledMessageTest extends UnitTestCase
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m1", message3.getBody().getString());
       assertEquals("m1", message2.getBody().getString());
-      message2.processed();
-      message3.processed();
+      message2.acknowledge();
+      message3.acknowledge();
       
       // Make sure no more messages
       consumer.close();
@@ -354,7 +359,7 @@ public class ScheduledMessageTest extends UnitTestCase
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("testINVMCoreClient", message2.getBody().getString());
 
-      message2.processed();
+      message2.acknowledge();
       
       // Make sure no more messages
       consumer.close();   
@@ -415,27 +420,27 @@ public class ScheduledMessageTest extends UnitTestCase
       ClientMessage message = consumer.receive(11000);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m1", message.getBody().getString());
-      message.processed();
+      message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m2", message.getBody().getString());
-      message.processed();
+      message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m3", message.getBody().getString());
-      message.processed();
+      message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m4", message.getBody().getString());
-      message.processed();
+      message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m5", message.getBody().getString());
-      message.processed();
+      message.acknowledge();
       
       // Make sure no more messages
       consumer.close();
@@ -497,27 +502,27 @@ public class ScheduledMessageTest extends UnitTestCase
       ClientMessage message = consumer.receive(10250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m1", message.getBody().getString());
-      message.processed();
+      message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m3", message.getBody().getString());
-      message.processed();
+      message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m5", message.getBody().getString());
-      message.processed();
+      message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m2", message.getBody().getString());
-      message.processed();
+      message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m4", message.getBody().getString());
-      message.processed();
+      message.acknowledge();
       
       // Make sure no more messages
       consumer.close();
@@ -575,24 +580,24 @@ public class ScheduledMessageTest extends UnitTestCase
 
       ClientMessage message = consumer.receive(1000);
       assertEquals("m2", message.getBody().getString());
-      message.processed();
+      message.acknowledge();
       message = consumer.receive(1000);
       assertEquals("m4", message.getBody().getString());
-      message.processed();
+      message.acknowledge();
       message = consumer.receive(10250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m1", message.getBody().getString());
-      message.processed();
+      message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m3", message.getBody().getString());
-      message.processed();
+      message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m5", message.getBody().getString());
-      message.processed();
+      message.acknowledge();
       
       // Make sure no more messages
       consumer.close();
@@ -653,7 +658,7 @@ public class ScheduledMessageTest extends UnitTestCase
       assertNotNull(message2);
       assertEquals("testINVMCoreClient", message2.getBody().getString());
 
-      message2.processed();
+      message2.acknowledge();
       session.end(xid2, XAResource.TMSUCCESS);
       session.prepare(xid2);
       session.commit(xid2, true);

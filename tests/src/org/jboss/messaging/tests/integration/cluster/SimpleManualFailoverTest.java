@@ -115,7 +115,7 @@ public class SimpleManualFailoverTest extends TestCase
 
          assertEquals(i, message2.getProperty(new SimpleString("count")));
 
-         message2.processed();
+         message2.acknowledge();
       }
 
       ClientMessage message3 = consumer.receive(250);

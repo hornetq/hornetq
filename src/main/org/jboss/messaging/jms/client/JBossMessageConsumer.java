@@ -214,7 +214,7 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
          
          if (message != null)
          {         
-            message.processed();            
+            message.acknowledge();            
                      
             jbm = JBossMessage.createMessage(message, session.getCoreSession());
             

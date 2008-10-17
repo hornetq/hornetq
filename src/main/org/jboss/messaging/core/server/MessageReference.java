@@ -63,13 +63,13 @@ public interface MessageReference
    
    Queue getQueue();
    
-   boolean cancel(StorageManager persistenceManager, PostOffice postOffice,
+   boolean cancel(StorageManager storageManager, PostOffice postOffice,
    		         HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;  
    
-   void sendToDLQ(StorageManager persistenceManager, PostOffice postOffice,
+   void sendToDLQ(StorageManager storageManager, PostOffice postOffice,
                   HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
    
-   void expire(StorageManager persistenceManager, PostOffice postOffice,
+   void expire(StorageManager storageManager, PostOffice postOffice,
          HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
    
    void move(Binding otherBinding, StorageManager persistenceManager, PostOffice postOffice) throws Exception;

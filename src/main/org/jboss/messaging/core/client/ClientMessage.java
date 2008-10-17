@@ -43,5 +43,5 @@ public interface ClientMessage extends Message
    
    void onReceipt(ClientSessionInternal session, long consumerID);
    
-   void processed() throws MessagingException;
+   void acknowledge() throws MessagingException;
 }
