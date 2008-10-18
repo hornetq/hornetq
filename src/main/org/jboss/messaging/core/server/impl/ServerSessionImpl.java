@@ -12,6 +12,23 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+
+import javax.management.Notification;
+import javax.management.NotificationListener;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
@@ -51,22 +68,7 @@ import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.SimpleIDGenerator;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.SimpleStringIdGenerator;
-
-import javax.management.Notification;
-import javax.management.NotificationListener;
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
+import org.jboss.messaging.util.UUIDGenerator;
 
 /*
  * Session implementation 
@@ -136,8 +138,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    private final MessagingServer server;
 
    private final SimpleStringIdGenerator simpleStringIdGenerator;
-
-   private final Object queueCopyLock = new Object();
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -296,19 +296,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       {
          if (!pager.page(msg))
          {
-            synchronized (queueCopyLock)
+            List<MessageReference> refs = postOffice.route(msg);
+
+            if (msg.getDurableRefCount() != 0)
             {
-               List<MessageReference> refs = postOffice.route(msg);
+               storageManager.storeMessage(msg);
+            }
 
-               if (msg.getDurableRefCount() != 0)
-               {
-                  storageManager.storeMessage(msg);
-               }
-
-               for (MessageReference ref : refs)
-               {
-                  ref.getQueue().addLast(ref);
-               }
+            for (MessageReference ref : refs)
+            {
+               ref.getQueue().addLast(ref);
             }
          }
       }
@@ -355,18 +352,22 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    public void acknowledge(final long consumerID, final long messageID) throws Exception
    {
       MessageReference ref = consumers.get(consumerID).getReference(messageID);
-
-      if (autoCommitAcks)
+      
+      //Null implies a browser
+      if (ref != null)
       {
-         doAck(ref);
-      }
-      else
-      {
-         tx.addAcknowledgement(ref);
-
-         // Del count is not actually updated in storage unless it's
-         // cancelled
-         ref.incrementDeliveryCount();
+         if (autoCommitAcks)
+         {
+            doAck(ref);
+         }
+         else
+         {
+            tx.addAcknowledgement(ref);
+   
+            // Del count is not actually updated in storage unless it's
+            // cancelled
+            ref.incrementDeliveryCount();
+         }
       }
    }
 
@@ -413,16 +414,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          if (ref.cancel(storageManager, postOffice, queueSettingsRepository))
          {
             Queue queue = ref.getQueue();
-   
+
             LinkedList<MessageReference> list = queueMap.get(queue);
-   
+
             if (list == null)
             {
                list = new LinkedList<MessageReference>();
-   
+
                queueMap.put(queue, list);
             }
-   
+
             list.add(ref);
          }
       }
@@ -825,37 +826,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
    }
 
-   public void createQueueCopy(final SimpleString queue,
-                               final SimpleString queueCopy,
-                               final SimpleString filterString,
-                               final boolean durable,
-                               final boolean temporary) throws Exception
-   {
-      Binding binding = postOffice.getBinding(queue);
-      if (binding == null)
-      {
-         throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
-      }
-      //we need to stop messages being routed whilst we make a copy of the queue. altho this will be extremely quick
-      // even for large quantities of references
-      synchronized (queueCopyLock)
-      {
-         createQueue(binding.getAddress(), queueCopy, filterString, durable, temporary);
-         Queue newQ = postOffice.getBinding(queueCopy).getQueue();
-         Filter filter = null;
-
-         if (filterString != null)
-         {
-            filter = new FilterImpl(filterString);
-         }
-         List<MessageReference> refs = binding.getQueue().list(filter);
-         for (MessageReference ref : refs)
-         {
-            newQ.addLast(ref.getMessage().createReference(newQ));
-         }
-      }
-   }
-
    public void deleteQueue(final SimpleString queueName) throws Exception
    {
       Binding binding = postOffice.removeBinding(queueName);
@@ -913,9 +883,37 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       maxRate = queueMaxRate != null ? queueMaxRate : maxRate;
 
+      Queue theQueue;
+      if (browseOnly)
+      {
+         // We consume a copy of the queue - TODO - this is a temporary measure
+         // and will disappear once we can provide a proper iterator on the queue
+
+         theQueue = new QueueImpl(-1,
+                                  queueName,
+                                  filter,
+                                  false,
+                                  false,
+                                  false,
+                                  null,
+                                  postOffice);
+
+         //There's no need for any special locking since the list method is synchronized
+         List<MessageReference> refs = binding.getQueue().list(filter);
+
+         for (MessageReference ref : refs)
+         {
+            theQueue.addLast(ref);
+         }
+      }
+      else
+      {
+         theQueue = binding.getQueue();
+      }
+
       ServerConsumer consumer = new ServerConsumerImpl(idGenerator.generateID(),
                                                        this,
-                                                       binding.getQueue(),
+                                                       theQueue,
                                                        filter,
                                                        windowSize != -1,
                                                        maxRate,
@@ -1040,7 +1038,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
       return new SessionCreateProducerResponseMessage(initialCredits, maxRateToUse, groupId);
    }
-
 
    public void closeConsumer(final long consumerID) throws Exception
    {

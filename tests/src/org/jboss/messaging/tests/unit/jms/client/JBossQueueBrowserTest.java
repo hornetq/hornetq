@@ -22,12 +22,19 @@
 
 package org.jboss.messaging.tests.unit.jms.client;
 
-import junit.framework.TestCase;
-import org.easymock.EasyMock;
 import static org.easymock.EasyMock.createStrictMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+
+import java.util.Enumeration;
+
+import javax.jms.Message;
+
+import junit.framework.TestCase;
+
+import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
@@ -35,11 +42,7 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.JBossQueueBrowser;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import org.jboss.messaging.util.SimpleString;
-
-import javax.jms.Message;
-import java.util.Enumeration;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -127,8 +130,7 @@ public class JBossQueueBrowserTest extends TestCase
    {
       JBossQueue queue = new JBossQueue(randomString());
       ClientConsumer consumer = createStrictMock(ClientConsumer.class);
-      ClientSession session = createStrictMock(ClientSession.class);
-      session.createQueueCopy((SimpleString) EasyMock.eq(queue.getSimpleAddress()), (SimpleString) EasyMock.anyObject(), (SimpleString) EasyMock.eq(null), EasyMock.anyBoolean(),EasyMock.anyBoolean());
+      ClientSession session = createStrictMock(ClientSession.class);    
       expect(session.createConsumer((SimpleString) EasyMock.anyObject(), (SimpleString) EasyMock.anyObject(), EasyMock.anyBoolean(), EasyMock.anyBoolean())).andReturn(consumer);
       replay(session, consumer);
 
@@ -147,8 +149,7 @@ public class JBossQueueBrowserTest extends TestCase
       ClientMessage clientMessage = createStrictMock(ClientMessage.class);
       MessagingBuffer buffer = createStrictMock(MessagingBuffer.class);
       ClientConsumer consumer = createStrictMock(ClientConsumer.class);
-      ClientSession session = createStrictMock(ClientSession.class);
-      session.createQueueCopy((SimpleString) EasyMock.eq(queue.getSimpleAddress()), (SimpleString) EasyMock.anyObject(), (SimpleString) EasyMock.eq(null), EasyMock.anyBoolean(),EasyMock.anyBoolean());
+      ClientSession session = createStrictMock(ClientSession.class);   
       expect(session.createConsumer((SimpleString) EasyMock.anyObject(), (SimpleString) EasyMock.anyObject(), EasyMock.anyBoolean(), EasyMock.anyBoolean())).andReturn(consumer);
       expect(consumer.receive(1000)).andReturn(clientMessage);
       expect(clientMessage.getType()).andReturn(JBossMessage.TYPE);

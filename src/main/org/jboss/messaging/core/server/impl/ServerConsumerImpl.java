@@ -300,6 +300,11 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public MessageReference getReference(final long messageID) throws Exception
    {
+      if (browseOnly)
+      {
+         return null;
+      }
+      
       // Acknowledge acknowledges all refs delivered by the consumer up to and including the one explicitly
       // acknowledged
 

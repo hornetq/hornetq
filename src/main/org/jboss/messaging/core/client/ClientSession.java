@@ -120,6 +120,4 @@ public interface ClientSession extends XAResource
    boolean removeFailureListener(FailureListener listener);
 
    int getVersion();
-
-    void createQueueCopy(SimpleString queueName, SimpleString queueCopyName, SimpleString coreSelector, boolean durable, boolean temporary) throws MessagingException;
 }

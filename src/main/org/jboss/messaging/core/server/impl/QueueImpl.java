@@ -208,7 +208,8 @@ public class QueueImpl implements Queue
 
       if (backup)
       {
-         return;
+         log.info("backup");
+         return ;
       }
 
       MessageReference reference;
@@ -256,7 +257,7 @@ public class QueueImpl implements Queue
             else
             {
                iterator.remove();
-            }
+            }            
          }
          else if (status == HandleStatus.BUSY)
          {
@@ -270,7 +271,7 @@ public class QueueImpl implements Queue
             // through the queue
             iterator = messageReferences.iterator();
          }
-      }
+      }     
    }
 
    public synchronized void addConsumer(final Consumer consumer)
@@ -778,6 +779,7 @@ public class QueueImpl implements Queue
    private HandleStatus deliver(final MessageReference reference)
    {
       HandleStatus status = distributionPolicy.distribute(reference);
+      
       if (status == HandleStatus.HANDLED)
       {
          deliveringCount.incrementAndGet();
@@ -787,6 +789,7 @@ public class QueueImpl implements Queue
       {
          promptDelivery = true;
       }
+      
       return status;
    }
 

@@ -80,7 +80,7 @@ public class QueueTest extends UnitTestCase
       consumer.setStatusImmediate(HandleStatus.HANDLED);
       
       queue.deliver();
-      
+
       if (sender.getException() != null)
       {
          throw sender.getException();

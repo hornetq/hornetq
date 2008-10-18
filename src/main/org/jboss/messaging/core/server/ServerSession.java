@@ -103,13 +103,7 @@ public interface ServerSession
                     SimpleString filterString,
                     boolean durable,
                     boolean temporary) throws Exception;
-
-   void createQueueCopy(final SimpleString queue,
-                        final SimpleString queueCopy,
-                        final SimpleString filterString,
-                        final boolean durable,
-                        final boolean temporary) throws Exception;
-
+  
    void deleteQueue(SimpleString queueName) throws Exception;
 
    SessionCreateConsumerResponseMessage createConsumer(SimpleString queueName,

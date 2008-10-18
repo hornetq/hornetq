@@ -21,6 +21,19 @@
  */
 package org.jboss.messaging.core.client.impl;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -46,7 +59,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueCopyMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionFailoverCompleteMessage;
@@ -74,18 +86,6 @@ import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.SimpleIDGenerator;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiterImpl;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 /*
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -589,15 +589,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public int getVersion()
    {
       return version;
-   }
-
-   public void createQueueCopy(SimpleString queueName, SimpleString queueCopyName, SimpleString coreSelector, boolean durable, boolean temporary) throws MessagingException
-   {
-      checkClosed();
-
-      SessionCreateQueueCopyMessage sessionCreateQueueCopyMessage = new SessionCreateQueueCopyMessage(queueCopyName, queueName, coreSelector,  durable, temporary);
-
-      channel.sendBlocking(sessionCreateQueueCopyMessage);
    }
 
    // ClientSessionInternal implementation

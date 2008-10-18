@@ -22,6 +22,14 @@
 
 package org.jboss.messaging.jms.client;
 
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.QueueBrowser;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
@@ -29,13 +37,6 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.util.SimpleString;
-
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.QueueBrowser;
-import java.util.Enumeration;
-import java.util.NoSuchElementException;
-import java.util.UUID;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -61,19 +62,17 @@ public class JBossQueueBrowser implements QueueBrowser
 
    private JBossQueue queue;
 
-   private SimpleString messageSelector;
-
-   private SimpleString queueName;
+   private SimpleString filterString;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public JBossQueueBrowser(JBossQueue queue, String messageSelector, ClientSession session)
+   public JBossQueueBrowser(JBossQueue queue, String messageSelector, ClientSession session) throws JMSException
    {
       this.session = session;
       this.queue = queue;
-      if(messageSelector != null)
+      if (messageSelector != null)
       {
-        this. messageSelector = new SimpleString(SelectorTranslator.convertToJBMFilterString(messageSelector));
+         this.filterString = new SimpleString(SelectorTranslator.convertToJBMFilterString(messageSelector));
       }
    }
 
@@ -86,7 +85,6 @@ public class JBossQueueBrowser implements QueueBrowser
          try
          {
             consumer.close();
-            session.deleteQueue(queueName);
          }
          catch (MessagingException e)
          {
@@ -100,9 +98,9 @@ public class JBossQueueBrowser implements QueueBrowser
       try
       {
          close();
-         queueName = new SimpleString(UUID.randomUUID().toString());
-         session.createQueueCopy(queue.getSimpleAddress(), queueName, messageSelector, false, true);
-         consumer = session.createConsumer(queueName, null, false, true);
+
+         consumer = session.createConsumer(queue.getSimpleAddress(), filterString, false, true);
+
          return new BrowserEnumeration();
       }
       catch (MessagingException e)
@@ -114,7 +112,7 @@ public class JBossQueueBrowser implements QueueBrowser
 
    public String getMessageSelector() throws JMSException
    {
-      return messageSelector == null?null:messageSelector.toString();
+      return filterString == null ? null : filterString.toString();
    }
 
    public Queue getQueue() throws JMSException
@@ -147,7 +145,8 @@ public class JBossQueueBrowser implements QueueBrowser
          {
             try
             {
-               //todo change this to consumer.receiveImmediate() once https://jira.jboss.org/jira/browse/JBMESSAGING-1432 is completed
+               // todo change this to consumer.receiveImmediate() once
+               // https://jira.jboss.org/jira/browse/JBMESSAGING-1432 is completed
                current = consumer.receive(NEXT_MESSAGE_TIMEOUT);
             }
             catch (MessagingException e)
@@ -172,7 +171,7 @@ public class JBossQueueBrowser implements QueueBrowser
             }
             catch (Exception e)
             {
-               log.error("Failed to prepare message", e);
+               log.error("Failed to create message", e);
 
                return null;
             }
