@@ -302,11 +302,14 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   public synchronized void clear()
+   public void clear()
    {
+      synchronized (this)
+      {
+         buffer.clear();
+      }
+      
       waitForOnMessageToComplete();
-
-      buffer.clear();
    }
 
    public int getClientWindowSize()
