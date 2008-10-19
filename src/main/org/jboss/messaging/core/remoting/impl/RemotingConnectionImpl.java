@@ -210,6 +210,13 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    private final ReadWriteLock readWriteLock;
 
    private final Object transferLock = new Object();
+   
+   private static volatile boolean debug;
+   
+   private static void report()
+   {
+      
+   }
 
    // Constructors
    // ---------------------------------------------------------------------------------

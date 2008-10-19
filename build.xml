@@ -153,6 +153,11 @@
       <ant antfile="build-messaging.xml" target="all-tests"/>
       <ant antfile="build-messaging.xml" target="compile-reports"/>
    </target>
+   
+   <target name="hudson-tests" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="hudson-tests"/>
+      <ant antfile="build-messaging.xml" target="compile-reports"/>
+   </target>
 
    <target name="tests" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="tests"/>
