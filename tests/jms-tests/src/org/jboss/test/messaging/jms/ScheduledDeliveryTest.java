@@ -90,7 +90,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
          long now = System.currentTimeMillis();
 
          TextMessage tm1 = sess.createTextMessage("testScheduled1");
-         tm1.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 19000);
+         tm1.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 29000);
          prod.send(tm1);
 
          //First send some non scheduled messages
@@ -106,21 +106,23 @@ public class ScheduledDeliveryTest extends JMSTestCase
 
 
          //Now send some more scheduled messages
+         
+         //These numbers have to be large with Hudson, since restart can take some time
 
          TextMessage tm5 = sess.createTextMessage("testScheduled5");
-         tm5.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 17000);
+         tm5.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 27000);
          prod.send(tm5);
 
          TextMessage tm6 = sess.createTextMessage("testScheduled6");
-         tm6.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 16000);
+         tm6.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 26000);
          prod.send(tm6);
 
          TextMessage tm7 = sess.createTextMessage("testScheduled7");
-         tm7.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 15000);
+         tm7.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 25000);
          prod.send(tm7);
 
          TextMessage tm8 = sess.createTextMessage("testScheduled8");
-         tm8.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 18000);
+         tm8.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 28000);
          prod.send(tm8);
 
          //And one scheduled with a -ve number
@@ -170,7 +172,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
          assertEquals(tm9.getText(), rm5.getText());
 
          //Now the scheduled
-         TextMessage rm6 = (TextMessage)cons.receive(15250);
+         TextMessage rm6 = (TextMessage)cons.receive(25500);
          assertNotNull(rm6);
          assertEquals(tm7.getText(), rm6.getText());
 
@@ -179,7 +181,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
          assertTrue(now2 - now >= 3000);
 
 
-         TextMessage rm7 = (TextMessage)cons.receive(16250);
+         TextMessage rm7 = (TextMessage)cons.receive(26500);
          assertNotNull(rm7);
          assertEquals(tm6.getText(), rm7.getText());
 
@@ -188,7 +190,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
          assertTrue(now2 - now >= 4000);
 
 
-         TextMessage rm8 = (TextMessage)cons.receive(17250);
+         TextMessage rm8 = (TextMessage)cons.receive(27500);
          assertNotNull(rm8);
          assertEquals(tm5.getText(), rm8.getText());
 
@@ -197,7 +199,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
          assertTrue(now2 - now >= 5000);
 
 
-         TextMessage rm9 = (TextMessage)cons.receive(18250);
+         TextMessage rm9 = (TextMessage)cons.receive(28500);
          assertNotNull(rm9);
          assertEquals(tm8.getText(), rm9.getText());
 
@@ -206,7 +208,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
          assertTrue(now2 - now >= 6000);
 
 
-         TextMessage rm10 = (TextMessage)cons.receive(19250);
+         TextMessage rm10 = (TextMessage)cons.receive(29500);
          assertNotNull(rm10);
          assertEquals(tm1.getText(), rm10.getText());
 

@@ -193,7 +193,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
          DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id, message.getMessageID()));
 
-         if(!browseOnly)
+         if (!browseOnly)
          {
             deliveringRefs.add(ref);
          }
@@ -230,13 +230,13 @@ public class ServerConsumerImpl implements ServerConsumer
       session.removeConsumer(this);
 
       LinkedList<MessageReference> refs = cancelRefs();
-      
+
       Iterator<MessageReference> iter = refs.iterator();
-      
+
       while (iter.hasNext())
       {
          MessageReference ref = iter.next();
-         
+
          if (!ref.cancel(storageManager, postOffice, queueSettingsRepository))
          {
             iter.remove();
@@ -257,7 +257,7 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          for (MessageReference ref : deliveringRefs)
          {
-            refs.add(ref);            
+            refs.add(ref);
          }
 
          deliveringRefs.clear();
@@ -304,7 +304,7 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          return null;
       }
-      
+
       // Acknowledge acknowledges all refs delivered by the consumer up to and including the one explicitly
       // acknowledged
 
