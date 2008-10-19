@@ -273,7 +273,7 @@ public class QueueImplTest extends UnitTestCase
       assertEquals(10, queue.getMessageCount());
       assertEquals(0, queue.getScheduledCount());
 
-      queue.deliver();
+      queue.deliverNow();
 
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
       assertEquals(numMessages, queue.getMessageCount());
@@ -308,7 +308,7 @@ public class QueueImplTest extends UnitTestCase
       assertEquals(0, queue.getScheduledCount());
       assertEquals(0, queue.getDeliveringCount());
 
-      queue.deliver();
+      queue.deliverNow();
 
       assertEquals(10, queue.getMessageCount());
       assertEquals(0, queue.getScheduledCount());
@@ -317,7 +317,7 @@ public class QueueImplTest extends UnitTestCase
 
       consumer.setStatusImmediate(HandleStatus.HANDLED);
 
-      queue.deliver();
+      queue.deliverNow();
 
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
       assertEquals(10, queue.getMessageCount());
@@ -352,7 +352,7 @@ public class QueueImplTest extends UnitTestCase
       assertEquals(0, queue.getScheduledCount());
       assertEquals(0, queue.getDeliveringCount());
 
-      queue.deliver();
+      queue.deliverNow();
 
       assertEquals(10, queue.getMessageCount());
       assertEquals(0, queue.getScheduledCount());
@@ -384,7 +384,7 @@ public class QueueImplTest extends UnitTestCase
          queue.addLast(ref);
       }
 
-      queue.deliver();
+      queue.deliverNow();
 
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
       assertEquals(30, queue.getMessageCount());
@@ -435,7 +435,7 @@ public class QueueImplTest extends UnitTestCase
 
       queue.addConsumer(consumer);
 
-      queue.deliver();
+      queue.deliverNow();
 
       List<MessageReference> allRefs = new ArrayList<MessageReference>();
 
@@ -472,7 +472,7 @@ public class QueueImplTest extends UnitTestCase
 
       queue.addConsumer(cons1);
 
-      queue.deliver();
+      queue.deliverNow();
 
       assertEquals(numMessages, queue.getMessageCount());
       assertEquals(0, queue.getScheduledCount());
@@ -658,7 +658,7 @@ public class QueueImplTest extends UnitTestCase
 
       queue.addConsumer(cons2);
 
-      queue.deliver();
+      queue.deliverNow();
 
       assertEquals(numMessages / 2, cons1.getReferences().size());
 
@@ -692,7 +692,7 @@ public class QueueImplTest extends UnitTestCase
 
       queue.addConsumer(cons2);
 
-      queue.deliver();
+      queue.deliverNow();
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -796,7 +796,7 @@ public class QueueImplTest extends UnitTestCase
 
       queue.addConsumer(consumer);
 
-      queue.deliver();
+      queue.deliverNow();
 
       assertTrue(consumer.getReferences().isEmpty());
    }
@@ -824,7 +824,7 @@ public class QueueImplTest extends UnitTestCase
 
       queue.addConsumer(consumer);
 
-      queue.deliver();
+      queue.deliverNow();
 
       List<MessageReference> receivedRefs = consumer.getReferences();
 
@@ -978,7 +978,7 @@ public class QueueImplTest extends UnitTestCase
 
       queue.addConsumer(consumer);
 
-      queue.deliver();
+      queue.deliverNow();
 
 
       refs.clear();
@@ -1069,7 +1069,7 @@ public class QueueImplTest extends UnitTestCase
       {
          queue.addConsumer(consumer);
 
-         queue.deliver();
+         queue.deliverNow();
       }
 
       assertEquals(6, queue.getMessageCount());
@@ -1089,7 +1089,7 @@ public class QueueImplTest extends UnitTestCase
 
       queue.addConsumer(consumer);
 
-      queue.deliver();
+      queue.deliverNow();
 
       assertEquals(4, queue.getMessageCount());
 
@@ -1113,7 +1113,7 @@ public class QueueImplTest extends UnitTestCase
       EasyMock.expect(consumer.handle(messageReference2)).andReturn(HandleStatus.HANDLED);
       EasyMock.replay(consumer);
       queue.addConsumer(consumer);
-      queue.deliver();
+      queue.deliverNow();
       EasyMock.verify(consumer);
    }
 
@@ -1167,7 +1167,7 @@ public class QueueImplTest extends UnitTestCase
       queue.addListFirst(messageReferences);
       queue.removeReferenceWithID(2);
       queue.addConsumer(consumer);
-      queue.deliver();
+      queue.deliverNow();
       EasyMock.verify(consumer);
 
    }

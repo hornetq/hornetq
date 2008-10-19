@@ -195,84 +195,14 @@ public class QueueImpl implements Queue
          executor.execute(deliverRunner);
       }
    }
-
-   /*
-    * Attempt to deliver all the messages in the queue
-    */
-   public void deliver()
+   
+   // Only used in testing - do not call directly!
+   public synchronized void deliverNow()
    {
-      // We don't do actual delivery if the queue is on a backup node - this is
-      // because it's async and could get out of step
-      // with the live node. Instead, when we replicate the delivery we remove
-      // the ref from the queue
-
-      if (backup)
-      {
-         return ;
-      }
-
-      MessageReference reference;
-
-      Iterator<MessageReference> iterator = null;
-
-      while (true)
-      {
-         if (iterator == null)
-         {
-            reference = messageReferences.peekFirst();
-         }
-         else
-         {
-            if (iterator.hasNext())
-            {
-               reference = iterator.next();
-            }
-            else
-            {
-               reference = null;
-            }
-         }
-
-         if (reference == null)
-         {
-            if (iterator == null)
-            {
-               // We delivered all the messages - go into direct delivery
-               direct = true;
-
-               promptDelivery = false;
-            }
-            return;
-         }
-
-         HandleStatus status = deliver(reference);
-
-         if (status == HandleStatus.HANDLED)
-         {
-            if (iterator == null)
-            {
-               messageReferences.removeFirst();
-            }
-            else
-            {
-               iterator.remove();
-            }            
-         }
-         else if (status == HandleStatus.BUSY)
-         {
-            // All consumers busy - give up
-            break;
-         }
-         else if (status == HandleStatus.NO_MATCH && iterator == null)
-         {
-            // Consumers not all busy - but filter not accepting - iterate
-            // back
-            // through the queue
-            iterator = messageReferences.iterator();
-         }
-      }     
+      deliver();
    }
 
+   
    public synchronized void addConsumer(final Consumer consumer)
    {
       distributionPolicy.addConsumer(consumer);
@@ -668,6 +598,83 @@ public class QueueImpl implements Queue
    // Private
    // ------------------------------------------------------------------------------
 
+   /*
+    * Attempt to deliver all the messages in the queue
+    */
+   private void deliver()
+   {
+      // We don't do actual delivery if the queue is on a backup node - this is
+      // because it's async and could get out of step
+      // with the live node. Instead, when we replicate the delivery we remove
+      // the ref from the queue
+
+      if (backup)
+      {
+         return;
+      }
+
+      MessageReference reference;
+
+      Iterator<MessageReference> iterator = null;
+
+      while (true)
+      {
+         if (iterator == null)
+         {
+            reference = messageReferences.peekFirst();
+         }
+         else
+         {
+            if (iterator.hasNext())
+            {
+               reference = iterator.next();
+            }
+            else
+            {
+               reference = null;
+            }
+         }
+
+         if (reference == null)
+         {
+            if (iterator == null)
+            {
+               // We delivered all the messages - go into direct delivery
+               direct = true;
+
+               promptDelivery = false;
+            }
+            return;
+         }
+
+         HandleStatus status = deliver(reference);
+
+         if (status == HandleStatus.HANDLED)
+         {
+            if (iterator == null)
+            {
+               messageReferences.removeFirst();
+            }
+            else
+            {
+               iterator.remove();
+            }            
+         }
+         else if (status == HandleStatus.BUSY)
+         {
+            // All consumers busy - give up
+            break;
+         }
+         else if (status == HandleStatus.NO_MATCH && iterator == null)
+         {
+            // Consumers not all busy - but filter not accepting - iterate
+            // back
+            // through the queue
+            iterator = messageReferences.iterator();
+         }
+      }     
+   }
+   
    private synchronized HandleStatus add(final MessageReference ref, final boolean first)
    {
       if (!first)

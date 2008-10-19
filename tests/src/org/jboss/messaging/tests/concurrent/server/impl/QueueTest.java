@@ -79,7 +79,7 @@ public class QueueTest extends UnitTestCase
       
       consumer.setStatusImmediate(HandleStatus.HANDLED);
       
-      queue.deliver();
+      queue.deliverNow();
 
       if (sender.getException() != null)
       {
@@ -196,7 +196,7 @@ public class QueueTest extends UnitTestCase
             {
                consumer.setStatusImmediate(HandleStatus.HANDLED);
                
-               queue.deliver();
+               queue.deliverNow();
             }
             toggle = !toggle;
             

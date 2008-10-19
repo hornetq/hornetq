@@ -57,9 +57,7 @@ public interface Queue
     * @param list
     */
    void addListFirst(LinkedList<MessageReference> list);
-   
-   void deliver();
-   
+         
    void deliverAsync(Executor executor);
    
    void addConsumer(Consumer consumer);
@@ -144,4 +142,7 @@ public interface Queue
    MessageReference removeFirst();
    
    boolean consumerFailedOver();   
+   
+   //Only used in testing
+   void deliverNow();
 }

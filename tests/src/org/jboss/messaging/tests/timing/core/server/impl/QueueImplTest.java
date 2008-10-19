@@ -141,7 +141,7 @@ public class QueueImplTest extends UnitTestCase
 
       queue.addConsumer(consumer);
 
-      queue.deliver();
+      queue.deliverNow();
 
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
    }
@@ -201,7 +201,7 @@ public class QueueImplTest extends UnitTestCase
 
          queue.addConsumer(consumer);
 
-         queue.deliver();
+         queue.deliverNow();
       }
 
       List<MessageReference> refs = new ArrayList<MessageReference>();
@@ -328,7 +328,7 @@ public class QueueImplTest extends UnitTestCase
 
       queue.addConsumer(consumer);
 
-      queue.deliver();
+      queue.deliverNow();
 
       assertTrue(consumer.getReferences().isEmpty());
    }
