@@ -326,17 +326,23 @@ public class ServerConsumerImpl implements ServerConsumer
    }
 
    public void deliverReplicated(final long messageID) throws Exception
-   {
+   {  
       // It may not be the first in the queue - since there may be multiple producers
       // sending to the queue
       MessageReference ref = messageQueue.removeReferenceWithID(messageID);
-
+      
+      if (ref == null)
+      {
+         log.error("Queue has size " + messageQueue.getMessageCount());
+         throw new IllegalStateException("Cannot find ref when replicating delivery " + messageID);
+      }
+                  
       HandleStatus handled = this.handle(ref);
 
       if (handled != HandleStatus.HANDLED)
       {
          throw new IllegalStateException("Reference was not handled " + ref + " " + handled);
-      }
+      }      
    }
 
    public void failedOver()

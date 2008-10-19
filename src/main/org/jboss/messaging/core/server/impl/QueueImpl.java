@@ -208,7 +208,6 @@ public class QueueImpl implements Queue
 
       if (backup)
       {
-         log.info("backup");
          return ;
       }
 
