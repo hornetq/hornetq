@@ -1009,6 +1009,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
    //When replicating the create consumer (browser) to the backup, when executed on the backup the
    //backup may have different messages in its queue since been added on different threads.
    //So when replicating deliveries they may not be found.
+   //https://jira.jboss.org/jira/browse/JBMESSAGING-1433
 //   protected void doTestM(final ClientSessionFactory sf, final int threadNum) throws Exception
 //   {
 //      long start = System.currentTimeMillis();
