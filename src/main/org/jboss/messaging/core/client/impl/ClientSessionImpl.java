@@ -1099,14 +1099,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          producerCache.clear();
       }
-
-      channel.close();
-
+     
       remotingConnection.removeFailureListener(this);
 
       synchronized (this)
       {
          closed = true;
+         
+         channel.close();
 
          connectionRegistry.returnConnection(remotingConnection.getID());
       }
