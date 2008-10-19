@@ -222,16 +222,16 @@ public class MultiThreadRandomFailoverTest extends TestCase
 //      }, NUM_THREADS);
 //   }
    
-   public void testN() throws Exception
-   {
-      runTestMultipleThreads(new RunnableT()
-      {
-         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
-         {
-            doTestN(sf, threadNum);
-         }
-      }, NUM_THREADS);
-   }
+//   public void testN() throws Exception
+//   {
+//      runTestMultipleThreads(new RunnableT()
+//      {
+//         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
+//         {
+//            doTestN(sf, threadNum);
+//         }
+//      }, NUM_THREADS);
+//   }
 
    // Package protected ---------------------------------------------
 
@@ -1130,6 +1130,8 @@ public class MultiThreadRandomFailoverTest extends TestCase
       sess.stop();
 
       sess.start();
+      
+      sess.stop();
 
       ClientConsumer consumer = sess.createConsumer(new SimpleString(threadNum + ADDRESS.toString()));
 
@@ -1165,7 +1167,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
    protected int getNumIterations()
    {
-      return 5;
+      return 1000;
    }
 
    protected void setUp() throws Exception
