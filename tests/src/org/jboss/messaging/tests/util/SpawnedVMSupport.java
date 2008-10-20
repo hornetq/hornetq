@@ -62,6 +62,8 @@ public class SpawnedVMSupport
       StringBuffer sb = new StringBuffer();
 
       sb.append("java").append(' ');
+      
+      sb.append("-Xms512m -Xmx512m ");
 
       String classPath = System.getProperty("java.class.path");
       
