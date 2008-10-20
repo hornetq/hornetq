@@ -23,7 +23,6 @@
 package org.jboss.messaging.tests.unit.core.filter.impl;
 
 import junit.framework.TestCase;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
@@ -55,7 +54,18 @@ public class FilterTest  extends TestCase
       
       message = new ServerMessageImpl();
    }
-     
+
+   public void testFilterForgets() throws Exception
+   {
+      filter = new FilterImpl(new SimpleString("color = 'RED'"));  
+
+      message.putStringProperty(new  SimpleString("color"), new SimpleString("RED"));
+      assertTrue(filter.match(message));
+      message = new ServerMessageImpl();
+      assertFalse(filter.match(message));
+   }
+
+
    public void testInvalidString() throws Exception
    {
       testInvalidFilter("invalid");

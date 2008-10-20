@@ -22,14 +22,14 @@
 
 package org.jboss.messaging.core.filter.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
 * This class implements a JBoss Messaging filter
@@ -123,14 +123,12 @@ public class FilterImpl implements Filter
               
               if (val instanceof SimpleString)
               {
-                 val = ((SimpleString)val).toString();
+                 val = val.toString();
               }
            }
-           
-           if (val != null)
-           {
-              id.setValue(val);
-           }
+
+           id.setValue(val);
+
         }
         
         // Compute the result of this operator

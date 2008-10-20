@@ -12,19 +12,7 @@
 
 package org.jboss.messaging.tests.integration.cluster;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -46,6 +34,17 @@ import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A MultiThreadRandomFailoverTest
@@ -1183,6 +1182,14 @@ public class MultiThreadRandomFailoverTest extends TestCase
    {
       log.info("************* Ending test " + this.getName());
 
+      if(liveService != null && liveService.isStarted())
+      {
+         liveService.stop();
+      }
+      if(backupService != null && backupService.isStarted())
+      {
+         backupService.stop();
+      }
       timer.cancel();
 
       super.tearDown();
