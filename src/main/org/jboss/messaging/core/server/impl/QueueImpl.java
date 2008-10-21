@@ -203,7 +203,7 @@ public class QueueImpl implements Queue
    }
 
    
-   public synchronized void addConsumer(final Consumer consumer)
+   public void addConsumer(final Consumer consumer)
    {
       distributionPolicy.addConsumer(consumer);
    }
@@ -211,11 +211,6 @@ public class QueueImpl implements Queue
    public synchronized boolean removeConsumer(final Consumer consumer) throws Exception
    {
       boolean removed = distributionPolicy.removeConsumer(consumer);
-
-      if (removed)
-      {
-         distributionPolicy.removeConsumer(consumer);
-      }
 
       if (!distributionPolicy.hasConsumers())
       {

@@ -483,7 +483,7 @@ public class MessagingServerImpl implements MessagingServer
       // to the backup, so we need to work in both cases
       if (sessions.putIfAbsent(name, session) == null)
       {
-         ChannelHandler handler = new ServerSessionPacketHandler(session, channel, storageManager);
+         ChannelHandler handler = new ServerSessionPacketHandler(session, channel);
 
          channel.setHandler(handler);
 

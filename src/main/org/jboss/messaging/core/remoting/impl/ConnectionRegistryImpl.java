@@ -100,9 +100,6 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
                                                                     callTimeout,
                                                                     pingInterval,                                                             
                                                                     pingExecutor,
-                                                                    null,
-                                                                    null,
-                                                                    true,
                                                                     null);        
 
          handler.conn = connection;
@@ -143,9 +140,6 @@ public class ConnectionRegistryImpl implements ConnectionRegistry, ConnectionLif
                                                                  callTimeout,
                                                                  pingInterval,                                                            
                                                                  pingExecutor,
-                                                                 null,
-                                                                 null,
-                                                                 true,
                                                                  null);        
 
       handler.conn = connection;

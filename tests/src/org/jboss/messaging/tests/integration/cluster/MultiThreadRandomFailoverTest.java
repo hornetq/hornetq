@@ -209,28 +209,28 @@ public class MultiThreadRandomFailoverTest extends TestCase
          }
       }, NUM_THREADS);
    }
-   
-//   public void testM() throws Exception
-//   {
-//      runTestMultipleThreads(new RunnableT()
-//      {
-//         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
-//         {
-//            doTestM(sf, threadNum);
-//         }
-//      }, NUM_THREADS);
-//   }
-   
-//   public void testN() throws Exception
-//   {
-//      runTestMultipleThreads(new RunnableT()
-//      {
-//         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
-//         {
-//            doTestN(sf, threadNum);
-//         }
-//      }, NUM_THREADS);
-//   }
+
+   // public void testM() throws Exception
+   // {
+   // runTestMultipleThreads(new RunnableT()
+   // {
+   // public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
+   // {
+   // doTestM(sf, threadNum);
+   // }
+   // }, NUM_THREADS);
+   // }
+
+   public void testN() throws Exception
+   {
+      runTestMultipleThreads(new RunnableT()
+      {
+         public void run(final ClientSessionFactory sf, final int threadNum) throws Exception
+         {
+            doTestN(sf, threadNum);
+         }
+      }, NUM_THREADS);
+   }
 
    // Package protected ---------------------------------------------
 
@@ -370,7 +370,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
 
          assertTrue(ok);
-         
+
          if (handler.failure != null)
          {
             throw new Exception("Handler failed: " + handler.failure);
@@ -457,7 +457,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
 
          assertTrue(ok);
-         
+
          if (handler.failure != null)
          {
             throw new Exception("Handler failed: " + handler.failure);
@@ -562,7 +562,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
 
          assertTrue(ok);
-         
+
          if (handler.failure != null)
          {
             throw new Exception("Handler failed: " + handler.failure);
@@ -1001,123 +1001,123 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
       s.close();
    }
-   
-   //Browsers
-   //FIXME - this test won't work until we use a proper iterator for browsing a queue.
-   //Making a copy of the queue for a browser consumer doesn't work well with replication since
-   //When replicating the create consumer (browser) to the backup, when executed on the backup the
-   //backup may have different messages in its queue since been added on different threads.
-   //So when replicating deliveries they may not be found.
-   //https://jira.jboss.org/jira/browse/JBMESSAGING-1433
-//   protected void doTestM(final ClientSessionFactory sf, final int threadNum) throws Exception
-//   {
-//      long start = System.currentTimeMillis();
-//
-//      ClientSession sessSend = sf.createSession(false, true, true, false);
-//      
-//      ClientSession sessConsume = sf.createSession(false, true, true, false);
-//      
-//      sessConsume.createQueue(ADDRESS, new SimpleString(threadNum + "sub"), null, false, false);
-//
-//      final int numMessages = 100;
-//
-//      ClientProducer producer = sessSend.createProducer(ADDRESS);
-//
-//      sendMessages(sessSend, producer, numMessages, threadNum);
-//      
-//      ClientConsumer browser = sessConsume.createConsumer(new SimpleString(threadNum + "sub"),
-//                                                          null, false, true);
-//      
-//      Map<Integer, Integer> consumerCounts = new HashMap<Integer, Integer>();
-//      
-//      for (int i = 0; i < numMessages; i++)
-//      {
-//         ClientMessage msg = browser.receive(RECEIVE_TIMEOUT);
-//
-//         assertNotNull(msg);
-//
-//         int tn = (Integer)msg.getProperty(new SimpleString("threadnum"));
-//         int cnt = (Integer)msg.getProperty(new SimpleString("count"));
-//
-//         Integer c = consumerCounts.get(tn);
-//         if (c == null)
-//         {
-//            c = new Integer(cnt);
-//         }
-//
-//         if (cnt != c.intValue())
-//         {
-//            throw new Exception("Invalid count, expected " + c + " got " + cnt);
-//         }
-//         
-//         c++;
-//         
-//         //Wrap
-//         if (c == numMessages)
-//         {
-//            c = 0;
-//         }
-//         
-//         consumerCounts.put(tn, c);
-//
-//         msg.acknowledge();         
-//      }
-//
-//      sessConsume.close();
-//      
-//      sessConsume = sf.createSession(false, true, true, false);
-//      
-//      browser = sessConsume.createConsumer(new SimpleString(threadNum + "sub"),
-//                                           null, false, true);
-//      
-//      //Messages should still be there
-//      
-//      consumerCounts.clear();
-//      
-//      for (int i = 0; i < numMessages; i++)
-//      {
-//         ClientMessage msg = browser.receive(RECEIVE_TIMEOUT);
-//
-//         assertNotNull(msg);
-//
-//         int tn = (Integer)msg.getProperty(new SimpleString("threadnum"));
-//         int cnt = (Integer)msg.getProperty(new SimpleString("count"));
-//
-//         Integer c = consumerCounts.get(tn);
-//         if (c == null)
-//         {
-//            c = new Integer(cnt);
-//         }
-//
-//         if (cnt != c.intValue())
-//         {
-//            throw new Exception("Invalid count, expected " + c + " got " + cnt);
-//         }
-//         
-//         c++;
-//         
-//         //Wrap
-//         if (c == numMessages)
-//         {
-//            c = 0;
-//         }
-//         
-//         consumerCounts.put(tn, c);
-//
-//         msg.acknowledge();         
-//      }
-//      
-//      sessConsume.close();
-//      
-//      sessSend.deleteQueue(new SimpleString(threadNum + "sub"));
-//      
-//      sessSend.close();
-//
-//      long end = System.currentTimeMillis();
-//
-//      log.info("duration " + (end - start));
-//   }
-      
+
+   // Browsers
+   // FIXME - this test won't work until we use a proper iterator for browsing a queue.
+   // Making a copy of the queue for a browser consumer doesn't work well with replication since
+   // When replicating the create consumer (browser) to the backup, when executed on the backup the
+   // backup may have different messages in its queue since been added on different threads.
+   // So when replicating deliveries they may not be found.
+   // https://jira.jboss.org/jira/browse/JBMESSAGING-1433
+   // protected void doTestM(final ClientSessionFactory sf, final int threadNum) throws Exception
+   // {
+   // long start = System.currentTimeMillis();
+   //
+   // ClientSession sessSend = sf.createSession(false, true, true, false);
+   //      
+   // ClientSession sessConsume = sf.createSession(false, true, true, false);
+   //      
+   // sessConsume.createQueue(ADDRESS, new SimpleString(threadNum + "sub"), null, false, false);
+   //
+   // final int numMessages = 100;
+   //
+   // ClientProducer producer = sessSend.createProducer(ADDRESS);
+   //
+   // sendMessages(sessSend, producer, numMessages, threadNum);
+   //      
+   // ClientConsumer browser = sessConsume.createConsumer(new SimpleString(threadNum + "sub"),
+   // null, false, true);
+   //      
+   // Map<Integer, Integer> consumerCounts = new HashMap<Integer, Integer>();
+   //      
+   // for (int i = 0; i < numMessages; i++)
+   // {
+   // ClientMessage msg = browser.receive(RECEIVE_TIMEOUT);
+   //
+   // assertNotNull(msg);
+   //
+   // int tn = (Integer)msg.getProperty(new SimpleString("threadnum"));
+   // int cnt = (Integer)msg.getProperty(new SimpleString("count"));
+   //
+   // Integer c = consumerCounts.get(tn);
+   // if (c == null)
+   // {
+   // c = new Integer(cnt);
+   // }
+   //
+   // if (cnt != c.intValue())
+   // {
+   // throw new Exception("Invalid count, expected " + c + " got " + cnt);
+   // }
+   //         
+   // c++;
+   //         
+   // //Wrap
+   // if (c == numMessages)
+   // {
+   // c = 0;
+   // }
+   //         
+   // consumerCounts.put(tn, c);
+   //
+   // msg.acknowledge();
+   // }
+   //
+   // sessConsume.close();
+   //      
+   // sessConsume = sf.createSession(false, true, true, false);
+   //      
+   // browser = sessConsume.createConsumer(new SimpleString(threadNum + "sub"),
+   // null, false, true);
+   //      
+   // //Messages should still be there
+   //      
+   // consumerCounts.clear();
+   //      
+   // for (int i = 0; i < numMessages; i++)
+   // {
+   // ClientMessage msg = browser.receive(RECEIVE_TIMEOUT);
+   //
+   // assertNotNull(msg);
+   //
+   // int tn = (Integer)msg.getProperty(new SimpleString("threadnum"));
+   // int cnt = (Integer)msg.getProperty(new SimpleString("count"));
+   //
+   // Integer c = consumerCounts.get(tn);
+   // if (c == null)
+   // {
+   // c = new Integer(cnt);
+   // }
+   //
+   // if (cnt != c.intValue())
+   // {
+   // throw new Exception("Invalid count, expected " + c + " got " + cnt);
+   // }
+   //         
+   // c++;
+   //         
+   // //Wrap
+   // if (c == numMessages)
+   // {
+   // c = 0;
+   // }
+   //         
+   // consumerCounts.put(tn, c);
+   //
+   // msg.acknowledge();
+   // }
+   //      
+   // sessConsume.close();
+   //      
+   // sessSend.deleteQueue(new SimpleString(threadNum + "sub"));
+   //      
+   // sessSend.close();
+   //
+   // long end = System.currentTimeMillis();
+   //
+   // log.info("duration " + (end - start));
+   // }
+
    protected void doTestN(final ClientSessionFactory sf, final int threadNum) throws Exception
    {
       ClientSession sessCreate = sf.createSession(false, true, true, false);
@@ -1125,11 +1125,11 @@ public class MultiThreadRandomFailoverTest extends TestCase
       sessCreate.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false);
 
       ClientSession sess = sf.createSession(false, true, true, false);
-      
+
       sess.stop();
 
       sess.start();
-      
+
       sess.stop();
 
       ClientConsumer consumer = sess.createConsumer(new SimpleString(threadNum + ADDRESS.toString()));
@@ -1144,7 +1144,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
       message.getBody().flip();
 
       producer.send(message);
-      
+
       sess.start();
 
       ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
@@ -1152,9 +1152,9 @@ public class MultiThreadRandomFailoverTest extends TestCase
       assertNotNull(message2);
 
       message2.acknowledge();
-      
+
       sess.stop();
-      
+
       sess.start();
 
       sess.close();
@@ -1166,7 +1166,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
    protected int getNumIterations()
    {
-      return 1000;
+      return 10;
    }
 
    protected void setUp() throws Exception
@@ -1182,11 +1182,11 @@ public class MultiThreadRandomFailoverTest extends TestCase
    {
       log.info("************* Ending test " + this.getName());
 
-      if(liveService != null && liveService.isStarted())
+      if (liveService != null && liveService.isStarted())
       {
          liveService.stop();
       }
-      if(backupService != null && backupService.isStarted())
+      if (backupService != null && backupService.isStarted())
       {
          backupService.stop();
       }
@@ -1351,7 +1351,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
    private void consumeMessages(final Set<ClientConsumer> consumers, final int numMessages) throws Exception
    {
-      //We make sure the messages arrive in the order they were sent from a particular producer
+      // We make sure the messages arrive in the order they were sent from a particular producer
       Map<ClientConsumer, Map<Integer, Integer>> counts = new HashMap<ClientConsumer, Map<Integer, Integer>>();
 
       for (int i = 0; i < numMessages; i++)
@@ -1383,15 +1383,15 @@ public class MultiThreadRandomFailoverTest extends TestCase
             {
                throw new Exception("Invalid count, expected " + c + " got " + cnt);
             }
-            
+
             c++;
-            
-            //Wrap
+
+            // Wrap
             if (c == numMessages)
             {
                c = 0;
             }
-            
+
             consumerCounts.put(tn, c);
 
             msg.acknowledge();
@@ -1469,15 +1469,15 @@ public class MultiThreadRandomFailoverTest extends TestCase
       volatile String failure;
 
       final int tn;
-      
+
       final int numMessages;
-      
+
       volatile boolean done;
 
       MyHandler(final int threadNum, final int numMessages)
       {
          this.tn = threadNum;
-         
+
          this.numMessages = numMessages;
       }
 
@@ -1491,7 +1491,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
          {
             log.error("Failed to process", me);
          }
-         
+
          if (done)
          {
             return;
@@ -1505,8 +1505,8 @@ public class MultiThreadRandomFailoverTest extends TestCase
          {
             c = new Integer(cnt);
          }
-         
-         //log.info("got message " + threadNum + "-" + cnt);
+
+         // log.info("got message " + threadNum + "-" + cnt);
 
          if (cnt != c.intValue())
          {
@@ -1515,7 +1515,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
             latch.countDown();
          }
-         
+
          if (tn == threadNum && c == numMessages - 1)
          {
             done = true;
@@ -1523,15 +1523,14 @@ public class MultiThreadRandomFailoverTest extends TestCase
          }
 
          c++;
-         //Wrap around at 100
+         // Wrap around at 100
          if (c == 100)
          {
             c = 0;
          }
-         
+
          counts.put(threadNum, c);
 
-         
       }
    }
 }

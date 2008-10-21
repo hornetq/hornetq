@@ -3760,7 +3760,7 @@ public class MessageConsumerTest extends JMSTestCase
          {
             conn.close();
          }
-      }
+      }      
    }
 
    // http://jira.jboss.org/jira/browse/JBMESSAGING-1294 - commented out until 2.0 beta
@@ -4115,14 +4115,14 @@ public class MessageConsumerTest extends JMSTestCase
          {
             TextMessage tm = (TextMessage) m;
 
-            log.trace("Got message:" + tm.getText() + " count is " + count);
+            log.info("Got message:" + tm.getText() + " count is " + count);
 
             messageOrder += tm.getText() + " ";
             if (count == 0)
             {
                if (!("a".equals(tm.getText())))
                {
-                  log.trace("Should be a but was " + tm.getText());
+                  log.info("Should be a but was " + tm.getText());
                   failed = true;
                   latch.countDown();
                }
@@ -4130,14 +4130,14 @@ public class MessageConsumerTest extends JMSTestCase
                {
                   sess.rollback();
                   messageOrder += "RB ";
-                  log.trace("rollback() called");
+                  log.info("rollback() called");
                }
                else
                {
-                  log.trace("Calling recover");
+                  log.info("Calling recover");
                   messageOrder += "RC ";
                   sess.recover();
-                  log.trace("recover() called");
+                  log.info("recover() called");
                }
             }
 
@@ -4145,7 +4145,7 @@ public class MessageConsumerTest extends JMSTestCase
             {
                if (!("a".equals(tm.getText())))
                {
-                  log.trace("Should be a but was " + tm.getText());
+                  log.info("Should be a but was " + tm.getText());
                   failed = true;
                   latch.countDown();
                }
@@ -4159,7 +4159,7 @@ public class MessageConsumerTest extends JMSTestCase
             {
                if (!("b".equals(tm.getText())))
                {
-                  log.trace("Should be b but was " + tm.getText());
+                  log.info("Should be b but was " + tm.getText());
                   failed = true;
                   latch.countDown();
                }
@@ -4168,7 +4168,7 @@ public class MessageConsumerTest extends JMSTestCase
             {
                if (!("c".equals(tm.getText())))
                {
-                  log.trace("Should be c but was " + tm.getText());
+                  log.info("Should be c but was " + tm.getText());
                   failed = true;
                   latch.countDown();
                }
@@ -4178,7 +4178,7 @@ public class MessageConsumerTest extends JMSTestCase
                }
                else
                {
-                  log.trace("Acknowledging session");
+                  log.info("Acknowledging session");
                   tm.acknowledge();
                }
                latch.countDown();
@@ -4187,7 +4187,7 @@ public class MessageConsumerTest extends JMSTestCase
          }
          catch (JMSException e)
          {
-            log.trace("Caught JMSException", e);
+            log.info("Caught JMSException", e);
             failed = true;
             latch.countDown();
          }

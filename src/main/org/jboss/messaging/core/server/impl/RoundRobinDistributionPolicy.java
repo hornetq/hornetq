@@ -39,18 +39,23 @@ public class RoundRobinDistributionPolicy extends DistributionPolicyImpl
 
    protected int pos = 0;
 
-
-   public synchronized void addConsumer(Consumer consumer)
+   @Override
+   public synchronized void addConsumer(final Consumer consumer)
    {
       pos = 0;
       super.addConsumer(consumer);
    }
 
-   public synchronized boolean removeConsumer(Consumer consumer)
+   @Override
+   public synchronized boolean removeConsumer(final Consumer consumer)
    {
-
       pos = 0;
       return super.removeConsumer(consumer);
+   }
+   
+   public synchronized int getConsumerCount()
+   {
+      return super.getConsumerCount();
    }
 
    public HandleStatus distribute(final MessageReference reference)
@@ -90,7 +95,7 @@ public class RoundRobinDistributionPolicy extends DistributionPolicyImpl
       }
    }
 
-   protected Consumer getNextConsumer()
+   protected synchronized Consumer getNextConsumer()
    {
       Consumer consumer = consumers.get(pos);
       incrementPosition();
@@ -106,7 +111,7 @@ public class RoundRobinDistributionPolicy extends DistributionPolicyImpl
       }
    }
 
-   protected HandleStatus handle(MessageReference reference, Consumer consumer)
+   protected HandleStatus handle(final MessageReference reference, final Consumer consumer)
    {
       HandleStatus status;
       try

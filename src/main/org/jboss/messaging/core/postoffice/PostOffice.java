@@ -69,7 +69,7 @@ public interface PostOffice extends MessagingComponent
    
    List<Binding> getBindingsForAddress(SimpleString address) throws Exception;
    
-   Binding getBinding(SimpleString queueName) throws Exception;
+   Binding getBinding(SimpleString queueName);
       
    List<MessageReference> route(ServerMessage message) throws Exception;
    

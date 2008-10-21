@@ -34,7 +34,6 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEPRODUCER;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEPRODUCER_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEQUEUE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEQUEUECOPY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_DELETE_QUEUE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FAILOVER_COMPLETE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FLOWTOKEN;
@@ -69,6 +68,9 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SUSPEND;
 
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -196,6 +198,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    private volatile boolean active;
 
+   private final boolean client;
+
    private final long pingPeriod;
 
    private final ScheduledExecutorService pingExecutor;
@@ -210,17 +214,172 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    private final ReadWriteLock readWriteLock;
 
    private final Object transferLock = new Object();
-   
-   private static volatile boolean debug;
-   
+
+   // debug only stuff
+
+   private boolean createdActive;
+
+   public static volatile boolean debug = false;
+
+   private static final int MAX_DEBUG_CACHE_SIZE = 1000;
+
+   private static final Map<Long, Channel> serverLiveChannels = new LinkedHashMap<Long, Channel>();
+
+   private static final Map<Long, Channel> serverBackupChannels = new LinkedHashMap<Long, Channel>();
+
+   private static final Map<Long, Channel> clientChannels = new LinkedHashMap<Long, Channel>();
+
    private static void report()
    {
+      log.info("=================================================================");
+      log.info("Report on channel history");
+      log.info("-------------------------");
+      log.info(" ");
+      log.info("Server--->Client traffic");
+      log.info("------------------------");
+      for (Channel serverBackupChannel : serverBackupChannels.values())
+      {
+         Channel serverLiveChannel = serverLiveChannels.get(serverBackupChannel.getID());
+
+         Channel clientChannel = clientChannels.get(serverBackupChannel.getID());
+
+         log.info("Channel id: " + serverBackupChannel.getID());
+         log.info("Backup     Live     Client");
+         Iterator<Channel.Command> backup = serverBackupChannel.getSentCommands().iterator();
+         Iterator<Channel.Command> live = serverLiveChannel == null ? null : serverLiveChannel.getSentCommands()
+                                                                                              .iterator();
+         Iterator<Channel.Command> client = clientChannel == null ? null : clientChannel.getReceivedCommands()
+                                                                                        .iterator();
+
+         while (backup.hasNext() || (live != null && live.hasNext()) || (client != null && client.hasNext()))
+         {
+            String line = "";
+            byte bkpPacketType = -1;
+            byte livePacketType = -1;
+            byte clientPacketType = -1;
+            if (backup.hasNext())
+            {
+               Channel.Command backupCommand = backup.next();
+               line += "id:" + backupCommand.commandID + " type:" + backupCommand.packet.getType() + ", ";
+               bkpPacketType = backupCommand.packet.getType();
+            }
+            else
+            {
+               line += "--------------";
+            }
+            if (live != null && live.hasNext())
+            {
+               Channel.Command liveCommand = live.next();
+               line += "id:" + liveCommand.commandID + " type:" + liveCommand.packet.getType() + ", ";
+               livePacketType = liveCommand.packet.getType();
+            }
+            else
+            {
+               line += "--------------";
+            }
+            if (client != null && client.hasNext())
+            {
+               Channel.Command clientCommand = client.next();
+               line += "id:" + clientCommand.commandID + " type:" + clientCommand.packet.getType() + ", ";
+               clientPacketType = clientCommand.packet.getType();
+            }
+            else
+            {
+               line += "--------------";
+            }
+            log.info(line);
+            if (bkpPacketType != -1 && livePacketType != -1 && clientPacketType != -1 &&
+                     (bkpPacketType != livePacketType || livePacketType != clientPacketType))
+            {
+               log.info("*** ERROR Packets in wrong sequence ***");
+            }
+         }
+      }
       
+      log.info("Client--->Server traffic");
+      log.info("------------------------");
+      for (Channel serverBackupChannel : serverBackupChannels.values())
+      {
+         Channel serverLiveChannel = serverLiveChannels.get(serverBackupChannel.getID());
+
+         Channel clientChannel = clientChannels.get(serverBackupChannel.getID());
+
+         log.info("Channel id: " + serverBackupChannel.getID());
+         log.info("Backup     Live     Client");
+         Iterator<Channel.Command> backup = serverBackupChannel.getReceivedCommands().iterator();
+         Iterator<Channel.Command> live = serverLiveChannel == null ? null : serverLiveChannel.getReceivedCommands()
+                                                                                              .iterator();
+         Iterator<Channel.Command> client = clientChannel == null ? null : clientChannel.getSentCommands()
+                                                                                        .iterator();
+
+         while (backup.hasNext() || (live != null && live.hasNext()) || (client != null && client.hasNext()))
+         {
+            String line = "";
+            byte bkpPacketType = -1;
+            byte livePacketType = -1;
+            byte clientPacketType = -1;
+            if (backup.hasNext())
+            {
+               Channel.Command backupCommand = backup.next();
+               line += "id:" + backupCommand.commandID + " type:" + backupCommand.packet.getType() + ", ";
+               bkpPacketType = backupCommand.packet.getType();
+            }
+            else
+            {
+               line += "--------------";
+            }
+            if (live != null && live.hasNext())
+            {
+               Channel.Command liveCommand = live.next();
+               line += "id:" + liveCommand.commandID + " type:" + liveCommand.packet.getType() + ", ";
+               livePacketType = liveCommand.packet.getType();
+            }
+            else
+            {
+               line += "--------------";
+            }
+            if (client != null && client.hasNext())
+            {
+               Channel.Command clientCommand = client.next();
+               line += "id:" + clientCommand.commandID + " type:" + clientCommand.packet.getType() + ", ";
+               clientPacketType = clientCommand.packet.getType();
+            }
+            else
+            {
+               line += "--------------";
+            }
+            log.info(line);
+            if (bkpPacketType != -1 && livePacketType != -1 && clientPacketType != -1 &&
+                     (bkpPacketType != livePacketType || livePacketType != clientPacketType))
+            {
+               log.info("*** ERROR Packets in wrong sequence ***");
+            }
+         }
+      }
+      
+      log.info("End of report====================================================");
    }
+
+   // end debug only stuff
 
    // Constructors
    // ---------------------------------------------------------------------------------
 
+   /*
+    * Create a client side connection
+    */
+   public RemotingConnectionImpl(final Connection transportConnection,
+                                 final long blockingCallTimeout,
+                                 final long pingPeriod,
+                                 final ScheduledExecutorService pingExecutor,
+                                 final List<Interceptor> interceptors)
+   {
+      this(transportConnection, blockingCallTimeout, pingPeriod, pingExecutor, interceptors, null, true, null, true);
+   }
+
+   /*
+    * Create a server side connection
+    */
    public RemotingConnectionImpl(final Connection transportConnection,
                                  final long blockingCallTimeout,
                                  final long pingPeriod,
@@ -229,6 +388,28 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                                  final RemotingConnection replicatingConnection,
                                  final boolean active,
                                  final ReadWriteLock readWriteLock)
+
+   {
+      this(transportConnection,
+           blockingCallTimeout,
+           pingPeriod,
+           pingExecutor,
+           interceptors,
+           replicatingConnection,
+           active,
+           readWriteLock,
+           false);
+   }
+
+   private RemotingConnectionImpl(final Connection transportConnection,
+                                  final long blockingCallTimeout,
+                                  final long pingPeriod,
+                                  final ScheduledExecutorService pingExecutor,
+                                  final List<Interceptor> interceptors,
+                                  final RemotingConnection replicatingConnection,
+                                  final boolean active,
+                                  final ReadWriteLock readWriteLock,
+                                  final boolean client)
 
    {
       this.transportConnection = transportConnection;
@@ -253,6 +434,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       final ChannelHandler ppHandler = new PingPongHandler();
 
       pingChannel.setHandler(ppHandler);
+
+      this.client = client;
+
+      this.createdActive = active;
    }
 
    public void startPinger()
@@ -290,6 +475,25 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          channel = new ChannelImpl(this, channelID, packetConfirmationBatchSize, interruptBlockOnFailure);
 
          channels.put(channelID, channel);
+
+         if (debug)
+         {
+            if (client)
+            {
+               clientChannels.put(channelID, channel);
+            }
+            else
+            {
+               if (createdActive)
+               {
+                  serverLiveChannels.put(channelID, channel);
+               }
+               else
+               {
+                  serverBackupChannels.put(channelID, channel);
+               }
+            }
+         }
       }
 
       return channel;
@@ -407,8 +611,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       final long channelID = packet.getChannelID();
 
-      //FIXME - need to redo global ordering since this won't work with multiple connections
-      //Instead use lastSeq technique
+      // FIXME - need to redo global ordering since this won't work with multiple connections
+      // Instead use lastSeq technique
 
       final boolean useLock = readWriteLock != null;
 
@@ -856,6 +1060,14 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       private final Queue<DelayedResult> responseActions = new ConcurrentLinkedQueue<DelayedResult>();
 
+      // debug stuff
+
+      private final Queue<Command> receivedCommandsCache;
+
+      private final Queue<Command> sentCommandsCache;
+
+      // end debug stuff
+
       private ChannelImpl(final RemotingConnectionImpl connection,
                           final long id,
                           final int packetConfirmationBatchSize,
@@ -893,6 +1105,19 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
 
          this.interruptBlockOnFailure = interruptBlockOnFailure;
+
+         if (debug)
+         {
+            this.sentCommandsCache = new LinkedList<Command>();
+
+            this.receivedCommandsCache = new LinkedList<Command>();
+         }
+         else
+         {
+            this.sentCommandsCache = null;
+
+            this.receivedCommandsCache = null;
+         }
       }
 
       public long getID()
@@ -1201,6 +1426,16 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          lock.unlock();
       }
 
+      public Queue<Command> getSentCommands()
+      {
+         return this.sentCommandsCache;
+      }
+
+      public Queue<Command> getReceivedCommands()
+      {
+         return this.receivedCommandsCache;
+      }
+
       // we need to do a thorough investigation of how packets confirmed get
       //
       // a) replicated from client through live to backup without dealing with on live
@@ -1208,6 +1443,18 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       private void handlePacket(final Packet packet)
       {
+         if (debug)
+         {
+            int commandID = packet.isRequiresConfirmations() ? lastReceivedCommandID + 1 : -1;
+
+            receivedCommandsCache.add(new Command(commandID, packet));
+
+            if (receivedCommandsCache.size() == MAX_DEBUG_CACHE_SIZE)
+            {
+               receivedCommandsCache.poll();
+            }
+         }
+
          if (packet.getType() == PACKETS_CONFIRMED)
          {
             if (resendCache != null)
@@ -1294,13 +1541,18 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                nextConfirmation += packetConfirmationBatchSize;
 
                confirmed.setChannelID(id);
+               
+               if (debug)
+               {
+                  this.sentCommandsCache.add(new Command(-1, confirmed));
+               }
 
                connection.doWrite(confirmed);
             }
          }
       }
 
-      // private volatile int lastSentID;
+      private volatile int lastSentID;
 
       private void addToCache(final Packet packet)
       {
@@ -1308,12 +1560,22 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          {
             resendCache.add(packet);
          }
+
+         if (debug && packet.getType() != PacketImpl.SESS_REPLICATE_DELIVERY)
+         {
+            sentCommandsCache.add(new Command(lastSentID++, packet));
+
+            if (sentCommandsCache.size() == MAX_DEBUG_CACHE_SIZE)
+            {
+               sentCommandsCache.poll();
+            }
+         }
       }
 
       private void clearUpTo(final int lastReceivedCommandID)
       {
          final int numberToClear = 1 + lastReceivedCommandID - firstStoredCommandID;
-        
+
          if (numberToClear == -1)
          {
             throw new IllegalArgumentException("Invalid lastReceivedCommandID: " + lastReceivedCommandID);
@@ -1325,8 +1587,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
             if (packet == null)
             {
-               throw new IllegalStateException(System.identityHashCode(this) + 
-                                               " Can't find packet to clear: " +
+               report();
+               throw new IllegalStateException(System.identityHashCode(this) + " Can't find packet to clear: " +
                                                " last received command id " +
                                                lastReceivedCommandID +
                                                " first stored command id " +
@@ -1334,7 +1596,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                                                " cache size " +
                                                this.resendCache.size() +
                                                " channel id " +
-                                               id);
+                                               id +
+                                               " client " +
+                                               connection.client +
+                                               " created active " +
+                                               connection.createdActive);
             }
          }
 
@@ -1347,6 +1613,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          {
             if (packet.getType() == PACKETS_CONFIRMED)
             {
+               if (debug)
+               {
+                  sentCommandsCache.add(new Command(-1, packet));
+               }
                connection.doWrite(packet);
             }
             else if (packet.getType() == REPLICATION_RESPONSE)
@@ -1415,4 +1685,5 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
       }
    }
+
 }

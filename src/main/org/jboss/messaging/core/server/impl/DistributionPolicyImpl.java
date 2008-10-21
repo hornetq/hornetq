@@ -21,12 +21,11 @@
  */
 package org.jboss.messaging.core.server.impl;
 
-import org.jboss.messaging.core.server.Consumer;
-import org.jboss.messaging.core.server.DistributionPolicy;
-import org.jboss.messaging.core.server.ServerMessage;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jboss.messaging.core.server.Consumer;
+import org.jboss.messaging.core.server.DistributionPolicy;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

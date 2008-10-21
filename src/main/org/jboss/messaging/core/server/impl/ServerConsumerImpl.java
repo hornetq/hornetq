@@ -22,12 +22,23 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.DelayedResult;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
 import org.jboss.messaging.core.server.HandleStatus;
@@ -38,11 +49,6 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
-
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Concrete implementation of a ClientConsumer.
@@ -75,7 +81,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final ServerSession session;
 
-   private final Object startStopLock = new Object();
+   private final Lock lock = new ReentrantLock();
 
    private final AtomicInteger availableCredits;
 
@@ -84,7 +90,7 @@ public class ServerConsumerImpl implements ServerConsumer
    /**
     * if we are a browse only consumer we don't need to worry about acknowledgemenets or being started/stopeed by the session.
     */
-   private boolean browseOnly;
+   private final boolean browseOnly;
 
    private final StorageManager storageManager;
 
@@ -168,9 +174,12 @@ public class ServerConsumerImpl implements ServerConsumer
 
          return HandleStatus.HANDLED;
       }
-
-      synchronized (startStopLock)
+   
+      lock.lock();
+      
+      try
       {
+      
          // If the consumer is stopped then we don't accept the message, it
          // should go back into the
          // queue for delivery later.
@@ -217,36 +226,73 @@ public class ServerConsumerImpl implements ServerConsumer
 
          return HandleStatus.HANDLED;
       }
-   }
-
-   public void close() throws Exception
-   {
-      browseOnly = false;
-
-      setStarted(false);
-
-      messageQueue.removeConsumer(this);
-
-      session.removeConsumer(this);
-
-      LinkedList<MessageReference> refs = cancelRefs();
-
-      Iterator<MessageReference> iter = refs.iterator();
-
-      while (iter.hasNext())
+      finally
       {
-         MessageReference ref = iter.next();
+         lock.unlock();
+      }
+   }
+   
+   public void handleClose(final Packet packet)
+   {
+      DelayedResult result = null;
 
-         if (!ref.cancel(storageManager, postOffice, queueSettingsRepository))
+      Packet response = null;
+                  
+      try
+      {               
+         lock.lock();
+         try
          {
-            iter.remove();
+            setStarted(false);
+         }
+         finally
+         {
+            lock.unlock();
+         }
+         
+         //We must stop delivery before replicating the packet, this ensures the close message gets processed
+         //and replicated on the backup in the same order as any delivery that might be occuring gets
+         //processed and replicated on the backup.
+         //Otherwise we could end up with a situation where a close comes in, then a delivery comes in,
+         //then close gets replicated to backup, then delivery gets replicated, but consumer is already
+         //closed!
+         
+         result = channel.replicatePacket(packet);
+         
+         doClose();
+         
+         response = new NullResponseMessage();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to close producer", e);
+         
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
          }
       }
-
-      if (!refs.isEmpty())
+   
+      session.sendResponse(result, response);
+   }
+     
+   public void close() throws Exception
+   {
+      lock.lock();
+      try
       {
-         messageQueue.addListFirst(refs);
+         setStarted(false);
       }
+      finally
+      {
+         lock.unlock();
+      }
+
+      doClose();
    }
 
    public LinkedList<MessageReference> cancelRefs() throws Exception
@@ -268,11 +314,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public void setStarted(final boolean started)
    {
-      synchronized (startStopLock)
-      {
-         this.started = browseOnly || started;
-      }
-
+      this.started = browseOnly || started;
+      
       // Outside the lock
       if (started)
       {
@@ -355,6 +398,16 @@ public class ServerConsumerImpl implements ServerConsumer
          }
       }
    }
+   
+   public void lock()
+   {
+      lock.lock();
+   }
+   
+   public void unlock()
+   {
+      lock.unlock();
+   }
 
    // Public
    // -----------------------------------------------------------------------------
@@ -362,6 +415,32 @@ public class ServerConsumerImpl implements ServerConsumer
    // Private
    // --------------------------------------------------------------------------------------
 
+   private void doClose() throws Exception
+   {
+      messageQueue.removeConsumer(this);
+
+      session.removeConsumer(this);
+
+      LinkedList<MessageReference> refs = cancelRefs();
+
+      Iterator<MessageReference> iter = refs.iterator();
+
+      while (iter.hasNext())
+      {
+         MessageReference ref = iter.next();
+
+         if (!ref.cancel(storageManager, postOffice, queueSettingsRepository))
+         {
+            iter.remove();
+         }
+      }
+
+      if (!refs.isEmpty())
+      {
+         messageQueue.addListFirst(refs);
+      }
+   }
+   
    private void promptDelivery()
    {
       session.promptDelivery(messageQueue);

@@ -48,19 +48,10 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_START;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SUSPEND;
 
-import java.util.List;
-
-import javax.transaction.xa.Xid;
-
-import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
-import org.jboss.messaging.core.remoting.DelayedResult;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -80,16 +71,12 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetInDoubtXidsResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAJoinMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAPrepareMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResumeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
-import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
 
 /**
@@ -107,18 +94,13 @@ public class ServerSessionPacketHandler implements ChannelHandler
 
    private final Channel channel;
 
-   private final StorageManager storageManager;
-
    public ServerSessionPacketHandler(final ServerSession session,
-                                     final Channel channel,
-                                     final StorageManager storageManager)
+                                     final Channel channel)
 
    {
       this.session = session;
 
       this.channel = channel;
-
-      this.storageManager = storageManager;
    }
 
    public long getID()
@@ -130,25 +112,6 @@ public class ServerSessionPacketHandler implements ChannelHandler
    {
       byte type = packet.getType();
 
-      if (type == SESS_SEND || type == SESS_SCHEDULED_SEND)
-      {
-         SessionSendMessage send = (SessionSendMessage)packet;
-
-         ServerMessage msg = send.getServerMessage();
-
-         if (msg.getMessageID() == 0L)
-         {
-            // must generate message id here, so we know they are in sync on live and backup
-            long id = storageManager.generateUniqueID();
-
-            send.getServerMessage().setMessageID(id);
-         }
-      }
-
-      Packet response = null;
-
-      DelayedResult result = channel.replicatePacket(packet);
-
       try
       {
          switch (type)
@@ -156,220 +119,184 @@ public class ServerSessionPacketHandler implements ChannelHandler
             case SESS_CREATECONSUMER:
             {
                SessionCreateConsumerMessage request = (SessionCreateConsumerMessage)packet;
-               response = session.createConsumer(request.getQueueName(),
-                                                 request.getFilterString(),
-                                                 request.getWindowSize(),
-                                                 request.getMaxRate(),
-                                                 request.isBrowseOnly());
+               session.handleCreateConsumer(request);
                break;
             }
             case SESS_CREATEQUEUE:
             {
                SessionCreateQueueMessage request = (SessionCreateQueueMessage)packet;
-               session.createQueue(request.getAddress(),
-                                   request.getQueueName(),
-                                   request.getFilterString(),
-                                   request.isDurable(),
-                                   request.isTemporary());
-               response = new NullResponseMessage();
+               session.handleCreateQueue(request);
                break;
             }
             case SESS_DELETE_QUEUE:
             {
                SessionDeleteQueueMessage request = (SessionDeleteQueueMessage)packet;
-               session.deleteQueue(request.getQueueName());
-               response = new NullResponseMessage();
+               session.handleDeleteQueue(request);               
                break;
             }
             case SESS_QUEUEQUERY:
             {
                SessionQueueQueryMessage request = (SessionQueueQueryMessage)packet;
-               response = session.executeQueueQuery(request.getQueueName());
+               session.handleExecuteQueueQuery(request);
                break;
             }
             case SESS_BINDINGQUERY:
             {
                SessionBindingQueryMessage request = (SessionBindingQueryMessage)packet;
-               response = session.executeBindingQuery(request.getAddress());
+               session.handleExecuteBindingQuery(request);
                break;
             }
             case SESS_CREATEPRODUCER:
             {
                SessionCreateProducerMessage request = (SessionCreateProducerMessage)packet;
-               response = session.createProducer(request.getAddress(),
-                                                 request.getWindowSize(),
-                                                 request.getMaxRate(),
-                                                 request.isAutoGroupId());
+               session.handleCreateProducer(request);
                break;
             }
             case SESS_ACKNOWLEDGE:
             {
                SessionAcknowledgeMessage message = (SessionAcknowledgeMessage)packet;
-               session.acknowledge(message.getConsumerID(), message.getMessageID());
-               if (message.isRequiresResponse())
-               {
-                  response = new NullResponseMessage();
-               }
+               session.handleAcknowledge(message);               
                break;
             }
             case SESS_COMMIT:
             {
-               session.commit();
-               response = new NullResponseMessage();
+               session.handleCommit(packet);               
                break;
             }
             case SESS_ROLLBACK:
             {
-               session.rollback();
-               response = new NullResponseMessage();
+               session.handleRollback(packet);
                break;
             }
             case SESS_XA_COMMIT:
             {
                SessionXACommitMessage message = (SessionXACommitMessage)packet;
-               response = session.XACommit(message.isOnePhase(), message.getXid());
+               session.handleXACommit(message);
                break;
             }
             case SESS_XA_END:
             {
                SessionXAEndMessage message = (SessionXAEndMessage)packet;
-               response = session.XAEnd(message.getXid(), message.isFailed());
+               session.handleXAEnd(message);
                break;
             }
             case SESS_XA_FORGET:
             {
                SessionXAForgetMessage message = (SessionXAForgetMessage)packet;
-               response = session.XAForget(message.getXid());
+               session.handleXAForget(message);
                break;
             }
             case SESS_XA_JOIN:
             {
                SessionXAJoinMessage message = (SessionXAJoinMessage)packet;
-               response = session.XAJoin(message.getXid());
+               session.handleXAJoin(message);
                break;
             }
             case SESS_XA_RESUME:
             {
                SessionXAResumeMessage message = (SessionXAResumeMessage)packet;
-               response = session.XAResume(message.getXid());
+               session.handleXAResume(message);
                break;
             }
             case SESS_XA_ROLLBACK:
             {
                SessionXARollbackMessage message = (SessionXARollbackMessage)packet;
-               response = session.XARollback(message.getXid());
+               session.handleXARollback(message);
                break;
             }
             case SESS_XA_START:
             {
                SessionXAStartMessage message = (SessionXAStartMessage)packet;
-               response = session.XAStart(message.getXid());
+               session.handleXAStart(message);
                break;
             }
             case SESS_XA_SUSPEND:
             {
-               response = session.XASuspend();
+               session.handleXASuspend(packet);
                break;
             }
             case SESS_XA_PREPARE:
             {
                SessionXAPrepareMessage message = (SessionXAPrepareMessage)packet;
-               response = session.XAPrepare(message.getXid());
+               session.handleXAPrepare(message);
                break;
             }
             case SESS_XA_INDOUBT_XIDS:
             {
-               List<Xid> xids = session.getInDoubtXids();
-               response = new SessionXAGetInDoubtXidsResponseMessage(xids);
+               session.handleGetInDoubtXids(packet);               
                break;
             }
             case SESS_XA_GET_TIMEOUT:
             {
-               response = new SessionXAGetTimeoutResponseMessage(session.getXATimeout());
+               session.handleGetXATimeout(packet);
                break;
             }
             case SESS_XA_SET_TIMEOUT:
             {
                SessionXASetTimeoutMessage message = (SessionXASetTimeoutMessage)packet;
-               response = new SessionXASetTimeoutResponseMessage(session.setXATimeout(message.getTimeoutSeconds()));
+               session.handleSetXATimeout(message);
                break;
             }
             case SESS_ADD_DESTINATION:
             {
                SessionAddDestinationMessage message = (SessionAddDestinationMessage)packet;
-               session.addDestination(message.getAddress(), message.isDurable(), message.isTemporary());
-               response = new NullResponseMessage();
+               session.handleAddDestination(message);
                break;
             }
             case SESS_REMOVE_DESTINATION:
             {
                SessionRemoveDestinationMessage message = (SessionRemoveDestinationMessage)packet;
-               session.removeDestination(message.getAddress(), message.isDurable());
-               response = new NullResponseMessage();
+               session.handleRemoveDestination(message);              
                break;
             }
             case SESS_START:
             {
-               session.setStarted(true);
+               session.handleStart(packet);
                break;
             }
             case SESS_FAILOVER_COMPLETE:
             {
-               session.failedOver();
+               session.handleFailedOver(packet);
                break;
             }
             case SESS_STOP:
             {
-               session.setStarted(false);
-               response = new NullResponseMessage();
+               session.handleStop(packet);
                break;
             }
             case SESS_CLOSE:
             {
-               session.close();
-               response = new NullResponseMessage();
+               session.handleClose(packet);
                break;
             }
             case SESS_CONSUMER_CLOSE:
             {
                SessionConsumerCloseMessage message = (SessionConsumerCloseMessage)packet;
-               session.closeConsumer(message.getConsumerID());
-               response = new NullResponseMessage();
+               session.handleCloseConsumer(message);
                break;
             }
             case SESS_PRODUCER_CLOSE:
             {
                SessionProducerCloseMessage message = (SessionProducerCloseMessage)packet;
-               session.closeProducer(message.getProducerID());
-               response = new NullResponseMessage();
+               session.handleCloseProducer(message);
                break;
             }
             case SESS_FLOWTOKEN:
             {
                SessionConsumerFlowCreditMessage message = (SessionConsumerFlowCreditMessage)packet;
-               session.receiveConsumerCredits(message.getConsumerID(), message.getCredits());
+               session.handleReceiveConsumerCredits(message);
                break;
             }
             case SESS_SEND:
             {
                SessionSendMessage message = (SessionSendMessage)packet;
-               session.sendProducerMessage(message.getProducerID(), message.getServerMessage());
-               if (message.isRequiresResponse())
-               {
-                  response = new NullResponseMessage();
-               }
+               session.handleSendProducerMessage(message);
                break;
             }
             case SESS_SCHEDULED_SEND:
             {
                SessionScheduledSendMessage message = (SessionScheduledSendMessage)packet;
-               session.sendScheduledProducerMessage(message.getProducerID(),
-                                                    message.getServerMessage(),
-                                                    message.getScheduledDeliveryTime());
-               if (message.isRequiresResponse())
-               {
-                  response = new NullResponseMessage();
-               }
+               session.handleSendScheduledProducerMessage(message);
                break;
             }
             case SESS_MANAGEMENT_SEND:
@@ -381,65 +308,14 @@ public class ServerSessionPacketHandler implements ChannelHandler
             case SESS_REPLICATE_DELIVERY:
             {
                SessionReplicateDeliveryMessage message = (SessionReplicateDeliveryMessage)packet;
-               session.handleReplicatedDelivery(message.getConsumerID(), message.getMessageID());
+               session.handleReplicatedDelivery(message);
                break;
-            }
-            default:
-            {
-               response = new MessagingExceptionMessage(new MessagingException(MessagingException.UNSUPPORTED_PACKET,
-                                                                               "Unsupported packet " + type));
             }
          }
       }
       catch (Throwable t)
       {
-         MessagingException me;
-
          log.error("Caught unexpected exception", t);
-
-         if (t instanceof MessagingException)
-         {
-            me = (MessagingException)t;
-         }
-         else
-         {
-            me = new MessagingException(MessagingException.INTERNAL_ERROR);
-         }
-
-         response = new MessagingExceptionMessage(me);
-      }
-
-      if (response != null)
-      {
-         final boolean closeChannel = type == SESS_CLOSE;
-
-         if (result == null)
-         {
-            // Not clustered - just send now
-            channel.send(response);              
-            
-            if (closeChannel)
-            {
-               channel.close();
-            }
-         }
-         else
-         {
-            final Packet theResponse = response;
-            
-            result.setResultRunner(new Runnable()
-            {
-               public void run()
-               {
-                  channel.send(theResponse);
-                  
-                  if (closeChannel)
-                  {
-                     channel.close();
-                  }
-               }
-            });
-         }
       }
 
       channel.replicateComplete();

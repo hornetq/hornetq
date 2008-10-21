@@ -25,6 +25,8 @@ package org.jboss.messaging.core.server;
 
 import java.util.List;
 
+import org.jboss.messaging.core.remoting.Packet;
+
 /**
  * 
  * A ServerConsumer
@@ -36,11 +38,13 @@ public interface ServerConsumer extends Consumer
 {
 	long getID();
 	
+	void handleClose(Packet packet);
+	
 	void close() throws Exception;
 
 	List<MessageReference> cancelRefs() throws Exception;
 	
-	void setStarted(boolean started) throws Exception;
+	void setStarted(boolean started);
 	
 	void receiveCredits(int credits) throws Exception;
 	
@@ -51,4 +55,8 @@ public interface ServerConsumer extends Consumer
 	void failedOver();
 	
 	void deliverReplicated(final long messageID) throws Exception;
+	
+	void lock();
+	
+	void unlock();
 }

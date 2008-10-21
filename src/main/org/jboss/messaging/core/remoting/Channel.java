@@ -11,6 +11,8 @@
  */
 package org.jboss.messaging.core.remoting;
 
+import java.util.Queue;
+
 import org.jboss.messaging.core.exception.MessagingException;
 
 /**
@@ -49,4 +51,24 @@ public interface Channel
    void unlock();
 
    void interruptBlocking();
+   
+   //debug only
+   Queue<Command> getSentCommands();
+   
+   Queue<Command> getReceivedCommands();
+   
+   // For debug only
+   static class Command
+   {
+      public final int commandID;
+
+      public final Packet packet;
+
+      public Command(final int commandID, final Packet packet)
+      {
+         this.commandID = commandID;
+
+         this.packet = packet;
+      }
+   }
 }

@@ -41,15 +41,46 @@ import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.DelayedResult;
 import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionScheduledSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetInDoubtXidsResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAGetTimeoutResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAJoinMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAPrepareMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResumeMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.MessageReference;
@@ -68,7 +99,6 @@ import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.SimpleIDGenerator;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.SimpleStringIdGenerator;
-import org.jboss.messaging.util.UUIDGenerator;
 
 /*
  * Session implementation 
@@ -235,31 +265,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
    }
 
-   public void setStarted(final boolean s) throws Exception
-   {
-      Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
-
-      for (ServerConsumer consumer : consumersClone)
-      {
-         consumer.setStarted(s);
-      }
-
-      started = s;
-   }
-
-   public void failedOver() throws Exception
-   {
-      Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
-
-      for (ServerConsumer consumer : consumersClone)
-      {
-         consumer.failedOver();
-      }
-   }
-
    public void close() throws Exception
    {
-      rollback(false);
+      rollback();
 
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
 
@@ -349,32 +357,1587 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
    }
 
-   public void acknowledge(final long consumerID, final long messageID) throws Exception
+   public void handleCreateConsumer(final SessionCreateConsumerMessage packet)
    {
-      MessageReference ref = consumers.get(consumerID).getReference(messageID);
-      
-      //Null implies a browser
-      if (ref != null)
+      SimpleString queueName = packet.getQueueName();
+
+      SimpleString filterString = packet.getFilterString();
+
+      int windowSize = packet.getWindowSize();
+
+      int maxRate = packet.getMaxRate();
+
+      boolean browseOnly = packet.isBrowseOnly();
+
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      try
       {
-         if (autoCommitAcks)
+         Binding binding = postOffice.getBinding(queueName);
+
+         if (binding == null)
          {
-            doAck(ref);
+            throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
+         }
+
+         securityStore.check(binding.getAddress(), CheckType.READ, this);
+
+         Filter filter = null;
+
+         if (filterString != null)
+         {
+            filter = new FilterImpl(filterString);
+         }
+
+         // Flow control values if specified on queue override those passed in from
+         // client
+
+         QueueSettings qs = queueSettingsRepository.getMatch(queueName.toString());
+
+         Integer queueWindowSize = qs.getConsumerWindowSize();
+
+         windowSize = queueWindowSize != null ? queueWindowSize : windowSize;
+
+         Integer queueMaxRate = queueSettingsRepository.getMatch(queueName.toString()).getConsumerMaxRate();
+
+         maxRate = queueMaxRate != null ? queueMaxRate : maxRate;
+
+         Queue theQueue;
+         if (browseOnly)
+         {
+            // We consume a copy of the queue - TODO - this is a temporary measure
+            // and will disappear once we can provide a proper iterator on the queue
+
+            theQueue = new QueueImpl(-1, queueName, filter, false, false, false, null, postOffice);
+
+            // There's no need for any special locking since the list method is synchronized
+            List<MessageReference> refs = binding.getQueue().list(filter);
+
+            for (MessageReference ref : refs)
+            {
+               theQueue.addLast(ref);
+            }
          }
          else
          {
-            tx.addAcknowledgement(ref);
-   
-            // Del count is not actually updated in storage unless it's
-            // cancelled
-            ref.incrementDeliveryCount();
+            theQueue = binding.getQueue();
+         }
+
+         ServerConsumer consumer = new ServerConsumerImpl(idGenerator.generateID(),
+                                                          this,
+                                                          theQueue,
+                                                          filter,
+                                                          windowSize != -1,
+                                                          maxRate,
+                                                          started,
+                                                          browseOnly,
+                                                          storageManager,
+                                                          queueSettingsRepository,
+                                                          postOffice,
+                                                          channel);
+
+         response = new SessionCreateConsumerResponseMessage(windowSize);
+
+         consumers.put(consumer.getID(), consumer);
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to create consumer", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleCreateQueue(final SessionCreateQueueMessage packet)
+   {
+      SimpleString address = packet.getAddress();
+
+      SimpleString queueName = packet.getQueueName();
+
+      SimpleString filterString = packet.getFilterString();
+
+      boolean temporary = packet.isTemporary();
+
+      boolean durable = packet.isDurable();
+
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      try
+      {
+         // make sure the user has privileges to create this queue
+         if (!postOffice.containsDestination(address))
+         {
+            securityStore.check(address, CheckType.CREATE, this);
+         }
+
+         Binding binding = postOffice.getBinding(queueName);
+
+         if (binding != null)
+         {
+            throw new MessagingException(MessagingException.QUEUE_EXISTS);
+         }
+
+         Filter filter = null;
+
+         if (filterString != null)
+         {
+            filter = new FilterImpl(filterString);
+         }
+
+         binding = postOffice.addBinding(address, queueName, filter, durable, temporary);
+
+         if (temporary)
+         {
+            // Temporary queue in core simply means the queue will be deleted if
+            // the remoting connection
+            // dies. It does not mean it will get deleted automatically when the
+            // session is closed.
+            // It is up to the user to delete the queue when finished with it
+
+            final Queue queue = binding.getQueue();
+
+            failureRunners.add(new Runnable()
+            {
+               public void run()
+               {
+                  try
+                  {
+                     postOffice.removeBinding(queue.getName());
+                  }
+                  catch (Exception e)
+                  {
+                     log.error("Failed to remove temporary queue " + queue.getName());
+                  }
+               }
+            });
+         }
+
+         response = new NullResponseMessage();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to create queue", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleDeleteQueue(final SessionDeleteQueueMessage packet)
+   {
+      SimpleString queueName = packet.getQueueName();
+
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      try
+      {
+         Binding binding = postOffice.removeBinding(queueName);
+
+         if (binding == null)
+         {
+            throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
+         }
+
+         Queue queue = binding.getQueue();
+
+         if (queue.getConsumerCount() != 0)
+         {
+            throw new MessagingException(MessagingException.ILLEGAL_STATE, "Cannot delete queue - it has consumers");
+         }
+
+         if (queue.isDurable())
+         {
+            binding.getQueue().deleteAllReferences(storageManager);
+         }
+
+         response = new NullResponseMessage();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to delete consumer", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleExecuteQueueQuery(final SessionQueueQueryMessage packet)
+   {
+      SimpleString queueName = packet.getQueueName();
+
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      try
+      {
+         if (queueName == null)
+         {
+            throw new IllegalArgumentException("Queue name is null");
+         }
+
+         Binding binding = postOffice.getBinding(queueName);
+
+         if (binding != null)
+         {
+            Queue queue = binding.getQueue();
+
+            Filter filter = queue.getFilter();
+
+            SimpleString filterString = filter == null ? null : filter.getFilterString();
+            // TODO: Remove MAX-SIZE-BYTES from SessionQueueQueryResponse.
+            response = new SessionQueueQueryResponseMessage(queue.isDurable(),
+                                                            queue.getConsumerCount(),
+                                                            queue.getMessageCount(),
+                                                            filterString,
+                                                            binding.getAddress());
+         }
+         else
+         {
+            response = new SessionQueueQueryResponseMessage();
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to execute queue query", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleExecuteBindingQuery(final SessionBindingQueryMessage packet)
+   {
+      SimpleString address = packet.getAddress();
+
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      try
+      {
+         if (address == null)
+         {
+            throw new IllegalArgumentException("Address is null");
+         }
+
+         boolean exists = postOffice.containsDestination(address);
+
+         List<SimpleString> queueNames = new ArrayList<SimpleString>();
+
+         if (exists)
+         {
+            List<Binding> bindings = postOffice.getBindingsForAddress(address);
+
+            for (Binding binding : bindings)
+            {
+               queueNames.add(binding.getQueue().getName());
+            }
+         }
+
+         response = new SessionBindingQueryResponseMessage(exists, queueNames);
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to execute binding query", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   /**
+    * Create a producer for the specified address
+    *
+    * @param address The address to produce too
+    * @param windowSize - the producer window size to use for flow control. Specify -1 to disable flow control
+    *           completely The actual window size used may be less than the specified window size if it is overridden by
+    *           any producer-window-size specified on the queue
+    */
+   public void handleCreateProducer(final SessionCreateProducerMessage packet)
+   {
+      SimpleString address = packet.getAddress();
+
+      int maxRate = packet.getMaxRate();
+
+      int windowSize = packet.getWindowSize();
+
+      boolean autoGroupID = packet.isAutoGroupId();
+
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      try
+      {
+         FlowController flowController = null;
+
+         final int maxRateToUse = maxRate;
+
+         if (address != null)
+         {
+            flowController = windowSize == -1 ? null : postOffice.getFlowController(address);
+         }
+
+         final int windowToUse = flowController == null ? -1 : windowSize;
+
+         // Server window size is 0.75 client window size for producer flow control
+         // (other way round to consumer flow control)
+
+         final int serverWindowSize = windowToUse == -1 ? -1 : (int)(windowToUse * 0.75);
+
+         ServerProducerImpl producer = new ServerProducerImpl(idGenerator.generateID(),
+                                                              this,
+                                                              address,
+                                                              flowController,
+                                                              serverWindowSize,
+                                                              channel);
+
+         producers.put(producer.getID(), producer);
+
+         // Get some initial credits to send to the producer - we try for
+         // windowToUse
+
+         int initialCredits = flowController == null ? -1 : flowController.getInitialCredits(windowToUse, producer);
+
+         SimpleString groupId = null;
+
+         if (autoGroupID)
+         {
+            groupId = simpleStringIdGenerator.generateID();
+         }
+
+         response = new SessionCreateProducerResponseMessage(initialCredits, maxRateToUse, groupId);
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to create producer", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleAcknowledge(final SessionAcknowledgeMessage packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      try
+      {
+         MessageReference ref = consumers.get(packet.getConsumerID()).getReference(packet.getMessageID());
+
+         // Null implies a browser
+         if (ref != null)
+         {
+            if (autoCommitAcks)
+            {
+               doAck(ref);
+            }
+            else
+            {
+               tx.addAcknowledgement(ref);
+
+               // Del count is not actually updated in storage unless it's
+               // cancelled
+               ref.incrementDeliveryCount();
+            }
+         }
+
+         if (packet.isRequiresResponse())
+         {
+            response = new NullResponseMessage();
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to acknowledge", e);
+
+         if (packet.isRequiresResponse())
+         {
+            if (e instanceof MessagingException)
+            {
+               response = new MessagingExceptionMessage((MessagingException)e);
+            }
+            else
+            {
+               response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            }
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleCommit(final Packet packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      try
+      {
+         tx.commit();
+
+         response = new NullResponseMessage();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to commit", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+      finally
+      {
+         tx = new TransactionImpl(storageManager, postOffice);
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleRollback(final Packet packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      try
+      {
+         rollback();
+
+         response = new NullResponseMessage();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to rollback", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleXACommit(final SessionXACommitMessage packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      Xid xid = packet.getXid();
+
+      try
+      {
+         if (tx != null)
+         {
+            final String msg = "Cannot commit, session is currently doing work in transaction " + tx.getXid();
+
+            response = new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
+         }
+         else
+         {
+            Transaction theTx = resourceManager.removeTransaction(xid);
+
+            if (theTx == null)
+            {
+               final String msg = "Cannot find xid in resource manager: " + xid;
+
+               response = new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
+            }
+            else
+            {
+               if (theTx.getState() == Transaction.State.SUSPENDED)
+               {
+                  // Put it back
+                  resourceManager.putTransaction(xid, tx);
+
+                  response = new SessionXAResponseMessage(true,
+                                                          XAException.XAER_PROTO,
+                                                          "Cannot commit transaction, it is suspended " + xid);
+               }
+               else
+               {
+                  theTx.commit();
+
+                  response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
+               }
+            }
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to xa commit", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleXAEnd(final SessionXAEndMessage packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      Xid xid = packet.getXid();
+
+      try
+      {
+         if (tx != null && tx.getXid().equals(xid))
+         {
+            if (tx.getState() == Transaction.State.SUSPENDED)
+            {
+               final String msg = "Cannot end, transaction is suspended";
+
+               response = new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
+            }
+            else
+            {
+               tx = null;
+            }
+         }
+         else
+         {
+            // It's also legal for the TM to call end for a Xid in the suspended
+            // state
+            // See JTA 1.1 spec 3.4.4 - state diagram
+            // Although in practice TMs rarely do this.
+            Transaction theTx = resourceManager.getTransaction(xid);
+
+            if (theTx == null)
+            {
+               final String msg = "Cannot find suspended transaction to end " + xid;
+
+               response = new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
+            }
+            else
+            {
+               if (theTx.getState() != Transaction.State.SUSPENDED)
+               {
+                  final String msg = "Transaction is not suspended " + xid;
+
+                  response = new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
+               }
+               else
+               {
+                  theTx.resume();
+               }
+            }
+         }
+
+         if (response == null)
+         {
+            response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to xa end", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleXAForget(final SessionXAForgetMessage packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      // Do nothing since we don't support heuristic commits / rollback from the
+      // resource manager
+
+      Packet response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
+
+      sendResponse(result, response);
+   }
+
+   public void handleXAJoin(final SessionXAJoinMessage packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      Xid xid = packet.getXid();
+
+      try
+      {
+         Transaction theTx = resourceManager.getTransaction(xid);
+
+         if (theTx == null)
+         {
+            final String msg = "Cannot find xid in resource manager: " + xid;
+
+            response = new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
+         }
+         else
+         {
+            if (theTx.getState() == Transaction.State.SUSPENDED)
+            {
+               response = new SessionXAResponseMessage(true,
+                                                       XAException.XAER_PROTO,
+                                                       "Cannot join tx, it is suspended " + xid);
+            }
+            else
+            {
+               tx = theTx;
+
+               response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
+            }
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to xa join", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleXAResume(final SessionXAResumeMessage packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      Xid xid = packet.getXid();
+
+      try
+      {
+         if (tx != null)
+         {
+            final String msg = "Cannot resume, session is currently doing work in a transaction " + tx.getXid();
+
+            response = new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
+         }
+         else
+         {
+            Transaction theTx = resourceManager.getTransaction(xid);
+
+            if (theTx == null)
+            {
+               final String msg = "Cannot find xid in resource manager: " + xid;
+
+               response = new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
+            }
+            else
+            {
+               if (theTx.getState() != Transaction.State.SUSPENDED)
+               {
+                  response = new SessionXAResponseMessage(true,
+                                                          XAException.XAER_PROTO,
+                                                          "Cannot resume transaction, it is not suspended " + xid);
+               }
+               else
+               {
+                  tx = theTx;
+
+                  tx.resume();
+
+                  response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
+               }
+            }
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to xa resume", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleXARollback(final SessionXARollbackMessage packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      Xid xid = packet.getXid();
+
+      try
+      {
+         if (tx != null)
+         {
+            final String msg = "Cannot roll back, session is currently doing work in a transaction " + tx.getXid();
+
+            response = new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
+         }
+         else
+         {
+            Transaction theTx = resourceManager.removeTransaction(xid);
+
+            if (theTx == null)
+            {
+               final String msg = "Cannot find xid in resource manager: " + xid;
+
+               response = new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
+            }
+            else
+            {
+               if (theTx.getState() == Transaction.State.SUSPENDED)
+               {
+                  // Put it back
+                  resourceManager.putTransaction(xid, tx);
+
+                  response = new SessionXAResponseMessage(true,
+                                                          XAException.XAER_PROTO,
+                                                          "Cannot rollback transaction, it is suspended " + xid);
+               }
+               else
+               {
+                  doRollback(theTx);
+
+                  response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
+               }
+            }
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to xa rollback", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleXAStart(final SessionXAStartMessage packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      Xid xid = packet.getXid();
+
+      try
+      {
+         if (tx != null)
+         {
+            final String msg = "Cannot start, session is already doing work in a transaction " + tx.getXid();
+
+            response = new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
+         }
+         else
+         {
+            tx = new TransactionImpl(xid, storageManager, postOffice);
+
+            boolean added = resourceManager.putTransaction(xid, tx);
+
+            if (!added)
+            {
+               final String msg = "Cannot start, there is already a xid " + tx.getXid();
+
+               response = new SessionXAResponseMessage(true, XAException.XAER_DUPID, msg);
+            }
+            else
+            {
+               response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
+            }
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to xa start", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleXASuspend(final Packet packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      try
+      {
+         if (tx == null)
+         {
+            final String msg = "Cannot suspend, session is not doing work in a transaction ";
+
+            response = new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
+         }
+         else
+         {
+            if (tx.getState() == Transaction.State.SUSPENDED)
+            {
+               final String msg = "Cannot suspend, transaction is already suspended " + tx.getXid();
+
+               response = new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
+            }
+            else
+            {
+               tx.suspend();
+
+               tx = null;
+
+               response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
+            }
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to xa suspend", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleXAPrepare(final SessionXAPrepareMessage packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      Xid xid = packet.getXid();
+
+      try
+      {
+         if (tx != null)
+         {
+            final String msg = "Cannot commit, session is currently doing work in a transaction " + tx.getXid();
+
+            response = new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
+         }
+         else
+         {
+            Transaction theTx = resourceManager.getTransaction(xid);
+
+            if (theTx == null)
+            {
+               final String msg = "Cannot find xid in resource manager: " + xid;
+
+               response = new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
+            }
+            else
+            {
+               if (theTx.getState() == Transaction.State.SUSPENDED)
+               {
+                  response = new SessionXAResponseMessage(true,
+                                                          XAException.XAER_PROTO,
+                                                          "Cannot prepare transaction, it is suspended " + xid);
+               }
+               else
+               {
+                  if (theTx.isEmpty())
+                  {
+                     response = new SessionXAResponseMessage(false, XAResource.XA_RDONLY, null);
+                  }
+                  else
+                  {
+                     theTx.prepare();
+
+                     response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
+                  }
+               }
+            }
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to xa prepare", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleGetInDoubtXids(final Packet packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = new SessionXAGetInDoubtXidsResponseMessage(resourceManager.getPreparedTransactions());
+
+      sendResponse(result, response);
+   }
+
+   public void handleGetXATimeout(final Packet packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = new SessionXAGetTimeoutResponseMessage(resourceManager.getTimeoutSeconds());
+
+      sendResponse(result, response);
+   }
+
+   public void handleSetXATimeout(final SessionXASetTimeoutMessage packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = new SessionXASetTimeoutResponseMessage(resourceManager.setTimeoutSeconds(packet.getTimeoutSeconds()));
+
+      sendResponse(result, response);
+   }
+
+   public void handleAddDestination(final SessionAddDestinationMessage packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      final SimpleString address = packet.getAddress();
+
+      final boolean durable = packet.isDurable();
+
+      final boolean temporary = packet.isTemporary();
+
+      try
+      {
+         securityStore.check(address, CheckType.CREATE, this);
+
+         if (!postOffice.addDestination(address, durable))
+         {
+            throw new MessagingException(MessagingException.ADDRESS_EXISTS, "Address already exists: " + address);
+         }
+
+         if (temporary)
+         {
+            // Temporary address in core simply means the address will be deleted
+            // if the remoting connection
+            // dies. It does not mean it will get deleted automatically when the
+            // session is closed.
+            // It is up to the user to delete the address when finished with it
+
+            failureRunners.add(new Runnable()
+            {
+               public void run()
+               {
+                  try
+                  {
+                     postOffice.removeDestination(address, durable);
+                  }
+                  catch (Exception e)
+                  {
+                     log.error("Failed to remove temporary address " + address);
+                  }
+               }
+            });
+         }
+
+         response = new NullResponseMessage();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to add destination", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleRemoveDestination(final SessionRemoveDestinationMessage packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      final SimpleString address = packet.getAddress();
+
+      final boolean durable = packet.isDurable();
+
+      try
+      {
+         securityStore.check(address, CheckType.CREATE, this);
+
+         if (!postOffice.removeDestination(address, durable))
+         {
+            throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST,
+                                         "Address does not exist: " + address);
+         }
+
+         response = new NullResponseMessage();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to remove destination", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   private void lockConsumers()
+   {
+      for (ServerConsumer consumer : consumers.values())
+      {
+         consumer.lock();
+      }
+   }
+
+   private void unlockConsumers()
+   {
+      for (ServerConsumer consumer : consumers.values())
+      {
+         consumer.unlock();
+      }
+   }
+
+   public void handleStart(final Packet packet)
+   {
+      boolean lock = this.channel.getReplicatingChannel() != null;
+      
+      if (lock)
+      {
+         lockConsumers();
+      }
+
+      //We need to prevent any delivery and replication of delivery occurring while the start/stop
+      //is being processed.
+      //Otherwise we can end up with start/stop being processed in different order on backup to live.
+      //Which can result in, say, a delivery arriving at backup, but it's still not started!
+      try
+      {
+         channel.replicatePacket(packet);
+
+         // set started will unlock
+         setStarted(true);
+
+      }
+      finally
+      {
+         if (lock)
+         {
+            unlockConsumers();
          }
       }
    }
 
-   public void rollback() throws Exception
+   public void handleStop(final Packet packet)
    {
-      rollback(true);
+      boolean lock = this.channel.getReplicatingChannel() != null;
+      
+      if (lock)
+      {
+         lockConsumers();
+      }
+
+      try
+      {
+         DelayedResult result = channel.replicatePacket(packet);
+
+         setStarted(false);
+
+         sendResponse(result, new NullResponseMessage());
+      }
+      finally
+      {
+         if (lock)
+         {
+            unlockConsumers();
+         }
+      }
    }
+
+   public void handleFailedOver(final Packet packet)
+   {
+      // No need to replicate since this only occurs after failover
+      Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
+
+      for (ServerConsumer consumer : consumersClone)
+      {
+         consumer.failedOver();
+      }
+   }
+
+   public void handleClose(final Packet packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      try
+      {
+         close();
+
+         response = new NullResponseMessage();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to close", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response, true);
+   }
+
+   private void setStarted(final boolean s)
+   {
+      Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
+
+      for (ServerConsumer consumer : consumersClone)
+      {
+         consumer.setStarted(s);
+      }
+
+      started = s;
+   }
+
+   public void handleCloseConsumer(final SessionConsumerCloseMessage packet)
+   {
+      consumers.get(packet.getConsumerID()).handleClose(packet);
+   }
+
+   public void handleCloseProducer(final SessionProducerCloseMessage packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      try
+      {
+         producers.get(packet.getProducerID()).close();
+
+         response = new NullResponseMessage();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to close producer", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleReceiveConsumerCredits(final SessionConsumerFlowCreditMessage packet)
+   {
+      channel.replicatePacket(packet);
+
+      try
+      {
+         consumers.get(packet.getConsumerID()).receiveCredits(packet.getCredits());
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to receive credits", e);
+      }
+   }
+
+   public void handleSendProducerMessage(final SessionSendMessage packet)
+   {
+      ServerMessage msg = packet.getServerMessage();
+
+      if (msg.getMessageID() == 0L)
+      {
+         // must generate message id here, so we know they are in sync on live and backup
+         long id = storageManager.generateUniqueID();
+
+         msg.setMessageID(id);
+      }
+
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      try
+      {
+         producers.get(packet.getProducerID()).send(msg);
+
+         if (packet.isRequiresResponse())
+         {
+            response = new NullResponseMessage();
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to send message", e);
+
+         if (packet.isRequiresResponse())
+         {
+            if (e instanceof MessagingException)
+            {
+               response = new MessagingExceptionMessage((MessagingException)e);
+            }
+            else
+            {
+               response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            }
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleSendScheduledProducerMessage(final SessionScheduledSendMessage packet)
+   {
+      ServerMessage msg = packet.getServerMessage();
+
+      if (msg.getMessageID() == 0L)
+      {
+         // must generate message id here, so we know they are in sync on live and backup
+         long id = storageManager.generateUniqueID();
+
+         msg.setMessageID(id);
+      }
+
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      try
+      {
+         producers.get(packet.getProducerID()).sendScheduled(msg, packet.getScheduledDeliveryTime());
+
+         if (packet.isRequiresResponse())
+         {
+            response = new NullResponseMessage();
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to send scheduled message", e);
+         if (packet.isRequiresResponse())
+         {
+            if (e instanceof MessagingException)
+            {
+               response = new MessagingExceptionMessage((MessagingException)e);
+            }
+            else
+            {
+               response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            }
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleManagementMessage(final SessionSendManagementMessage packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+
+      Packet response = null;
+
+      try
+      {
+         ServerMessage serverMessage = packet.getServerMessage();
+
+         if (serverMessage.containsProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS))
+         {
+            boolean subscribe = (Boolean)serverMessage.getProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS);
+
+            final SimpleString replyTo = (SimpleString)serverMessage.getProperty(ManagementHelper.HDR_JMX_REPLYTO);
+
+            if (subscribe)
+            {
+               if (log.isDebugEnabled())
+               {
+                  log.debug("added notification listener " + this);
+               }
+
+               managementService.addNotificationListener(this, null, replyTo);
+            }
+            else
+            {
+               if (log.isDebugEnabled())
+               {
+                  log.debug("removed notification listener " + this);
+               }
+
+               managementService.removeNotificationListener(this);
+            }
+         }
+         else
+         {
+            managementService.handleMessage(serverMessage);
+
+            serverMessage.setDestination((SimpleString)serverMessage.getProperty(ManagementHelper.HDR_JMX_REPLYTO));
+
+            send(serverMessage);
+         }
+
+         if (packet.isRequiresResponse())
+         {
+            response = new NullResponseMessage();
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to send management message", e);
+         if (packet.isRequiresResponse())
+         {
+            if (e instanceof MessagingException)
+            {
+               response = new MessagingExceptionMessage((MessagingException)e);
+            }
+            else
+            {
+               response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            }
+         }
+      }
+
+      sendResponse(result, response);
+   }
+
+   public void handleReplicatedDelivery(final SessionReplicateDeliveryMessage packet)
+   {
+      ServerConsumer consumer = consumers.get(packet.getConsumerID());
+
+      if (consumer == null)
+      {
+         throw new IllegalStateException("Cannot handle replicated delivery, consumer is closed");
+      }
+
+      try
+      {
+         consumer.deliverReplicated(packet.getMessageID());
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to handle replicated delivery", e);
+      }
+   }
+
+   public int transferConnection(final RemotingConnection newConnection, final int lastReceivedCommandID)
+   {
+      remotingConnection.removeFailureListener(this);
+
+      channel.transferConnection(newConnection);
+
+      newConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
+
+      // Destroy the old connection
+      remotingConnection.destroy();
+
+      remotingConnection = newConnection;
+
+      remotingConnection.addFailureListener(this);
+
+      int serverLastReceivedCommandID = channel.getLastReceivedCommandID();
+
+      channel.replayCommands(lastReceivedCommandID);
+
+      return serverLastReceivedCommandID;
+   }
+
+   // FailureListener implementation
+   // --------------------------------------------------------------------
+
+   public void connectionFailed(final MessagingException me)
+   {
+      try
+      {
+         for (Runnable runner : failureRunners)
+         {
+            try
+            {
+               runner.run();
+            }
+            catch (Throwable t)
+            {
+               log.error("Failed to execute failure runner", t);
+            }
+         }
+
+         close();
+
+         channel.close();
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed to close connection " + this);
+      }
+   }
+
+   // NotificationListener implementation -------------------------------------
+
+   public void handleNotification(final Notification notification, final Object replyTo)
+   {
+      // FIXME this won't work with replication
+      ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
+      notificationMessage.setDestination((SimpleString)replyTo);
+      notificationMessage.setBody(new ByteBufferWrapper(ByteBuffer.allocate(2048)));
+      ManagementHelper.storeNotification(notificationMessage, notification);
+      try
+      {
+         send(notificationMessage);
+      }
+      catch (Exception e)
+      {
+         log.warn("problem while sending a notification message " + notification, e);
+
+      }
+   }
+
+   // Public
+   // ----------------------------------------------------------------------------
+
+   public Transaction getTransaction()
+   {
+      return tx;
+   }
+
+   // Private
+   // ----------------------------------------------------------------------------
 
    private void doRollback(final Transaction theTx) throws Exception
    {
@@ -436,7 +1999,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
    }
 
-   private void rollback(final boolean sendResponse) throws Exception
+   private void rollback() throws Exception
    {
       if (tx == null)
       {
@@ -449,749 +2012,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       tx = new TransactionImpl(storageManager, postOffice);
    }
-
-   public void commit() throws Exception
-   {
-      try
-      {
-         tx.commit();
-      }
-      finally
-      {
-         tx = new TransactionImpl(storageManager, postOffice);
-      }
-   }
-
-   public SessionXAResponseMessage XACommit(final boolean onePhase, final Xid xid) throws Exception
-   {
-      if (tx != null)
-      {
-         final String msg = "Cannot commit, session is currently doing work in transaction " + tx.getXid();
-
-         return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
-      }
-
-      Transaction theTx = resourceManager.removeTransaction(xid);
-
-      if (theTx == null)
-      {
-         final String msg = "Cannot find xid in resource manager: " + xid;
-
-         return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
-      }
-
-      if (theTx.getState() == Transaction.State.SUSPENDED)
-      {
-         // Put it back
-         resourceManager.putTransaction(xid, tx);
-
-         return new SessionXAResponseMessage(true,
-                                             XAException.XAER_PROTO,
-                                             "Cannot commit transaction, it is suspended " + xid);
-      }
-
-      theTx.commit();
-
-      return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
-   }
-
-   public SessionXAResponseMessage XAEnd(final Xid xid, final boolean failed) throws Exception
-   {
-      if (tx != null && tx.getXid().equals(xid))
-      {
-         if (tx.getState() == Transaction.State.SUSPENDED)
-         {
-            final String msg = "Cannot end, transaction is suspended";
-
-            return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
-         }
-
-         tx = null;
-      }
-      else
-      {
-         // It's also legal for the TM to call end for a Xid in the suspended
-         // state
-         // See JTA 1.1 spec 3.4.4 - state diagram
-         // Although in practice TMs rarely do this.
-         Transaction theTx = resourceManager.getTransaction(xid);
-
-         if (theTx == null)
-         {
-            final String msg = "Cannot find suspended transaction to end " + xid;
-
-            return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
-         }
-
-         if (theTx.getState() != Transaction.State.SUSPENDED)
-         {
-            final String msg = "Transaction is not suspended " + xid;
-
-            return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
-         }
-
-         theTx.resume();
-      }
-
-      return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
-   }
-
-   public SessionXAResponseMessage XAForget(final Xid xid)
-   {
-      // Do nothing since we don't support heuristic commits / rollback from the
-      // resource manager
-
-      return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
-   }
-
-   public SessionXAResponseMessage XAJoin(final Xid xid) throws Exception
-   {
-      Transaction theTx = resourceManager.getTransaction(xid);
-
-      if (theTx == null)
-      {
-         final String msg = "Cannot find xid in resource manager: " + xid;
-
-         return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
-      }
-
-      if (theTx.getState() == Transaction.State.SUSPENDED)
-      {
-         return new SessionXAResponseMessage(true, XAException.XAER_PROTO, "Cannot join tx, it is suspended " + xid);
-      }
-
-      tx = theTx;
-
-      return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
-   }
-
-   public SessionXAResponseMessage XAPrepare(final Xid xid) throws Exception
-   {
-      if (tx != null)
-      {
-         final String msg = "Cannot commit, session is currently doing work in a transaction " + tx.getXid();
-
-         return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
-      }
-
-      Transaction theTx = resourceManager.getTransaction(xid);
-
-      if (theTx == null)
-      {
-         final String msg = "Cannot find xid in resource manager: " + xid;
-
-         return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
-      }
-
-      if (theTx.getState() == Transaction.State.SUSPENDED)
-      {
-         return new SessionXAResponseMessage(true,
-                                             XAException.XAER_PROTO,
-                                             "Cannot prepare transaction, it is suspended " + xid);
-      }
-
-      if (theTx.isEmpty())
-      {
-         return new SessionXAResponseMessage(false, XAResource.XA_RDONLY, null);
-      }
-      else
-      {
-         theTx.prepare();
-
-         return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
-      }
-   }
-
-   public SessionXAResponseMessage XAResume(final Xid xid) throws Exception
-   {
-      if (tx != null)
-      {
-         final String msg = "Cannot resume, session is currently doing work in a transaction " + tx.getXid();
-
-         return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
-      }
-
-      Transaction theTx = resourceManager.getTransaction(xid);
-
-      if (theTx == null)
-      {
-         final String msg = "Cannot find xid in resource manager: " + xid;
-
-         return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
-      }
-
-      if (theTx.getState() != Transaction.State.SUSPENDED)
-      {
-         return new SessionXAResponseMessage(true,
-                                             XAException.XAER_PROTO,
-                                             "Cannot resume transaction, it is not suspended " + xid);
-      }
-
-      tx = theTx;
-
-      tx.resume();
-
-      return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
-   }
-
-   public SessionXAResponseMessage XARollback(final Xid xid) throws Exception
-   {
-      if (tx != null)
-      {
-         final String msg = "Cannot roll back, session is currently doing work in a transaction " + tx.getXid();
-
-         return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
-      }
-
-      Transaction theTx = resourceManager.removeTransaction(xid);
-
-      if (theTx == null)
-      {
-         final String msg = "Cannot find xid in resource manager: " + xid;
-
-         return new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
-      }
-
-      if (theTx.getState() == Transaction.State.SUSPENDED)
-      {
-         // Put it back
-         resourceManager.putTransaction(xid, tx);
-
-         return new SessionXAResponseMessage(true,
-                                             XAException.XAER_PROTO,
-                                             "Cannot rollback transaction, it is suspended " + xid);
-      }
-
-      doRollback(theTx);
-
-      return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
-   }
-
-   public SessionXAResponseMessage XAStart(final Xid xid)
-   {
-      if (tx != null)
-      {
-         final String msg = "Cannot start, session is already doing work in a transaction " + tx.getXid();
-
-         return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
-      }
-
-      tx = new TransactionImpl(xid, storageManager, postOffice);
-
-      boolean added = resourceManager.putTransaction(xid, tx);
-
-      if (!added)
-      {
-         final String msg = "Cannot start, there is already a xid " + tx.getXid();
-
-         return new SessionXAResponseMessage(true, XAException.XAER_DUPID, msg);
-      }
-
-      return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
-   }
-
-   public SessionXAResponseMessage XASuspend() throws Exception
-   {
-      if (tx == null)
-      {
-         final String msg = "Cannot suspend, session is not doing work in a transaction ";
-
-         return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
-      }
-
-      if (tx.getState() == Transaction.State.SUSPENDED)
-      {
-         final String msg = "Cannot suspend, transaction is already suspended " + tx.getXid();
-
-         return new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
-      }
-
-      tx.suspend();
-
-      tx = null;
-
-      return new SessionXAResponseMessage(false, XAResource.XA_OK, null);
-   }
-
-   public List<Xid> getInDoubtXids() throws Exception
-   {
-      return resourceManager.getPreparedTransactions();
-   }
-
-   public int getXATimeout()
-   {
-      return resourceManager.getTimeoutSeconds();
-   }
-
-   public boolean setXATimeout(final int timeoutSeconds)
-   {
-      return resourceManager.setTimeoutSeconds(timeoutSeconds);
-   }
-
-   public void addDestination(final SimpleString address, final boolean durable, final boolean temporary) throws Exception
-   {
-      securityStore.check(address, CheckType.CREATE, this);
-
-      if (!postOffice.addDestination(address, durable))
-      {
-         throw new MessagingException(MessagingException.ADDRESS_EXISTS, "Address already exists: " + address);
-      }
-
-      if (temporary)
-      {
-         // Temporary address in core simply means the address will be deleted
-         // if the remoting connection
-         // dies. It does not mean it will get deleted automatically when the
-         // session is closed.
-         // It is up to the user to delete the address when finished with it
-
-         failureRunners.add(new Runnable()
-         {
-            public void run()
-            {
-               try
-               {
-                  postOffice.removeDestination(address, durable);
-               }
-               catch (Exception e)
-               {
-                  log.error("Failed to remove temporary address " + address);
-               }
-            }
-         });
-      }
-   }
-
-   public void removeDestination(final SimpleString address, final boolean durable) throws Exception
-   {
-      securityStore.check(address, CheckType.CREATE, this);
-
-      if (!postOffice.removeDestination(address, durable))
-      {
-         throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST, "Address does not exist: " + address);
-      }
-   }
-
-   public void createQueue(final SimpleString address,
-                           final SimpleString queueName,
-                           final SimpleString filterString,
-                           final boolean durable,
-                           final boolean temporary) throws Exception
-   {
-      // make sure the user has privileges to create this queue
-      if (!postOffice.containsDestination(address))
-      {
-         securityStore.check(address, CheckType.CREATE, this);
-      }
-      Binding binding = postOffice.getBinding(queueName);
-
-      if (binding != null)
-      {
-         throw new MessagingException(MessagingException.QUEUE_EXISTS);
-      }
-
-      Filter filter = null;
-
-      if (filterString != null)
-      {
-         filter = new FilterImpl(filterString);
-      }
-
-      binding = postOffice.addBinding(address, queueName, filter, durable, temporary);
-
-      if (temporary)
-      {
-         // Temporary queue in core simply means the queue will be deleted if
-         // the remoting connection
-         // dies. It does not mean it will get deleted automatically when the
-         // session is closed.
-         // It is up to the user to delete the queue when finished with it
-
-         final Queue queue = binding.getQueue();
-
-         failureRunners.add(new Runnable()
-         {
-            public void run()
-            {
-               try
-               {
-                  postOffice.removeBinding(queue.getName());
-               }
-               catch (Exception e)
-               {
-                  log.error("Failed to remove temporary queue " + queue.getName());
-               }
-            }
-         });
-      }
-   }
-
-   public void deleteQueue(final SimpleString queueName) throws Exception
-   {
-      Binding binding = postOffice.removeBinding(queueName);
-
-      if (binding == null)
-      {
-         throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
-      }
-
-      Queue queue = binding.getQueue();
-
-      if (queue.getConsumerCount() != 0)
-      {
-         throw new MessagingException(MessagingException.ILLEGAL_STATE, "Cannot delete queue - it has consumers");
-      }
-
-      if (queue.isDurable())
-      {
-         binding.getQueue().deleteAllReferences(storageManager);
-      }
-   }
-
-   public SessionCreateConsumerResponseMessage createConsumer(final SimpleString queueName,
-                                                              final SimpleString filterString,
-                                                              int windowSize,
-                                                              int maxRate,
-                                                              final boolean browseOnly) throws Exception
-   {
-      Binding binding = postOffice.getBinding(queueName);
-
-      if (binding == null)
-      {
-         throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
-      }
-
-      securityStore.check(binding.getAddress(), CheckType.READ, this);
-
-      Filter filter = null;
-
-      if (filterString != null)
-      {
-         filter = new FilterImpl(filterString);
-      }
-
-      // Flow control values if specified on queue override those passed in from
-      // client
-
-      QueueSettings qs = queueSettingsRepository.getMatch(queueName.toString());
-
-      Integer queueWindowSize = qs.getConsumerWindowSize();
-
-      windowSize = queueWindowSize != null ? queueWindowSize : windowSize;
-
-      Integer queueMaxRate = queueSettingsRepository.getMatch(queueName.toString()).getConsumerMaxRate();
-
-      maxRate = queueMaxRate != null ? queueMaxRate : maxRate;
-
-      Queue theQueue;
-      if (browseOnly)
-      {
-         // We consume a copy of the queue - TODO - this is a temporary measure
-         // and will disappear once we can provide a proper iterator on the queue
-
-         theQueue = new QueueImpl(-1,
-                                  queueName,
-                                  filter,
-                                  false,
-                                  false,
-                                  false,
-                                  null,
-                                  postOffice);
-
-         //There's no need for any special locking since the list method is synchronized
-         List<MessageReference> refs = binding.getQueue().list(filter);
-
-         for (MessageReference ref : refs)
-         {
-            theQueue.addLast(ref);
-         }
-      }
-      else
-      {
-         theQueue = binding.getQueue();
-      }
-
-      ServerConsumer consumer = new ServerConsumerImpl(idGenerator.generateID(),
-                                                       this,
-                                                       theQueue,
-                                                       filter,
-                                                       windowSize != -1,
-                                                       maxRate,
-                                                       started,
-                                                       browseOnly,
-                                                       storageManager,
-                                                       queueSettingsRepository,
-                                                       postOffice,
-                                                       channel);
-
-      SessionCreateConsumerResponseMessage response = new SessionCreateConsumerResponseMessage(windowSize);
-
-      consumers.put(consumer.getID(), consumer);
-
-      return response;
-   }
-
-   public SessionQueueQueryResponseMessage executeQueueQuery(final SimpleString queueName) throws Exception
-   {
-      if (queueName == null)
-      {
-         throw new IllegalArgumentException("Queue name is null");
-      }
-
-      Binding binding = postOffice.getBinding(queueName);
-
-      SessionQueueQueryResponseMessage response;
-
-      if (binding != null)
-      {
-         Queue queue = binding.getQueue();
-
-         Filter filter = queue.getFilter();
-
-         SimpleString filterString = filter == null ? null : filter.getFilterString();
-         // TODO: Remove MAX-SIZE-BYTES from SessionQueueQueryResponse.
-         response = new SessionQueueQueryResponseMessage(queue.isDurable(),
-                                                         queue.getConsumerCount(),
-                                                         queue.getMessageCount(),
-                                                         filterString,
-                                                         binding.getAddress());
-      }
-      else
-      {
-         response = new SessionQueueQueryResponseMessage();
-      }
-
-      return response;
-   }
-
-   public SessionBindingQueryResponseMessage executeBindingQuery(final SimpleString address) throws Exception
-   {
-      if (address == null)
-      {
-         throw new IllegalArgumentException("Address is null");
-      }
-
-      boolean exists = postOffice.containsDestination(address);
-
-      List<SimpleString> queueNames = new ArrayList<SimpleString>();
-
-      if (exists)
-      {
-         List<Binding> bindings = postOffice.getBindingsForAddress(address);
-
-         for (Binding binding : bindings)
-         {
-            queueNames.add(binding.getQueue().getName());
-         }
-      }
-
-      return new SessionBindingQueryResponseMessage(exists, queueNames);
-   }
-
-   /**
-    * Create a producer for the specified address
-    *
-    * @param address The address to produce too
-    * @param windowSize - the producer window size to use for flow control. Specify -1 to disable flow control
-    *           completely The actual window size used may be less than the specified window size if it is overridden by
-    *           any producer-window-size specified on the queue
-    */
-   public SessionCreateProducerResponseMessage createProducer(final SimpleString address,
-                                                              final int windowSize,
-                                                              final int maxRate,
-                                                              final boolean autoGroupId) throws Exception
-   {
-      FlowController flowController = null;
-
-      final int maxRateToUse = maxRate;
-
-      if (address != null)
-      {
-         flowController = windowSize == -1 ? null : postOffice.getFlowController(address);
-      }
-
-      final int windowToUse = flowController == null ? -1 : windowSize;
-
-      // Server window size is 0.75 client window size for producer flow control
-      // (other way round to consumer flow control)
-
-      final int serverWindowSize = windowToUse == -1 ? -1 : (int)(windowToUse * 0.75);
-
-      ServerProducerImpl producer = new ServerProducerImpl(idGenerator.generateID(),
-                                                           this,
-                                                           address,
-                                                           flowController,
-                                                           serverWindowSize,
-                                                           channel);
-
-      producers.put(producer.getID(), producer);
-
-      // Get some initial credits to send to the producer - we try for
-      // windowToUse
-
-      int initialCredits = flowController == null ? -1 : flowController.getInitialCredits(windowToUse, producer);
-
-      SimpleString groupId = null;
-      if (autoGroupId)
-      {
-         groupId = simpleStringIdGenerator.generateID();
-      }
-      return new SessionCreateProducerResponseMessage(initialCredits, maxRateToUse, groupId);
-   }
-
-   public void closeConsumer(final long consumerID) throws Exception
-   {
-      consumers.get(consumerID).close();
-   }
-
-   public void closeProducer(final long producerID) throws Exception
-   {
-      producers.get(producerID).close();
-   }
-
-   public void receiveConsumerCredits(final long consumerID, final int credits) throws Exception
-   {
-      consumers.get(consumerID).receiveCredits(credits);
-   }
-
-   public void sendProducerMessage(final long producerID, final ServerMessage message) throws Exception
-   {
-      producers.get(producerID).send(message);
-   }
-
-   public void sendScheduledProducerMessage(final long producerID,
-                                            final ServerMessage message,
-                                            final long scheduledDeliveryTime) throws Exception
-   {
-      producers.get(producerID).sendScheduled(message, scheduledDeliveryTime);
-   }
-
-   public int transferConnection(final RemotingConnection newConnection, final int lastReceivedCommandID)
-   {
-      remotingConnection.removeFailureListener(this);
-
-      channel.transferConnection(newConnection);
-
-      newConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
-
-      // Destroy the old connection
-      remotingConnection.destroy();
-
-      remotingConnection = newConnection;
-
-      remotingConnection.addFailureListener(this);
-
-      int serverLastReceivedCommandID = channel.getLastReceivedCommandID();
-
-      channel.replayCommands(lastReceivedCommandID);
-
-      return serverLastReceivedCommandID;
-   }
-
-   public void handleManagementMessage(final SessionSendManagementMessage message) throws Exception
-   {
-      ServerMessage serverMessage = message.getServerMessage();
-
-      if (serverMessage.containsProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS))
-      {
-         boolean subscribe = (Boolean)serverMessage.getProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS);
-
-         final SimpleString replyTo = (SimpleString)serverMessage.getProperty(ManagementHelper.HDR_JMX_REPLYTO);
-
-         if (subscribe)
-         {
-            if (log.isDebugEnabled())
-            {
-               log.debug("added notification listener " + this);
-            }
-
-            managementService.addNotificationListener(this, null, replyTo);
-         }
-         else
-         {
-            if (log.isDebugEnabled())
-            {
-               log.debug("removed notification listener " + this);
-            }
-
-            managementService.removeNotificationListener(this);
-         }
-         return;
-      }
-      managementService.handleMessage(message.getServerMessage());
-
-      serverMessage.setDestination((SimpleString)serverMessage.getProperty(ManagementHelper.HDR_JMX_REPLYTO));
-
-      send(serverMessage);
-   }
-
-   public void handleReplicatedDelivery(long consumerID, long messageID) throws Exception
-   {
-      ServerConsumer consumer = consumers.get(consumerID);
-
-      if (consumer != null)
-      {
-         consumer.deliverReplicated(messageID);
-      }
-   }
-
-   // FailureListener implementation
-   // --------------------------------------------------------------------
-
-   public void connectionFailed(final MessagingException me)
-   {
-      try
-      {
-         for (Runnable runner : failureRunners)
-         {
-            try
-            {
-               runner.run();
-            }
-            catch (Throwable t)
-            {
-               log.error("Failed to execute failure runner", t);
-            }
-         }
-
-         close();
-      }
-      catch (Throwable t)
-      {
-         log.error("Failed to close connection " + this);
-      }
-   }
-
-   // NotificationListener implementation -------------------------------------
-
-   public void handleNotification(final Notification notification, final Object replyTo)
-   {
-      // FIXME this won't work with replication
-      ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
-      notificationMessage.setDestination((SimpleString)replyTo);
-      notificationMessage.setBody(new ByteBufferWrapper(ByteBuffer.allocate(2048)));
-      ManagementHelper.storeNotification(notificationMessage, notification);
-      try
-      {
-         send(notificationMessage);
-      }
-      catch (Exception e)
-      {
-         log.warn("problem while sending a notification message " + notification, e);
-
-      }
-   }
-
-   // Public
-   // ----------------------------------------------------------------------------
-
-   public Transaction getTransaction()
-   {
-      return tx;
-   }
-
-   // Private
-   // ----------------------------------------------------------------------------
 
    private void doAck(final MessageReference ref) throws Exception
    {
@@ -1235,5 +2055,42 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
          throw e;
       }
+   }
+
+   private void sendResponse(final DelayedResult result, final Packet response, final boolean closeChannel)
+   {
+      if (response != null)
+      {
+         if (result == null)
+         {
+            // Not clustered - just send now
+            channel.send(response);
+
+            if (closeChannel)
+            {
+               channel.close();
+            }
+         }
+         else
+         {
+            result.setResultRunner(new Runnable()
+            {
+               public void run()
+               {
+                  channel.send(response);
+
+                  if (closeChannel)
+                  {
+                     channel.close();
+                  }
+               }
+            });
+         }
+      }
+   }
+
+   public void sendResponse(final DelayedResult result, final Packet response)
+   {
+      this.sendResponse(result, response, false);
    }
 }

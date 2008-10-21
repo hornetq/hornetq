@@ -76,7 +76,7 @@ public class FakePostOffice implements PostOffice
       return addresses.contains(address);
    }
 
-   public Binding getBinding(SimpleString queueName) throws Exception
+   public Binding getBinding(SimpleString queueName)
    {
       return bindings.get(queueName);
    }

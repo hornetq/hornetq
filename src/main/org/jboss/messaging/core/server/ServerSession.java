@@ -22,17 +22,34 @@
 
 package org.jboss.messaging.core.server;
 
+import org.jboss.messaging.core.remoting.DelayedResult;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionScheduledSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
-import org.jboss.messaging.util.SimpleString;
-
-import javax.transaction.xa.Xid;
-import java.util.List;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAJoinMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAPrepareMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResumeMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 
 /**
  *
@@ -55,87 +72,84 @@ public interface ServerSession
    void removeProducer(ServerProducer producer) throws Exception;
 
    void close() throws Exception;
-
-   void setStarted(boolean started) throws Exception;
-
+   
    void promptDelivery(Queue queue);
 
    void send(ServerMessage msg) throws Exception;
 
    void sendScheduled(ServerMessage serverMessage, long scheduledDeliveryTime) throws Exception;
 
-   void acknowledge(final long consumerID, final long messageID) throws Exception;
+   void handleAcknowledge(final SessionAcknowledgeMessage packet);
 
-   void rollback() throws Exception;
+   void handleRollback(Packet packet);
 
-   void commit() throws Exception;
+   void handleCommit(Packet packet);
 
-   SessionXAResponseMessage XACommit(boolean onePhase, Xid xid) throws Exception;
+   void handleXACommit(SessionXACommitMessage packet);
 
-   SessionXAResponseMessage XAEnd(Xid xid, boolean failed) throws Exception;
+   void handleXAEnd(SessionXAEndMessage packet);
 
-   SessionXAResponseMessage XAForget(Xid xid);
+   void handleXAForget(SessionXAForgetMessage packet);
 
-   SessionXAResponseMessage XAJoin(Xid xid) throws Exception;
+   void handleXAJoin(SessionXAJoinMessage packet);
 
-   SessionXAResponseMessage XAPrepare(Xid xid) throws Exception;
+   void handleXAPrepare(SessionXAPrepareMessage packet);
 
-   SessionXAResponseMessage XAResume(Xid xid) throws Exception;
+   void handleXAResume(SessionXAResumeMessage packet);
 
-   SessionXAResponseMessage XARollback(Xid xid) throws Exception;
+   void handleXARollback(SessionXARollbackMessage packet);
 
-   SessionXAResponseMessage XAStart(Xid xid);
+   void handleXAStart(SessionXAStartMessage packet);
 
-   SessionXAResponseMessage XASuspend() throws Exception;
+   void handleXASuspend(Packet packet);
 
-   List<Xid> getInDoubtXids() throws Exception;
+   void handleGetInDoubtXids(Packet packet);
 
-   int getXATimeout();
+   void handleGetXATimeout(Packet packet);
 
-   boolean setXATimeout(int timeoutSeconds);
+   void handleSetXATimeout(SessionXASetTimeoutMessage packet);
 
-   void addDestination(SimpleString address, boolean durable, boolean temporary) throws Exception;
+   void handleAddDestination(SessionAddDestinationMessage packet);
+   
+   void handleStart(Packet packet);
+   
+   void handleStop(Packet packet);
 
-   void removeDestination(SimpleString address, boolean durable) throws Exception;
+   void handleRemoveDestination(SessionRemoveDestinationMessage packet);
 
-   void createQueue(SimpleString address,
-                    SimpleString queueName,
-                    SimpleString filterString,
-                    boolean durable,
-                    boolean temporary) throws Exception;
+   void handleCreateQueue(SessionCreateQueueMessage packet);
   
-   void deleteQueue(SimpleString queueName) throws Exception;
+   void handleDeleteQueue(SessionDeleteQueueMessage packet);
 
-   SessionCreateConsumerResponseMessage createConsumer(SimpleString queueName,
-                                                       SimpleString filterString,
-                                                       int windowSize,
-                                                       int maxRate,
-                                                       boolean browseOnly) throws Exception;
+   void handleCreateConsumer(SessionCreateConsumerMessage packet);
 
-   SessionCreateProducerResponseMessage createProducer(SimpleString address,
-                                                       int windowSize,
-                                                       int maxRate,
-                                                       boolean autoGroupId) throws Exception;
+   void handleCreateProducer(SessionCreateProducerMessage packet);
 
-   SessionQueueQueryResponseMessage executeQueueQuery(SimpleString queueName) throws Exception;
+   void handleExecuteQueueQuery(SessionQueueQueryMessage packet);
 
-   SessionBindingQueryResponseMessage executeBindingQuery(SimpleString address) throws Exception;
+   void handleExecuteBindingQuery(SessionBindingQueryMessage packet);
 
-   void closeConsumer(long consumerID) throws Exception;
+   void handleCloseConsumer(SessionConsumerCloseMessage packet);
 
-   void closeProducer(long producerID) throws Exception;
+   void handleCloseProducer(SessionProducerCloseMessage packet);
 
-   void receiveConsumerCredits(long consumerID, int credits) throws Exception;
+   void handleReceiveConsumerCredits(SessionConsumerFlowCreditMessage packet);
 
-   void sendProducerMessage(long producerID, ServerMessage message) throws Exception;
+   void handleSendProducerMessage(SessionSendMessage packet);
 
-   void sendScheduledProducerMessage(long producerID, ServerMessage serverMessage, long scheduledDeliveryTime) throws Exception;
+   void handleSendScheduledProducerMessage(SessionScheduledSendMessage packet);
 
+   void handleManagementMessage(SessionSendManagementMessage packet);
+
+   void handleFailedOver(Packet packet);
+   
+   void handleClose(Packet packet);
+   
+   void handleReplicatedDelivery(SessionReplicateDeliveryMessage packet);
+   
    int transferConnection(RemotingConnection newConnection, int lastReceivedCommandID);
 
-   void handleManagementMessage(SessionSendManagementMessage message) throws Exception;
+   //Should this really be here??
+   void sendResponse(final DelayedResult result, final Packet response);
 
-   void failedOver() throws Exception;
-   
-   void handleReplicatedDelivery(long consumerID, long messageID) throws Exception;
 }

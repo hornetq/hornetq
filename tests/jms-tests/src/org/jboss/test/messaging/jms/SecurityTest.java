@@ -98,8 +98,10 @@ public class SecurityTest extends JMSTestCase
       }
       finally
       {
-         if (conn1 != null) conn1.close();
-         if (conn2 != null) conn2.close();
+         if (conn1 != null)
+            conn1.close();
+         if (conn2 != null)
+            conn2.close();
       }
    }
 
@@ -116,7 +118,8 @@ public class SecurityTest extends JMSTestCase
       }
       finally
       {
-         if (conn1 != null) conn1.close();
+         if (conn1 != null)
+            conn1.close();
       }
    }
 
@@ -134,11 +137,12 @@ public class SecurityTest extends JMSTestCase
       }
       catch (JMSSecurityException e)
       {
-         //Expected
+         // Expected
       }
       finally
       {
-         if (conn1 != null) conn1.close();
+         if (conn1 != null)
+            conn1.close();
       }
    }
 
@@ -156,11 +160,12 @@ public class SecurityTest extends JMSTestCase
       }
       catch (JMSSecurityException e)
       {
-         //Expected
+         // Expected
       }
       finally
       {
-         if (conn1 != null) conn1.close();
+         if (conn1 != null)
+            conn1.close();
       }
    }
 
@@ -169,7 +174,7 @@ public class SecurityTest extends JMSTestCase
    /**
     * user/pwd with preconfigured clientID, should return preconf
     */
-    public void testPreConfClientID() throws Exception
+   public void testPreConfClientID() throws Exception
    {
       Connection conn = null;
       try
@@ -177,7 +182,7 @@ public class SecurityTest extends JMSTestCase
          ArrayList<String> bindings = new ArrayList<String>();
          bindings.add("preConfcf");
          deployConnectionFactory("dilbert-id", "preConfcf", bindings);
-         ConnectionFactory cf = (ConnectionFactory) getInitialContext().lookup("preConfcf");
+         ConnectionFactory cf = (ConnectionFactory)getInitialContext().lookup("preConfcf");
          conn = cf.createConnection("dilbert", "dogbert");
          String clientID = conn.getClientID();
          assertEquals("Invalid ClientID", "dilbert-id", clientID);
@@ -205,7 +210,8 @@ public class SecurityTest extends JMSTestCase
       }
       finally
       {
-         if (conn != null) conn.close();
+         if (conn != null)
+            conn.close();
       }
    }
 
@@ -220,7 +226,7 @@ public class SecurityTest extends JMSTestCase
          ArrayList<String> bindings = new ArrayList<String>();
          bindings.add("preConfcf");
          deployConnectionFactory("dilbert-id", "preConfcf", bindings);
-         ConnectionFactory cf = (ConnectionFactory) getInitialContext().lookup("preConfcf");
+         ConnectionFactory cf = (ConnectionFactory)getInitialContext().lookup("preConfcf");
          conn = cf.createConnection("dilbert", "dogbert");
          conn.setClientID("myID");
          fail();
@@ -252,11 +258,12 @@ public class SecurityTest extends JMSTestCase
       }
       catch (IllegalStateException e)
       {
-         //Expected
+         // Expected
       }
       finally
       {
-         if (conn != null) conn.close();
+         if (conn != null)
+            conn.close();
       }
    }
 
@@ -343,7 +350,8 @@ public class SecurityTest extends JMSTestCase
       }
       finally
       {
-         if (conn != null) conn.close();
+         if (conn != null)
+            conn.close();
       }
    }
 
@@ -358,7 +366,8 @@ public class SecurityTest extends JMSTestCase
       }
       finally
       {
-         if (conn != null) conn.close();
+         if (conn != null)
+            conn.close();
       }
    }
 
@@ -374,11 +383,12 @@ public class SecurityTest extends JMSTestCase
       }
       catch (JMSSecurityException e)
       {
-         //Expected
+         // Expected
       }
       finally
       {
-         if (conn != null) conn.close();
+         if (conn != null)
+            conn.close();
       }
    }
 
@@ -392,7 +402,8 @@ public class SecurityTest extends JMSTestCase
       }
       finally
       {
-         if (conn != null) conn.close();
+         if (conn != null)
+            conn.close();
       }
    }
 
@@ -406,7 +417,8 @@ public class SecurityTest extends JMSTestCase
       }
       finally
       {
-         if (conn != null) conn.close();
+         if (conn != null)
+            conn.close();
       }
    }
 
@@ -420,7 +432,8 @@ public class SecurityTest extends JMSTestCase
       }
       finally
       {
-         if (conn != null) conn.close();
+         if (conn != null)
+            conn.close();
       }
    }
 
@@ -434,7 +447,8 @@ public class SecurityTest extends JMSTestCase
       }
       finally
       {
-         if (conn != null) conn.close();
+         if (conn != null)
+            conn.close();
       }
    }
 
@@ -449,8 +463,8 @@ public class SecurityTest extends JMSTestCase
          ArrayList<String> bindings = new ArrayList<String>();
          bindings.add("preConfcf");
          deployConnectionFactory("dilbert-id", "preConfcf", bindings);
-         ConnectionFactory cf = (ConnectionFactory) getInitialContext().lookup("preConfcf");
-         //setSecurityConfig(oldDefaultConfig);
+         ConnectionFactory cf = (ConnectionFactory)getInitialContext().lookup("preConfcf");
+         // setSecurityConfig(oldDefaultConfig);
          conn = cf.createConnection("dilbert", "dogbert");
          assertTrue(this.canCreateDurableSub(conn, topic1, "sub2"));
       }
@@ -476,10 +490,10 @@ public class SecurityTest extends JMSTestCase
       }
       finally
       {
-         if (conn != null) conn.close();
+         if (conn != null)
+            conn.close();
       }
    }
-
 
    public void testDefaultSecurityValid() throws Exception
    {
@@ -494,7 +508,8 @@ public class SecurityTest extends JMSTestCase
       }
       finally
       {
-         if (conn != null) conn.close();
+         if (conn != null)
+            conn.close();
       }
    }
 
@@ -511,7 +526,8 @@ public class SecurityTest extends JMSTestCase
       }
       finally
       {
-         if (conn != null) conn.close();
+         if (conn != null)
+            conn.close();
       }
    }
 
@@ -532,7 +548,7 @@ public class SecurityTest extends JMSTestCase
          assertTrue(canReadDestination(conn, queue2));
          assertTrue(canWriteDestination(conn, queue2));
 
-         HashSet<Role>  newSecurityConfig = new HashSet<Role>();
+         HashSet<Role> newSecurityConfig = new HashSet<Role>();
          newSecurityConfig.add(new Role("someotherrole", true, true, false));
 
          setSecurityConfig(newSecurityConfig);
@@ -584,11 +600,10 @@ public class SecurityTest extends JMSTestCase
          assertFalse(canReadDestination(conn, queue2));
          assertFalse(canWriteDestination(conn, queue2, false));
 
-
          newSecurityConfig = new HashSet<Role>();
          newSecurityConfig.add(new Role("def", true, false, false));
 
-         configureSecurityForDestination("Queue2", true,  newSecurityConfig);
+         configureSecurityForDestination("Queue2", true, newSecurityConfig);
 
          assertTrue(canReadDestination(conn, queue2));
          assertFalse(canWriteDestination(conn, queue2, false));
@@ -596,16 +611,16 @@ public class SecurityTest extends JMSTestCase
          newSecurityConfig = new HashSet<Role>();
          newSecurityConfig.add(new Role("def", true, true, false));
 
-         configureSecurityForDestination("Queue2", true,  newSecurityConfig);
+         configureSecurityForDestination("Queue2", true, newSecurityConfig);
 
          assertTrue(canReadDestination(conn, queue2));
          assertTrue(canWriteDestination(conn, queue2, false));
 
-         //Now set to null
+         // Now set to null
 
          ServerManagement.configureSecurityForDestination("Queue2", null);
 
-         //Should fall back to the default config
+         // Should fall back to the default config
          HashSet<Role> lockedConf = new HashSet<Role>();
          lockedConf.add(new Role("alien", true, true, true));
 
@@ -643,18 +658,16 @@ public class SecurityTest extends JMSTestCase
          assertTrue(canReadDestination(conn, topic2));
          assertTrue(canWriteDestination(conn, topic2));
 
-
          HashSet<Role> newSecurityConfig = new HashSet<Role>();
-         newSecurityConfig.add(new Role("someotherrole", true, true, false)) ;
+         newSecurityConfig.add(new Role("someotherrole", true, true, false));
 
          configureSecurityForDestination("Topic2", false, newSecurityConfig);
 
          assertFalse(canReadDestination(conn, topic2));
          assertFalse(canWriteDestination(conn, topic2, false));
 
-
          newSecurityConfig = new HashSet<Role>();
-         newSecurityConfig.add(new Role("def", true, false, false)) ;
+         newSecurityConfig.add(new Role("def", true, false, false));
 
          configureSecurityForDestination("Topic2", false, newSecurityConfig);
 
@@ -662,20 +675,20 @@ public class SecurityTest extends JMSTestCase
          assertFalse(canWriteDestination(conn, topic2, false));
 
          newSecurityConfig = new HashSet<Role>();
-         newSecurityConfig.add(new Role("def", true, true, false)) ;
+         newSecurityConfig.add(new Role("def", true, true, false));
 
-         configureSecurityForDestination("Topic2", false,  newSecurityConfig);
+         configureSecurityForDestination("Topic2", false, newSecurityConfig);
 
          assertTrue(canReadDestination(conn, topic2));
          assertTrue(canWriteDestination(conn, topic2, false));
 
-         //Now set to null
+         // Now set to null
 
          configureSecurityForDestination("Topic2", false, null);
 
-         //Should fall back to the default config
+         // Should fall back to the default config
          HashSet<Role> lockedConf = new HashSet<Role>();
-         lockedConf.add(new Role("alien", true, true, true)) ;
+         lockedConf.add(new Role("alien", true, true, true));
          Set<Role> orig = getSecurityConfig();
          setSecurityConfig(lockedConf);
 
@@ -708,7 +721,7 @@ public class SecurityTest extends JMSTestCase
          // configure the queue to allow "def" to read
          HashSet<Role> config = new HashSet<Role>();
          config.add(new Role("def", true, false, false));
-         configureSecurityForDestination("Accounting", true, config );
+         configureSecurityForDestination("Accounting", true, config);
 
          // configure the topic to prevent "def" from reading
          HashSet<Role> config2 = new HashSet<Role>();
@@ -751,7 +764,7 @@ public class SecurityTest extends JMSTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       oldDefaultConfig = getSecurityConfig();
 
       HashSet<Role> roles = new HashSet<Role>();
@@ -760,7 +773,6 @@ public class SecurityTest extends JMSTestCase
       roles.add(new Role("noacc", false, false, false));
       roles.add(new Role("john", true, false, false));
       configureSecurityForDestination("Queue1", true, roles);
-
 
       HashSet<Role> roles2 = new HashSet<Role>();
       roles2.add(new Role("guest", true, true, true));
@@ -777,15 +789,15 @@ public class SecurityTest extends JMSTestCase
 
    protected void tearDown() throws Exception
    {
-   	super.tearDown();
-   	
+      super.tearDown();
+
       setSecurityConfig(oldDefaultConfig);
-      configureSecurityForDestination("Queue1", true,  null);
-      configureSecurityForDestination("Queue2", true,  null);
+      configureSecurityForDestination("Queue1", true, null);
+      configureSecurityForDestination("Queue2", true, null);
       configureSecurityForDestination("Topic1", false, null);
       configureSecurityForDestination("Topic2", false, null);
    }
-      
+
    // Private -------------------------------------------------------
 
    private boolean canReadDestination(Connection conn, Destination dest) throws Exception
@@ -808,6 +820,7 @@ public class SecurityTest extends JMSTestCase
       }
 
    }
+
    private boolean canWriteDestination(Connection conn, Destination dest) throws Exception
    {
       boolean transacted = canWriteDestination(conn, dest, true);
@@ -901,15 +914,14 @@ public class SecurityTest extends JMSTestCase
 
    private void testSecurityForTemporaryDestination(boolean isQueue) throws Exception
    {
-      Destination dest = isQueue ? (Destination) queue1 : topic1;
+      Destination dest = isQueue ? (Destination)queue1 : topic1;
 
       Connection conn = cf.createConnection("guest", "guest");
       try
       {
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Destination temporaryDestination = isQueue
-            ? (Destination) session.createTemporaryQueue()
-            : session.createTemporaryTopic();
+         Destination temporaryDestination = isQueue ? (Destination)session.createTemporaryQueue()
+                                                   : session.createTemporaryTopic();
          Message message = session.createMessage();
          message.setJMSReplyTo(temporaryDestination);
          MessageProducer producer = session.createProducer(dest);
@@ -947,9 +959,6 @@ public class SecurityTest extends JMSTestCase
       }
    }
 
-   
    // Inner classes -------------------------------------------------
 
 }
-
-
