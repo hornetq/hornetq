@@ -6,7 +6,11 @@
 	<classpathentry kind="src" path="src/config"/>
 	<classpathentry kind="src" path="examples/jms/src"/>
 	<classpathentry kind="src" path="examples/messaging/src"/>
-	<classpathentry excluding="**/.svn/**/*" kind="src" path="tests/src"/>
+	<classpathentry excluding="**/.svn/**/*" kind="src" path="tests/src">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="trunk/native/bin"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="src" path="tests/jms-tests/src"/>
 	<classpathentry kind="lib" path="thirdparty/oswego-concurrent/lib/concurrent.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jgroups/lib/jgroups.jar"/>
