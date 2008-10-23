@@ -57,7 +57,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    private final boolean supportsCallback;
 
    private volatile boolean holdCallbacks;
-   
+
    private ListenerHoldCallback holdCallbackListener;
 
    private volatile boolean generateErrors;
@@ -72,7 +72,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    {
       this.alignment = alignment;
       this.supportsCallback = supportsCallback;
-      callbacksInHold =  new ArrayList<CallbackRunnable>();
+      callbacksInHold = new ArrayList<CallbackRunnable>();
    }
 
    public FakeSequentialFileFactory()
@@ -173,7 +173,8 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       return holdCallbacks;
    }
 
-   public synchronized void setHoldCallbacks(final boolean holdCallbacks, final ListenerHoldCallback holdCallbackListener)
+   public synchronized void setHoldCallbacks(final boolean holdCallbacks,
+                                             final ListenerHoldCallback holdCallbackListener)
    {
       this.holdCallbacks = holdCallbacks;
       this.holdCallbackListener = holdCallbackListener;
@@ -235,11 +236,11 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    // Inner classes -------------------------------------------------
 
    /** This listener will return a message to the test with each callback added */
-   public static interface ListenerHoldCallback 
+   public static interface ListenerHoldCallback
    {
       public void callbackAdded(final ByteBuffer bytes);
    }
-   
+
    private class CallbackRunnable implements Runnable
    {
 
@@ -515,7 +516,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
        * @param bytes
        * @param action
        */
-      private void addCallback(final ByteBuffer bytes, CallbackRunnable action)
+      private void addCallback(final ByteBuffer bytes, final CallbackRunnable action)
       {
          synchronized (FakeSequentialFileFactory.this)
          {
@@ -526,7 +527,6 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
             }
          }
       }
-
 
       public int getAlignment() throws Exception
       {

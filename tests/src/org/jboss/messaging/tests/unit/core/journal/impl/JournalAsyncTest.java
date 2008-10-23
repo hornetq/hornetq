@@ -32,7 +32,6 @@ import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.SimpleEncoding;
-import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory.FakeSequentialFile;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 public class JournalAsyncTest extends UnitTestCase
@@ -119,12 +118,14 @@ public class JournalAsyncTest extends UnitTestCase
 
       final CountDownLatch latch = new CountDownLatch(11);
 
-      factory.setHoldCallbacks(true, new FakeSequentialFileFactory.ListenerHoldCallback(){
+      factory.setHoldCallbacks(true, new FakeSequentialFileFactory.ListenerHoldCallback()
+      {
 
-         public void callbackAdded(ByteBuffer bytes)
+         public void callbackAdded(final ByteBuffer bytes)
          {
             latch.countDown();
-         }});
+         }
+      });
 
       class LocalThread extends Thread
       {
@@ -181,13 +182,14 @@ public class JournalAsyncTest extends UnitTestCase
 
       final CountDownLatch latch = new CountDownLatch(11);
 
-      factory.setHoldCallbacks(true, new FakeSequentialFileFactory.ListenerHoldCallback(){
+      factory.setHoldCallbacks(true, new FakeSequentialFileFactory.ListenerHoldCallback()
+      {
 
-         public void callbackAdded(ByteBuffer bytes)
+         public void callbackAdded(final ByteBuffer bytes)
          {
             latch.countDown();
-         }});
-
+         }
+      });
 
       class LocalThread extends Thread
       {
