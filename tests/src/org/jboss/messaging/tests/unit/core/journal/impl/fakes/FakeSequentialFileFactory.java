@@ -57,6 +57,8 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    private final boolean supportsCallback;
 
    private volatile boolean holdCallbacks;
+   
+   private ListenerHoldCallback holdCallbackListener;
 
    private volatile boolean generateErrors;
 
@@ -70,7 +72,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    {
       this.alignment = alignment;
       this.supportsCallback = supportsCallback;
-      callbacksInHold = new ArrayList<CallbackRunnable>();
+      callbacksInHold =  new ArrayList<CallbackRunnable>();
    }
 
    public FakeSequentialFileFactory()
@@ -166,14 +168,15 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       return ByteBuffer.wrap(bytes);
    }
 
-   public boolean isHoldCallbacks()
+   public synchronized boolean isHoldCallbacks()
    {
       return holdCallbacks;
    }
 
-   public void setHoldCallbacks(final boolean holdCallbacks)
+   public synchronized void setHoldCallbacks(final boolean holdCallbacks, final ListenerHoldCallback holdCallbackListener)
    {
       this.holdCallbacks = holdCallbacks;
+      this.holdCallbackListener = holdCallbackListener;
    }
 
    public boolean isGenerateErrors()
@@ -186,7 +189,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       this.generateErrors = generateErrors;
    }
 
-   public void flushAllCallbacks()
+   public synchronized void flushAllCallbacks()
    {
       for (Runnable action : callbacksInHold)
       {
@@ -196,19 +199,19 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       callbacksInHold.clear();
    }
 
-   public void flushCallback(final int position)
+   public synchronized void flushCallback(final int position)
    {
       Runnable run = callbacksInHold.get(position);
       run.run();
       callbacksInHold.remove(run);
    }
 
-   public void setCallbackAsError(final int position)
+   public synchronized void setCallbackAsError(final int position)
    {
       callbacksInHold.get(position).setSendError(true);
    }
 
-   public int getNumberOfCallbacks()
+   public synchronized int getNumberOfCallbacks()
    {
       return callbacksInHold.size();
    }
@@ -231,6 +234,12 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
    // Inner classes -------------------------------------------------
 
+   /** This listener will return a message to the test with each callback added */
+   public static interface ListenerHoldCallback 
+   {
+      public void callbackAdded(final ByteBuffer bytes);
+   }
+   
    private class CallbackRunnable implements Runnable
    {
 
@@ -447,7 +456,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
          if (holdCallbacks)
          {
-            callbacksInHold.add(action);
+            addCallback(bytes, action);
          }
          else
          {
@@ -501,6 +510,23 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
             data.position(oldpos);
          }
       }
+
+      /**
+       * @param bytes
+       * @param action
+       */
+      private void addCallback(final ByteBuffer bytes, CallbackRunnable action)
+      {
+         synchronized (FakeSequentialFileFactory.this)
+         {
+            callbacksInHold.add(action);
+            if (holdCallbackListener != null)
+            {
+               holdCallbackListener.callbackAdded(bytes);
+            }
+         }
+      }
+
 
       public int getAlignment() throws Exception
       {

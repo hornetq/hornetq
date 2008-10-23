@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.tests.unit.core.journal.impl;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +32,7 @@ import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.SimpleEncoding;
+import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory.FakeSequentialFile;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 public class JournalAsyncTest extends UnitTestCase
@@ -60,7 +62,7 @@ public class JournalAsyncTest extends UnitTestCase
 
       setupJournal(JOURNAL_SIZE, 100, 5);
 
-      factory.setHoldCallbacks(true);
+      factory.setHoldCallbacks(true, null);
 
       final CountDownLatch latch = new CountDownLatch(1);
 
@@ -79,7 +81,7 @@ public class JournalAsyncTest extends UnitTestCase
                }
 
                latch.countDown();
-               factory.setHoldCallbacks(false);
+               factory.setHoldCallbacks(false, null);
                journalImpl.appendCommitRecord(1l);
             }
             catch (Exception e)
@@ -115,9 +117,14 @@ public class JournalAsyncTest extends UnitTestCase
 
       setupJournal(JOURNAL_SIZE, 100, 5);
 
-      factory.setHoldCallbacks(true);
+      final CountDownLatch latch = new CountDownLatch(11);
 
-      final CountDownLatch latch = new CountDownLatch(1);
+      factory.setHoldCallbacks(true, new FakeSequentialFileFactory.ListenerHoldCallback(){
+
+         public void callbackAdded(ByteBuffer bytes)
+         {
+            latch.countDown();
+         }});
 
       class LocalThread extends Thread
       {
@@ -133,7 +140,6 @@ public class JournalAsyncTest extends UnitTestCase
                   journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0));
                }
 
-               latch.countDown();
                journalImpl.appendRollbackRecord(1l);
             }
             catch (Exception e)
@@ -173,9 +179,15 @@ public class JournalAsyncTest extends UnitTestCase
 
       setupJournal(JOURNAL_SIZE, 100, 5);
 
-      factory.setHoldCallbacks(true);
+      final CountDownLatch latch = new CountDownLatch(11);
 
-      final CountDownLatch latch = new CountDownLatch(1);
+      factory.setHoldCallbacks(true, new FakeSequentialFileFactory.ListenerHoldCallback(){
+
+         public void callbackAdded(ByteBuffer bytes)
+         {
+            latch.countDown();
+         }});
+
 
       class LocalThread extends Thread
       {
@@ -191,7 +203,6 @@ public class JournalAsyncTest extends UnitTestCase
                   journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0));
                }
 
-               latch.countDown();
                journalImpl.appendCommitRecord(1l);
             }
             catch (Exception e)
@@ -243,7 +254,7 @@ public class JournalAsyncTest extends UnitTestCase
 
       setupJournal(JOURNAL_SIZE, 100, 5);
 
-      factory.setHoldCallbacks(true);
+      factory.setHoldCallbacks(true, null);
       factory.setGenerateErrors(true);
 
       journalImpl.appendAddRecordTransactional(1l, 1, (byte)1, new SimpleEncoding(1, (byte)0));
@@ -251,7 +262,7 @@ public class JournalAsyncTest extends UnitTestCase
       factory.flushAllCallbacks();
 
       factory.setGenerateErrors(false);
-      factory.setHoldCallbacks(false);
+      factory.setHoldCallbacks(false, null);
 
       try
       {
