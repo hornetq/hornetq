@@ -211,6 +211,20 @@
       <path refid="easymock.easymock.classpath" />
    </path>
 
+   <path id="findbugs.classpath">
+      <path refid="core.compilation.classpath"/>
+      <path refid="jms.compilation.classpath"/>
+      <path location="${build.jars.dir}/jboss-${module.name}.jar"/>
+      <path refid="junit.junit.classpath"/>
+      <path refid="jboss.profiler.jvmti.classpath"/>
+      <path refid="jboss.test14.classpath"/>
+      <path refid="jboss.jboss.retro.classpath"/>
+      <path refid="easymock.easymock.classpath" />
+      <path refid="slf4j.api.classpath"/>
+      <path refid="slf4j.log4j.classpath"/>
+      <path refid="jboss.jbossxb.classpath"/>
+   </path>
+
    <path id="unit.test.execution.classpath">
       <pathelement location="${test.dir}/config"/>
       <pathelement location="${test.dir}/tmpfiles"/>
@@ -946,6 +960,17 @@
       </java>
    </target>
 
+   <target name="findbugs" depends="jar">
+      <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"/>
+      <findbugs home="${findbugs.home}"
+                   output="html"
+                   outputFile="bugs.html" >
+           <auxClasspath refid="findbugs.classpath"/>
+           <sourcePath path="${src.main.dir}" />
+           <class location="${build.jars.dir}/jboss-${module.name}.jar" />
+         </findbugs>
+
+   </target>
    <!-- Examples -->
 
    <target name="queueExample" depends="client-jar">

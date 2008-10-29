@@ -182,6 +182,9 @@
       <ant antfile="build-messaging.xml" target="debugServer"/>
    </target>
 
+    <target name="findbugs" depends="createthirdparty">
+       <ant antfile="build-messaging.xml" target="findbugs"/>
+    </target>
    <!--example targets-->
    <target name="queueExample" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="queueExample"/>
