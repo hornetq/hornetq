@@ -14,15 +14,11 @@ package org.jboss.messaging.core.server.impl;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -40,6 +36,7 @@ import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.ScheduledDeliveryHandler;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
@@ -74,13 +71,11 @@ public class QueueImpl implements Queue
 
    private final boolean temporary;
 
-   private final ScheduledExecutorService scheduledExecutor;
-
    private final PostOffice postOffice;
 
    private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(NUM_PRIORITIES);
 
-   private final Set<ScheduledDeliveryRunnable> scheduledRunnables = new LinkedHashSet<ScheduledDeliveryRunnable>();
+   private final ScheduledDeliveryHandler scheduledDeliveryHandler;
 
    private volatile DistributionPolicy distributionPolicy = new RoundRobinDistributionPolicy();
 
@@ -125,11 +120,11 @@ public class QueueImpl implements Queue
 
       this.temporary = temporary;
 
-      this.scheduledExecutor = scheduledExecutor;
-
       this.postOffice = postOffice;
 
       direct = true;
+
+      scheduledDeliveryHandler = new ScheduledDeliveryHandlerImpl(scheduledExecutor);
    }
 
    // Queue implementation
@@ -177,7 +172,7 @@ public class QueueImpl implements Queue
          
          ServerMessage msg = ref.getMessage();
 
-         if (!checkAndSchedule(ref))
+         if (!scheduledDeliveryHandler.checkAndSchedule(ref, backup))
          {
             messageReferences.addFirst(ref, msg.getPriority());
          }
@@ -309,17 +304,12 @@ public class QueueImpl implements Queue
 
    public synchronized int getScheduledCount()
    {
-      return scheduledRunnables.size();
+      return scheduledDeliveryHandler.getScheduledCount();
    }
 
    public synchronized List<MessageReference> getScheduledMessages()
    {
-      List<MessageReference> refs = new ArrayList<MessageReference>();
-      for (ScheduledDeliveryRunnable runnable : scheduledRunnables)
-      {
-         refs.add(runnable.getReference());
-      }
-      return refs;
+      return scheduledDeliveryHandler.getScheduledMessages();
    }
 
    public int getDeliveringCount()
@@ -391,18 +381,12 @@ public class QueueImpl implements Queue
          iter.remove();
       }
 
-      synchronized (scheduledRunnables)
+      List<MessageReference> cancelled = scheduledDeliveryHandler.cancel();
+      for (MessageReference messageReference : cancelled)
       {
-         for (ScheduledDeliveryRunnable runnable : scheduledRunnables)
-         {
-            runnable.cancel();
+          deliveringCount.incrementAndGet();
 
-            deliveringCount.incrementAndGet();
-
-            tx.addAcknowledgement(runnable.getReference());
-         }
-
-         scheduledRunnables.clear();
+          tx.addAcknowledgement(messageReference);
       }
 
       tx.commit();
@@ -557,10 +541,7 @@ public class QueueImpl implements Queue
 
          backup = false;
 
-         for (ScheduledDeliveryRunnable runnable : scheduledRunnables)
-         {
-            scheduleDelivery(runnable, runnable.getReference().getScheduledDeliveryTime());
-         }
+         scheduledDeliveryHandler.reSchedule();
 
          return true;
       }
@@ -679,7 +660,7 @@ public class QueueImpl implements Queue
          sizeBytes.addAndGet(ref.getMessage().getEncodeSize());
       }
 
-      if (checkAndSchedule(ref))
+      if (scheduledDeliveryHandler.checkAndSchedule(ref, backup))
       {
          return HandleStatus.HANDLED;
       }
@@ -741,42 +722,6 @@ public class QueueImpl implements Queue
       return HandleStatus.HANDLED;
    }
 
-   private boolean checkAndSchedule(final MessageReference ref)
-   {
-      long deliveryTime = ref.getScheduledDeliveryTime();
-
-      if (deliveryTime != 0 && scheduledExecutor != null)
-      {
-         if (trace)
-         {
-            log.trace("Scheduling delivery for " + ref + " to occur at " + deliveryTime);
-         }
-
-         ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(ref);
-
-         scheduledRunnables.add(runnable);
-
-         if (!backup)
-         {
-            scheduleDelivery(runnable, deliveryTime);
-         }
-
-         return true;
-      }
-      return false;
-   }
-
-   private void scheduleDelivery(final ScheduledDeliveryRunnable runnable, final long deliveryTime)
-   {
-      long now = System.currentTimeMillis();
-
-      long delay = deliveryTime - now;
-
-      Future<?> future = scheduledExecutor.schedule(runnable, delay, TimeUnit.MILLISECONDS);
-
-      runnable.setFuture(future);
-   }
-
    private HandleStatus deliver(final MessageReference reference)
    {
       HandleStatus status = distributionPolicy.distribute(reference);
@@ -811,78 +756,4 @@ public class QueueImpl implements Queue
       }
    }
 
-   private class ScheduledDeliveryRunnable implements Runnable
-   {
-      private final MessageReference ref;
-
-      private volatile Future<?> future;
-
-      private boolean cancelled;
-
-      public ScheduledDeliveryRunnable(final MessageReference ref)
-      {
-         this.ref = ref;
-      }
-
-      public synchronized void setFuture(final Future<?> future)
-      {
-         if (cancelled)
-         {
-            future.cancel(false);
-         }
-         else
-         {
-            this.future = future;
-         }
-      }
-
-      public synchronized void cancel()
-      {
-         if (future != null)
-         {
-            future.cancel(false);
-         }
-
-         cancelled = true;
-      }
-
-      public MessageReference getReference()
-      {
-         return ref;
-      }
-
-      public void run()
-      {
-         if (trace)
-         {
-            log.trace("Scheduled delivery timeout " + ref);
-         }
-
-         synchronized (scheduledRunnables)
-         {
-            boolean removed = scheduledRunnables.remove(this);
-
-            if (!removed)
-            {
-               log.warn("Failed to remove timeout " + this);
-
-               return;
-            }
-         }
-
-         ref.setScheduledDeliveryTime(0);
-
-         HandleStatus status = deliver(ref);
-
-         if (HandleStatus.HANDLED != status)
-         {
-            // Add back to the front of the queue
-
-            // TODO - need to replicate this so backup node also adds back to
-            // front of queue
-
-            addFirst(ref);
-         }
-      }
-   }
 }
