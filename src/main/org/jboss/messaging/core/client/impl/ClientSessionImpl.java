@@ -371,39 +371,22 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return consumer;
    }
 
-
    public ClientProducer createProducer(final SimpleString address) throws MessagingException
    {      
       checkClosed();
 
-      return createProducer(address, connectionFactory.getProducerWindowSize(), connectionFactory.getProducerMaxRate());
+      return createProducer(address, connectionFactory.getProducerMaxRate());
    }
 
-   public ClientProducer createRateLimitedProducer(final SimpleString address, final int rate) throws MessagingException
+   public ClientProducer createProducer(final SimpleString address, final int maxRate) throws MessagingException
    {
-      checkClosed();
-
-      return createProducer(address, -1, rate);
-   }
-
-   public ClientProducer createProducerWithWindowSize(final SimpleString address, final int windowSize) throws MessagingException
-   {
-      checkClosed();
-
-      return createProducer(address, windowSize, -1);
-   }
-
-   private ClientProducer createProducer(final SimpleString address, final int windowSize, final int maxRate) throws MessagingException
-   {
-      return createProducer(address,
-                            windowSize,
+      return createProducer(address,               
                             maxRate,
                             connectionFactory.isBlockOnNonPersistentSend(),
                             connectionFactory.isBlockOnPersistentSend());
    }
 
    public ClientProducer createProducer(final SimpleString address,
-                                        final int windowSize,
                                         final int maxRate,
                                         final boolean blockOnNonPersistentSend,
                                         final boolean blockOnPersistentSend) throws MessagingException
@@ -419,8 +402,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (producer == null)
       {
-         SessionCreateProducerMessage request = new SessionCreateProducerMessage(address,
-                                                                                 windowSize,
+         SessionCreateProducerMessage request = new SessionCreateProducerMessage(address,                                                                             
                                                                                  maxRate,
                                                                                  autoGroupId);
 
@@ -440,8 +422,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                                                    false),
                                            autoCommitSends && blockOnNonPersistentSend,
                                            autoCommitSends && blockOnPersistentSend,
-                                           response.getAutoGroupId(),
-                                           response.getInitialCredits(),
+                                           response.getAutoGroupId(),                                          
                                            channel);
       }
 
@@ -658,16 +639,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       if (consumer != null)
       {
          consumer.handleMessage(message);
-      }
-   }
-
-   public void receiveProducerCredits(final long producerID, final int credits) throws Exception
-   {
-      ClientProducerInternal producer = producers.get(producerID);
-
-      if (producer != null)
-      {
-         producer.receiveCredits(credits);
       }
    }
 

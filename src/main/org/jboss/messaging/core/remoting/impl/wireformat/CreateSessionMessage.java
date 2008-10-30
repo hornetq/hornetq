@@ -22,6 +22,10 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
+
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**

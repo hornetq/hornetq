@@ -35,9 +35,5 @@ public interface ClientProducerInternal extends ClientProducer
 {
    long getID();
    
-	void receiveCredits(int credits) throws Exception;
-	
-	int getAvailableCredits();
-	
    void cleanUp();
 }

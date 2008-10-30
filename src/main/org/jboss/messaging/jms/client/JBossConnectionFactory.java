@@ -72,15 +72,13 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    private final long pingPeriod;
    
-   private final int pingPoolSize;
-
    private final long callTimeout;
 
    private final int consumerWindowSize;
 
    private final int consumerMaxRate;
 
-   private final int producerWindowSize;
+   private final int sendWindowSize;
 
    private final int producerMaxRate;
 
@@ -98,14 +96,13 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    public JBossConnectionFactory(final TransportConfiguration connectorConfig,
                                  final TransportConfiguration backupConnectorConfig,
-                                 final long pingPeriod,
-                                 final int pingPoolSize,
+                                 final long pingPeriod,                         
                                  final long callTimeout,
                                  final String clientID,
                                  final int dupsOKBatchSize,
                                  final int consumerWindowSize,
                                  final int consumerMaxRate,
-                                 final int producerWindowSize,
+                                 final int sendWindowSize,
                                  final int producerMaxRate,
                                  final boolean blockOnAcknowledge,
                                  final boolean blockOnNonPersistentSend,
@@ -118,12 +115,11 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.clientID = clientID;
       this.dupsOKBatchSize = dupsOKBatchSize;
       this.pingPeriod = pingPeriod;
-      this.pingPoolSize = pingPoolSize;
       this.callTimeout = callTimeout;
       this.consumerMaxRate = consumerMaxRate;
       this.consumerWindowSize = consumerWindowSize;
       this.producerMaxRate = producerMaxRate;
-      this.producerWindowSize = producerWindowSize;
+      this.sendWindowSize = sendWindowSize;
       this.blockOnAcknowledge = blockOnAcknowledge;
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
       this.blockOnPersistentSend = blockOnPersistentSend;
@@ -225,11 +221,6 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       return pingPeriod;
    }
    
-   public int getPingPoolSize()
-   {
-      return pingPoolSize;
-   }
-
    public long getCallTimeout()
    {
       return callTimeout;
@@ -257,7 +248,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    public int getProducerWindowSize()
    {
-      return producerWindowSize;
+      return sendWindowSize;
    }
 
    public int getProducerMaxRate()
@@ -285,7 +276,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       return autoGroupId;
    }
 
-// Package protected ----------------------------------------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
 
@@ -299,12 +290,11 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
          // It doesn't matter if more than one is created due to a race
          sessionFactory = new ClientSessionFactoryImpl(connectorConfig,
                                                        backupConnectorConfig,
-                                                       pingPeriod,
-                                                       pingPoolSize,
+                                                       pingPeriod,                                                 
                                                        callTimeout,
                                                        consumerWindowSize,
                                                        consumerMaxRate,
-                                                       producerWindowSize,
+                                                       sendWindowSize,
                                                        producerMaxRate,
                                                        blockOnAcknowledge,
                                                        blockOnNonPersistentSend,

@@ -39,14 +39,13 @@ public class JMSTestCase extends JBMServerTestCase
       getJmsServerManager().createConnectionFactory("testsuitecf",
                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"),
                                                     null,
-                                                    5000,
-                                                    5,
+                                                    5000,                                                    
                                                     5000,
                                                     null,
                                                     1000,
                                                     1024 * 1024,
                                                     -1,
-                                                    1000,
+                                                    1024 * 1024,
                                                     -1,
                                                     true,
                                                     true,
@@ -54,7 +53,7 @@ public class JMSTestCase extends JBMServerTestCase
                                                     false,
                                                     8,
                                                     "/testsuitecf");
-
+      
       cf = (JBossConnectionFactory)getInitialContext().lookup("/testsuitecf");
    }
 

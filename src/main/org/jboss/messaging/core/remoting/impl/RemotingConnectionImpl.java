@@ -43,7 +43,6 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_PRODUCER_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVETOKENS;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_MSG;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REMOVE_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REPLICATE_DELIVERY;
@@ -79,6 +78,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -119,7 +119,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessa
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionFailoverCompleteMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
@@ -217,6 +216,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    private boolean frozen;
    
    private final Object failLock = new Object();
+   
+   private final int sendWindowSize;
+   
+   private final Semaphore sendSemaphore;
       
    // debug only stuff
 
@@ -232,9 +235,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                                  final long blockingCallTimeout,
                                  final long pingPeriod,
                                  final ScheduledExecutorService pingExecutor,
-                                 final List<Interceptor> interceptors)
+                                 final List<Interceptor> interceptors,
+                                 final int sendWindowSize)
    {
-      this(transportConnection, blockingCallTimeout, pingPeriod, pingExecutor, interceptors, null, true, true);
+      this(transportConnection, blockingCallTimeout, pingPeriod, pingExecutor, interceptors, null, true, true, sendWindowSize);
    }
 
    /*
@@ -254,7 +258,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
            interceptors,
            replicatingConnection,
            active,
-           false);
+           false,
+           -1);
    }
    
    private RemotingConnectionImpl(final Connection transportConnection,
@@ -264,7 +269,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                                   final List<Interceptor> interceptors,
                                   final RemotingConnection replicatingConnection,
                                   final boolean active,
-                                  final boolean client)
+                                  final boolean client,
+                                  final int sendWindowSize)
 
    {
       this.transportConnection = transportConnection;
@@ -289,6 +295,17 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       this.client = client;
 
       this.createdActive = active;
+      
+      this.sendWindowSize = sendWindowSize;
+      
+      if (sendWindowSize != -1)
+      {        
+         this.sendSemaphore = new Semaphore(sendWindowSize, true);
+      }
+      else
+      {
+         this.sendSemaphore = null;
+      }
    }
 
    public void startPinger()
@@ -521,13 +538,22 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       }
    }
 
-   // private static AtomicInteger specialSeq = new AtomicInteger(0);
-
    private void doWrite(final Packet packet)
    {      
       final MessagingBuffer buffer = transportConnection.createBuffer(PacketImpl.INITIAL_BUFFER_SIZE);
 
-      packet.encode(buffer);
+      int size = packet.encode(buffer);
+      
+      if (packet.isRequiresConfirmations() && sendSemaphore != null)
+      {
+         try
+         {
+            sendSemaphore.acquire(size);
+         }
+         catch (InterruptedException e)
+         {            
+         }
+      }
 
       transportConnection.write(buffer);
    }
@@ -773,11 +799,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          case SESS_SEND:
          {
             packet = new SessionSendMessage();
-            break;
-         }
-         case SESS_RECEIVETOKENS:
-         {
-            packet = new SessionProducerFlowCreditMessage();
             break;
          }
          case SESS_RECEIVE_MSG:
@@ -1302,6 +1323,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          {
             throw new IllegalArgumentException("Invalid lastReceivedCommandID: " + lastReceivedCommandID);
          }
+         
+         int sizeToFree = 0;
 
          for (int i = 0; i < numberToClear; i++)
          {
@@ -1324,9 +1347,16 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                                                " created active " +
                                                connection.createdActive);
             }
+            
+            sizeToFree += packet.getPacketSize();
          }
 
          firstStoredCommandID += numberToClear;
+         
+         if (connection.sendSemaphore != null)
+         {
+            connection.sendSemaphore.release(sizeToFree);
+         }
       }
 
       private class ReplicatedPacketsConfirmedChannelHandler implements ChannelHandler

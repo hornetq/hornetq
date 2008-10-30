@@ -23,14 +23,12 @@
 package org.jboss.messaging.core.client.impl;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EXCEPTION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVETOKENS;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_MSG;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 
 /**
@@ -59,14 +57,6 @@ public class ClientSessionPacketHandler implements ChannelHandler
       {
          switch (type)
          {
-            case SESS_RECEIVETOKENS:
-            {
-               SessionProducerFlowCreditMessage message = (SessionProducerFlowCreditMessage) packet;
-   
-               clientSession.receiveProducerCredits(message.getProducerID(), message.getTokens());
-               
-               break;
-            }
             case SESS_RECEIVE_MSG:
             {
                SessionReceiveMessage message = (SessionReceiveMessage) packet;

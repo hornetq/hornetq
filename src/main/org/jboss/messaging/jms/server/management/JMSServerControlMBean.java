@@ -71,8 +71,6 @@ public interface JMSServerControlMBean
                                 TransportConfiguration backupConnectorConfig,
                                 @Parameter(name = "pingPeriod", desc = "The ping period in m")
                                 long pingPeriod,
-                                @Parameter(name = "pingPoolSize", desc = "The max size of thread pool used for pinging")
-                                int pingPoolSize,
                                 @Parameter(name = "callTimeout", desc = "The call timeout in m")
                                 long callTimeout,
                                 @Parameter(name = "clientID", desc = "ClientID for created connections")

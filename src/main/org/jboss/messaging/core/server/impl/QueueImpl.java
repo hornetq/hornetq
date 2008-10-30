@@ -28,7 +28,6 @@ import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.DistributionPolicy;
@@ -88,8 +87,6 @@ public class QueueImpl implements Queue
    private AtomicInteger messagesAdded = new AtomicInteger(0);
 
    private AtomicInteger deliveringCount = new AtomicInteger(0);
-
-   private volatile FlowController flowController;
 
    private AtomicBoolean waitingToDeliver = new AtomicBoolean(false);
 
@@ -348,15 +345,6 @@ public class QueueImpl implements Queue
       return messagesAdded.get();
    }
 
-   public void setFlowController(final FlowController flowController)
-   {
-      this.flowController = flowController;
-   }
-
-   public FlowController getFlowController()
-   {
-      return flowController;
-   }
 
    public synchronized void deleteAllReferences(final StorageManager storageManager) throws Exception
    {

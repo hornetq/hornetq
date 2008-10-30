@@ -38,7 +38,6 @@ import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.DelayedResult;
@@ -855,43 +854,18 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       int maxRate = packet.getMaxRate();
 
-      int windowSize = packet.getWindowSize();
-
       boolean autoGroupID = packet.isAutoGroupId();
 
       Packet response = null;
 
       try
       {
-         FlowController flowController = null;
-
          final int maxRateToUse = maxRate;
 
-         if (address != null)
-         {
-            flowController = windowSize == -1 ? null : postOffice.getFlowController(address);
-         }
-
-         final int windowToUse = flowController == null ? -1 : windowSize;
-
-         // Server window size is 0.75 client window size for producer flow control
-         // (other way round to consumer flow control)
-
-         final int serverWindowSize = windowToUse == -1 ? -1 : (int)(windowToUse * 0.75);
-
          ServerProducerImpl producer = new ServerProducerImpl(idGenerator.generateID(),
-                                                              this,
-                                                              address,
-                                                              flowController,
-                                                              serverWindowSize,
-                                                              channel);
+                                                              this);
 
          producers.put(producer.getID(), producer);
-
-         // Get some initial credits to send to the producer - we try for
-         // windowToUse
-
-         int initialCredits = flowController == null ? -1 : flowController.getInitialCredits(windowToUse, producer);
 
          SimpleString groupId = null;
 
@@ -900,7 +874,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             groupId = simpleStringIdGenerator.generateID();
          }
 
-         response = new SessionCreateProducerResponseMessage(initialCredits, maxRateToUse, groupId);
+         response = new SessionCreateProducerResponseMessage(maxRateToUse, groupId);
       }
       catch (Exception e)
       {

@@ -30,7 +30,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
@@ -85,11 +84,6 @@ public class FakePostOffice implements PostOffice
    }
 
    public List<Binding> getBindingsForAddress(SimpleString address) throws Exception
-   {
-      return null;
-   }
-
-   public FlowController getFlowController(SimpleString address)
    {
       return null;
    }

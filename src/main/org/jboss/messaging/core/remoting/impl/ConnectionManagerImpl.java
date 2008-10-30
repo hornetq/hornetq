@@ -52,47 +52,51 @@ import org.jboss.messaging.util.JBMThreadFactory;
 public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeCycleListener
 {
    private static final Logger log = Logger.getLogger(ConnectionManagerImpl.class);
-   
+
    private final ConnectorFactory connectorFactory;
-   
+
    private final Map<String, Object> params;
-   
+
    private final long pingInterval;
-   
+
    private final long callTimeout;
-   
+
    private final int maxConnections;
-       
-   //TODO - allow this to be configurable
+
+   // TODO - allow this to be configurable
    private static final ScheduledThreadPoolExecutor pingExecutor = new ScheduledThreadPoolExecutor(5,
-                                                                             new JBMThreadFactory("jbm-pinger-threads"));
-   
+                                                                                                   new JBMThreadFactory("jbm-pinger-threads"));
+
    private final Map<Object, ConnectionEntry> connections = new LinkedHashMap<Object, ConnectionEntry>();
-      
+
    private int refCount;
-   
+
    private Iterator<ConnectionEntry> mapIterator;
-   
+
    private Object failConnectionLock = new Object();
-      
+   
+   private final int sendWindowSize;
+
    public ConnectionManagerImpl(final ConnectorFactory connectorFactory,
                                 final Map<String, Object> params,
                                 final long pingInterval,
                                 final long callTimeout,
                                 final int maxConnections,
-                                final int pingPoolSize)  // FIXME - pingPoolSize is not used
+                                final int sendWindowSize)
    {
       this.connectorFactory = connectorFactory;
-      
+
       this.params = params;
-      
+
       this.pingInterval = pingInterval;
-      
+
       this.callTimeout = callTimeout;
+
+      this.maxConnections = maxConnections;
       
-      this.maxConnections = maxConnections; 
+      this.sendWindowSize = sendWindowSize;
    }
-    
+
    public RemotingConnection createConnection()
    {
       DelegatingBufferHandler handler = new DelegatingBufferHandler();
@@ -110,7 +114,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          throw new IllegalStateException("Failed to connect");
       }
 
-      RemotingConnection connection = new RemotingConnectionImpl(tc, callTimeout, pingInterval, pingExecutor, null);
+      RemotingConnection connection = new RemotingConnectionImpl(tc, callTimeout, pingInterval, pingExecutor, null, sendWindowSize);
 
       handler.conn = connection;
 
@@ -120,7 +124,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
       return connection;
    }
-   
+
    public synchronized RemotingConnection getConnection()
    {
       RemotingConnection conn;
@@ -142,7 +146,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             throw new IllegalStateException("Failed to connect");
          }
 
-         conn = new RemotingConnectionImpl(tc, callTimeout, pingInterval, pingExecutor, null);
+         conn = new RemotingConnectionImpl(tc, callTimeout, pingInterval, pingExecutor, null, sendWindowSize);
 
          handler.conn = conn;
 
@@ -153,108 +157,108 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       else
       {
          // Return one round-robin from the list
-         
+
          if (mapIterator == null || !mapIterator.hasNext())
          {
             mapIterator = connections.values().iterator();
          }
 
          ConnectionEntry entry = mapIterator.next();
-         
-         conn = entry.connection;            
+
+         conn = entry.connection;
       }
-      
+
       refCount++;
-      
+
       return conn;
    }
-   
+
    public synchronized void returnConnection(final Object connectionID)
-   {              
+   {
       ConnectionEntry entry = connections.get(connectionID);
-      
+
       if (refCount != 0)
       {
          refCount--;
       }
-      
+
       if (entry != null)
-      {                  
+      {
          checkCloseConnections();
       }
       else
       {
-         //Can be legitimately null if session was closed before then went to remove session from csf
-         //and locked since failover had started then after failover removes it but it's already been failed
+         // Can be legitimately null if session was closed before then went to remove session from csf
+         // and locked since failover had started then after failover removes it but it's already been failed
       }
    }
-    
+
    public void failConnection(final MessagingException me)
-   {      
+   {
       synchronized (failConnectionLock)
       {
-         //When a single connection fails, we fail *all* the connections
-         
-         Set<ConnectionEntry> copy = new HashSet<ConnectionEntry>(connections.values());         
-         
-         for (ConnectionEntry entry: copy)
+         // When a single connection fails, we fail *all* the connections
+
+         Set<ConnectionEntry> copy = new HashSet<ConnectionEntry>(connections.values());
+
+         for (ConnectionEntry entry : copy)
          {
-            entry.connection.fail(me);      
+            entry.connection.fail(me);
          }
-         
+
          refCount = 0;
       }
    }
-   
+
    public synchronized int getRefCount()
    {
       return refCount;
    }
-   
+
    public synchronized int numConnections()
-   {    
+   {
       return connections.size();
    }
-   
+
    public synchronized Set<RemotingConnection> getConnections()
    {
       Set<RemotingConnection> conns = new HashSet<RemotingConnection>();
-      
-      for (ConnectionEntry entry: connections.values())
+
+      for (ConnectionEntry entry : connections.values())
       {
          conns.add(entry.connection);
       }
-      
+
       return conns;
    }
-   
+
    // Private -------------------------------------------------------
-   
+
    private void checkCloseConnections()
    {
       if (refCount == 0)
       {
-         //Close connections
-            
+         // Close connections
+
          Set<ConnectionEntry> copy = new HashSet<ConnectionEntry>(connections.values());
-         
-         connections.clear();    
-         
-         for (ConnectionEntry entry: copy)
+
+         connections.clear();
+
+         for (ConnectionEntry entry : copy)
          {
             try
             {
                entry.connection.destroy();
-            
+
                entry.connector.close();
             }
             catch (Throwable ignore)
-            {                  
-            }                                    
-         }                                    
+            {
+            }
+         }
       }
    }
-   
+
    // ConnectionLifeCycleListener implementation --------------------
 
    public void connectionCreated(final Connection connection)
@@ -262,37 +266,36 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    }
 
    public void connectionDestroyed(final Object connectionID)
-   {      
+   {
       // If conn still exists here this means that the underlying transport
       // conn has been closed from the server side without
       // being returned from the client side so we need to fail the conn and
       // call it's listeners
-      MessagingException me = new MessagingException(MessagingException.OBJECT_CLOSED,
-                                                     "The conn has been closed.");
-      failConnection(me);              
+      MessagingException me = new MessagingException(MessagingException.OBJECT_CLOSED, "The conn has been closed.");
+      failConnection(me);
    }
 
    public void connectionException(final Object connectionID, final MessagingException me)
    {
-      failConnection(me);      
+      failConnection(me);
    }
-   
+
    // Inner classes ----------------------------------------------------------------
-   
+
    private class ConnectionEntry
    {
       ConnectionEntry(final RemotingConnection connection, final Connector connector)
       {
          this.connection = connection;
-         
+
          this.connector = connector;
       }
-      
+
       final RemotingConnection connection;
-      
+
       final Connector connector;
    }
-   
+
    private class DelegatingBufferHandler extends AbstractBufferHandler
    {
       RemotingConnection conn;
@@ -302,7 +305,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          conn.bufferReceived(connectionID, buffer);
       }
    }
-   
+
    private static class NoCacheConnectionLifeCycleListener implements ConnectionLifeCycleListener
    {
       private RemotingConnection conn;

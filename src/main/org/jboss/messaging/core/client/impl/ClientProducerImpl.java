@@ -12,8 +12,6 @@
 
 package org.jboss.messaging.core.client.impl;
 
-import java.util.concurrent.Semaphore;
-
 import org.jboss.messaging.core.client.AcknowledgementHandler;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -55,10 +53,6 @@ public class ClientProducerImpl implements ClientProducerInternal
 
    private volatile boolean closed;
 
-   // For limit throttling
-
-   private final Semaphore availableCredits;
-
    // For rate throttling
 
    private final TokenBucketLimiter rateLimiter;
@@ -66,10 +60,6 @@ public class ClientProducerImpl implements ClientProducerInternal
    private final boolean blockOnNonPersistentSend;
 
    private final boolean blockOnPersistentSend;
-
-   private final boolean creditFlowControl;
-
-   private final int initialWindowSize;
 
    private final SimpleString autoGroupId;
 
@@ -84,7 +74,6 @@ public class ClientProducerImpl implements ClientProducerInternal
                              final boolean blockOnNonPersistentSend,
                              final boolean blockOnPersistentSend,
                              final SimpleString autoGroupId,
-                             final int initialCredits,
                              final Channel channel)
    {
       this.channel = channel;
@@ -102,12 +91,6 @@ public class ClientProducerImpl implements ClientProducerInternal
       this.blockOnPersistentSend = blockOnPersistentSend;
 
       this.autoGroupId = autoGroupId;
-
-      availableCredits = new Semaphore(initialCredits);
-
-      creditFlowControl = initialCredits != -1;
-
-      initialWindowSize = initialCredits;
    }
 
    // ClientProducer implementation ----------------------------------------------------------------
@@ -245,11 +228,6 @@ public class ClientProducerImpl implements ClientProducerInternal
       return blockOnNonPersistentSend;
    }
 
-   public int getInitialWindowSize()
-   {
-      return initialWindowSize;
-   }
-
    public int getMaxRate()
    {
       return rateLimiter == null ? -1 : rateLimiter.getRate();
@@ -260,16 +238,6 @@ public class ClientProducerImpl implements ClientProducerInternal
    public long getID()
    {
       return id;
-   }
-
-   public void receiveCredits(final int credits)
-   {
-      availableCredits.release(credits);
-   }
-
-   public int getAvailableCredits()
-   {
-      return availableCredits.availablePermits();
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -332,18 +300,6 @@ public class ClientProducerImpl implements ClientProducerInternal
       {
          channel.send(message);
       }
-
-//      // We only flow control with non-anonymous producers
-//      if (address == null && creditFlowControl)
-//      {
-//         try
-//         {
-//            availableCredits.acquire(message.getClientMessage().getEncodeSize());
-//         }
-//         catch (InterruptedException e)
-//         {
-//         }
-//      }
    }
 
    private void checkClosed() throws MessagingException

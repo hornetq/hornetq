@@ -189,7 +189,7 @@ public class ClientSessionFactoryImplTest extends UnitTestCase
 //      assertEquals(ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT, cf.getCallTimeout());
 //      assertEquals(ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE, cf.getConsumerWindowSize());
 //      assertEquals(ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE, cf.getConsumerMaxRate());
-//      assertEquals(ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE, cf.getProducerWindowSize());
+//      assertEquals(ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE, cf.getProducerWindowSize());
 //      assertEquals(ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE, cf.getProducerMaxRate());
 //      assertEquals(ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE, cf.isBlockOnAcknowledge());
 //      assertEquals(ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND, cf.isBlockOnNonPersistentSend());

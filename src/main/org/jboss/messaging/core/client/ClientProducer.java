@@ -56,7 +56,4 @@ public interface ClientProducer
    boolean isBlockOnNonPersistentSend();
    
    int getMaxRate();
-   
-   int getInitialWindowSize();
-
 }

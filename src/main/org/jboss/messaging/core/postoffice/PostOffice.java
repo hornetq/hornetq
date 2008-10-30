@@ -73,11 +73,7 @@ public interface PostOffice extends MessagingComponent
    Binding getBinding(SimpleString queueName);
       
    List<MessageReference> route(ServerMessage message) throws Exception;
-   
-   //Flow control
-   
-   FlowController getFlowController(SimpleString address);
-     
+      
    //For testing only
    Map<SimpleString, List<Binding>> getMappings();
 

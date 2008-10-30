@@ -58,13 +58,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
    public static final long DEFAULT_PING_PERIOD = 5000;
 
-   public static final int DEFAULT_PING_POOL_SIZE = 5;
-
    public static final int DEFAULT_CONSUMER_WINDOW_SIZE = 1024 * 1024;
 
    public static final int DEFAULT_CONSUMER_MAX_RATE = -1;
 
-   public static final int DEFAULT_PRODUCER_WINDOW_SIZE = 1024 * 1024;
+   public static final int DEFAULT_SEND_WINDOW_SIZE = 1024 * 1024;
 
    public static final int DEFAULT_PRODUCER_MAX_RATE = -1;
 
@@ -94,8 +92,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
    private final long pingPeriod;
 
-   private final int pingPoolSize;
-
    private final long callTimeout;
 
    private final int maxConnections;
@@ -108,7 +104,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
    private volatile int consumerMaxRate;
 
-   private volatile int producerWindowSize;
+   private volatile int sendWindowSize;
 
    private volatile int producerMaxRate;
 
@@ -142,12 +138,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
     */
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
                                    final TransportConfiguration backupConfig,
-                                   final long pingPeriod,
-                                   final int pingPoolSize,
+                                   final long pingPeriod,                                 
                                    final long callTimeout,
                                    final int consumerWindowSize,
                                    final int consumerMaxRate,
-                                   final int producerWindowSize,
+                                   final int sendWindowSize,
                                    final int producerMaxRate,
                                    final boolean blockOnAcknowledge,
                                    final boolean blockOnNonPersistentSend,
@@ -164,7 +159,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                     pingPeriod,
                                                     callTimeout,
                                                     maxConnections,
-                                                    pingPoolSize);
+                                                    sendWindowSize);
       if (backupConfig != null)
       {
          backupConnectorFactory = instantiateConnectorFactory(backupConfig.getFactoryClassName());
@@ -176,7 +171,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                              pingPeriod,
                                                              callTimeout,
                                                              maxConnections,
-                                                             pingPoolSize);
+                                                             sendWindowSize);
       }
       else
       {
@@ -187,11 +182,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
          backupConnectionManager = null;
       }
       this.pingPeriod = pingPeriod;
-      this.pingPoolSize = pingPoolSize;
       this.callTimeout = callTimeout;
       this.consumerWindowSize = consumerWindowSize;
       this.consumerMaxRate = consumerMaxRate;
-      this.producerWindowSize = producerWindowSize;
+      this.sendWindowSize = sendWindowSize;
       this.producerMaxRate = producerMaxRate;
       this.blockOnAcknowledge = blockOnAcknowledge;
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
@@ -206,11 +200,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       this(connectorConfig,
            backupConfig,
            DEFAULT_PING_PERIOD,
-           DEFAULT_PING_POOL_SIZE,
            DEFAULT_CALL_TIMEOUT,
            DEFAULT_CONSUMER_WINDOW_SIZE,
            DEFAULT_CONSUMER_MAX_RATE,
-           DEFAULT_PRODUCER_WINDOW_SIZE,
+           DEFAULT_SEND_WINDOW_SIZE,
            DEFAULT_PRODUCER_MAX_RATE,
            DEFAULT_BLOCK_ON_ACKNOWLEDGE,
            DEFAULT_BLOCK_ON_PERSISTENT_SEND,
@@ -259,14 +252,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       consumerWindowSize = size;
    }
 
-   public int getProducerWindowSize()
+   public int getSendWindowSize()
    {
-      return producerWindowSize;
+      return sendWindowSize;
    }
 
-   public void setProducerWindowSize(final int size)
+   public void setSendWindowSize(final int size)
    {
-      producerWindowSize = size;
+      sendWindowSize = size;
    }
 
    public int getProducerMaxRate()
@@ -352,11 +345,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    public long getPingPeriod()
    {
       return pingPeriod;
-   }
-
-   public int getPingPoolSize()
-   {
-      return pingPoolSize;
    }
 
    public long getCallTimeout()

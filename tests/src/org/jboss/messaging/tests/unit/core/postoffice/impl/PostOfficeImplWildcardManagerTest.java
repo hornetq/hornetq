@@ -81,7 +81,6 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       EasyMock.expect(message3.getDestination()).andStubReturn(address3);
       EasyMock.expect(qf.createQueue(-1, queueName, null, false, false)).andReturn(queue);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
-      queue.setFlowController(null);
       EasyMock.expect(queue.getFilter()).andStubReturn(null);
       EasyMock.expect(pgm.addSize(message)).andStubReturn(1000l);
       //this bit is the test itself, if the reference is created for each queue thenwe know that they have been routed via all 3 queues
@@ -93,9 +92,6 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       assertTrue(postOffice.addDestination(address, true));
       assertTrue(postOffice.addDestination(address2, true));
       assertTrue(postOffice.addDestination(address3, true));
-      assertNotNull(postOffice.getFlowController(address));
-      assertNotNull(postOffice.getFlowController(address2));
-      assertNotNull(postOffice.getFlowController(address3));
       assertTrue(postOffice.containsDestination(address));
       assertTrue(postOffice.containsDestination(address2));
       assertTrue(postOffice.containsDestination(address3));
@@ -147,12 +143,10 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       EasyMock.expect(qf.createQueue(-1, queueName2, null, false, false)).andReturn(queue2);
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       EasyMock.expect(queue2.getName()).andStubReturn(queueName2);
-      queue.setFlowController(null);
-      queue2.setFlowController(null);
       EasyMock.expect(queue.getFilter()).andStubReturn(null);
       EasyMock.expect(queue2.getFilter()).andStubReturn(null);
       EasyMock.expect(pgm.addSize(message)).andStubReturn(1000l);
-      //this bit is the test itself, if the reference is created for each queue thenwe know that they have been routed via all 3 queues
+      //this bit is the test itself, if the reference is created for each queue then we know that they have been routed via all 3 queues
       EasyMock.expect(message.createReference(queue)).andReturn(messageReference);
       EasyMock.expect(message2.createReference(queue2)).andReturn(messageReference2);
       EasyMock.expect(message3.createReference(queue)).andReturn(messageReference3);

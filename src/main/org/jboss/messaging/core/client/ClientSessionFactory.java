@@ -49,9 +49,9 @@ public interface ClientSessionFactory
 
    int getConsumerWindowSize();
 
-   void setProducerWindowSize(int size);
+   void setSendWindowSize(int size);
 
-   int getProducerWindowSize();
+   int getSendWindowSize();
 
    void setConsumerMaxRate(int rate);
 
@@ -87,8 +87,6 @@ public interface ClientSessionFactory
 
    long getPingPeriod();
    
-   int getPingPoolSize();
-
    long getCallTimeout();   
    
    int getMaxConnections();

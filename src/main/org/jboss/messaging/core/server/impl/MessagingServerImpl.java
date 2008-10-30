@@ -22,6 +22,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -260,8 +261,8 @@ public class MessagingServerImpl implements MessagingServer
                                                                   backupConnectorParams,
                                                                   5000,
                                                                   30000,
-                                                                  1,
-                                                                  5);
+                                                                  ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
+                                                                  ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE);
       }
       remotingService.setMessagingServer(this);
 

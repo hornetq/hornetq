@@ -29,7 +29,6 @@ import java.util.concurrent.Executor;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -102,10 +101,6 @@ public interface Queue
    
    int getMessagesAdded();
 
-   FlowController getFlowController();
-   
-   void setFlowController(FlowController flowController);
-  
    MessageReference removeReferenceWithID(long id);
    
    MessageReference getReference(long id);

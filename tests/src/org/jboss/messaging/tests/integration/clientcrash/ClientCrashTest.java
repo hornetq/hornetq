@@ -29,9 +29,8 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PING_POOL_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
 import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_CALL_TIMEOUT;
 import junit.framework.TestCase;
 
@@ -157,11 +156,10 @@ public class ClientCrashTest extends TestCase
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"),
            null,
            2000,
-           DEFAULT_PING_POOL_SIZE,
            DEFAULT_CALL_TIMEOUT,
            DEFAULT_CONSUMER_WINDOW_SIZE,
            DEFAULT_CONSUMER_MAX_RATE,
-           DEFAULT_PRODUCER_WINDOW_SIZE,
+           DEFAULT_SEND_WINDOW_SIZE,
            DEFAULT_PRODUCER_MAX_RATE,
            DEFAULT_BLOCK_ON_ACKNOWLEDGE,
            DEFAULT_BLOCK_ON_PERSISTENT_SEND,

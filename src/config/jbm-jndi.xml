@@ -52,7 +52,7 @@
       <!-- The batch size to use when using the DUPS_OK_ACKNOWLEDGE acknowledgement mode -->
       <dups-ok-batch-size>5000</dups-ok-batch-size>-size>
       <!-- This is the window size in number of messages to use when using producer window based flow control -->
-      <producer-window-size>1000</producer-window-size>
+      <producer-window-size>1048576</producer-window-size>
       <!-- This is the maximum producer send rate that will be applied when using rate based producer flow control -->
       <producer-max-rate>100</producer-max-rate>
       <!-- This is the window size in number of messages to use when using consumer window based flow control -->

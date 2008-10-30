@@ -38,7 +38,7 @@ public class PacketsConfirmedMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private int commandID;
-   
+         
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------

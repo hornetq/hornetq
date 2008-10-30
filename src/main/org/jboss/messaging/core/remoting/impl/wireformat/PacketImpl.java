@@ -33,6 +33,8 @@ public class PacketImpl implements Packet
    private long channelID;
 
    private final byte type;
+   
+   private int size;
 
    // The packet types
    // -----------------------------------------------------------------------------------
@@ -136,21 +138,19 @@ public class PacketImpl implements Packet
 
    public static final byte SESS_SEND = 75;
 
-   public static final byte SESS_RECEIVETOKENS = 76;
+   public static final byte SESS_CONSUMER_CLOSE = 76;
 
-   public static final byte SESS_CONSUMER_CLOSE = 77;
+   public static final byte SESS_PRODUCER_CLOSE = 77;
 
-   public static final byte SESS_PRODUCER_CLOSE = 78;
+   public static final byte SESS_RECEIVE_MSG = 78;
 
-   public static final byte SESS_RECEIVE_MSG = 79;
+   public static final byte SESS_MANAGEMENT_SEND = 79;
 
-   public static final byte SESS_MANAGEMENT_SEND = 80;
+   public static final byte SESS_SCHEDULED_SEND = 80;
 
-   public static final byte SESS_SCHEDULED_SEND = 81;
+   public static final byte SESS_FAILOVER_COMPLETE = 81;
 
-   public static final byte SESS_FAILOVER_COMPLETE = 82;
-
-   public static final byte SESS_REPLICATE_DELIVERY = 83;
+   public static final byte SESS_REPLICATE_DELIVERY = 82;
 
    // Static --------------------------------------------------------
 
@@ -175,8 +175,8 @@ public class PacketImpl implements Packet
    {
       this.channelID = channelID;
    }
-
-   public void encode(final MessagingBuffer buffer)
+   
+   public int encode(final MessagingBuffer buffer)
    {
       // The standard header fields
       buffer.putInt(0); // The length gets filled in at the end
@@ -191,6 +191,10 @@ public class PacketImpl implements Packet
       buffer.putInt(0, len);
 
       buffer.flip();
+      
+      size = DataConstants.SIZE_INT + len;
+      
+      return size;
    }
 
    public void decode(final MessagingBuffer buffer)
@@ -198,6 +202,11 @@ public class PacketImpl implements Packet
       channelID = buffer.getLong();
 
       decodeBody(buffer);
+   }
+   
+   public int getPacketSize()
+   {
+      return size;
    }
 
    public boolean isResponse()

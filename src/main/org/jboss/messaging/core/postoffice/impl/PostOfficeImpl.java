@@ -28,8 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
@@ -40,7 +38,6 @@ import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.AddressManager;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
@@ -64,8 +61,6 @@ public class PostOfficeImpl implements PostOffice
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
 
    private final AddressManager addressManager;
-
-   private final ConcurrentMap<SimpleString, FlowController> flowControllers = new ConcurrentHashMap<SimpleString, FlowController>();
 
    private final QueueFactory queueFactory;
 
@@ -163,8 +158,7 @@ public class PostOfficeImpl implements PostOffice
          {
             storageManager.addDestination(address);
          }
-
-         flowControllers.put(address, new FlowControllerImpl(address, this));
+       
          managementService.registerAddress(address);
       }
 
@@ -176,9 +170,7 @@ public class PostOfficeImpl implements PostOffice
       boolean removed = addressManager.removeDestination(address);
 
       if (removed)
-      {
-         flowControllers.remove(address);
-
+      {         
          if (durable)
          {
             storageManager.deleteDestination(address);
@@ -316,11 +308,6 @@ public class PostOfficeImpl implements PostOffice
       return addressManager.getMappings();
    }
 
-   public FlowController getFlowController(final SimpleString address)
-   {
-      return flowControllers.get(address);
-   }
-   
    public synchronized void activate()
    {
       this.backup = false;
@@ -378,10 +365,6 @@ public class PostOfficeImpl implements PostOffice
       managementService.registerQueue(binding.getQueue(), binding.getAddress(), storageManager);
 
       addressManager.addBinding(binding);
-
-      FlowController flowController = flowControllers.get(binding.getAddress());
-
-      binding.getQueue().setFlowController(flowController);
    }
 
    private Binding removeQueueInMemory(final SimpleString queueName) throws Exception
@@ -391,8 +374,6 @@ public class PostOfficeImpl implements PostOffice
       if (addressManager.removeMapping(binding.getAddress(), queueName))
       {
          managementService.unregisterAddress(binding.getAddress());
-
-         binding.getQueue().setFlowController(null);
       }
 
       return binding;

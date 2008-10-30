@@ -44,8 +44,6 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String PING_PERIOD_ELEMENT = "ping-period";
    
-   private static final String PING_POOL_SIZE_ELEMENT = "ping-pool-size";
-
    private static final String CALL_TIMEOUT_ELEMENT = "call-timeout";
 
    private static final String DUPS_OK_BATCH_SIZE_ELEMENT = "dups-ok-batch-size";
@@ -131,14 +129,13 @@ public class JMSServerDeployer extends XmlDeployer
       {
          NodeList children = node.getChildNodes();
 
-         long pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
-         int pingPoolSize = ClientSessionFactoryImpl.DEFAULT_PING_POOL_SIZE;
+         long pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;     
          long callTimeout = ConfigurationImpl.DEFAULT_CALL_TIMEOUT;
          String clientID = null;
          int dupsOKBatchSize = DEFAULT_DUPS_OK_BATCH_SIZE;
          int consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
          int consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-         int producerWindowSize = ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
+         int sendWindowSize = ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
          int producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
          boolean blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
          boolean blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
@@ -157,10 +154,6 @@ public class JMSServerDeployer extends XmlDeployer
             {
                pingPeriod = Long.parseLong(children.item(j).getTextContent().trim());
             }
-            else if (PING_POOL_SIZE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
-            {
-               pingPoolSize = Integer.parseInt(children.item(j).getTextContent().trim());
-            }
             else if (CALL_TIMEOUT_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
                callTimeout = Long.parseLong(children.item(j).getTextContent().trim());
@@ -175,7 +168,7 @@ public class JMSServerDeployer extends XmlDeployer
             }
             else if (PRODUCER_WINDOW_SIZE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
-               producerWindowSize = Integer.parseInt(children.item(j).getTextContent().trim());
+               sendWindowSize = Integer.parseInt(children.item(j).getTextContent().trim());
             }
             else if (PRODUCER_MAX_RATE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
@@ -401,14 +394,13 @@ public class JMSServerDeployer extends XmlDeployer
          jmsServerManager.createConnectionFactory(name,
                                                   connectorConfig,
                                                   backupConnectorConfig,
-                                                  pingPeriod,
-                                                  pingPoolSize,
+                                                  pingPeriod,                                      
                                                   callTimeout,
                                                   clientID,
                                                   dupsOKBatchSize,
                                                   consumerWindowSize,
                                                   consumerMaxRate,
-                                                  producerWindowSize,
+                                                  sendWindowSize,
                                                   producerMaxRate,
                                                   blockOnAcknowledge,
                                                   blockOnNonPersistentSend,

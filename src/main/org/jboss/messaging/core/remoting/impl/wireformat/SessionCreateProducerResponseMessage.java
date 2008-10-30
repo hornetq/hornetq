@@ -35,9 +35,7 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   private int initialCredits;
-   
+  
    private int maxRate;
 
    private SimpleString autoGroupId;
@@ -46,12 +44,10 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateProducerResponseMessage(final int initialCredits, final int maxRate, final SimpleString autoGroupId)
+   public SessionCreateProducerResponseMessage(final int maxRate, final SimpleString autoGroupId)
    {
       super(SESS_CREATEPRODUCER_RESP);
  
-      this.initialCredits = initialCredits;
-      
       this.maxRate = maxRate;
 
       this.autoGroupId = autoGroupId;
@@ -69,11 +65,6 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
       return true;
    }
    
-   public int getInitialCredits()
-   {
-   	return initialCredits;
-   }
-   
    public int getMaxRate()
    {
    	return maxRate;
@@ -86,14 +77,12 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
 
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putInt(initialCredits);
       buffer.putInt(maxRate);
       buffer.putNullableSimpleString(autoGroupId);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {     
-      initialCredits = buffer.getInt();
       maxRate = buffer.getInt();
       autoGroupId = buffer.getNullableSimpleString();
    }
@@ -103,7 +92,6 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
    public String toString()
    {
       StringBuffer buf = new StringBuffer(getParentString());
-      buf.append(", initialCredits=" + initialCredits);
       buf.append(", maxRate=" + maxRate);
       buf.append("]");
       return buf.toString();
@@ -118,8 +106,7 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
             
       SessionCreateProducerResponseMessage r = (SessionCreateProducerResponseMessage)other;
       
-      return super.equals(other) &&
-         this.initialCredits == r.initialCredits &&
+      return super.equals(other) &&       
          this.maxRate == r.maxRate;
       
    }

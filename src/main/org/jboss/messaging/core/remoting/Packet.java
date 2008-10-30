@@ -41,11 +41,13 @@ public interface Packet
    
    byte getType();
 
-   void encode(MessagingBuffer buffer);
+   int encode(MessagingBuffer buffer);
       
    void decode(MessagingBuffer buffer);
    
    boolean isRequiresConfirmations();
    
    boolean isWriteAlways();     
+   
+   int getPacketSize();
 }
