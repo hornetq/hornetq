@@ -47,7 +47,5 @@ public interface Packet
    
    boolean isRequiresConfirmations();
    
-   boolean isWriteAlways();
-   
-   boolean isRequiresGlobalOrdering();      
+   boolean isWriteAlways();     
 }

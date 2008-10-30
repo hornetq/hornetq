@@ -22,13 +22,13 @@
 
 package org.jboss.messaging.core.postoffice.impl;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.FlowController;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.ServerProducer;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * 

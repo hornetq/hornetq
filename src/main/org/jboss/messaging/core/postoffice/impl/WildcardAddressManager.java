@@ -21,15 +21,15 @@
  */
 package org.jboss.messaging.core.postoffice.impl;
 
-import org.jboss.messaging.core.postoffice.Address;
-import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.util.SimpleString;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.jboss.messaging.core.postoffice.Address;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * extends the simple manager to allow wilcard addresses to be used.

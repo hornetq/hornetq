@@ -21,14 +21,14 @@
  */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.messaging.jms.client.JBossMessage;
-
 import javax.jms.Connection;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+
+import org.jboss.messaging.jms.client.JBossMessage;
 
 
 /**

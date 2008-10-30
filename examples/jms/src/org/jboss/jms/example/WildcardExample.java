@@ -21,10 +21,18 @@
  */
 package org.jboss.jms.example;
 
-import org.jboss.messaging.core.logging.Logger;
-
-import javax.jms.*;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
 import javax.naming.InitialContext;
+
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

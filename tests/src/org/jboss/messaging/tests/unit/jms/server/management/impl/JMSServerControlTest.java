@@ -28,15 +28,9 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
-import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
-import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -47,8 +41,6 @@ import javax.management.ObjectName;
 
 import junit.framework.TestCase;
 
-import org.easymock.EasyMock;
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.jms.server.management.impl.JMSServerControl;

@@ -22,8 +22,9 @@
 
 package org.jboss.messaging.core.transaction;
 
-import javax.transaction.xa.Xid;
 import java.util.List;
+
+import javax.transaction.xa.Xid;
 
 
 /**

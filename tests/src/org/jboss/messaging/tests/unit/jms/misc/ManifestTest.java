@@ -33,7 +33,6 @@ import javax.jms.ConnectionMetaData;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;

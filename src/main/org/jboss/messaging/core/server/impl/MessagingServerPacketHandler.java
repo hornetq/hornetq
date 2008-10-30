@@ -14,6 +14,7 @@ package org.jboss.messaging.core.server.impl;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REPLICATE_CREATESESSION;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -24,7 +25,9 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.ReplicateCreateSessionMessage;
 import org.jboss.messaging.core.server.MessagingServer;
 
 /**
@@ -56,23 +59,36 @@ public class MessagingServerPacketHandler implements ChannelHandler
    }
 
    public void handlePacket(final Packet packet)
-   {  
-      DelayedResult result = channel1.replicatePacket(packet);
+   {
+      DelayedResult result = null;
       
+      if (packet.getType() == PacketImpl.CREATESESSION && channel1.getReplicatingChannel() != null)
+      {
+         CreateSessionMessage msg = (CreateSessionMessage)packet;
+
+         Packet replPacket = new ReplicateCreateSessionMessage(msg.getName(), msg.getSessionChannelID(),
+                                                               msg.getVersion(), msg.getUsername(),
+                                                               msg.getPassword(), msg.isXA(),
+                                                               msg.isAutoCommitSends(),
+                                                               msg.isAutoCommitAcks());
+         
+         result = channel1.replicatePacket(replPacket);
+      }
+            
       Packet response = null;
-      
+
       byte type = packet.getType();
 
       // All these operations need to be idempotent since they are outside of the session
       // reliability replay functionality
       try
-      {                
+      {
          switch (type)
          {
             case CREATESESSION:
             {
                CreateSessionMessage request = (CreateSessionMessage)packet;
-   
+
                response = server.createSession(request.getName(),
                                                request.getSessionChannelID(),
                                                request.getUsername(),
@@ -84,12 +100,27 @@ public class MessagingServerPacketHandler implements ChannelHandler
                                                request.isXA());
                break;
             }
+            case REPLICATE_CREATESESSION:
+            {
+               ReplicateCreateSessionMessage request = (ReplicateCreateSessionMessage)packet;
+
+               response = server.replicateCreateSession(request.getName(),
+                                                        request.getSessionChannelID(),
+                                                        request.getUsername(),
+                                                        request.getPassword(),
+                                                        request.getVersion(),
+                                                        connection,
+                                                        request.isAutoCommitSends(),
+                                                        request.isAutoCommitAcks(),
+                                                        request.isXA());
+               break;
+            }
             case REATTACH_SESSION:
             {
                ReattachSessionMessage request = (ReattachSessionMessage)packet;
-   
+
                response = server.reattachSession(connection, request.getName(), request.getLastReceivedCommandID());
-               
+
                break;
             }
             default:
@@ -116,7 +147,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
 
          response = new MessagingExceptionMessage(me);
       }
-      
+
       if (response != null)
       {
          if (result == null)
@@ -126,7 +157,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
          else
          {
             final Packet theResponse = response;
-            
+
             result.setResultRunner(new Runnable()
             {
                public void run()
@@ -136,7 +167,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
             });
          }
       }
-      
+
       channel1.replicateComplete();
    }
 }

@@ -157,108 +157,54 @@ public class ServerConsumerImpl implements ServerConsumer
    {
       return id;
    }
-
+   
    public HandleStatus handle(final MessageReference ref) throws Exception
    {
-      if (availableCredits != null && availableCredits.get() <= 0)
-      {
-         return HandleStatus.BUSY;
-      }
-
-      final ServerMessage message = ref.getMessage();
-
-      if (message.isExpired())
-      {
-         // TODO need to replicate expires
-         ref.expire(storageManager, postOffice, queueSettingsRepository);
-
-         return HandleStatus.HANDLED;
-      }
-   
+      return doHandle(ref);
+   }
+         
+   public void handleClose(final Packet packet)
+   {
+      //We must stop delivery before replicating the packet, this ensures the close message gets processed
+      //and replicated on the backup in the same order as any delivery that might be occuring gets
+      //processed and replicated on the backup.
+      //Otherwise we could end up with a situation where a close comes in, then a delivery comes in,
+      //then close gets replicated to backup, then delivery gets replicated, but consumer is already
+      //closed!
       lock.lock();
-      
       try
       {
-      
-         // If the consumer is stopped then we don't accept the message, it
-         // should go back into the
-         // queue for delivery later.
-         if (!started)
-         {
-            return HandleStatus.BUSY;
-         }
-
-         if (filter != null && !filter.match(message))
-         {
-            return HandleStatus.NO_MATCH;
-         }
-
-         if (availableCredits != null)
-         {
-            availableCredits.addAndGet(-message.getEncodeSize());
-         }
-
-         final SessionReceiveMessage packet = new SessionReceiveMessage(id, message, ref.getDeliveryCount() + 1);
-
-         DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id, message.getMessageID()));
-
-         if (!browseOnly)
-         {
-            deliveringRefs.add(ref);
-         }
-
-         if (result == null)
-         {
-            // Not replicated - just send now
-            channel.send(packet);
-         }
-         else
-         {
-            // Send when replicate delivery response comes back
-            result.setResultRunner(new Runnable()
-            {
-               public void run()
-               {
-                  channel.send(packet);
-               }
-            });
-         }
-
-         return HandleStatus.HANDLED;
+         setStarted(false);
       }
       finally
       {
          lock.unlock();
       }
+      
+      DelayedResult result = channel.replicatePacket(packet);
+      
+      if (result != null)
+      {
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleClose(packet);
+            }
+         });
+      }
+      else
+      {
+         doHandleClose(packet);
+      }
    }
    
-   public void handleClose(final Packet packet)
+   private void doHandleClose(final Packet packet)
    {
-      DelayedResult result = null;
-
       Packet response = null;
-                  
+      
       try
-      {               
-         lock.lock();
-         try
-         {
-            setStarted(false);
-         }
-         finally
-         {
-            lock.unlock();
-         }
-         
-         //We must stop delivery before replicating the packet, this ensures the close message gets processed
-         //and replicated on the backup in the same order as any delivery that might be occuring gets
-         //processed and replicated on the backup.
-         //Otherwise we could end up with a situation where a close comes in, then a delivery comes in,
-         //then close gets replicated to backup, then delivery gets replicated, but consumer is already
-         //closed!
-         
-         result = channel.replicatePacket(packet);
-         
+      {                                                                   
          doClose();
          
          response = new NullResponseMessage();
@@ -277,7 +223,7 @@ public class ServerConsumerImpl implements ServerConsumer
          }
       }
    
-      session.sendResponse(result, response);
+      channel.send(response);
    }
      
    public void close() throws Exception
@@ -292,7 +238,33 @@ public class ServerConsumerImpl implements ServerConsumer
          lock.unlock();
       }
 
-      doClose();
+      doClose();     
+   }
+   
+   private void doClose() throws Exception
+   {
+      messageQueue.removeConsumer(this);
+
+      session.removeConsumer(this);
+
+      LinkedList<MessageReference> refs = cancelRefs();
+
+      Iterator<MessageReference> iter = refs.iterator();
+
+      while (iter.hasNext())
+      {
+         MessageReference ref = iter.next();
+
+         if (!ref.cancel(storageManager, postOffice, queueSettingsRepository))
+         {
+            iter.remove();
+         }
+      }
+
+      if (!refs.isEmpty())
+      {
+         messageQueue.addListFirst(refs);
+      }
    }
 
    public LinkedList<MessageReference> cancelRefs() throws Exception
@@ -373,14 +345,17 @@ public class ServerConsumerImpl implements ServerConsumer
       // It may not be the first in the queue - since there may be multiple producers
       // sending to the queue
       MessageReference ref = messageQueue.removeReferenceWithID(messageID);
-      
+
       if (ref == null)
       {
-         log.error("Queue has size " + messageQueue.getMessageCount());
          throw new IllegalStateException("Cannot find ref when replicating delivery " + messageID);
       }
                   
-      HandleStatus handled = this.handle(ref);
+      //We call doHandle rather than handle, since we don't want to check available credits
+      //This is because delivery and receive credits can be processed in different order on live
+      //and backup, and otherwise we could have a situation where the delivery is replicated
+      //but the credits haven't arrived yet, so the delivery gets rejected on backup
+      HandleStatus handled = doHandle(ref);
 
       if (handled != HandleStatus.HANDLED)
       {
@@ -415,35 +390,83 @@ public class ServerConsumerImpl implements ServerConsumer
    // Private
    // --------------------------------------------------------------------------------------
 
-   private void doClose() throws Exception
-   {
-      messageQueue.removeConsumer(this);
-
-      session.removeConsumer(this);
-
-      LinkedList<MessageReference> refs = cancelRefs();
-
-      Iterator<MessageReference> iter = refs.iterator();
-
-      while (iter.hasNext())
-      {
-         MessageReference ref = iter.next();
-
-         if (!ref.cancel(storageManager, postOffice, queueSettingsRepository))
-         {
-            iter.remove();
-         }
-      }
-
-      if (!refs.isEmpty())
-      {
-         messageQueue.addListFirst(refs);
-      }
-   }
-   
    private void promptDelivery()
    {
       session.promptDelivery(messageQueue);
+   }
+   
+   private HandleStatus doHandle(final MessageReference ref) throws Exception
+   {
+      if (availableCredits != null && availableCredits.get() <= 0)
+      {
+         return HandleStatus.BUSY;
+      }
+
+      final ServerMessage message = ref.getMessage();
+
+      if (message.isExpired())
+      {
+         // TODO need to replicate expires
+         ref.expire(storageManager, postOffice, queueSettingsRepository);
+
+         return HandleStatus.HANDLED;
+      }
+   
+      lock.lock();
+      
+      try
+      {      
+         // If the consumer is stopped then we don't accept the message, it
+         // should go back into the
+         // queue for delivery later.
+         if (!started)
+         {
+            return HandleStatus.BUSY;
+         }
+
+         if (filter != null && !filter.match(message))
+         {
+            return HandleStatus.NO_MATCH;
+         }
+
+         if (availableCredits != null)
+         {
+            availableCredits.addAndGet(-message.getEncodeSize());
+         }
+
+         final SessionReceiveMessage packet = new SessionReceiveMessage(id, message, ref.getDeliveryCount() + 1);
+
+         DelayedResult result =
+            channel.replicatePacket(new SessionReplicateDeliveryMessage(id, message.getMessageID()));
+
+         if (!browseOnly)
+         {
+            deliveringRefs.add(ref);
+         }
+
+         if (result == null)
+         {
+            // Not replicated - just send now
+            channel.send(packet);
+         }
+         else
+         {
+            // Send when replicate delivery response comes back
+            result.setResultRunner(new Runnable()
+            {
+               public void run()
+               {
+                  channel.send(packet);
+               }
+            });
+         }
+
+         return HandleStatus.HANDLED;
+      }
+      finally
+      {
+         lock.unlock();
+      }
    }
 
    // Inner classes

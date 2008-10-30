@@ -35,6 +35,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -43,7 +44,6 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.MessagingService;
@@ -127,7 +127,7 @@ public class SimpleManualFailoverTest extends TestCase
    
    public void testFailover() throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
       ClientSession session = sendAndConsume(sf);
 
@@ -165,6 +165,12 @@ public class SimpleManualFailoverTest extends TestCase
       session = sendAndConsume(sf);
 
       session.close();
+      
+      assertEquals(0, sf.numSessions());
+      
+      assertEquals(0, sf.numConnections());
+      
+      assertEquals(0, sf.numBackupConnections());
    }
 
    // Package protected ---------------------------------------------
@@ -194,8 +200,6 @@ public class SimpleManualFailoverTest extends TestCase
 
    protected void tearDown() throws Exception
    {
-      assertEquals(0, ConnectionRegistryImpl.instance.size());
-
       assertEquals(0, server1Service.getServer().getRemotingService().getConnections().size());
 
       server1Service.stop();

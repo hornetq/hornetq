@@ -22,6 +22,10 @@
 
 package org.jboss.messaging.tests.unit.core.paging.impl;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PageMessage;
@@ -32,10 +36,6 @@ import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.jboss.messaging.util.SimpleString;
-
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 

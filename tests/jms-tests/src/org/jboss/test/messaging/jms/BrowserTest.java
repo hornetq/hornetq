@@ -21,7 +21,7 @@
   */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.messaging.jms.JBossQueue;
+import java.util.Enumeration;
 
 import javax.jms.Connection;
 import javax.jms.InvalidDestinationException;
@@ -31,7 +31,8 @@ import javax.jms.MessageProducer;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import java.util.Enumeration;
+
+import org.jboss.messaging.jms.JBossQueue;
 
 
 /**

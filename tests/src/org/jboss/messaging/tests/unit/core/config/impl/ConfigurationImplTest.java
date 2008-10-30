@@ -22,17 +22,22 @@
 
 package org.jboss.messaging.tests.unit.core.config.impl;
 
-import junit.framework.TestCase;
-import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.server.JournalType;
-import static org.jboss.messaging.tests.util.RandomUtil.*;
+import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
+import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
+
+import junit.framework.TestCase;
+
+import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.server.JournalType;
 
 /**
  * 

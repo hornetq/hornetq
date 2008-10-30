@@ -21,6 +21,9 @@
  */
 package org.jboss.messaging.tests.unit.core.postoffice.impl;
 
+import java.util.List;
+import java.util.Map;
+
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.paging.PagingManager;
@@ -34,9 +37,6 @@ import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

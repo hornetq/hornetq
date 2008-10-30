@@ -22,14 +22,15 @@
 
 package org.jboss.messaging.core.transaction.impl;
 
-import org.jboss.messaging.core.transaction.ResourceManager;
-import org.jboss.messaging.core.transaction.Transaction;
-
-import javax.transaction.xa.Xid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import javax.transaction.xa.Xid;
+
+import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.core.transaction.Transaction;
 
 /**
  * 

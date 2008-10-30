@@ -21,6 +21,25 @@
  */
 package org.jboss.test.messaging.jms;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jms.BytesMessage;
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.InvalidSelectorException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.QueueConnection;
+import javax.jms.QueueReceiver;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
+
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
@@ -28,10 +47,6 @@ import org.jboss.test.messaging.jms.message.SimpleJMSBytesMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSTextMessage;
 import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
-
-import javax.jms.*;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Safeguards for previously detected TCK failures.
@@ -44,299 +59,315 @@ import java.util.List;
  */
 public class CTSMiscellaneousTest extends JBMServerTestCase
 {
-	// Constants -----------------------------------------------------
+   // Constants -----------------------------------------------------
 
-	// Static --------------------------------------------------------
+   // Static --------------------------------------------------------
 
-	// Attributes ----------------------------------------------------
-	protected static JBossConnectionFactory cf;
-	protected ServiceAttributeOverrides overrides;
-	private static final String ORG_JBOSS_MESSAGING_SERVICE_LBCONNECTION_FACTORY = "StrictTCKConnectionFactory";
+   // Attributes ----------------------------------------------------
+   protected static JBossConnectionFactory cf;
 
-	// Constructors --------------------------------------------------
+   protected ServiceAttributeOverrides overrides;
 
-	public CTSMiscellaneousTest(String name)
-	{
-		super(name);
-	}
+   private static final String ORG_JBOSS_MESSAGING_SERVICE_LBCONNECTION_FACTORY = "StrictTCKConnectionFactory";
 
-	protected void setUp() throws Exception
-	{
-		try
-		{
-			super.setUp();
-			//Deploy a connection factory with load balancing but no failover on node0
+   // Constructors --------------------------------------------------
+
+   public CTSMiscellaneousTest(String name)
+   {
+      super(name);
+   }
+
+   protected void setUp() throws Exception
+   {
+      try
+      {
+         super.setUp();
+         // Deploy a connection factory with load balancing but no failover on node0
          List<String> bindings = new ArrayList<String>();
          bindings.add("StrictTCKConnectionFactory");
-         
+
          getJmsServerManager().createConnectionFactory("StrictTCKConnectionFactory",
-                  new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"), null, 5000, 5000,                  
-                  null,
-               1000, 1024 * 1024, -1, 1000, -1, true, true, true, false, "/StrictTCKConnectionFactory");
-                 
-         cf = (JBossConnectionFactory) getInitialContext().lookup("/StrictTCKConnectionFactory");
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
+                                                       new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"),
+                                                       null,
+                                                       5000,
+                                                       5,
+                                                       5000,
+                                                       null,
+                                                       1000,
+                                                       1024 * 1024,
+                                                       -1,
+                                                       1000,
+                                                       -1,
+                                                       true,
+                                                       true,
+                                                       true,
+                                                       false,
+                                                       8,
+                                                       "/StrictTCKConnectionFactory");
 
-	}
+         cf = (JBossConnectionFactory)getInitialContext().lookup("/StrictTCKConnectionFactory");
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
 
-	// Public --------------------------------------------------------
+   }
 
-	public void testForiengMessageSetDestination() throws Exception
-	{
-		Connection c = null;
+   // Public --------------------------------------------------------
 
-		try
-		{
-			c = cf.createConnection();
-			Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   public void testForiengMessageSetDestination() throws Exception
+   {
+      Connection c = null;
 
-			MessageProducer p = s.createProducer(queue1);
+      try
+      {
+         c = cf.createConnection();
+         Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-			// create a Bytes foreign message
-			SimpleJMSTextMessage txt = new SimpleJMSTextMessage("hello from Brazil!");
-			txt.setJMSDestination(null);
+         MessageProducer p = s.createProducer(queue1);
 
-			p.send(txt);
+         // create a Bytes foreign message
+         SimpleJMSTextMessage txt = new SimpleJMSTextMessage("hello from Brazil!");
+         txt.setJMSDestination(null);
 
-			assertNotNull(txt.getJMSDestination());
+         p.send(txt);
 
-			MessageConsumer cons = s.createConsumer(queue1);
-			c.start();
+         assertNotNull(txt.getJMSDestination());
 
-			TextMessage tm = (TextMessage)cons.receive();
-			assertNotNull(tm);
-			assertEquals("hello from Brazil!", txt.getText());
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			if (c != null)
-			{
-				c.close();
-			}
-		}
+         MessageConsumer cons = s.createConsumer(queue1);
+         c.start();
 
-	}
+         TextMessage tm = (TextMessage)cons.receive();
+         assertNotNull(tm);
+         assertEquals("hello from Brazil!", txt.getText());
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+      finally
+      {
+         if (c != null)
+         {
+            c.close();
+         }
+      }
 
-	public void testForeignByteMessage() throws Exception
-	{
-		Connection c = null;
+   }
 
-		try
-		{	      
-			c = cf.createConnection();
-			Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   public void testForeignByteMessage() throws Exception
+   {
+      Connection c = null;
 
-			MessageProducer p = s.createProducer(queue1);
+      try
+      {
+         c = cf.createConnection();
+         Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-			// create a Bytes foreign message
-			SimpleJMSBytesMessage bfm = new SimpleJMSBytesMessage();
+         MessageProducer p = s.createProducer(queue1);
 
-			p.send(bfm);
+         // create a Bytes foreign message
+         SimpleJMSBytesMessage bfm = new SimpleJMSBytesMessage();
 
-			MessageConsumer cons = s.createConsumer(queue1);
-			c.start();
+         p.send(bfm);
 
-			BytesMessage bm = (BytesMessage)cons.receive();
-			assertNotNull(bm);
-		}
-		finally
-		{
-			if (c != null)
-			{
-				c.close();
-			}
-		}
+         MessageConsumer cons = s.createConsumer(queue1);
+         c.start();
 
-	}
+         BytesMessage bm = (BytesMessage)cons.receive();
+         assertNotNull(bm);
+      }
+      finally
+      {
+         if (c != null)
+         {
+            c.close();
+         }
+      }
 
-	public void testJMSMessageIDChanged() throws Exception
-	{
-		Connection c = null;
+   }
 
-		try
-		{
+   public void testJMSMessageIDChanged() throws Exception
+   {
+      Connection c = null;
 
-			c= cf.createConnection();
-			Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      try
+      {
 
-			MessageProducer p = s.createProducer(queue1);
+         c = cf.createConnection();
+         Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-			Message m = new SimpleJMSMessage();
-			m.setJMSMessageID("something");
+         MessageProducer p = s.createProducer(queue1);
 
-			p.send(m);
+         Message m = new SimpleJMSMessage();
+         m.setJMSMessageID("something");
 
-			assertFalse("something".equals(m.getJMSMessageID()));
+         p.send(m);
 
-			c.close();
-		}
-		finally
-		{
-			if (c != null)
-			{
-				c.close();
-			}
+         assertFalse("something".equals(m.getJMSMessageID()));
 
-			removeAllMessages(queue1.getQueueName(), true, 0);
-		}
-	}
+         c.close();
+      }
+      finally
+      {
+         if (c != null)
+         {
+            c.close();
+         }
 
-	/**
-	 * com.sun.ts.tests.jms.ee.all.queueconn.QueueConnTest line 171
-	 */
-	public void test_1() throws Exception
-	{
-		QueueConnection qc = null;
+         removeAllMessages(queue1.getQueueName(), true, 0);
+      }
+   }
 
-		try
-		{	      
-			qc = cf.createQueueConnection();
-			QueueSession qs = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+   /**
+    * com.sun.ts.tests.jms.ee.all.queueconn.QueueConnTest line 171
+    */
+   public void test_1() throws Exception
+   {
+      QueueConnection qc = null;
 
-			QueueReceiver qreceiver = qs.createReceiver(queue1, "targetMessage = TRUE");
+      try
+      {
+         qc = cf.createQueueConnection();
+         QueueSession qs = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 
-			qc.start();
+         QueueReceiver qreceiver = qs.createReceiver(queue1, "targetMessage = TRUE");
 
-			TextMessage m = qs.createTextMessage();
-			m.setText("one");
-			m.setBooleanProperty("targetMessage", false);
+         qc.start();
 
-			QueueSender qsender = qs.createSender(queue1);
+         TextMessage m = qs.createTextMessage();
+         m.setText("one");
+         m.setBooleanProperty("targetMessage", false);
 
-			qsender.send(m);
+         QueueSender qsender = qs.createSender(queue1);
 
-			m.setText("two");
-			m.setBooleanProperty("targetMessage", true);
+         qsender.send(m);
 
-			qsender.send(m);
+         m.setText("two");
+         m.setBooleanProperty("targetMessage", true);
 
-			TextMessage rm = (TextMessage)qreceiver.receive(1000);
+         qsender.send(m);
 
-			assertEquals("two", rm.getText());
-		}
-		finally
-		{
-			if (qc != null)
-			{
-				qc.close();      		
-			}
-			Thread.sleep(2000);
-			log.info("****** removing merssages");
-			removeAllMessages(queue1.getQueueName(), true, 0);
-			checkEmpty(queue1);
-		}
-	}
+         TextMessage rm = (TextMessage)qreceiver.receive(1000);
 
-	public void testInvalidSelectorOnDurableSubscription() throws Exception
-	{
-		Connection c = null;
+         assertEquals("two", rm.getText());
+      }
+      finally
+      {
+         if (qc != null)
+         {
+            qc.close();
+         }
+         Thread.sleep(2000);
+         log.info("****** removing merssages");
+         removeAllMessages(queue1.getQueueName(), true, 0);
+         checkEmpty(queue1);
+      }
+   }
 
-		try
-		{      
-			c = cf.createConnection();
-			c.setClientID("something");
+   public void testInvalidSelectorOnDurableSubscription() throws Exception
+   {
+      Connection c = null;
 
-			Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      try
+      {
+         c = cf.createConnection();
+         c.setClientID("something");
 
-			try
-			{
-				s.createDurableSubscriber(topic1, "somename", "=TEST 'test'", false);
-				fail("this should fail");
-			}
-			catch(InvalidSelectorException e)
-			{
-				// OK
-			}
-		}
-		finally
-		{
-			c.close();
-		}
-	}
+         Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-	public void testInvalidSelectorOnSubscription() throws Exception
-	{
-		TopicConnection c = null;      
-		try
-		{
-			c = cf.createTopicConnection();
-			c.setClientID("something");
+         try
+         {
+            s.createDurableSubscriber(topic1, "somename", "=TEST 'test'", false);
+            fail("this should fail");
+         }
+         catch (InvalidSelectorException e)
+         {
+            // OK
+         }
+      }
+      finally
+      {
+         c.close();
+      }
+   }
 
-			TopicSession s = c.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+   public void testInvalidSelectorOnSubscription() throws Exception
+   {
+      TopicConnection c = null;
+      try
+      {
+         c = cf.createTopicConnection();
+         c.setClientID("something");
 
-			try
-			{
-				s.createSubscriber(topic1, "=TEST 'test'", false);
-				fail("this should fail");
-			}
-			catch(InvalidSelectorException e)
-			{
-				// OK
-			}
-		}
-		finally
-		{
-			c.close();
-		}
-	}
-	
-	/* By default we send non persistent messages asynchronously for performance reasons
-	 * when running with strictTCK we send them synchronously
-	 */
-	public void testNonPersistentMessagesSentSynchronously() throws Exception
-	{
-		Connection c = null;
+         TopicSession s = c.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
 
-		try
-		{
-			c= cf.createConnection();
-			Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         try
+         {
+            s.createSubscriber(topic1, "=TEST 'test'", false);
+            fail("this should fail");
+         }
+         catch (InvalidSelectorException e)
+         {
+            // OK
+         }
+      }
+      finally
+      {
+         c.close();
+      }
+   }
 
-			MessageProducer p = s.createProducer(queue1);
-			
-			p.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-			
-			final int numMessages = 100;
-			
-			this.assertRemainingMessages(0);
-			
-			for (int i = 0; i < numMessages; i++)
-			{
-				p.send(s.createMessage());
-			}	
-			
-			this.assertRemainingMessages(numMessages);					
-		}
-		finally
-		{
-			if (c != null)
-			{
-				c.close();
-			}
+   /* By default we send non persistent messages asynchronously for performance reasons
+    * when running with strictTCK we send them synchronously
+    */
+   public void testNonPersistentMessagesSentSynchronously() throws Exception
+   {
+      Connection c = null;
 
-			removeAllMessages(queue1.getQueueName(), true, 0);
-		}
-	}
+      try
+      {
+         c = cf.createConnection();
+         Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-	protected void tearDown() throws Exception
-	{
-		super.tearDown();
-		undeployConnectionFactory(ORG_JBOSS_MESSAGING_SERVICE_LBCONNECTION_FACTORY);
-	}
+         MessageProducer p = s.createProducer(queue1);
 
-	// Package protected ---------------------------------------------
+         p.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
-	// Protected -----------------------------------------------------
+         final int numMessages = 100;
 
-	// Private -------------------------------------------------------
+         this.assertRemainingMessages(0);
 
-	// Inner classes -------------------------------------------------   
+         for (int i = 0; i < numMessages; i++)
+         {
+            p.send(s.createMessage());
+         }
+
+         this.assertRemainingMessages(numMessages);
+      }
+      finally
+      {
+         if (c != null)
+         {
+            c.close();
+         }
+
+         removeAllMessages(queue1.getQueueName(), true, 0);
+      }
+   }
+
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+      undeployConnectionFactory(ORG_JBOSS_MESSAGING_SERVICE_LBCONNECTION_FACTORY);
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
 }

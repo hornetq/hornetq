@@ -23,6 +23,7 @@
 package org.jboss.messaging.tests.unit.core.settings.impl;
 
 import junit.framework.TestCase;
+
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
 

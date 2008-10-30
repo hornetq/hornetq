@@ -21,6 +21,8 @@
   */
 package org.jboss.messaging.core.server.impl;
 
+import java.lang.management.ManagementFactory;
+
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.journal.Journal;
@@ -37,8 +39,6 @@ import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.MessagingService;
-
-import java.lang.management.ManagementFactory;
 
 /**
  * 

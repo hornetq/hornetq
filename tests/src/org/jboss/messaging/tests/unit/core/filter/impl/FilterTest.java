@@ -23,6 +23,7 @@
 package org.jboss.messaging.tests.unit.core.filter.impl;
 
 import junit.framework.TestCase;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;

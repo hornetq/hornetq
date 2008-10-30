@@ -73,6 +73,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private volatile int creditsToSend;
 
+   private volatile Exception lastException;
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -196,7 +198,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return handler;
    }
 
-   public void setMessageHandler(final MessageHandler handler) throws MessagingException
+   //Must be synchronized since messages may be arriving while handler is being set and might otherwise end
+   //up not queueing enough executors - so messages get stranded
+   public synchronized void setMessageHandler(final MessageHandler theHandler) throws MessagingException
    {
       checkClosed();
 
@@ -206,12 +210,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                                       "Cannot set MessageHandler - consumer is in receive(...)");
       }
 
-      waitForOnMessageToComplete();
+      // If no handler before then need to queue them up
+      boolean queueUp = this.handler == null;
 
-      this.handler = handler;
+      this.handler = theHandler;
 
-      // If there are any messages in the buffer, we need to queue up executors for them
-      synchronized (this)
+      if (queueUp)
       {
          for (int i = 0; i < buffer.size(); i++)
          {
@@ -245,6 +249,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public boolean isDirect()
    {
       return direct;
+   }
+
+   public Exception getLastException()
+   {
+      return lastException;
    }
 
    // ClientConsumerInternal implementation
@@ -287,14 +296,14 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          else
          {
             // Execute using executor
-
+        
             buffer.add(message);
 
             queueExecutor();
          }
       }
       else
-      {
+      { 
          // Add it to the buffer
          buffer.add(message);
 
@@ -308,7 +317,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          buffer.clear();
       }
-      
+
       waitForOnMessageToComplete();
    }
 
@@ -326,7 +335,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       return creditsToSend;
    }
-   
+
    // Public
    // ---------------------------------------------------------------------------------------
 
@@ -392,21 +401,25 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   private void callOnMessage()
+   private void callOnMessage() throws Exception
    {
-      try
+      if (closed)
       {
-         if (closed)
-         {
-            return;
-         }
+         return;
+      }
 
-         // We pull the message from the buffer from inside the Runnable so we can ensure priority
-         // ordering. If we just added a Runnable with the message to the executor immediately as we get it
-         // we could not do that
+      // We pull the message from the buffer from inside the Runnable so we can ensure priority
+      // ordering. If we just added a Runnable with the message to the executor immediately as we get it
+      // we could not do that
 
-         ClientMessage message;
+      ClientMessage message;
 
+      // Must store handler in local variable since might get set to null
+      // otherwise while this is executing and give NPE when calling onMessage
+      MessageHandler theHandler = this.handler;
+
+      if (theHandler != null)
+      {
          synchronized (this)
          {
             message = buffer.poll();
@@ -422,21 +435,13 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             {
                onMessageThread = Thread.currentThread();
 
-               handler.onMessage(message);
+               theHandler.onMessage(message);
             }
             else
             {
                session.acknowledge(id, message.getMessageID());
             }
          }
-      }
-      catch (MessagingException e)
-      {
-         log.error("Failed to execute", e);
-      }
-      catch (RuntimeException e)
-      {
-         log.error("RuntimeException thrown from handler", e);
       }
    }
 
@@ -457,7 +462,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          synchronized (this)
          {
             if (receiverThread != null)
-            {              
+            {
                // Wake up any receive() thread that might be waiting
                notify();
             }
@@ -485,7 +490,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       public void run()
       {
-         callOnMessage();
+         try
+         {
+            callOnMessage();
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to call onMessage()", e);
+
+            lastException = e;
+         }
       }
    }
 }

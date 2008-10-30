@@ -18,15 +18,14 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.client;
 
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
-
 import java.util.Map;
 
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 
 /**
  * 
@@ -36,71 +35,61 @@ import java.util.Map;
  *
  */
 public interface ClientSessionFactory
-{         
-   ClientSession createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
-                               boolean cacheProducers)
-      throws MessagingException;
-      
-   ClientSession createSession(String username, String password, boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
-                               boolean cacheProducers)
-      throws MessagingException;
-        
+{
+   ClientSession createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks, boolean cacheProducers) throws MessagingException;
+
+   ClientSession createSession(String username,
+                               String password,
+                               boolean xa,
+                               boolean autoCommitSends,
+                               boolean autoCommitAcks,
+                               boolean cacheProducers) throws MessagingException;
+
    void setConsumerWindowSize(int size);
-   
+
    int getConsumerWindowSize();
-   
-   void setProducerWindowSize(int size);     
-   
+
+   void setProducerWindowSize(int size);
+
    int getProducerWindowSize();
-   
+
    void setConsumerMaxRate(int rate);
-   
+
    int getConsumerMaxRate();
-   
+
    void setProducerMaxRate(int rate);
-   
+
    int getProducerMaxRate();
-   
+
    boolean isBlockOnPersistentSend();
-   
+
    void setBlockOnPersistentSend(final boolean blocking);
-   
+
    boolean isBlockOnNonPersistentSend();
-   
+
    void setBlockOnNonPersistentSend(final boolean blocking);
-   
+
    boolean isBlockOnAcknowledge();
-   
+
    void setBlockOnAcknowledge(final boolean blocking);
 
-   boolean isAutoGroupId();
+   boolean isAutoGroupID();
 
    void setAutoGroupId(boolean autoGroupId);
-   
-   ConnectorFactory getConnectorFactory();
 
-   void setConnectorFactory(final ConnectorFactory connectorFactory);
+   ConnectorFactory getConnectorFactory();
 
    Map<String, Object> getTransportParams();
 
-   void setTransportParams(final Map<String, Object> transportParams);
-   
    ConnectorFactory getBackupConnectorFactory();
-
-   void setBackupConnectorFactory(final ConnectorFactory connectorFactory);
 
    Map<String, Object> getBackupTransportParams();
 
-   void setBackupTransportParams(final Map<String, Object> transportParams);
-
    long getPingPeriod();
-
-   void setPingPeriod(final long pingPeriod);
-
-   long getCallTimeout();
-
-   void setCallTimeout(final long callTimeout);
    
-   boolean isFailedOver();
+   int getPingPoolSize();
+
+   long getCallTimeout();   
    
+   int getMaxConnections();
 }

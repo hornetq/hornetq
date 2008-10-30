@@ -86,6 +86,7 @@ import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerProducer;
@@ -305,7 +306,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          if (!pager.page(msg))
          {
             List<MessageReference> refs = postOffice.route(msg);
-
+            
             if (msg.getDurableRefCount() != 0)
             {
                storageManager.storeMessage(msg);
@@ -356,8 +357,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          tx.addScheduledMessage(msg, scheduledDeliveryTime);
       }
    }
-
-   public void handleCreateConsumer(final SessionCreateConsumerMessage packet)
+   
+   public void doHandleCreateConsumer(final SessionCreateConsumerMessage packet)
    {
       SimpleString queueName = packet.getQueueName();
 
@@ -368,8 +369,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       int maxRate = packet.getMaxRate();
 
       boolean browseOnly = packet.isBrowseOnly();
-
-      DelayedResult result = channel.replicatePacket(packet);
 
       Packet response = null;
 
@@ -456,22 +455,41 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response);
+      channel.send(response);
    }
 
-   public void handleCreateQueue(final SessionCreateQueueMessage packet)
+   public void handleCreateConsumer(final SessionCreateConsumerMessage packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+      
+      if (result == null)
+      {
+         doHandleCreateConsumer(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleCreateConsumer(packet);
+            }
+         });
+      }
+   }
+
+   public void doHandleCreateQueue(final SessionCreateQueueMessage packet)
    {
       SimpleString address = packet.getAddress();
 
       SimpleString queueName = packet.getQueueName();
-
+      
       SimpleString filterString = packet.getFilterString();
 
       boolean temporary = packet.isTemporary();
 
       boolean durable = packet.isDurable();
-
-      DelayedResult result = channel.replicatePacket(packet);
 
       Packet response = null;
 
@@ -540,15 +558,86 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
          }
       }
-
-      sendResponse(result, response);
+      
+      channel.send(response);
    }
+      
 
+   public void handleCreateQueue(final SessionCreateQueueMessage packet)
+   {
+      final SendLock lock;
+      if (channel.getReplicatingChannel() != null)
+      {
+         lock = postOffice.getAddressLock(packet.getAddress());
+         
+         lock.lock();
+      }
+      else
+      {
+         lock = null;
+      }
+      
+      DelayedResult result = channel.replicatePacket(packet);
+                 
+      if (result == null)
+      {
+         doHandleCreateQueue(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleCreateQueue(packet);        
+               
+               lock.unlock();               
+            }
+         });
+      }
+   }
+   
    public void handleDeleteQueue(final SessionDeleteQueueMessage packet)
    {
-      SimpleString queueName = packet.getQueueName();
-
+      final SendLock lock;
+      if (channel.getReplicatingChannel() != null)
+      {
+         Binding binding = postOffice.getBinding(packet.getQueueName());
+         lock = postOffice.getAddressLock(binding.getAddress());
+         
+         lock.lock();
+      }
+      else
+      {
+         lock = null;
+      }
+      
       DelayedResult result = channel.replicatePacket(packet);
+            
+      
+      if (result == null)
+      {
+         doHandleDeleteQueue(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleDeleteQueue(packet);     
+               
+               lock.unlock();
+            }
+         });
+      }   
+   }
+   
+   public void doHandleDeleteQueue(final SessionDeleteQueueMessage packet)
+   {
+      SimpleString queueName = packet.getQueueName();
 
       Packet response = null;
 
@@ -588,15 +677,34 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
          }
       }
-
-      sendResponse(result, response);
+      
+      channel.send(response);
    }
-
+      
    public void handleExecuteQueueQuery(final SessionQueueQueryMessage packet)
    {
-      SimpleString queueName = packet.getQueueName();
-
       DelayedResult result = channel.replicatePacket(packet);
+      
+      if (result == null)
+      {
+         doHandleExecuteQueueQuery(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleExecuteQueueQuery(packet);
+            }
+         });
+      }   
+   }
+
+   public void doHandleExecuteQueueQuery(final SessionQueueQueryMessage packet)
+   {
+      SimpleString queueName = packet.getQueueName();
 
       Packet response = null;
 
@@ -642,14 +750,33 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response);
+      channel.send(response);
    }
-
+   
    public void handleExecuteBindingQuery(final SessionBindingQueryMessage packet)
    {
-      SimpleString address = packet.getAddress();
-
       DelayedResult result = channel.replicatePacket(packet);
+      
+      if (result == null)
+      {
+         doHandleExecuteBindingQuery(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleExecuteBindingQuery(packet);
+            }
+         });
+      } 
+   }
+
+   public void doHandleExecuteBindingQuery(final SessionBindingQueryMessage packet)
+   {
+      SimpleString address = packet.getAddress();
 
       Packet response = null;
 
@@ -689,8 +816,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
          }
       }
-
-      sendResponse(result, response);
+      
+      channel.send(response);
    }
 
    /**
@@ -703,6 +830,27 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
     */
    public void handleCreateProducer(final SessionCreateProducerMessage packet)
    {
+      DelayedResult result = channel.replicatePacket(packet);
+      
+      if (result == null)
+      {
+         doHandleCreateProducer(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleCreateProducer(packet);
+            }
+         });
+      }
+   }
+   
+   public void doHandleCreateProducer(final SessionCreateProducerMessage packet)
+   {
       SimpleString address = packet.getAddress();
 
       int maxRate = packet.getMaxRate();
@@ -710,8 +858,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       int windowSize = packet.getWindowSize();
 
       boolean autoGroupID = packet.isAutoGroupId();
-
-      DelayedResult result = channel.replicatePacket(packet);
 
       Packet response = null;
 
@@ -770,13 +916,32 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response);
+      channel.send(response);
    }
 
    public void handleAcknowledge(final SessionAcknowledgeMessage packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
-
+      
+      if (result == null)
+      {
+         doHandleAcknowledge(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleAcknowledge(packet);
+            }
+         });
+      }
+   }
+   
+   public void doHandleAcknowledge(final SessionAcknowledgeMessage packet)
+   {
       Packet response = null;
 
       try
@@ -822,13 +987,35 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response);
+      if (response != null)
+      {
+         channel.send(response);
+      }
    }
-
+   
    public void handleCommit(final Packet packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
+      
+      if (result == null)
+      {
+         doHandleCommit(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleCommit(packet);
+            }
+         });
+      }
+   }
 
+   public void doHandleCommit(final Packet packet)
+   {
       Packet response = null;
 
       try
@@ -855,13 +1042,32 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          tx = new TransactionImpl(storageManager, postOffice);
       }
 
-      sendResponse(result, response);
+      channel.send(response);
+   }
+   
+   public void handleRollback(final Packet packet)
+   {      
+      DelayedResult result = channel.replicatePacket(packet);
+      
+      if (result == null)
+      {
+         doHandleRollback(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleRollback(packet);
+            }
+         });
+      }
    }
 
-   public void handleRollback(final Packet packet)
-   {
-      DelayedResult result = channel.replicatePacket(packet);
-
+   public void doHandleRollback(final Packet packet)
+   {   
       Packet response = null;
 
       try
@@ -884,13 +1090,32 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response);
+      channel.send(response);
    }
 
    public void handleXACommit(final SessionXACommitMessage packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
-
+      
+      if (result == null)
+      {
+         doHandleXACommit(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleXACommit(packet);
+            }
+         });
+      }
+   }
+   
+   public void doHandleXACommit(final SessionXACommitMessage packet)
+   {
       Packet response = null;
 
       Xid xid = packet.getXid();
@@ -947,13 +1172,32 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response);
+      channel.send(response);
    }
-
+   
    public void handleXAEnd(final SessionXAEndMessage packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
-
+      
+      if (result == null)
+      {
+         doHandleXAEnd(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleXAEnd(packet);
+            }
+         });
+      }
+   }
+   
+   public void doHandleXAEnd(final SessionXAEndMessage packet)
+   {
       Packet response = null;
 
       Xid xid = packet.getXid();
@@ -1021,25 +1265,63 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response);
+      channel.send(response);
    }
-
+   
    public void handleXAForget(final SessionXAForgetMessage packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
+      
+      if (result == null)
+      {
+         doHandleXAForget(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleXAForget(packet);
+            }
+         });
+      }
+   }
 
+   public void doHandleXAForget(final SessionXAForgetMessage packet)
+   {
       // Do nothing since we don't support heuristic commits / rollback from the
       // resource manager
 
       Packet response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
 
-      sendResponse(result, response);
+      channel.send(response);
    }
 
    public void handleXAJoin(final SessionXAJoinMessage packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
-
+      
+      if (result == null)
+      {
+         doHandleXAJoin(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleXAJoin(packet);
+            }
+         });
+      }
+   }
+   
+   public void doHandleXAJoin(final SessionXAJoinMessage packet)
+   {
       Packet response = null;
 
       Xid xid = packet.getXid();
@@ -1084,13 +1366,32 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response);
+      channel.send(response);
    }
 
    public void handleXAResume(final SessionXAResumeMessage packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
-
+      
+      if (result == null)
+      {
+         doHandleXAResume(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleXAResume(packet);
+            }
+         });
+      }
+   }
+   
+   public void doHandleXAResume(final SessionXAResumeMessage packet)
+   {
       Packet response = null;
 
       Xid xid = packet.getXid();
@@ -1146,13 +1447,32 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response);
+      channel.send(response);
    }
-
+   
    public void handleXARollback(final SessionXARollbackMessage packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
+      
+      if (result == null)
+      {
+         doHandleXARollback(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleXARollback(packet);
+            }
+         });
+      }
+   }
 
+   public void doHandleXARollback(final SessionXARollbackMessage packet)
+   {
       Packet response = null;
 
       Xid xid = packet.getXid();
@@ -1209,13 +1529,32 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response);
+      channel.send(response);
    }
 
    public void handleXAStart(final SessionXAStartMessage packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
-
+      
+      if (result == null)
+      {
+         doHandleXAStart(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleXAStart(packet);
+            }
+         });
+      }
+   }
+   
+   public void doHandleXAStart(final SessionXAStartMessage packet)
+   {
       Packet response = null;
 
       Xid xid = packet.getXid();
@@ -1260,13 +1599,32 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response);
+      channel.send(response);
    }
 
    public void handleXASuspend(final Packet packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
-
+      
+      if (result == null)
+      {
+         doHandleXASuspend(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleXASuspend(packet);
+            }
+         });
+      }
+   }
+   
+   public void doHandleXASuspend(final Packet packet)
+   {
       Packet response = null;
 
       try
@@ -1309,13 +1667,32 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response);
+      channel.send(response);
    }
 
    public void handleXAPrepare(final SessionXAPrepareMessage packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
-
+      
+      if (result == null)
+      {
+         doHandleXAPrepare(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleXAPrepare(packet);
+            }
+         });
+      }
+   }
+   
+   public void doHandleXAPrepare(final SessionXAPrepareMessage packet)
+   {
       Packet response = null;
 
       Xid xid = packet.getXid();
@@ -1376,40 +1753,116 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response);
+      channel.send(response);
    }
 
    public void handleGetInDoubtXids(final Packet packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
-
+      
+      if (result == null)
+      {
+         doHandleGetInDoubtXids(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleGetInDoubtXids(packet);
+            }
+         });
+      }
+   }
+   
+   public void doHandleGetInDoubtXids(final Packet packet)
+   {
       Packet response = new SessionXAGetInDoubtXidsResponseMessage(resourceManager.getPreparedTransactions());
 
-      sendResponse(result, response);
+      channel.send(response);
    }
 
    public void handleGetXATimeout(final Packet packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
-
+      
+      if (result == null)
+      {
+         doHandleGetXATimeout(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleGetXATimeout(packet);
+            }
+         });
+      }
+   }
+   
+   public void doHandleGetXATimeout(final Packet packet)
+   {
       Packet response = new SessionXAGetTimeoutResponseMessage(resourceManager.getTimeoutSeconds());
 
-      sendResponse(result, response);
+      channel.send(response);
    }
 
    public void handleSetXATimeout(final SessionXASetTimeoutMessage packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
-
+      
+      if (result == null)
+      {
+         doHandleSetXATimeout(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleSetXATimeout(packet);
+            }
+         });
+      }
+   }
+   
+   public void doHandleSetXATimeout(final SessionXASetTimeoutMessage packet)
+   {
       Packet response = new SessionXASetTimeoutResponseMessage(resourceManager.setTimeoutSeconds(packet.getTimeoutSeconds()));
 
-      sendResponse(result, response);
+      channel.send(response);
    }
-
+   
    public void handleAddDestination(final SessionAddDestinationMessage packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
+      
+      if (result == null)
+      {
+         doHandleAddDestination(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleAddDestination(packet);
+            }
+         });
+      }
+   }
 
+   public void doHandleAddDestination(final SessionAddDestinationMessage packet)
+   {
       Packet response = null;
 
       final SimpleString address = packet.getAddress();
@@ -1467,13 +1920,32 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response);
+      channel.send(response);
    }
-
+   
    public void handleRemoveDestination(final SessionRemoveDestinationMessage packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
+      
+      if (result == null)
+      {
+         doHandleRemoveDestination(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleRemoveDestination(packet);
+            }
+         });
+      }
+   }
 
+   public void doHandleRemoveDestination(final SessionRemoveDestinationMessage packet)
+   {
       Packet response = null;
 
       final SimpleString address = packet.getAddress();
@@ -1506,7 +1978,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response);
+      channel.send(response);
    }
 
    private void lockConsumers()
@@ -1543,8 +2015,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          channel.replicatePacket(packet);
 
          // set started will unlock
-         setStarted(true);
-
+         
+         //note we process start before response is back from the backup
+         setStarted(true);         
       }
       finally
       {
@@ -1555,6 +2028,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
    }
 
+   //TODO try removing the lock consumers and see what happens!!
    public void handleStop(final Packet packet)
    {
       boolean lock = this.channel.getReplicatingChannel() != null;
@@ -1568,6 +2042,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       {
          DelayedResult result = channel.replicatePacket(packet);
 
+         //note we process stop before response is back from the backup
+         
          setStarted(false);
 
          sendResponse(result, new NullResponseMessage());
@@ -1591,15 +2067,44 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          consumer.failedOver();
       }
    }
-
+   
    public void handleClose(final Packet packet)
    {
+      //We need to stop the consumers first before replicating, to ensure no deliveries occur after this,
+      //but we need to process the actual close() when the replication response returns, otherwise things
+      //can happen like acks can come in after close
+      
+      for (ServerConsumer consumer : consumers.values())
+      {
+         consumer.setStarted(false);
+      }
+      
       DelayedResult result = channel.replicatePacket(packet);
+      
+      if (result == null)
+      {
+         doHandleClose(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleClose(packet);
+            }
+         });
+      }
+   }
 
+   public void doHandleClose(final Packet packet)
+   {
       Packet response = null;
 
       try
       {
+         //note we process close before response is back from the backup
          close();
 
          response = new NullResponseMessage();
@@ -1618,7 +2123,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response, true);
+      channel.send(response);
    }
 
    private void setStarted(final boolean s)
@@ -1632,16 +2137,86 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       started = s;
    }
-
+   
    public void handleCloseConsumer(final SessionConsumerCloseMessage packet)
    {
-      consumers.get(packet.getConsumerID()).handleClose(packet);
+      //We need to stop the consumer first before replicating, to ensure no deliveries occur after this,
+      //but we need to process the actual close() when the replication response returns, otherwise things
+      //can happen like acks can come in after close
+      
+      ServerConsumer consumer = consumers.get(packet.getConsumerID());    
+      
+      consumer.handleClose(packet);
+      
+//      DelayedResult result = channel.replicatePacket(packet);
+//      
+//      if (result == null)
+//      {
+//         doHandleCloseConsumer(packet);
+//      }
+//      else
+//      {
+//         //Don't process until result has come back from backup
+//         result.setResultRunner(new Runnable()
+//         {
+//            public void run()
+//            {
+//               doHandleCloseConsumer(packet);
+//            }
+//         });
+//      }
+   }
+
+   public void doHandleCloseConsumer(final SessionConsumerCloseMessage packet)
+   {
+      Packet response = null;
+
+      try
+      {
+         consumers.get(packet.getConsumerID()).close();
+   
+         response = new NullResponseMessage();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to close", e);
+   
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+   
+      channel.send(response);
    }
 
    public void handleCloseProducer(final SessionProducerCloseMessage packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
-
+      
+      if (result == null)
+      {
+         doHandleCloseProducer(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleCloseProducer(packet);
+            }
+         });
+      }
+   }
+   
+   public void doHandleCloseProducer(final SessionProducerCloseMessage packet)
+   {
       Packet response = null;
 
       try
@@ -1664,7 +2239,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response);
+      channel.send(response);
    }
 
    public void handleReceiveConsumerCredits(final SessionConsumerFlowCreditMessage packet)
@@ -1673,6 +2248,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       try
       {
+         //Note we don't wait for response before handling this
          consumers.get(packet.getConsumerID()).receiveCredits(packet.getCredits());
       }
       catch (Exception e)
@@ -1682,9 +2258,22 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    }
 
    public void handleSendProducerMessage(final SessionSendMessage packet)
-   {
+   {               
       ServerMessage msg = packet.getServerMessage();
-
+      
+      final SendLock lock;
+            
+      if (channel.getReplicatingChannel() != null)
+      {
+         lock = postOffice.getAddressLock(msg.getDestination());
+               
+         lock.beforeSend();
+      }
+      else
+      {
+         lock = null;
+      }
+      
       if (msg.getMessageID() == 0L)
       {
          // must generate message id here, so we know they are in sync on live and backup
@@ -1694,12 +2283,38 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
 
       DelayedResult result = channel.replicatePacket(packet);
-
+      
+      //With a send we must make sure it is replicated to backup before being processed on live
+      //or can end up with delivery being processed on backup before original send
+      
+      if (result == null)
+      {
+         doSend(packet);                        
+      }
+      else
+      {
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doSend(packet);
+               
+               lock.afterSend();
+            }
+         });
+      }
+   }
+   
+   private void doSend(final SessionSendMessage packet)
+   {
+      //With a send we must make sure it is replicated to backup before being processed on live
+      //or can end up with delivery being processed on backup before original send
+      
       Packet response = null;
 
       try
       {
-         producers.get(packet.getProducerID()).send(msg);
+         producers.get(packet.getProducerID()).send(packet.getServerMessage());
 
          if (packet.isRequiresResponse())
          {
@@ -1722,8 +2337,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             }
          }
       }
-
-      sendResponse(result, response);
+      
+      if (response != null)
+      {
+         channel.send(response);
+      }
    }
 
    public void handleSendScheduledProducerMessage(final SessionScheduledSendMessage packet)
@@ -1877,6 +2495,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       channel.replayCommands(lastReceivedCommandID);
 
       return serverLastReceivedCommandID;
+   }
+   
+   public Channel getChannel()
+   {
+      return channel;
    }
 
    // FailureListener implementation

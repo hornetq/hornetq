@@ -46,4 +46,6 @@ public interface ClientConsumer
    boolean isClosed();   
    
    boolean isDirect();   
+   
+   Exception getLastException();
 }

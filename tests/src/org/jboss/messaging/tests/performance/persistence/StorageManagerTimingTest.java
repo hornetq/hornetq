@@ -22,6 +22,11 @@
 
 package org.jboss.messaging.tests.performance.persistence;
 
+import java.io.File;
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.core.logging.Logger;
@@ -33,11 +38,6 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
-
-import java.io.File;
-import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 

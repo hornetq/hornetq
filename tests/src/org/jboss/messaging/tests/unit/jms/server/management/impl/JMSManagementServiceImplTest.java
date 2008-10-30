@@ -32,15 +32,11 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
-import javax.management.MBeanServer;
-import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
 import junit.framework.TestCase;
 
-import org.easymock.EasyMock;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
@@ -58,11 +54,7 @@ import org.jboss.messaging.jms.server.management.JMSManagementService;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
-import org.jboss.messaging.jms.server.management.impl.ConnectionFactoryControl;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
-import org.jboss.messaging.jms.server.management.impl.JMSQueueControl;
-import org.jboss.messaging.jms.server.management.impl.TopicControl;
-import org.jboss.messaging.tests.util.RandomUtil;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

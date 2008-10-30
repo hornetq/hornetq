@@ -24,7 +24,6 @@ package org.jboss.messaging.jms.client;
 
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
-import java.util.UUID;
 
 import javax.jms.JMSException;
 import javax.jms.Queue;

@@ -30,6 +30,7 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingComponent;
+import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
 
@@ -85,4 +86,6 @@ public interface PostOffice extends MessagingComponent
    void activate();
    
    PagingManager getPagingManager();
+   
+   SendLock getAddressLock(SimpleString address);
 }

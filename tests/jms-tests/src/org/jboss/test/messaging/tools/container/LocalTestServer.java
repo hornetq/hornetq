@@ -21,6 +21,26 @@
 */
 package org.jboss.test.messaging.tools.container;
 
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.management.MBeanServerInvocationHandler;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
+
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
@@ -41,25 +61,6 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.tm.TransactionManagerLocator;
 
-import javax.management.MBeanServerInvocationHandler;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
-import java.io.File;
-import java.lang.management.ManagementFactory;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -72,8 +73,11 @@ public class LocalTestServer implements Server, Runnable
    // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(LocalTestServer.class);
+
    private boolean started = false;
+
    private HashMap<String, List<String>> allBindings = new HashMap<String, List<String>>();
+
    // Static ---------------------------------------------------------------------------------------
 
    public static void setEnvironmentServerIndex(int serverIndex)
@@ -118,10 +122,7 @@ public class LocalTestServer implements Server, Runnable
       return serverIndex;
    }
 
-
-   public synchronized void start(String[] containerConfig,
-                                  HashMap<String, Object> configuration,
-                                  boolean clearDatabase) throws Exception
+   public synchronized void start(String[] containerConfig, HashMap<String, Object> configuration, boolean clearDatabase) throws Exception
    {
       if (isStarted())
       {
@@ -129,10 +130,10 @@ public class LocalTestServer implements Server, Runnable
       }
 
       log.info("** deleting database?" + clearDatabase);
-      
+
       if (clearDatabase)
       {
-         //Delete the BDB environment
+         // Delete the BDB environment
 
          File dir = new File("data");
 
@@ -144,9 +145,9 @@ public class LocalTestServer implements Server, Runnable
       ConfigurationHelper.addServerConfig(getServerID(), configuration);
 
       JBMPropertyKernelConfig propertyKernelConfig = new JBMPropertyKernelConfig(System.getProperties());
-      //propertyKernelConfig.setServerID(getServerID());
+      // propertyKernelConfig.setServerID(getServerID());
       bootstrap = new JBMBootstrapServer(containerConfig, propertyKernelConfig);
-      System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, ""+getServerID());
+      System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
       bootstrap.run();
       started = true;
 
@@ -170,7 +171,6 @@ public class LocalTestServer implements Server, Runnable
       return directory.delete();
    }
 
-
    protected void deleteAllData() throws Exception
    {
       log.info("DELETING ALL DATA FROM DATABASE!");
@@ -181,7 +181,7 @@ public class LocalTestServer implements Server, Runnable
       // further commands after one fails
 
       TransactionManager mgr = TransactionManagerLocator.locateTransactionManager();
-      DataSource ds = (DataSource) ctx.lookup("java:/DefaultDS");
+      DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
 
       javax.transaction.Transaction txOld = mgr.suspend();
 
@@ -254,17 +254,15 @@ public class LocalTestServer implements Server, Runnable
          }
       }
 
-
    }
 
    public synchronized boolean stop() throws Exception
    {
       bootstrap.shutDown();
-      started=false;
+      started = false;
       unbindAll();
       return true;
    }
-
 
    public void ping() throws Exception
    {
@@ -294,11 +292,11 @@ public class LocalTestServer implements Server, Runnable
          }
          else
          {
-            throw new Exception (e.toString(), e);
+            throw new Exception(e.toString(), e);
          }
       }
    }
-   
+
    public KernelDeployment deployXML(String name, String xml) throws Exception
    {
       try
@@ -314,7 +312,7 @@ public class LocalTestServer implements Server, Runnable
          }
          else
          {
-            throw new Exception (e.toString(), e);
+            throw new Exception(e.toString(), e);
          }
       }
    }
@@ -334,7 +332,7 @@ public class LocalTestServer implements Server, Runnable
          }
          else
          {
-            throw new Exception (e.toString(), e);
+            throw new Exception(e.toString(), e);
          }
       }
    }
@@ -346,27 +344,23 @@ public class LocalTestServer implements Server, Runnable
 
    public void setAttribute(ObjectName on, String name, String valueAsString) throws Exception
    {
-      //sc.setAttribute(on, name, valueAsString);
+      // sc.setAttribute(on, name, valueAsString);
    }
 
-   public Object invoke(ObjectName on, String operationName, Object[] params, String[] signature)
-           throws Exception
+   public Object invoke(ObjectName on, String operationName, Object[] params, String[] signature) throws Exception
    {
-      return null;//sc.invoke(on, operationName, params, signature);
+      return null;// sc.invoke(on, operationName, params, signature);
    }
 
-   public void addNotificationListener(ObjectName on, NotificationListener listener)
-           throws Exception
+   public void addNotificationListener(ObjectName on, NotificationListener listener) throws Exception
    {
       // sc.addNotificationListener(on, listener);
    }
 
-   public void removeNotificationListener(ObjectName on, NotificationListener listener)
-           throws Exception
+   public void removeNotificationListener(ObjectName on, NotificationListener listener) throws Exception
    {
-      //sc.removeNotificationListener(on, listener);
+      // sc.removeNotificationListener(on, listener);
    }
-
 
    public void log(int level, String text)
    {
@@ -407,10 +401,10 @@ public class LocalTestServer implements Server, Runnable
    }
 
    public synchronized void startServerPeer(int serverPeerID,
-                               String defaultQueueJNDIContext,
-                               String defaultTopicJNDIContext,
-                               ServiceAttributeOverrides attrOverrides,
-                               boolean clustered) throws Exception
+                                            String defaultQueueJNDIContext,
+                                            String defaultTopicJNDIContext,
+                                            ServiceAttributeOverrides attrOverrides,
+                                            boolean clustered) throws Exception
    {
       System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
       getMessagingServer().start();
@@ -420,12 +414,11 @@ public class LocalTestServer implements Server, Runnable
    {
       System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
       getMessagingServer().stop();
-      //also unbind everything
+      // also unbind everything
       unbindAll();
    }
 
-   private void unbindAll()
-           throws Exception
+   private void unbindAll() throws Exception
    {
       Collection<List<String>> bindings = allBindings.values();
       for (List<String> binding : bindings)
@@ -454,6 +447,7 @@ public class LocalTestServer implements Server, Runnable
    {
       return getMessagingServer();
    }
+
    public void destroyQueue(String name, String jndiName) throws Exception
    {
       this.getJMSServerManager().destroyQueue(name);
@@ -474,22 +468,17 @@ public class LocalTestServer implements Server, Runnable
       this.getJMSServerManager().createTopic(name, "/topic/" + (jndiName != null ? jndiName : name));
    }
 
-   public void deployConnectionFactory(String clientId, String objectName,
-                                       List<String> jndiBindings) throws Exception
+   public void deployConnectionFactory(String clientId, String objectName, List<String> jndiBindings) throws Exception
    {
       deployConnectionFactory(clientId, objectName, jndiBindings, -1, -1, -1, -1, false, false, -1, false);
    }
 
-   public void deployConnectionFactory(String objectName,
-                                       List<String> jndiBindings,
-                                       int consumerWindowSize) throws Exception
+   public void deployConnectionFactory(String objectName, List<String> jndiBindings, int consumerWindowSize) throws Exception
    {
       deployConnectionFactory(null, objectName, jndiBindings, consumerWindowSize, -1, -1, -1, false, false, -1, false);
    }
 
-
-   public void deployConnectionFactory(String objectName,
-                                       List<String> jndiBindings) throws Exception
+   public void deployConnectionFactory(String objectName, List<String> jndiBindings) throws Exception
    {
       deployConnectionFactory(null, objectName, jndiBindings, -1, -1, -1, -1, false, false, -1, false);
    }
@@ -501,16 +490,35 @@ public class LocalTestServer implements Server, Runnable
                                        int defaultTempQueuePageSize,
                                        int defaultTempQueueDownCacheSize) throws Exception
    {
-      this.deployConnectionFactory(null, objectName, jndiBindings, prefetchSize, defaultTempQueueFullSize,
-              defaultTempQueuePageSize, defaultTempQueueDownCacheSize, false, false, -1, false);
+      this.deployConnectionFactory(null,
+                                   objectName,
+                                   jndiBindings,
+                                   prefetchSize,
+                                   defaultTempQueueFullSize,
+                                   defaultTempQueuePageSize,
+                                   defaultTempQueueDownCacheSize,
+                                   false,
+                                   false,
+                                   -1,
+                                   false);
    }
 
    public void deployConnectionFactory(String objectName,
                                        List<String> jndiBindings,
-                                       boolean supportsFailover, boolean supportsLoadBalancing) throws Exception
+                                       boolean supportsFailover,
+                                       boolean supportsLoadBalancing) throws Exception
    {
-      this.deployConnectionFactory(null, objectName, jndiBindings, -1, -1,
-              -1, -1, supportsFailover, supportsLoadBalancing, -1, false);
+      this.deployConnectionFactory(null,
+                                   objectName,
+                                   jndiBindings,
+                                   -1,
+                                   -1,
+                                   -1,
+                                   -1,
+                                   supportsFailover,
+                                   supportsLoadBalancing,
+                                   -1,
+                                   false);
    }
 
    public void deployConnectionFactory(String clientId,
@@ -521,17 +529,30 @@ public class LocalTestServer implements Server, Runnable
                                        int defaultTempQueuePageSize,
                                        int defaultTempQueueDownCacheSize,
                                        boolean supportsFailover,
-                                       boolean supportsLoadBalancing,                                     
+                                       boolean supportsLoadBalancing,
                                        int dupsOkBatchSize,
                                        boolean blockOnAcknowledge) throws Exception
    {
       log.info("deploying connection factory with name: " + objectName + " and dupsok: " + dupsOkBatchSize);
       getJMSServerManager().createConnectionFactory(objectName,
-               new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"), null, 5000, 5000,      
-               clientId, dupsOkBatchSize,
-      		prefetchSize, -1, 1000, -1, blockOnAcknowledge, true, true, false, jndiBindings);
+                                                    new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"),
+                                                    null,
+                                                    5000,
+                                                    5,
+                                                    5000,
+                                                    clientId,
+                                                    dupsOkBatchSize,
+                                                    prefetchSize,
+                                                    -1,
+                                                    1000,
+                                                    -1,
+                                                    blockOnAcknowledge,
+                                                    true,
+                                                    true,
+                                                    false,
+                                                    8,
+                                                    jndiBindings);
    }
-
 
    public void undeployConnectionFactory(String objectName) throws Exception
    {
@@ -558,19 +579,18 @@ public class LocalTestServer implements Server, Runnable
 
    public UserTransaction getUserTransaction() throws Exception
    {
-      //return sc.getUserTransaction();
+      // return sc.getUserTransaction();
       return null;
    }
 
    public List pollNotificationListener(long listenerID) throws Exception
    {
-      throw new IllegalStateException("Poll doesn't make sense on a local server. " +
-              "Register listeners directly instead.");
+      throw new IllegalStateException("Poll doesn't make sense on a local server. " + "Register listeners directly instead.");
    }
 
    public void flushManagedConnectionPool()
    {
-      //sc.flushManagedConnectionPool();
+      // sc.flushManagedConnectionPool();
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -585,27 +605,27 @@ public class LocalTestServer implements Server, Runnable
    }
 
    protected void overrideServerPeerConfiguration(MBeanConfigurationElement config,
-                                                  int serverPeerID, String defaultQueueJNDIContext, String defaultTopicJNDIContext)
-           throws Exception
+                                                  int serverPeerID,
+                                                  String defaultQueueJNDIContext,
+                                                  String defaultTopicJNDIContext) throws Exception
    {
       config.setAttribute("ServerPeerID", Integer.toString(serverPeerID));
-      config.setAttribute("DefaultQueueJNDIContext",
-              defaultQueueJNDIContext == null ? "/queue" : defaultQueueJNDIContext);
-      config.setAttribute("DefaultTopicJNDIContext",
-              defaultTopicJNDIContext == null ? "/topic" : defaultTopicJNDIContext);
+      config.setAttribute("DefaultQueueJNDIContext", defaultQueueJNDIContext == null ? "/queue"
+                                                                                    : defaultQueueJNDIContext);
+      config.setAttribute("DefaultTopicJNDIContext", defaultTopicJNDIContext == null ? "/topic"
+                                                                                    : defaultTopicJNDIContext);
    }
 
    // Private --------------------------------------------------------------------------------------
 
-
    public MessagingServer getMessagingServer()
    {
-      return (MessagingServer) bootstrap.getKernel().getRegistry().getEntry("MessagingServer").getTarget();
+      return (MessagingServer)bootstrap.getKernel().getRegistry().getEntry("MessagingServer").getTarget();
    }
 
    public JMSServerManager getJMSServerManager()
    {
-      return (JMSServerManager) bootstrap.getKernel().getRegistry().getEntry("JMSServerManager").getTarget();
+      return (JMSServerManager)bootstrap.getKernel().getRegistry().getEntry("JMSServerManager").getTarget();
    }
 
    public void addQueueSettings(String name, long redeliveryDelay)
@@ -625,9 +645,10 @@ public class LocalTestServer implements Server, Runnable
    public InitialContext getInitialContext() throws Exception
    {
       Properties props = new Properties();
-      props.setProperty("java.naming.factory.initial", "org.jboss.test.messaging.tools.container.InVMInitialContextFactory");
+      props.setProperty("java.naming.factory.initial",
+                        "org.jboss.test.messaging.tools.container.InVMInitialContextFactory");
       props.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
-      //props.setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
+      // props.setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
       return new InitialContext(props);
    }
 
@@ -646,21 +667,22 @@ public class LocalTestServer implements Server, Runnable
          }
          catch (InterruptedException e)
          {
-            //e.printStackTrace();
+            // e.printStackTrace();
          }
       }
 
    }
 
-
    public Integer getMessageCountForQueue(String queueName) throws Exception
    {
       ObjectName objectName = JMSManagementServiceImpl.getJMSQueueObjectName(queueName);
-      JMSQueueControlMBean queue = (JMSQueueControlMBean)getMessagingServer().getManagementService().getResource(objectName);
+      JMSQueueControlMBean queue = (JMSQueueControlMBean)getMessagingServer().getManagementService()
+                                                                             .getResource(objectName);
       if (queue != null)
       {
          return queue.getMessageCount();
-      } else
+      }
+      else
       {
          return -1;
       }
@@ -678,11 +700,12 @@ public class LocalTestServer implements Server, Runnable
    public List<SubscriptionInfo> listAllSubscribersForTopic(String s) throws Exception
    {
       ObjectName objectName = JMSManagementServiceImpl.getJMSTopicObjectName(s);
-      TopicControlMBean topic = (TopicControlMBean) MBeanServerInvocationHandler.newProxyInstance(
-            ManagementFactory.getPlatformMBeanServer(), objectName, TopicControlMBean.class, false);
+      TopicControlMBean topic = (TopicControlMBean)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+                                                                                                 objectName,
+                                                                                                 TopicControlMBean.class,
+                                                                                                 false);
       return Arrays.asList(topic.listAllSubscriptionInfos());
    }
-
 
    public Set<Role> getSecurityConfig() throws Exception
    {
@@ -692,7 +715,7 @@ public class LocalTestServer implements Server, Runnable
    public void setSecurityConfig(Set<Role> defConfig) throws Exception
    {
       getMessagingServer().getSecurityRepository().removeMatch("*");
-      getMessagingServer().getSecurityRepository().addMatch("*", defConfig);      
+      getMessagingServer().getSecurityRepository().addMatch("*", defConfig);
    }
 
    public void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception
@@ -700,10 +723,9 @@ public class LocalTestServer implements Server, Runnable
       SimpleString condition = new SimpleString((queue ? "queuejms." : "topicjms.") + dest);
       QueueSettings queueSettings = new QueueSettings();
       queueSettings.setRedeliveryDelay(delay);
-      //FIXME we need to expose queue attributes in another way
-//      getMessagingServer().getServerManagement().setQueueAttributes(condition, queueSettings);
+      // FIXME we need to expose queue attributes in another way
+      // getMessagingServer().getServerManagement().setQueueAttributes(condition, queueSettings);
    }
-
 
    // Inner classes --------------------------------------------------------------------------------
 

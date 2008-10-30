@@ -26,7 +26,7 @@ public interface RemotingConnection extends BufferHandler
 {
    Object getID();
 
-   Channel getChannel(long channelID, int packetConfirmationBatchSize, boolean interruptBlockOnFailure);
+   Channel getChannel(long channelID, int packetConfirmationBatchSize);
 
    long generateChannelID();
 
@@ -49,4 +49,6 @@ public interface RemotingConnection extends BufferHandler
    long getIDGeneratorSequence();
    
    void activate();
+   
+   void freeze();
 }

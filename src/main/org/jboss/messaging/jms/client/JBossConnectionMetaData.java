@@ -22,12 +22,13 @@
 
 package org.jboss.messaging.jms.client;
 
-import org.jboss.messaging.core.version.Version;
+import java.util.Enumeration;
+import java.util.Vector;
 
 import javax.jms.ConnectionMetaData;
 import javax.jms.JMSException;
-import java.util.Enumeration;
-import java.util.Vector;
+
+import org.jboss.messaging.core.version.Version;
 
 /**
  * Connection metadata

@@ -50,6 +50,7 @@ public class PacketImpl implements Packet
 
    public static final byte REPLICATION_RESPONSE = 23;
 
+   public static final byte EARLY_RESPONSE = 24;
 
    // Server
    public static final byte CREATESESSION = 30;
@@ -60,6 +61,8 @@ public class PacketImpl implements Packet
 
    public static final byte REATTACH_SESSION_RESP = 33;
 
+   public static final byte REPLICATE_CREATESESSION = 34;
+
    // Session
    public static final byte SESS_CREATECONSUMER = 40;
 
@@ -69,87 +72,85 @@ public class PacketImpl implements Packet
 
    public static final byte SESS_CREATEPRODUCER_RESP = 43;
 
-   public static final byte SESS_CREATEQUEUECOPY = 44;
+   public static final byte SESS_ACKNOWLEDGE = 44;
 
-   public static final byte SESS_ACKNOWLEDGE = 46;
+   public static final byte SESS_COMMIT = 45;
 
-   public static final byte SESS_COMMIT = 47;
+   public static final byte SESS_ROLLBACK = 46;
 
-   public static final byte SESS_ROLLBACK = 48;
+   public static final byte SESS_QUEUEQUERY = 47;
 
-   public static final byte SESS_QUEUEQUERY = 49;
+   public static final byte SESS_QUEUEQUERY_RESP = 48;
 
-   public static final byte SESS_QUEUEQUERY_RESP = 50;
+   public static final byte SESS_CREATEQUEUE = 49;
 
-   public static final byte SESS_CREATEQUEUE = 51;
+   public static final byte SESS_DELETE_QUEUE = 50;
 
-   public static final byte SESS_DELETE_QUEUE = 52;
+   public static final byte SESS_ADD_DESTINATION = 51;
 
-   public static final byte SESS_ADD_DESTINATION = 53;
+   public static final byte SESS_REMOVE_DESTINATION = 52;
 
-   public static final byte SESS_REMOVE_DESTINATION = 54;
+   public static final byte SESS_BINDINGQUERY = 53;
 
-   public static final byte SESS_BINDINGQUERY = 55;
+   public static final byte SESS_BINDINGQUERY_RESP = 54;
 
-   public static final byte SESS_BINDINGQUERY_RESP = 56;
+   public static final byte SESS_XA_START = 55;
 
-   public static final byte SESS_XA_START = 62;
+   public static final byte SESS_XA_END = 56;
 
-   public static final byte SESS_XA_END = 63;
+   public static final byte SESS_XA_COMMIT = 57;
 
-   public static final byte SESS_XA_COMMIT = 64;
+   public static final byte SESS_XA_PREPARE = 58;
 
-   public static final byte SESS_XA_PREPARE = 65;
+   public static final byte SESS_XA_RESP = 59;
 
-   public static final byte SESS_XA_RESP = 66;
+   public static final byte SESS_XA_ROLLBACK = 60;
 
-   public static final byte SESS_XA_ROLLBACK = 67;
+   public static final byte SESS_XA_JOIN = 61;
 
-   public static final byte SESS_XA_JOIN = 68;
+   public static final byte SESS_XA_SUSPEND = 62;
 
-   public static final byte SESS_XA_SUSPEND = 69;
+   public static final byte SESS_XA_RESUME = 63;
 
-   public static final byte SESS_XA_RESUME = 70;
+   public static final byte SESS_XA_FORGET = 64;
 
-   public static final byte SESS_XA_FORGET = 71;
+   public static final byte SESS_XA_INDOUBT_XIDS = 65;
 
-   public static final byte SESS_XA_INDOUBT_XIDS = 72;
+   public static final byte SESS_XA_INDOUBT_XIDS_RESP = 66;
 
-   public static final byte SESS_XA_INDOUBT_XIDS_RESP = 73;
+   public static final byte SESS_XA_SET_TIMEOUT = 67;
 
-   public static final byte SESS_XA_SET_TIMEOUT = 74;
+   public static final byte SESS_XA_SET_TIMEOUT_RESP = 68;
 
-   public static final byte SESS_XA_SET_TIMEOUT_RESP = 75;
+   public static final byte SESS_XA_GET_TIMEOUT = 69;
 
-   public static final byte SESS_XA_GET_TIMEOUT = 76;
+   public static final byte SESS_XA_GET_TIMEOUT_RESP = 70;
 
-   public static final byte SESS_XA_GET_TIMEOUT_RESP = 77;
+   public static final byte SESS_START = 71;
 
-   public static final byte SESS_START = 78;
+   public static final byte SESS_STOP = 72;
 
-   public static final byte SESS_STOP = 79;
+   public static final byte SESS_CLOSE = 73;
 
-   public static final byte SESS_CLOSE = 80;
+   public static final byte SESS_FLOWTOKEN = 74;
 
-   public static final byte SESS_FLOWTOKEN = 81;
+   public static final byte SESS_SEND = 75;
 
-   public static final byte SESS_SEND = 82;
+   public static final byte SESS_RECEIVETOKENS = 76;
 
-   public static final byte SESS_RECEIVETOKENS = 83;
+   public static final byte SESS_CONSUMER_CLOSE = 77;
 
-   public static final byte SESS_CONSUMER_CLOSE = 84;
+   public static final byte SESS_PRODUCER_CLOSE = 78;
 
-   public static final byte SESS_PRODUCER_CLOSE = 85;
+   public static final byte SESS_RECEIVE_MSG = 79;
 
-   public static final byte SESS_RECEIVE_MSG = 87;
+   public static final byte SESS_MANAGEMENT_SEND = 80;
 
-   public static final byte SESS_MANAGEMENT_SEND = 88;
+   public static final byte SESS_SCHEDULED_SEND = 81;
 
-   public static final byte SESS_SCHEDULED_SEND = 89;
+   public static final byte SESS_FAILOVER_COMPLETE = 82;
 
-   public static final byte SESS_FAILOVER_COMPLETE = 90;
-
-   public static final byte SESS_REPLICATE_DELIVERY = 91;
+   public static final byte SESS_REPLICATE_DELIVERY = 83;
 
    // Static --------------------------------------------------------
 
@@ -195,7 +196,7 @@ public class PacketImpl implements Packet
    public void decode(final MessagingBuffer buffer)
    {
       channelID = buffer.getLong();
-      
+
       decodeBody(buffer);
    }
 
@@ -218,11 +219,6 @@ public class PacketImpl implements Packet
    }
 
    public boolean isWriteAlways()
-   {
-      return false;
-   }
-
-   public boolean isRequiresGlobalOrdering()
    {
       return false;
    }
@@ -258,5 +254,4 @@ public class PacketImpl implements Packet
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-
 }

@@ -21,8 +21,16 @@
  */
 package org.jboss.messaging.tests.integration.basic;
 
+import java.util.concurrent.CountDownLatch;
+
 import junit.framework.TestCase;
-import org.jboss.messaging.core.client.*;
+
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -34,8 +42,6 @@ import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.concurrent.CountDownLatch;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

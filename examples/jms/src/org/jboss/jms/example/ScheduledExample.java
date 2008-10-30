@@ -21,7 +21,9 @@
  */
 package org.jboss.jms.example;
 
-import org.jboss.messaging.core.logging.Logger;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -33,9 +35,8 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

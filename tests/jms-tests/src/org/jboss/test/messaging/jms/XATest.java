@@ -42,6 +42,8 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
+
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
@@ -50,8 +52,6 @@ import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.tm.TransactionManagerLocator;
 import org.jboss.tm.TxUtils;
-
-import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
 /**
  *

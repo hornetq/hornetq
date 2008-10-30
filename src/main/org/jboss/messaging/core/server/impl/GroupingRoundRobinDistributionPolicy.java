@@ -21,17 +21,13 @@
  */
 package org.jboss.messaging.core.server.impl;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.Consumer;
-import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Distributes message based on the message property 'JMSXGroupID'. Once a message has been successfully delivered to a

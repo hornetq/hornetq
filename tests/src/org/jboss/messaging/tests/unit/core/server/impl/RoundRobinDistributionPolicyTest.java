@@ -22,17 +22,13 @@
 
 package org.jboss.messaging.tests.unit.core.server.impl;
 
+import org.easymock.EasyMock;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.DistributionPolicy;
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.HandleStatus;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
-import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.easymock.EasyMock;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 

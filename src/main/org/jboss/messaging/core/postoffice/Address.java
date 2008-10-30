@@ -21,9 +21,9 @@
  */
 package org.jboss.messaging.core.postoffice;
 
-import org.jboss.messaging.util.SimpleString;
-
 import java.util.List;
+
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * USed to hold a hierarchichal style address, delimited by a '.'.

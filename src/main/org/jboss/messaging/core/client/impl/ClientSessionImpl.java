@@ -41,11 +41,9 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.ConnectionRegistry;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
@@ -128,6 +126,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final Executor executor;
 
    private volatile RemotingConnection remotingConnection;
+   
+   private volatile RemotingConnection backupConnection;
 
    private final Map<Long, ClientProducerInternal> producers = new ConcurrentHashMap<Long, ClientProducerInternal>();
 
@@ -151,17 +151,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private final int version;
 
-   private ConnectionRegistry connectionRegistry;
-
    // For testing only
    private boolean forceNotSameRM;
 
    private final IDGenerator idGenerator = new SimpleIDGenerator(0);
 
-   private volatile boolean failedOver;
-
    private volatile boolean started;
-
+   
    // Constructors ----------------------------------------------------------------------------
 
    public ClientSessionImpl(final ClientSessionFactoryInternal sessionFactory,
@@ -173,6 +169,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final boolean blockOnAcknowledge,
                             final boolean autoGroupId,
                             final RemotingConnection remotingConnection,
+                            final RemotingConnection backupConnection,
                             final ClientSessionFactory connectionFactory,
                             final int version,
                             final Channel channel) throws MessagingException
@@ -182,6 +179,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       this.name = name;
 
       this.remotingConnection = remotingConnection;
+      
+      this.backupConnection = backupConnection;
 
       this.connectionFactory = connectionFactory;
 
@@ -210,11 +209,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       this.channel = channel;
 
-      this.version = version;
-
-      connectionRegistry = ConnectionRegistryImpl.instance;
-
-      remotingConnection.addFailureListener(this);
+      this.version = version;      
    }
 
    // ClientSession implementation
@@ -225,7 +220,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                            final SimpleString filterString,
                            final boolean durable,
                            final boolean temp) throws MessagingException
-   {
+   {   
       checkClosed();
 
       SessionCreateQueueMessage request = new SessionCreateQueueMessage(address, queueName, filterString, durable, temp);
@@ -234,14 +229,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    }
 
    public void deleteQueue(final SimpleString queueName) throws MessagingException
-   {
+   {    
       checkClosed();
 
       channel.sendBlocking(new SessionDeleteQueueMessage(queueName));
    }
 
    public SessionQueueQueryResponseMessage queueQuery(final SimpleString queueName) throws MessagingException
-   {
+   {    
       checkClosed();
 
       SessionQueueQueryMessage request = new SessionQueueQueryMessage(queueName);
@@ -252,7 +247,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    }
 
    public SessionBindingQueryResponseMessage bindingQuery(final SimpleString address) throws MessagingException
-   {
+   {    
       checkClosed();
 
       SessionBindingQueryMessage request = new SessionBindingQueryMessage(address);
@@ -263,7 +258,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    }
 
    public void addDestination(final SimpleString address, final boolean durable, final boolean temp) throws MessagingException
-   {
+   {     
       checkClosed();
 
       SessionAddDestinationMessage request = new SessionAddDestinationMessage(address, durable, temp);
@@ -272,7 +267,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    }
 
    public void removeDestination(final SimpleString address, final boolean durable) throws MessagingException
-   {
+   {     
       checkClosed();
 
       SessionRemoveDestinationMessage request = new SessionRemoveDestinationMessage(address, durable);
@@ -281,7 +276,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    }
 
    public ClientConsumer createConsumer(final SimpleString queueName) throws MessagingException
-   {
+   {      
       checkClosed();
 
       return createConsumer(queueName, null, false);
@@ -290,7 +285,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public ClientConsumer createConsumer(final SimpleString queueName,
                                         final SimpleString filterString,
                                         final boolean direct) throws MessagingException
-   {
+   {     
       checkClosed();
 
       return createConsumer(queueName,
@@ -318,7 +313,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                         final int windowSize,
                                         final int maxRate,
                                         final boolean browseOnly) throws MessagingException
-   {
+   {     
       checkClosed();
 
       SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(queueName,
@@ -378,7 +373,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
 
    public ClientProducer createProducer(final SimpleString address) throws MessagingException
-   {
+   {      
       checkClosed();
 
       return createProducer(address, connectionFactory.getProducerWindowSize(), connectionFactory.getProducerMaxRate());
@@ -412,7 +407,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                         final int maxRate,
                                         final boolean blockOnNonPersistentSend,
                                         final boolean blockOnPersistentSend) throws MessagingException
-   {
+   {    
       checkClosed();
 
       ClientProducerInternal producer = null;
@@ -553,7 +548,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    }
 
    public void start() throws MessagingException
-   {
+   {    
       checkClosed();
 
       if (!started)
@@ -565,7 +560,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    }
 
    public void stop() throws MessagingException
-   {
+   {   
       checkClosed();
 
       if (started)
@@ -601,7 +596,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // This acknowledges all messages received by the consumer so far
    public void acknowledge(final long consumerID, final long messageID) throws MessagingException
-   {
+   {     
       checkClosed();
 
       SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(consumerID, messageID, blockOnAcknowledge);
@@ -677,7 +672,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    }
 
    public void close() throws MessagingException
-   {
+   {     
       if (closed)
       {
          return;
@@ -710,13 +705,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    }
 
    //Needs to be synchronized to prevent issues with occurring concurrently with close()
-   public synchronized boolean handleFailover(final RemotingConnection backupConnection)
+   public synchronized void handleFailover()
    {
       if (closed)
       {
-         return false;
+         return ;
       }
-
+      
       // We lock the channel to prevent any packets to be added to the resend
       // cache during the failover process
       channel.lock();
@@ -731,9 +726,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          Packet request = new ReattachSessionMessage(name, channel.getLastReceivedCommandID());
 
-         Channel channel1 = backupConnection.getChannel(1, -1, true);
-
-         ReattachSessionResponseMessage response = (ReattachSessionResponseMessage)channel1.sendBlocking(request);
+         Channel channel1 = backupConnection.getChannel(1, -1);
+        
+         ReattachSessionResponseMessage response = (ReattachSessionResponseMessage)channel1.sendBlocking(request);         
 
          if (!response.isRemoved())
          {
@@ -741,16 +736,16 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          }
          else
          {
-            // There may be a create session call blocking - the response will never come because the session has been
+            // There may be a close session call blocking - the response will never come because the session has been
             // closed on the server so we need to interrupt it
-            channel.interruptBlocking();
+            channel.returnBlocking();
          }
+         
+         backupConnection = null;
       }
       catch (Throwable t)
       {
          log.error("Failed to handle failover", t);
-
-         return false;
       }
       finally
       {
@@ -758,10 +753,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
 
       channel.send(new SessionFailoverCompleteMessage(name));
-
-      failedOver = true;
-
-      return true;
+      
+      //Now we can add a failure listener since if a further failure occurs we cleanup since no backup any more
+      remotingConnection.addFailureListener(this);
    }
 
    // XAResource implementation
@@ -1023,7 +1017,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
       catch (MessagingException e)
       {
-         log.error("Caught jmsexecptione ", e);
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
       }
@@ -1032,21 +1025,15 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    // FailureListener implementation --------------------------------------------
 
    public void connectionFailed(final MessagingException me)
-   {
-      if (!sessionFactory.checkFailover(me))
+   { 
+      try
       {
-         if (!failedOver)
-         {
-            try
-            {
-               cleanUp();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to cleanup session");
-            }
-         }
+         cleanUp();
       }
+      catch (Exception e)
+      {
+         log.error("Failed to cleanup session");
+      }         
    }
 
    // Public
@@ -1057,14 +1044,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       forceNotSameRM = force;
    }
 
-   public void setConnectionRegistry(final ConnectionRegistry registry)
-   {
-      connectionRegistry = registry;
-   }
-
    public RemotingConnection getConnection()
    {
       return remotingConnection;
+   }
+   
+   public RemotingConnection getBackupConnection()
+   {
+      return backupConnection;
    }
 
    // Protected
@@ -1106,11 +1093,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          closed = true;
          
-         channel.close();
-
-         connectionRegistry.returnConnection(remotingConnection.getID());
-      }
-
+         channel.close();                                  
+      }  
+      
       sessionFactory.removeSession(this);
    }
 
@@ -1147,5 +1132,4 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          producer.close();
       }
    }
-
 }

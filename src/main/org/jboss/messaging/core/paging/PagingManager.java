@@ -22,13 +22,13 @@
 
 package org.jboss.messaging.core.paging;
 
+import java.util.Collection;
+
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.Collection;
 
 /**
  * 

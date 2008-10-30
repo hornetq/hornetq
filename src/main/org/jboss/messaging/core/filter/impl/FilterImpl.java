@@ -22,14 +22,14 @@
 
 package org.jboss.messaging.core.filter.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
 * This class implements a JBoss Messaging filter

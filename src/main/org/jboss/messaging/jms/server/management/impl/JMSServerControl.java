@@ -22,15 +22,25 @@
 
 package org.jboss.messaging.jms.server.management.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+
+import javax.management.ListenerNotFoundException;
+import javax.management.MBeanInfo;
+import javax.management.MBeanNotificationInfo;
+import javax.management.NotCompliantMBeanException;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.NotificationEmitter;
+import javax.management.NotificationFilter;
+import javax.management.NotificationListener;
+import javax.management.StandardMBean;
+
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
-
-import javax.management.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -38,8 +48,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JMSServerControl extends StandardMBean implements
-      JMSServerControlMBean, NotificationEmitter
+public class JMSServerControl extends StandardMBean implements JMSServerControlMBean, NotificationEmitter
 {
 
    // Constants -----------------------------------------------------
@@ -47,15 +56,16 @@ public class JMSServerControl extends StandardMBean implements
    // Attributes ----------------------------------------------------
 
    private final JMSServerManager server;
+
    private NotificationBroadcasterSupport broadcaster;
+
    private AtomicLong notifSeq = new AtomicLong(0);
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public JMSServerControl(final JMSServerManager server)
-         throws NotCompliantMBeanException
+   public JMSServerControl(final JMSServerManager server) throws NotCompliantMBeanException
    {
       super(JMSServerControlMBean.class);
       this.server = server;
@@ -66,32 +76,53 @@ public class JMSServerControl extends StandardMBean implements
 
    // JMSServerControlMBean implementation --------------------------
 
-   public void createConnectionFactory(String name, TransportConfiguration connectorConfig,
-            TransportConfiguration backupConnectorConfig,
-            long pingPeriod, long callTimeout, String clientID,
-         int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
-         int producerWindowSize, int producerMaxRate,
-         boolean blockOnAcknowledge,
-         boolean blockOnNonPersistentSend,
-         boolean blockOnPersistentSend, boolean autoGroupId, String jndiBinding) throws Exception
+   public void createConnectionFactory(String name,
+                                       TransportConfiguration connectorConfig,
+                                       TransportConfiguration backupConnectorConfig,
+                                       long pingPeriod,
+                                       int pingPoolSize,
+                                       long callTimeout,
+                                       String clientID,
+                                       int dupsOKBatchSize,
+                                       int consumerWindowSize,
+                                       int consumerMaxRate,
+                                       int producerWindowSize,
+                                       int producerMaxRate,
+                                       boolean blockOnAcknowledge,
+                                       boolean blockOnNonPersistentSend,
+                                       boolean blockOnPersistentSend,
+                                       boolean autoGroupId,
+                                       int maxConnections,
+                                       String jndiBinding) throws Exception
    {
       List<String> bindings = new ArrayList<String>();
       bindings.add(jndiBinding);
 
-      boolean created = server.createConnectionFactory(name, connectorConfig,
-               backupConnectorConfig,
-                  pingPeriod, callTimeout, clientID, dupsOKBatchSize, 
-               consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, 
-               blockOnAcknowledge, blockOnNonPersistentSend, 
-               blockOnPersistentSend, autoGroupId, jndiBinding);
+      boolean created = server.createConnectionFactory(name,
+                                                       connectorConfig,
+                                                       backupConnectorConfig,
+                                                       pingPeriod,
+                                                       pingPoolSize,
+                                                       callTimeout,
+                                                       clientID,
+                                                       dupsOKBatchSize,
+                                                       consumerWindowSize,
+                                                       consumerMaxRate,
+                                                       producerWindowSize,
+                                                       producerMaxRate,
+                                                       blockOnAcknowledge,
+                                                       blockOnNonPersistentSend,
+                                                       blockOnPersistentSend,
+                                                       autoGroupId,
+                                                       maxConnections,
+                                                       jndiBinding);
       if (created)
       {
          sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
       }
    }
 
-   public boolean createQueue(final String name, final String jndiBinding)
-         throws Exception
+   public boolean createQueue(final String name, final String jndiBinding) throws Exception
    {
       boolean created = server.createQueue(name, jndiBinding);
       if (created)
@@ -111,8 +142,7 @@ public class JMSServerControl extends StandardMBean implements
       return destroyed;
    }
 
-   public boolean createTopic(final String topicName, final String jndiBinding)
-         throws Exception
+   public boolean createTopic(final String topicName, final String jndiBinding) throws Exception
    {
       boolean created = server.createTopic(topicName, jndiBinding);
       if (created)
@@ -154,21 +184,20 @@ public class JMSServerControl extends StandardMBean implements
    // NotificationEmitter implementation ----------------------------
 
    public void removeNotificationListener(final NotificationListener listener,
-         final NotificationFilter filter, final Object handback)
-         throws ListenerNotFoundException
+                                          final NotificationFilter filter,
+                                          final Object handback) throws ListenerNotFoundException
    {
       broadcaster.removeNotificationListener(listener, filter, handback);
    }
 
-   public void removeNotificationListener(final NotificationListener listener)
-         throws ListenerNotFoundException
+   public void removeNotificationListener(final NotificationListener listener) throws ListenerNotFoundException
    {
       broadcaster.removeNotificationListener(listener);
    }
 
    public void addNotificationListener(final NotificationListener listener,
-         final NotificationFilter filter, final Object handback)
-         throws IllegalArgumentException
+                                       final NotificationFilter filter,
+                                       final Object handback) throws IllegalArgumentException
    {
       broadcaster.addNotificationListener(listener, filter, handback);
    }
@@ -182,7 +211,8 @@ public class JMSServerControl extends StandardMBean implements
          names[i] = values[i].toString();
       }
       return new MBeanNotificationInfo[] { new MBeanNotificationInfo(names,
-            this.getClass().getName(), "Notifications emitted by a JMS Server") };
+                                                                     this.getClass().getName(),
+                                                                     "Notifications emitted by a JMS Server") };
    }
 
    // StandardMBean overrides
@@ -199,10 +229,12 @@ public class JMSServerControl extends StandardMBean implements
    public MBeanInfo getMBeanInfo()
    {
       MBeanInfo info = super.getMBeanInfo();
-      return new MBeanInfo(info.getClassName(), info.getDescription(), info
-            .getAttributes(), info.getConstructors(), MBeanInfoHelper
-            .getMBeanOperationsInfo(JMSServerControlMBean.class),
-            getNotificationInfo());
+      return new MBeanInfo(info.getClassName(),
+                           info.getDescription(),
+                           info.getAttributes(),
+                           info.getConstructors(),
+                           MBeanInfoHelper.getMBeanOperationsInfo(JMSServerControlMBean.class),
+                           getNotificationInfo());
    }
 
    // Package protected ---------------------------------------------
@@ -211,11 +243,9 @@ public class JMSServerControl extends StandardMBean implements
 
    // Private -------------------------------------------------------
 
-   private void sendNotification(final NotificationType type,
-         final String message)
+   private void sendNotification(final NotificationType type, final String message)
    {
-      Notification notif = new Notification(type.toString(), this, notifSeq
-            .incrementAndGet(), message);
+      Notification notif = new Notification(type.toString(), this, notifSeq.incrementAndGet(), message);
       broadcaster.sendNotification(notif);
    }
 
@@ -223,6 +253,11 @@ public class JMSServerControl extends StandardMBean implements
 
    public static enum NotificationType
    {
-      QUEUE_CREATED, QUEUE_DESTROYED, TOPIC_CREATED, TOPIC_DESTROYED, CONNECTION_FACTORY_CREATED, CONNECTION_FACTORY_DESTROYED;
+      QUEUE_CREATED,
+      QUEUE_DESTROYED,
+      TOPIC_CREATED,
+      TOPIC_DESTROYED,
+      CONNECTION_FACTORY_CREATED,
+      CONNECTION_FACTORY_DESTROYED;
    }
 }

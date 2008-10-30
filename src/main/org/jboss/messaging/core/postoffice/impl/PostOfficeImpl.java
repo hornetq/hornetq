@@ -45,7 +45,9 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.impl.SendLockImpl;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
 
@@ -80,7 +82,9 @@ public class PostOfficeImpl implements PostOffice
    private final ManagementService managementService;
 
    private final ResourceManager resourceManager;
-
+   
+   private Map<SimpleString, SendLock> addressLocks = new HashMap<SimpleString, SendLock>();
+   
    public PostOfficeImpl(final StorageManager storageManager,
                          final PagingManager pagingManager,
                          final QueueFactory queueFactory,
@@ -110,7 +114,7 @@ public class PostOfficeImpl implements PostOffice
       {
          addressManager = new SimpleAddressManager();
       }
-      
+
       this.backup = backup;
    }
 
@@ -149,7 +153,7 @@ public class PostOfficeImpl implements PostOffice
 
    // PostOffice implementation -----------------------------------------------
 
-   public boolean addDestination(final SimpleString address, final boolean durable) throws Exception
+   public synchronized boolean addDestination(final SimpleString address, final boolean durable) throws Exception
    {
       boolean added = addressManager.addDestination(address);
 
@@ -167,7 +171,7 @@ public class PostOfficeImpl implements PostOffice
       return added;
    }
 
-   public boolean removeDestination(final SimpleString address, final boolean durable) throws Exception
+   public synchronized boolean removeDestination(final SimpleString address, final boolean durable) throws Exception
    {
       boolean removed = addressManager.removeDestination(address);
 
@@ -181,11 +185,13 @@ public class PostOfficeImpl implements PostOffice
          }
          managementService.unregisterAddress(address);
       }
+            
+      addressLocks.remove(address);
 
       return removed;
    }
 
-   public boolean containsDestination(final SimpleString address)
+   public synchronized boolean containsDestination(final SimpleString address)
    {
       return addressManager.containsDestination(address);
    }
@@ -195,11 +201,17 @@ public class PostOfficeImpl implements PostOffice
       return addressManager.getDestinations();
    }
 
-   public Binding addBinding(final SimpleString address,
-                             final SimpleString queueName,
-                             final Filter filter,
-                             final boolean durable,
-                             boolean temporary) throws Exception
+   //TODO - needs to be synchronized to prevent happening concurrently with activate().
+   //(and possible removeBinding and other methods)
+   //Otherwise can have situation where createQueue comes in before failover, then failover occurs
+   //and post office is activated but queue remains unactivated after failover so delivery never occurs
+   //even though failover is complete
+   //TODO - more subtle locking could be used -this is a bit heavy handed
+   public synchronized Binding addBinding(final SimpleString address,
+                                          final SimpleString queueName,
+                                          final Filter filter,
+                                          final boolean durable,
+                                          boolean temporary) throws Exception
    {
       Binding binding = createBinding(address, queueName, filter, durable, temporary);
 
@@ -209,11 +221,11 @@ public class PostOfficeImpl implements PostOffice
       {
          storageManager.addBinding(binding);
       }
-
+            
       return binding;
    }
 
-   public Binding removeBinding(final SimpleString queueName) throws Exception
+   public synchronized Binding removeBinding(final SimpleString queueName) throws Exception
    {
       Binding binding = removeQueueInMemory(queueName);
 
@@ -268,7 +280,7 @@ public class PostOfficeImpl implements PostOffice
          }
 
          List<Binding> bindings = addressManager.getBindings(address);
-         
+
          List<MessageReference> refs = new ArrayList<MessageReference>();
 
          if (bindings != null)
@@ -290,6 +302,7 @@ public class PostOfficeImpl implements PostOffice
 
          return refs;
       }
+            
 
    }
 
@@ -307,17 +320,31 @@ public class PostOfficeImpl implements PostOffice
    {
       return flowControllers.get(address);
    }
-
-   public void activate()
+   
+   public synchronized void activate()
    {
       this.backup = false;
-      
+
       Map<SimpleString, Binding> nameMap = addressManager.getBindings();
 
       for (Binding binding : nameMap.values())
       {
          binding.getQueue().activate();
-      }            
+      }
+   }
+   
+   public synchronized SendLock getAddressLock(final SimpleString address)
+   {
+      SendLock lock = addressLocks.get(address);
+                  
+      if (lock == null)
+      {
+         lock = new SendLockImpl();
+         
+         addressLocks.put(address, lock);
+      }
+      
+      return lock;
    }
 
    // Private -----------------------------------------------------------------

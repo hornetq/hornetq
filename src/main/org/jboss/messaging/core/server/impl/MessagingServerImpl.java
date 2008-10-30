@@ -16,7 +16,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -38,9 +37,10 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
+import org.jboss.messaging.core.remoting.ConnectionManager;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
+import org.jboss.messaging.core.remoting.impl.ConnectionManagerImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
@@ -113,12 +113,8 @@ public class MessagingServerImpl implements MessagingServer
 
    private MessagingServerControlMBean serverManagement;
 
-   private final ConcurrentMap<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
+   private final Map<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
 
-   private ConnectorFactory backupConnectorFactory;
-
-   private Map<String, Object> backupConnectorParams;
-   
    // plugins
 
    private StorageManager storageManager;
@@ -132,6 +128,8 @@ public class MessagingServerImpl implements MessagingServer
    private ManagementService managementService;
 
    private final SimpleStringIdGenerator simpleStringIdGenerator = new GroupIdGenerator(new SimpleString("AutoGroupId-"));
+
+   private ConnectionManager replicatingConnectionManager;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -242,6 +240,7 @@ public class MessagingServerImpl implements MessagingServer
 
       if (backupConnector != null)
       {
+         ConnectorFactory backupConnectorFactory;
          ClassLoader loader = Thread.currentThread().getContextClassLoader();
          try
          {
@@ -254,7 +253,15 @@ public class MessagingServerImpl implements MessagingServer
                                                         "\"",
                                                e);
          }
-         backupConnectorParams = backupConnector.getParams();
+         Map<String, Object> backupConnectorParams = backupConnector.getParams();
+
+         // TODO don't hardcode ping interval and code timeout
+         replicatingConnectionManager = new ConnectionManagerImpl(backupConnectorFactory,
+                                                                  backupConnectorParams,
+                                                                  5000,
+                                                                  30000,
+                                                                  1,
+                                                                  5);
       }
       remotingService.setMessagingServer(this);
 
@@ -395,22 +402,56 @@ public class MessagingServerImpl implements MessagingServer
       return started;
    }
 
+   private synchronized void checkActivate(final RemotingConnection connection)
+   {
+      if (configuration.isBackup())
+      {
+         freezeAllBackupConnections();
+         
+         postOffice.activate();
+
+         configuration.setBackup(false);
+
+         remotingService.setBackup(false);                  
+      }
+
+      connection.activate();
+   }
+   
+   //We need to prevent any more packets being handled on any connections (from live) as soon as first live connection
+   //is created or re-attaches, to prevent a situation like the following:
+   //connection 1 create queue A
+   //connection 2 fails over
+   //A gets activated since no consumers
+   //connection 1 create consumer on A
+   //connection 1 delivery
+   //connection 1 delivery gets replicated
+   //can't find message in queue since active was delivered immediately   
+   private void freezeAllBackupConnections()
+   {
+      Set<RemotingConnection> connections = new HashSet<RemotingConnection>();
+      
+      for (ServerSession session: sessions.values())
+      {
+         connections.add(session.getChannel().getConnection());
+      }
+      
+      for (RemotingConnection connection: connections)
+      {
+         connection.freeze();
+      }
+   }
+   
    public ReattachSessionResponseMessage reattachSession(final RemotingConnection connection,
-                                                         final String name,
-                                                         final int lastReceivedCommandID) throws Exception
+                                                                      final String name,
+                                                                      final int lastReceivedCommandID) throws Exception
    {
       ServerSession session = sessions.get(name);
 
       // Need to activate the connection even if session can't be found - since otherwise response
       // will never get back
 
-      connection.activate();
-
-      postOffice.activate();
-
-      configuration.setBackup(false);
-
-      remotingService.setBackup(false);
+      checkActivate(connection);
 
       if (session == null)
       {
@@ -420,78 +461,58 @@ public class MessagingServerImpl implements MessagingServer
       {
          // Reconnect the channel to the new connection
          int serverLastReceivedCommandID = session.transferConnection(connection, lastReceivedCommandID);
-                         
+
          return new ReattachSessionResponseMessage(serverLastReceivedCommandID, false);
       }
    }
-   
-   public CreateSessionResponseMessage createSession(final String name,
-                                                     final long channelID,
-                                                     final String username,
-                                                     final String password,
-                                                     final int incrementingVersion,
-                                                     final RemotingConnection connection,
-                                                     final boolean autoCommitSends,
-                                                     final boolean autoCommitAcks,
-                                                     final boolean xa) throws Exception
+
+   public CreateSessionResponseMessage replicateCreateSession(final String name,
+                                                                           final long channelID,
+                                                                           final String username,
+                                                                           final String password,
+                                                                           final int incrementingVersion,
+                                                                           final RemotingConnection connection,
+                                                                           final boolean autoCommitSends,
+                                                                           final boolean autoCommitAcks,
+                                                                           final boolean xa) throws Exception
    {
-      if (version.getIncrementingVersion() < incrementingVersion)
-      {
-         throw new MessagingException(MessagingException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
-                                      "client not compatible with version: " + version.getFullVersion());
-      }
+      return doCreateSession(name,
+                             channelID,
+                             username,
+                             password,
+                             incrementingVersion,
+                             connection,
+                             autoCommitSends,
+                             autoCommitAcks,
+                             xa);
+   }
 
-      // Is this comment relevant any more ?
+   public CreateSessionResponseMessage createSession(final String name,
+                                                                  final long channelID,
+                                                                  final String username,
+                                                                  final String password,
+                                                                  final int incrementingVersion,
+                                                                  final RemotingConnection connection,
+                                                                  final boolean autoCommitSends,
+                                                                  final boolean autoCommitAcks,
+                                                                  final boolean xa) throws Exception
+   {
+//      if (configuration.isBackup())
+//      {
+//         throw new IllegalStateException("Cannot create a session on a backup server");
+//      }
 
-      // Authenticate. Successful autentication will place a new SubjectContext
-      // on thread local,
-      // which will be used in the authorization process. However, we need to
-      // make sure we clean
-      // up thread local immediately after we used the information, otherwise
-      // some other people
-      // security my be screwed up, on account of thread local security stack
-      // being corrupted.
+      checkActivate(connection);
 
-      securityStore.authenticate(username, password);
- 
-      Channel channel = connection.getChannel(channelID,                                             
-                                              configuration.getPacketConfirmationBatchSize(),                                             
-                                              false);
-
-      final ServerSessionImpl session = new ServerSessionImpl(name,
-                                                              channelID,
-                                                              username,
-                                                              password,
-                                                              autoCommitSends,
-                                                              autoCommitAcks,
-                                                              xa,
-                                                              connection,
-                                                              storageManager,
-                                                              postOffice,
-                                                              queueSettingsRepository,
-                                                              resourceManager,
-                                                              securityStore,
-                                                              executorFactory.getExecutor(),
-                                                              channel,
-                                                              managementService,
-                                                              this,
-                                                              simpleStringIdGenerator);
-
-      // If the session already exists that's fine - create session must be idempotent
-      // This is because if server failures occurring during a create session call we need to
-      // retry it on the backup, but the create session might have and might not have been replicated
-      // to the backup, so we need to work in both cases
-      if (sessions.putIfAbsent(name, session) == null)
-      {
-         ChannelHandler handler = new ServerSessionPacketHandler(session, channel);
-
-         channel.setHandler(handler);
-
-         connection.addFailureListener(session);
-      }
-
-      return new CreateSessionResponseMessage(version.getIncrementingVersion(),
-                                              configuration.getPacketConfirmationBatchSize());
+      return doCreateSession(name,
+                             channelID,
+                             username,
+                             password,
+                             incrementingVersion,
+                             connection,
+                             autoCommitSends,
+                             autoCommitAcks,
+                             xa);
    }
 
    public void removeSession(final String name) throws Exception
@@ -507,13 +528,10 @@ public class MessagingServerImpl implements MessagingServer
       // need to preserve channel ids
       // before and after failover
 
-      if (backupConnectorFactory != null)
+      if (this.replicatingConnectionManager != null)
       {
-         // TODO don't hardcode ping interval and code timeout
-         RemotingConnection replicatingConnection = ConnectionRegistryImpl.instance.getConnectionNoCache(backupConnectorFactory,
-                                                                                                         backupConnectorParams,
-                                                                                                         -1,
-                                                                                                         2000);
+         RemotingConnection replicatingConnection = replicatingConnectionManager.createConnection();
+
          return replicatingConnection;
       }
       else
@@ -521,7 +539,7 @@ public class MessagingServerImpl implements MessagingServer
          return null;
       }
    }
-   
+
    public MessagingServerControlMBean getServerManagement()
    {
       return serverManagement;
@@ -548,6 +566,79 @@ public class MessagingServerImpl implements MessagingServer
 
    // Private
    // --------------------------------------------------------------------------------------
+
+   private final Object createSessionLock = new Object();
+   
+   private CreateSessionResponseMessage doCreateSession(final String name,
+                                                        final long channelID,
+                                                        final String username,
+                                                        final String password,
+                                                        final int incrementingVersion,
+                                                        final RemotingConnection connection,
+                                                        final boolean autoCommitSends,
+                                                        final boolean autoCommitAcks,
+                                                        final boolean xa) throws Exception
+   {
+      if (version.getIncrementingVersion() < incrementingVersion)
+      {
+         throw new MessagingException(MessagingException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
+                                      "client not compatible with version: " + version.getFullVersion());
+      }
+
+      // Is this comment relevant any more ?
+
+      // Authenticate. Successful autentication will place a new SubjectContext
+      // on thread local,
+      // which will be used in the authorization process. However, we need to
+      // make sure we clean
+      // up thread local immediately after we used the information, otherwise
+      // some other people
+      // security my be screwed up, on account of thread local security stack
+      // being corrupted.
+
+      securityStore.authenticate(username, password);
+
+      ServerSession currentSession = sessions.remove(name);
+
+      if (currentSession != null)
+      {
+         // This session may well be on a different connection and different channel id, so we must get rid
+         // of it and create another
+         currentSession.getChannel().close();
+      }
+
+      Channel channel = connection.getChannel(channelID, configuration.getPacketConfirmationBatchSize());
+
+      final ServerSessionImpl session = new ServerSessionImpl(name,
+                                                              channelID,
+                                                              username,
+                                                              password,
+                                                              autoCommitSends,
+                                                              autoCommitAcks,
+                                                              xa,
+                                                              connection,
+                                                              storageManager,
+                                                              postOffice,
+                                                              queueSettingsRepository,
+                                                              resourceManager,
+                                                              securityStore,
+                                                              executorFactory.getExecutor(),
+                                                              channel,
+                                                              managementService,
+                                                              this,
+                                                              simpleStringIdGenerator);
+
+      sessions.put(name, session);
+
+      ChannelHandler handler = new ServerSessionPacketHandler(session, channel);
+
+      channel.setHandler(handler);
+
+      connection.addFailureListener(session);
+
+      return new CreateSessionResponseMessage(version.getIncrementingVersion(),
+                                              configuration.getPacketConfirmationBatchSize());
+   }
 
    // Inner classes
    // --------------------------------------------------------------------------------

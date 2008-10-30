@@ -20,8 +20,6 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -67,7 +65,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final Map<Object, RemotingConnection> connections = new ConcurrentHashMap<Object, RemotingConnection>();
 
-   private final Timer failedConnectionTimer = new Timer(true);
+   private Timer failedConnectionTimer;
 
    private TimerTask failedConnectionsTask;
 
@@ -79,8 +77,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private volatile MessagingServer server;
    
-   private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock(true);
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -143,6 +139,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          a.start();
       }
+      
+      failedConnectionTimer = new Timer(true);
 
       failedConnectionsTask = new FailedConnectionsTask();
 
@@ -158,11 +156,15 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          return;
       }
 
-      if (failedConnectionsTask != null)
+      if (failedConnectionTimer != null)
       {
          failedConnectionsTask.cancel();
 
          failedConnectionsTask = null;
+         
+         failedConnectionTimer.cancel();
+         
+         failedConnectionTimer = null;
       }
 
       for (Acceptor acceptor : acceptors)
@@ -172,7 +174,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       started = false;
    }
-
+   
    public boolean isStarted()
    {
       return started;
@@ -215,15 +217,12 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       RemotingConnection replicatingConnection = server.getReplicatingConnection();
 
       RemotingConnection rc = new RemotingConnectionImpl(connection,
-                                                         callTimeout,
-                                                         -1,                            
-                                                         null,
+                                                         callTimeout,                                           
                                                          interceptors,
                                                          replicatingConnection,
-                                                         !backup,
-                                                         readWriteLock);
+                                                         !backup);
 
-      Channel channel1 = rc.getChannel(1,  -1, false);
+      Channel channel1 = rc.getChannel(1,  -1);
 
       ChannelHandler handler = new MessagingServerPacketHandler(server, channel1, rc);
 

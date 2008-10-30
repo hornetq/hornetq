@@ -28,7 +28,7 @@
 
    <!-- A time/date based rolling appender -->
    <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
-      <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
+      <!-- <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/> -->
 
       <param name="File" value="${module.output}tests/logs/messaging-tests.log"/>
 

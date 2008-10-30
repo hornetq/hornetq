@@ -21,11 +21,21 @@
  */
 package org.jboss.jms.example;
 
-import org.jboss.messaging.core.logging.Logger;
-
-import javax.jms.*;
-import javax.naming.InitialContext;
 import java.util.concurrent.CountDownLatch;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.naming.InitialContext;
+
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * This example sends 20 messages setting the groupid so that a specific consumer will receive each message.

@@ -21,9 +21,9 @@
   */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.security.Role;
-import org.jboss.test.messaging.tools.ServerManagement;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -36,9 +36,10 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * Test JMS Security.

@@ -21,13 +21,14 @@
  */
 package org.jboss.messaging.core.postoffice.impl;
 
-import org.jboss.messaging.core.postoffice.Address;
 import static org.jboss.messaging.core.postoffice.impl.WildcardAddressManager.DELIM;
 import static org.jboss.messaging.core.postoffice.impl.WildcardAddressManager.SINGLE_WORD;
-import org.jboss.messaging.util.SimpleString;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jboss.messaging.core.postoffice.Address;
+import org.jboss.messaging.util.SimpleString;
 
 /**splits an address string into its hierarchical parts split by '.'
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

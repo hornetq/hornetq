@@ -23,17 +23,7 @@
 
 package org.jboss.messaging.tests.integration.remoting;
 
-import java.util.HashMap;
-
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.impl.ClientSessionImpl;
-import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.tests.integration.base.IntegrationTestBase;
-import org.jboss.messaging.util.SimpleString;
 
 public class DestroyConsumerTest extends IntegrationTestBase
 {

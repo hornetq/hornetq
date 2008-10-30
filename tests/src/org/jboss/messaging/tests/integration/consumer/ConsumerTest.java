@@ -26,10 +26,12 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -41,6 +43,8 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class ConsumerTest extends UnitTestCase
 {
+   private static final Logger log = Logger.getLogger(ConsumerTest.class);
+   
    private MessagingService messagingService;
 
    private SimpleString QUEUE = new SimpleString("ConsumerTestQueue");
@@ -51,7 +55,8 @@ public class ConsumerTest extends UnitTestCase
 
       conf.setSecurityEnabled(false);
 
-      conf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
+      conf.getAcceptorConfigurations()
+          .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
 
       messagingService = MessagingServiceImpl.newNullStorageMessagingServer(conf);
 
@@ -108,7 +113,6 @@ public class ConsumerTest extends UnitTestCase
 
       session.close();
 
-
    }
 
    public void testConsumerBrowserWithSelector() throws Exception
@@ -155,7 +159,6 @@ public class ConsumerTest extends UnitTestCase
 
       session.close();
 
-
    }
 
    public void testConsumerBrowserWithStringSelector() throws Exception
@@ -174,7 +177,7 @@ public class ConsumerTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createMessage(session, "m" + i);
-         if(i % 2 == 0)
+         if (i % 2 == 0)
          {
             message.putStringProperty(new SimpleString("color"), new SimpleString("RED"));
          }
@@ -183,7 +186,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientConsumer consumer = session.createConsumer(QUEUE, new SimpleString("color = 'RED'"), false, true);
 
-      for (int i = 0; i < numMessages; i+=2)
+      for (int i = 0; i < numMessages; i += 2)
       {
          ClientMessage message2 = consumer.receive(1000);
 
@@ -191,7 +194,6 @@ public class ConsumerTest extends UnitTestCase
       }
 
       session.close();
-
 
    }
 
@@ -229,7 +231,6 @@ public class ConsumerTest extends UnitTestCase
       }
 
       session.close();
-
 
    }
 
@@ -275,7 +276,6 @@ public class ConsumerTest extends UnitTestCase
 
       session.close();
 
-
    }
 
    public void testConsumerBrowserMessagesArentAcked() throws Exception
@@ -305,19 +305,15 @@ public class ConsumerTest extends UnitTestCase
 
          assertEquals("m" + i, message2.getBody().getString());
       }
-      //assert that all the messages are there and none have been acked
+      // assert that all the messages are there and none have been acked
       assertEquals(messagingService.getServer().getPostOffice().getBinding(QUEUE).getQueue().getDeliveringCount(), 0);
       assertEquals(messagingService.getServer().getPostOffice().getBinding(QUEUE).getQueue().getMessageCount(), 100);
 
       session.close();
-
-
    }
-
 
    public void testConsumerBrowserMessageAckDoesNothing() throws Exception
    {
-
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
       ClientSession session = sf.createSession(false, true, true, false);
@@ -344,19 +340,81 @@ public class ConsumerTest extends UnitTestCase
 
          assertEquals("m" + i, message2.getBody().getString());
       }
-      //assert that all the messages are there and none have been acked
+      // assert that all the messages are there and none have been acked
       assertEquals(messagingService.getServer().getPostOffice().getBinding(QUEUE).getQueue().getDeliveringCount(), 0);
       assertEquals(messagingService.getServer().getPostOffice().getBinding(QUEUE).getQueue().getMessageCount(), 100);
 
       session.close();
+   }
+   
+   public void testSetMessageHandlerWithMessagesPending() throws Exception
+   {
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
+      ClientSession session = sf.createSession(false, true, true, false);
 
+      session.createQueue(QUEUE, QUEUE, null, false, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = createMessage(session, "m" + i);
+         producer.send(message);
+      }
+
+      ClientConsumer consumer = session.createConsumer(QUEUE, null, false, true);
+      
+      session.start();
+      
+      Thread.sleep(100);
+      
+      //Message should be in consumer
+      
+      class MyHandler implements MessageHandler
+      {
+         public void onMessage(final ClientMessage message)
+         {
+            try
+            {
+               Thread.sleep(10);
+               
+               message.acknowledge();
+            }
+            catch (Exception e)
+            {               
+            }                        
+         }                 
+      }
+      
+      consumer.setMessageHandler(new MyHandler());
+      
+      //Let a few messages get processed
+      Thread.sleep(100);
+      
+      //Now set null
+      
+      consumer.setMessageHandler(null);
+       
+      //Give a bit of time for some queued executors to run
+      
+      Thread.sleep(500);
+      
+      //Make sure no exceptions were thrown from onMessage
+      assertNull(consumer.getLastException());
+
+      session.close();
    }
 
    private ClientMessage createMessage(ClientSession session, String msg)
    {
-      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
-            System.currentTimeMillis(), (byte) 1);
+      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+                                                          false,
+                                                          0,
+                                                          System.currentTimeMillis(),
+                                                          (byte)1);
       message.getBody().putString(msg);
       message.getBody().flip();
       return message;

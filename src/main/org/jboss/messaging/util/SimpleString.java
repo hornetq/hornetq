@@ -22,12 +22,13 @@
 
 package org.jboss.messaging.util;
 
-import org.jboss.messaging.core.logging.Logger;
 import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jboss.messaging.core.logging.Logger;
 
 
 /**

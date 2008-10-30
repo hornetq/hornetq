@@ -41,7 +41,6 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.management.JMSMessageInfo;
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;

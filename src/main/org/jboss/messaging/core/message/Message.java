@@ -24,7 +24,6 @@ package org.jboss.messaging.core.message;
 
 import java.util.Set;
 
-import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 

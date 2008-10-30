@@ -22,6 +22,11 @@
 
 package org.jboss.messaging.core.persistence;
 
+import java.util.List;
+import java.util.Map;
+
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -33,10 +38,6 @@ import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
-
-import javax.transaction.xa.Xid;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 

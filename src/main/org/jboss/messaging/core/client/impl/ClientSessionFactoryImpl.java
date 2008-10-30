@@ -11,25 +11,29 @@
  */
 package org.jboss.messaging.core.client.impl;
 
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_CALL_TIMEOUT;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EARLY_RESPONSE;
+
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
-import org.jboss.messaging.core.remoting.ConnectionRegistry;
+import org.jboss.messaging.core.remoting.ConnectionManager;
+import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
+import org.jboss.messaging.core.remoting.impl.ConnectionManagerImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.UUIDGenerator;
 import org.jboss.messaging.util.VersionLoader;
 
@@ -39,8 +43,11 @@ import org.jboss.messaging.util.VersionLoader;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision: 3602 $</tt>
+ * 
+ * Note! There should never be more than one clientsessionfactory with the same connection params
+ * Otherwise failover won't work properly since channel ids won't match on live and backup
  */
-public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
+public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, FailureListener
 {
    // Constants
    // ------------------------------------------------------------------------------------
@@ -50,6 +57,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
    private static final Logger log = Logger.getLogger(ClientSessionFactoryImpl.class);
 
    public static final long DEFAULT_PING_PERIOD = 5000;
+
+   public static final int DEFAULT_PING_POOL_SIZE = 5;
 
    public static final int DEFAULT_CONSUMER_WINDOW_SIZE = 1024 * 1024;
 
@@ -67,25 +76,33 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
 
    public static final boolean DEFAULT_AUTO_GROUP_ID = false;
 
+   public static final int DEFAULT_MAX_CONNECTIONS = 8;
+
    // Attributes
    // -----------------------------------------------------------------------------------
-
-   private ConnectionRegistry connectionRegistry;
 
    // These attributes are mutable and can be updated by different threads so
    // must be volatile
 
-   private volatile ConnectorFactory connectorFactory;
+   private final ConnectorFactory connectorFactory;
 
-   private volatile Map<String, Object> transportParams;
+   private final Map<String, Object> transportParams;
 
-   private volatile ConnectorFactory backupConnectorFactory;
+   private final ConnectorFactory backupConnectorFactory;
 
-   private volatile Map<String, Object> backupTransportParams;
+   private final Map<String, Object> backupTransportParams;
 
-   private volatile long pingPeriod;
+   private final long pingPeriod;
 
-   private volatile long callTimeout;
+   private final int pingPoolSize;
+
+   private final long callTimeout;
+
+   private final int maxConnections;
+
+   private volatile ConnectionManager connectionManager;
+
+   private volatile ConnectionManager backupConnectionManager;
 
    private volatile int consumerWindowSize;
 
@@ -101,11 +118,18 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
 
    private volatile boolean blockOnNonPersistentSend;
 
-   private volatile boolean failedOver;
-
-   private final Set<ClientSessionInternal> sessions = new ConcurrentHashSet<ClientSessionInternal>();
-
    private volatile boolean autoGroupId;
+
+   private final Set<ClientSessionInternal> sessions = new HashSet<ClientSessionInternal>();
+   
+   private final Object exitLock = new Object();
+   
+   private final Object createSessionLock = new Object();
+   
+   private boolean inCreateSession;
+   
+   private final Object failoverLock = new Object();
+   
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -119,6 +143,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
                                    final TransportConfiguration backupConfig,
                                    final long pingPeriod,
+                                   final int pingPoolSize,
                                    final long callTimeout,
                                    final int consumerWindowSize,
                                    final int consumerMaxRate,
@@ -127,16 +152,42 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
                                    final boolean blockOnAcknowledge,
                                    final boolean blockOnNonPersistentSend,
                                    final boolean blockOnPersistentSend,
-                                   final boolean autoGroupId)
+                                   final boolean autoGroupId,
+                                   final int maxConnections)
    {
       connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
+
       transportParams = connectorConfig.getParams();
+
+      connectionManager = new ConnectionManagerImpl(connectorFactory,
+                                                    transportParams,
+                                                    pingPeriod,
+                                                    callTimeout,
+                                                    maxConnections,
+                                                    pingPoolSize);
       if (backupConfig != null)
       {
          backupConnectorFactory = instantiateConnectorFactory(backupConfig.getFactoryClassName());
+
          backupTransportParams = backupConfig.getParams();
+
+         backupConnectionManager = new ConnectionManagerImpl(backupConnectorFactory,
+                                                             backupTransportParams,
+                                                             pingPeriod,
+                                                             callTimeout,
+                                                             maxConnections,
+                                                             pingPoolSize);
+      }
+      else
+      {
+         backupConnectorFactory = null;
+
+         backupTransportParams = null;
+
+         backupConnectionManager = null;
       }
       this.pingPeriod = pingPeriod;
+      this.pingPoolSize = pingPoolSize;
       this.callTimeout = callTimeout;
       this.consumerWindowSize = consumerWindowSize;
       this.consumerMaxRate = consumerMaxRate;
@@ -146,30 +197,27 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
       this.blockOnPersistentSend = blockOnPersistentSend;
       this.autoGroupId = autoGroupId;
-      connectionRegistry = ConnectionRegistryImpl.instance;
+      this.maxConnections = maxConnections;
    }
 
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
                                    final TransportConfiguration backupConfig)
    {
-      connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
-      transportParams = connectorConfig.getParams();
-      if (backupConfig != null)
-      {
-         backupConnectorFactory = instantiateConnectorFactory(backupConfig.getFactoryClassName());
-         backupTransportParams = backupConfig.getParams();
-      }
-      pingPeriod = DEFAULT_PING_PERIOD;
-      callTimeout = ConfigurationImpl.DEFAULT_CALL_TIMEOUT;
-      consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
-      consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
-      producerWindowSize = DEFAULT_PRODUCER_WINDOW_SIZE;
-      producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
-      blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-      blockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-      blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-      autoGroupId = DEFAULT_AUTO_GROUP_ID;
-      connectionRegistry = ConnectionRegistryImpl.instance;
+      this(connectorConfig,
+           backupConfig,
+           DEFAULT_PING_PERIOD,
+           DEFAULT_PING_POOL_SIZE,
+           DEFAULT_CALL_TIMEOUT,
+           DEFAULT_CONSUMER_WINDOW_SIZE,
+           DEFAULT_CONSUMER_MAX_RATE,
+           DEFAULT_PRODUCER_WINDOW_SIZE,
+           DEFAULT_PRODUCER_MAX_RATE,
+           DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+           DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+           DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+           DEFAULT_AUTO_GROUP_ID,
+           DEFAULT_MAX_CONNECTIONS);
+
    }
 
    /**
@@ -177,19 +225,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
     */
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig)
    {
-      connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
-      transportParams = connectorConfig.getParams();
-      pingPeriod = DEFAULT_PING_PERIOD;
-      callTimeout = ConfigurationImpl.DEFAULT_CALL_TIMEOUT;
-      consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
-      consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
-      producerWindowSize = DEFAULT_PRODUCER_WINDOW_SIZE;
-      producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
-      blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-      blockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-      blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-      autoGroupId = DEFAULT_AUTO_GROUP_ID;
-      connectionRegistry = ConnectionRegistryImpl.instance;
+      this(connectorConfig, null);
    }
 
    // ClientSessionFactory implementation
@@ -199,20 +235,15 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
                                       final String password,
                                       final boolean xa,
                                       final boolean autoCommitSends,
-                                      final boolean autoCommitAcks,                             
+                                      final boolean autoCommitAcks,
                                       final boolean cacheProducers) throws MessagingException
    {
-      return createSessionInternal(username,
-                                   password,
-                                   xa,
-                                   autoCommitSends,
-                                   autoCommitAcks,                                   
-                                   cacheProducers);
+      return createSessionInternal(username, password, xa, autoCommitSends, autoCommitAcks, cacheProducers);
    }
 
    public ClientSession createSession(final boolean xa,
                                       final boolean autoCommitSends,
-                                      final boolean autoCommitAcks,                                   
+                                      final boolean autoCommitAcks,
                                       final boolean cacheProducers) throws MessagingException
    {
       return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, cacheProducers);
@@ -288,7 +319,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
       blockOnAcknowledge = blocking;
    }
 
-   public boolean isAutoGroupId()
+   public boolean isAutoGroupID()
    {
       return autoGroupId;
    }
@@ -303,29 +334,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
       return connectorFactory;
    }
 
-   public void setConnectorFactory(final ConnectorFactory connectorFactory)
-   {
-      if (!sessions.isEmpty())
-      {
-         throw new IllegalStateException("Cannot set connector factory after connections have been created");
-      }
-
-      this.connectorFactory = connectorFactory;
-   }
-
    public Map<String, Object> getTransportParams()
    {
       return transportParams;
-   }
-
-   public void setTransportParams(final Map<String, Object> transportParams)
-   {
-      if (!sessions.isEmpty())
-      {
-         throw new IllegalStateException("Cannot set transport params after connections have been created");
-      }
-
-      this.transportParams = transportParams;
    }
 
    public ConnectorFactory getBackupConnectorFactory()
@@ -333,29 +344,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
       return backupConnectorFactory;
    }
 
-   public void setBackupConnectorFactory(final ConnectorFactory connectorFactory)
-   {
-      if (!sessions.isEmpty())
-      {
-         throw new IllegalStateException("Cannot set backup connector factory after connections have been created");
-      }
-
-      backupConnectorFactory = connectorFactory;
-   }
-
    public Map<String, Object> getBackupTransportParams()
    {
       return backupTransportParams;
-   }
-
-   public void setBackupTransportParams(final Map<String, Object> transportParams)
-   {
-      if (!sessions.isEmpty())
-      {
-         throw new IllegalStateException("Cannot set backup transport params after connections have been created");
-      }
-
-      backupTransportParams = transportParams;
    }
 
    public long getPingPeriod()
@@ -363,9 +354,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
       return pingPeriod;
    }
 
-   public void setPingPeriod(final long pingPeriod)
+   public int getPingPoolSize()
    {
-      this.pingPeriod = pingPeriod;
+      return pingPoolSize;
    }
 
    public long getCallTimeout()
@@ -373,19 +364,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
       return callTimeout;
    }
 
-   public void setCallTimeout(final long callTimeout)
+   public int getMaxConnections()
    {
-      this.callTimeout = callTimeout;
-   }
-
-   public boolean isFailedOver()
-   {
-      return failedOver;
-   }
-   
-   public int getSessionCount()
-   {
-      return sessions.size();
+      return maxConnections;
    }
 
    // ClientSessionFactoryInternal implementation
@@ -393,32 +374,133 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
 
    // Must be synchronized to prevent it happening concurrently with failover which can lead to
    // inconsistencies
-   public synchronized void removeSession(final ClientSessionInternal session)
+   public void removeSession(final ClientSessionInternal session)
    {
-      sessions.remove(session);
+      //TODO - can we simplify this locking?
+      synchronized (createSessionLock)
+      {
+         synchronized (failoverLock)
+         {
+            if (!sessions.remove(session))
+            {
+               throw new IllegalStateException("Cannot find session to remove " + session);
+            }
+      
+            connectionManager.returnConnection(session.getConnection().getID());
+      
+            if (backupConnectionManager != null)
+            {
+               backupConnectionManager.returnConnection(session.getBackupConnection().getID());
+            }
+         }
+      }
+   }
+
+   public int numConnections()
+   {
+      return connectionManager.numConnections();
+   }
+
+   public int numBackupConnections()
+   {
+      return backupConnectionManager != null ? backupConnectionManager.numConnections() : 0;
+   }
+
+   public int numSessions()
+   {
+      return sessions.size();
+   }
+
+   // FailureListener implementation --------------------------------------------------------
+
+   public void connectionFailed(final MessagingException me)
+   {      
+      synchronized (failoverLock)
+      {         
+         //Now get locks on all channel 1s, whilst holding the failoverLock - this makes sure
+         //There are either no threads executing in createSession, or one is blocking on a createSession
+         //result.
+         
+         //Then interrupt the channel 1 that is blocking (could just interrupt them all)
+         
+         //Then release all channel 1 locks - this allows the createSession to exit the monitor
+         
+         //Then get all channel 1 locks again - this ensures the any createSession thread has executed the section and
+         //returned all its connections to the connection manager (the code to return connections to connection manager
+         //must be inside the lock
+         
+         //Then perform failover
+         
+         //Then release failoverLock
+         
+         //The other side of the bargain - during createSession:
+         //The calling thread must get the failoverLock and get its' connections when this is locked.
+         //While this is still locked it must then get the channel1 lock
+         //It can then release the failoverLock
+         //It should catch MessagingException.INTERRUPTED in the call to channel.sendBlocking
+         //It should then return its connections, with channel 1 lock still held
+         //It can then release the channel 1 lock, and retry (which will cause locking on failoverLock
+         //until failover is complete
+         
+         if (backupConnectionManager != null)
+         {
+            log.info("Commencing automatic failover");
+            lockAllChannel1s();
+            
+            final boolean needToInterrupt;
+            
+            synchronized (exitLock)
+            {
+               needToInterrupt = inCreateSession;
+            }
+            
+            unlockAllChannel1s();
+                 
+            if (needToInterrupt)
+            {           
+               //Forcing return all channels won't guarantee that any blocked thread will return immediately
+               //So we need to wait for it
+               forceReturnAllChannel1s();
+               
+               //Now we need to make sure that the thread has actually exited and returned it's connections
+               //before failover occurs
+               
+               synchronized (exitLock)
+               {
+                  while (inCreateSession)
+                  {
+                     try
+                     {
+                        exitLock.wait(5000);
+                     }
+                     catch (InterruptedException e)
+                     {                        
+                     }
+                  }
+               }
+            }
+            
+            //Now we absolutely know that no threads are executing in or blocked in createSession, and no
+            //more will execute it until failover is complete
+            
+            //So.. do failover
+            
+            connectionManager = backupConnectionManager;
+   
+            backupConnectionManager = null;
+            
+            for (ClientSessionInternal session : sessions)
+            {
+               session.handleFailover();
+            }
+            
+            log.info("Failover complete");
+         }                    
+      }      
    }
    
-   public boolean checkFailover(final MessagingException me)
-   {
-      if (backupConnectorFactory != null)
-      {
-         handleFailover(me);
-         
-         return true;
-      }
-      else
-      {
-         return false;
-      }
-   }
-
    // Public
    // ---------------------------------------------------------------------------------------
-
-   public void setConnectionRegistry(final ConnectionRegistry registry)
-   {
-      connectionRegistry = registry;
-   }
 
    // Protected
    // ------------------------------------------------------------------------------------
@@ -429,154 +511,164 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
    // Private
    // --------------------------------------------------------------------------------------
 
-   private synchronized void handleFailover(final MessagingException me)
+   
+   //The whole method must be synchonrized to prevent more than one thread executing concurrently
+   private ClientSession createSessionInternal(final String username,
+                                               final String password,
+                                               final boolean xa,
+                                               final boolean autoCommitSends,
+                                               final boolean autoCommitAcks,
+                                               final boolean cacheProducers) throws MessagingException
    {
-      log.info("Connection failure has been detected, initiating failover");
-
-      if (backupConnectorFactory == null)
+      synchronized (createSessionLock)
       {
-         throw new IllegalStateException("Cannot fail-over if backup connector factory is null");
-      }
-
-      for (ClientSessionInternal session : sessions)
-      {
-         // Need to get it once for each session to ensure ref count in
-         // holder is incremented properly
-         RemotingConnection backupConnection = connectionRegistry.getConnection(backupConnectorFactory,
-                                                                                backupTransportParams,
-                                                                                pingPeriod,
-                                                                                callTimeout);         
-
-         boolean ok = session.handleFailover(backupConnection);
-         
-         if (!ok)
-         {
-            //Already closed - so return it
-            connectionRegistry.returnConnection(backupConnection.getID());
-         }
-      }
-
-      connectorFactory = backupConnectorFactory;
-      transportParams = backupTransportParams;
-
-      backupConnectorFactory = null;
-      backupTransportParams = null;
-
-      failedOver = true;
-
-      log.info("Failover complete");
-   }
-
-   private synchronized ClientSession createSessionInternal(final String username,
-                                                            final String password,
-                                                            final boolean xa,
-                                                            final boolean autoCommitSends,
-                                                            final boolean autoCommitAcks,                                                            
-                                                            final boolean cacheProducers) throws MessagingException
-   {
-      Version clientVersion = VersionLoader.getVersion();
-
-      RemotingConnection connection = null;
-      try
-      {
-         connection = connectionRegistry.getConnection(connectorFactory, transportParams, pingPeriod, callTimeout);
-
          String name = UUIDGenerator.getInstance().generateSimpleStringUUID().toString();
-
-         long sessionChannelID = connection.generateChannelID();
-
-         boolean hasBackup = backupConnectorFactory != null;
-
-         Packet pResponse = null;
-
-         Packet request = new CreateSessionMessage(name,
-                                                   sessionChannelID,
-                                                   clientVersion.getIncrementingVersion(),
-                                                   username,
-                                                   password,
-                                                   xa,
-                                                   autoCommitSends,
-                                                   autoCommitAcks);
-
-         Channel channel1 = connection.getChannel(1, -1, true);
-
-         try
-         {
-            pResponse = channel1.sendBlocking(request);
-         }
-         catch (MessagingException me)
-         {
-            if (hasBackup && me.getCode() == MessagingException.NOT_CONNECTED)
-            {
-               // Failure occurred after create session was sent but before response came back
-               // in this case the blocking thread will be interrupted and throw this exception
-               log.warn("Failed to create session, will retry");
-
-               // We should be able to try again immediately - since failover will have occurred
-               pResponse = channel1.sendBlocking(request);
-            }
-            else
-            {
-               throw me;
-            }
-         }
-
-         CreateSessionResponseMessage response = (CreateSessionResponseMessage)pResponse;
-
-         int packetConfirmationBatchSize = response.getPacketConfirmationBatchSize();
-         
-         Channel sessionChannel = connection.getChannel(sessionChannelID,                                               
-                                                        packetConfirmationBatchSize,                                               
-                                                        !hasBackup);
-
-         ClientSessionInternal session = new ClientSessionImpl(this,
-                                                               name,
-                                                               xa,                                                              
-                                                               cacheProducers,
-                                                               autoCommitSends,
-                                                               autoCommitAcks,
-                                                               blockOnAcknowledge,
-                                                               autoGroupId,
-                                                               connection,
-                                                               this,
-                                                               response.getServerVersion(),
-                                                               sessionChannel);
-
-         sessions.add(session);
-
-         ChannelHandler handler = new ClientSessionPacketHandler(session);
-
-         sessionChannel.setHandler(handler);
-
-         return session;
-      }
-      catch (Throwable t)
-      {
-         if (connection != null)
-         {
+         boolean retry = false;
+         do
+         {         
+            Version clientVersion = VersionLoader.getVersion();
+      
+            RemotingConnection connection = null;
+      
+            RemotingConnection backupConnection = null;
+            
+            Lock lock = null;
+      
             try
-            {
-               connectionRegistry.returnConnection(connection.getID());
+            {    
+               Channel channel1;
+               
+               synchronized (failoverLock)
+               {               
+                  connection = connectionManager.getConnection();
+      
+                  if (backupConnectionManager != null)
+                  {
+                     backupConnection = backupConnectionManager.getConnection();
+                  }
+                  
+                  channel1 = connection.getChannel(1, -1);
+                  
+                  //Lock it - this must be done while the failoverLock is held
+                  channel1.getLock().lock();
+                  
+                  lock = channel1.getLock();
+               } //We can now release the failoverLock
+               
+               //We now set a flag saying createSession is executing
+               synchronized (exitLock)
+               {
+                  inCreateSession = true;
+               }
+                                    
+               long sessionChannelID = connection.generateChannelID();
+      
+               Packet request = new CreateSessionMessage(name,
+                                                         sessionChannelID,
+                                                         clientVersion.getIncrementingVersion(),
+                                                         username,
+                                                         password,
+                                                         xa,
+                                                         autoCommitSends,
+                                                         autoCommitAcks);
+      
+               Packet pResponse = channel1.sendBlocking(request);
+               
+               if (pResponse.getType() == EARLY_RESPONSE)
+               {
+                  //This means the thread was blocked on create session and failover unblocked it
+                  //so failover could occur
+                  
+                  //So we just need to return our connections and flag for retry
+                  
+                  connectionManager.returnConnection(connection.getID());               
+         
+                  backupConnectionManager.returnConnection(backupConnection.getID());
+                  
+                  retry = true;                             
+               }
+               else
+               {
+         
+                  CreateSessionResponseMessage response = (CreateSessionResponseMessage)pResponse;
+         
+                  int packetConfirmationBatchSize = response.getPacketConfirmationBatchSize();
+         
+                  Channel sessionChannel = connection.getChannel(sessionChannelID,
+                                                                 packetConfirmationBatchSize);
+         
+                  ClientSessionInternal session = new ClientSessionImpl(this,
+                                                                        name,
+                                                                        xa,
+                                                                        cacheProducers,
+                                                                        autoCommitSends,
+                                                                        autoCommitAcks,
+                                                                        blockOnAcknowledge,
+                                                                        autoGroupId,
+                                                                        connection,
+                                                                        backupConnection,
+                                                                        this,
+                                                                        response.getServerVersion(),
+                                                                        sessionChannel);
+                           
+                  sessions.add(session);
+
+                  ChannelHandler handler = new ClientSessionPacketHandler(session);
+         
+                  sessionChannel.setHandler(handler);
+         
+                  connection.addFailureListener(this);
+         
+                  return session;
+               }
             }
-            catch (Throwable ignore)
+            catch (Throwable t)
             {
+               if (connection != null)
+               {
+                  connectionManager.returnConnection(connection.getID());
+               }
+      
+               if (backupConnection != null)
+               {
+                  backupConnectionManager.returnConnection(backupConnection.getID());
+               }
+      
+               if (t instanceof MessagingException)
+               {
+                  throw (MessagingException)t;
+               }
+               else
+               {
+                  MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR,
+                                                                 "Failed to create session");
+      
+                  me.initCause(t);
+      
+                  throw me;
+               }
+            } 
+            finally
+            {
+               if (lock != null)
+               {
+                  lock.unlock();
+               }
+               
+               //Execution has finished so notify any failover thread that may be waiting for us to be done
+               synchronized (exitLock)
+               {
+                  inCreateSession = false;
+                  
+                  exitLock.notify();
+               }                     
             }
          }
-
-         if (t instanceof MessagingException)
-         {
-            throw (MessagingException)t;
-         }
-         else
-         {
-            MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR,
-                                                           "Failed to start connection");
-
-            me.initCause(t);
-
-            throw me;
-         }
+         while (retry);
       }
+      
+      //Should never get here
+      throw new IllegalStateException("How did you get here??");
    }
 
    private ConnectorFactory instantiateConnectorFactory(final String connectorFactoryClassName)
@@ -593,5 +685,42 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal
                                             "\"", e);
       }
    }
+   
+   private void lockAllChannel1s()
+   {
+      Set<RemotingConnection> conns = connectionManager.getConnections();
+      
+      for (RemotingConnection conn: conns)
+      {
+         Channel channel1 = conn.getChannel(1, -1);
+         
+         channel1.getLock().lock();
+      }
+   }
+   
+   private void unlockAllChannel1s()
+   {
+      Set<RemotingConnection> conns = connectionManager.getConnections();
+      
+      for (RemotingConnection conn: conns)
+      {
+         Channel channel1 = conn.getChannel(1, -1);
+         
+         channel1.getLock().unlock();
+      }
+   }
+   
+   private void forceReturnAllChannel1s()
+   {
+      Set<RemotingConnection> conns = connectionManager.getConnections();
+      
+      for (RemotingConnection conn: conns)
+      {
+         Channel channel1 = conn.getChannel(1, -1);
+         
+         channel1.returnBlocking();
+      }
+   }
+   
 
 }

@@ -21,11 +21,11 @@
  */
 package org.jboss.messaging.core.postoffice;
 
-import org.jboss.messaging.util.SimpleString;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * Used to maintain addresses and Bindings.

@@ -12,6 +12,24 @@
 
 package org.jboss.messaging.jms.client;
 
+import java.io.Serializable;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.QueueConnection;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.TopicConnection;
+import javax.jms.TopicConnectionFactory;
+import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
+import javax.jms.XAQueueConnection;
+import javax.jms.XAQueueConnectionFactory;
+import javax.jms.XATopicConnection;
+import javax.jms.XATopicConnectionFactory;
+import javax.naming.NamingException;
+import javax.naming.Reference;
+
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
@@ -20,11 +38,6 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
-
-import javax.jms.*;
-import javax.naming.NamingException;
-import javax.naming.Reference;
-import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -58,6 +71,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    private final int dupsOKBatchSize;
 
    private final long pingPeriod;
+   
+   private final int pingPoolSize;
 
    private final long callTimeout;
 
@@ -76,12 +91,15 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    private final boolean blockOnPersistentSend;
 
    private final boolean autoGroupId;
+   
+   private final int maxConnections;
 
    // Constructors ---------------------------------------------------------------------------------
 
    public JBossConnectionFactory(final TransportConfiguration connectorConfig,
                                  final TransportConfiguration backupConnectorConfig,
                                  final long pingPeriod,
+                                 final int pingPoolSize,
                                  final long callTimeout,
                                  final String clientID,
                                  final int dupsOKBatchSize,
@@ -92,13 +110,15 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  final boolean blockOnAcknowledge,
                                  final boolean blockOnNonPersistentSend,
                                  final boolean blockOnPersistentSend,
-                                 final boolean autoGroupId)
+                                 final boolean autoGroupId,
+                                 final int maxConnections)
    {
       this.connectorConfig = connectorConfig;
       this.backupConnectorConfig = backupConnectorConfig;
       this.clientID = clientID;
       this.dupsOKBatchSize = dupsOKBatchSize;
       this.pingPeriod = pingPeriod;
+      this.pingPoolSize = pingPoolSize;
       this.callTimeout = callTimeout;
       this.consumerMaxRate = consumerMaxRate;
       this.consumerWindowSize = consumerWindowSize;
@@ -108,6 +128,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
       this.blockOnPersistentSend = blockOnPersistentSend;
       this.autoGroupId = autoGroupId;
+      this.maxConnections = maxConnections;
    }
 
    // ConnectionFactory implementation -------------------------------------------------------------
@@ -203,6 +224,11 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    {
       return pingPeriod;
    }
+   
+   public int getPingPoolSize()
+   {
+      return pingPoolSize;
+   }
 
    public long getCallTimeout()
    {
@@ -274,6 +300,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
          sessionFactory = new ClientSessionFactoryImpl(connectorConfig,
                                                        backupConnectorConfig,
                                                        pingPeriod,
+                                                       pingPoolSize,
                                                        callTimeout,
                                                        consumerWindowSize,
                                                        consumerMaxRate,
@@ -282,7 +309,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                        blockOnAcknowledge,
                                                        blockOnNonPersistentSend,
                                                        blockOnPersistentSend,
-                                                       autoGroupId);
+                                                       autoGroupId,
+                                                       maxConnections);
 
       }
 

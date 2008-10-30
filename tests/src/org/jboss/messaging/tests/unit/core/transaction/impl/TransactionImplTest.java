@@ -22,6 +22,13 @@
 
 package org.jboss.messaging.tests.unit.core.transaction.impl;
 
+import static org.jboss.messaging.tests.util.RandomUtil.randomXid;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
+import javax.transaction.xa.Xid;
+
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -34,13 +41,8 @@ import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
-import static org.jboss.messaging.tests.util.RandomUtil.randomXid;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
-
-import javax.transaction.xa.Xid;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * 

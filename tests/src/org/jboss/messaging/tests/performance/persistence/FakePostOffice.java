@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.performance.persistence;
 
@@ -35,6 +35,7 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.impl.SendLockImpl;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.SimpleString;
@@ -49,24 +50,26 @@ import org.jboss.messaging.util.SimpleString;
 public class FakePostOffice implements PostOffice
 {
    private ConcurrentHashMap<SimpleString, Binding> bindings = new ConcurrentHashMap<SimpleString, Binding>();
-   
+
    private QueueFactory queueFactory = new FakeQueueFactory();
-   
+
    private ConcurrentHashSet<SimpleString> addresses = new ConcurrentHashSet<SimpleString>();
-   
+
    private volatile boolean started;
-   
-   public Binding addBinding(SimpleString address, SimpleString queueName,
-         Filter filter, boolean durable, boolean temporary) throws Exception
+
+   public Binding addBinding(SimpleString address,
+                             SimpleString queueName,
+                             Filter filter,
+                             boolean durable,
+                             boolean temporary) throws Exception
    {
-      Queue queue = queueFactory.createQueue(-1, queueName, filter, durable, false); 
+      Queue queue = queueFactory.createQueue(-1, queueName, filter, durable, false);
       Binding binding = new FakeBinding(address, queue);
       bindings.put(address, binding);
       return binding;
    }
 
-   public boolean addDestination(SimpleString address, boolean temporary)
-         throws Exception
+   public boolean addDestination(SimpleString address, boolean temporary) throws Exception
    {
       return addresses.addIfAbsent(address);
    }
@@ -81,8 +84,7 @@ public class FakePostOffice implements PostOffice
       return bindings.get(queueName);
    }
 
-   public List<Binding> getBindingsForAddress(SimpleString address)
-         throws Exception
+   public List<Binding> getBindingsForAddress(SimpleString address) throws Exception
    {
       return null;
    }
@@ -107,8 +109,7 @@ public class FakePostOffice implements PostOffice
       return null;
    }
 
-   public boolean removeDestination(SimpleString address, boolean temporary)
-         throws Exception
+   public boolean removeDestination(SimpleString address, boolean temporary) throws Exception
    {
       return false;
    }
@@ -122,7 +123,7 @@ public class FakePostOffice implements PostOffice
    {
       started = false;
    }
-   
+
    public boolean isStarted()
    {
       return started;
@@ -132,7 +133,7 @@ public class FakePostOffice implements PostOffice
    {
       return null;
    }
-   
+
    public void activate()
    {
    }
@@ -142,5 +143,9 @@ public class FakePostOffice implements PostOffice
       return null;
    }
 
-   
+   public SendLockImpl getAddressLock(SimpleString address)
+   {
+      return null;
+   }
+
 }

@@ -21,12 +21,6 @@
  */
 package org.jboss.messaging.core.postoffice.impl;
 
-import org.jboss.messaging.core.postoffice.AddressManager;
-import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.util.ConcurrentHashSet;
-import org.jboss.messaging.util.ConcurrentSet;
-import org.jboss.messaging.util.SimpleString;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +28,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.jboss.messaging.core.postoffice.AddressManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.util.ConcurrentHashSet;
+import org.jboss.messaging.util.ConcurrentSet;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A simple address manager that maintains the addresses and bindings.

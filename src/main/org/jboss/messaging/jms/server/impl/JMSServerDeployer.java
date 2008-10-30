@@ -12,6 +12,11 @@
 
 package org.jboss.messaging.jms.server.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -22,11 +27,6 @@ import org.jboss.messaging.jms.server.JMSServerManager;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -43,6 +43,8 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String CLIENTID_ELEMENT = "client-id";
 
    private static final String PING_PERIOD_ELEMENT = "ping-period";
+   
+   private static final String PING_POOL_SIZE_ELEMENT = "ping-pool-size";
 
    private static final String CALL_TIMEOUT_ELEMENT = "call-timeout";
 
@@ -62,7 +64,9 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String SEND_P_MESSAGES_SYNCHRONOUSLY_ELEMENT = "send-p-messages-synchronously";
 
-   private static final String AUTO_GROUP_ID__ELEMENT = "auto-group-id";
+   private static final String AUTO_GROUP_ID_ELEMENT = "auto-group-id";
+   
+   private static final String MAX_CONNECTIONS_ELEMENT = "max-connections";
 
    private static final String CONNECTOR_ELEMENT = "connector";
 
@@ -128,6 +132,7 @@ public class JMSServerDeployer extends XmlDeployer
          NodeList children = node.getChildNodes();
 
          long pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
+         int pingPoolSize = ClientSessionFactoryImpl.DEFAULT_PING_POOL_SIZE;
          long callTimeout = ConfigurationImpl.DEFAULT_CALL_TIMEOUT;
          String clientID = null;
          int dupsOKBatchSize = DEFAULT_DUPS_OK_BATCH_SIZE;
@@ -139,6 +144,7 @@ public class JMSServerDeployer extends XmlDeployer
          boolean blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
          boolean blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
          boolean autoGroupId = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP_ID;
+         int maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
          List<String> jndiBindings = new ArrayList<String>();
          String connectorFactoryClassName = null;
          Map<String, Object> params = new HashMap<String, Object>();
@@ -150,6 +156,10 @@ public class JMSServerDeployer extends XmlDeployer
             if (PING_PERIOD_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
                pingPeriod = Long.parseLong(children.item(j).getTextContent().trim());
+            }
+            else if (PING_POOL_SIZE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               pingPoolSize = Integer.parseInt(children.item(j).getTextContent().trim());
             }
             else if (CALL_TIMEOUT_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
@@ -191,9 +201,13 @@ public class JMSServerDeployer extends XmlDeployer
             {
                blockOnPersistentSend = Boolean.parseBoolean(children.item(j).getTextContent().trim());
             }
-            else if(AUTO_GROUP_ID__ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if(AUTO_GROUP_ID_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
                autoGroupId = Boolean.parseBoolean(children.item(j).getTextContent().trim());
+            }
+            else if(MAX_CONNECTIONS_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               maxConnections = Integer.parseInt(children.item(j).getTextContent().trim());
             }
             else if (ENTRY_NODE_NAME.equalsIgnoreCase(children.item(j).getNodeName()))
             {
@@ -388,6 +402,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                   connectorConfig,
                                                   backupConnectorConfig,
                                                   pingPeriod,
+                                                  pingPoolSize,
                                                   callTimeout,
                                                   clientID,
                                                   dupsOKBatchSize,
@@ -399,6 +414,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                   blockOnNonPersistentSend,
                                                   blockOnPersistentSend,
                                                   autoGroupId,
+                                                  maxConnections,
                                                   jndiBindings);
       }
       else if (node.getNodeName().equals(QUEUE_NODE_NAME))

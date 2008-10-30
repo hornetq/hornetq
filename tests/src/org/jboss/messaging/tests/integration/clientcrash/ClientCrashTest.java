@@ -22,6 +22,17 @@
 
 package org.jboss.messaging.tests.integration.clientcrash;
 
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP_ID;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PING_POOL_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_CALL_TIMEOUT;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.ClientConsumer;
@@ -34,7 +45,6 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -144,9 +154,20 @@ public class ClientCrashTest extends TestCase
       messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
       messagingService.start();
 
-      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));
-      sf.setPingPeriod(2000);
-      
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"),
+           null,
+           2000,
+           DEFAULT_PING_POOL_SIZE,
+           DEFAULT_CALL_TIMEOUT,
+           DEFAULT_CONSUMER_WINDOW_SIZE,
+           DEFAULT_CONSUMER_MAX_RATE,
+           DEFAULT_PRODUCER_WINDOW_SIZE,
+           DEFAULT_PRODUCER_MAX_RATE,
+           DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+           DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+           DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+           DEFAULT_AUTO_GROUP_ID,
+           DEFAULT_MAX_CONNECTIONS);
    }
 
    @Override

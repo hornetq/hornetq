@@ -253,7 +253,12 @@ public class TransactionImpl implements Transaction
    }
 
    public void commit() throws Exception
-   {
+   {      
+//      if (inMethod != -1)
+//      {
+//         throw new IllegalStateException("Can't commit, already inmethod " + inMethod);
+//      }
+      inMethod = 2;
       if (state == State.ROLLBACK_ONLY)
       {
          if (messagingException != null)
@@ -320,11 +325,17 @@ public class TransactionImpl implements Transaction
 
       clear();
 
-      state = State.COMMITTED;
+      state = State.COMMITTED;   
+      inMethod = -1;
    }
 
    public List<MessageReference> rollback(final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
+//      if (inMethod != -1)
+//      {
+//         throw new IllegalStateException("Can't rollback, already inmethod " + inMethod);
+//      }
+      inMethod=1;
       if (xid != null)
       {
          if (state != State.PREPARED && state != State.ACTIVE)
@@ -374,6 +385,7 @@ public class TransactionImpl implements Transaction
 
       state = State.ROLLEDBACK;
       
+      inMethod = -1;
       return toCancel;
    }
 
@@ -458,8 +470,15 @@ public class TransactionImpl implements Transaction
    // Private
    // -------------------------------------------------------------------
 
+   private volatile int inMethod;
+   
    private List<MessageReference> route(final ServerMessage message) throws Exception
    {
+//      if (inMethod != -1)
+//      {
+//         throw new IllegalStateException("Can't route, already inmethod " + inMethod);
+//      }
+      inMethod = 0;
       List<MessageReference> refs = postOffice.route(message);
 
       refsToAdd.addAll(refs);
@@ -470,6 +489,7 @@ public class TransactionImpl implements Transaction
 
          containsPersistent = true;
       }
+      inMethod = -1;
       return refs;
    }
 

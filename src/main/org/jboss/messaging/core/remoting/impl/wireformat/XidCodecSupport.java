@@ -22,11 +22,11 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.util.DataConstants;
-
-import javax.transaction.xa.Xid;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

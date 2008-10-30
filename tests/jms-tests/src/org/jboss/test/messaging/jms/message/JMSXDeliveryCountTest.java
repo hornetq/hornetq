@@ -38,10 +38,10 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
+
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-
-import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
 /**
  * 

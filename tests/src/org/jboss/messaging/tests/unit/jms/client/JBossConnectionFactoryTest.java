@@ -22,22 +22,10 @@
 
 package org.jboss.messaging.tests.unit.jms.client;
 
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.jms.Connection;
-import javax.jms.QueueConnection;
-import javax.jms.TopicConnection;
-import javax.jms.XAConnection;
-import javax.jms.XAQueueConnection;
-import javax.jms.XATopicConnection;
 
 import junit.framework.TestCase;
 
-import org.easymock.classextension.EasyMock;
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 
 /**

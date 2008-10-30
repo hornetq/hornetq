@@ -33,10 +33,10 @@ import javax.jms.XASession;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.transaction.impl.XidImpl;
-
 import com.arjuna.ats.arjuna.common.Uid;
 import com.arjuna.ats.jta.xa.XidImple;
+
+import org.jboss.messaging.core.transaction.impl.XidImpl;
 
 /**
  * 

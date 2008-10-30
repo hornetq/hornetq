@@ -30,14 +30,12 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
-import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.MessagingService;
@@ -52,11 +50,11 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class RandomFailoverTest extends TestCase
 {
-   private static final Logger log = Logger.getLogger(SimpleAutomaticFailoverTest.class);
+   private static final Logger log = Logger.getLogger(RandomFailoverTest.class);
 
    // Constants -----------------------------------------------------
 
-   private static final int RECEIVE_TIMEOUT = 5000;
+   private static final int RECEIVE_TIMEOUT = 10000;
 
    // Attributes ----------------------------------------------------
 
@@ -204,7 +202,18 @@ public class RandomFailoverTest extends TestCase
       {
          public void run(final ClientSessionFactory sf) throws Exception
          {
-            doTestK(sf);
+            doTestL(sf);
+         }
+      });
+   }
+   
+   public void testN() throws Exception
+   {
+      runTest(new RunnableT()
+      {
+         public void run(final ClientSessionFactory sf) throws Exception
+         {
+            doTestN(sf);
          }
       });
    }
@@ -225,6 +234,7 @@ public class RandomFailoverTest extends TestCase
 
          Failer failer = startFailer(1000, session);
 
+         log.info("***************Iteration: " + its);
          do
          {
             runnable.run(sf);
@@ -233,7 +243,11 @@ public class RandomFailoverTest extends TestCase
 
          session.close();
 
-         assertEquals(0, sf.getSessionCount());
+         assertEquals(0, sf.numSessions());
+         
+         assertEquals(0, sf.numConnections());
+         
+         assertEquals(0, sf.numBackupConnections());
 
          stop();
       }
@@ -246,12 +260,14 @@ public class RandomFailoverTest extends TestCase
    protected void doTestA(final ClientSessionFactory sf) throws Exception
    {
       long start = System.currentTimeMillis();
+      
+      log.info("starting================");
 
       ClientSession s = sf.createSession(false, false, false, false);
 
       final int numMessages = 100;
 
-      final int numSessions = 50;
+      final int numSessions = 10;
 
       Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
       Set<ClientSession> sessions = new HashSet<ClientSession>();
@@ -340,11 +356,13 @@ public class RandomFailoverTest extends TestCase
          assertTrue("Didn't receive all messages", ok);
       }
 
+      log.info("*** closing sessions");
       sessSend.close();
       for (ClientSession session : sessions)
       {
          session.close();
       }
+      log.info("*** closed sessions");
 
       for (int i = 0; i < numSessions; i++)
       {
@@ -886,7 +904,7 @@ public class RandomFailoverTest extends TestCase
 
       Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
       Set<ClientSession> sessions = new HashSet<ClientSession>();
-
+      
       for (int i = 0; i < numSessions; i++)
       {
          SimpleString subName = new SimpleString("sub" + i);
@@ -917,18 +935,23 @@ public class RandomFailoverTest extends TestCase
          message.getBody().flip();
          producer.send(message);
       }
-
+      
       for (ClientSession session : sessions)
       {
          session.start();
       }
-
+      
       for (int i = 0; i < numMessages; i++)
       {
          for (ClientConsumer consumer : consumers)
          {
             ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
 
+            if (msg == null)
+            {
+               throw new IllegalStateException("Failed to receive message " + i);
+            }
+            
             assertNotNull(msg);
 
             assertEquals(i, msg.getProperty(new SimpleString("count")));
@@ -961,6 +984,8 @@ public class RandomFailoverTest extends TestCase
       }
 
       s.close();
+      
+      assertEquals(1, ((ClientSessionFactoryImpl)sf).numSessions());
 
       long end = System.currentTimeMillis();
 
@@ -1028,6 +1053,8 @@ public class RandomFailoverTest extends TestCase
       }
 
       sessSend.commit();
+      
+      log.info("sent and committed");
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -1355,16 +1382,64 @@ public class RandomFailoverTest extends TestCase
       s.close();
    }
    
+
+   protected void doTestN(final ClientSessionFactory sf) throws Exception
+   {
+      ClientSession sessCreate = sf.createSession(false, true, true, false);
+
+      sessCreate.createQueue(ADDRESS, new SimpleString(ADDRESS.toString()), null, false, false);
+
+      ClientSession sess = sf.createSession(false, true, true, false);
+
+      sess.stop();
+
+      sess.start();
+
+      sess.stop();
+
+      ClientConsumer consumer = sess.createConsumer(new SimpleString(ADDRESS.toString()));
+
+      ClientProducer producer = sess.createProducer(ADDRESS);
+
+      ClientMessage message = sess.createClientMessage(JBossTextMessage.TYPE,
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
+      message.getBody().flip();
+
+      producer.send(message);
+
+      sess.start();
+
+      ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
+
+      assertNotNull(message2);
+
+      message2.acknowledge();
+
+      sess.stop();
+
+      sess.start();
+
+      sess.close();
+
+      sessCreate.deleteQueue(new SimpleString(ADDRESS.toString()));
+
+      sessCreate.close();
+   }
+   
    protected int getNumIterations()
    {
-      return 10;
+      return 20;
    }
    
    protected void setUp() throws Exception
    {
       super.setUp();
       
-      timer = new Timer();
+      log.info("*********** created timer");
+      timer = new Timer(true);
       
       log.info("************ Starting test " + this.getName());
    }
@@ -1382,7 +1457,7 @@ public class RandomFailoverTest extends TestCase
    
    private Failer startFailer(final long time, final ClientSession session)
    {
-      Failer failer = new Failer(session);
+      Failer failer = new Failer((ClientSessionInternal)session);
 
       timer.schedule(failer, (long)(time * Math.random()), 100);
       
@@ -1419,12 +1494,6 @@ public class RandomFailoverTest extends TestCase
 
    private void stop() throws Exception
    {
-      ConnectionRegistryImpl.instance.dump();
-
-      assertEquals(0, ConnectionRegistryImpl.instance.size());
-
-      // ConnectionRegistryImpl.instance.clear();
-
       assertEquals(0, backupService.getServer().getRemotingService().getConnections().size());
 
       backupService.stop();
@@ -1439,24 +1508,22 @@ public class RandomFailoverTest extends TestCase
    // Inner classes -------------------------------------------------
    
    class Failer extends TimerTask
-   {
-      private final ClientSession session;
+   { 
+      private final ClientSessionInternal session;
 
       private boolean executed;
 
-      public Failer(final ClientSession session)
-      {
+      public Failer(final ClientSessionInternal session)
+      {     
          this.session = session;
       }
 
       public synchronized void run()
       {
          log.info("** Failing connection");
-
-         RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionImpl)session).getConnection();
-
-         conn.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
-
+ 
+         session.getConnection().fail(new MessagingException(MessagingException.NOT_CONNECTED, "oops"));
+         
          log.info("** Fail complete");
 
          cancel();

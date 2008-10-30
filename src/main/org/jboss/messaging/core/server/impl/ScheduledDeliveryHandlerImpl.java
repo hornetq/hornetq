@@ -21,17 +21,17 @@
  */
 package org.jboss.messaging.core.server.impl;
 
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.ScheduledDeliveryHandler;
-import org.jboss.messaging.core.logging.Logger;
-
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.Set;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.ScheduledDeliveryHandler;
 
 /**
  * Handles scheduling deliveries to a queue at the correct time.

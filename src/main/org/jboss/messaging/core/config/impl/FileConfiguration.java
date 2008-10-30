@@ -22,6 +22,13 @@
 
 package org.jboss.messaging.core.config.impl;
 
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.JournalType;
@@ -30,13 +37,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * ConfigurationImpl

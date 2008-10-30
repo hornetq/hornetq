@@ -73,6 +73,16 @@ public interface MessagingServer extends MessagingComponent
                                               boolean autoCommitAcks,
                                               boolean xa) throws Exception;
 
+   CreateSessionResponseMessage replicateCreateSession(String name,
+                                                       long channelID,
+                                                       String username,
+                                                       String password,
+                                                       int incrementingVersion,
+                                                       RemotingConnection remotingConnection,
+                                                       boolean autoCommitSends,
+                                                       boolean autoCommitAcks,
+                                                       boolean xa) throws Exception;
+
    void removeSession(String name) throws Exception;
 
    boolean isStarted();

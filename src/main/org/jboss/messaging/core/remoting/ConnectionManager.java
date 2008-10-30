@@ -18,34 +18,31 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
+
 
 package org.jboss.messaging.core.remoting;
 
-import java.util.Map;
-
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
+import java.util.Set;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * A ConnectionManager
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * 
+ * Created 24 Oct 2008 09:07:05
+ *
+ *
  */
-public interface ConnectionRegistry
+public interface ConnectionManager
 {
-   RemotingConnection getConnection(ConnectorFactory connectorFactory, Map<String, Object> params,
-                                    long pingInterval, long callTimeout);
+   RemotingConnection getConnection();
    
-   RemotingConnection getConnectionNoCache(ConnectorFactory connectorFactory, Map<String, Object> params,
-                                           long pingInterval, long callTimeout);
+   RemotingConnection createConnection();
    
    void returnConnection(Object connectionID);
    
-   int size();
+   int numConnections();
    
-   int getCount(ConnectorFactory connectorFactory, Map<String, Object> params);
-   
-   void clear();
-   
-   void dump();
+   Set<RemotingConnection> getConnections();
 }

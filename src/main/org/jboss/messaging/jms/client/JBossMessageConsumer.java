@@ -29,7 +29,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.Queue;
 import javax.jms.QueueReceiver;
-import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 

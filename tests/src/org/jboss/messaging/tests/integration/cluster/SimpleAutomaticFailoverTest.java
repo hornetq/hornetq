@@ -37,6 +37,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -45,8 +46,6 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.ConnectionRegistryImpl;
-import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.MessagingService;
@@ -94,7 +93,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
       ClientProducer producer = session.createProducer(ADDRESS);
 
       final int numMessages = 100;
-      
+
       log.info("Sending messages");
 
       for (int i = 0; i < numMessages; i++)
@@ -109,7 +108,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
          message.getBody().flip();
          producer.send(message);
       }
-      
+
       log.info("sent messages");
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
@@ -128,18 +127,18 @@ public class SimpleAutomaticFailoverTest extends TestCase
          message2.acknowledge();
       }
 
-      //ClientMessage message3 = consumer.receive(250);
+      // ClientMessage message3 = consumer.receive(250);
 
-      //assertNull(message3);
+      // assertNull(message3);
 
       session.close();
    }
 
    public void testFailoverSameConnectionFactory() throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                        backupParams));
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                backupParams));
 
       ClientSession session = sf.createSession(false, true, true, false);
 
@@ -162,10 +161,10 @@ public class SimpleAutomaticFailoverTest extends TestCase
          producer.send(message);
       }
 
-      RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+      RemotingConnection conn1 = ((ClientSessionImpl)session).getConnection();
 
       // Simulate failure on connection
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -206,13 +205,19 @@ public class SimpleAutomaticFailoverTest extends TestCase
       session.close();
 
       assertNull(message3);
+
+      assertEquals(0, sf.numSessions());
+
+      assertEquals(0, sf.numConnections());
+      
+      assertEquals(0, sf.numBackupConnections());
    }
 
    public void testFailoverChangeConnectionFactory() throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                        backupParams));
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                backupParams));
 
       ClientSession session = sf.createSession(false, true, true, false);
 
@@ -282,13 +287,19 @@ public class SimpleAutomaticFailoverTest extends TestCase
       assertNull(message3);
 
       session.close();
+
+      assertEquals(0, sf.numSessions());
+
+      assertEquals(0, sf.numConnections());
+      
+      assertEquals(0, sf.numBackupConnections());
    }
 
    public void testNoMessagesLeftAfterFailoverNewSession() throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                        backupParams));
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                backupParams));
 
       ClientSession session = sf.createSession(false, true, true, false);
 
@@ -345,13 +356,19 @@ public class SimpleAutomaticFailoverTest extends TestCase
       assertNull(message3);
 
       session.close();
+
+      assertEquals(0, sf.numSessions());
+
+      assertEquals(0, sf.numConnections());
+      
+      assertEquals(0, sf.numBackupConnections());
    }
 
    public void testCreateMoreSessionsAfterFailover() throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                        backupParams));
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                backupParams));
 
       ClientSession session = sf.createSession(false, true, true, false);
 
@@ -410,13 +427,19 @@ public class SimpleAutomaticFailoverTest extends TestCase
       session2.close();
 
       session3.close();
+
+      assertEquals(0, sf.numSessions());
+
+      assertEquals(0, sf.numConnections());
+      
+      assertEquals(0, sf.numBackupConnections());
    }
 
    public void testFailureListenerCalledOnFailure() throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                        backupParams));
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                backupParams));
 
       ClientSession session = sf.createSession(false, true, true, false);
 
@@ -489,15 +512,21 @@ public class SimpleAutomaticFailoverTest extends TestCase
       assertNull(message3);
 
       session.close();
+
+      assertEquals(0, sf.numSessions());
+
+      assertEquals(0, sf.numConnections());
+      
+      assertEquals(0, sf.numBackupConnections());
    }
 
    public void testFailoverMultipleSessions() throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                        backupParams));
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                backupParams));
 
-      final int numSessions = 10;
+      final int numSessions = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 2;
 
       List<ClientSession> sessions = new ArrayList<ClientSession>();
 
@@ -553,12 +582,8 @@ public class SimpleAutomaticFailoverTest extends TestCase
             ClientMessage message2 = cons.receive();
 
             assertEquals("aardvarks", message2.getBody().getString());
-            
-           // log.info("actually got message " + message2.getMessageID());
 
             assertEquals(j, message2.getProperty(new SimpleString("count")));
-            
-            
 
             message2.acknowledge();
          }
@@ -576,85 +601,86 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
          sess.close();
       }
+
+      assertEquals(0, sf.numSessions());
+
+      assertEquals(0, sf.numConnections());
+      
+      assertEquals(0, sf.numBackupConnections());
    }
 
-   public void testCantSetConnectorsAfterCreateSession() throws Exception
+   public void testAllConnectionsReturned() throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                        backupParams));
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                backupParams));
 
-      sf.setConnectorFactory(new InVMConnectorFactory());
-      sf.setTransportParams(new HashMap<String, Object>());
-      sf.setBackupConnectorFactory(new InVMConnectorFactory());
-      sf.setBackupTransportParams(new HashMap<String, Object>());
+      final int numSessions = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 2;
 
-      ClientSession sess = null;
+      List<ClientSession> sessions = new ArrayList<ClientSession>();
 
-      try
+      for (int i = 0; i < numSessions; i++)
       {
-         sess = sf.createSession(false, true, true, false);
+         ClientSession sess = sf.createSession(false, true, true, false);
 
-         try
-         {
-            sf.setConnectorFactory(new InVMConnectorFactory());
-
-            fail("Should throw exception");
-         }
-         catch (IllegalStateException e)
-         {
-            // Ok
-         }
-
-         try
-         {
-            sf.setTransportParams(new HashMap<String, Object>());
-
-            fail("Should throw exception");
-         }
-         catch (IllegalStateException e)
-         {
-            // Ok
-         }
-
-         try
-         {
-            sf.setBackupConnectorFactory(new InVMConnectorFactory());
-
-            fail("Should throw exception");
-         }
-         catch (IllegalStateException e)
-         {
-            // Ok
-         }
-
-         try
-         {
-            sf.setBackupTransportParams(new HashMap<String, Object>());
-
-            fail("Should throw exception");
-         }
-         catch (IllegalStateException e)
-         {
-            // Ok
-         }
+         sessions.add(sess);
       }
-      finally
+
+      for (int i = 0; i < numSessions; i++)
       {
+         ClientSession sess = sessions.get(i);
+
          sess.close();
       }
 
-      sf.setConnectorFactory(new InVMConnectorFactory());
-      sf.setTransportParams(new HashMap<String, Object>());
-      sf.setBackupConnectorFactory(new InVMConnectorFactory());
-      sf.setBackupTransportParams(new HashMap<String, Object>());
+      assertEquals(0, sf.numSessions());
+
+      assertEquals(0, sf.numConnections());
+      
+      assertEquals(0, sf.numBackupConnections());
+   }
+
+   public void testAllConnectionsReturnedAfterFailover() throws Exception
+   {
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                backupParams));
+
+      final int numSessions = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 2;
+
+      List<ClientSession> sessions = new ArrayList<ClientSession>();
+
+      for (int i = 0; i < numSessions; i++)
+      {
+         ClientSession sess = sf.createSession(false, true, true, false);
+
+         sessions.add(sess);
+      }
+
+      RemotingConnection conn = ((ClientSessionImpl)sessions.get(0)).getConnection();
+
+      // Simulate failure on connection
+      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+
+      for (int i = 0; i < numSessions; i++)
+      {
+         ClientSession sess = sessions.get(i);
+
+         sess.close();
+      }
+
+      assertEquals(0, sf.numSessions());
+
+      assertEquals(0, sf.numConnections());
+      
+      assertEquals(0, sf.numBackupConnections());
    }
 
    public void testFailureAfterFailover() throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                        backupParams));
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                backupParams));
 
       ClientSession session = sf.createSession(false, true, true, false);
 
@@ -729,10 +755,16 @@ public class SimpleAutomaticFailoverTest extends TestCase
       }
       catch (MessagingException me)
       {
-         assertEquals(MessagingException.NOT_CONNECTED, me.getCode());
+         assertEquals(MessagingException.OBJECT_CLOSED, me.getCode());
       }
 
       session.close();
+
+      assertEquals(0, sf.numSessions());
+
+      assertEquals(0, sf.numConnections());
+      
+      assertEquals(0, sf.numBackupConnections());
    }
 
    // Package protected ---------------------------------------------
@@ -767,8 +799,6 @@ public class SimpleAutomaticFailoverTest extends TestCase
    @Override
    protected void tearDown() throws Exception
    {
-      assertEquals(0, ConnectionRegistryImpl.instance.size());
-
       assertEquals(0, backupService.getServer().getRemotingService().getConnections().size());
 
       backupService.stop();

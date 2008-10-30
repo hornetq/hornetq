@@ -22,17 +22,7 @@
 
 package org.jboss.messaging.tests.unit.jms.referenceable;
 
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import java.util.Map;
-
-import javax.naming.Reference;
-
 import junit.framework.TestCase;
-
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.jms.referenceable.ConnectionFactoryObjectFactory;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

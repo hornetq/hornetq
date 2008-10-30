@@ -22,9 +22,9 @@
 
 package org.jboss.messaging.jms.server;
 
-import org.jboss.messaging.core.config.TransportConfiguration;
-
 import java.util.List;
+
+import org.jboss.messaging.core.config.TransportConfiguration;
 
 /**
  * The JMS Management interface.
@@ -82,7 +82,7 @@ public interface JMSServerManager
     *            if a problem occurred removing the destination
     */
    boolean undeployDestination(String name) throws Exception;
-   
+
    /**
     * destroys a queue and removes it from JNDI
     * 
@@ -105,26 +105,43 @@ public interface JMSServerManager
     */
    boolean destroyTopic(String name) throws Exception;
 
-   boolean createConnectionFactory(String name, TransportConfiguration connectorConfig,
-            TransportConfiguration backupConnectorConfig,
-            long pingPeriod, long callTimeout, String clientID,
-         int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
-         int producerWindowSize, int producerMaxRate,
-         boolean blockOnAcknowledge,
-         boolean blockOnNonPersistentSend,
-         boolean blockOnPersistentSend, boolean autoGroupId, String jndiBinding)
-         throws Exception;
+   boolean createConnectionFactory(String name,
+                                   TransportConfiguration connectorConfig,
+                                   TransportConfiguration backupConnectorConfig,
+                                   long pingPeriod,
+                                   int pingPoolSize,
+                                   long callTimeout,
+                                   String clientID,
+                                   int dupsOKBatchSize,
+                                   int consumerWindowSize,
+                                   int consumerMaxRate,
+                                   int producerWindowSize,
+                                   int producerMaxRate,
+                                   boolean blockOnAcknowledge,
+                                   boolean blockOnNonPersistentSend,
+                                   boolean blockOnPersistentSend,
+                                   boolean autoGroupId,
+                                   int maxConnections,
+                                   String jndiBinding) throws Exception;
 
-
-   boolean createConnectionFactory(String name, TransportConfiguration connectorConfig,
-            TransportConfiguration backupConnectorConfig,
-            long pingPeriod, long callTimeout, String clientID,
-         int dupsOKBatchSize, int consumerWindowSize, int consumerMaxRate,
-         int producerWindowSize, int producerMaxRate,
-         boolean blockOnAcknowledge,
-         boolean blockOnNonPersistentSend,
-         boolean blockOnPersistentSend, boolean autoGroupId,  List<String> jndiBinding)
-         throws Exception;
+   boolean createConnectionFactory(String name,
+                                   TransportConfiguration connectorConfig,
+                                   TransportConfiguration backupConnectorConfig,
+                                   long pingPeriod,
+                                   int pingPoolSize,
+                                   long callTimeout,
+                                   String clientID,
+                                   int dupsOKBatchSize,
+                                   int consumerWindowSize,
+                                   int consumerMaxRate,
+                                   int producerWindowSize,
+                                   int producerMaxRate,
+                                   boolean blockOnAcknowledge,
+                                   boolean blockOnNonPersistentSend,
+                                   boolean blockOnPersistentSend,
+                                   boolean autoGroupId,
+                                   int maxConnections,
+                                   List<String> jndiBinding) throws Exception;
 
    /**
     * destroys a connection factory.

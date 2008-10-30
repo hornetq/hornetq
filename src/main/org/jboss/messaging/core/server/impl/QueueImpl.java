@@ -35,8 +35,8 @@ import org.jboss.messaging.core.server.DistributionPolicy;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ScheduledDeliveryHandler;
+import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
@@ -151,7 +151,7 @@ public class QueueImpl implements Queue
    }
 
    public HandleStatus addLast(final MessageReference ref)
-   {
+   {      
       HandleStatus status = add(ref, false);
 
       return status;
@@ -196,7 +196,6 @@ public class QueueImpl implements Queue
    {
       deliver();
    }
-
    
    public void addConsumer(final Consumer consumer)
    {
@@ -211,7 +210,7 @@ public class QueueImpl implements Queue
       {
          promptDelivery = false;
       }
-
+      
       return removed;
    }
 
@@ -298,7 +297,7 @@ public class QueueImpl implements Queue
    }
 
    public synchronized int getMessageCount()
-   {
+   {    
       return messageReferences.size() + getScheduledCount() + getDeliveringCount();
    }
 
@@ -322,11 +321,6 @@ public class QueueImpl implements Queue
       deliveringCount.decrementAndGet();
 
       sizeBytes.addAndGet(-ref.getMessage().getEncodeSize());
-
-      // if (flowController != null)
-      // {
-      // flowController.messageAcknowledged();
-      // }
    }
 
    public void referenceCancelled()
@@ -510,7 +504,7 @@ public class QueueImpl implements Queue
    }
 
    public synchronized void setBackup()
-   {
+   {    
       this.backup = true;
 
       this.direct = false;
@@ -522,9 +516,9 @@ public class QueueImpl implements Queue
    }
 
    public synchronized void activate()
-   {
+   {      
       consumersToFailover = distributionPolicy.getConsumerCount();
-
+      
       if (consumersToFailover == 0)
       {
          backup = false;
@@ -534,13 +528,13 @@ public class QueueImpl implements Queue
    public synchronized boolean consumerFailedOver()
    {
       consumersToFailover--;
-
+      
       if (consumersToFailover == 0)
       {
          // All consumers for the queue have failed over, can re-activate it now
 
          backup = false;
-
+         
          scheduledDeliveryHandler.reSchedule();
 
          return true;
@@ -588,7 +582,7 @@ public class QueueImpl implements Queue
       {
          return;
       }
-
+      
       MessageReference reference;
 
       Iterator<MessageReference> iterator = null;
@@ -750,8 +744,8 @@ public class QueueImpl implements Queue
          waitingToDeliver.set(false);
 
          synchronized (QueueImpl.this)
-         {
-            deliver();
+         {          
+            deliver();            
          }
       }
    }

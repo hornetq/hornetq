@@ -22,15 +22,21 @@
 
 package org.jboss.messaging.tests.unit.jms.client;
 
-import junit.framework.TestCase;
-import static org.easymock.EasyMock.*;
-import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.jms.client.JBossConnectionMetaData;
+import static org.easymock.EasyMock.createStrictMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 
-import javax.jms.ConnectionMetaData;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.jms.ConnectionMetaData;
+
+import junit.framework.TestCase;
+
+import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.jms.client.JBossConnectionMetaData;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

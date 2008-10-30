@@ -22,6 +22,11 @@
 
 package org.jboss.messaging.core.persistence.impl.nullpm;
 
+import java.util.List;
+import java.util.Map;
+
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
@@ -36,10 +41,6 @@ import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TimeAndCounterIDGenerator;
-
-import javax.transaction.xa.Xid;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 

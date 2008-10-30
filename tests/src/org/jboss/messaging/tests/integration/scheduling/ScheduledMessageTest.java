@@ -21,6 +21,12 @@
  */
 package org.jboss.messaging.tests.integration.scheduling;
 
+import java.io.File;
+import java.util.Calendar;
+
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -38,11 +44,6 @@ import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.util.id.GUID;
-
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.io.File;
-import java.util.Calendar;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

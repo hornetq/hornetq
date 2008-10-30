@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.server;
 
-
 import java.util.List;
 
 import org.jboss.messaging.core.remoting.Packet;
