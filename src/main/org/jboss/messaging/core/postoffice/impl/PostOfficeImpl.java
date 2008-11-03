@@ -137,6 +137,14 @@ public class PostOfficeImpl implements PostOffice
       pagingManager.stop();
 
       addressManager.clear();
+      
+      //Release all the locks
+      for (SendLock lock: addressLocks.values())
+      {
+         lock.close();
+      }
+      
+      addressLocks.clear();
 
       started = false;
    }

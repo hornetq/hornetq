@@ -40,14 +40,26 @@ public class SendLockImpl implements SendLock
    private boolean locked;
    
    private int count;
+   
+   private boolean closed;
       
    public synchronized void lock()
    {
+      if (closed)
+      {
+         return;
+      }
+      
       while (count > 0 || locked)
       {
          try
          {
             wait();
+            
+            if (closed)
+            {
+               return;
+            }
          }
          catch (InterruptedException e)
          {            
@@ -59,6 +71,11 @@ public class SendLockImpl implements SendLock
    
    public synchronized void unlock()
    {
+      if (closed)
+      {
+         return;
+      }
+      
       locked = false;
       
       notifyAll();
@@ -66,11 +83,21 @@ public class SendLockImpl implements SendLock
      
    public synchronized void beforeSend()   
    {
+      if (closed)
+      {
+         return;
+      }
+      
       while (locked)
       {
          try
          {
             wait();
+            
+            if (closed)
+            {
+               return;
+            }
          }
          catch (InterruptedException e)
          {            
@@ -82,6 +109,11 @@ public class SendLockImpl implements SendLock
    
    public synchronized void afterSend()
    {
+      if (closed)
+      {
+         return;
+      }
+      
       count--;
       
       if (count < 0)
@@ -93,6 +125,13 @@ public class SendLockImpl implements SendLock
       {         
          notifyAll();
       }
+   }
+   
+   public synchronized void close()
+   {
+      closed = true;
+      
+      notifyAll();
    }
 
 }

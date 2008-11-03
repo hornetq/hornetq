@@ -41,4 +41,6 @@ public interface SendLock
    void beforeSend();
    
    void afterSend();
+   
+   void close();
 }
