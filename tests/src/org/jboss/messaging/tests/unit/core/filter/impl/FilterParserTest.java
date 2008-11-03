@@ -156,7 +156,7 @@ public class FilterParserTest extends UnitTestCase
       Boolean bool = (Boolean)result.apply();
       assertTrue("is false", !bool.booleanValue());
    }
-   
+
    public void testTrueNOTINOperator() throws Exception
    {
       log.trace("parse(Status IN ('new', 'cleared', 'acknowledged'))");
@@ -168,7 +168,7 @@ public class FilterParserTest extends UnitTestCase
       Boolean bool = (Boolean)result.apply();
       assertTrue(bool.booleanValue());
    }
-   
+
    public void testFalseNOTINOperator() throws Exception
    {
       log.trace("parse(Status IN ('new', 'cleared', 'acknowledged'))");
@@ -359,29 +359,6 @@ public class FilterParserTest extends UnitTestCase
          log.trace("failed", e);
          fail("" + e);
       }
-   }
-
-   /** This testcase does not use the JBossServer so override
-   the testServerFound to be a noop
-   */
-   public void testServerFound()
-   {
-   }
-
-   public void testParserPerf() throws Exception
-   {
-      SimpleString filter = new SimpleString("Cateogry IN ('category1') AND Rating >= 2");
-      SimpleString categoryKey = new SimpleString("Cateogry");
-      SimpleString ratingKey = new SimpleString("Rating");
-      long start = System.currentTimeMillis();
-      for (int i = 0; i < 100000; i++)
-      {
-         Operator result = (Operator)parser.parse(filter, identifierMap);
-         (identifierMap.get(categoryKey)).setValue(new SimpleString("category1"));
-         (identifierMap.get(ratingKey)).setValue(new Integer(3));
-         Boolean bool = (Boolean)result.apply();
-      }
-      System.out.println(System.currentTimeMillis() - start + " ms");
    }
 
    public static void main(java.lang.String[] args)
