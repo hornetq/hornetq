@@ -24,6 +24,8 @@ package org.jboss.messaging.core.filter.impl;
 
 import java.util.HashSet;
 
+import org.jboss.messaging.util.SimpleString;
+
 /**
 * Implementations of the operators used in JBM filter expressions
 *
@@ -79,12 +81,12 @@ public class Operator
   public final static int IN = 22;
   public final static int NOT_IN = 23;
 
-  public final static int STRING = 0;
   public final static int DOUBLE = 1;
   //DOUBLE FLOAT
   public final static int LONG = 2;
   //LONG BYTE SHORT INTEGER
   public final static int BOOLEAN = 3;
+  public final static int SIMPLE_STRING = 4;
 
   public Operator(int operation, Object oper1, Object oper2, Object oper3)
   {
@@ -205,7 +207,7 @@ public class Operator
            if (class2 == DOUBLE)
               return Boolean.valueOf(((Number) arg1).doubleValue() == ((Number) arg2).doubleValue());
            return Boolean.FALSE;
-        case STRING:
+        case SIMPLE_STRING:
         case BOOLEAN:
            computeArgument2();
            if (arg2 == null)
@@ -464,7 +466,7 @@ public class Operator
            if (class2 == DOUBLE)
               return Boolean.valueOf(((Number) arg1).doubleValue() != ((Number) arg2).doubleValue());
            return Boolean.FALSE;
-        case STRING:
+        case SIMPLE_STRING:
         case BOOLEAN:
            computeArgument2();
            if (arg2 == null)
@@ -689,13 +691,13 @@ public class Operator
      computeArgument1();
      if (arg1 == null)
         return null;
-     if (class1 != STRING)
+     if (class1 != SIMPLE_STRING)
         throwBadObjectException(class1);
 
      computeArgument2();
      if (arg2 == null)
         return null;
-     if (class2 != STRING)
+     if (class2 != SIMPLE_STRING)
         throwBadObjectException(class2);
 
      if (use_escape)
@@ -704,7 +706,7 @@ public class Operator
         if (arg3 == null)
            return null;
 
-        if (class3 != STRING)
+        if (class3 != SIMPLE_STRING)
            throwBadObjectException(class3);
 
         StringBuffer escapeBuf = new StringBuffer((String) arg3);
@@ -716,7 +718,7 @@ public class Operator
 
      if (re == null)
         // the first time through we prepare the regular expression
-        re = new RegExp ((String) arg2, escapeChar);
+        re = new RegExp (arg2.toString(), escapeChar);
      
      boolean result = re.isMatch (arg1);
      if (not)
@@ -746,7 +748,7 @@ public class Operator
      computeArgument1();
      if (arg1 == null)
         return null;
-     if (class1 != STRING)
+     if (class1 != SIMPLE_STRING)
         throwBadObjectException(class1);
      if (((HashSet) oper2).contains(arg1))
         return Boolean.FALSE;
@@ -774,8 +776,8 @@ public class Operator
 
      className = arg1.getClass();
 
-     if (className == String.class)
-        class1 = STRING;
+     if (className == SimpleString.class)
+        class1 = SIMPLE_STRING;
      else if (className == Double.class)
         class1 = DOUBLE;
      else if (className == Long.class)
@@ -825,8 +827,8 @@ public class Operator
 
      className = arg2.getClass();
 
-     if (className == String.class)
-        class2 = STRING;
+     if (className == SimpleString.class)
+        class2 = SIMPLE_STRING;
      else if (className == Double.class)
         class2 = DOUBLE;
      else if (className == Long.class)
@@ -876,8 +878,8 @@ public class Operator
 
      className = arg3.getClass();
 
-     if (className == String.class)
-        class3 = STRING;
+     if (className == SimpleString.class)
+        class3 = SIMPLE_STRING;
      else if (className == Double.class)
         class3 = DOUBLE;
      else if (className == Long.class)
@@ -985,8 +987,8 @@ public class Operator
      String str = "Unknown";
      switch (class1)
      {
-        case STRING:
-           str = "String";
+        case SIMPLE_STRING:
+           str = "SimpleString";
            break;
         case LONG:
            str = "Long";

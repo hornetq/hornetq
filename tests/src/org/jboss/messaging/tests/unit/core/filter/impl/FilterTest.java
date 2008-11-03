@@ -60,7 +60,7 @@ public class FilterTest  extends TestCase
    {
       filter = new FilterImpl(new SimpleString("color = 'RED'"));  
 
-      message.putStringProperty(new  SimpleString("color"), new SimpleString("RED"));
+      message.putStringProperty(new SimpleString("color"), new SimpleString("RED"));
       assertTrue(filter.match(message));
       message = new ServerMessageImpl();
       assertFalse(filter.match(message));

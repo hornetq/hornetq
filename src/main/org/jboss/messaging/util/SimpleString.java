@@ -298,5 +298,28 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
 		return SIZE_INT + str.data.length;
 	}
 
+   public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {
+      if (srcBegin < 0) {
+          throw new StringIndexOutOfBoundsException(srcBegin);
+      }
+      if (srcEnd > length()) {
+          throw new StringIndexOutOfBoundsException(srcEnd);
+      }
+      if (srcBegin > srcEnd) {
+          throw new StringIndexOutOfBoundsException(srcEnd - srcBegin);
+      }
+      
+      int j = 0;
+
+      for (int i = srcBegin; i <  srcEnd - srcBegin; i++)
+      {
+         int low = data[j++] & 0xFF;
+         
+         int high = (data[j++] << 8) & 0xFF00 ;
+         
+         dst[i] = (char)(low | high);
+      }
+  }
+
 
 }

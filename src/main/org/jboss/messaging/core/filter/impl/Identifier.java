@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.filter.impl;
 
+import org.jboss.messaging.util.SimpleString;
+
 /**
  * 
  * A Identifier
@@ -34,13 +36,13 @@ package org.jboss.messaging.core.filter.impl;
  */
 public class Identifier
 {
-   private final String name;
+   private final SimpleString name;
    
    private Object value;
    
    private final int hash;
    
-   public Identifier(final String name)
+   public Identifier(final SimpleString name)
    {
       this.name = name;
       
@@ -72,7 +74,7 @@ public class Identifier
       return hash;
    }
 
-   public String getName()
+   public SimpleString getName()
    {
       return name;
    }

@@ -39,6 +39,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.SimpleStringReader;
+
 /**
  * A JavaCC 2.0 grammar for JBoss Messaging filters
  *
@@ -63,16 +66,16 @@ public class FilterParser
       this(new StringReader(""));
    }
 
-   public Object parse(String selector, Map identifierMap)
+   public Object parse(SimpleString selector, Map identifierMap)
       throws ParseException
    {
       return parse(selector, identifierMap, false);
    }
    
-   public Object parse(String selector, Map identifierMap, boolean trace)
+   public Object parse(SimpleString selector, Map identifierMap, boolean trace)
       throws ParseException
    {
-      StringReader sr = new StringReader(selector);
+      SimpleStringReader sr = new SimpleStringReader(selector);
       ReInit(sr);
 
       // This will have no effect unless the debugging options are true      
@@ -93,7 +96,7 @@ public class FilterParser
     * Strip off the leading and trailing (quote) chars from the given string
     * and return it. 
     */
-   private String stripQuotes(String image)
+   private SimpleString stripQuotes(String image)
    {
       StringBuffer result = new StringBuffer(image.length()-2);
       int i = 1;
@@ -114,16 +117,16 @@ public class FilterParser
             result.append(image.charAt(i));
          ++i;
       }
-      return result.toString();
+      return new SimpleString(result.toString());
    }
    
-   public static Object doParse(String selector, Map identifierMap)
+   public static Object doParse(SimpleString selector, Map identifierMap)
       throws ParseException
    {
       return doParse(selector, identifierMap, false);
    }
    
-   public static Object doParse(String selector, Map identifierMap, boolean trace)
+   public static Object doParse(SimpleString selector, Map identifierMap, boolean trace)
       throws ParseException
    {
       FilterParser parser = new FilterParser();
@@ -216,7 +219,7 @@ TOKEN :
 
 TOKEN :
 {
-   < STRING:
+   < SIMPLE_STRING:
       "'"
       (   (~["'","\n","\r"])
         | ("''")
@@ -416,7 +419,7 @@ void stringToken(Set set) :
    Token t = null;
 }
 {
-   [ t=<STRING> ]
+   [ t=<SIMPLE_STRING> ]
    {
       if (t != null)
         set.add(stripQuotes(t.image));
@@ -546,7 +549,7 @@ Object stringLiteral() :
    Token string = null;
 }
 {
-   string=<STRING>
+   string=<SIMPLE_STRING>
    {
       return stripQuotes(string.image);
    }
@@ -630,11 +633,12 @@ Object identifier() :
 {
    id=<IDENTIFIER>
    {
-      Identifier identifier = (Identifier) identifierMap.get(id.image);
+      SimpleString simage = new SimpleString(id.image);
+      Identifier identifier = (Identifier) identifierMap.get(simage);
       if (identifier == null)
       {
-         identifier = new Identifier(id.image);
-         identifierMap.put(id.image, identifier);
+         identifier = new Identifier(simage);
+         identifierMap.put(simage, identifier);
 	   }
       return identifier;
    }
