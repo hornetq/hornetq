@@ -17,11 +17,6 @@
       <!-- true to expose JBoss Messaging resources through JMX -->
       <jmx-management-enabled>true</jmx-management-enabled>
     
-      <!--  call timeout in milliseconds -->
-      <call-timeout>30000</call-timeout>
-      
-      <packet-confirmation-batch-size>10000</packet-confirmation-batch-size>
-      
       <connection-scan-period>10000</connection-scan-period>
       
       <!-- Example interceptors 

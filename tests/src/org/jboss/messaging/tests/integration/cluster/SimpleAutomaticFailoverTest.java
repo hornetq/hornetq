@@ -86,6 +86,8 @@ public class SimpleAutomaticFailoverTest extends TestCase
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
+      sf.setSendWindowSize(32 * 1024);
+      
       ClientSession session = sf.createSession(false, true, true, false);
 
       session.createQueue(ADDRESS, ADDRESS, null, false, false);
@@ -140,6 +142,8 @@ public class SimpleAutomaticFailoverTest extends TestCase
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
 
+      sf.setSendWindowSize(32 * 1024);
+      
       ClientSession session = sf.createSession(false, true, true, false);
 
       session.createQueue(ADDRESS, ADDRESS, null, false, false);
@@ -219,6 +223,8 @@ public class SimpleAutomaticFailoverTest extends TestCase
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
 
+      sf.setSendWindowSize(32 * 1024);
+      
       ClientSession session = sf.createSession(false, true, true, false);
 
       session.createQueue(ADDRESS, ADDRESS, null, false, false);
@@ -301,6 +307,8 @@ public class SimpleAutomaticFailoverTest extends TestCase
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
 
+      sf.setSendWindowSize(32 * 1024);
+      
       ClientSession session = sf.createSession(false, true, true, false);
 
       session.createQueue(ADDRESS, ADDRESS, null, false, false);
@@ -370,6 +378,8 @@ public class SimpleAutomaticFailoverTest extends TestCase
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
 
+      sf.setSendWindowSize(32 * 1024);
+      
       ClientSession session = sf.createSession(false, true, true, false);
 
       session.createQueue(ADDRESS, ADDRESS, null, false, false);
@@ -441,6 +451,8 @@ public class SimpleAutomaticFailoverTest extends TestCase
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
 
+      sf.setSendWindowSize(32 * 1024);
+      
       ClientSession session = sf.createSession(false, true, true, false);
 
       session.createQueue(ADDRESS, ADDRESS, null, false, false);
@@ -526,6 +538,8 @@ public class SimpleAutomaticFailoverTest extends TestCase
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
 
+      sf.setSendWindowSize(32 * 1024);
+      
       final int numSessions = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 2;
 
       List<ClientSession> sessions = new ArrayList<ClientSession>();
@@ -615,6 +629,8 @@ public class SimpleAutomaticFailoverTest extends TestCase
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
 
+      sf.setSendWindowSize(32 * 1024);
+      
       final int numSessions = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 2;
 
       List<ClientSession> sessions = new ArrayList<ClientSession>();
@@ -646,6 +662,8 @@ public class SimpleAutomaticFailoverTest extends TestCase
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
 
+      sf.setSendWindowSize(32 * 1024);
+      
       final int numSessions = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 2;
 
       List<ClientSession> sessions = new ArrayList<ClientSession>();
@@ -682,6 +700,8 @@ public class SimpleAutomaticFailoverTest extends TestCase
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
 
+      sf.setSendWindowSize(32 * 1024);
+      
       ClientSession session = sf.createSession(false, true, true, false);
 
       session.createQueue(ADDRESS, ADDRESS, null, false, false);
@@ -776,7 +796,6 @@ public class SimpleAutomaticFailoverTest extends TestCase
    {
       Configuration backupConf = new ConfigurationImpl();
       backupConf.setSecurityEnabled(false);
-      backupConf.setPacketConfirmationBatchSize(10);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       backupConf.getAcceptorConfigurations()
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
@@ -787,7 +806,6 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
-      liveConf.setPacketConfirmationBatchSize(10);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
       liveConf.setBackupConnectorConfiguration(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",

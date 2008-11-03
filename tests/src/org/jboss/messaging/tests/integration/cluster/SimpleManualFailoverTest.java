@@ -181,7 +181,6 @@ public class SimpleManualFailoverTest extends TestCase
    {
       Configuration server1Conf = new ConfigurationImpl();
       server1Conf.setSecurityEnabled(false);
-      server1Conf.setPacketConfirmationBatchSize(1);
       server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       server1Conf.getAcceptorConfigurations()
                  .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
@@ -191,7 +190,6 @@ public class SimpleManualFailoverTest extends TestCase
 
       Configuration server0Conf = new ConfigurationImpl();
       server0Conf.setSecurityEnabled(false);
-      server0Conf.setPacketConfirmationBatchSize(1);
       server0Conf.getAcceptorConfigurations()
                  .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
       server0Service = MessagingServiceImpl.newNullStorageMessagingServer(server0Conf);

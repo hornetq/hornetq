@@ -230,6 +230,8 @@ public class RandomFailoverTest extends TestCase
                                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                backupParams));
 
+         sf.setSendWindowSize(32 * 1024);
+         
          ClientSession session = sf.createSession(false, false, false, false);
 
          Failer failer = startFailer(1000, session);
@@ -499,7 +501,7 @@ public class RandomFailoverTest extends TestCase
 
       final int numMessages = 100;
 
-      final int numSessions = 50;
+      final int numSessions = 10;
 
       Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
       Set<ClientSession> sessions = new HashSet<ClientSession>();
@@ -1468,7 +1470,6 @@ public class RandomFailoverTest extends TestCase
    {
       Configuration backupConf = new ConfigurationImpl();
       backupConf.setSecurityEnabled(false);
-      backupConf.setPacketConfirmationBatchSize(10);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       backupConf.getAcceptorConfigurations()
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
@@ -1483,7 +1484,6 @@ public class RandomFailoverTest extends TestCase
 
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
-      liveConf.setPacketConfirmationBatchSize(10);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
       liveConf.setBackupConnectorConfiguration(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",

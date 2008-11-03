@@ -68,14 +68,6 @@ public interface Configuration extends Serializable
 
    void setJMXManagementEnabled(boolean enabled);
 
-   long getCallTimeout();
-
-   void setCallTimeout(long timeout);
-
-   int getPacketConfirmationBatchSize();
-
-   void setPacketConfirmationBatchSize(int size);
-
    List<String> getInterceptorClassNames();
 
    void setInterceptorClassNames(List<String> interceptors);

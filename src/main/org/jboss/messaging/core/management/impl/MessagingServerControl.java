@@ -71,7 +71,6 @@ public class MessagingServerControl extends StandardMBean implements
    private final PostOffice postOffice;
    private final StorageManager storageManager;
    private final Configuration configuration;
-   private final HierarchicalRepository<Set<Role>> securityRepository;
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
    private final MessagingServer server;
    private final MessageCounterManager messageCounterManager;
@@ -85,7 +84,6 @@ public class MessagingServerControl extends StandardMBean implements
 
    public MessagingServerControl(PostOffice postOffice,
          StorageManager storageManager, Configuration configuration,
-         HierarchicalRepository<Set<Role>> securityRepository,
          HierarchicalRepository<QueueSettings> queueSettingsRepository,
          MessagingServer messagingServer, MessageCounterManager messageCounterManager,
          NotificationBroadcasterSupport broadcaster) throws Exception
@@ -94,7 +92,6 @@ public class MessagingServerControl extends StandardMBean implements
       this.postOffice = postOffice;
       this.storageManager = storageManager;
       this.configuration = configuration;
-      this.securityRepository = securityRepository;
       this.queueSettingsRepository = queueSettingsRepository;
       this.server = messagingServer;
       this.messageCounterManager = messageCounterManager;
@@ -244,11 +241,6 @@ public class MessagingServerControl extends StandardMBean implements
       return configuration.getBindingsDirectory();
    }
 
-   public long getCallTimeout()
-   {
-      return configuration.getCallTimeout();      
-   }
-   
    public long getConnectionScanPeriod()
    {
       return configuration.getConnectionScanPeriod();      
@@ -294,11 +286,6 @@ public class MessagingServerControl extends StandardMBean implements
       return configuration.getPagingMaxGlobalSizeBytes();
    }
    
-   public int getPacketConfirmationBatchSize()
-   {
-      return configuration.getPacketConfirmationBatchSize();
-   }
-
    public String getPagingDirectory()
    {      
       return configuration.getPagingDirectory();

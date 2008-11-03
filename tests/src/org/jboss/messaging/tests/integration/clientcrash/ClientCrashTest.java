@@ -26,12 +26,12 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
-import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_CALL_TIMEOUT;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.ClientConsumer;
@@ -63,7 +63,9 @@ public class ClientCrashTest extends TestCase
    // Constants -----------------------------------------------------
 
    public static final SimpleString QUEUE = new SimpleString("ClientCrashTestQueue");
+
    public static final String MESSAGE_TEXT_FROM_SERVER = "ClientCrashTest from server";
+
    public static final String MESSAGE_TEXT_FROM_CLIENT = "ClientCrashTest from client";
 
    // Static --------------------------------------------------------
@@ -73,6 +75,7 @@ public class ClientCrashTest extends TestCase
    // Attributes ----------------------------------------------------
 
    private MessagingService messagingService;
+
    private ClientSessionFactory sf;
 
    // Constructors --------------------------------------------------
@@ -100,9 +103,8 @@ public class ClientCrashTest extends TestCase
 
       // spawn a JVM that creates a JMS client, which waits to receive a test
       // message
-      Process p = SpawnedVMSupport.spawnVM(CrashClient.class
-              .getName(), new String[]{Integer
-              .toString(numberOfConnectionsOnTheClient)});
+      Process p = SpawnedVMSupport.spawnVM(CrashClient.class.getName(),
+                                           new String[] { Integer.toString(numberOfConnectionsOnTheClient) });
 
       ClientSession session = sf.createSession(false, true, true, false);
       session.createQueue(QUEUE, QUEUE, null, false, false);
@@ -116,10 +118,13 @@ public class ClientCrashTest extends TestCase
       assertNotNull("no message received", messageFromClient);
       assertEquals(MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getBody().getString());
 
-      assertActiveConnections(1 + 1); //One local and one from the other vm
+      assertActiveConnections(1 + 1); // One local and one from the other vm
 
-      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
-              System.currentTimeMillis(), (byte) 1);
+      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+                                                          false,
+                                                          0,
+                                                          System.currentTimeMillis(),
+                                                          (byte)1);
       message.getBody().putString(ClientCrashTest.MESSAGE_TEXT_FROM_SERVER);
       producer.send(message);
 
@@ -149,23 +154,24 @@ public class ClientCrashTest extends TestCase
 
       ConfigurationImpl config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
-      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory"));
+      config.getAcceptorConfigurations()
+            .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory"));
       messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
       messagingService.start();
 
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"),
-           null,
-           2000,
-           DEFAULT_CALL_TIMEOUT,
-           DEFAULT_CONSUMER_WINDOW_SIZE,
-           DEFAULT_CONSUMER_MAX_RATE,
-           DEFAULT_SEND_WINDOW_SIZE,
-           DEFAULT_PRODUCER_MAX_RATE,
-           DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-           DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-           DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-           DEFAULT_AUTO_GROUP_ID,
-           DEFAULT_MAX_CONNECTIONS);
+                                        null,
+                                        2000,
+                                        DEFAULT_CALL_TIMEOUT,
+                                        DEFAULT_CONSUMER_WINDOW_SIZE,
+                                        DEFAULT_CONSUMER_MAX_RATE,
+                                        DEFAULT_SEND_WINDOW_SIZE,
+                                        DEFAULT_PRODUCER_MAX_RATE,
+                                        DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                        DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                        DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                        DEFAULT_AUTO_GROUP_ID,
+                                        DEFAULT_MAX_CONNECTIONS);
    }
 
    @Override
@@ -180,8 +186,7 @@ public class ClientCrashTest extends TestCase
 
    // Private -------------------------------------------------------
 
-   private void assertActiveConnections(int expectedActiveConnections)
-           throws Exception
+   private void assertActiveConnections(int expectedActiveConnections) throws Exception
    {
       assertEquals(expectedActiveConnections, messagingService.getServer().getServerManagement().getConnectionCount());
    }

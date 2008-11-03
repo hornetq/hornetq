@@ -22,8 +22,6 @@
 
 package org.jboss.messaging.core.management;
 
-import java.util.Set;
-
 import javax.management.NotificationBroadcaster;
 import javax.management.ObjectName;
 
@@ -31,7 +29,6 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -51,8 +48,7 @@ public interface ManagementService extends NotificationBroadcaster
 
    MessagingServerControlMBean registerServer(PostOffice postOffice,
                                               StorageManager storageManager,
-                                              Configuration configuration,
-                                              HierarchicalRepository<Set<Role>> securityRepository,
+                                              Configuration configuration,                                            
                                               HierarchicalRepository<QueueSettings> queueSettingsRepository,
                                               MessagingServer messagingServer) throws Exception;
 

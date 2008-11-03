@@ -11,7 +11,6 @@
  */
 package org.jboss.messaging.core.client.impl;
 
-import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_CALL_TIMEOUT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EARLY_RESPONSE;
 
 import java.util.HashSet;
@@ -73,6 +72,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    public static final boolean DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND = false;
 
    public static final boolean DEFAULT_AUTO_GROUP_ID = false;
+   
+   public static final long DEFAULT_CALL_TIMEOUT = 30000;
+      
 
    public static final int DEFAULT_MAX_CONNECTIONS = 8;
 
@@ -158,8 +160,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                     transportParams,
                                                     pingPeriod,
                                                     callTimeout,
-                                                    maxConnections,
-                                                    sendWindowSize);
+                                                    maxConnections);
       if (backupConfig != null)
       {
          backupConnectorFactory = instantiateConnectorFactory(backupConfig.getFactoryClassName());
@@ -170,8 +171,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                              backupTransportParams,
                                                              pingPeriod,
                                                              callTimeout,
-                                                             maxConnections,
-                                                             sendWindowSize);
+                                                             maxConnections);
       }
       else
       {
@@ -192,6 +192,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       this.blockOnPersistentSend = blockOnPersistentSend;
       this.autoGroupId = autoGroupId;
       this.maxConnections = maxConnections;
+      log.info("Creating csf with send window size " + this.sendWindowSize);
    }
 
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
@@ -535,7 +536,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                      backupConnection = backupConnectionManager.getConnection();
                   }
                   
-                  channel1 = connection.getChannel(1, -1);
+                  channel1 = connection.getChannel(1, -1, false);
                   
                   //Lock it - this must be done while the failoverLock is held
                   channel1.getLock().lock();
@@ -558,7 +559,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                          password,
                                                          xa,
                                                          autoCommitSends,
-                                                         autoCommitAcks);
+                                                         autoCommitAcks,
+                                                         sendWindowSize);
       
                Packet pResponse = channel1.sendBlocking(request);
                
@@ -576,14 +578,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                   retry = true;                             
                }
                else
-               {
-         
+               {         
                   CreateSessionResponseMessage response = (CreateSessionResponseMessage)pResponse;
          
-                  int packetConfirmationBatchSize = response.getPacketConfirmationBatchSize();
-         
                   Channel sessionChannel = connection.getChannel(sessionChannelID,
-                                                                 packetConfirmationBatchSize);
+                                                                 sendWindowSize,
+                                                                 sendWindowSize != -1);
          
                   ClientSessionInternal session = new ClientSessionImpl(this,
                                                                         name,
@@ -680,7 +680,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       
       for (RemotingConnection conn: conns)
       {
-         Channel channel1 = conn.getChannel(1, -1);
+         Channel channel1 = conn.getChannel(1, -1, false);
          
          channel1.getLock().lock();
       }
@@ -692,7 +692,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       
       for (RemotingConnection conn: conns)
       {
-         Channel channel1 = conn.getChannel(1, -1);
+         Channel channel1 = conn.getChannel(1, -1, false);
          
          channel1.getLock().unlock();
       }
@@ -704,7 +704,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       
       for (RemotingConnection conn: conns)
       {
-         Channel channel1 = conn.getChannel(1, -1);
+         Channel channel1 = conn.getChannel(1, -1, false);
          
          channel1.returnBlocking();
       }

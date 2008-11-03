@@ -70,7 +70,8 @@ public class MessagingServerPacketHandler implements ChannelHandler
                                                                msg.getVersion(), msg.getUsername(),
                                                                msg.getPassword(), msg.isXA(),
                                                                msg.isAutoCommitSends(),
-                                                               msg.isAutoCommitAcks());
+                                                               msg.isAutoCommitAcks(),
+                                                               msg.getWindowSize());
          
          result = channel1.replicatePacket(replPacket);
       }
@@ -97,7 +98,8 @@ public class MessagingServerPacketHandler implements ChannelHandler
                                                connection,
                                                request.isAutoCommitSends(),
                                                request.isAutoCommitAcks(),
-                                               request.isXA());
+                                               request.isXA(),
+                                               request.getWindowSize());
                break;
             }
             case REPLICATE_CREATESESSION:
@@ -112,7 +114,8 @@ public class MessagingServerPacketHandler implements ChannelHandler
                                                         connection,
                                                         request.isAutoCommitSends(),
                                                         request.isAutoCommitAcks(),
-                                                        request.isXA());
+                                                        request.isXA(),
+                                                        request.getWindowSize());
                break;
             }
             case REATTACH_SESSION:

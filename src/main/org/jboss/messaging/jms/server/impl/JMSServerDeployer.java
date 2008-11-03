@@ -130,7 +130,7 @@ public class JMSServerDeployer extends XmlDeployer
          NodeList children = node.getChildNodes();
 
          long pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;     
-         long callTimeout = ConfigurationImpl.DEFAULT_CALL_TIMEOUT;
+         long callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
          String clientID = null;
          int dupsOKBatchSize = DEFAULT_DUPS_OK_BATCH_SIZE;
          int consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;

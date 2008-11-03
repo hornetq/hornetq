@@ -108,7 +108,7 @@ public class PingTest extends TestCase
       ConnectorFactory cf = new NettyConnectorFactory();
       Map<String, Object> params = new HashMap<String, Object>();
       
-      ConnectionManager cm = new ConnectionManagerImpl(cf, params, PING_INTERVAL, 5000, 1, 1);
+      ConnectionManager cm = new ConnectionManagerImpl(cf, params, PING_INTERVAL, 5000, 1);
       
       RemotingConnection conn = cm.getConnection();
       assertNotNull(conn);
@@ -159,7 +159,7 @@ public class PingTest extends TestCase
       ConnectorFactory cf = new NettyConnectorFactory();
       Map<String, Object> params = new HashMap<String, Object>();
       
-      ConnectionManager cm = new ConnectionManagerImpl(cf, params, PING_INTERVAL, 5000, 1, 1);
+      ConnectionManager cm = new ConnectionManagerImpl(cf, params, PING_INTERVAL, 5000, 1);
       
       RemotingConnection conn = cm.getConnection();
       assertNotNull(conn);
@@ -210,7 +210,7 @@ public class PingTest extends TestCase
       ConnectorFactory cf = new NettyConnectorFactory();
       Map<String, Object> params = new HashMap<String, Object>();
       
-      ConnectionManager cm = new ConnectionManagerImpl(cf, params, PING_INTERVAL, 5000, 1, 1);
+      ConnectionManager cm = new ConnectionManagerImpl(cf, params, PING_INTERVAL, 5000, 1);
       
       RemotingConnectionImpl conn = (RemotingConnectionImpl)cm.getConnection();
       assertEquals(1, cm.numConnections());
@@ -288,7 +288,7 @@ public class PingTest extends TestCase
      ConnectorFactory cf = new NettyConnectorFactory();
      Map<String, Object> params = new HashMap<String, Object>();
      
-     ConnectionManager cm = new ConnectionManagerImpl(cf, params, PING_INTERVAL, 5000, 1, 1);
+     ConnectionManager cm = new ConnectionManagerImpl(cf, params, PING_INTERVAL, 5000, 1);
      
      RemotingConnection conn = cm.getConnection();
      assertNotNull(conn);

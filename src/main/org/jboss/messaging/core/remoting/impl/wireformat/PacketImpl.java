@@ -185,14 +185,14 @@ public class PacketImpl implements Packet
 
       encodeBody(buffer);
 
+      size = buffer.position();
+      
       // The length doesn't include the actual length byte
-      int len = buffer.position() - DataConstants.SIZE_INT;
+      int len = size - DataConstants.SIZE_INT;
 
       buffer.putInt(0, len);
 
       buffer.flip();
-      
-      size = DataConstants.SIZE_INT + len;
       
       return size;
    }
@@ -202,6 +202,8 @@ public class PacketImpl implements Packet
       channelID = buffer.getLong();
 
       decodeBody(buffer);
+      
+      size = buffer.position();
    }
    
    public int getPacketSize()

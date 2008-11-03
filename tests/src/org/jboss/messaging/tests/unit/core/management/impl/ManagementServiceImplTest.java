@@ -96,7 +96,7 @@ public class ManagementServiceImplTest extends TestCase
       replay(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
 
       ManagementService service = new ManagementServiceImpl(mbeanServer, true);
-      service.registerServer(postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
+      service.registerServer(postOffice, storageManager, configuration, queueSettingsRepository, messagingServer);
 
       verify(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
    }
@@ -124,7 +124,7 @@ public class ManagementServiceImplTest extends TestCase
       replay(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
 
       ManagementService service = new ManagementServiceImpl(mbeanServer, true);
-      service.registerServer(postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
+      service.registerServer(postOffice, storageManager, configuration, queueSettingsRepository, messagingServer);
 
       verify(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
    }

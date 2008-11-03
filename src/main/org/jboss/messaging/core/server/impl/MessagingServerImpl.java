@@ -231,7 +231,6 @@ public class MessagingServerImpl implements MessagingServer
       serverManagement = managementService.registerServer(postOffice,
                                                           storageManager,
                                                           configuration,
-                                                          securityRepository,
                                                           queueSettingsRepository,
                                                           this);
 
@@ -261,8 +260,7 @@ public class MessagingServerImpl implements MessagingServer
                                                                   backupConnectorParams,
                                                                   5000,
                                                                   30000,
-                                                                  ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                                                                  ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE);
+                                                                  ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
       }
       remotingService.setMessagingServer(this);
 
@@ -408,44 +406,44 @@ public class MessagingServerImpl implements MessagingServer
       if (configuration.isBackup())
       {
          freezeAllBackupConnections();
-         
+
          postOffice.activate();
 
          configuration.setBackup(false);
 
-         remotingService.setBackup(false);                  
+         remotingService.setBackup(false);
       }
 
       connection.activate();
    }
-   
-   //We need to prevent any more packets being handled on any connections (from live) as soon as first live connection
-   //is created or re-attaches, to prevent a situation like the following:
-   //connection 1 create queue A
-   //connection 2 fails over
-   //A gets activated since no consumers
-   //connection 1 create consumer on A
-   //connection 1 delivery
-   //connection 1 delivery gets replicated
-   //can't find message in queue since active was delivered immediately   
+
+   // We need to prevent any more packets being handled on any connections (from live) as soon as first live connection
+   // is created or re-attaches, to prevent a situation like the following:
+   // connection 1 create queue A
+   // connection 2 fails over
+   // A gets activated since no consumers
+   // connection 1 create consumer on A
+   // connection 1 delivery
+   // connection 1 delivery gets replicated
+   // can't find message in queue since active was delivered immediately
    private void freezeAllBackupConnections()
    {
       Set<RemotingConnection> connections = new HashSet<RemotingConnection>();
-      
-      for (ServerSession session: sessions.values())
+
+      for (ServerSession session : sessions.values())
       {
          connections.add(session.getChannel().getConnection());
       }
-      
-      for (RemotingConnection connection: connections)
+
+      for (RemotingConnection connection : connections)
       {
          connection.freeze();
       }
    }
-   
+
    public ReattachSessionResponseMessage reattachSession(final RemotingConnection connection,
-                                                                      final String name,
-                                                                      final int lastReceivedCommandID) throws Exception
+                                                         final String name,
+                                                         final int lastReceivedCommandID) throws Exception
    {
       ServerSession session = sessions.get(name);
 
@@ -468,14 +466,15 @@ public class MessagingServerImpl implements MessagingServer
    }
 
    public CreateSessionResponseMessage replicateCreateSession(final String name,
-                                                                           final long channelID,
-                                                                           final String username,
-                                                                           final String password,
-                                                                           final int incrementingVersion,
-                                                                           final RemotingConnection connection,
-                                                                           final boolean autoCommitSends,
-                                                                           final boolean autoCommitAcks,
-                                                                           final boolean xa) throws Exception
+                                                              final long channelID,
+                                                              final String username,
+                                                              final String password,
+                                                              final int incrementingVersion,
+                                                              final RemotingConnection connection,
+                                                              final boolean autoCommitSends,
+                                                              final boolean autoCommitAcks,
+                                                              final boolean xa,
+                                                              final int sendWindowSize) throws Exception
    {
       return doCreateSession(name,
                              channelID,
@@ -485,24 +484,21 @@ public class MessagingServerImpl implements MessagingServer
                              connection,
                              autoCommitSends,
                              autoCommitAcks,
-                             xa);
+                             xa,
+                             sendWindowSize);
    }
 
    public CreateSessionResponseMessage createSession(final String name,
-                                                                  final long channelID,
-                                                                  final String username,
-                                                                  final String password,
-                                                                  final int incrementingVersion,
-                                                                  final RemotingConnection connection,
-                                                                  final boolean autoCommitSends,
-                                                                  final boolean autoCommitAcks,
-                                                                  final boolean xa) throws Exception
+                                                     final long channelID,
+                                                     final String username,
+                                                     final String password,
+                                                     final int incrementingVersion,
+                                                     final RemotingConnection connection,
+                                                     final boolean autoCommitSends,
+                                                     final boolean autoCommitAcks,
+                                                     final boolean xa,
+                                                     final int sendWindowSize)throws Exception
    {
-//      if (configuration.isBackup())
-//      {
-//         throw new IllegalStateException("Cannot create a session on a backup server");
-//      }
-
       checkActivate(connection);
 
       return doCreateSession(name,
@@ -513,7 +509,8 @@ public class MessagingServerImpl implements MessagingServer
                              connection,
                              autoCommitSends,
                              autoCommitAcks,
-                             xa);
+                             xa,
+                             sendWindowSize);
    }
 
    public void removeSession(final String name) throws Exception
@@ -569,7 +566,7 @@ public class MessagingServerImpl implements MessagingServer
    // --------------------------------------------------------------------------------------
 
    private final Object createSessionLock = new Object();
-   
+
    private CreateSessionResponseMessage doCreateSession(final String name,
                                                         final long channelID,
                                                         final String username,
@@ -578,7 +575,8 @@ public class MessagingServerImpl implements MessagingServer
                                                         final RemotingConnection connection,
                                                         final boolean autoCommitSends,
                                                         final boolean autoCommitAcks,
-                                                        final boolean xa) throws Exception
+                                                        final boolean xa,
+                                                        final int sendWindowSize) throws Exception
    {
       if (version.getIncrementingVersion() < incrementingVersion)
       {
@@ -608,7 +606,7 @@ public class MessagingServerImpl implements MessagingServer
          currentSession.getChannel().close();
       }
 
-      Channel channel = connection.getChannel(channelID, configuration.getPacketConfirmationBatchSize());
+      Channel channel = connection.getChannel(channelID, sendWindowSize, false);
 
       final ServerSessionImpl session = new ServerSessionImpl(name,
                                                               channelID,
@@ -637,8 +635,7 @@ public class MessagingServerImpl implements MessagingServer
 
       connection.addFailureListener(session);
 
-      return new CreateSessionResponseMessage(version.getIncrementingVersion(),
-                                              configuration.getPacketConfirmationBatchSize());
+      return new CreateSessionResponseMessage(version.getIncrementingVersion());
    }
 
    // Inner classes

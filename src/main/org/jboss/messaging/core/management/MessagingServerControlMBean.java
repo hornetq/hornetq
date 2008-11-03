@@ -92,15 +92,11 @@ public interface MessagingServerControlMBean
    
    public boolean isBackup();
 
-   public long getCallTimeout();
-
    public long getConnectionScanPeriod();
 
    public int getJournalBufferReuseSize();
 
    public long getPagingMaxGlobalSizeBytes();
-
-   public int getPacketConfirmationBatchSize();
 
    public String getPagingDirectory();
 

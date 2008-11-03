@@ -38,19 +38,15 @@ public class CreateSessionResponseMessage extends PacketImpl
 
    private int serverVersion;
    
-   private int packetConfirmationBatchSize;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public CreateSessionResponseMessage(final int serverVersion, final int packetConfirmationBatchSize)
+   public CreateSessionResponseMessage(final int serverVersion)
    {
       super(CREATESESSION_RESP);
 
       this.serverVersion = serverVersion;
-      
-      this.packetConfirmationBatchSize = packetConfirmationBatchSize;
    }
    
    public CreateSessionResponseMessage()
@@ -70,21 +66,14 @@ public class CreateSessionResponseMessage extends PacketImpl
       return serverVersion;
    }
    
-   public int getPacketConfirmationBatchSize()
-   {
-      return packetConfirmationBatchSize;
-   }
-   
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putInt(serverVersion);      
-      buffer.putInt(packetConfirmationBatchSize);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
       serverVersion = buffer.getInt();
-      packetConfirmationBatchSize = buffer.getInt();
    }
 
    public boolean equals(Object other)
@@ -97,7 +86,7 @@ public class CreateSessionResponseMessage extends PacketImpl
       CreateSessionResponseMessage r = (CreateSessionResponseMessage)other;
       
       boolean matches = super.equals(other) &&     
-                        this.packetConfirmationBatchSize == r.packetConfirmationBatchSize;
+                        this.serverVersion == r.serverVersion;
       
       return matches;
    }

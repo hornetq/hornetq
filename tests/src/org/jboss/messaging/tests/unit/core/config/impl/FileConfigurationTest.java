@@ -43,8 +43,6 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(5423, conf.getSecurityInvalidationInterval());
       assertEquals(false, conf.isRequireDestinations());
       assertEquals(false, conf.isSecurityEnabled());
-      assertEquals(7654, conf.getCallTimeout());
-      assertEquals(543, conf.getPacketConfirmationBatchSize());
       assertEquals(6543, conf.getConnectionScanPeriod());
       assertEquals("somedir", conf.getBindingsDirectory());
       assertEquals(false, conf.isCreateBindingsDir());

@@ -58,8 +58,6 @@ public class ConfigurationImplTest extends TestCase
       assertEquals(ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL, conf.getSecurityInvalidationInterval());
       assertEquals(ConfigurationImpl.DEFAULT_REQUIRE_DESTINATIONS, conf.isRequireDestinations());
       assertEquals(ConfigurationImpl.DEFAULT_SECURITY_ENABLED, conf.isSecurityEnabled());
-      assertEquals(ConfigurationImpl.DEFAULT_CALL_TIMEOUT, conf.getCallTimeout());
-      assertEquals(ConfigurationImpl.DEFAULT_PACKET_CONFIRMATION_BATCH_SIZE, conf.getPacketConfirmationBatchSize());
       assertEquals(ConfigurationImpl.DEFAULT_CONNECTION_SCAN_PERIOD, conf.getConnectionScanPeriod());
       assertEquals(ConfigurationImpl.DEFAULT_BINDINGS_DIRECTORY, conf.getBindingsDirectory());
       assertEquals(ConfigurationImpl.DEFAULT_CREATE_BINDINGS_DIR, conf.isCreateBindingsDir());
@@ -101,15 +99,7 @@ public class ConfigurationImplTest extends TestCase
          b = randomBoolean();
          conf.setSecurityEnabled(b);
          assertEquals(b, conf.isSecurityEnabled());
- 
-         l = randomLong();
-         conf.setCallTimeout(l);
-         assertEquals(l, conf.getCallTimeout());
-         
-         i = randomInt();
-         conf.setPacketConfirmationBatchSize(i);
-         assertEquals(i, conf.getPacketConfirmationBatchSize());
-         
+    
          l = randomLong();
          conf.setConnectionScanPeriod(l);
          assertEquals(l, conf.getConnectionScanPeriod());
@@ -189,12 +179,6 @@ public class ConfigurationImplTest extends TestCase
       b = randomBoolean();
       conf.setSecurityEnabled(b);
         
-      l = randomLong();
-      conf.setCallTimeout(l);
-      
-      i = randomInt();
-      conf.setPacketConfirmationBatchSize(i);
-      
       l = randomLong();
       conf.setConnectionScanPeriod(l);
       

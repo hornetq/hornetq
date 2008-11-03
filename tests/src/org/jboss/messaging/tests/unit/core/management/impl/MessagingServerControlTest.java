@@ -521,7 +521,7 @@ public class MessagingServerControlTest extends TestCase
    private MessagingServerControl createControl() throws Exception
    {
       MessagingServerControl control = new MessagingServerControl(postOffice,
-            storageManager, configuration, securityRepository,
+            storageManager, configuration, 
             queueSettingsRepository, server, messageCounterManager, new NotificationBroadcasterSupport());
       return control;
    }

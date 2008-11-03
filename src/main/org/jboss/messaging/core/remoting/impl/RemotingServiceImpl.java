@@ -61,8 +61,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final Set<Acceptor> acceptors = new HashSet<Acceptor>();
 
-   private final long callTimeout;
-
    private final Map<Object, RemotingConnection> connections = new ConcurrentHashMap<Object, RemotingConnection>();
 
    private Timer failedConnectionTimer;
@@ -98,8 +96,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             log.warn("Error instantiating interceptor \"" + interceptorClass + "\"", e);
          }
       }
-
-      callTimeout = config.getCallTimeout();
 
       connectionScanPeriod = config.getConnectionScanPeriod();
 
@@ -216,13 +212,12 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       RemotingConnection replicatingConnection = server.getReplicatingConnection();
 
-      RemotingConnection rc = new RemotingConnectionImpl(connection,
-                                                         callTimeout,                                           
+      RemotingConnection rc = new RemotingConnectionImpl(connection,                                                                                             
                                                          interceptors,
                                                          replicatingConnection,
                                                          !backup);
 
-      Channel channel1 = rc.getChannel(1,  -1);
+      Channel channel1 = rc.getChannel(1,  -1, false);
 
       ChannelHandler handler = new MessagingServerPacketHandler(server, channel1, rc);
 

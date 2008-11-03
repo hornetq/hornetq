@@ -22,10 +22,6 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
-import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
-
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
@@ -56,6 +52,8 @@ public class CreateSessionMessage extends PacketImpl
    
    private boolean autoCommitAcks;
    
+   private int windowSize;
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -63,7 +61,7 @@ public class CreateSessionMessage extends PacketImpl
    public CreateSessionMessage(final String name, final long sessionChannelID,
                                final int version, final String username, final String password,
                                final boolean xa, final boolean autoCommitSends,
-                               final boolean autoCommitAcks)
+                               final boolean autoCommitAcks, final int windowSize)
    {
       super(CREATESESSION);
       
@@ -82,6 +80,8 @@ public class CreateSessionMessage extends PacketImpl
       this.autoCommitSends = autoCommitSends;
       
       this.autoCommitAcks = autoCommitAcks;
+      
+      this.windowSize = windowSize;
    }
    
    public CreateSessionMessage()
@@ -131,6 +131,11 @@ public class CreateSessionMessage extends PacketImpl
       return this.autoCommitAcks;
    }
    
+   public int getWindowSize()
+   {
+      return this.windowSize;
+   }
+   
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putString(name);
@@ -141,6 +146,7 @@ public class CreateSessionMessage extends PacketImpl
       buffer.putBoolean(xa);
       buffer.putBoolean(autoCommitSends);
       buffer.putBoolean(autoCommitAcks);
+      buffer.putInt(windowSize);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
@@ -153,6 +159,7 @@ public class CreateSessionMessage extends PacketImpl
       xa = buffer.getBoolean();
       autoCommitSends = buffer.getBoolean();
       autoCommitAcks = buffer.getBoolean();
+      windowSize = buffer.getInt();
    }
    
    public boolean equals(Object other)

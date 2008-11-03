@@ -26,7 +26,7 @@ public interface RemotingConnection extends BufferHandler
 {
    Object getID();
 
-   Channel getChannel(long channelID, int packetConfirmationBatchSize);
+   Channel getChannel(long channelID, int windowSize, boolean block);
 
    long generateChannelID();
 

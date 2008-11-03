@@ -697,7 +697,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          Packet request = new ReattachSessionMessage(name, channel.getLastReceivedCommandID());
 
-         Channel channel1 = backupConnection.getChannel(1, -1);
+         Channel channel1 = backupConnection.getChannel(1, -1, false);
         
          ReattachSessionResponseMessage response = (ReattachSessionResponseMessage)channel1.sendBlocking(request);         
 

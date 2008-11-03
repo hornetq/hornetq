@@ -75,14 +75,11 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    private Object failConnectionLock = new Object();
    
-   private final int sendWindowSize;
-
    public ConnectionManagerImpl(final ConnectorFactory connectorFactory,
                                 final Map<String, Object> params,
                                 final long pingInterval,
                                 final long callTimeout,
-                                final int maxConnections,
-                                final int sendWindowSize)
+                                final int maxConnections)
    {
       this.connectorFactory = connectorFactory;
 
@@ -93,8 +90,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       this.callTimeout = callTimeout;
 
       this.maxConnections = maxConnections;
-      
-      this.sendWindowSize = sendWindowSize;
    }
 
    public RemotingConnection createConnection()
@@ -113,8 +108,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       {
          throw new IllegalStateException("Failed to connect");
       }
-
-      RemotingConnection connection = new RemotingConnectionImpl(tc, callTimeout, pingInterval, pingExecutor, null, sendWindowSize);
+      
+      RemotingConnection connection = new RemotingConnectionImpl(tc, callTimeout, pingInterval, pingExecutor, null);
 
       handler.conn = connection;
 
@@ -146,7 +141,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             throw new IllegalStateException("Failed to connect");
          }
 
-         conn = new RemotingConnectionImpl(tc, callTimeout, pingInterval, pingExecutor, null, sendWindowSize);
+         conn = new RemotingConnectionImpl(tc, callTimeout, pingInterval, pingExecutor, null);
 
          handler.conn = conn;
 

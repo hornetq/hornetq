@@ -71,7 +71,8 @@ public interface MessagingServer extends MessagingComponent
                                               RemotingConnection remotingConnection,
                                               boolean autoCommitSends,
                                               boolean autoCommitAcks,
-                                              boolean xa) throws Exception;
+                                              boolean xa,
+                                              int sendWindowSize) throws Exception;
 
    CreateSessionResponseMessage replicateCreateSession(String name,
                                                        long channelID,
@@ -81,7 +82,8 @@ public interface MessagingServer extends MessagingComponent
                                                        RemotingConnection remotingConnection,
                                                        boolean autoCommitSends,
                                                        boolean autoCommitAcks,
-                                                       boolean xa) throws Exception;
+                                                       boolean xa,
+                                                       int sendWindowSize) throws Exception;
 
    void removeSession(String name) throws Exception;
 

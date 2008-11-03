@@ -51,6 +51,8 @@ public class ReplicateCreateSessionMessage extends PacketImpl
    private boolean autoCommitSends;
 
    private boolean autoCommitAcks;
+   
+   private int windowSize;
 
    // Static --------------------------------------------------------
 
@@ -63,7 +65,8 @@ public class ReplicateCreateSessionMessage extends PacketImpl
                                         final String password,
                                         final boolean xa,
                                         final boolean autoCommitSends,
-                                        final boolean autoCommitAcks)
+                                        final boolean autoCommitAcks,
+                                        final int windowSize)
    {
       super(REPLICATE_CREATESESSION);
 
@@ -82,6 +85,8 @@ public class ReplicateCreateSessionMessage extends PacketImpl
       this.autoCommitSends = autoCommitSends;
 
       this.autoCommitAcks = autoCommitAcks;
+      
+      this.windowSize = windowSize;
    }
 
    public ReplicateCreateSessionMessage()
@@ -130,6 +135,11 @@ public class ReplicateCreateSessionMessage extends PacketImpl
    {
       return this.autoCommitAcks;
    }
+   
+   public int getWindowSize()
+   {
+      return this.windowSize;
+   }
 
    public void encodeBody(final MessagingBuffer buffer)
    {
@@ -141,6 +151,7 @@ public class ReplicateCreateSessionMessage extends PacketImpl
       buffer.putBoolean(xa);
       buffer.putBoolean(autoCommitSends);
       buffer.putBoolean(autoCommitAcks);
+      buffer.putInt(windowSize);
    }
 
    public void decodeBody(final MessagingBuffer buffer)
@@ -153,6 +164,7 @@ public class ReplicateCreateSessionMessage extends PacketImpl
       xa = buffer.getBoolean();
       autoCommitSends = buffer.getBoolean();
       autoCommitAcks = buffer.getBoolean();
+      windowSize = buffer.getInt();
    }
 
    public boolean equals(Object other)
@@ -171,7 +183,8 @@ public class ReplicateCreateSessionMessage extends PacketImpl
                         this.autoCommitSends == r.autoCommitSends &&
                         this.autoCommitAcks == r.autoCommitAcks &&
                         (this.username == null ? r.username == null : this.username.equals(r.username)) &&
-                        (this.password == null ? r.password == null : this.password.equals(r.password));
+                        (this.password == null ? r.password == null : this.password.equals(r.password)) &&
+                        this.windowSize == r.windowSize;
 
       return matches;
    }

@@ -45,10 +45,6 @@ public class ConfigurationImpl implements Configuration
 
    public static final boolean DEFAULT_JMX_MANAGEMENT_ENABLED = true;
 
-   public static final int DEFAULT_CALL_TIMEOUT = 30000;
-
-   public static final int DEFAULT_PACKET_CONFIRMATION_BATCH_SIZE = 1000;
-
    public static final long DEFAULT_CONNECTION_SCAN_PERIOD = 1000;
 
    public static final String DEFAULT_BINDINGS_DIRECTORY = "data/bindings";
@@ -92,10 +88,6 @@ public class ConfigurationImpl implements Configuration
    protected boolean securityEnabled = DEFAULT_SECURITY_ENABLED;
 
    protected boolean jmxManagementEnabled = DEFAULT_JMX_MANAGEMENT_ENABLED;
-
-   protected long callTimeout = DEFAULT_CALL_TIMEOUT;
-
-   protected int packetConfirmationBatchSize = DEFAULT_PACKET_CONFIRMATION_BATCH_SIZE;
 
    protected long connectionScanPeriod = DEFAULT_CONNECTION_SCAN_PERIOD;
 
@@ -185,26 +177,6 @@ public class ConfigurationImpl implements Configuration
    public void setRequireDestinations(final boolean require)
    {
       requireDestinations = require;
-   }
-
-   public long getCallTimeout()
-   {
-      return callTimeout;
-   }
-
-   public void setCallTimeout(final long timeout)
-   {
-      callTimeout = timeout;
-   }
-
-   public int getPacketConfirmationBatchSize()
-   {
-      return packetConfirmationBatchSize;
-   }
-
-   public void setPacketConfirmationBatchSize(final int size)
-   {
-      packetConfirmationBatchSize = size;
    }
 
    public long getConnectionScanPeriod()

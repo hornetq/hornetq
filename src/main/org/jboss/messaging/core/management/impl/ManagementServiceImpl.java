@@ -148,8 +148,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public MessagingServerControlMBean registerServer(final PostOffice postOffice,
                                                      final StorageManager storageManager,
-                                                     final Configuration configuration,
-                                                     final HierarchicalRepository<Set<Role>> securityRepository,
+                                                     final Configuration configuration,                                     
                                                      final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                                                      final MessagingServer messagingServer) throws Exception
    {
@@ -158,8 +157,7 @@ public class ManagementServiceImpl implements ManagementService
       this.queueSettingsRepository = queueSettingsRepository;
       managedServer = new MessagingServerControl(postOffice,
                                                  storageManager,
-                                                 configuration,
-                                                 securityRepository,
+                                                 configuration,                                                
                                                  queueSettingsRepository,
                                                  messagingServer,
                                                  messageCounterManager,

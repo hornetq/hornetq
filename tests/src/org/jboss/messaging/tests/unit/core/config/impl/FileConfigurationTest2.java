@@ -43,8 +43,6 @@ public class FileConfigurationTest2 extends ConfigurationImplTest
       assertEquals(ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL, conf.getSecurityInvalidationInterval());
       assertEquals(ConfigurationImpl.DEFAULT_REQUIRE_DESTINATIONS, conf.isRequireDestinations());
       assertEquals(ConfigurationImpl.DEFAULT_SECURITY_ENABLED, conf.isSecurityEnabled());
-      assertEquals(ConfigurationImpl.DEFAULT_CALL_TIMEOUT, conf.getCallTimeout());
-      assertEquals(ConfigurationImpl.DEFAULT_PACKET_CONFIRMATION_BATCH_SIZE, conf.getPacketConfirmationBatchSize());
       assertEquals(ConfigurationImpl.DEFAULT_CONNECTION_SCAN_PERIOD, conf.getConnectionScanPeriod());
       assertEquals(ConfigurationImpl.DEFAULT_BINDINGS_DIRECTORY, conf.getBindingsDirectory());
       assertEquals(ConfigurationImpl.DEFAULT_CREATE_BINDINGS_DIR, conf.isCreateBindingsDir());
