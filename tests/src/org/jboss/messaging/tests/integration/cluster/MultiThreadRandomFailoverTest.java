@@ -58,7 +58,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
    // Constants -----------------------------------------------------
 
-   private static final int RECEIVE_TIMEOUT = 5000;
+   private static final int RECEIVE_TIMEOUT = 30000;
 
    private static final int NUM_THREADS = 10;
 
@@ -1194,7 +1194,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
    protected int getNumIterations()
    {
-      return 20;
+      return 200000;
    }
 
    protected void setUp() throws Exception

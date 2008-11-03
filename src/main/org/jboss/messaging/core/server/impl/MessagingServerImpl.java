@@ -273,18 +273,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          return;
       }
-
-      securityStore = null;
-      postOffice.stop();
-      postOffice = null;
-      securityRepository = null;
-      securityStore = null;
-      queueSettingsRepository.clear();
-      scheduledExecutor.shutdown();
-      queueFactory = null;
-      resourceManager = null;
-      serverManagement = null;
-
+      
       asyncDeliveryPool.shutdown();
 
       try
@@ -298,6 +287,17 @@ public class MessagingServerImpl implements MessagingServer
       {
          // Ignore
       }
+
+      securityStore = null;
+      postOffice.stop();
+      postOffice = null;
+      securityRepository = null;
+      securityStore = null;
+      queueSettingsRepository.clear();
+      scheduledExecutor.shutdown();
+      queueFactory = null;
+      resourceManager = null;
+      serverManagement = null;
 
       started = false;
    }

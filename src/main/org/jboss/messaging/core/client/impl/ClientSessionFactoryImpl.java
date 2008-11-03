@@ -192,7 +192,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       this.blockOnPersistentSend = blockOnPersistentSend;
       this.autoGroupId = autoGroupId;
       this.maxConnections = maxConnections;
-      log.info("Creating csf with send window size " + this.sendWindowSize);
    }
 
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,

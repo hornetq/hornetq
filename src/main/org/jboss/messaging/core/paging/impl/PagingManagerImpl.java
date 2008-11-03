@@ -131,8 +131,6 @@ public class PagingManagerImpl implements PagingManager
 
    public PagingStore getPageStore(final SimpleString storeName) throws Exception
    {
-      validateStarted();
-
       PagingStore store = stores.get(storeName);
       if (store == null)
       {
@@ -398,14 +396,6 @@ public class PagingManagerImpl implements PagingManager
    private PagingStore newStore(final SimpleString destinationName)
    {
       return pagingSPI.newStore(destinationName, queueSettingsRepository.getMatch(destinationName.toString()));
-   }
-
-   private void validateStarted()
-   {
-      if (!started)
-      {
-         throw new IllegalStateException("PagingManager is not started");
-      }
    }
 
    private long addSize(final SimpleString destination, final long size) throws Exception
