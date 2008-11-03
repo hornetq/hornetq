@@ -215,8 +215,6 @@ public class PagingStoreImpl implements TestSupportPageStore
     * */
    public Page depage() throws Exception
    {
-      validateInit();
-
       positioningGlobalLock.acquire(); // Can't change currentPage or any of ids
                                        // without a global lock
       lock.writeLock().lock(); // Wait pending writes to finish before
@@ -282,8 +280,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public boolean page(final PageMessage message) throws Exception
    {
-      validateInit();
-
       // Max-size is set, but reject is activated, what means.. never page on
       // this address
       if (dropMessagesOnSize)
@@ -359,8 +355,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public void sync() throws Exception
    {
-      validateInit();
-
       lock.readLock().lock();
 
       try
@@ -502,8 +496,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public boolean startPaging() throws Exception
    {
-      validateInit();
-
       // First check without any global locks.
       // (Faster)
       lock.readLock().lock();
@@ -545,7 +537,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public void forceAnotherPage() throws Exception
    {
-      validateInit();
       openNewPage();
    }
 
@@ -628,14 +619,6 @@ public class PagingStoreImpl implements TestSupportPageStore
    private static int getPageIdFromFileName(final String fileName)
    {
       return Integer.parseInt(fileName.substring(0, fileName.indexOf('.')));
-   }
-
-   private void validateInit()
-   {
-      if (!initialized)
-      {
-         throw new IllegalStateException("PagingStore " + storeName + " not initialized!");
-      }
    }
 
    // Inner classes -------------------------------------------------

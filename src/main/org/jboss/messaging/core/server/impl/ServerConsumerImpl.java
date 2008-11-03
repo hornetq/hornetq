@@ -101,6 +101,8 @@ public class ServerConsumerImpl implements ServerConsumer
    private final java.util.Queue<MessageReference> deliveringRefs = new ConcurrentLinkedQueue<MessageReference>();
 
    private final Channel channel;
+   
+   private volatile boolean closed;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -251,6 +253,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
       Iterator<MessageReference> iter = refs.iterator();
 
+      closed = true;
+      
       while (iter.hasNext())
       {
          MessageReference ref = iter.next();
@@ -332,7 +336,8 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             throw new IllegalStateException("Could not find reference with id " + messageID +
                                             " backup " +
-                                            messageQueue.isBackup());
+                                            messageQueue.isBackup() + 
+                                            " closed " + closed);
          }
       }
       while (ref.getMessage().getMessageID() != messageID);
