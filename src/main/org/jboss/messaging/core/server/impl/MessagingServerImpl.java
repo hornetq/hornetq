@@ -216,7 +216,7 @@ public class MessagingServerImpl implements MessagingServer
 
       storeFactory.setPagingManager(pagingManager);
 
-      resourceManager = new ResourceManagerImpl(0);
+      resourceManager = new ResourceManagerImpl(0, scheduledExecutor, storageManager, postOffice, queueSettingsRepository);
       postOffice = new PostOfficeImpl(storageManager,
                                       pagingManager,
                                       queueFactory,

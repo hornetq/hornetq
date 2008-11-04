@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 
 import javax.transaction.xa.Xid;
 
@@ -73,6 +74,8 @@ public class TransactionImpl implements Transaction
    private volatile boolean containsPersistent;
 
    private MessagingException messagingException;
+
+   private final Object timeoutLock = new Object();
 
    public TransactionImpl(final StorageManager storageManager, final PostOffice postOffice)
    {
@@ -185,6 +188,20 @@ public class TransactionImpl implements Transaction
       }
    }
 
+   public List<MessageReference> timeout() throws Exception
+   {
+      //we need to synchronize with commit and rollback just in case they get called atthesame time
+      synchronized (timeoutLock)
+      {
+         //if we've already rolled back or committed we don't need to do anything
+         if(state == State.COMMITTED || state == State.ROLLBACK_ONLY)
+         {
+            return Collections.emptyList();
+         }
+         return doRollback();
+      }
+   }
+
    public void addAcknowledgement(final MessageReference acknowledgement) throws Exception
    {
       if (state != State.ACTIVE)
@@ -259,73 +276,76 @@ public class TransactionImpl implements Transaction
 //         throw new IllegalStateException("Can't commit, already inmethod " + inMethod);
 //      }
       inMethod = 2;
-      if (state == State.ROLLBACK_ONLY)
+      synchronized (timeoutLock)
       {
-         if (messagingException != null)
+         if (state == State.ROLLBACK_ONLY)
          {
-            throw messagingException;
+            if (messagingException != null)
+            {
+               throw messagingException;
+            }
+            else
+            {
+               throw new IllegalStateException("Transaction is in invalid state " + state);
+            }
+
+         }
+         if (xid != null)
+         {
+            if (state != State.PREPARED)
+            {
+               throw new IllegalStateException("Transaction is in invalid state " + state);
+            }
          }
          else
          {
-            throw new IllegalStateException("Transaction is in invalid state " + state);
+            if (state != State.ACTIVE)
+            {
+               throw new IllegalStateException("Transaction is in invalid state " + state);
+            }
          }
 
-      }
-      if (xid != null)
-      {
          if (state != State.PREPARED)
          {
-            throw new IllegalStateException("Transaction is in invalid state " + state);
+            pageMessages();
          }
-      }
-      else
-      {
-         if (state != State.ACTIVE)
+
+         if (containsPersistent || xid != null)
          {
-            throw new IllegalStateException("Transaction is in invalid state " + state);
+            storageManager.commit(id);
          }
-      }
 
-      if (state != State.PREPARED)
-      {
-         pageMessages();
-      }
-
-      if (containsPersistent || xid != null)
-      {
-         storageManager.commit(id);
-      }
-
-      for (MessageReference ref : refsToAdd)
-      {
-         Long scheduled = scheduledReferences.get(ref);
-         if(scheduled == null)
+         for (MessageReference ref : refsToAdd)
          {
-            ref.getQueue().addLast(ref);
+            Long scheduled = scheduledReferences.get(ref);
+            if(scheduled == null)
+            {
+               ref.getQueue().addLast(ref);
+            }
+            else
+            {
+               ref.setScheduledDeliveryTime(scheduled);
+               ref.getQueue().addLast(ref);
+            }
          }
-         else
+
+         // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
+         // transaction until all the messages were added to the queue
+         // or else we could deliver the messages out of order
+         if (pageTransaction != null)
          {
-            ref.setScheduledDeliveryTime(scheduled);
-            ref.getQueue().addLast(ref);
+            pageTransaction.complete();
          }
+
+         for (MessageReference reference : acknowledgements)
+         {
+            reference.getQueue().referenceAcknowledged(reference);
+         }
+
+         clear();
+
+         state = State.COMMITTED;
       }
-
-      // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
-      // transaction until all the messages were added to the queue
-      // or else we could deliver the messages out of order
-      if (pageTransaction != null)
-      {
-         pageTransaction.complete();
-      }
-
-      for (MessageReference reference : acknowledgements)
-      {
-         reference.getQueue().referenceAcknowledged(reference);
-      }
-
-      clear();
-
-      state = State.COMMITTED;   
       inMethod = -1;
    }
 
@@ -336,21 +356,35 @@ public class TransactionImpl implements Transaction
 //         throw new IllegalStateException("Can't rollback, already inmethod " + inMethod);
 //      }
       inMethod=1;
-      if (xid != null)
+      LinkedList<MessageReference> toCancel;
+      synchronized (timeoutLock)
       {
-         if (state != State.PREPARED && state != State.ACTIVE)
+         if (xid != null)
          {
-            throw new IllegalStateException("Transaction is in invalid state " + state);
+            if (state != State.PREPARED && state != State.ACTIVE)
+            {
+               throw new IllegalStateException("Transaction is in invalid state " + state);
+            }
          }
-      }
-      else
-      {
-         if (state != State.ACTIVE && state != State.ROLLBACK_ONLY)
+         else
          {
-            throw new IllegalStateException("Transaction is in invalid state " + state);
+            if (state != State.ACTIVE && state != State.ROLLBACK_ONLY)
+            {
+               throw new IllegalStateException("Transaction is in invalid state " + state);
+            }
          }
+
+         toCancel = doRollback();
+
+         state = State.ROLLEDBACK;
       }
 
+      inMethod = -1;
+      return toCancel;
+   }
+
+   private LinkedList<MessageReference> doRollback() throws Exception
+   {
       if (containsPersistent || xid != null)
       {
          storageManager.rollback(id);
@@ -362,7 +396,7 @@ public class TransactionImpl implements Transaction
       }
 
       LinkedList<MessageReference> toCancel = new LinkedList<MessageReference>();
-      
+
       for (MessageReference ref : acknowledgements)
       {
 //         Queue queue = ref.getQueue();
@@ -370,7 +404,7 @@ public class TransactionImpl implements Transaction
 //         ServerMessage message = ref.getMessage();
 
          // Putting back the size on pagingManager, and reverting the counters
-         
+
          //FIXME - why????
          //Surely paging happens before routing, so cancellation shouldn't effect anything......
 //         if (message.incrementReference(message.isDurable() && queue.isDurable()) == 1)
@@ -378,14 +412,10 @@ public class TransactionImpl implements Transaction
 //            pagingManager.addSize(message);
 //         }
 
-         toCancel.add(ref);         
+         toCancel.add(ref);
       }
-      
-      clear();
 
-      state = State.ROLLEDBACK;
-      
-      inMethod = -1;
+      clear();
       return toCancel;
    }
 
