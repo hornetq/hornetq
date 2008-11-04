@@ -81,7 +81,7 @@ public class ActivationTimeoutTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   public void testActivationTimeout() throws Exception
+   public void testTimeoutAfterConsumerFailsToReattach() throws Exception
    {            
       ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                       new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
@@ -153,6 +153,94 @@ public class ActivationTimeoutTest extends TestCase
       }
       
       message = consumer1.receive(1000);
+      
+      assertNull(message);
+      
+      session1.close();
+      
+      RemotingConnection conn2 = ((ClientSessionImpl)session2).getConnection();
+     
+      conn2.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      
+      session2.close();
+   }
+   
+   public void testTimeoutAfterAllConsumerFailsToReattach() throws Exception
+   {            
+      ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                 backupParams));
+      
+      ClientSessionFactoryInternal sf2 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                 backupParams));
+
+      sf1.setSendWindowSize(32 * 1024);
+      sf2.setSendWindowSize(32 * 1024);
+
+      ClientSession session1 = sf1.createSession(false, true, true, false);
+
+      session1.createQueue(ADDRESS, ADDRESS, null, false, false);
+
+      ClientProducer producer = session1.createProducer(ADDRESS);
+
+      final int numMessages = 1000;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session1.createClientMessage(JBossTextMessage.TYPE,
+                                                             false,
+                                                             0,
+                                                             System.currentTimeMillis(),
+                                                             (byte)1);
+         message.putIntProperty(new SimpleString("count"), i);
+         message.getBody().putString("aardvarks");
+         message.getBody().flip();
+         producer.send(message);
+      }
+      log.info("Sent messages");
+            
+      
+      ClientSession session2 = sf2.createSession(false, true, true, false);
+      
+      ClientConsumer consumer1 = session2.createConsumer(ADDRESS);
+      
+      ClientConsumer consumer2 = session2.createConsumer(ADDRESS);
+      
+      long start = System.currentTimeMillis();
+
+      RemotingConnection conn1 = ((ClientSessionImpl)session1).getConnection();
+
+      // Now we fail ONLY the connections on sf1, not on sf2      
+      conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+
+      session1.start();
+
+      //The messages should not be delivered until after activationTimeout ms, since
+      //session 2 didn't reattach
+        
+      long now = System.currentTimeMillis();
+      
+      //We now create a new consumer but it shouldn't receive the messages until after the timeout
+      
+      ClientConsumer consumer3 = session1.createConsumer(ADDRESS);
+      
+      ClientMessage message = consumer3.receive(ACTIVATION_TIMEOUT - (now - start));
+      
+      assertNull(message);        
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         message = consumer3.receive();
+         
+         assertEquals("aardvarks", message.getBody().getString());
+
+         assertEquals(i, message.getProperty(new SimpleString("count")));
+
+         message.acknowledge();
+      }
+      
+      message = consumer3.receive(1000);
       
       assertNull(message);
       
