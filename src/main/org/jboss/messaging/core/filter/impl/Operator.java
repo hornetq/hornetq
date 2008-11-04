@@ -437,8 +437,17 @@ public class Operator
   Object different() throws Exception
   {
      computeArgument1();
-     if ( arg1 == null )
-        return Boolean.FALSE;
+     if ( arg1 == null)
+     {
+        computeArgument2();
+        if (arg2 == null)
+        { 
+           return Boolean.FALSE;
+        } else
+        {
+           return Boolean.TRUE;
+        }
+     }
 
      switch (class1)
      {
@@ -470,7 +479,7 @@ public class Operator
         case BOOLEAN:
            computeArgument2();
            if (arg2 == null)
-              return Boolean.FALSE;
+              return null;
            if (class2 != class1)
               throwBadObjectException(class1, class2);
            return Boolean.valueOf(arg1.equals(arg2) == false);
@@ -709,11 +718,11 @@ public class Operator
         if (class3 != SIMPLE_STRING)
            throwBadObjectException(class3);
 
-        StringBuffer escapeBuf = new StringBuffer((String) arg3);
-        if (escapeBuf.length() != 1)
-           throw new Exception("LIKE ESCAPE: Bad escape character " + escapeBuf.toString());
+        SimpleString escapeString = (SimpleString) arg3;
+        if (escapeString.length() != 1)
+           throw new Exception("LIKE ESCAPE: Bad escape character " + escapeString.toString());
 
-        escapeChar = new Character(escapeBuf.charAt(0));
+        escapeChar = new Character(escapeString.charAt(0));
      }
 
      if (re == null)
@@ -736,6 +745,8 @@ public class Operator
      computeArgument1();
      if (arg1 == null)
         return null;
+     if (class1 != SIMPLE_STRING)
+        throwBadObjectException(class1);
      if (((HashSet) oper2).contains(arg1))
         return Boolean.TRUE;
      else
@@ -759,6 +770,11 @@ public class Operator
 
   void computeArgument1() throws Exception
   {
+     if (oper1 == null)
+     {
+        class1 = 0;
+        return;
+     }
      Class className = oper1.getClass();
 
      if (className == Identifier.class)
@@ -810,6 +826,12 @@ public class Operator
 
   void computeArgument2() throws Exception
   {
+     if (oper2 == null)
+     {
+        class2 = 0;
+        return;
+     }
+
      Class className = oper2.getClass();
 
      if (className == Identifier.class)
@@ -861,6 +883,12 @@ public class Operator
 
   void computeArgument3() throws Exception
   {
+     if (oper3 == null)
+     {
+        class3 = 0;
+        return;
+     }
+
      Class className = oper3.getClass();
 
      if (className == Identifier.class)

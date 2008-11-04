@@ -155,6 +155,23 @@ public class FilterTest  extends TestCase
       testBoolean("MyBoolean", true);
    }
    
+   public void testDifferentNullString() throws Exception
+   {
+      filter = new FilterImpl(new SimpleString("prop <> 'foo'"));
+      assertTrue(filter.match(message));     
+      
+      filter = new FilterImpl(new SimpleString("NOT (prop = 'foo')"));
+      assertTrue(filter.match(message));      
+
+      filter = new FilterImpl(new SimpleString("prop <> 'foo'"));
+      doPutStringProperty("prop", "bar");
+      assertTrue(filter.match(message));     
+
+      filter = new FilterImpl(new SimpleString("prop <> 'foo'"));
+      doPutStringProperty("prop", "foo");
+      assertFalse(filter.match(message));     
+   }
+   
    public void testBooleanFalse() throws Exception
    {
       filter = new FilterImpl(new SimpleString("MyBoolean=false"));
