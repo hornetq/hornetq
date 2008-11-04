@@ -1049,13 +1049,9 @@ public class AcknowledgementTest extends JMSTestCase
 
          log.info("Waited for messages");
 
-         // Recover forces an ack so there will be one
-         assertRemainingMessages(1);
-
-         log.info("closing connection");
-         conn.close();
-
-         Thread.sleep(500);
+         cons.close();
+         
+         //Thread.sleep(500);
 
          assertRemainingMessages(0);
          assertFalse(listener.failed);
@@ -1066,7 +1062,7 @@ public class AcknowledgementTest extends JMSTestCase
          {
             conn.close();
          }
-      }
+      }      
    }
 
    public void testMessageListenerClientAck() throws Exception
