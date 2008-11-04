@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.transaction;
 
 import java.util.List;
+import java.util.LinkedList;
 
 import javax.transaction.xa.Xid;
 
@@ -73,8 +74,10 @@ public interface Transaction
 
    void addScheduledMessage(ServerMessage msg, long scheduledDeliveryTime) throws Exception;
 
+   List<MessageReference> timeout() throws Exception;
+
    static enum State
    {
-      ACTIVE, PREPARED, COMMITTED, ROLLEDBACK, SUSPENDED, ROLLBACK_ONLY;
+      ACTIVE, PREPARED, COMMITTED, ROLLEDBACK, SUSPENDED, ROLLBACK_ONLY
    }
 }
