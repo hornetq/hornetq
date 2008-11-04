@@ -59,7 +59,7 @@ import org.jboss.messaging.util.SimpleString;
 /**
  * A OperatorTest
  *
- * @author jmesnil
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * Created 3 nov. 2008 17:22:22
  *
