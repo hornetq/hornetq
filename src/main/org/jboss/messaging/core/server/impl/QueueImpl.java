@@ -148,7 +148,7 @@ public class QueueImpl implements Queue
    }
 
    public HandleStatus addLast(final MessageReference ref)
-   {      
+   {
       HandleStatus status = add(ref, false);
 
       return status;
@@ -166,7 +166,7 @@ public class QueueImpl implements Queue
       while (iter.hasPrevious())
       {
          MessageReference ref = iter.previous();
-         
+
          ServerMessage msg = ref.getMessage();
 
          if (!scheduledDeliveryHandler.checkAndSchedule(ref, backup))
@@ -187,13 +187,13 @@ public class QueueImpl implements Queue
          executor.execute(deliverRunner);
       }
    }
-   
+
    // Only used in testing - do not call directly!
    public synchronized void deliverNow()
    {
       deliver();
    }
-   
+
    public void addConsumer(final Consumer consumer)
    {
       distributionPolicy.addConsumer(consumer);
@@ -207,7 +207,7 @@ public class QueueImpl implements Queue
       {
          promptDelivery = false;
       }
-      
+
       return removed;
    }
 
@@ -294,7 +294,7 @@ public class QueueImpl implements Queue
    }
 
    public synchronized int getMessageCount()
-   {    
+   {
       return messageReferences.size() + getScheduledCount() + getDeliveringCount();
    }
 
@@ -345,7 +345,6 @@ public class QueueImpl implements Queue
       return messagesAdded.get();
    }
 
-
    public synchronized void deleteAllReferences(final StorageManager storageManager) throws Exception
    {
       Transaction tx = new TransactionImpl(storageManager, postOffice);
@@ -366,9 +365,9 @@ public class QueueImpl implements Queue
       List<MessageReference> cancelled = scheduledDeliveryHandler.cancel();
       for (MessageReference messageReference : cancelled)
       {
-          deliveringCount.incrementAndGet();
+         deliveringCount.incrementAndGet();
 
-          tx.addAcknowledgement(messageReference);
+         tx.addAcknowledgement(messageReference);
       }
 
       tx.commit();
@@ -492,7 +491,7 @@ public class QueueImpl implements Queue
    }
 
    public synchronized void setBackup()
-   {    
+   {
       this.backup = true;
 
       this.direct = false;
@@ -503,26 +502,45 @@ public class QueueImpl implements Queue
       return messageReferences.removeFirst();
    }
 
-   public synchronized void activate()
-   {      
+   public synchronized boolean activate()
+   {
       consumersToFailover = distributionPolicy.getConsumerCount();
-      
+
       if (consumersToFailover == 0)
       {
          backup = false;
+
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
+
+   public synchronized void activateNow(final Executor executor)
+   {
+      if (backup)
+      {
+         log.info("Timed out waiting for all consumers to reconnect to queue " + name +
+                  " so queue will be activated now");
+
+         backup = false;
+
+         deliverAsync(executor);
       }
    }
 
    public synchronized boolean consumerFailedOver()
    {
       consumersToFailover--;
-      
+
       if (consumersToFailover == 0)
       {
          // All consumers for the queue have failed over, can re-activate it now
 
          backup = false;
-         
+
          scheduledDeliveryHandler.reSchedule();
 
          return true;
@@ -570,7 +588,7 @@ public class QueueImpl implements Queue
       {
          return;
       }
-      
+
       MessageReference reference;
 
       Iterator<MessageReference> iterator = null;
@@ -616,7 +634,7 @@ public class QueueImpl implements Queue
             else
             {
                iterator.remove();
-            }            
+            }
          }
          else if (status == HandleStatus.BUSY)
          {
@@ -630,9 +648,9 @@ public class QueueImpl implements Queue
             // through the queue
             iterator = messageReferences.iterator();
          }
-      }     
+      }
    }
-   
+
    private synchronized HandleStatus add(final MessageReference ref, final boolean first)
    {
       if (!first)
@@ -707,7 +725,7 @@ public class QueueImpl implements Queue
    private HandleStatus deliver(final MessageReference reference)
    {
       HandleStatus status = distributionPolicy.distribute(reference);
-      
+
       if (status == HandleStatus.HANDLED)
       {
          deliveringCount.incrementAndGet();
@@ -717,7 +735,7 @@ public class QueueImpl implements Queue
       {
          promptDelivery = true;
       }
-      
+
       return status;
    }
 
@@ -732,8 +750,8 @@ public class QueueImpl implements Queue
          waitingToDeliver.set(false);
 
          synchronized (QueueImpl.this)
-         {          
-            deliver();            
+         {
+            deliver();
          }
       }
    }

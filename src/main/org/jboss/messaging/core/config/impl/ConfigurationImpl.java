@@ -34,6 +34,8 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_CLUSTERED = false;
 
    public static final boolean DEFAULT_BACKUP = false;
+   
+   public static final long DEFAULT_QUEUE_ACTIVATION_TIMEOUT = 30000;
 
    public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 30;
 
@@ -78,6 +80,8 @@ public class ConfigurationImpl implements Configuration
    protected boolean clustered = DEFAULT_CLUSTERED;
 
    protected boolean backup = DEFAULT_BACKUP;
+      
+   protected long queueActivationTimeout = DEFAULT_QUEUE_ACTIVATION_TIMEOUT;
 
    protected int scheduledThreadPoolMaxSize = DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 
@@ -147,6 +151,16 @@ public class ConfigurationImpl implements Configuration
    public void setBackup(final boolean backup)
    {
       this.backup = backup;
+   }
+   
+   public long getQueueActivationTimeout()
+   {
+      return queueActivationTimeout;
+   }
+   
+   public void setQueueActivationTimeout(long timeout)
+   {
+      this.queueActivationTimeout = timeout;
    }
 
    public int getScheduledThreadPoolMaxSize()

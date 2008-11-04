@@ -401,7 +401,7 @@ public class ServerConsumerImpl implements ServerConsumer
    }
    
    private HandleStatus doHandle(final MessageReference ref) throws Exception
-   {
+   {      
       if (availableCredits != null && availableCredits.get() <= 0)
       {
          return HandleStatus.BUSY;

@@ -39,6 +39,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
       //Check they match the values from the test file
       assertEquals(true, conf.isClustered());
       assertEquals(true, conf.isBackup());
+      assertEquals(12456, conf.getQueueActivationTimeout());
       assertEquals(12345, conf.getScheduledThreadPoolMaxSize());    
       assertEquals(5423, conf.getSecurityInvalidationInterval());
       assertEquals(false, conf.isRequireDestinations());

@@ -30,6 +30,7 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingComponent;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
@@ -49,9 +50,6 @@ import org.jboss.messaging.util.SimpleString;
  * The PostOffice also maintains a set of "allowable addresses". These are the addresses that it is legal to
  * route to.
  * 
- * Finally, a PostOffice maintains a set of FlowControllers - one for each unique address. These are used, where
- * appropriate to control the flow of messages sent to a particular address
- *  
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -79,7 +77,7 @@ public interface PostOffice extends MessagingComponent
 
    Set<SimpleString> listAllDestinations();
    
-   void activate();
+   List<Queue> activate();
    
    PagingManager getPagingManager();
    

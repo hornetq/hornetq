@@ -54,6 +54,7 @@ public class ConfigurationImplTest extends TestCase
    {      
       assertEquals(ConfigurationImpl.DEFAULT_CLUSTERED, conf.isClustered());
       assertEquals(ConfigurationImpl.DEFAULT_BACKUP, conf.isBackup());
+      assertEquals(ConfigurationImpl.DEFAULT_QUEUE_ACTIVATION_TIMEOUT, conf.getQueueActivationTimeout());
       assertEquals(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE, conf.getScheduledThreadPoolMaxSize());
       assertEquals(ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL, conf.getSecurityInvalidationInterval());
       assertEquals(ConfigurationImpl.DEFAULT_REQUIRE_DESTINATIONS, conf.isRequireDestinations());
@@ -84,11 +85,15 @@ public class ConfigurationImplTest extends TestCase
          conf.setBackup(b);
          assertEquals(b, conf.isBackup());
          
+         long l = randomLong();
+         conf.setQueueActivationTimeout(l);
+         assertEquals(l, conf.getQueueActivationTimeout());
+         
          int i = randomInt();
          conf.setScheduledThreadPoolMaxSize(i);
          assertEquals(i, conf.getScheduledThreadPoolMaxSize());
                   
-         long l = randomLong();
+         l = randomLong();
          conf.setSecurityInvalidationInterval(l);
          assertEquals(l, conf.getSecurityInvalidationInterval());
          
@@ -149,8 +154,6 @@ public class ConfigurationImplTest extends TestCase
    
    public void testGetSetInterceptors()
    {
-      List<String> interceptors = conf.getInterceptorClassNames();
-      
       final String name1 = "uqwyuqywuy";
       final String name2 = "yugyugyguyg";
       
@@ -167,10 +170,17 @@ public class ConfigurationImplTest extends TestCase
       boolean b = randomBoolean();
       conf.setClustered(b);
       
+      b = randomBoolean();
+      conf.setBackup(b);
+      
+      long l = randomLong();
+      conf.setQueueActivationTimeout(l);
+      
+      
       int i = randomInt();
       conf.setScheduledThreadPoolMaxSize(i);
          
-      long l = randomLong();
+      l = randomLong();
       conf.setSecurityInvalidationInterval(l);
 
       b = randomBoolean();

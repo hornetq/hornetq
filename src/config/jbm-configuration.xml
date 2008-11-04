@@ -28,6 +28,8 @@
       
       <backup>false</backup>
       
+      <queue-activation-timeout>30000</queue-activation-timeout>
+      
       <!--
       <backup-connector>
          <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory</factory-class>

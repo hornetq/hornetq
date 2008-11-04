@@ -13,6 +13,7 @@
 package org.jboss.messaging.core.server.impl;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,6 +51,7 @@ import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -273,7 +275,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          return;
       }
-      
+
       asyncDeliveryPool.shutdown();
 
       try
@@ -407,7 +409,14 @@ public class MessagingServerImpl implements MessagingServer
       {
          freezeAllBackupConnections();
 
-         postOffice.activate();
+         List<Queue> toActivate = postOffice.activate();
+
+         for (Queue queue : toActivate)
+         {
+            scheduledExecutor.schedule(new ActivateRunner(queue),
+                                       configuration.getQueueActivationTimeout(),
+                                       TimeUnit.MILLISECONDS);
+         }
 
          configuration.setBackup(false);
 
@@ -497,7 +506,7 @@ public class MessagingServerImpl implements MessagingServer
                                                      final boolean autoCommitSends,
                                                      final boolean autoCommitAcks,
                                                      final boolean xa,
-                                                     final int sendWindowSize)throws Exception
+                                                     final int sendWindowSize) throws Exception
    {
       checkActivate(connection);
 
@@ -640,4 +649,19 @@ public class MessagingServerImpl implements MessagingServer
 
    // Inner classes
    // --------------------------------------------------------------------------------
+
+   private class ActivateRunner implements Runnable
+   {
+      private Queue queue;
+
+      ActivateRunner(final Queue queue)
+      {
+         this.queue = queue;
+      }
+
+      public void run()
+      {
+         queue.activateNow(asyncDeliveryPool);
+      }
+   }
 }

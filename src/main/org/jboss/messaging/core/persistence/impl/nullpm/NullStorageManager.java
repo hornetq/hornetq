@@ -54,9 +54,6 @@ public class NullStorageManager implements StorageManager
 {
    private static final Logger log = Logger.getLogger(NullStorageManager.class);
 
-   
-   //FIXME - these need to use id generators from 1.4 null storage manager since is not unique across
-   //cluster
 	private final IDGenerator idGenerator = new TimeAndCounterIDGenerator();
 
 	private volatile boolean started;

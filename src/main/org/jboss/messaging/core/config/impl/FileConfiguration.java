@@ -71,6 +71,8 @@ public class FileConfiguration extends ConfigurationImpl
       clustered = getBoolean(e, "clustered", clustered);
       
       backup = getBoolean(e, "backup", backup);
+      
+      queueActivationTimeout = getLong(e, "queue-activation-timeout", queueActivationTimeout);
 
       //NOTE! All the defaults come from the super class
       

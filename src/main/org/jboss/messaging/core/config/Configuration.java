@@ -47,6 +47,10 @@ public interface Configuration extends Serializable
    boolean isBackup();
 
    void setBackup(boolean backup);
+   
+   long getQueueActivationTimeout();
+   
+   void setQueueActivationTimeout(long timeout);
 
    int getScheduledThreadPoolMaxSize();
 

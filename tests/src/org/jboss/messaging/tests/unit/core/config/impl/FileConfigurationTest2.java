@@ -39,6 +39,7 @@ public class FileConfigurationTest2 extends ConfigurationImplTest
    {
       assertEquals(ConfigurationImpl.DEFAULT_CLUSTERED, conf.isClustered());
       assertEquals(ConfigurationImpl.DEFAULT_BACKUP, conf.isBackup());
+      assertEquals(ConfigurationImpl.DEFAULT_QUEUE_ACTIVATION_TIMEOUT, conf.getQueueActivationTimeout());
       assertEquals(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE, conf.getScheduledThreadPoolMaxSize());
       assertEquals(ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL, conf.getSecurityInvalidationInterval());
       assertEquals(ConfigurationImpl.DEFAULT_REQUIRE_DESTINATIONS, conf.isRequireDestinations());

@@ -110,7 +110,7 @@ public class PostOfficeImpl implements PostOffice
          addressManager = new SimpleAddressManager();
       }
 
-      this.backup = backup;
+      this.backup = backup;    
    }
 
    // MessagingComponent implementation ---------------------------------------
@@ -123,7 +123,7 @@ public class PostOfficeImpl implements PostOffice
 
          pagingManager.start();
       }
-
+      
       // Injecting the postoffice (itself) on queueFactory for paging-control
       queueFactory.setPostOffice(this);
 
@@ -316,18 +316,29 @@ public class PostOfficeImpl implements PostOffice
       return addressManager.getMappings();
    }
 
-   public synchronized void activate()
+   public List<Queue> activate()
    {
       this.backup = false;
 
       Map<SimpleString, Binding> nameMap = addressManager.getBindings();
 
+      List<Queue> queues = new ArrayList<Queue>();
+      
       for (Binding binding : nameMap.values())
       {
-         binding.getQueue().activate();
-      }
-   }
+         Queue queue = binding.getQueue();
+         
+         boolean activated = queue.activate();
    
+         if (!activated)
+         { 
+            queues.add(queue);
+         }
+      }
+      
+      return queues;
+   }
+         
    public synchronized SendLock getAddressLock(final SimpleString address)
    {
       SendLock lock = addressLocks.get(address);

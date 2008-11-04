@@ -130,7 +130,9 @@ public interface Queue
 
    void setBackup();
    
-   void activate();
+   boolean activate();
+   
+   void activateNow(Executor executor);
    
    boolean isBackup();
    
@@ -140,6 +142,4 @@ public interface Queue
    
    //Only used in testing
    void deliverNow();
-   
-  // void dumpRefs();
 }

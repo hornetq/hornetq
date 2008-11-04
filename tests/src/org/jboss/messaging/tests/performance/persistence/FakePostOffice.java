@@ -128,8 +128,9 @@ public class FakePostOffice implements PostOffice
       return null;
    }
 
-   public void activate()
+   public List<Queue> activate()
    {
+      return null;
    }
 
    public PagingManager getPagingManager()
