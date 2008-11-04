@@ -180,9 +180,12 @@ public class TransactionImpl implements Transaction
          for (MessageReference ref : refs)
          {
             scheduledReferences.put(ref, scheduledDeliveryTime);
-            if(ref.getQueue().isDurable())
+            if (ref.getQueue().isDurable())
             {
-               storageManager.storeMessageReferenceScheduledTransactional(id, ref.getQueue().getPersistenceID(), message.getMessageID(), scheduledDeliveryTime);
+               storageManager.storeMessageReferenceScheduledTransactional(id,
+                                                                          ref.getQueue().getPersistenceID(),
+                                                                          message.getMessageID(),
+                                                                          scheduledDeliveryTime);
             }
          }
       }
@@ -190,14 +193,15 @@ public class TransactionImpl implements Transaction
 
    public List<MessageReference> timeout() throws Exception
    {
-      //we need to synchronize with commit and rollback just in case they get called atthesame time
+      // we need to synchronize with commit and rollback just in case they get called atthesame time
       synchronized (timeoutLock)
       {
-         //if we've already rolled back or committed we don't need to do anything
-         if(state == State.COMMITTED || state == State.ROLLBACK_ONLY)
+         // if we've already rolled back or committed we don't need to do anything
+         if (state == State.COMMITTED || state == State.ROLLBACK_ONLY)
          {
             return Collections.emptyList();
          }
+         
          return doRollback();
       }
    }
@@ -217,7 +221,7 @@ public class TransactionImpl implements Transaction
       {
          pagingManager.messageDone(message);
       }
-      
+
       if (message.isDurable())
       {
          Queue queue = acknowledgement.getQueue();
@@ -270,12 +274,7 @@ public class TransactionImpl implements Transaction
    }
 
    public void commit() throws Exception
-   {      
-//      if (inMethod != -1)
-//      {
-//         throw new IllegalStateException("Can't commit, already inmethod " + inMethod);
-//      }
-      inMethod = 2;
+   {
       synchronized (timeoutLock)
       {
          if (state == State.ROLLBACK_ONLY)
@@ -318,7 +317,7 @@ public class TransactionImpl implements Transaction
          for (MessageReference ref : refsToAdd)
          {
             Long scheduled = scheduledReferences.get(ref);
-            if(scheduled == null)
+            if (scheduled == null)
             {
                ref.getQueue().addLast(ref);
             }
@@ -346,16 +345,10 @@ public class TransactionImpl implements Transaction
 
          state = State.COMMITTED;
       }
-      inMethod = -1;
    }
 
    public List<MessageReference> rollback(final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
-//      if (inMethod != -1)
-//      {
-//         throw new IllegalStateException("Can't rollback, already inmethod " + inMethod);
-//      }
-      inMethod=1;
       LinkedList<MessageReference> toCancel;
       synchronized (timeoutLock)
       {
@@ -379,7 +372,6 @@ public class TransactionImpl implements Transaction
          state = State.ROLLEDBACK;
       }
 
-      inMethod = -1;
       return toCancel;
    }
 
@@ -399,23 +391,11 @@ public class TransactionImpl implements Transaction
 
       for (MessageReference ref : acknowledgements)
       {
-//         Queue queue = ref.getQueue();
-//
-//         ServerMessage message = ref.getMessage();
-
-         // Putting back the size on pagingManager, and reverting the counters
-
-         //FIXME - why????
-         //Surely paging happens before routing, so cancellation shouldn't effect anything......
-//         if (message.incrementReference(message.isDurable() && queue.isDurable()) == 1)
-//         {
-//            pagingManager.addSize(message);
-//         }
-
          toCancel.add(ref);
       }
 
       clear();
+
       return toCancel;
    }
 
@@ -500,15 +480,8 @@ public class TransactionImpl implements Transaction
    // Private
    // -------------------------------------------------------------------
 
-   private volatile int inMethod;
-   
    private List<MessageReference> route(final ServerMessage message) throws Exception
    {
-//      if (inMethod != -1)
-//      {
-//         throw new IllegalStateException("Can't route, already inmethod " + inMethod);
-//      }
-      inMethod = 0;
       List<MessageReference> refs = postOffice.route(message);
 
       refsToAdd.addAll(refs);
@@ -519,7 +492,7 @@ public class TransactionImpl implements Transaction
 
          containsPersistent = true;
       }
-      inMethod = -1;
+
       return refs;
    }
 
@@ -542,7 +515,6 @@ public class TransactionImpl implements Transaction
 
       for (ServerMessage message : pagedMessages)
       {
-
          // http://wiki.jboss.org/wiki/JBossMessaging2Paging
          // Explained under Transaction On Paging. (This is the item B)
          if (pagingManager.page(message, id))
@@ -585,9 +557,12 @@ public class TransactionImpl implements Transaction
             for (MessageReference ref : refs)
             {
                scheduledReferences.put(ref, scheduledDeliveryTime);
-               if(ref.getQueue().isDurable())
+               if (ref.getQueue().isDurable())
                {
-                  storageManager.storeMessageReferenceScheduledTransactional(id, ref.getQueue().getPersistenceID(), message.getMessageID(), scheduledDeliveryTime);
+                  storageManager.storeMessageReferenceScheduledTransactional(id,
+                                                                             ref.getQueue().getPersistenceID(),
+                                                                             message.getMessageID(),
+                                                                             scheduledDeliveryTime);
                }
             }
          }

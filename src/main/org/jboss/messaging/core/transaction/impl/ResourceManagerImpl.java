@@ -23,29 +23,28 @@
 package org.jboss.messaging.core.transaction.impl;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.transaction.ResourceManager;
-import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.core.transaction.Transaction;
 
 /**
  * A ResourceManagerImpl
@@ -66,7 +65,7 @@ public class ResourceManagerImpl implements ResourceManager
 
    private final ScheduledExecutorService executorService;
 
-   private final Map<Xid, ScheduledFuture> scheduledTimeoutTxs = new HashMap<Xid, ScheduledFuture>();
+   private final Map<Xid, ScheduledFuture<Boolean>> scheduledTimeoutTxs = new HashMap<Xid, ScheduledFuture<Boolean>>();
 
    private final StorageManager storageManager;
 
@@ -99,7 +98,9 @@ public class ResourceManagerImpl implements ResourceManager
       boolean added = transactions.putIfAbsent(xid, tx) == null;
       if (added && timeoutSeconds > 0)
       {
-         ScheduledFuture<Boolean> future = executorService.schedule(new TxTimeoutHandler(tx), timeoutSeconds, TimeUnit.SECONDS);
+         ScheduledFuture<Boolean> future = executorService.schedule(new TxTimeoutHandler(tx),
+                                                                    timeoutSeconds,
+                                                                    TimeUnit.SECONDS);
          scheduledTimeoutTxs.put(xid, future);
       }
       return added;
@@ -124,7 +125,7 @@ public class ResourceManagerImpl implements ResourceManager
    {
       if (timeoutSeconds == 0)
       {
-         //reset to default
+         // reset to default
          this.timeoutSeconds = defaultTimeoutSeconds;
       }
       else
@@ -148,19 +149,26 @@ public class ResourceManagerImpl implements ResourceManager
       return xids;
    }
 
-   class TxTimeoutHandler implements Callable
+   private class TxTimeoutHandler implements Callable
    {
       final Transaction tx;
 
-      public TxTimeoutHandler(Transaction tx) {this.tx = tx;}
+      public TxTimeoutHandler(final Transaction tx)
+      {
+         this.tx = tx;
+      }
 
       public Object call() throws Exception
       {
          transactions.remove(tx.getXid());
+
          log.warn("transaction with xid " + tx.getXid() + " timed out");
+
          List<MessageReference> rolledBack = tx.timeout();
+
          Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
 
+         // TODO - this code is duplicated in ServerSessionImpl - combine
          for (MessageReference ref : rolledBack)
          {
             if (ref.cancel(storageManager, postOffice, queueSettingsRepository))
@@ -186,6 +194,7 @@ public class ResourceManagerImpl implements ResourceManager
 
             entry.getKey().addListFirst(refs);
          }
+
          return null;
       }
    }
