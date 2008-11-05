@@ -25,6 +25,8 @@ package org.jboss.messaging.tests.integration.cluster;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.management.Notification;
+
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.ClientConsumer;
@@ -34,31 +36,33 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
-import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
- * A FailoverScheduledMessageTest
+ * A FailoverManagementTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 5 Nov 2008 11:18:51
+ * Created 5 Nov 2008 15:05:14
+ *
  *
  */
-public class FailoverScheduledMessageTest extends TestCase
+public class FailoverManagementTest extends TestCase
 {
-   private static final Logger log = Logger.getLogger(FailoverScheduledMessageTest.class);
+   private static final Logger log = Logger.getLogger(FailoverManagementTest.class);
 
    // Constants -----------------------------------------------------
 
@@ -78,14 +82,7 @@ public class FailoverScheduledMessageTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   /*
-    * Send some scheduled messsages on live
-    * Let some fire on live
-    * Failover
-    * Let rest fire on backup
-    * Assert no duplicates and all are received ok
-    */
-   public void testScheduled() throws Exception
+   public void testManagementMessages() throws Exception
    {            
       ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                       new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
@@ -97,69 +94,73 @@ public class FailoverScheduledMessageTest extends TestCase
 
       session1.createQueue(ADDRESS, ADDRESS, null, false, false);
       
-      session1.start();
-
+      SimpleString replyTo = new SimpleString("replyto");
+      
+      session1.createQueue(replyTo, new SimpleString("replyto"), null, false, false);
+      
       ClientProducer producer = session1.createProducer(ADDRESS);
-                 
+      
       final int numMessages = 10;
-      
-      long now = System.currentTimeMillis();
-      
-      final long delay = 200;
       
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session1.createClientMessage(JBossTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
-         message.putIntProperty(new SimpleString("count"), i);         
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
-         producer.send(message, now + delay * i);                
+         ClientMessage msg  = session1.createClientMessage(false);
+         
+         msg.getBody().flip();
+         
+         producer.send(msg);
       }
       
-      ClientConsumer consumer1 = session1.createConsumer(ADDRESS);
+      for (int i = 0; i < numMessages / 2; i++)
+      {
+         ClientMessage managementMessage  = session1.createClientMessage(false);
+         
+         ManagementHelper.putAttributes(managementMessage,
+                                        replyTo,
+                                        ManagementServiceImpl.getQueueObjectName(ADDRESS, ADDRESS),
+                                        "MessageCount");
+         
+         managementMessage.getBody().flip();
+         
+         session1.sendManagementMessage(managementMessage);
+      }
+                            
+      ClientConsumer consumer1 = session1.createConsumer(replyTo);
                  
       final RemotingConnection conn1 = ((ClientSessionImpl)session1).getConnection();
  
-      Thread t = new Thread()
-      {
-         public void run()
-         {
-            try
-            {
-               //Sleep a little while to ensure that some messages are consumed before failover
-               Thread.sleep(delay * numMessages / 2);
-            }
-            catch (InterruptedException e)
-            {               
-            }
-            
-            conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
-         }
-      };
+      conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
       
-      t.start();
+      //Send the other half
+      for (int i = 0; i < numMessages / 2; i++)
+      {
+         ClientMessage managementMessage  = session1.createClientMessage(false);
+         
+         ManagementHelper.putAttributes(managementMessage,
+                                        replyTo,
+                                        ManagementServiceImpl.getQueueObjectName(ADDRESS, ADDRESS),
+                                        "MessageCount");
+         
+         managementMessage.getBody().flip();
+         
+         session1.sendManagementMessage(managementMessage);
+      }
+            
+      session1.start();
                    
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(delay * 2);
-                           
+         ClientMessage message = consumer1.receive(1000);
+         
          assertNotNull(message);
-         
-         log.info("got message " + i);
-         
+                        
          message.acknowledge();
-      }      
+         
+         assertTrue(ManagementHelper.isAttributesResult(message));
+         
+         assertEquals(numMessages, message.getProperty(new SimpleString("MessageCount")));
+      }
       
-      ClientMessage message = consumer1.receive(delay * 2);
-      
-      assertNull(message);
-      
-      t.join();
-                   
       session1.close();
       
       //Make sure no more messages
@@ -167,9 +168,94 @@ public class FailoverScheduledMessageTest extends TestCase
       
       session2.start();
       
-      ClientConsumer consumer2 = session2.createConsumer(ADDRESS);
+      ClientConsumer consumer2 = session2.createConsumer(replyTo);
       
-      message = consumer2.receive(1000);
+      ClientMessage message = consumer2.receive(1000);
+      
+      assertNull(message);
+      
+      session2.close();      
+   }
+   
+   public void testManagementMessages2() throws Exception
+   {            
+      ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                 backupParams));
+      
+      sf1.setSendWindowSize(32 * 1024);
+  
+      ClientSession session1 = sf1.createSession(false, true, true, false);
+
+      session1.createQueue(ADDRESS, ADDRESS, null, false, false);
+      
+      SimpleString replyTo = new SimpleString("replyto");
+      
+      session1.createQueue(replyTo, new SimpleString("replyto"), null, false, false);
+      
+      ClientProducer producer = session1.createProducer(ADDRESS);
+      
+      final int numMessages = 10;
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage msg  = session1.createClientMessage(false);
+         
+         msg.getBody().flip();
+         
+         producer.send(msg);
+      }
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage managementMessage  = session1.createClientMessage(false);
+         
+         ManagementHelper.putAttributes(managementMessage,
+                                        replyTo,
+                                        ManagementServiceImpl.getQueueObjectName(ADDRESS, ADDRESS),
+                                        "MessageCount");
+         
+         managementMessage.getBody().flip();
+         
+         session1.sendManagementMessage(managementMessage);
+      }
+                            
+      ClientConsumer consumer1 = session1.createConsumer(replyTo);
+                       
+                      
+      session1.start();
+                   
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = consumer1.receive(1000);
+         
+         assertNotNull(message);
+         
+         if (i == 0)
+         {
+            //Fail after receipt but before ack
+            final RemotingConnection conn1 = ((ClientSessionImpl)session1).getConnection();
+            
+            conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+         }
+                        
+         message.acknowledge();
+         
+         assertTrue(ManagementHelper.isAttributesResult(message));
+         
+         assertEquals(numMessages, message.getProperty(new SimpleString("MessageCount")));
+      }
+      
+      session1.close();
+      
+      //Make sure no more messages
+      ClientSession session2 = sf1.createSession(false, true, true, false);
+      
+      session2.start();
+      
+      ClientConsumer consumer2 = session2.createConsumer(replyTo);
+      
+      ClientMessage message = consumer2.receive(1000);
       
       assertNull(message);
       

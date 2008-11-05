@@ -55,13 +55,11 @@ public class ManagementClient
       clientSession.addDestination(replytoQueue, false, true);
       clientSession.createQueue(replytoQueue, replytoQueue, null, false, true);
 
-      ClientProducer mngmntProducer = clientSession.createProducer(ManagementHelper.MANAGEMENT_DESTINATION);
-
       // create a management message to subscribe to notifications from the
       // server
       ClientMessage mngmntMessage = clientSession.createClientMessage(false);
       ManagementHelper.putNotificationSubscription(mngmntMessage, replytoQueue, true);
-      mngmntProducer.sendManagement(mngmntMessage);
+      clientSession.sendManagementMessage(mngmntMessage);
       System.out.println("send message to subscribe to notifications");
 
       ClientConsumer mngmntConsumer = clientSession.createConsumer(replytoQueue);
@@ -119,7 +117,7 @@ public class ManagementClient
                                               ManagementServiceImpl.getMessagingServerObjectName(),
                                               "setMessageCounterSamplePeriod",
                                               (long)30000);
-      mngmntProducer.sendManagement(mngmntMessage);
+      clientSession.sendManagementMessage(mngmntMessage);
       System.out.println("sent management message to set an attribute");
 
       // create a message to retrieve one or many attributes
@@ -130,7 +128,7 @@ public class ManagementClient
                                      "MessageCount",
                                      "Durable");
 
-      mngmntProducer.sendManagement(mngmntMessage);
+      clientSession.sendManagementMessage(mngmntMessage);
       System.out.println("sent management message to retrieve attributes");
 
       // create a message to invoke the operation sendMessageToDLQ(long) on the
@@ -141,14 +139,14 @@ public class ManagementClient
                                               ManagementServiceImpl.getQueueObjectName(queue, queue),
                                               "sendMessageToDLQ",
                                               (long)6161);
-      mngmntProducer.sendManagement(mngmntMessage);
+      clientSession.sendManagementMessage(mngmntMessage);
       System.out.println("sent management message to invoke operation");
 
       // create a message to unsubscribe from the notifications sent by the
       // server
       mngmntMessage = clientSession.createClientMessage(false);
       ManagementHelper.putNotificationSubscription(mngmntMessage, replytoQueue, false);
-      mngmntProducer.sendManagement(mngmntMessage);
+      clientSession.sendManagementMessage(mngmntMessage);
       System.out.println("send message to unsubscribe to notifications");
 
       Thread.sleep(5000);

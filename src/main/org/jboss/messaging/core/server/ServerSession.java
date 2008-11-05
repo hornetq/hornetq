@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.server;
 
 import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.DelayedResult;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
@@ -151,8 +150,4 @@ public interface ServerSession
    int transferConnection(RemotingConnection newConnection, int lastReceivedCommandID);
    
    Channel getChannel();
-   
-   //Should this really be here??
-   void sendResponse(final DelayedResult result, final Packet response);
-
 }

@@ -41,27 +41,19 @@ public class SessionSendManagementMessage extends PacketImpl
    
    // Attributes ----------------------------------------------------
 
-   private long producerID;
-   
    private ClientMessage clientMessage;
    
    private ServerMessage serverMessage;
    
-   private boolean requiresResponse;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionSendManagementMessage(final long producerID, final ClientMessage message, final boolean requiresResponse)
+   public SessionSendManagementMessage(final ClientMessage message)
    {
       super(SESS_MANAGEMENT_SEND);
 
-      this.producerID = producerID;
-      
       this.clientMessage = message;
-      
-      this.requiresResponse = requiresResponse;
    }
       
    public SessionSendManagementMessage()
@@ -71,11 +63,6 @@ public class SessionSendManagementMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public long getProducerID()
-   {
-      return producerID;
-   }
-   
    public ClientMessage getClientMessage()
    {
       return clientMessage;
@@ -86,15 +73,8 @@ public class SessionSendManagementMessage extends PacketImpl
       return serverMessage;
    }
    
-   public boolean isRequiresResponse()
-   {
-      return requiresResponse;
-   }
-   
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(producerID);      
-      
       if (clientMessage != null)
       {
          clientMessage.encode(buffer);
@@ -104,23 +84,15 @@ public class SessionSendManagementMessage extends PacketImpl
          //If we're replicating a buffer to a backup node then we encode the serverMessage not the clientMessage
          serverMessage.encode(buffer);
       }
-      
-      buffer.putBoolean(requiresResponse);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
-   {
-      //TODO can be optimised
-      
-      producerID = buffer.getLong();
-                  
+   {          
       serverMessage = new ServerMessageImpl();
       
       serverMessage.decode(buffer);
       
       serverMessage.getBody().flip();
-      
-      requiresResponse = buffer.getBoolean();
    }
 
 

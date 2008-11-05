@@ -108,7 +108,6 @@ import org.jboss.messaging.util.SimpleStringIdGenerator;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  */
-
 public class ServerSessionImpl implements ServerSession, FailureListener, NotificationListener
 {
    // Constants -----------------------------------------------------------------------------
@@ -1987,9 +1986,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       try
       {
          channel.replicatePacket(packet);
-
-         // set started will unlock
-         
+ 
          //note we process start before response is back from the backup
          setStarted(true);         
       }
@@ -2005,7 +2002,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    //TODO try removing the lock consumers and see what happens!!
    public void handleStop(final Packet packet)
    {
-      boolean lock = this.channel.getReplicatingChannel() != null;
+      boolean lock = channel.getReplicatingChannel() != null;
       
       if (lock)
       {
@@ -2018,9 +2015,25 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
          //note we process stop before response is back from the backup
          
+         final Packet response = new NullResponseMessage();
+         
          setStarted(false);
 
-         sendResponse(result, new NullResponseMessage());
+         if (result == null)
+         {
+            // Not clustered - just send now
+            channel.send(response);
+         }
+         else
+         {
+            result.setResultRunner(new Runnable()
+            {
+               public void run()
+               {
+                  channel.send(response);
+               }
+            });
+         }         
       }
       finally
       {
@@ -2077,8 +2090,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       Packet response = null;
 
       try
-      {
-         //note we process close before response is back from the backup
+      {         
          close();
 
          response = new NullResponseMessage();
@@ -2317,11 +2329,24 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          channel.send(response);
       }
    }
-
+   
    public void handleSendScheduledProducerMessage(final SessionScheduledSendMessage packet)
-   {
+   {               
       ServerMessage msg = packet.getServerMessage();
-
+      
+      final SendLock lock;
+            
+      if (channel.getReplicatingChannel() != null)
+      {
+         lock = postOffice.getAddressLock(msg.getDestination());
+               
+         lock.beforeSend();
+      }
+      else
+      {
+         lock = null;
+      }
+      
       if (msg.getMessageID() == 0L)
       {
          // must generate message id here, so we know they are in sync on live and backup
@@ -2331,12 +2356,35 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
 
       DelayedResult result = channel.replicatePacket(packet);
+      
+      //With a send we must make sure it is replicated to backup before being processed on live
+      //or can end up with delivery being processed on backup before original send
+      
+      if (result == null)
+      {
+         doSendScheduled(packet);                        
+      }
+      else
+      {
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doSendScheduled(packet);
+               
+               lock.afterSend();
+            }
+         });
+      }
+   }
 
+   private void doSendScheduled(final SessionScheduledSendMessage packet)
+   {
       Packet response = null;
 
       try
       {
-         producers.get(packet.getProducerID()).sendScheduled(msg, packet.getScheduledDeliveryTime());
+         producers.get(packet.getProducerID()).sendScheduled(packet.getServerMessage(), packet.getScheduledDeliveryTime());
 
          if (packet.isRequiresResponse())
          {
@@ -2359,24 +2407,56 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
-      sendResponse(result, response);
+      if (response != null)
+      {
+         channel.send(response);
+      }
+   }
+   
+   public void handleManagementMessage(final SessionSendManagementMessage packet)
+   {        
+      ServerMessage msg = packet.getServerMessage();
+      
+      if (msg.getMessageID() == 0L)
+      {
+         // must generate message id here, so we know they are in sync on live and backup
+         long id = storageManager.generateUniqueID();
+
+         msg.setMessageID(id);
+      }
+      
+      DelayedResult result = channel.replicatePacket(packet);
+      
+      //With a send we must make sure it is replicated to backup before being processed on live
+      //or can end up with delivery being processed on backup before original send
+      
+      if (result == null)
+      {
+         doHandleManagementMessage(packet);                        
+      }
+      else
+      {
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleManagementMessage(packet);
+            }
+         });
+      }
    }
 
-   public void handleManagementMessage(final SessionSendManagementMessage packet)
+   public void doHandleManagementMessage(final SessionSendManagementMessage packet)
    {
-      DelayedResult result = channel.replicatePacket(packet);
-
-      Packet response = null;
-
       try
       {
-         ServerMessage serverMessage = packet.getServerMessage();
+         ServerMessage message = packet.getServerMessage();
 
-         if (serverMessage.containsProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS))
+         if (message.containsProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS))
          {
-            boolean subscribe = (Boolean)serverMessage.getProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS);
+            boolean subscribe = (Boolean)message.getProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS);
 
-            final SimpleString replyTo = (SimpleString)serverMessage.getProperty(ManagementHelper.HDR_JMX_REPLYTO);
+            final SimpleString replyTo = (SimpleString)message.getProperty(ManagementHelper.HDR_JMX_REPLYTO);
 
             if (subscribe)
             {
@@ -2399,35 +2479,17 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
          else
          {
-            managementService.handleMessage(serverMessage);
+            managementService.handleMessage(message);
+            
+            message.setDestination((SimpleString)message.getProperty(ManagementHelper.HDR_JMX_REPLYTO));
 
-            serverMessage.setDestination((SimpleString)serverMessage.getProperty(ManagementHelper.HDR_JMX_REPLYTO));
-
-            send(serverMessage);
-         }
-
-         if (packet.isRequiresResponse())
-         {
-            response = new NullResponseMessage();
+            send(message);
          }
       }
       catch (Exception e)
       {
-         log.error("Failed to send management message", e);
-         if (packet.isRequiresResponse())
-         {
-            if (e instanceof MessagingException)
-            {
-               response = new MessagingExceptionMessage((MessagingException)e);
-            }
-            else
-            {
-               response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
-            }
-         }
+         log.error("Failed to send management message", e);        
       }
-
-      sendResponse(result, response);
    }
 
    public void handleReplicatedDelivery(final SessionReplicateDeliveryMessage packet)
@@ -2521,7 +2583,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       catch (Exception e)
       {
          log.warn("problem while sending a notification message " + notification, e);
-
       }
    }
 
@@ -2654,40 +2715,4 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
    }
 
-   private void sendResponse(final DelayedResult result, final Packet response, final boolean closeChannel)
-   {
-      if (response != null)
-      {
-         if (result == null)
-         {
-            // Not clustered - just send now
-            channel.send(response);
-
-            if (closeChannel)
-            {
-               channel.close();
-            }
-         }
-         else
-         {
-            result.setResultRunner(new Runnable()
-            {
-               public void run()
-               {
-                  channel.send(response);
-
-                  if (closeChannel)
-                  {
-                     channel.close();
-                  }
-               }
-            });
-         }
-      }
-   }
-
-   public void sendResponse(final DelayedResult result, final Packet response)
-   {
-      this.sendResponse(result, response, false);
-   }
 }

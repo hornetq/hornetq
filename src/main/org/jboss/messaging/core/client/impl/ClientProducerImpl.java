@@ -20,7 +20,6 @@ import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionScheduledSendMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiter;
@@ -114,7 +113,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       doSend(address, msg, 0);
    }
 
-    public void send(final ClientMessage msg, long scheduleDeliveryTime) throws MessagingException
+   public void send(final ClientMessage msg, long scheduleDeliveryTime) throws MessagingException
    {
       checkClosed();
 
@@ -126,54 +125,6 @@ public class ClientProducerImpl implements ClientProducerInternal
       checkClosed();
 
       doSend(address, msg, scheduleDeliveryTime);
-   }
-
-   // use a special wireformat packet to sendScheduled management message (on the server-side they are
-   // handled by the server session differently from regular Client Message)
-   public void sendManagement(final ClientMessage msg) throws MessagingException
-   {
-      checkClosed();
-      
-      if (address != null)
-      {
-         msg.setDestination(address);
-      }
-      else
-      {
-         msg.setDestination(this.address);
-      }
-      
-      if (rateLimiter != null)
-      {
-         // Rate flow control
-                  
-         rateLimiter.limit();
-      }
-      
-      boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
-      
-      SessionSendManagementMessage message = new SessionSendManagementMessage(id, msg, false);
-      
-      if (sendBlocking)
-      {        
-         channel.sendBlocking(message);
-      }
-      else
-      {
-         channel.send(message);
-      }      
-      
-//      //We only flow control with non-anonymous producers
-//      if (address == null && creditFlowControl)
-//      {
-//         try
-//         {
-//            availableCredits.acquire(message.getClientMessage().getEncodeSize());
-//         }
-//         catch (InterruptedException e)
-//         {           
-//         }         
-//      }
    }
 
    public void registerAcknowledgementHandler(final AcknowledgementHandler handler)
@@ -273,7 +224,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          rateLimiter.limit();
       }
 
-      if(autoGroupId != null)
+      if (autoGroupId != null)
       {
          msg.putStringProperty(MessageImpl.GROUP_ID, autoGroupId);
       }
@@ -281,8 +232,9 @@ public class ClientProducerImpl implements ClientProducerInternal
       boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
 
       SessionSendMessage message;
-      //check to see if this message need to be scheduled.
-      if(scheduledDeliveryTime <= 0)
+      
+      // check to see if this message need to be scheduled.
+      if (scheduledDeliveryTime <= 0)
       {
          message = new SessionSendMessage(id, msg, sendBlocking);
       }
@@ -290,7 +242,6 @@ public class ClientProducerImpl implements ClientProducerInternal
       {
          message = new SessionScheduledSendMessage(id, msg, sendBlocking, scheduledDeliveryTime);
       }
-
 
       if (sendBlocking)
       {

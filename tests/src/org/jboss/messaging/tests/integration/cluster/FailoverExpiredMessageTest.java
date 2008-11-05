@@ -59,7 +59,7 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class FailoverExpiredMessageTest extends TestCase
 {
-   private static final Logger log = Logger.getLogger(SimpleAutomaticFailoverTest.class);
+   private static final Logger log = Logger.getLogger(FailoverExpiredMessageTest.class);
 
    // Constants -----------------------------------------------------
 
