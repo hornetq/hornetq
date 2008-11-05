@@ -496,6 +496,7 @@ public class MessagingServerControlTest extends TestCase
       postOffice = createMock(PostOffice.class);
       storageManager = createMock(StorageManager.class);
       configuration = createMock(Configuration.class);
+      expect(configuration.isMessageCounterEnabled()).andReturn(false);
       securityRepository = createMock(HierarchicalRepository.class);
       queueSettingsRepository = createMock(HierarchicalRepository.class);
       server = createMock(MessagingServer.class);

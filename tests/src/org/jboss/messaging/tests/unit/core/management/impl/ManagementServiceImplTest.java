@@ -84,6 +84,7 @@ public class ManagementServiceImplTest extends TestCase
       PostOffice postOffice = createMock(PostOffice.class);
       StorageManager storageManager = createMock(StorageManager.class);
       Configuration configuration = createMock(Configuration.class);
+      expect(configuration.isMessageCounterEnabled()).andReturn(false);
       HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
       HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
       MessagingServer messagingServer = createMock(MessagingServer.class);
@@ -111,6 +112,7 @@ public class ManagementServiceImplTest extends TestCase
       PostOffice postOffice = createMock(PostOffice.class);
       StorageManager storageManager = createMock(StorageManager.class);
       Configuration configuration = createMock(Configuration.class);
+      expect(configuration.isMessageCounterEnabled()).andReturn(false);
       HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
       HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
       MessagingServer messagingServer = createMock(MessagingServer.class);

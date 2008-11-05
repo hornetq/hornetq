@@ -14,6 +14,9 @@
 
       <wild-card-routing-enabled>true</wild-card-routing-enabled>
 
+      <!-- by default, message counter is disabled -->
+      <message-counter-enabled>false</message-counter-enabled>
+
       <!-- true to expose JBoss Messaging resources through JMX -->
       <jmx-management-enabled>true</jmx-management-enabled>
     

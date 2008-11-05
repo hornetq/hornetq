@@ -349,7 +349,9 @@ public class FileConfiguration extends ConfigurationImpl
       journalMaxAIO = getInteger(e, "journal-max-aio", journalMaxAIO);
 
       wildcardRoutingEnabled = getBoolean(e, "wild-card-routing-enabled", wildcardRoutingEnabled);
-   }
+
+      messageCounterEnabled = getBoolean(e, "message-counter-enabled", messageCounterEnabled);
+}
 
    public String getConfigurationUrl()
    {

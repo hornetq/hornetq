@@ -76,7 +76,7 @@ public class MessagingServerControl extends StandardMBean implements
    private final MessageCounterManager messageCounterManager;
    private final NotificationBroadcasterSupport broadcaster;
 
-   private boolean enableMessageCounters;
+   private boolean messageCounterEnabled;
 
    // Static --------------------------------------------------------
 
@@ -96,6 +96,12 @@ public class MessagingServerControl extends StandardMBean implements
       this.server = messagingServer;
       this.messageCounterManager = messageCounterManager;
       this.broadcaster = broadcaster;
+      
+      messageCounterEnabled = configuration.isMessageCounterEnabled();
+      if (messageCounterEnabled)
+      {
+         messageCounterManager.start();
+      }
    }
 
    // Public --------------------------------------------------------
@@ -398,12 +404,12 @@ public class MessagingServerControl extends StandardMBean implements
 
    public void enableMessageCounters()
    {
-      setEnableMessageCounters(true);
+      setMessageCounterEnabled(true);
    }
 
    public void disableMessageCounters()
    {
-      setEnableMessageCounters(false);
+      setMessageCounterEnabled(false);
    }
       
    public void resetAllMessageCounters()
@@ -416,9 +422,9 @@ public class MessagingServerControl extends StandardMBean implements
       messageCounterManager.resetAllCounterHistories();
    }
 
-   public boolean isEnableMessageCounters()
+   public boolean isMessageCounterEnabled()
    {
-      return enableMessageCounters;
+      return messageCounterEnabled;
    } 
    
    public synchronized long getMessageCounterSamplePeriod()
@@ -493,20 +499,20 @@ public class MessagingServerControl extends StandardMBean implements
 
    // Private -------------------------------------------------------
 
-   private synchronized void setEnableMessageCounters(boolean enable) 
+   private synchronized void setMessageCounterEnabled(boolean enable) 
    {
       if (isStarted())
       {
-         if (enableMessageCounters && !enable)
+         if (messageCounterEnabled && !enable)
          {
             stopMessageCounters();
          }
-         else if (!enableMessageCounters && enable)
+         else if (!messageCounterEnabled && enable)
          {
             startMessageCounters();
          }        
       }
-      enableMessageCounters = enable;
+      messageCounterEnabled = enable;
    }
 
    private void startMessageCounters()

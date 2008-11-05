@@ -80,7 +80,7 @@ public interface MessagingServerControlMBean
 
    Configuration getConfiguration();
    
-   boolean isEnableMessageCounters();
+   boolean isMessageCounterEnabled();
 
    int getMessageCounterMaxDayCount();
 

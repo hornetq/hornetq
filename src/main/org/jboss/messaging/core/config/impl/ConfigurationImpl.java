@@ -75,6 +75,8 @@ public class ConfigurationImpl implements Configuration
 
    public static final boolean DEFAULT_WILDCARD_ROUTING_ENABLED = false;
 
+   public static final boolean DEFAULT_MESSAGE_COUNTER_ENABLED = false;
+
    // Attributes -----------------------------------------------------------------------------
 
    protected boolean clustered = DEFAULT_CLUSTERED;
@@ -133,6 +135,8 @@ public class ConfigurationImpl implements Configuration
 
    protected boolean wildcardRoutingEnabled = DEFAULT_WILDCARD_ROUTING_ENABLED;
 
+   protected boolean messageCounterEnabled = DEFAULT_MESSAGE_COUNTER_ENABLED;
+   
    public boolean isClustered()
    {
       return clustered;
@@ -386,6 +390,11 @@ public class ConfigurationImpl implements Configuration
    public void setPagingMaxGlobalSizeBytes(final long maxGlobalSize)
    {
       pagingMaxGlobalSize = maxGlobalSize;
+   }
+   
+   public boolean isMessageCounterEnabled()
+   {
+      return messageCounterEnabled;
    }
 
    @Override

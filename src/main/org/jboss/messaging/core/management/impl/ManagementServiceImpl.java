@@ -153,8 +153,8 @@ public class ManagementServiceImpl implements ManagementService
                                                      final MessagingServer messagingServer) throws Exception
    {
       this.postOffice = postOffice;
-      this.securityRepository = securityRepository;
       this.queueSettingsRepository = queueSettingsRepository;
+      
       managedServer = new MessagingServerControl(postOffice,
                                                  storageManager,
                                                  configuration,                                                

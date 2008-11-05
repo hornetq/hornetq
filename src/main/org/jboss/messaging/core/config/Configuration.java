@@ -144,4 +144,6 @@ public interface Configuration extends Serializable
    void setPagingMaxGlobalSizeBytes(long maxGlobalSize);
 
    boolean isWildcardRoutingEnabled();
+
+   boolean isMessageCounterEnabled();
 }
