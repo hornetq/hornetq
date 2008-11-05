@@ -101,7 +101,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // ClientConsumer implementation
    // -----------------------------------------------------------------
 
-   public synchronized ClientMessage receive(long timeout) throws MessagingException
+   public ClientMessage receive(long timeout) throws MessagingException
    {
       checkClosed();
 
@@ -119,7 +119,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          timeout = Long.MAX_VALUE;
       }
 
-      long start = System.currentTimeMillis();
+      long start = -1;
 
       long toWait = timeout;
 
@@ -127,28 +127,40 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          while (true)
          {
-            while (!closed && buffer.isEmpty() && toWait > 0)
-            {
-               try
+            ClientMessage m = null;
+            
+            synchronized (this)
+            {              
+               while ((m = buffer.poll()) == null && !closed && toWait > 0)
                {
-                  wait(toWait);
+                  if (start == -1)
+                  {
+                     start = System.currentTimeMillis();                     
+                  }
+                  
+                  try
+                  {
+                     wait(toWait);
+                  }
+                  catch (InterruptedException e)
+                  {
+                  }
+                    
+                  if (m != null || closed)
+                  {
+                     break;
+                  }
+   
+                  long now = System.currentTimeMillis();
+   
+                  toWait -= now - start;
+   
+                  start = now;
                }
-               catch (InterruptedException e)
-               {
-               }
-
-               // TODO - can avoid this extra System.currentTimeMillis call by exiting early
-               long now = System.currentTimeMillis();
-
-               toWait -= now - start;
-
-               start = now;
             }
 
-            if (!closed && !buffer.isEmpty())
+            if (m != null)
             {
-               ClientMessage m = buffer.poll();
-
                boolean expired = m.isExpired();
 
                flowControl(m.getEncodeSize());

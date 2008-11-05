@@ -406,17 +406,7 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          return HandleStatus.BUSY;
       }
-
-      final ServerMessage message = ref.getMessage();
-
-      if (message.isExpired())
-      {
-         // TODO need to replicate expires
-         ref.expire(storageManager, postOffice, queueSettingsRepository);
-
-         return HandleStatus.HANDLED;
-      }
-   
+      
       lock.lock();
       
       try
@@ -428,6 +418,8 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             return HandleStatus.BUSY;
          }
+         
+         final ServerMessage message = ref.getMessage();
 
          if (filter != null && !filter.match(message))
          {

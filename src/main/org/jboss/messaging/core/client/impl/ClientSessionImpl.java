@@ -317,6 +317,15 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                         final boolean browseOnly) throws MessagingException
    {
       checkClosed();
+      
+      if (direct && sessionFactory.getSendWindowSize() != -1)
+      {
+         //Direct consumers and send window blocking is incompatible.
+         //If execute onMessage on same thread as remoting thread then if onMessage calls rollback() or other method
+         //but has no credits it will block on the semaphore until credits arrive, but they will never arrive since the
+         //remoting thread won't unwind.
+         throw new IllegalArgumentException("Cannot create a direct consumer if send window is specified - since can lead to deadlock");
+      }
 
       SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(queueName,
                                                                               filterString,
