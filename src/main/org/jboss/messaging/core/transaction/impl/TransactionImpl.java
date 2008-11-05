@@ -39,7 +39,7 @@ import org.jboss.messaging.util.SimpleString;
 
 /**
  * A TransactionImpl
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  */
@@ -77,6 +77,8 @@ public class TransactionImpl implements Transaction
 
    private final Object timeoutLock = new Object();
 
+   private final long createTime;
+
    public TransactionImpl(final StorageManager storageManager, final PostOffice postOffice)
    {
       this.storageManager = storageManager;
@@ -95,6 +97,8 @@ public class TransactionImpl implements Transaction
       this.xid = null;
 
       this.id = storageManager.generateUniqueID();
+
+      createTime = System.currentTimeMillis();
    }
 
    public TransactionImpl(final Xid xid, final StorageManager storageManager, final PostOffice postOffice)
@@ -115,6 +119,8 @@ public class TransactionImpl implements Transaction
       this.xid = xid;
 
       this.id = storageManager.generateUniqueID();
+
+      createTime = System.currentTimeMillis();
    }
 
    public TransactionImpl(final long id, final Xid xid, final StorageManager storageManager, final PostOffice postOffice)
@@ -135,6 +141,8 @@ public class TransactionImpl implements Transaction
       {
          this.pagingManager = postOffice.getPagingManager();
       }
+
+      createTime = System.currentTimeMillis();
    }
 
    // Transaction implementation
@@ -197,13 +205,18 @@ public class TransactionImpl implements Transaction
       synchronized (timeoutLock)
       {
          // if we've already rolled back or committed we don't need to do anything
-         if (state == State.COMMITTED || state == State.ROLLBACK_ONLY)
+         if (state == State.COMMITTED || state == State.ROLLBACK_ONLY || state == State.PREPARED)
          {
             return Collections.emptyList();
          }
-         
+
          return doRollback();
       }
+   }
+
+   public long getCreateTime()
+   {
+      return createTime;
    }
 
    public void addAcknowledgement(final MessageReference acknowledgement) throws Exception
@@ -256,21 +269,24 @@ public class TransactionImpl implements Transaction
 
    public void prepare() throws Exception
    {
-      if (state != State.ACTIVE)
+      synchronized (timeoutLock)
       {
-         throw new IllegalStateException("Transaction is in invalid state " + state);
+         if (state != State.ACTIVE)
+         {
+            throw new IllegalStateException("Transaction is in invalid state " + state);
+         }
+
+         if (xid == null)
+         {
+            throw new IllegalStateException("Cannot prepare non XA transaction");
+         }
+
+         pageMessages();
+
+         storageManager.prepare(id, xid);
+
+         state = State.PREPARED;
       }
-
-      if (xid == null)
-      {
-         throw new IllegalStateException("Cannot prepare non XA transaction");
-      }
-
-      pageMessages();
-
-      storageManager.prepare(id, xid);
-
-      state = State.PREPARED;
    }
 
    public void commit() throws Exception
@@ -559,10 +575,7 @@ public class TransactionImpl implements Transaction
                scheduledReferences.put(ref, scheduledDeliveryTime);
                if (ref.getQueue().isDurable())
                {
-                  storageManager.storeMessageReferenceScheduledTransactional(id,
-                                                                             ref.getQueue().getPersistenceID(),
-                                                                             message.getMessageID(),
-                                                                             scheduledDeliveryTime);
+                  storageManager.storeMessageReferenceScheduledTransactional(id, ref.getQueue().getPersistenceID(), message.getMessageID(), scheduledDeliveryTime);
                }
             }
          }

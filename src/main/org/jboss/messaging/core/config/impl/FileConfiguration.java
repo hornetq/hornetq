@@ -87,6 +87,10 @@ public class FileConfiguration extends ConfigurationImpl
       securityInvalidationInterval = getLong(e, "security-invalidation-interval", securityInvalidationInterval);
       
       connectionScanPeriod = getLong(e, "connection-scan-period", connectionScanPeriod);
+
+      transactionTimeout = getLong(e, "transaction-timeout", transactionTimeout);
+
+      transactionTimeoutScanPeriod = getLong(e, "transaction-timeout-scan-period", transactionTimeoutScanPeriod);
             
       NodeList interceptorNodes = e.getElementsByTagName("remoting-interceptors");
 

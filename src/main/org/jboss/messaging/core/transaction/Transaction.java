@@ -76,6 +76,8 @@ public interface Transaction
 
    List<MessageReference> timeout() throws Exception;
 
+   long getCreateTime();
+
    static enum State
    {
       ACTIVE, PREPARED, COMMITTED, ROLLEDBACK, SUSPENDED, ROLLBACK_ONLY

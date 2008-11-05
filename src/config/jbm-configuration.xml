@@ -21,6 +21,11 @@
       <jmx-management-enabled>true</jmx-management-enabled>
     
       <connection-scan-period>10000</connection-scan-period>
+
+      <!--how long before timing a transaction out-->
+      <transaction-timeout>60000</transaction-timeout>
+      <!--how often to scan for timedout transactions-->
+      <transaction-timeout-scan-period>1000</transaction-timeout-scan-period>
       
       <!-- Example interceptors 
       <remoting-interceptors>

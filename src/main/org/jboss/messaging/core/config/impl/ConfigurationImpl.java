@@ -77,12 +77,16 @@ public class ConfigurationImpl implements Configuration
 
    public static final boolean DEFAULT_MESSAGE_COUNTER_ENABLED = false;
 
+   public static final long DEFAULT_TRANSACTION_TIMEOUT = 60000;
+
+   public static final long DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD = 1000;
+
    // Attributes -----------------------------------------------------------------------------
 
    protected boolean clustered = DEFAULT_CLUSTERED;
 
    protected boolean backup = DEFAULT_BACKUP;
-      
+
    protected long queueActivationTimeout = DEFAULT_QUEUE_ACTIVATION_TIMEOUT;
 
    protected int scheduledThreadPoolMaxSize = DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
@@ -136,7 +140,11 @@ public class ConfigurationImpl implements Configuration
    protected boolean wildcardRoutingEnabled = DEFAULT_WILDCARD_ROUTING_ENABLED;
 
    protected boolean messageCounterEnabled = DEFAULT_MESSAGE_COUNTER_ENABLED;
-   
+
+   protected long transactionTimeout = DEFAULT_TRANSACTION_TIMEOUT;
+
+   protected long transactionTimeoutScanPeriod = DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD;
+
    public boolean isClustered()
    {
       return clustered;
@@ -156,12 +164,12 @@ public class ConfigurationImpl implements Configuration
    {
       this.backup = backup;
    }
-   
+
    public long getQueueActivationTimeout()
    {
       return queueActivationTimeout;
    }
-   
+
    public void setQueueActivationTimeout(long timeout)
    {
       this.queueActivationTimeout = timeout;
@@ -352,6 +360,26 @@ public class ConfigurationImpl implements Configuration
       return wildcardRoutingEnabled;
    }
 
+   public long getTransactionTimeout()
+   {
+      return transactionTimeout;
+   }
+
+   public void setTransactionTimeout(long timeout)
+   {
+      transactionTimeout = timeout;
+   }
+
+   public long getTransactionTimeoutScanPeriod()
+   {
+      return transactionTimeoutScanPeriod;
+   }
+
+   public void setTransactionTimeoutScanPeriod(long period)
+   {
+      transactionTimeoutScanPeriod = period;
+   }
+
    public boolean isSecurityEnabled()
    {
       return securityEnabled;
@@ -391,7 +419,7 @@ public class ConfigurationImpl implements Configuration
    {
       pagingMaxGlobalSize = maxGlobalSize;
    }
-   
+
    public boolean isMessageCounterEnabled()
    {
       return messageCounterEnabled;

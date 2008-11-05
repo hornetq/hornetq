@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.transaction;
 
+import org.jboss.messaging.core.server.MessagingComponent;
+
 import java.util.List;
 
 import javax.transaction.xa.Xid;
@@ -34,7 +36,7 @@ import javax.transaction.xa.Xid;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface ResourceManager
+public interface ResourceManager extends MessagingComponent
 {
    boolean putTransaction(Xid xid, Transaction tx);
    

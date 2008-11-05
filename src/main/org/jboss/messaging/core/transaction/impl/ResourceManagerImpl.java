@@ -23,30 +23,29 @@
 package org.jboss.messaging.core.transaction.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
+import java.util.LinkedList;
 import java.util.TimerTask;
-import java.util.concurrent.Callable;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.MessagingComponent;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
 
 /**
  * A ResourceManagerImpl
@@ -55,7 +54,7 @@ import org.jboss.messaging.core.transaction.Transaction;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class ResourceManagerImpl implements ResourceManager
+public class ResourceManagerImpl implements ResourceManager, MessagingComponent
 {
    private static final Logger log = Logger.getLogger(ResourceManagerImpl.class);
 
@@ -65,27 +64,71 @@ public class ResourceManagerImpl implements ResourceManager
 
    private volatile int timeoutSeconds;
 
-   private final ScheduledExecutorService executorService;
-
-   private final Map<Xid, ScheduledFuture<Boolean>> scheduledTimeoutTxs = new HashMap<Xid, ScheduledFuture<Boolean>>();
-
    private final StorageManager storageManager;
 
    private final PostOffice postOffice;
 
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
-   
+
+   private boolean started = false;
+
+   private Timer timer;
+
+   private TimerTask task;
+
+   private final long txTimeoutScanPeriod;
+
    public ResourceManagerImpl(final int defaultTimeoutSeconds,
-                              final ScheduledExecutorService scheduledExecutor,
+                              final long txTimeoutScanPeriod,
                               final StorageManager storageManager,
                               final PostOffice postOffice,
                               final HierarchicalRepository<QueueSettings> queueSettingsRepository)
    {
       this.defaultTimeoutSeconds = defaultTimeoutSeconds;
-      this.executorService = scheduledExecutor;
+      this.timeoutSeconds = defaultTimeoutSeconds;
+      this.txTimeoutScanPeriod = txTimeoutScanPeriod;
       this.storageManager = storageManager;
       this.postOffice = postOffice;
       this.queueSettingsRepository = queueSettingsRepository;
+   }
+
+   // MessagingComponent implementation
+
+   public void start() throws Exception
+   {
+      if (started)
+      {
+         return;
+      }
+      timer = new Timer(true);
+      task = new TxTimeoutHandler();
+      timer.schedule(task, txTimeoutScanPeriod, txTimeoutScanPeriod);
+      started = true;
+   }
+
+   public void stop() throws Exception
+   {
+      if (!started)
+      {
+         return;
+      }
+      if (timer != null)
+      {
+         task.cancel();
+
+         task = null;
+
+         timer.cancel();
+
+         timer = null;
+      }
+
+      started = false;
+   }
+
+   public boolean isStarted()
+   {
+      return started;
    }
 
    // ResourceManager implementation ---------------------------------------------
@@ -97,24 +140,11 @@ public class ResourceManagerImpl implements ResourceManager
 
    public boolean putTransaction(final Xid xid, final Transaction tx)
    {
-      boolean added = transactions.putIfAbsent(xid, tx) == null;
-      if (added && timeoutSeconds > 0)
-      {
-         ScheduledFuture<Boolean> future = executorService.schedule(new TxTimeoutHandler(tx),
-                                                                    timeoutSeconds,
-                                                                    TimeUnit.SECONDS);
-         scheduledTimeoutTxs.put(xid, future);
-      }
-      return added;
+      return transactions.putIfAbsent(xid, tx) == null;
    }
 
    public Transaction removeTransaction(final Xid xid)
    {
-      ScheduledFuture<Boolean> future = scheduledTimeoutTxs.get(xid);
-      if (future != null)
-      {
-         future.cancel(true);
-      }
       return transactions.remove(xid);
    }
 
@@ -127,7 +157,7 @@ public class ResourceManagerImpl implements ResourceManager
    {
       if (timeoutSeconds == 0)
       {
-         // reset to default
+         //reset to default
          this.timeoutSeconds = defaultTimeoutSeconds;
       }
       else
@@ -141,7 +171,7 @@ public class ResourceManagerImpl implements ResourceManager
    public List<Xid> getPreparedTransactions()
    {
       List<Xid> xids = new ArrayList<Xid>();
-      
+
       for (Xid xid : transactions.keySet())
       {
          if (transactions.get(xid).getState() == Transaction.State.PREPARED)
@@ -152,53 +182,63 @@ public class ResourceManagerImpl implements ResourceManager
       return xids;
    }
 
-   private class TxTimeoutHandler implements Callable
+   class TxTimeoutHandler extends TimerTask
    {
-      final Transaction tx;
-
-      public TxTimeoutHandler(final Transaction tx)
+      public void run()
       {
-         this.tx = tx;
-      }
+         Set<Transaction> timedoutTransactions = new HashSet<Transaction>();
 
-      public Object call() throws Exception
-      {
-         transactions.remove(tx.getXid());
+         long now = System.currentTimeMillis();
 
-         log.warn("transaction with xid " + tx.getXid() + " timed out");
-
-         List<MessageReference> rolledBack = tx.timeout();
-
-         Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
-
-         // TODO - this code is duplicated in ServerSessionImpl - combine
-         for (MessageReference ref : rolledBack)
+         for (Transaction tx : transactions.values())
          {
-            if (ref.cancel(storageManager, postOffice, queueSettingsRepository))
+            if (tx.getState() != Transaction.State.PREPARED && now > (tx.getCreateTime() + timeoutSeconds * 1000))
             {
-               Queue queue = ref.getQueue();
-
-               LinkedList<MessageReference> list = queueMap.get(queue);
-
-               if (list == null)
-               {
-                  list = new LinkedList<MessageReference>();
-
-                  queueMap.put(queue, list);
-               }
-
-               list.add(ref);
+               transactions.remove(tx.getXid());
+               log.warn("transaction with xid " + tx.getXid() + " timed out");
+               timedoutTransactions.add(tx);
             }
          }
 
-         for (Map.Entry<Queue, LinkedList<MessageReference>> entry : queueMap.entrySet())
+         for (Transaction failedTransaction : timedoutTransactions)
          {
-            LinkedList<MessageReference> refs = entry.getValue();
+            try
+            {
+               List<MessageReference> rolledBack = failedTransaction.timeout();
+               Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
 
-            entry.getKey().addListFirst(refs);
+               for (MessageReference ref : rolledBack)
+               {
+                  if (ref.cancel(storageManager, postOffice, queueSettingsRepository))
+                  {
+                     Queue queue = ref.getQueue();
+
+                     LinkedList<MessageReference> list = queueMap.get(queue);
+
+                     if (list == null)
+                     {
+                        list = new LinkedList<MessageReference>();
+
+                        queueMap.put(queue, list);
+                     }
+
+                     list.add(ref);
+                  }
+               }
+
+               for (Map.Entry<Queue, LinkedList<MessageReference>> entry : queueMap.entrySet())
+               {
+                  LinkedList<MessageReference> refs = entry.getValue();
+
+                  entry.getKey().addListFirst(refs);
+               }
+            }
+            catch (Exception e)
+            {
+               log.error("failed to timeout transaction, xid:" + failedTransaction.getXid(), e);
+            }
          }
-
-         return null;
       }
+
    }
 }

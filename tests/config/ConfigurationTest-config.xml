@@ -11,6 +11,8 @@
       <call-timeout>7654</call-timeout>    
       <packet-confirmation-batch-size>543</packet-confirmation-batch-size>
       <connection-scan-period>6543</connection-scan-period>
+      <transaction-timeout>98765</transaction-timeout>
+      <transaction-timeout-scan-period>56789</transaction-timeout-scan-period>
       <remoting-interceptors>
          <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1</class-name>
          <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor2</class-name>

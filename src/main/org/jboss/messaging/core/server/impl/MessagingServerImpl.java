@@ -216,7 +216,7 @@ public class MessagingServerImpl implements MessagingServer
 
       storeFactory.setPagingManager(pagingManager);
 
-      resourceManager = new ResourceManagerImpl(0, scheduledExecutor, storageManager, postOffice, queueSettingsRepository);
+      resourceManager = new ResourceManagerImpl((int) configuration.getTransactionTimeout()/1000, configuration.getTransactionTimeoutScanPeriod(), storageManager, postOffice, queueSettingsRepository);
       postOffice = new PostOfficeImpl(storageManager,
                                       pagingManager,
                                       queueFactory,
@@ -237,6 +237,7 @@ public class MessagingServerImpl implements MessagingServer
                                                           this);
 
       postOffice.start();
+      resourceManager.start();
 
       TransportConfiguration backupConnector = configuration.getBackupConnectorConfiguration();
 
@@ -291,6 +292,8 @@ public class MessagingServerImpl implements MessagingServer
       }
 
       securityStore = null;
+      resourceManager.stop();
+      resourceManager = null;
       postOffice.stop();
       postOffice = null;
       securityRepository = null;
