@@ -47,6 +47,7 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -2110,6 +2111,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
 
       channel.send(response);
+      
+      channel.close();
    }
 
    private void setStarted(final boolean s)
@@ -2557,9 +2560,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             }
          }
 
-         close();
-
-         channel.close();
+         //We call handleClose() since we need to replicate the close too, if there is a backup
+         handleClose(new PacketImpl(PacketImpl.SESS_CLOSE));
       }
       catch (Throwable t)
       {
