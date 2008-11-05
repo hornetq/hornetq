@@ -134,16 +134,19 @@ public class ActivationTimeoutTest extends TestCase
 
       //The messages should not be delivered until after activationTimeout ms, since
       //session 2 didn't reattach
-        
-      long now = System.currentTimeMillis();
-      
-      ClientMessage message = consumer1.receive(ACTIVATION_TIMEOUT - (now - start));
-      
-      assertNull(message);        
-      
+             
       for (int i = 0; i < numMessages; i++)
       {
-         message = consumer1.receive();
+         ClientMessage message = consumer1.receive(2 * ACTIVATION_TIMEOUT);
+         
+         assertNotNull(message);
+         
+         if (i == 0)
+         {
+            long now = System.currentTimeMillis();
+            
+            assertTrue(now - start >= ACTIVATION_TIMEOUT);
+         }
          
          assertEquals("aardvarks", message.getBody().getString());
 
@@ -152,7 +155,7 @@ public class ActivationTimeoutTest extends TestCase
          message.acknowledge();
       }
       
-      message = consumer1.receive(1000);
+      ClientMessage message = consumer1.receive(1000);
       
       assertNull(message);
       
@@ -218,20 +221,23 @@ public class ActivationTimeoutTest extends TestCase
 
       //The messages should not be delivered until after activationTimeout ms, since
       //session 2 didn't reattach
-        
-      long now = System.currentTimeMillis();
-      
+              
       //We now create a new consumer but it shouldn't receive the messages until after the timeout
       
       ClientConsumer consumer3 = session1.createConsumer(ADDRESS);
-      
-      ClientMessage message = consumer3.receive(ACTIVATION_TIMEOUT - (now - start));
-      
-      assertNull(message);        
-      
+               
       for (int i = 0; i < numMessages; i++)
       {
-         message = consumer3.receive();
+         ClientMessage message = consumer3.receive(2 * ACTIVATION_TIMEOUT);
+         
+         assertNotNull(message);
+         
+         if (i == 0)
+         {
+            long now = System.currentTimeMillis();
+            
+            assertTrue(now - start >= ACTIVATION_TIMEOUT);
+         }
          
          assertEquals("aardvarks", message.getBody().getString());
 
@@ -240,7 +246,7 @@ public class ActivationTimeoutTest extends TestCase
          message.acknowledge();
       }
       
-      message = consumer3.receive(1000);
+      ClientMessage message = consumer3.receive(1000);
       
       assertNull(message);
       

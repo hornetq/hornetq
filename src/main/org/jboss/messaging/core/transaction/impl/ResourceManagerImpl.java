@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -72,7 +74,7 @@ public class ResourceManagerImpl implements ResourceManager
    private final PostOffice postOffice;
 
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
-
+   
    public ResourceManagerImpl(final int defaultTimeoutSeconds,
                               final ScheduledExecutorService scheduledExecutor,
                               final StorageManager storageManager,
@@ -139,6 +141,7 @@ public class ResourceManagerImpl implements ResourceManager
    public List<Xid> getPreparedTransactions()
    {
       List<Xid> xids = new ArrayList<Xid>();
+      
       for (Xid xid : transactions.keySet())
       {
          if (transactions.get(xid).getState() == Transaction.State.PREPARED)
