@@ -34,7 +34,9 @@ public interface ScheduledDeliveryHandler
 
    int getScheduledCount();
 
-   List<MessageReference> getScheduledMessages();
+   List<MessageReference> getScheduledReferences();
 
    List<MessageReference> cancel();
+   
+   MessageReference removeReferenceWithID(long id);
 }

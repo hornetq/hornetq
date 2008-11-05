@@ -22,9 +22,9 @@
 package org.jboss.messaging.core.server.impl;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +36,10 @@ import org.jboss.messaging.core.server.ScheduledDeliveryHandler;
 /**
  * Handles scheduling deliveries to a queue at the correct time.
  * 
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  */
 public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 {
@@ -46,7 +49,9 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
    private final ScheduledExecutorService scheduledExecutor;
 
-   private final Set<ScheduledDeliveryRunnable> scheduledRunnables = new LinkedHashSet<ScheduledDeliveryRunnable>();
+   private final Map<Long, ScheduledDeliveryRunnable> scheduledRunnables = new LinkedHashMap<Long, ScheduledDeliveryRunnable>();
+   
+   private boolean rescheduled;
 
    public ScheduledDeliveryHandlerImpl(final ScheduledExecutorService scheduledExecutor)
    {
@@ -66,7 +71,10 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
          ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(ref);
 
-         scheduledRunnables.add(runnable);
+         synchronized (scheduledRunnables)
+         {
+            scheduledRunnables.put(ref.getMessage().getMessageID(), runnable);
+         }
 
          if (!backup)
          {
@@ -77,12 +85,20 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
       }
       return false;
    }
-
+   
    public void reSchedule()
    {
-      for (ScheduledDeliveryRunnable runnable : scheduledRunnables)
+      synchronized (scheduledRunnables)
       {
-         scheduleDelivery(runnable, runnable.getReference().getScheduledDeliveryTime());
+         if (!rescheduled)
+         {
+            for (ScheduledDeliveryRunnable runnable : scheduledRunnables.values())
+            {
+               scheduleDelivery(runnable, runnable.getReference().getScheduledDeliveryTime());
+            }
+            
+            rescheduled = true;
+         }
       }
    }
 
@@ -91,12 +107,13 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
       return scheduledRunnables.size();
    }
 
-   public List<MessageReference> getScheduledMessages()
+   public List<MessageReference> getScheduledReferences()
    {
       List<MessageReference> refs = new ArrayList<MessageReference>();
+      
       synchronized (scheduledRunnables)
       {
-         for (ScheduledDeliveryRunnable scheduledRunnable : scheduledRunnables)
+         for (ScheduledDeliveryRunnable scheduledRunnable : scheduledRunnables.values())
          {
             refs.add(scheduledRunnable.getReference());
          }
@@ -107,17 +124,27 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
    public List<MessageReference> cancel()
    {
       List<MessageReference> refs = new ArrayList<MessageReference>();
+      
       synchronized (scheduledRunnables)
       {
-         for (ScheduledDeliveryRunnable runnable : scheduledRunnables)
+         for (ScheduledDeliveryRunnable runnable : scheduledRunnables.values())
          {
             runnable.cancel();
+            
             refs.add(runnable.getReference());
          }
 
          scheduledRunnables.clear();
       }
       return refs;
+   }
+   
+   public MessageReference removeReferenceWithID(long id)
+   {
+      synchronized (scheduledRunnables)
+      {
+         return scheduledRunnables.remove(id).getReference();
+      }
    }
 
    private void scheduleDelivery(final ScheduledDeliveryRunnable runnable, final long deliveryTime)
@@ -180,9 +207,9 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
          synchronized (scheduledRunnables)
          {
-            boolean removed = scheduledRunnables.remove(this);
+            Object removed = scheduledRunnables.remove(ref.getMessage().getMessageID());
 
-            if (!removed)
+            if (removed == null)
             {
                log.warn("Failed to remove timeout " + this);
 
@@ -194,7 +221,6 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
          // TODO - need to replicate this so backup node also adds back to
          // front of queue
          ref.getQueue().addFirst(ref);
-
       }
    }
 }

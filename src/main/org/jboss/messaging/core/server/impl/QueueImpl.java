@@ -257,6 +257,12 @@ public class QueueImpl implements Queue
             break;
          }
       }
+      
+      if (removed == null)
+      {
+         //Look in scheduled deliveries
+         removed = scheduledDeliveryHandler.removeReferenceWithID(id);
+      }
 
       return removed;
    }
@@ -305,7 +311,7 @@ public class QueueImpl implements Queue
 
    public synchronized List<MessageReference> getScheduledMessages()
    {
-      return scheduledDeliveryHandler.getScheduledMessages();
+      return scheduledDeliveryHandler.getScheduledReferences();
    }
 
    public int getDeliveringCount()
@@ -526,6 +532,8 @@ public class QueueImpl implements Queue
                   " so queue will be activated now");
 
          backup = false;
+         
+         scheduledDeliveryHandler.reSchedule();
 
          deliverAsync(executor);
       }
