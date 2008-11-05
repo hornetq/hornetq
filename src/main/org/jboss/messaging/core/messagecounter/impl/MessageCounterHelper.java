@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.messagecounter.impl;
 
@@ -49,17 +49,18 @@ public class MessageCounterHelper
       if (counters == null)
          return null;
 
-      String ret = "<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">"
-            + "<tr>"
-            + "<th>Type</th>"
-            + "<th>Name</th>"
-            + "<th>Subscription</th>"
-            + "<th>Durable</th>"
-            + "<th>Count</th>"
-            + "<th>CountDelta</th>"
-            + "<th>Depth</th>"
-            + "<th>DepthDelta</th>"
-            + "<th>Last Add</th>" + "</tr>";
+      String ret = "<table class=\"jbm-message-counter\">\n" 
+                   + "<tr>"
+                   + "<th>Type</th>"
+                   + "<th>Name</th>"
+                   + "<th>Subscription</th>"
+                   + "<th>Durable</th>"
+                   + "<th>Count</th>"
+                   + "<th>CountDelta</th>"
+                   + "<th>Depth</th>"
+                   + "<th>DepthDelta</th>"
+                   + "<th>Last Add</th>"
+                   + "</tr>\n";
 
       for (int i = 0; i < counters.length; i++)
       {
@@ -67,8 +68,7 @@ public class MessageCounterHelper
          StringTokenizer token = new StringTokenizer(data, ",");
          String value;
 
-         ret += "<tr bgcolor=\"#" + ((i % 2) == 0 ? "FFFFFF" : "F0F0F0")
-               + "\">";
+         ret += "<tr bgcolor=\"#" + ((i % 2) == 0 ? "FFFFFF" : "F0F0F0") + "\">";
 
          ret += "<td>" + token.nextToken() + "</td>"; // type
          ret += "<td>" + token.nextToken() + "</td>"; // name
@@ -95,10 +95,10 @@ public class MessageCounterHelper
 
          ret += "<td>" + token.nextToken() + "</td>"; // date last add
 
-         ret += "</tr>";
+         ret += "</tr>\n";
       }
 
-      ret += "</table>";
+      ret += "</table>\n";
 
       return ret;
    }
@@ -108,30 +108,37 @@ public class MessageCounterHelper
       if (counters == null)
          return null;
 
-      String ret = "";
+      String ret = "<ul>\n";
 
       for (int i = 0; i < counters.length; i++)
       {
+         ret += "<li>\n";
+         ret += "  <ul>\n";
+
+         ret += "    <li>";
          // destination name
-         ret += (counters[i].getDestinationTopic() ? "Topic '" : "Queue '");
-         ret += counters[i].getDestinationName() + "'";
+         ret += (counters[i].getDestinationTopic() ? "Topic '" : "Queue '") + counters[i].getDestinationName() + "'";
+         ret += "</li>\n";
 
          if (counters[i].getDestinationSubscription() != null)
-            ret += "Subscription '" + counters[i].getDestinationSubscription()
-                  + "'";
+         {
+            ret += "    <li>";
+            ret += "Subscription '" + counters[i].getDestinationSubscription() + "'";
+            ret += "</li>\n";
+         }
 
+         ret += "    <li>";
          // table header
-         ret += "<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">"
-               + "<tr>" + "<th>Date</th>";
+         ret += "<table class=\"jbm-message-counter-history\">\n";
+         ret += "<tr><th>Date</th>";
 
          for (int j = 0; j < 24; j++)
-            ret += "<th width=\"4%\">" + j + "</th>";
+            ret += "<th>" + j + "</th>";
 
-         ret += "<th>Total</th></tr>";
+         ret += "<th>Total</th></tr>\n";
 
          // get history data as CSV string
-         StringTokenizer tokens = new StringTokenizer(counters[i]
-               .getHistoryAsString(), ",\n");
+         StringTokenizer tokens = new StringTokenizer(counters[i].getHistoryAsString(), ",\n");
 
          // get history day count
          int days = Integer.parseInt(tokens.nextToken());
@@ -139,8 +146,7 @@ public class MessageCounterHelper
          for (int j = 0; j < days; j++)
          {
             // next day counter row
-            ret += "<tr bgcolor=\"#" + ((j % 2) == 0 ? "FFFFFF" : "F0F0F0")
-                  + "\">";
+            ret += "<tr bgcolor=\"#" + ((j % 2) == 0 ? "FFFFFF" : "F0F0F0") + "\">";
 
             // date
             ret += "<td>" + tokens.nextToken() + "</td>";
@@ -155,7 +161,8 @@ public class MessageCounterHelper
                if (value == -1)
                {
                   ret += "<td></td>";
-               } else
+               }
+               else
                {
                   ret += "<td>" + value + "</td>";
 
@@ -163,15 +170,19 @@ public class MessageCounterHelper
                }
             }
 
-            ret += "<td>" + total + "</td></tr>";
+            ret += "<td>" + total + "</td></tr>\n";
          }
 
-         ret += "</table><br><br>";
+         ret += "</table></li>\n";
+         ret += "  </ul>\n";
+         ret += "</li>\n";
       }
+
+      ret += "</ul>\n";
 
       return ret;
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
