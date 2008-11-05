@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.messagecounter.impl;
 
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.StringTokenizer;
 
 import org.jboss.messaging.core.messagecounter.MessageCounter;
@@ -36,13 +38,11 @@ public class MessageCounterHelper
 {
    // Constants -----------------------------------------------------
 
+   private static DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
+
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public static String listMessageCounterAsHTML(MessageCounter[] counters)
    {
@@ -64,36 +64,29 @@ public class MessageCounterHelper
 
       for (int i = 0; i < counters.length; i++)
       {
-         String data = counters[i].getCounterAsString();
-         StringTokenizer token = new StringTokenizer(data, ",");
-         String value;
-
+         MessageCounter counter = counters[i];
+         String type = counter.isDestinationTopic() ? "Topic" : "Queue";
+         String subscription = counter.getDestinationSubscription();
+         if (subscription == null)
+         {
+            subscription = "-";
+         }
+         String durableStr = "-"; // makes no sense for a queue
+         if (counter.isDestinationTopic())
+         {
+            durableStr = Boolean.toString(counter.isDestinationDurable());            
+         }
          ret += "<tr bgcolor=\"#" + ((i % 2) == 0 ? "FFFFFF" : "F0F0F0") + "\">";
 
-         ret += "<td>" + token.nextToken() + "</td>"; // type
-         ret += "<td>" + token.nextToken() + "</td>"; // name
-         ret += "<td>" + token.nextToken() + "</td>"; // subscription
-         ret += "<td>" + token.nextToken() + "</td>"; // durable
-
-         ret += "<td>" + token.nextToken() + "</td>"; // count
-
-         value = token.nextToken(); // countDelta
-
-         if (value.equalsIgnoreCase("0"))
-            value = "-";
-
-         ret += "<td>" + value + "</td>";
-
-         ret += "<td>" + token.nextToken() + "</td>"; // depth
-
-         value = token.nextToken(); // depthDelta
-
-         if (value.equalsIgnoreCase("0"))
-            value = "-";
-
-         ret += "<td>" + value + "</td>";
-
-         ret += "<td>" + token.nextToken() + "</td>"; // date last add
+         ret += "<td>" + type + "</td>";
+         ret += "<td>" + counter.getDestinationName() + "</td>";
+         ret += "<td>" + subscription + "</td>";
+         ret += "<td>" + durableStr + "</td>";
+         ret += "<td>" + counter.getCount() + "</td>";
+         ret += "<td>" + prettify(counter.getCountDelta()) + "</td>";
+         ret += "<td>" + prettify(counter.getMessageCount()) + "</td>";
+         ret += "<td>" + prettify(counter.getMessageCountDelta()) + "</td>";
+         ret += "<td>" + asDate(counter.getLastUpdate()) + "</td>"; // date last add
 
          ret += "</tr>\n";
       }
@@ -117,7 +110,7 @@ public class MessageCounterHelper
 
          ret += "    <li>";
          // destination name
-         ret += (counters[i].getDestinationTopic() ? "Topic '" : "Queue '") + counters[i].getDestinationName() + "'";
+         ret += (counters[i].isDestinationTopic() ? "Topic '" : "Queue '") + counters[i].getDestinationName() + "'";
          ret += "</li>\n";
 
          if (counters[i].getDestinationSubscription() != null)
@@ -182,6 +175,31 @@ public class MessageCounterHelper
 
       return ret;
    }
+   
+   private static String prettify(int value)
+   {
+      if (value == 0)
+      {
+         return "-";
+      }
+      return Integer.toString(value);
+   }
+   
+   private static String asDate(long time)
+   {
+      if (time > 0)
+      {
+         return DATE_FORMAT.format(new Date(time));
+      }
+      else
+      {
+         return "-";
+      }
+   }
+
+   // Constructors --------------------------------------------------
+
+   // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
 

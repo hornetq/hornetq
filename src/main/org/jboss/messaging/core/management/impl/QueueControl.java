@@ -319,7 +319,7 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
       String timestamp = dateFormat.format(new Date(counter.getLastUpdate()));
       MessageCounterInfo info = new MessageCounterInfo(counter
             .getDestinationName(), counter.getDestinationSubscription(),
-            counter.getDestinationDurable(), counter.getCount(), counter
+            counter.isDestinationDurable(), counter.getCount(), counter
                   .getCountDelta(), counter.getMessageCount(), counter
                   .getMessageCountDelta(), timestamp);
       return info.toCompositeData();

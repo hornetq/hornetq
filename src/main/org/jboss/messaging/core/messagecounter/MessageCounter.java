@@ -24,7 +24,6 @@ package org.jboss.messaging.core.messagecounter;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -47,12 +46,17 @@ import org.jboss.messaging.core.server.Queue;
  */
 public class MessageCounter
 {
-   protected static final Logger log = Logger.getLogger(MessageCounter.class);
+   // Constants -----------------------------------------------------
+
+   // Attributes ----------------------------------------------------
 
    // destination related information
    private String destName;
+
    private String destSubscription;
+
    private boolean destTopic;
+
    private boolean destDurable;
 
    // destination queue
@@ -60,13 +64,23 @@ public class MessageCounter
 
    // counter
    private int countTotal;
+
    private int countTotalLast;
+
    private int depthLast;
+
    private long timeLastUpdate;
 
    // per hour day counter history
    private int dayCounterMax;
-   private ArrayList dayCounter;
+
+   private List<DayCounter> dayCounters;
+
+   private int lastMessagesAdded;
+
+   // Static --------------------------------------------------------
+
+   // Constructors --------------------------------------------------
 
    /**
     *    Constructor
@@ -78,96 +92,62 @@ public class MessageCounter
     * @param durable          durable subsciption flag
     * @param daycountmax      max message history day count
     */
-   public MessageCounter(String name,
-                         String subscription,
-                         Queue queue,
-                         boolean topic,
-                         boolean durable,
-                         int daycountmax)
+   public MessageCounter(String name, String subscription, Queue queue, boolean topic, boolean durable, int daycountmax)
    {
       // store destination related information
       destName = name;
       destSubscription = subscription;
       destTopic = topic;
       destDurable = durable;
-      destQueue = queue;      
+      destQueue = queue;
 
       // initialize counter
       resetCounter();
 
       // initialize message history
-      dayCounter = new ArrayList();
+      dayCounters = new ArrayList<DayCounter>();
 
       setHistoryLimit(daycountmax);
    }
 
-   /**
-   * Get string representation
-   */
-   public String toString()
-   {
-      return getCounterAsString();
-   }
+   // Public --------------------------------------------------------
 
-   private int lastMessagesAdded;
-   
    /*
     * This method is called periodically to update statistics from the queue
     */
    public synchronized void onTimer()
    {
       int latestMessagesAdded = destQueue.getMessagesAdded();
-      
+
       int newMessagesAdded = latestMessagesAdded - lastMessagesAdded;
-      
+
       countTotal += newMessagesAdded;
-      
+
       lastMessagesAdded = latestMessagesAdded;
-      
-      //update timestamp
+
+      // update timestamp
       timeLastUpdate = System.currentTimeMillis();
-      
+
       // update message history
       updateHistory(newMessagesAdded);
    }
 
-   /**
-    * Gets the related destination name
-    *
-    * @return String    destination name
-    */
    public String getDestinationName()
    {
       return destName;
    }
 
-   /**
-    * Gets the related destination subscription
-    *
-    * @return String    destination name
-    */
    public String getDestinationSubscription()
    {
       return destSubscription;
    }
 
-   /**
-    * Gets the related destination topic flag
-    *
-    * @return boolean    true: topic destination, false: queue destination
-    */
-   public boolean getDestinationTopic()
+   public boolean isDestinationTopic()
    {
       return destTopic;
    }
 
-   /**
-    * Gets the related destination durable subscription flag
-    *
-    * @return boolean   true : durable subscription,
-    *                   false: non-durable subscription
-    */
-   public boolean getDestinationDurable()
+   public boolean isDestinationDurable()
    {
       return destDurable;
    }
@@ -175,8 +155,6 @@ public class MessageCounter
    /**
     * Gets the total message count since startup or
     * last counter reset
-    *
-    * @return int    message count
     */
    public int getCount()
    {
@@ -185,8 +163,6 @@ public class MessageCounter
 
    /**
     * Gets the message count delta since last method call
-    *
-    * @return int    message count delta
     */
    public int getCountDelta()
    {
@@ -200,8 +176,6 @@ public class MessageCounter
    /**
     * Gets the current message count of pending messages
     * within the destination waiting for dispatch
-    *
-    * @return int message queue depth
     */
    public int getMessageCount()
    {
@@ -210,9 +184,7 @@ public class MessageCounter
 
    /**
     * Gets the message count delta of pending messages
-    * since last method call. Therefore
-    *
-    * @return int message queue depth delta
+    * since last method call.
     */
    public int getMessageCountDelta()
    {
@@ -224,19 +196,11 @@ public class MessageCounter
       return delta;
    }
 
-   /**
-    * Gets the timestamp of the last message add
-    *
-    * @return long      system time
-    */
    public long getLastUpdate()
    {
       return timeLastUpdate;
    }
 
-   /**
-    * Reset message counter values
-    */
    public void resetCounter()
    {
       countTotal = 0;
@@ -245,82 +209,7 @@ public class MessageCounter
       timeLastUpdate = 0;
    }
 
-   /**
-    * Get message counter data as string in format
-    *
-    *  "Topic/Queue, Name, Subscription, Durable, Count, CountDelta,
-    *  Depth, DepthDelta, Timestamp Last Increment"  
-    *
-    * @return  String   message counter data string
-    */
-   public String getCounterAsString()
-   {
-      StringBuffer ret = new StringBuffer();
-
-      // Topic/Queue
-      if (destTopic)
-         ret.append("Topic,");
-      else
-         ret.append("Queue,");
-
-      // name 
-      ret.append(destName).append(",");
-
-      // subscription
-      if (destSubscription != null)
-         ret.append(destSubscription).append(",");
-      else
-         ret.append("-,");
-
-      // Durable subscription
-      if (destTopic)
-      {
-         // Topic
-         if (destDurable)
-            ret.append("true,");
-         else
-            ret.append("false,");
-      }
-      else
-      {
-         // Queue
-         ret.append("-,");
-      }
-
-      // counter values
-      ret.append(getCount()).append(",").append(getCountDelta()).append(",").append(getMessageCount()).append(",").append(getMessageCountDelta()).append(",");
-
-      // timestamp last counter update
-      if (timeLastUpdate > 0)
-      {
-         DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
-
-         ret.append(dateFormat.format(new Date(timeLastUpdate)));
-      }
-      else
-      {
-         ret.append("-");
-      }
-
-      return ret.toString();
-   }
-
-   /**
-    * Get message counter history day count limit
-    *
-    * <0: unlimited, 0: history disabled, >0: day count
-    */
-   public int getHistoryLimit()
-   {
-      return dayCounterMax;
-   }
-
-   /**
-    * Set message counter history day count limit
-    *
-    * <0: unlimited, 0: history disabled, >0: day count
-    */
-   public void setHistoryLimit(int daycountmax)
+   private void setHistoryLimit(int daycountmax)
    {
       boolean bInitialize = false;
 
@@ -328,43 +217,115 @@ public class MessageCounter
       dayCounterMax = daycountmax;
 
       // update day counter array
-      synchronized (dayCounter)
+      synchronized (dayCounters)
       {
          if (dayCounterMax > 0)
          {
             // limit day history to specified day count
-            int delta = dayCounter.size() - dayCounterMax;
+            int delta = dayCounters.size() - dayCounterMax;
 
             for (int i = 0; i < delta; i++)
             {
                // reduce array size to requested size by dropping
                // oldest day counters
-               dayCounter.remove(0);
+               dayCounters.remove(0);
             }
 
             // create initial day counter when empty
-            bInitialize = dayCounter.isEmpty();
+            bInitialize = dayCounters.isEmpty();
          }
          else if (dayCounterMax == 0)
          {
             // disable history
-            dayCounter.clear();
+            dayCounters.clear();
          }
          else
          {
             // unlimited day history
 
             // create initial day counter when empty
-            bInitialize = dayCounter.isEmpty();
+            bInitialize = dayCounters.isEmpty();
          }
 
          // optionally initialize first day counter entry
          if (bInitialize)
          {
-            dayCounter.add(new DayCounter(new GregorianCalendar(), true));
+            dayCounters.add(new DayCounter(new GregorianCalendar(), true));
          }
       }
    }
+
+   public void resetHistory()
+   {
+      int max = dayCounterMax;
+
+      setHistoryLimit(0);
+      setHistoryLimit(max);
+   }
+
+   public List<DayCounter> getHistory()
+   {
+      updateHistory(0);
+
+      return new ArrayList<DayCounter>(dayCounters);
+   }
+
+   /**
+    * Get message counter history data as string in format
+    * 
+    * "day count\n  
+    *  Date 1, hour counter 0, hour counter 1, ..., hour counter 23\n
+    *  Date 2, hour counter 0, hour counter 1, ..., hour counter 23\n
+    *  .....
+    *  .....
+    *  Date n, hour counter 0, hour counter 1, ..., hour counter 23\n"
+    *
+    * @return  String   message history data string
+    */
+   public String getHistoryAsString()
+   {
+      String ret = "";
+
+      // ensure history counters are up to date
+      updateHistory(0);
+
+      // compile string
+      synchronized (dayCounters)
+      {
+         // first line: history day count
+         ret += dayCounters.size() + "\n";
+
+         // following lines: day counter data
+         for (int i = 0; i < dayCounters.size(); i++)
+         {
+            DayCounter counter = dayCounters.get(i);
+
+            ret += counter.getDayCounterAsString() + "\n";
+         }
+      }
+
+      return ret;
+   }
+
+   public String toString()
+   {
+      return "MessageCounter[destName" + destName +
+             ", destSubscription=" +
+             destSubscription +
+             ", destTopic=" +
+             destTopic +
+             ", destDurable=" +
+             destDurable +
+             ", destQueue=" +
+             destQueue +
+             "]";
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
 
    /**
     * Update message counter history
@@ -374,15 +335,15 @@ public class MessageCounter
    private void updateHistory(int newMessages)
    {
       // check history activation
-      if (dayCounter.isEmpty())
+      if (dayCounters.isEmpty())
       {
          return;
       }
 
       // calculate day difference between current date and date of last day counter entry
-      synchronized (dayCounter)
+      synchronized (dayCounters)
       {
-         DayCounter counterLast = (DayCounter) dayCounter.get(dayCounter.size() - 1);
+         DayCounter counterLast = dayCounters.get(dayCounters.size() - 1);
 
          GregorianCalendar calNow = new GregorianCalendar();
          GregorianCalendar calLast = counterLast.getDate();
@@ -405,7 +366,7 @@ public class MessageCounter
          long millisPerDay = 86400000; // 24 * 60 * 60 * 1000
          long millisDelta = calNow.getTime().getTime() - calLast.getTime().getTime();
 
-         int dayDelta = (int) (millisDelta / millisPerDay);
+         int dayDelta = (int)(millisDelta / millisPerDay);
 
          if (dayDelta > 0)
          {
@@ -423,78 +384,25 @@ public class MessageCounter
                counterNew = new DayCounter(calLast, false);
                counterNew.finalizeDayCounter();
 
-               dayCounter.add(counterNew);
+               dayCounters.add(counterNew);
             }
 
             // add new day counter entry for current day
             counterNew = new DayCounter(calNow, false);
 
-            dayCounter.add(counterNew);
+            dayCounters.add(counterNew);
 
             // ensure history day count limit
             setHistoryLimit(dayCounterMax);
          }
 
          // update last day counter entry
-         counterLast = (DayCounter) dayCounter.get(dayCounter.size() - 1);
+         counterLast = dayCounters.get(dayCounters.size() - 1);
          counterLast.updateDayCounter(newMessages);
       }
    }
 
-   /**
-    * Reset message counter history
-    */
-   public void resetHistory()
-   {
-      int max = dayCounterMax;
-
-      setHistoryLimit(0);
-      setHistoryLimit(max);
-   }
-
-   public List<DayCounter> getHistory()
-   {
-      updateHistory(0);
-      
-      return new ArrayList<DayCounter>(dayCounter);
-   }
-   
-   /**
-    * Get message counter history data as string in format
-    * 
-    * "day count\n  
-    *  Date 1, hour counter 0, hour counter 1, ..., hour counter 23\n
-    *  Date 2, hour counter 0, hour counter 1, ..., hour counter 23\n
-    *  .....
-    *  .....
-    *  Date n, hour counter 0, hour counter 1, ..., hour counter 23\n"
-    *
-    * @return  String   message history data string
-    */
-   public String getHistoryAsString()
-   {
-      String ret = "";
-
-      // ensure history counters are up to date
-      updateHistory(0);
-
-      // compile string       
-      synchronized (dayCounter)
-      {
-         // first line: history day count  
-         ret += dayCounter.size() + "\n";
-
-         // following lines: day counter data
-         for (int i = 0; i < dayCounter.size(); i++)
-         {
-            DayCounter counter = (DayCounter) dayCounter.get(i);
-
-            ret += counter.getDayCounterAsString() + "\n";
-         }
-      }
-
-      return ret;
-   }
+   // Inner classes -------------------------------------------------
 
    /**
     * Internal day counter class for one day hour based counter history
@@ -504,6 +412,7 @@ public class MessageCounter
       static final int HOURS = 24;
 
       GregorianCalendar date = null;
+
       int[] counters = new int[HOURS];
 
       /**
@@ -516,7 +425,7 @@ public class MessageCounter
       DayCounter(GregorianCalendar date, boolean isStartDay)
       {
          // store internal copy of creation date
-         this.date = (GregorianCalendar) date.clone();
+         this.date = (GregorianCalendar)date.clone();
 
          // initialize the array with '0'- values to current hour (if it is not the
          // first monitored day) and the rest with default values ('-1')
@@ -548,14 +457,14 @@ public class MessageCounter
        */
       public GregorianCalendar getDate()
       {
-         return (GregorianCalendar) date.clone();
+         return (GregorianCalendar)date.clone();
       }
 
       public int[] getCounters()
       {
-          return counters;
+         return counters;
       }
-      
+
       /**
        * Update day counter hour array elements  
        *
@@ -578,7 +487,7 @@ public class MessageCounter
             {
                // found first initialized hour counter
                // -> set all following uninitialized
-               //    counter values to 0
+               // counter values to 0
                bUpdate = true;
             }
 
@@ -608,7 +517,7 @@ public class MessageCounter
             {
                // found first initialized hour counter
                // -> finalize all following uninitialized
-               //    counter values
+               // counter values
                bFinalize = true;
             }
 
@@ -633,7 +542,7 @@ public class MessageCounter
 
          String strData = dateFormat.format(date.getTime());
 
-         // append 24 comma separated hour counter values           
+         // append 24 comma separated hour counter values
          for (int i = 0; i < HOURS; i++)
          {
             strData += "," + counters[i];
@@ -643,4 +552,3 @@ public class MessageCounter
       }
    }
 }
-
