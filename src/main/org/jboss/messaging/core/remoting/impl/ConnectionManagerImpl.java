@@ -266,7 +266,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       // conn has been closed from the server side without
       // being returned from the client side so we need to fail the conn and
       // call it's listeners
-      MessagingException me = new MessagingException(MessagingException.OBJECT_CLOSED, "The conn has been closed.");
+      MessagingException me = new MessagingException(MessagingException.OBJECT_CLOSED, "The conn has been closed by the server");
+      
       failConnection(me);
    }
 

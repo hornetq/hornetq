@@ -139,7 +139,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       failedConnectionTimer = new Timer(true);
 
       failedConnectionsTask = new FailedConnectionsTask();
-
+   
       failedConnectionTimer.schedule(failedConnectionsTask, connectionScanPeriod, connectionScanPeriod);
 
       started = true;
@@ -209,7 +209,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          throw new IllegalStateException("Unable to create connection, server hasn't finished starting up");
       }
-
+      
       RemotingConnection replicatingConnection = server.getReplicatingConnection();
 
       RemotingConnection rc = new RemotingConnectionImpl(connection,                                                                                             
@@ -231,7 +231,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    public void connectionDestroyed(final Object connectionID)
    {
       RemotingConnection conn = connections.remove(connectionID);
-
+      
       if (conn != null)
       {
          conn.destroy();

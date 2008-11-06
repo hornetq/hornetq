@@ -403,6 +403,15 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
    public void connectionFailed(final MessagingException me)
    {      
+      if (me.getCode() == MessagingException.OBJECT_CLOSED)
+      {
+         //The server has closed the connection. We don't want failover to occur in this case - 
+         //either the server has booted off the connection, or it didn't receive a ping in time
+         //in either case server side resources on both live and backup will be removed so the client
+         //can't failover anyway
+         return;
+      }
+      
       synchronized (failoverLock)
       {         
          //Now get locks on all channel 1s, whilst holding the failoverLock - this makes sure

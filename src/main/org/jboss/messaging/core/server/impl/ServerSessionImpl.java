@@ -2548,6 +2548,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    {
       try
       {
+         log.info("Connection failed, so clearing up resources for session " + name);
          for (Runnable runner : failureRunners)
          {
             try
@@ -2562,6 +2563,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
          //We call handleClose() since we need to replicate the close too, if there is a backup
          handleClose(new PacketImpl(PacketImpl.SESS_CLOSE));
+         
+         log.info("Cleared up resources for session " + name);
       }
       catch (Throwable t)
       {
