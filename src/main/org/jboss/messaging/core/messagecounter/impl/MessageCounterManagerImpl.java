@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 

@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.management;
 
+import org.jboss.messaging.core.logging.Logger;
+
 import static javax.management.openmbean.SimpleType.INTEGER;
 import static javax.management.openmbean.SimpleType.STRING;
 
@@ -34,7 +36,6 @@ import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 
-import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

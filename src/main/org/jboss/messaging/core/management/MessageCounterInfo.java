@@ -36,7 +36,7 @@ import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.OpenType;
 import javax.management.openmbean.TabularType;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 
 /**
