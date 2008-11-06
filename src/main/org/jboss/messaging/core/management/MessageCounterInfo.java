@@ -26,6 +26,9 @@ import static javax.management.openmbean.SimpleType.BOOLEAN;
 import static javax.management.openmbean.SimpleType.INTEGER;
 import static javax.management.openmbean.SimpleType.STRING;
 
+import java.text.DateFormat;
+import java.util.Date;
+
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
 import javax.management.openmbean.CompositeType;
@@ -34,6 +37,7 @@ import javax.management.openmbean.OpenType;
 import javax.management.openmbean.TabularType;
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.messagecounter.MessageCounter;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -47,16 +51,19 @@ public class MessageCounterInfo
 
    private static final Logger log = Logger.getLogger(MessageCounterInfo.class);
 
+   private static final DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(DateFormat.SHORT,
+                                                          DateFormat.MEDIUM);
+   
    public static final CompositeType TYPE;
    private static final String MESSAGE_TYPE_NAME = "MessageCounterInfo";
    private static final String MESSAGE_TABULAR_TYPE_NAME = "TabularMessageCounterInfo";
    private static final String[] ITEM_NAMES = new String[] { "name",
          "subscription", "durable", "count", "countDelta", "depth",
-         "depthDelta", "timestamp" };
+         "depthDelta", "lastAddTimestamp", "updateTimestamp" };
    private static final String[] ITEM_DESCRIPTIONS = new String[] {
          "Name of the Queue", "Name of the subscription",
          "Is the queue durable?", "Message count", "Message count delta",
-         "Depth", "Depth delta", "Timestamp of the last increment" };
+         "Depth", "Depth delta", "Timestamp of the last added messagg", "Timestamp of the last update" };
    private static final OpenType[] TYPES;
    private static final TabularType TABULAR_TYPE;
 
@@ -65,7 +72,7 @@ public class MessageCounterInfo
       try
       {
          TYPES = new OpenType[] { STRING, STRING, BOOLEAN, INTEGER, INTEGER,
-               INTEGER, INTEGER, STRING };
+               INTEGER, INTEGER, STRING, STRING };
          TYPE = new CompositeType(MESSAGE_TYPE_NAME,
                "Information for a MessageCounter", ITEM_NAMES,
                ITEM_DESCRIPTIONS, TYPES);
@@ -88,15 +95,28 @@ public class MessageCounterInfo
    private final int countDelta;
    private final int depth;
    private final int depthDelta;
-   private final String timestamp;
+   private final String lastAddTimestamp;
+   private final String udpateTimestamp;
 
    // Static --------------------------------------------------------
 
+   public static CompositeData toCompositeData(MessageCounter counter)
+   {
+      String lassAddTimestamp = DATE_FORMAT.format(new Date(counter.getLastAddedMessageTime()));
+      String updateTimestamp = DATE_FORMAT.format(new Date(counter.getLastUpdate()));
+      MessageCounterInfo info = new MessageCounterInfo(counter
+                                                       .getDestinationName(), counter.getDestinationSubscription(),
+                                                       counter.isDestinationDurable(), counter.getCount(), counter
+                                                       .getCountDelta(), counter.getMessageCount(), counter
+                                                       .getMessageCountDelta(), lassAddTimestamp, updateTimestamp);
+      return info.toCompositeData();
+   }
+   
    // Constructors --------------------------------------------------
 
    public MessageCounterInfo(final String name, final String subscription,
          final boolean durable, final int count, final int countDelta,
-         final int depth, final int depthDelta, final String timestamp)
+         final int depth, final int depthDelta, final String lastAddTimestamp, final String udpateTimestamp)
    {
       this.name = name;
       this.subscription = subscription;
@@ -105,7 +125,8 @@ public class MessageCounterInfo
       this.countDelta = countDelta;
       this.depth = depth;
       this.depthDelta = depthDelta;
-      this.timestamp = timestamp;
+      this.lastAddTimestamp = lastAddTimestamp;
+      this.udpateTimestamp = udpateTimestamp;
    }
 
    // Public --------------------------------------------------------
@@ -117,7 +138,7 @@ public class MessageCounterInfo
 
          return new CompositeDataSupport(TYPE, ITEM_NAMES, new Object[] { name,
                subscription, durable, count, countDelta, depth, depthDelta,
-               timestamp });
+               lastAddTimestamp, udpateTimestamp });
       } catch (OpenDataException e)
       {
          log.error("Unable to create a CompositeData from a MessageCounter", e);

@@ -71,6 +71,8 @@ public class MessageCounter
 
    private long timeLastUpdate;
 
+   private long timeLastAdd;
+   
    // per hour day counter history
    private int dayCounterMax;
 
@@ -124,6 +126,11 @@ public class MessageCounter
       countTotal += newMessagesAdded;
 
       lastMessagesAdded = latestMessagesAdded;
+
+      if(newMessagesAdded > 0) 
+      {
+         timeLastAdd = System.currentTimeMillis();
+      }
 
       // update timestamp
       timeLastUpdate = System.currentTimeMillis();
@@ -201,12 +208,18 @@ public class MessageCounter
       return timeLastUpdate;
    }
 
+   public long getLastAddedMessageTime()
+   {
+      return timeLastAdd;
+   }
+
    public void resetCounter()
    {
       countTotal = 0;
       countTotalLast = 0;
       depthLast = 0;
       timeLastUpdate = 0;
+      timeLastAdd = 0;
    }
 
    private void setHistoryLimit(int daycountmax)

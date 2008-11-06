@@ -314,15 +314,7 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
 
    public CompositeData listMessageCounter()
    {
-      DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT,
-            DateFormat.MEDIUM);
-      String timestamp = dateFormat.format(new Date(counter.getLastUpdate()));
-      MessageCounterInfo info = new MessageCounterInfo(counter
-            .getDestinationName(), counter.getDestinationSubscription(),
-            counter.isDestinationDurable(), counter.getCount(), counter
-                  .getCountDelta(), counter.getMessageCount(), counter
-                  .getMessageCountDelta(), timestamp);
-      return info.toCompositeData();
+      return MessageCounterInfo.toCompositeData(counter);
    }
 
    public String listMessageCounterAsHTML()

@@ -60,6 +60,7 @@ public class MessageCounterHelper
                    + "<th>Depth</th>"
                    + "<th>DepthDelta</th>"
                    + "<th>Last Add</th>"
+                   + "<th>Last Update</th>"
                    + "</tr>\n";
 
       for (int i = 0; i < counters.length; i++)
@@ -86,8 +87,9 @@ public class MessageCounterHelper
          ret += "<td>" + prettify(counter.getCountDelta()) + "</td>";
          ret += "<td>" + prettify(counter.getMessageCount()) + "</td>";
          ret += "<td>" + prettify(counter.getMessageCountDelta()) + "</td>";
-         ret += "<td>" + asDate(counter.getLastUpdate()) + "</td>"; // date last add
-
+         ret += "<td>" + asDate(counter.getLastAddedMessageTime()) + "</td>";
+         ret += "<td>" + asDate(counter.getLastUpdate()) + "</td>";
+         
          ret += "</tr>\n";
       }
 
