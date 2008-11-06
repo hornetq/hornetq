@@ -98,7 +98,7 @@
       <componentref name="jboss/jbosssx-client" version="2.0.1.GA"/>
       <componentref name="jboss/jboss-javaee" version="5.0.0.Beta3"/>
       <componentref name="jboss/jboss-common-logging-spi" version="2.0.4.GA"/>
-      <componentref name="netty" version="3.0.0.GA"/>
+      <componentref name="netty" version="3.0.1-SNAPSHOT-1"/>
       <componentref name="apache-mina" version="2.0.0-M3-20080730.120633-1"/>
       <componentref name="slf4j/log4j" version="1.4.3"/>
       <componentref name="jpa-api" version="1.0.0.GA"/>
