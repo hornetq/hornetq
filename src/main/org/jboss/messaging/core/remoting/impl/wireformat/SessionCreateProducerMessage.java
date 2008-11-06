@@ -36,7 +36,6 @@ public class SessionCreateProducerMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private SimpleString address;
 
    private int maxRate;
 
@@ -46,11 +45,9 @@ public class SessionCreateProducerMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateProducerMessage(final SimpleString address, final int maxRate, final boolean autoGroupId)
+   public SessionCreateProducerMessage(final int maxRate, final boolean autoGroupId)
    {
       super(SESS_CREATEPRODUCER);
-
-      this.address = address;
 
       this.maxRate = maxRate;
 
@@ -68,16 +65,10 @@ public class SessionCreateProducerMessage extends PacketImpl
    public String toString()
    {
       StringBuffer buff = new StringBuffer(getParentString());
-      buff.append(", address=" + address);
       buff.append(", maxrate=" + maxRate);
       buff.append(", autoGroupId=" + autoGroupId);
       buff.append("]");
       return buff.toString();
-   }
-
-   public SimpleString getAddress()
-   {
-      return address;
    }
 
    public int getMaxRate()
@@ -92,14 +83,12 @@ public class SessionCreateProducerMessage extends PacketImpl
 
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putNullableSimpleString(address);
       buffer.putInt(maxRate);
       buffer.putBoolean(autoGroupId);
    }
 
    public void decodeBody(final MessagingBuffer buffer)
    {
-      address = buffer.getNullableSimpleString();
       maxRate = buffer.getInt();
       autoGroupId = buffer.getBoolean();
    }
@@ -113,9 +102,7 @@ public class SessionCreateProducerMessage extends PacketImpl
 
       SessionCreateProducerMessage r = (SessionCreateProducerMessage)other;
 
-      return super.equals(other) && this.address == null ? r.address == null
-                                                        : this.address.equals(r.address) && this.maxRate == r.maxRate &&
-                                                          this.autoGroupId == autoGroupId;
+      return super.equals(other) && this.autoGroupId == autoGroupId;
    }
 
    // Package protected ---------------------------------------------

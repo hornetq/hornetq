@@ -415,7 +415,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (producer == null)
       {
-         SessionCreateProducerMessage request = new SessionCreateProducerMessage(address, maxRate, autoGroupId);
+         SessionCreateProducerMessage request = new SessionCreateProducerMessage(maxRate, autoGroupId);
 
          SessionCreateProducerResponseMessage response = (SessionCreateProducerResponseMessage)channel.sendBlocking(request);
 
