@@ -1347,14 +1347,17 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             receivedBytes += packet.getPacketSize();
 
             if (receivedBytes >= confWindowSize)
-            {
-               final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
-
-               confirmed.setChannelID(id);
-
+            {               
                receivedBytes = 0;
 
-               doWrite(confirmed);
+               if (connection.active)
+               {
+                  final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
+   
+                  confirmed.setChannelID(id);
+                  
+                  doWrite(confirmed);
+               }
             }
          }
       }
@@ -1411,12 +1414,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          {
             switch (packet.getType())
             {
-               case PACKETS_CONFIRMED:
-               {
-                  doWrite(packet);
-
-                  break;
-               }
                case REPLICATION_RESPONSE:
                {
                   replicateResponseReceived();
