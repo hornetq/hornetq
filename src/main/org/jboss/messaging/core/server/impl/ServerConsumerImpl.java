@@ -224,6 +224,8 @@ public class ServerConsumerImpl implements ServerConsumer
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
          }
       }
+      
+      channel.confirm(packet);
    
       channel.send(response);
    }

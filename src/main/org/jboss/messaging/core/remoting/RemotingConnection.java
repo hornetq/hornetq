@@ -51,4 +51,6 @@ public interface RemotingConnection extends BufferHandler
    void activate();
    
    void freeze();
+   
+   RemotingConnection getReplicatingConnection();
 }

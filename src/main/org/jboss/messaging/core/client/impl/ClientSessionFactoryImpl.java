@@ -609,7 +609,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                            
                   sessions.add(session);
 
-                  ChannelHandler handler = new ClientSessionPacketHandler(session);
+                  ChannelHandler handler = new ClientSessionPacketHandler(session, sessionChannel);
          
                   sessionChannel.setHandler(handler);
          

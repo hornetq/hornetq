@@ -95,11 +95,6 @@ public class PacketsConfirmedMessage extends PacketImpl
       return false;
    }
    
-   public boolean isWriteAlways()
-   {
-      return true;
-   }
-   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -453,6 +453,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
          }
       }
+      
+      channel.confirm(packet);
 
       channel.send(response);
    }
@@ -558,7 +560,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
       
-      channel.send(response);
+      channel.confirm(packet);
+      
+      channel.send(response);            
    }
       
 
@@ -677,6 +681,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
       
+      channel.confirm(packet);
+      
       channel.send(response);
    }
       
@@ -749,6 +755,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
+      channel.confirm(packet);
+      
       channel.send(response);
    }
    
@@ -816,6 +824,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
       
+      channel.confirm(packet);
+      
       channel.send(response);
    }
 
@@ -849,9 +859,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    }
    
    public void doHandleCreateProducer(final SessionCreateProducerMessage packet)
-   {
-      SimpleString address = packet.getAddress();
-
+   {      
       int maxRate = packet.getMaxRate();
 
       boolean autoGroupID = packet.isAutoGroupId();
@@ -889,6 +897,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
          }
       }
+      
+      channel.confirm(packet);
 
       channel.send(response);
    }
@@ -961,6 +971,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
+      channel.confirm(packet);
+      
       if (response != null)
       {
          channel.send(response);
@@ -1015,7 +1027,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       {
          tx = new TransactionImpl(storageManager, postOffice);
       }
-
+      
+      channel.confirm(packet);
+      
       channel.send(response);
    }
    
@@ -1064,6 +1078,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
+      channel.confirm(packet);
+      
       channel.send(response);
    }
 
@@ -1146,6 +1162,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
+      channel.confirm(packet);
+      
       channel.send(response);
    }
    
@@ -1239,6 +1257,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
+      channel.confirm(packet);
+      
       channel.send(response);
    }
    
@@ -1270,6 +1290,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       Packet response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
 
+      channel.confirm(packet);
+      
       channel.send(response);
    }
 
@@ -1339,6 +1361,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
          }
       }
+      
+      channel.confirm(packet);
 
       channel.send(response);
    }
@@ -1421,6 +1445,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
+      channel.confirm(packet);
+      
       channel.send(response);
    }
    
@@ -1503,6 +1529,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
+      channel.confirm(packet);
+      
       channel.send(response);
    }
 
@@ -1572,6 +1600,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
          }
       }
+      
+      channel.confirm(packet);
 
       channel.send(response);
    }
@@ -1641,6 +1671,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
+      channel.confirm(packet);
+      
       channel.send(response);
    }
 
@@ -1726,6 +1758,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
          }
       }
+      
+      channel.confirm(packet);
 
       channel.send(response);
    }
@@ -1755,6 +1789,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    {
       Packet response = new SessionXAGetInDoubtXidsResponseMessage(resourceManager.getPreparedTransactions());
 
+      channel.confirm(packet);
+      
       channel.send(response);
    }
 
@@ -1783,6 +1819,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    {
       Packet response = new SessionXAGetTimeoutResponseMessage(resourceManager.getTimeoutSeconds());
 
+      channel.confirm(packet);
+      
       channel.send(response);
    }
 
@@ -1811,6 +1849,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    {
       Packet response = new SessionXASetTimeoutResponseMessage(resourceManager.setTimeoutSeconds(packet.getTimeoutSeconds()));
 
+      channel.confirm(packet);
+      
       channel.send(response);
    }
    
@@ -1894,6 +1934,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
+      channel.confirm(packet);
+      
       channel.send(response);
    }
    
@@ -1952,6 +1994,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
 
+      channel.confirm(packet);
+      
       channel.send(response);
    }
 
@@ -1984,10 +2028,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       //is being processed.
       //Otherwise we can end up with start/stop being processed in different order on backup to live.
       //Which can result in, say, a delivery arriving at backup, but it's still not started!
+      DelayedResult result = null;
       try
       {
-         channel.replicatePacket(packet);
- 
+         result = channel.replicatePacket(packet);
+          
          //note we process start before response is back from the backup
          setStarted(true);         
       }
@@ -1997,6 +2042,22 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          {
             unlockConsumers();
          }
+      }
+      
+      if (result == null)
+      {
+         channel.confirm(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               channel.confirm(packet);
+            }
+         });
       }
    }
 
@@ -2022,6 +2083,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
          if (result == null)
          {
+            channel.confirm(packet);
             // Not clustered - just send now
             channel.send(response);
          }
@@ -2031,6 +2093,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             {
                public void run()
                {
+                  channel.confirm(packet);
+                  
                   channel.send(response);
                }
             });
@@ -2109,6 +2173,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
          }
       }
+      
+      channel.confirm(packet);
 
       channel.send(response);
       
@@ -2135,52 +2201,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       
       ServerConsumer consumer = consumers.get(packet.getConsumerID());    
       
-      consumer.handleClose(packet);
-      
-//      DelayedResult result = channel.replicatePacket(packet);
-//      
-//      if (result == null)
-//      {
-//         doHandleCloseConsumer(packet);
-//      }
-//      else
-//      {
-//         //Don't process until result has come back from backup
-//         result.setResultRunner(new Runnable()
-//         {
-//            public void run()
-//            {
-//               doHandleCloseConsumer(packet);
-//            }
-//         });
-//      }
-   }
-
-   public void doHandleCloseConsumer(final SessionConsumerCloseMessage packet)
-   {
-      Packet response = null;
-
-      try
-      {
-         consumers.get(packet.getConsumerID()).close();
-   
-         response = new NullResponseMessage();
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to close", e);
-   
-         if (e instanceof MessagingException)
-         {
-            response = new MessagingExceptionMessage((MessagingException)e);
-         }
-         else
-         {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
-         }
-      }
-   
-      channel.send(response);
+      consumer.handleClose(packet);      
    }
 
    public void handleCloseProducer(final SessionProducerCloseMessage packet)
@@ -2227,13 +2248,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
          }
       }
+      
+      channel.confirm(packet);
 
       channel.send(response);
    }
 
    public void handleReceiveConsumerCredits(final SessionConsumerFlowCreditMessage packet)
    {
-      channel.replicatePacket(packet);
+      DelayedResult result = channel.replicatePacket(packet);
 
       try
       {
@@ -2243,6 +2266,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       catch (Exception e)
       {
          log.error("Failed to receive credits", e);
+      }
+      
+      if (result == null)
+      {
+         channel.confirm(packet);
+      }
+      else
+      {
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               channel.confirm(packet);
+            }
+         });
       }
    }
 
@@ -2327,6 +2365,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          }
       }
       
+      channel.confirm(packet);
+      
       if (response != null)
       {
          channel.send(response);
@@ -2409,6 +2449,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             }
          }
       }
+      
+      channel.confirm(packet);
 
       if (response != null)
       {
@@ -2493,6 +2535,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       {
          log.error("Failed to send management message", e);        
       }
+      
+      channel.confirm(packet);
    }
 
    public void handleReplicatedDelivery(final SessionReplicateDeliveryMessage packet)

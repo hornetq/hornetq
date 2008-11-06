@@ -26,6 +26,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EXCEP
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_MSG;
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
@@ -43,10 +44,14 @@ public class ClientSessionPacketHandler implements ChannelHandler
    private static final Logger log = Logger.getLogger(ClientSessionPacketHandler.class);
 
    private final ClientSessionInternal clientSession;
+   
+   private final Channel channel;
 
-   public ClientSessionPacketHandler(final ClientSessionInternal clientSesssion)
+   public ClientSessionPacketHandler(final ClientSessionInternal clientSesssion, final Channel channel)
    {     
       this.clientSession = clientSesssion;
+      
+      this.channel = channel;
    }
       
    public void handlePacket(final Packet packet)
@@ -85,5 +90,7 @@ public class ClientSessionPacketHandler implements ChannelHandler
       {
          log.error("Failed to handle packet", e);
       }
+      
+      channel.confirm(packet);
    }
 }

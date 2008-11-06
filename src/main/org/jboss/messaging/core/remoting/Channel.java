@@ -56,23 +56,7 @@ public interface Channel
    
    RemotingConnection getConnection();
    
-//   //debug only
-//   Queue<Command> getSentCommands();
-//   
-//   Queue<Command> getReceivedCommands();
-//   
-//   // For debug only
-//   static class Command
-//   {
-//      public final int commandID;
-//
-//      public final Packet packet;
-//
-//      public Command(final int commandID, final Packet packet)
-//      {
-//         this.commandID = commandID;
-//
-//         this.packet = packet;
-//      }
-//   }
+   void replicatingChannelDead();
+   
+   void confirm(Packet packet);
 }
