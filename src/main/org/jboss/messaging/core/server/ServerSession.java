@@ -34,6 +34,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
@@ -80,6 +81,8 @@ public interface ServerSession
    void sendScheduled(ServerMessage serverMessage, long scheduledDeliveryTime) throws Exception;
 
    void handleAcknowledge(final SessionAcknowledgeMessage packet);
+   
+   void handleExpired(final SessionExpiredMessage packet);
 
    void handleRollback(Packet packet);
 

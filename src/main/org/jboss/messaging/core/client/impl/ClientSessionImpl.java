@@ -59,6 +59,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionFailoverCompleteMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
@@ -85,7 +86,6 @@ import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.SimpleIDGenerator;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiterImpl;
-import org.jboss.messaging.util.TypedProperties;
 
 /*
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -601,6 +601,15 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          channel.send(message);
       }
+   }
+   
+   public void expire(final long consumerID, final long messageID) throws MessagingException
+   {
+      checkClosed();
+
+      SessionExpiredMessage message = new SessionExpiredMessage(consumerID, messageID);
+
+      channel.send(message);      
    }
 
    public void addConsumer(final ClientConsumerInternal consumer)

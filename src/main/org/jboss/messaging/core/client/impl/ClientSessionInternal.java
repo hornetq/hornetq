@@ -31,6 +31,8 @@ public interface ClientSessionInternal extends ClientSession
    String getName();
 
    void acknowledge(long consumerID, long messageID) throws MessagingException;
+   
+   void expire(long consumerID, long messageID) throws MessagingException;
 
    void addConsumer(ClientConsumerInternal consumer);
 

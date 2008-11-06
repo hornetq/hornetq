@@ -187,6 +187,8 @@ public class MessageReferenceImpl implements MessageReference
       {
          Binding expiryBinding = postOffice.getBinding(expiryQueue);
 
+         //FIXME - this is not threadsafe - what if two refs get expired for same queue at same time
+         //might try and create the binding twice?
          if (expiryBinding == null)
          {
             expiryBinding = postOffice.addBinding(expiryQueue, expiryQueue, null, true, false);

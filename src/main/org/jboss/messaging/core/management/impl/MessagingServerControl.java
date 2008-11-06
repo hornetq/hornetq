@@ -46,7 +46,6 @@ import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
@@ -60,8 +59,7 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class MessagingServerControl extends StandardMBean implements
-      MessagingServerControlMBean, NotificationEmitter
+public class MessagingServerControl extends StandardMBean implements MessagingServerControlMBean, NotificationEmitter
 {
 
    // Constants -----------------------------------------------------
@@ -69,11 +67,17 @@ public class MessagingServerControl extends StandardMBean implements
    // Attributes ----------------------------------------------------
 
    private final PostOffice postOffice;
+
    private final StorageManager storageManager;
+
    private final Configuration configuration;
+
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+
    private final MessagingServer server;
+
    private final MessageCounterManager messageCounterManager;
+
    private final NotificationBroadcasterSupport broadcaster;
 
    private boolean messageCounterEnabled;
@@ -82,21 +86,23 @@ public class MessagingServerControl extends StandardMBean implements
 
    // Constructors --------------------------------------------------
 
-   public MessagingServerControl(PostOffice postOffice,
-         StorageManager storageManager, Configuration configuration,
-         HierarchicalRepository<QueueSettings> queueSettingsRepository,
-         MessagingServer messagingServer, MessageCounterManager messageCounterManager,
-         NotificationBroadcasterSupport broadcaster) throws Exception
+   public MessagingServerControl(final PostOffice postOffice,
+                                 final StorageManager storageManager,
+                                 final Configuration configuration,
+                                 final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                                 final MessagingServer messagingServer,
+                                 final MessageCounterManager messageCounterManager,
+                                 final NotificationBroadcasterSupport broadcaster) throws Exception
    {
       super(MessagingServerControlMBean.class);
       this.postOffice = postOffice;
       this.storageManager = storageManager;
       this.configuration = configuration;
       this.queueSettingsRepository = queueSettingsRepository;
-      this.server = messagingServer;
+      server = messagingServer;
       this.messageCounterManager = messageCounterManager;
       this.broadcaster = broadcaster;
-      
+
       messageCounterEnabled = configuration.isMessageCounterEnabled();
       if (messageCounterEnabled)
       {
@@ -106,17 +112,17 @@ public class MessagingServerControl extends StandardMBean implements
 
    // Public --------------------------------------------------------
 
-   public void addDestination(SimpleString simpleAddress) throws Exception
+   public void addDestination(final SimpleString simpleAddress) throws Exception
    {
       postOffice.addDestination(simpleAddress, false);
    }
 
-   public void removeDestination(SimpleString simpleAddress) throws Exception
+   public void removeDestination(final SimpleString simpleAddress) throws Exception
    {
       postOffice.removeDestination(simpleAddress, false);
    }
 
-   public Queue getQueue(String address) throws Exception
+   public Queue getQueue(final String address) throws Exception
    {
       SimpleString sAddress = new SimpleString(address);
       Binding binding = postOffice.getBinding(sAddress);
@@ -133,8 +139,26 @@ public class MessagingServerControl extends StandardMBean implements
       return configuration;
    }
 
-   public int expireMessages(Filter filter, SimpleString simpleAddress)
-         throws Exception
+   public int expireMessages(final Filter filter, final SimpleString simpleAddress) throws Exception
+   {
+      Binding binding = postOffice.getBinding(simpleAddress);
+      if (binding != null)
+      {
+         Queue queue = binding.getQueue();
+         List<MessageReference> refs = queue.list(filter);
+         
+         //FIXME - what if the refs have been consumed between listing them and expiring them?
+         
+         for (MessageReference ref : refs)
+         {
+            queue.expireMessage(ref.getMessage().getMessageID(), storageManager, postOffice, queueSettingsRepository);
+         }
+         return refs.size();
+      }
+      return 0;
+   }
+
+   public int sendMessagesToDLQ(final Filter filter, final SimpleString simpleAddress) throws Exception
    {
       Binding binding = postOffice.getBinding(simpleAddress);
       if (binding != null)
@@ -143,34 +167,14 @@ public class MessagingServerControl extends StandardMBean implements
          List<MessageReference> refs = queue.list(filter);
          for (MessageReference ref : refs)
          {
-            queue.expireMessage(ref.getMessage().getMessageID(),
-                  storageManager, postOffice, queueSettingsRepository);
+            queue.sendMessageToDLQ(ref.getMessage().getMessageID(), storageManager, postOffice, queueSettingsRepository);
          }
          return refs.size();
       }
       return 0;
    }
 
-   public int sendMessagesToDLQ(Filter filter, SimpleString simpleAddress)
-         throws Exception
-   {
-      Binding binding = postOffice.getBinding(simpleAddress);
-      if (binding != null)
-      {
-         Queue queue = binding.getQueue();
-         List<MessageReference> refs = queue.list(filter);
-         for (MessageReference ref : refs)
-         {
-            queue.sendMessageToDLQ(ref.getMessage().getMessageID(),
-                  storageManager, postOffice, queueSettingsRepository);
-         }
-         return refs.size();
-      }
-      return 0;
-   }
-
-   public int changeMessagesPriority(Filter filter, byte newPriority,
-         SimpleString simpleAddress) throws Exception
+   public int changeMessagesPriority(final Filter filter, final byte newPriority, final SimpleString simpleAddress) throws Exception
    {
       Binding binding = postOffice.getBinding(simpleAddress);
       if (binding != null)
@@ -180,8 +184,10 @@ public class MessagingServerControl extends StandardMBean implements
          for (MessageReference ref : refs)
          {
             queue.changeMessagePriority(ref.getMessage().getMessageID(),
-                  newPriority, storageManager, postOffice,
-                  queueSettingsRepository);
+                                        newPriority,
+                                        storageManager,
+                                        postOffice,
+                                        queueSettingsRepository);
          }
          return refs.size();
       }
@@ -194,10 +200,12 @@ public class MessagingServerControl extends StandardMBean implements
    public MBeanInfo getMBeanInfo()
    {
       MBeanInfo info = super.getMBeanInfo();
-      return new MBeanInfo(info.getClassName(), info.getDescription(), info
-            .getAttributes(), info.getConstructors(), MBeanInfoHelper
-            .getMBeanOperationsInfo(MessagingServerControlMBean.class),
-            getNotificationInfo());
+      return new MBeanInfo(info.getClassName(),
+                           info.getDescription(),
+                           info.getAttributes(),
+                           info.getConstructors(),
+                           MBeanInfoHelper.getMBeanOperationsInfo(MessagingServerControlMBean.class),
+                           getNotificationInfo());
    }
 
    // MessagingServerControlMBean implementation --------------------
@@ -208,17 +216,18 @@ public class MessagingServerControl extends StandardMBean implements
       if (backupConf != null)
       {
          return backupConf.getParams();
-      } else
+      }
+      else
       {
          return Collections.emptyMap();
       }
    }
-   
+
    public Map<String, Map<String, Object>> getAcceptorConfigurations()
    {
-      Map<String, Map<String, Object>> result = new HashMap<String, Map<String,Object>>();
+      Map<String, Map<String, Object>> result = new HashMap<String, Map<String, Object>>();
       Set<TransportConfiguration> acceptorConfs = configuration.getAcceptorConfigurations();
-      
+
       for (TransportConfiguration acceptorConf : acceptorConfs)
       {
          result.put(acceptorConf.getFactoryClassName(), acceptorConf.getParams());
@@ -226,7 +235,6 @@ public class MessagingServerControl extends StandardMBean implements
       return result;
    }
 
-   
    public boolean isStarted()
    {
       return server.isStarted();
@@ -241,7 +249,7 @@ public class MessagingServerControl extends StandardMBean implements
    {
       return configuration.isBackup();
    }
-      
+
    public String getBindingsDirectory()
    {
       return configuration.getBindingsDirectory();
@@ -249,7 +257,7 @@ public class MessagingServerControl extends StandardMBean implements
 
    public long getConnectionScanPeriod()
    {
-      return configuration.getConnectionScanPeriod();      
+      return configuration.getConnectionScanPeriod();
    }
 
    public List<String> getInterceptorClassNames()
@@ -261,7 +269,7 @@ public class MessagingServerControl extends StandardMBean implements
    {
       return configuration.getJournalBufferReuseSize();
    }
-   
+
    public String getJournalDirectory()
    {
       return configuration.getJournalDirectory();
@@ -288,15 +296,15 @@ public class MessagingServerControl extends StandardMBean implements
    }
 
    public long getPagingMaxGlobalSizeBytes()
-   {   
+   {
       return configuration.getPagingMaxGlobalSizeBytes();
    }
-   
+
    public String getPagingDirectory()
-   {      
+   {
       return configuration.getPagingDirectory();
    }
-   
+
    public int getScheduledThreadPoolMaxSize()
    {
       return configuration.getScheduledThreadPoolMaxSize();
@@ -306,7 +314,7 @@ public class MessagingServerControl extends StandardMBean implements
    {
       return configuration.getSecurityInvalidationInterval();
    }
-  
+
    public boolean isClustered()
    {
       return configuration.isClustered();
@@ -347,8 +355,7 @@ public class MessagingServerControl extends StandardMBean implements
       return postOffice.addDestination(new SimpleString(address), false);
    }
 
-   public void createQueue(final String address, final String name)
-         throws Exception
+   public void createQueue(final String address, final String name) throws Exception
    {
       SimpleString sAddress = new SimpleString(address);
       SimpleString sName = new SimpleString(name);
@@ -358,14 +365,11 @@ public class MessagingServerControl extends StandardMBean implements
       }
    }
 
-   public void createQueue(final String address, final String name,
-         final String filterStr, final boolean durable)
-         throws Exception
+   public void createQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
    {
       SimpleString sAddress = new SimpleString(address);
       SimpleString sName = new SimpleString(name);
-      SimpleString sFilter = (filterStr == null || filterStr.length() == 0) ? null
-            : new SimpleString(filterStr);
+      SimpleString sFilter = filterStr == null || filterStr.length() == 0 ? null : new SimpleString(filterStr);
       Filter filter = null;
       if (sFilter != null)
       {
@@ -411,7 +415,7 @@ public class MessagingServerControl extends StandardMBean implements
    {
       setMessageCounterEnabled(false);
    }
-      
+
    public void resetAllMessageCounters()
    {
       messageCounterManager.resetAllCounters();
@@ -425,14 +429,14 @@ public class MessagingServerControl extends StandardMBean implements
    public boolean isMessageCounterEnabled()
    {
       return messageCounterEnabled;
-   } 
-   
+   }
+
    public synchronized long getMessageCounterSamplePeriod()
    {
       return messageCounterManager.getSamplePeriod();
    }
 
-   public synchronized void setMessageCounterSamplePeriod(long newPeriod)
+   public synchronized void setMessageCounterSamplePeriod(final long newPeriod)
    {
       if (newPeriod < 1000)
       {
@@ -444,13 +448,13 @@ public class MessagingServerControl extends StandardMBean implements
          messageCounterManager.reschedule(newPeriod);
       }
    }
-   
+
    public int getMessageCounterMaxDayCount()
    {
       return messageCounterManager.getMaxDayCount();
    }
-   
-   public void setMessageCounterMaxDayCount(int count)
+
+   public void setMessageCounterMaxDayCount(final int count)
    {
       if (count <= 0)
       {
@@ -458,25 +462,24 @@ public class MessagingServerControl extends StandardMBean implements
       }
       messageCounterManager.setMaxDayCount(count);
    }
-   
+
    // NotificationEmitter implementation ----------------------------
 
    public void removeNotificationListener(final NotificationListener listener,
-         final NotificationFilter filter, final Object handback)
-         throws ListenerNotFoundException
+                                          final NotificationFilter filter,
+                                          final Object handback) throws ListenerNotFoundException
    {
       broadcaster.removeNotificationListener(listener, filter, handback);
    }
 
-   public void removeNotificationListener(final NotificationListener listener)
-         throws ListenerNotFoundException
+   public void removeNotificationListener(final NotificationListener listener) throws ListenerNotFoundException
    {
       broadcaster.removeNotificationListener(listener);
    }
 
    public void addNotificationListener(final NotificationListener listener,
-         final NotificationFilter filter, final Object handback)
-         throws IllegalArgumentException
+                                       final NotificationFilter filter,
+                                       final Object handback) throws IllegalArgumentException
    {
       broadcaster.addNotificationListener(listener, filter, handback);
    }
@@ -490,7 +493,8 @@ public class MessagingServerControl extends StandardMBean implements
          names[i] = values[i].toString();
       }
       return new MBeanNotificationInfo[] { new MBeanNotificationInfo(names,
-            this.getClass().getName(), "Notifications emitted by a Core Server") };
+                                                                     this.getClass().getName(),
+                                                                     "Notifications emitted by a Core Server") };
    }
 
    // Package protected ---------------------------------------------
@@ -499,7 +503,7 @@ public class MessagingServerControl extends StandardMBean implements
 
    // Private -------------------------------------------------------
 
-   private synchronized void setMessageCounterEnabled(boolean enable) 
+   private synchronized void setMessageCounterEnabled(boolean enable)
    {
       if (isStarted())
       {
@@ -510,7 +514,7 @@ public class MessagingServerControl extends StandardMBean implements
          else if (!messageCounterEnabled && enable)
          {
             startMessageCounters();
-         }        
+         }
       }
       messageCounterEnabled = enable;
    }
@@ -519,11 +523,11 @@ public class MessagingServerControl extends StandardMBean implements
    {
       messageCounterManager.start();
    }
-   
+
    private void stopMessageCounters()
    {
       messageCounterManager.stop();
-      
+
       messageCounterManager.resetAllCounters();
 
       messageCounterManager.resetAllCounterHistories();

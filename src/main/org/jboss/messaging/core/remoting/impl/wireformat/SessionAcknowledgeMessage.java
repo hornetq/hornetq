@@ -29,7 +29,7 @@ public class SessionAcknowledgeMessage extends PacketImpl
    private long messageID;
 
    private boolean requiresResponse;
-
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------

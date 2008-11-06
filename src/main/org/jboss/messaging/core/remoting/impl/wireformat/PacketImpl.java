@@ -75,82 +75,84 @@ public class PacketImpl implements Packet
    public static final byte SESS_CREATEPRODUCER_RESP = 43;
 
    public static final byte SESS_ACKNOWLEDGE = 44;
+   
+   public static final byte SESS_EXPIRED = 45;
 
-   public static final byte SESS_COMMIT = 45;
+   public static final byte SESS_COMMIT = 46;
 
-   public static final byte SESS_ROLLBACK = 46;
+   public static final byte SESS_ROLLBACK = 47;
 
-   public static final byte SESS_QUEUEQUERY = 47;
+   public static final byte SESS_QUEUEQUERY = 48;
 
-   public static final byte SESS_QUEUEQUERY_RESP = 48;
+   public static final byte SESS_QUEUEQUERY_RESP = 49;
 
-   public static final byte SESS_CREATEQUEUE = 49;
+   public static final byte SESS_CREATEQUEUE = 50;
 
-   public static final byte SESS_DELETE_QUEUE = 50;
+   public static final byte SESS_DELETE_QUEUE = 51;
 
-   public static final byte SESS_ADD_DESTINATION = 51;
+   public static final byte SESS_ADD_DESTINATION = 52;
 
-   public static final byte SESS_REMOVE_DESTINATION = 52;
+   public static final byte SESS_REMOVE_DESTINATION = 53;
 
-   public static final byte SESS_BINDINGQUERY = 53;
+   public static final byte SESS_BINDINGQUERY = 54;
 
-   public static final byte SESS_BINDINGQUERY_RESP = 54;
+   public static final byte SESS_BINDINGQUERY_RESP = 55;
 
-   public static final byte SESS_XA_START = 55;
+   public static final byte SESS_XA_START = 56;
 
-   public static final byte SESS_XA_END = 56;
+   public static final byte SESS_XA_END = 57;
 
-   public static final byte SESS_XA_COMMIT = 57;
+   public static final byte SESS_XA_COMMIT = 58;
 
-   public static final byte SESS_XA_PREPARE = 58;
+   public static final byte SESS_XA_PREPARE = 59;
 
-   public static final byte SESS_XA_RESP = 59;
+   public static final byte SESS_XA_RESP = 60;
 
-   public static final byte SESS_XA_ROLLBACK = 60;
+   public static final byte SESS_XA_ROLLBACK = 61;
 
-   public static final byte SESS_XA_JOIN = 61;
+   public static final byte SESS_XA_JOIN = 62;
 
-   public static final byte SESS_XA_SUSPEND = 62;
+   public static final byte SESS_XA_SUSPEND = 63;
 
-   public static final byte SESS_XA_RESUME = 63;
+   public static final byte SESS_XA_RESUME = 64;
 
-   public static final byte SESS_XA_FORGET = 64;
+   public static final byte SESS_XA_FORGET = 65;
 
-   public static final byte SESS_XA_INDOUBT_XIDS = 65;
+   public static final byte SESS_XA_INDOUBT_XIDS = 66;
 
-   public static final byte SESS_XA_INDOUBT_XIDS_RESP = 66;
+   public static final byte SESS_XA_INDOUBT_XIDS_RESP = 67;
 
-   public static final byte SESS_XA_SET_TIMEOUT = 67;
+   public static final byte SESS_XA_SET_TIMEOUT = 68;
 
-   public static final byte SESS_XA_SET_TIMEOUT_RESP = 68;
+   public static final byte SESS_XA_SET_TIMEOUT_RESP = 69;
 
-   public static final byte SESS_XA_GET_TIMEOUT = 69;
+   public static final byte SESS_XA_GET_TIMEOUT = 70;
 
-   public static final byte SESS_XA_GET_TIMEOUT_RESP = 70;
+   public static final byte SESS_XA_GET_TIMEOUT_RESP = 71;
 
-   public static final byte SESS_START = 71;
+   public static final byte SESS_START = 72;
 
-   public static final byte SESS_STOP = 72;
+   public static final byte SESS_STOP = 73;
 
-   public static final byte SESS_CLOSE = 73;
+   public static final byte SESS_CLOSE = 74;
 
-   public static final byte SESS_FLOWTOKEN = 74;
+   public static final byte SESS_FLOWTOKEN = 75;
 
-   public static final byte SESS_SEND = 75;
+   public static final byte SESS_SEND = 76;
 
-   public static final byte SESS_CONSUMER_CLOSE = 76;
+   public static final byte SESS_CONSUMER_CLOSE = 77;
 
-   public static final byte SESS_PRODUCER_CLOSE = 77;
+   public static final byte SESS_PRODUCER_CLOSE = 78;
 
-   public static final byte SESS_RECEIVE_MSG = 78;
+   public static final byte SESS_RECEIVE_MSG = 79;
 
-   public static final byte SESS_MANAGEMENT_SEND = 79;
+   public static final byte SESS_MANAGEMENT_SEND = 80;
 
-   public static final byte SESS_SCHEDULED_SEND = 80;
+   public static final byte SESS_SCHEDULED_SEND = 81;
 
-   public static final byte SESS_FAILOVER_COMPLETE = 81;
+   public static final byte SESS_FAILOVER_COMPLETE = 82;
 
-   public static final byte SESS_REPLICATE_DELIVERY = 82;
+   public static final byte SESS_REPLICATE_DELIVERY = 83;
 
    // Static --------------------------------------------------------
 

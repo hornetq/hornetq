@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.transaction;
 
 import java.util.List;
-import java.util.LinkedList;
 
 import javax.transaction.xa.Xid;
 

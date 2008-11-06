@@ -60,6 +60,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
@@ -977,6 +978,47 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       {
          channel.send(response);
       }
+   }
+   
+   public void handleExpired(final SessionExpiredMessage packet)
+   {
+      DelayedResult result = channel.replicatePacket(packet);
+      
+      if (result == null)
+      {
+         doHandleExpired(packet);
+      }
+      else
+      {
+         //Don't process until result has come back from backup
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doHandleExpired(packet);
+            }
+         });
+      }
+   }
+   
+   public void doHandleExpired(final SessionExpiredMessage packet)
+   {
+      try
+      {
+         MessageReference ref = consumers.get(packet.getConsumerID()).getReference(packet.getMessageID());
+
+         // Null implies a browser
+         if (ref != null)
+         {
+            ref.expire(storageManager, postOffice, queueSettingsRepository);
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to acknowledge", e);
+      }
+
+      channel.confirm(packet);
    }
    
    public void handleCommit(final Packet packet)

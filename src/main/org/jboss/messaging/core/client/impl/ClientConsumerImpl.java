@@ -167,8 +167,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
                if (expired)
                {
-                  session.acknowledge(id, m.getMessageID());
-
+                  session.expire(id, m.getMessageID());
+                                   
                   if (toWait > 0)
                   {
                      continue;
@@ -302,7 +302,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             }
             else
             {
-               session.acknowledge(id, message.getMessageID());
+               session.expire(id, message.getMessageID());
             }
          }
          else
@@ -451,7 +451,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             }
             else
             {
-               session.acknowledge(id, message.getMessageID());
+               session.expire(id, message.getMessageID());
             }
          }
       }
