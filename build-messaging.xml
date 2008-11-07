@@ -715,8 +715,6 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${test.classes.dir}">
                <include name="${tests.param}"/>
-	       <exclude name="**/jms/ExpiryQueueTest.class"/>
-	       <exclude name="**/jms/DLQTest.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -766,7 +764,8 @@
                <include name="**/messaging/**/${test-mask}.class"/>
                <include name="**/jms/**/${test-mask}.class"/>
                <include name="**/messaging/util/**/${test-mask}.class"/>
-
+	       <exclude name="**/jms/ExpiryQueueTest.class"/>
+	       <exclude name="**/jms/DLQTest.class"/>
                <exclude name="**/jms/JCAWrapperTest.class"/>
                <exclude name="**/jms/XARecoveryTest.class"/>
                <exclude name="**/jms/XAResourceRecoveryTest.class"/>
