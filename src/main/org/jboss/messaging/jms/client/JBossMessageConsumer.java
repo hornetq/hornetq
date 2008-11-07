@@ -115,7 +115,7 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
    {
       this.listener = listener;
       
-      coreListener = new JMSMessageListenerWrapper(session, listener, ackMode);
+      coreListener = new JMSMessageListenerWrapper(session, consumer, listener, ackMode);
       
       try
       {

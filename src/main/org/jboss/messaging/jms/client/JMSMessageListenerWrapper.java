@@ -25,6 +25,7 @@ package org.jboss.messaging.jms.client;
 import javax.jms.MessageListener;
 import javax.jms.Session;
 
+import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -45,11 +46,15 @@ public class JMSMessageListenerWrapper implements MessageHandler
    
    private final MessageListener listener;
    
+   private final ClientConsumer consumer;
+   
    private final boolean transactedOrClientAck;
    
-   public JMSMessageListenerWrapper(final JBossSession session, final MessageListener listener, final int ackMode)
+   public JMSMessageListenerWrapper(final JBossSession session, final ClientConsumer consumer, final MessageListener listener, final int ackMode)
    {
       this.session = session;
+      
+      this.consumer = consumer;
       
       this.listener = listener;
       
@@ -116,8 +121,8 @@ public class JMSMessageListenerWrapper implements MessageHandler
       {
          try
          {
-            //We don't want to call this if the connection/session was closed from inside onMessage
-            if (!session.getCoreSession().isClosed() && !this.transactedOrClientAck)
+            //We don't want to call this if the consumer was closed from inside onMessage
+            if (!consumer.isClosed() && !this.transactedOrClientAck)
             {
                message.acknowledge();
             }

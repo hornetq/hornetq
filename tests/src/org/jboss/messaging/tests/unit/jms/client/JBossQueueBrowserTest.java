@@ -131,7 +131,7 @@ public class JBossQueueBrowserTest extends TestCase
       JBossQueue queue = new JBossQueue(randomString());
       ClientConsumer consumer = createStrictMock(ClientConsumer.class);
       ClientSession session = createStrictMock(ClientSession.class);    
-      expect(session.createConsumer((SimpleString) EasyMock.anyObject(), (SimpleString) EasyMock.anyObject(), EasyMock.anyBoolean(), EasyMock.anyBoolean())).andReturn(consumer);
+      expect(session.createConsumer((SimpleString) EasyMock.anyObject(), (SimpleString) EasyMock.anyObject(), EasyMock.anyBoolean())).andReturn(consumer);
       replay(session, consumer);
 
       JBossQueueBrowser browser = new JBossQueueBrowser(queue, null,
@@ -150,7 +150,7 @@ public class JBossQueueBrowserTest extends TestCase
       MessagingBuffer buffer = createStrictMock(MessagingBuffer.class);
       ClientConsumer consumer = createStrictMock(ClientConsumer.class);
       ClientSession session = createStrictMock(ClientSession.class);   
-      expect(session.createConsumer((SimpleString) EasyMock.anyObject(), (SimpleString) EasyMock.anyObject(), EasyMock.anyBoolean(), EasyMock.anyBoolean())).andReturn(consumer);
+      expect(session.createConsumer((SimpleString) EasyMock.anyObject(), (SimpleString) EasyMock.anyObject(), EasyMock.anyBoolean())).andReturn(consumer);
       expect(consumer.receive(1000)).andReturn(clientMessage);
       expect(clientMessage.getType()).andReturn(JBossMessage.TYPE);
       expect(clientMessage.getBody()).andStubReturn(buffer);

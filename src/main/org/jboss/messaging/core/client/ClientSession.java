@@ -58,13 +58,12 @@ public interface ClientSession extends XAResource
 
    ClientConsumer createConsumer(SimpleString queueName) throws MessagingException;
 
-   ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean direct) throws MessagingException;
+   ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString) throws MessagingException;
 
-   ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean direct, boolean browseOnly) throws MessagingException;
+   ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean browseOnly) throws MessagingException;
 
    ClientConsumer createConsumer(SimpleString queueName,
-                                 SimpleString filterString,
-                                 boolean direct,
+                                 SimpleString filterString,                    
                                  int windowSize,
                                  int maxRate,
                                  boolean browseOnly) throws MessagingException;

@@ -59,8 +59,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private final Queue<ClientMessage> buffer = new LinkedList<ClientMessage>();
 
-   private final boolean direct;
-
    private final Runner runner = new Runner();
 
    private volatile Thread receiverThread;
@@ -80,8 +78,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public ClientConsumerImpl(final ClientSessionInternal session,
                              final long id,
-                             final int clientWindowSize,
-                             final boolean direct,
+                             final int clientWindowSize,                          
                              final Executor executor,
                              final Channel channel)
    {
@@ -94,8 +91,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       sessionExecutor = executor;
 
       this.clientWindowSize = clientWindowSize;
-
-      this.direct = direct;
    }
 
    // ClientConsumer implementation
@@ -258,11 +253,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return closed;
    }
 
-   public boolean isDirect()
-   {
-      return direct;
-   }
-
    public Exception getLastException()
    {
       return lastException;
@@ -288,31 +278,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       if (handler != null)
       {
-         if (direct)
-         {
-            // Dispatch it directly on remoting thread
+         // Execute using executor
+     
+         buffer.add(message);
 
-            boolean expired = message.isExpired();
-
-            flowControl(message.getEncodeSize());
-
-            if (!expired)
-            {
-               handler.onMessage(message);
-            }
-            else
-            {
-               session.expire(id, message.getMessageID());
-            }
-         }
-         else
-         {
-            // Execute using executor
-        
-            buffer.add(message);
-
-            queueExecutor();
-         }
+         queueExecutor();         
       }
       else
       { 

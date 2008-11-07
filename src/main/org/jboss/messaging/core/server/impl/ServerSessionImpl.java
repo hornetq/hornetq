@@ -931,7 +931,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       try
       {
-         MessageReference ref = consumers.get(packet.getConsumerID()).getReference(packet.getMessageID());
+         ServerConsumer consumer = consumers.get(packet.getConsumerID());
+         
+         MessageReference ref = consumer.getReference(packet.getMessageID());
 
          // Null implies a browser
          if (ref != null)

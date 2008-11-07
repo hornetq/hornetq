@@ -98,7 +98,7 @@ public class JBossQueueBrowser implements QueueBrowser
       {
          close();
 
-         consumer = session.createConsumer(queue.getSimpleAddress(), filterString, false, true);
+         consumer = session.createConsumer(queue.getSimpleAddress(), filterString, true);
 
          return new BrowserEnumeration();
       }

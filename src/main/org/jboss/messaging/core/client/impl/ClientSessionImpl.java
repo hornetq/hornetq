@@ -285,50 +285,44 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    }
 
    public ClientConsumer createConsumer(final SimpleString queueName,
-                                        final SimpleString filterString,
-                                        final boolean direct) throws MessagingException
+                                        final SimpleString filterString) throws MessagingException
    {
       checkClosed();
 
       return createConsumer(queueName,
-                            filterString,
-                            direct,
+                            filterString,                        
                             connectionFactory.getConsumerWindowSize(),
                             connectionFactory.getConsumerMaxRate(),
                             false);
    }
 
    public ClientConsumer createConsumer(final SimpleString queueName,
-                                        final SimpleString filterString,
-                                        final boolean direct,
+                                        final SimpleString filterString,                                     
                                         final boolean browseOnly) throws MessagingException
    {
       return createConsumer(queueName,
-                            filterString,
-                            direct,
+                            filterString,                           
                             connectionFactory.getConsumerWindowSize(),
                             connectionFactory.getConsumerMaxRate(),
                             browseOnly);
    }
 
+   /*
+    * Note, we DO NOT currently support direct consumers (i.e. consumers we're delivery occurs on the remoting thread.
+    * Direct consumers have issues with blocking and failover.
+    * E.g. if direct then inside MessageHandler call a blocking method like rollback or acknowledge (blocking)
+    * This can block until failove completes, which disallows the thread to be used to deliver any responses to the client
+    * during that period, so failover won't occur.
+    * If we want direct consumers we need to rethink how they work
+   */
    public ClientConsumer createConsumer(final SimpleString queueName,
-                                        final SimpleString filterString,
-                                        final boolean direct,
+                                        final SimpleString filterString,                                       
                                         final int windowSize,
                                         final int maxRate,
                                         final boolean browseOnly) throws MessagingException
    {
       checkClosed();
       
-      if (direct && sessionFactory.getSendWindowSize() != -1)
-      {
-         //Direct consumers and send window blocking is incompatible.
-         //If execute onMessage on same thread as remoting thread then if onMessage calls rollback() or other method
-         //but has no credits it will block on the semaphore until credits arrive, but they will never arrive since the
-         //remoting thread won't unwind.
-         throw new IllegalArgumentException("Cannot create a direct consumer if send window is specified - since can lead to deadlock");
-      }
-
       SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(queueName,
                                                                               filterString,
                                                                               windowSize,
@@ -368,8 +362,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       ClientConsumerInternal consumer = new ClientConsumerImpl(this,
                                                                consumerID,
-                                                               clientWindowSize,
-                                                               direct,
+                                                               clientWindowSize,                                                              
                                                                executor,
                                                                channel);
 

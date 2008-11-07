@@ -89,7 +89,7 @@ public class ConsumerTest extends UnitTestCase
          producer.send(message);
       }
 
-      ClientConsumer consumer = session.createConsumer(QUEUE, null, false, true);
+      ClientConsumer consumer = session.createConsumer(QUEUE, null, true);
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -100,7 +100,7 @@ public class ConsumerTest extends UnitTestCase
 
       consumer.close();
 
-      consumer = session.createConsumer(QUEUE, null, false, true);
+      consumer = session.createConsumer(QUEUE, null, true);
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -135,7 +135,7 @@ public class ConsumerTest extends UnitTestCase
          producer.send(message);
       }
 
-      ClientConsumer consumer = session.createConsumer(QUEUE, new SimpleString("x >= 50"), false, true);
+      ClientConsumer consumer = session.createConsumer(QUEUE, new SimpleString("x >= 50"), true);
 
       for (int i = 50; i < numMessages; i++)
       {
@@ -146,7 +146,7 @@ public class ConsumerTest extends UnitTestCase
 
       consumer.close();
 
-      consumer = session.createConsumer(QUEUE, null, false, true);
+      consumer = session.createConsumer(QUEUE, null, true);
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -184,7 +184,7 @@ public class ConsumerTest extends UnitTestCase
          producer.send(message);
       }
 
-      ClientConsumer consumer = session.createConsumer(QUEUE, new SimpleString("color = 'RED'"), false, true);
+      ClientConsumer consumer = session.createConsumer(QUEUE, new SimpleString("color = 'RED'"), true);
 
       for (int i = 0; i < numMessages; i += 2)
       {
@@ -216,9 +216,9 @@ public class ConsumerTest extends UnitTestCase
          producer.send(message);
       }
 
-      ClientConsumer consumer = session.createConsumer(QUEUE, null, false, true);
-      ClientConsumer consumer2 = session.createConsumer(QUEUE, null, false, true);
-      ClientConsumer consumer3 = session.createConsumer(QUEUE, null, false, true);
+      ClientConsumer consumer = session.createConsumer(QUEUE, null, true);
+      ClientConsumer consumer2 = session.createConsumer(QUEUE, null, true);
+      ClientConsumer consumer3 = session.createConsumer(QUEUE, null, true);
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -254,9 +254,9 @@ public class ConsumerTest extends UnitTestCase
          producer.send(message);
       }
 
-      ClientConsumer consumer = session.createConsumer(QUEUE, new SimpleString("x < 50"), false, true);
-      ClientConsumer consumer2 = session.createConsumer(QUEUE, new SimpleString("x >= 50"), false, true);
-      ClientConsumer consumer3 = session.createConsumer(QUEUE, null, false, true);
+      ClientConsumer consumer = session.createConsumer(QUEUE, new SimpleString("x < 50"), true);
+      ClientConsumer consumer2 = session.createConsumer(QUEUE, new SimpleString("x >= 50"), true);
+      ClientConsumer consumer3 = session.createConsumer(QUEUE, null, true);
 
       for (int i = 0; i < 50; i++)
       {
@@ -297,7 +297,7 @@ public class ConsumerTest extends UnitTestCase
          producer.send(message);
       }
 
-      ClientConsumer consumer = session.createConsumer(QUEUE, null, false, true);
+      ClientConsumer consumer = session.createConsumer(QUEUE, null, true);
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -330,7 +330,7 @@ public class ConsumerTest extends UnitTestCase
          producer.send(message);
       }
 
-      ClientConsumer consumer = session.createConsumer(QUEUE, null, false, true);
+      ClientConsumer consumer = session.createConsumer(QUEUE, null, true);
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -365,7 +365,7 @@ public class ConsumerTest extends UnitTestCase
          producer.send(message);
       }
 
-      ClientConsumer consumer = session.createConsumer(QUEUE, null, false, true);
+      ClientConsumer consumer = session.createConsumer(QUEUE, null, true);
       
       session.start();
       
