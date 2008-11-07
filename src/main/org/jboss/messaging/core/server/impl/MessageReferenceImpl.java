@@ -243,6 +243,7 @@ public class MessageReferenceImpl implements MessageReference
       Transaction tx = new TransactionImpl(persistenceManager, postOffice);
 
       ServerMessage copyMessage = makeCopy(expiry, persistenceManager);
+      
       copyMessage.setDestination(otherBinding.getAddress());
 
       tx.addMessage(copyMessage);

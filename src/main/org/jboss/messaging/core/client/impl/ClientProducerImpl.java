@@ -86,7 +86,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       this.rateLimiter = rateLimiter;
 
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
-
+      
       this.blockOnPersistentSend = blockOnPersistentSend;
 
       this.autoGroupId = autoGroupId;
@@ -230,7 +230,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
 
       boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
-
+      
       SessionSendMessage message;
       
       // check to see if this message need to be scheduled.

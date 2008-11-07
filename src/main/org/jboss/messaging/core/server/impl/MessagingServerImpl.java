@@ -510,7 +510,7 @@ public class MessagingServerImpl implements MessagingServer
                                                      final boolean autoCommitAcks,
                                                      final boolean xa,
                                                      final int sendWindowSize) throws Exception
-   {
+   {      
       checkActivate(connection);
 
       return doCreateSession(name,
@@ -576,8 +576,6 @@ public class MessagingServerImpl implements MessagingServer
 
    // Private
    // --------------------------------------------------------------------------------------
-
-   private final Object createSessionLock = new Object();
 
    private CreateSessionResponseMessage doCreateSession(final String name,
                                                         final long channelID,
@@ -646,7 +644,7 @@ public class MessagingServerImpl implements MessagingServer
       channel.setHandler(handler);
 
       connection.addFailureListener(session);
-
+      
       return new CreateSessionResponseMessage(version.getIncrementingVersion());
    }
 

@@ -424,7 +424,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          // If the producer is not auto-commit sends then messages are never
          // sent blocking - there is no point
          // since commit, prepare or rollback will flush any messages sent.
-
+ 
          producer = new ClientProducerImpl(this,
                                            idGenerator.generateID(),
                                            address,
