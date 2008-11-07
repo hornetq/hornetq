@@ -321,7 +321,7 @@ public class AcknowledgementTest extends JMSTestCase
          int count = 0;
          while (true)
          {
-            Message m = consumer.receive(200);
+            Message m = consumer.receive(1000);
             if (m == null)
             {
                break;

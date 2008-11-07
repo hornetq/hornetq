@@ -51,8 +51,7 @@ import org.jboss.util.id.GUID;
 public class ScheduledMessageTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(ScheduledMessageTest.class);
-
-   
+  
    private static final String ACCEPTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory";
 
    private static final String CONNECTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory";

@@ -22,6 +22,10 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ACTUAL_EXPIRY_TIME;
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIGIN_QUEUE;
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIG_MESSAGE_ID;
+
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -173,7 +177,11 @@ public class MessageReferenceImpl implements MessageReference
       }
       else
       {
-         throw new IllegalStateException("No DLQ configured for queue " + queue.getName() + ", so dropping it");
+         log.warn("Message has exceeded max delivery attempts. No DLQ configured for queue " + queue.getName() + " so dropping it");
+         
+         Transaction tx = new TransactionImpl(persistenceManager, postOffice);
+         tx.addAcknowledgement(this);
+         tx.commit();
       }
    }
 
@@ -198,7 +206,7 @@ public class MessageReferenceImpl implements MessageReference
       }
       else
       {
-         log.warn("Message has expired, no expiry queue is configured so dropping it");
+         log.warn("Message has expired. No expiry queue configured for queue " + queue.getName() + " so dropping it");
 
          Transaction tx = new TransactionImpl(persistenceManager, postOffice);
          tx.addAcknowledgement(this);
@@ -263,7 +271,8 @@ public class MessageReferenceImpl implements MessageReference
       copy.setMessageID(newMessageId);
 
       SimpleString originalQueue = copy.getDestination();
-      copy.putStringProperty(MessageImpl.HDR_ORIGIN_QUEUE, originalQueue);
+      copy.putStringProperty(HDR_ORIGIN_QUEUE, originalQueue);
+      copy.putLongProperty(HDR_ORIG_MESSAGE_ID, message.getMessageID());
 
       // reset expiry
       copy.setExpiration(0);
@@ -271,7 +280,7 @@ public class MessageReferenceImpl implements MessageReference
       {
          long actualExpiryTime = System.currentTimeMillis();
 
-         copy.putLongProperty(MessageImpl.HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
+         copy.putLongProperty(HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
       }
 
       return copy;

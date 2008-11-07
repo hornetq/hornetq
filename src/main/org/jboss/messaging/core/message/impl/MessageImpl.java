@@ -56,9 +56,11 @@ public abstract class MessageImpl implements Message
 
    private static final Logger log = Logger.getLogger(MessageImpl.class);
 
-   public static final SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("JBMActualExpiryTime");
+   public static final SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("JBM_ACTUAL_EXPIRY");
 
-   public static final SimpleString HDR_ORIGIN_QUEUE = new SimpleString("JBMOriginQueue");
+   public static final SimpleString HDR_ORIGIN_QUEUE = new SimpleString("JBM_ORIG_DESTINATION");
+   
+   public static final SimpleString HDR_ORIG_MESSAGE_ID = new SimpleString("JBM_ORIG_MESSAGE_ID");
 
    public static final SimpleString GROUP_ID = new SimpleString("JBMGroupID");
 

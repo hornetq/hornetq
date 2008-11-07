@@ -715,6 +715,8 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${test.classes.dir}">
                <include name="${tests.param}"/>
+	       <exclude name="**/jms/ExpiryQueueTest.class"/>
+	       <exclude name="**/jms/DLQTest.class"/>
             </fileset>
          </batchtest>
       </junit>
