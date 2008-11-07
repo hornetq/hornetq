@@ -89,6 +89,11 @@ public interface QueueControlMBean
          @Parameter(name = "messageID", desc = "A message ID") long messageID)
          throws Exception;
 
+   @Operation(desc = "Remove the messages corresponding to the given filter (and returns the number of removed messages)", impact = ACTION)
+   int removeMatchingMessages(
+         @Parameter(name = "filter", desc = "A message filter") String filter)
+         throws Exception;
+
    @Operation(desc = "Remove the messages corresponding to the given filter (and returns the number of expired messages)", impact = ACTION)
    int expireMessages(
          @Parameter(name = "filter", desc = "A message filter") String filter)
@@ -103,6 +108,17 @@ public interface QueueControlMBean
    boolean moveMessage(
          @Parameter(name = "messageID", desc = "A message ID") long messageID,
          @Parameter(name = "otherQueueName", desc = "The name of the queue to move the message to") String otherQueueName)
+         throws Exception;
+
+   @Operation(desc = "Move the messages corresponding to the given filter (and returns the number of moved messages)", impact = ACTION)
+   int moveMatchingMessages(
+         @Parameter(name = "filter", desc = "A message filter") String filter,
+         @Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to") String otherQueueName)
+         throws Exception;
+
+   @Operation(desc = "Move all the messages to another queue (and returns the number of moved messages)", impact = ACTION)
+   int moveAllMessages(
+         @Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to") String otherQueueName)
          throws Exception;
 
    @Operation(desc = "Send the message corresponding to the given messageID to this queue's Dead Letter Queue", impact = ACTION)

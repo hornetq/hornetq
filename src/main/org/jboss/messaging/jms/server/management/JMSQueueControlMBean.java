@@ -82,7 +82,12 @@ public interface JMSQueueControlMBean extends DestinationControlMBean
    boolean removeMessage(
          @Parameter(name = "messageID", desc = "A message ID") String messageID)
          throws Exception;
-   
+
+   @Operation(desc = "Remove the messages corresponding to the given filter (and returns the number of removed messages)", impact = ACTION)
+   int removeMatchingMessages(
+         @Parameter(name = "filter", desc = "A message filter") String filter)
+         throws Exception;
+
    @Operation(desc = "Expire the messages corresponding to the given filter (and returns the number of expired messages)", impact = ACTION)
    int expireMessages(
          @Parameter(name = "filter", desc = "A message filter") String filter)
@@ -104,6 +109,23 @@ public interface JMSQueueControlMBean extends DestinationControlMBean
          @Parameter(name = "newPriority", desc = "the new priority (between 0 and 9)") int newPriority)
          throws Exception;
 
+   @Operation(desc = "Move the message corresponding to the given messageID to another queue", impact = ACTION)
+   boolean moveMessage(
+         @Parameter(name = "messageID", desc = "A message ID") long messageID,
+         @Parameter(name = "otherQueueName", desc = "The name of the queue to move the message to") String otherQueueName)
+         throws Exception;
+
+   @Operation(desc = "Move the messages corresponding to the given filter (and returns the number of moved messages)", impact = ACTION)
+   int moveMatchingMessages(
+         @Parameter(name = "filter", desc = "A message filter") String filter,
+         @Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to") String otherQueueName)
+         throws Exception;
+
+   @Operation(desc = "Move all the messages to another queue (and returns the number of moved messages)", impact = ACTION)
+   int moveAllMessages(
+         @Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to") String otherQueueName)
+         throws Exception;
+   
    CompositeData listMessageCounter();
 
    String listMessageCounterAsHTML();

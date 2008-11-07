@@ -44,6 +44,7 @@ import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounter.DayCounter;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterHelper;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
@@ -212,6 +213,26 @@ public class JMSQueueControl extends StandardMBean implements
             storageManager);
    }
 
+   public int removeMatchingMessages(String filterStr) throws Exception
+   {
+      try
+      {
+         Filter filter = filterStr == null ? null : new FilterImpl(
+               new SimpleString(SelectorTranslator
+                     .convertToJBMFilterString(filterStr)));
+
+         List<MessageReference> refs = coreQueue.list(filter);
+         for (MessageReference ref : refs)
+         {
+            coreQueue.deleteReference(ref.getMessage().getMessageID(), storageManager);
+         }
+         return refs.size();
+      } catch (MessagingException e)
+      {
+         throw new IllegalStateException(e.getMessage());
+      }
+   }
+   
    public void removeAllMessages() throws Exception
    {
       coreQueue.deleteAllReferences(storageManager);
@@ -313,7 +334,38 @@ public class JMSQueueControl extends StandardMBean implements
             .getMessageID(), (byte) newPriority, storageManager, postOffice,
             queueSettingsRepository);
    }
+   
+   public boolean moveMessage(long messageID, String otherQueueName) throws Exception
+   {
+      Binding binding = postOffice.getBinding(new SimpleString(otherQueueName));
+      if (binding == null)
+      {
+         throw new IllegalArgumentException("No queue found for "
+               + otherQueueName);
+      }
 
+      return coreQueue.moveMessage(messageID, binding, storageManager, postOffice);
+   }
+   
+   public int moveMatchingMessages(String filterStr, String otherQueueName) throws Exception
+   {
+      Filter filter = filterStr == null ? null : new FilterImpl(new SimpleString(filterStr));
+      List<MessageReference> refs = coreQueue.list(filter);
+      synchronized (coreQueue)
+      {
+         for (MessageReference ref : refs)
+         {
+            moveMessage(ref.getMessage().getMessageID(), otherQueueName);
+         }
+         return refs.size();
+      }
+   }
+   
+   public int moveAllMessages(String otherQueueName) throws Exception
+   {
+      return moveMatchingMessages(null, otherQueueName);
+   }
+   
    public CompositeData listMessageCounter()
    {
       return MessageCounterInfo.toCompositeData(counter);

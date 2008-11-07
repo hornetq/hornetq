@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.management.impl;
 
 import java.text.DateFormat;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -252,6 +251,17 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
          throw new IllegalStateException(e.getMessage());
       }
    }
+   
+   public int removeMatchingMessages(String filterStr) throws Exception
+   {
+      Filter filter = filterStr == null ? null : new FilterImpl(new SimpleString(filterStr));
+      List<MessageReference> refs = queue.list(filter);
+      for (MessageReference ref : refs)
+      {
+         removeMessage(ref.getMessage().getMessageID());
+      }
+      return refs.size();
+   }
 
    public boolean expireMessage(final long messageID) throws Exception
    {
@@ -292,6 +302,25 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
       }
 
       return queue.moveMessage(messageID, binding, storageManager, postOffice);
+   }
+   
+   public int moveMatchingMessages(String filterStr, String otherQueueName) throws Exception
+   {
+      Filter filter = filterStr == null ? null : new FilterImpl(new SimpleString(filterStr));
+      List<MessageReference> refs = queue.list(filter);
+      synchronized (queue)
+      {
+         for (MessageReference ref : refs)
+         {
+            moveMessage(ref.getMessage().getMessageID(), otherQueueName);
+         }
+         return refs.size();
+      }
+   }
+   
+   public int moveAllMessages(String otherQueueName) throws Exception
+   {
+      return moveMatchingMessages(null, otherQueueName);
    }
 
    public boolean sendMessageToDLQ(final long messageID) throws Exception
