@@ -1054,6 +1054,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return backupConnection;
    }
+   
+   public void setBackupConnection(RemotingConnection connection)
+   {
+      this.backupConnection = connection;
+   }
 
    // Protected
    // ----------------------------------------------------------------------------

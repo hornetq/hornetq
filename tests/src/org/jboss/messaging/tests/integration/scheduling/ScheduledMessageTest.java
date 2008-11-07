@@ -158,7 +158,6 @@ public class ScheduledMessageTest extends UnitTestCase
 
    public void testPagedMessageDeliveredCorrectly() throws Exception
    {
-
       TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
       configuration.setPagingMaxGlobalSizeBytes(0);

@@ -847,6 +847,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       private final Condition failoverCondition = lock.newCondition();
 
       private final Object sendLock = new Object();
+      
+      private final Object sendBlockingLock = new Object();
+      
+      private final Object replicationLock = new Object();
 
       private boolean failingOver;
 
@@ -989,8 +993,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             }
          }
       }
-
-      // This must never called by more than one thread concurrently
+      
       public Packet sendBlocking(final Packet packet) throws MessagingException
       {
          if (closed)
@@ -1002,133 +1005,144 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          {
             throw new IllegalStateException("Cannot do a blocking call timeout on a server side connection");
          }
-
-         packet.setChannelID(id);
-
-         final MessagingBuffer buffer = connection.transportConnection.createBuffer(PacketImpl.INITIAL_BUFFER_SIZE);
-
-         int size = packet.encode(buffer);
-
-         // Must block on semaphore outside the main lock or this can prevent failover from occurring
-         if (sendSemaphore != null)
-         {
+         
+         //Synchronized since can't be called concurrently by more than one thread and this can occur
+         //E.g. blocking acknowledge() from inside a message handler at some time as other operation on main thread
+         synchronized (sendBlockingLock)
+         {   
+            packet.setChannelID(id);
+   
+            final MessagingBuffer buffer = connection.transportConnection.createBuffer(PacketImpl.INITIAL_BUFFER_SIZE);
+   
+            int size = packet.encode(buffer);
+   
+            // Must block on semaphore outside the main lock or this can prevent failover from occurring
+            if (sendSemaphore != null)
+            {
+               try
+               {
+                  sendSemaphore.acquire(size);
+               }
+               catch (InterruptedException e)
+               {
+                  throw new IllegalStateException("Semaphore interrupted");
+               }
+            }
+   
+            lock.lock();
+   
             try
             {
-               sendSemaphore.acquire(size);
-            }
-            catch (InterruptedException e)
-            {
-               throw new IllegalStateException("Semaphore interrupted");
-            }
-         }
-
-         lock.lock();
-
-         try
-         {
-            while (failingOver)
-            {
-               // TODO - don't hardcode this timeout
-               try
+               while (failingOver)
                {
-                  failoverCondition.await(10000, TimeUnit.MILLISECONDS);
+                  // TODO - don't hardcode this timeout
+                  try
+                  {
+                     failoverCondition.await(10000, TimeUnit.MILLISECONDS);
+                  }
+                  catch (InterruptedException e)
+                  {
+                  }
                }
-               catch (InterruptedException e)
+   
+               response = null;
+   
+               if (resendCache != null && packet.isRequiresConfirmations())
                {
+                  resendCache.add(packet);
                }
-            }
-
-            response = null;
-
-            if (resendCache != null && packet.isRequiresConfirmations())
-            {
-               resendCache.add(packet);
-            }
-
-            connection.transportConnection.write(buffer);
-
-            long toWait = connection.blockingCallTimeout;
-
-            long start = System.currentTimeMillis();
-
-            while (response == null && toWait > 0)
-            {
-               try
+   
+               connection.transportConnection.write(buffer);
+   
+               long toWait = connection.blockingCallTimeout;
+   
+               long start = System.currentTimeMillis();
+   
+               while (response == null && toWait > 0)
                {
-                  sendCondition.await(toWait, TimeUnit.MILLISECONDS);
+                  try
+                  {
+                     sendCondition.await(toWait, TimeUnit.MILLISECONDS);
+                  }
+                  catch (InterruptedException e)
+                  {
+                  }
+   
+                  final long now = System.currentTimeMillis();
+   
+                  toWait -= now - start;
+   
+                  start = now;
                }
-               catch (InterruptedException e)
+   
+               if (response == null)
                {
+                  throw new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
+                                               "Timed out waiting for response when sending packet " + packet.getType());
                }
-
-               final long now = System.currentTimeMillis();
-
-               toWait -= now - start;
-
-               start = now;
+   
+               if (response.getType() == PacketImpl.EXCEPTION)
+               {
+                  final MessagingExceptionMessage mem = (MessagingExceptionMessage)response;
+   
+                  throw mem.getException();
+               }
+               else
+               {
+                  return response;
+               }
             }
-
-            if (response == null)
+            finally
             {
-               throw new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
-                                            "Timed out waiting for response when sending packet " + packet.getType());
+               lock.unlock();
             }
-
-            if (response.getType() == PacketImpl.EXCEPTION)
-            {
-               final MessagingExceptionMessage mem = (MessagingExceptionMessage)response;
-
-               throw mem.getException();
-            }
-            else
-            {
-               return response;
-            }
-         }
-         finally
-         {
-            lock.unlock();
          }
       }
 
       // Must be synchronized since can be called by incoming session commands but also by deliveries
       // Also needs to be synchronized with respect to replicatingChannelDead
-      public synchronized DelayedResult replicatePacket(final Packet packet)
+      public DelayedResult replicatePacket(final Packet packet)
       {
-         if (replicatingChannel != null)
+         synchronized (replicationLock)
          {
-            DelayedResult result = new DelayedResult();
-
-            responseActions.add(result);
-
-            replicatingChannel.send(packet);
-
-            return result;
-         }
-         else
-         {
-            return null;
+            if (replicatingChannel != null)
+            {
+               DelayedResult result = new DelayedResult();
+   
+               responseActions.add(result);
+   
+               replicatingChannel.send(packet);
+   
+               return result;
+            }
+            else
+            {
+               return null;
+            }
          }
       }
 
       // The replicating connection has died (backup has died)
-      public synchronized void replicatingChannelDead()
+      public void replicatingChannelDead()
       {
-         replicatingChannel = null;
-
-         // Execute all the response actions now
-
-         while (true)
+         synchronized (replicationLock)
          {
-            DelayedResult result = responseActions.poll();
-
-            if (result != null)
+            replicatingChannel = null;
+   
+            // Execute all the response actions now
+   
+            while (true)
             {
-               result.replicated();
-            }
-            else
-            {
-               break;
+               DelayedResult result = responseActions.poll();
+   
+               if (result != null)
+               {
+                  result.replicated();
+               }
+               else
+               {
+                  break;
+               }
             }
          }
       }
@@ -1155,7 +1169,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       {
          DelayedResult result = null;
 
-         synchronized (this)
+         synchronized (replicationLock)
          {
             if (replicatingChannel != null)
             {

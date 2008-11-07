@@ -55,4 +55,6 @@ public interface ClientSessionInternal extends ClientSession
    RemotingConnection getConnection();
    
    RemotingConnection getBackupConnection();
+   
+   void setBackupConnection(RemotingConnection connection);
 }

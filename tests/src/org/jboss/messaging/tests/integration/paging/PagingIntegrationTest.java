@@ -29,6 +29,11 @@ import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.tests.unit.core.paging.impl.PageImplTestBase;
 
+/**
+ * 
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ *
+ */
 public class PagingIntegrationTest extends PageImplTestBase
 {
 
