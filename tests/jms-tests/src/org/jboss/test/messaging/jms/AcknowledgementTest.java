@@ -199,7 +199,6 @@ public class AcknowledgementTest extends JMSTestCase
 
       try
       {
-
          conn = cf.createConnection();
 
          Session producerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
@@ -217,10 +216,14 @@ public class AcknowledgementTest extends JMSTestCase
             Message m = producerSess.createMessage();
             producer.send(m);
          }
+         
+         log.info("sent messages");
 
          assertRemainingMessages(0);
 
+         log.info("rolling back");
          producerSess.rollback();
+         log.info("rolled back");
 
          // Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
@@ -229,27 +232,32 @@ public class AcknowledgementTest extends JMSTestCase
             producer.send(m);
          }
          assertRemainingMessages(0);
+         log.info("sent more");
 
          producerSess.commit();
+         log.info("committed");
 
          assertRemainingMessages(NUM_MESSAGES);
 
-         log.trace("Sent messages");
+         log.trace("Sent all messages");
 
          int count = 0;
          while (true)
          {
             Message m = consumer.receive(200);
+            log.info("got message "+m);
             if (m == null)
             {
                break;
             }
             count++;
          }
+         
+         
 
          assertRemainingMessages(NUM_MESSAGES);
 
-         log.trace("Received " + count + " messages");
+         log.info("Received " + count + " messages");
 
          assertEquals(count, NUM_MESSAGES);
 
@@ -257,20 +265,20 @@ public class AcknowledgementTest extends JMSTestCase
 
          assertRemainingMessages(NUM_MESSAGES);
 
-         log.trace("Session rollback called");
+         log.info("Session rollback called");
 
          int i = 0;
          for (; i < NUM_MESSAGES; i++)
          {
             consumer.receive();
-            log.trace("Received message " + i);
+            log.info("Received message " + i);
          }
 
          assertRemainingMessages(NUM_MESSAGES);
 
          // if I don't receive enough messages, the test will timeout
 
-         log.trace("Received " + i + " messages after recover");
+         log.info("Received " + i + " messages after recover");
 
          consumerSess.commit();
 
@@ -705,12 +713,8 @@ public class AcknowledgementTest extends JMSTestCase
 
          Message m = null;
          for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            assertRemainingMessages(NUM_MESSAGES - i);
-
+         {            
             m = consumer.receive(200);
-
-            assertRemainingMessages(NUM_MESSAGES - (i + 1));
 
             if (m == null)
             {
@@ -719,7 +723,7 @@ public class AcknowledgementTest extends JMSTestCase
             count++;
          }
 
-         assertRemainingMessages(0);
+         assertRemainingMessages(NUM_MESSAGES);
 
          assertNotNull(m);
 
@@ -736,8 +740,10 @@ public class AcknowledgementTest extends JMSTestCase
          log.trace("Message is:" + m);
 
          assertNull(m);
-
-         // Thread.sleep(3000000);
+         
+         conn.close();
+         
+         assertRemainingMessages(0);
       }
       finally
       {
@@ -850,7 +856,7 @@ public class AcknowledgementTest extends JMSTestCase
 
          assertNotNull(m);
 
-         assertRemainingMessages(0);
+         assertRemainingMessages(NUM_MESSAGES);
 
          log.trace("Received " + count + " messages");
 
@@ -865,6 +871,10 @@ public class AcknowledgementTest extends JMSTestCase
          log.trace("Message is:" + m);
 
          assertNull(m);
+         
+         conn.close();
+         
+         assertRemainingMessages(0);
       }
       finally
       {
@@ -1051,9 +1061,8 @@ public class AcknowledgementTest extends JMSTestCase
 
          cons.close();
          
-         //Thread.sleep(500);
-
          assertRemainingMessages(0);
+         
          assertFalse(listener.failed);
       }
       finally
@@ -1293,7 +1302,7 @@ public class AcknowledgementTest extends JMSTestCase
             }
             if (count == 2)
             {
-               assertRemainingMessages(2);
+               assertRemainingMessages(3);
 
                if (!"b".equals(tm.getText()))
                {
@@ -1303,7 +1312,7 @@ public class AcknowledgementTest extends JMSTestCase
             }
             if (count == 3)
             {
-               assertRemainingMessages(1);
+               assertRemainingMessages(3);
 
                if (!"c".equals(tm.getText()))
                {

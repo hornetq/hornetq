@@ -19,7 +19,6 @@ import java.util.Map;
 
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.core.logging.Logger;
@@ -36,8 +35,6 @@ public class JMSServerDeployer extends XmlDeployer
 {
    Logger log = Logger.getLogger(JMSServerDeployer.class);
 
-   public static final int DEFAULT_DUPS_OK_BATCH_SIZE = 1000;
-
    private JMSServerManager jmsServerManager;
 
    private static final String CLIENTID_ELEMENT = "client-id";
@@ -47,12 +44,14 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String CALL_TIMEOUT_ELEMENT = "call-timeout";
 
    private static final String DUPS_OK_BATCH_SIZE_ELEMENT = "dups-ok-batch-size";
+   
+   private static final String TRANSACTION_BATCH_SIZE_ELEMENT = "transaction-batch-size";
 
    private static final String CONSUMER_WINDOW_SIZE_ELEMENT = "consumer-window-size";
 
    private static final String CONSUMER_MAX_RATE_ELEMENT = "consumer-max-rate";
 
-   private static final String PRODUCER_WINDOW_SIZE_ELEMENT = "producer-window-size";
+   private static final String SEND_WINDOW_SIZE = "send-window-size";
 
    private static final String PRODUCER_MAX_RATE_ELEMENT = "producer-max-rate";
 
@@ -132,7 +131,8 @@ public class JMSServerDeployer extends XmlDeployer
          long pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;     
          long callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
          String clientID = null;
-         int dupsOKBatchSize = DEFAULT_DUPS_OK_BATCH_SIZE;
+         int dupsOKBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+         int transactionBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
          int consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
          int consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
          int sendWindowSize = ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
@@ -166,7 +166,7 @@ public class JMSServerDeployer extends XmlDeployer
             {
                consumerMaxRate = Integer.parseInt(children.item(j).getTextContent().trim());
             }
-            else if (PRODUCER_WINDOW_SIZE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if (SEND_WINDOW_SIZE.equalsIgnoreCase(children.item(j).getNodeName()))
             {
                sendWindowSize = Integer.parseInt(children.item(j).getTextContent().trim());
             }
@@ -181,6 +181,10 @@ public class JMSServerDeployer extends XmlDeployer
             else if (DUPS_OK_BATCH_SIZE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
                dupsOKBatchSize = Integer.parseInt(children.item(j).getTextContent().trim());
+            }
+            else if (TRANSACTION_BATCH_SIZE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               transactionBatchSize = Integer.parseInt(children.item(j).getTextContent().trim());
             }
             else if (BLOCK_ON_ACKNOWLEDGE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
@@ -398,6 +402,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                   callTimeout,
                                                   clientID,
                                                   dupsOKBatchSize,
+                                                  transactionBatchSize,
                                                   consumerWindowSize,
                                                   consumerMaxRate,
                                                   sendWindowSize,

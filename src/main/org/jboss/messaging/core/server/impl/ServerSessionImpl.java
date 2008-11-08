@@ -435,7 +435,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
                                                           storageManager,
                                                           queueSettingsRepository,
                                                           postOffice,
-                                                          channel);
+                                                          channel,
+                                                          pager);
 
          response = new SessionCreateConsumerResponseMessage(windowSize);
 
@@ -933,24 +934,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       {
          ServerConsumer consumer = consumers.get(packet.getConsumerID());
          
-         MessageReference ref = consumer.getReference(packet.getMessageID());
-
-         // Null implies a browser
-         if (ref != null)
-         {
-            if (autoCommitAcks)
-            {
-               doAck(ref);
-            }
-            else
-            {
-               tx.addAcknowledgement(ref);
-
-               // Del count is not actually updated in storage unless it's
-               // cancelled
-               ref.incrementDeliveryCount();
-            }
-         }
+         consumer.acknowledge(autoCommitAcks, tx, packet.getMessageID());
 
          if (packet.isRequiresResponse())
          {
@@ -1007,7 +991,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    {
       try
       {
-         MessageReference ref = consumers.get(packet.getConsumerID()).getReference(packet.getMessageID());
+         MessageReference ref = consumers.get(packet.getConsumerID()).getExpired(packet.getMessageID());
 
          // Null implies a browser
          if (ref != null)
@@ -2329,7 +2313,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    }
 
    public void handleSendProducerMessage(final SessionSendMessage packet)
-   {               
+   {                     
       ServerMessage msg = packet.getServerMessage();
       
       final SendLock lock;
@@ -2380,7 +2364,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    {
       //With a send we must make sure it is replicated to backup before being processed on live
       //or can end up with delivery being processed on backup before original send
-      
+         
       Packet response = null;
 
       try
@@ -2707,7 +2691,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
 
       List<MessageReference> rolledBack = theTx.rollback(queueSettingsRepository);
-
+      
       rolledBack.addAll(toCancel);
 
       if (wasStarted)
@@ -2764,33 +2748,33 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       tx = new TransactionImpl(storageManager, postOffice);
    }
 
-   private void doAck(final MessageReference ref) throws Exception
-   {
-      ServerMessage message = ref.getMessage();
-
-      Queue queue = ref.getQueue();
-
-      if (message.decrementRefCount() == 0)
-      {
-         pager.messageDone(message);
-      }
-
-      if (message.isDurable() && queue.isDurable())
-      {
-         int count = message.decrementDurableRefCount();
-
-         if (count == 0)
-         {
-            storageManager.storeDelete(message.getMessageID());
-         }
-         else
-         {
-            storageManager.storeAcknowledge(queue.getPersistenceID(), message.getMessageID());
-         }
-      }
-
-      queue.referenceAcknowledged(ref);
-   }
+//   private void doAck(final MessageReference ref) throws Exception
+//   {
+//      ServerMessage message = ref.getMessage();
+//
+//      Queue queue = ref.getQueue();
+//
+//      if (message.decrementRefCount() == 0)
+//      {
+//         pager.messageDone(message);
+//      }
+//
+//      if (message.isDurable() && queue.isDurable())
+//      {
+//         int count = message.decrementDurableRefCount();
+//
+//         if (count == 0)
+//         {
+//            storageManager.storeDelete(message.getMessageID());
+//         }
+//         else
+//         {
+//            storageManager.storeAcknowledge(queue.getPersistenceID(), message.getMessageID());
+//         }
+//      }
+//
+//      queue.referenceAcknowledged(ref);
+//   }
 
    private void doSecurity(final ServerMessage msg) throws Exception
    {

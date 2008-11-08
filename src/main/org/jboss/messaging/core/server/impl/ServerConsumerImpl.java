@@ -32,6 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
@@ -49,6 +50,7 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.Transaction;
 
 /**
  * Concrete implementation of a ClientConsumer.
@@ -102,6 +104,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final Channel channel;
    
+   private final PagingManager pager;
+
    private volatile boolean closed;
 
    // Constructors
@@ -118,7 +122,8 @@ public class ServerConsumerImpl implements ServerConsumer
                              final StorageManager storageManager,
                              final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                              final PostOffice postOffice,
-                             final Channel channel)
+                             final Channel channel,
+                             final PagingManager pager)
    {
       this.id = id;
 
@@ -148,6 +153,8 @@ public class ServerConsumerImpl implements ServerConsumer
       this.postOffice = postOffice;
 
       this.channel = channel;
+      
+      this.pager = pager;
 
       messageQueue.addConsumer(this);
    }
@@ -159,20 +166,20 @@ public class ServerConsumerImpl implements ServerConsumer
    {
       return id;
    }
-   
+
    public HandleStatus handle(final MessageReference ref) throws Exception
    {
       return doHandle(ref);
    }
-         
+
    public void handleClose(final Packet packet)
    {
-      //We must stop delivery before replicating the packet, this ensures the close message gets processed
-      //and replicated on the backup in the same order as any delivery that might be occuring gets
-      //processed and replicated on the backup.
-      //Otherwise we could end up with a situation where a close comes in, then a delivery comes in,
-      //then close gets replicated to backup, then delivery gets replicated, but consumer is already
-      //closed!
+      // We must stop delivery before replicating the packet, this ensures the close message gets processed
+      // and replicated on the backup in the same order as any delivery that might be occuring gets
+      // processed and replicated on the backup.
+      // Otherwise we could end up with a situation where a close comes in, then a delivery comes in,
+      // then close gets replicated to backup, then delivery gets replicated, but consumer is already
+      // closed!
       lock.lock();
       try
       {
@@ -182,9 +189,9 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          lock.unlock();
       }
-      
+
       DelayedResult result = channel.replicatePacket(packet);
-      
+
       if (result != null)
       {
          result.setResultRunner(new Runnable()
@@ -200,21 +207,21 @@ public class ServerConsumerImpl implements ServerConsumer
          doHandleClose(packet);
       }
    }
-   
+
    private void doHandleClose(final Packet packet)
    {
       Packet response = null;
-      
+
       try
-      {                                                                   
+      {
          doClose();
-         
+
          response = new NullResponseMessage();
       }
       catch (Exception e)
       {
          log.error("Failed to close producer", e);
-         
+
          if (e instanceof MessagingException)
          {
             response = new MessagingExceptionMessage((MessagingException)e);
@@ -224,12 +231,12 @@ public class ServerConsumerImpl implements ServerConsumer
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
          }
       }
-      
+
       channel.confirm(packet);
-   
+
       channel.send(response);
    }
-     
+
    public void close() throws Exception
    {
       lock.lock();
@@ -242,9 +249,9 @@ public class ServerConsumerImpl implements ServerConsumer
          lock.unlock();
       }
 
-      doClose();     
+      doClose();
    }
-   
+
    private void doClose() throws Exception
    {
       messageQueue.removeConsumer(this);
@@ -256,7 +263,7 @@ public class ServerConsumerImpl implements ServerConsumer
       Iterator<MessageReference> iter = refs.iterator();
 
       closed = true;
-      
+
       while (iter.hasNext())
       {
          MessageReference ref = iter.next();
@@ -293,7 +300,7 @@ public class ServerConsumerImpl implements ServerConsumer
    public void setStarted(final boolean started)
    {
       this.started = browseOnly || started;
-      
+
       // Outside the lock
       if (started)
       {
@@ -319,11 +326,12 @@ public class ServerConsumerImpl implements ServerConsumer
       return messageQueue;
    }
 
-   public MessageReference getReference(final long messageID) throws Exception
+   public void acknowledge(final boolean autoCommitAcks, final Transaction tx, final long messageID)
+      throws Exception
    {
       if (browseOnly)
       {
-         return null;
+         return;
       }
 
       // Acknowledge acknowledges all refs delivered by the consumer up to and including the one explicitly
@@ -338,17 +346,69 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             throw new IllegalStateException("Could not find reference with id " + messageID +
                                             " backup " +
-                                            messageQueue.isBackup() + 
-                                            " closed " + closed);
+                                            messageQueue.isBackup() +
+                                            " closed " +
+                                            closed);
          }
+
+         if (autoCommitAcks)
+         {
+            doAck(ref);
+         }
+         else
+         {
+            tx.addAcknowledgement(ref);
+
+            // Del count is not actually updated in storage unless it's
+            // cancelled
+            ref.incrementDeliveryCount();
+         }         
       }
       while (ref.getMessage().getMessageID() != messageID);
 
+   }
+      
+   public MessageReference getExpired(final long messageID) throws Exception
+   {
+      if (browseOnly)
+      {
+         return null;
+      }
+      
+      //Expiries can come in our of sequence with respect to delivery order
+      
+      Iterator<MessageReference> iter = deliveringRefs.iterator();
+      
+      MessageReference ref = null;
+      
+      while (iter.hasNext())
+      {
+         MessageReference theRef = iter.next();
+         
+         if (theRef.getMessage().getMessageID() == messageID)
+         {
+            iter.remove();
+            
+            ref = theRef;
+            
+            break;
+         }
+      }
+      
+      if (ref == null)
+      {
+         throw new IllegalStateException("Could not find reference with id " + messageID +
+                                         " backup " +
+                                         messageQueue.isBackup() +
+                                         " closed " +
+                                         closed);
+      }
+      
       return ref;
    }
 
    public void deliverReplicated(final long messageID) throws Exception
-   {  
+   {
       // It may not be the first in the queue - since there may be multiple producers
       // sending to the queue
       MessageReference ref = messageQueue.removeReferenceWithID(messageID);
@@ -357,17 +417,17 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          throw new IllegalStateException("Cannot find ref when replicating delivery " + messageID);
       }
-                  
-      //We call doHandle rather than handle, since we don't want to check available credits
-      //This is because delivery and receive credits can be processed in different order on live
-      //and backup, and otherwise we could have a situation where the delivery is replicated
-      //but the credits haven't arrived yet, so the delivery gets rejected on backup
+
+      // We call doHandle rather than handle, since we don't want to check available credits
+      // This is because delivery and receive credits can be processed in different order on live
+      // and backup, and otherwise we could have a situation where the delivery is replicated
+      // but the credits haven't arrived yet, so the delivery gets rejected on backup
       HandleStatus handled = doHandle(ref);
 
       if (handled != HandleStatus.HANDLED)
       {
          throw new IllegalStateException("Reference was not handled " + ref + " " + handled);
-      }      
+      }
    }
 
    public void failedOver()
@@ -380,12 +440,12 @@ public class ServerConsumerImpl implements ServerConsumer
          }
       }
    }
-   
+
    public void lock()
    {
       lock.lock();
    }
-   
+
    public void unlock()
    {
       lock.unlock();
@@ -397,22 +457,50 @@ public class ServerConsumerImpl implements ServerConsumer
    // Private
    // --------------------------------------------------------------------------------------
 
+   private void doAck(final MessageReference ref) throws Exception
+   {
+      ServerMessage message = ref.getMessage();
+
+      Queue queue = ref.getQueue();
+
+      if (message.decrementRefCount() == 0)
+      {
+         pager.messageDone(message);
+      }
+
+      if (message.isDurable() && queue.isDurable())
+      {
+         int count = message.decrementDurableRefCount();
+
+         if (count == 0)
+         {
+            storageManager.storeDelete(message.getMessageID());
+         }
+         else
+         {
+            storageManager.storeAcknowledge(queue.getPersistenceID(), message.getMessageID());
+         }
+      }
+
+      queue.referenceAcknowledged(ref);
+   }
+   
    private void promptDelivery()
    {
       session.promptDelivery(messageQueue);
    }
-   
+
    private HandleStatus doHandle(final MessageReference ref) throws Exception
-   {      
+   {
       if (availableCredits != null && availableCredits.get() <= 0)
       {
          return HandleStatus.BUSY;
       }
-      
+
       lock.lock();
-      
+
       try
-      {      
+      {
          // If the consumer is stopped then we don't accept the message, it
          // should go back into the
          // queue for delivery later.
@@ -420,7 +508,7 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             return HandleStatus.BUSY;
          }
-         
+
          final ServerMessage message = ref.getMessage();
 
          if (filter != null && !filter.match(message))
@@ -435,8 +523,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
          final SessionReceiveMessage packet = new SessionReceiveMessage(id, message, ref.getDeliveryCount() + 1);
 
-         DelayedResult result =
-            channel.replicatePacket(new SessionReplicateDeliveryMessage(id, message.getMessageID()));
+         DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id, message.getMessageID()));
 
          if (!browseOnly)
          {

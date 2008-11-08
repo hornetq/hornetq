@@ -119,11 +119,15 @@ public class JBossConnection implements
    private final FailureListener listener = new JMSFailureListener();
    
    private final Version thisVersion;
+   
+   private final int dupsOKBatchSize;
+   
+   private final int transactionBatchSize;
                
    // Constructors ---------------------------------------------------------------------------------
 
    public JBossConnection(final String username, final String password, final int connectionType,
-                          final String clientID, final int dupsOKBatchSize,                       
+                          final String clientID, final int dupsOKBatchSize, final int transactionBatchSize,                     
                           final ClientSessionFactory sessionFactory)
    { 
       this.username = username;
@@ -139,6 +143,10 @@ public class JBossConnection implements
       uid = UUIDGenerator.getInstance().generateSimpleStringUUID();    
       
       thisVersion = VersionLoader.getVersion();
+      
+      this.dupsOKBatchSize = dupsOKBatchSize;
+      
+      this.transactionBatchSize = transactionBatchSize;
    }
 
    // Connection implementation --------------------------------------------------------------------
@@ -257,7 +265,7 @@ public class JBossConnection implements
             try
             {
                session =
-                  sessionFactory.createSession(username, password, false, true, true, false);
+                  sessionFactory.createSession(username, password, false, true, true, false, 0);
                          
                //Remove any temporary queues and addresses
                
@@ -490,20 +498,20 @@ public class JBossConnection implements
       	if (acknowledgeMode == Session.SESSION_TRANSACTED)
       	{
       	   session =
-               sessionFactory.createSession(username, password, isXA, false, false, cacheProducers);
+               sessionFactory.createSession(username, password, isXA, false, false, cacheProducers, transactionBatchSize);
       	}
       	else if (acknowledgeMode == Session.AUTO_ACKNOWLEDGE)
          {
-      	   session = sessionFactory.createSession(username, password, isXA, true, true, cacheProducers);
+      	   session = sessionFactory.createSession(username, password, isXA, true, true, cacheProducers, 0);
          }
          else if (acknowledgeMode == Session.DUPS_OK_ACKNOWLEDGE)
          {
-            session = sessionFactory.createSession(username, password, isXA, true, true, cacheProducers);
+            session = sessionFactory.createSession(username, password, isXA, true, true, cacheProducers, dupsOKBatchSize);
          }
          else if (acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
          {
             session =
-               sessionFactory.createSession(username, password, isXA, true, false, cacheProducers);
+               sessionFactory.createSession(username, password, isXA, true, false, cacheProducers, transactionBatchSize);
          }         
          else
          {

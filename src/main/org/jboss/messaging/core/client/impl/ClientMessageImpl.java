@@ -39,9 +39,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
 {
    private int deliveryCount;
    
-   private long consumerID;
-   
-   private ClientSessionInternal session;
+   private ClientConsumerInternal consumer;
            
    /*
     * Constructor for when reading from network
@@ -77,11 +75,9 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
    {      
    }
    
-   public void onReceipt(final ClientSessionInternal session, final long consumerID)
+   public void onReceipt(final ClientConsumerInternal consumer)
    {
-      this.session = session;
-      
-      this.consumerID = consumerID;
+      this.consumer = consumer;
    }
    
    public void setDeliveryCount(final int deliveryCount)
@@ -96,9 +92,9 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
    
    public void acknowledge() throws MessagingException
    {
-      if (session != null)
+      if (consumer != null)
       {
-         session.acknowledge(consumerID, messageID);
+         consumer.acknowledge(this);
       }
    }
 }

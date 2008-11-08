@@ -76,21 +76,23 @@ public class ReplicateConnectionFailureTest extends TestCase
    public void testFailConnection() throws Exception
    {
       final long pingPeriod = 500;
-                
+
+      // TODO - use the defaults!!
       ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                       new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                  backupParams),
                                                                       pingPeriod,
-                                                                      5000,
-                                                                      1024 * 1024,
-                                                                      -1,
-                                                                      1024 * 1024,
-                                                                      -1,
-                                                                      false,
-                                                                      false,
-                                                                      false,
-                                                                      false,
-                                                                      8);
+                                                                      ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                                                      ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                                      ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                                                      ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                                                                      ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                                                      ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                                                      ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                                                      ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                                                      ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP_ID,
+                                                                      ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
+                                                                      ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
 
       sf1.setSendWindowSize(32 * 1024);
 
@@ -123,19 +125,20 @@ public class ReplicateConnectionFailureTest extends TestCase
       final RemotingConnectionImpl conn1 = (RemotingConnectionImpl)((ClientSessionImpl)session1).getConnection();
 
       conn1.stopPingingAfterOne();
-      
+
       Thread.sleep(3 * pingPeriod);
-      
+
       assertEquals(0, liveService.getServer().getRemotingService().getConnections().size());
 
-      //Should be one connection left to the backup - the other one (replicating connection) should be automatically closed
+      // Should be one connection left to the backup - the other one (replicating connection) should be automatically
+      // closed
       assertEquals(1, backupService.getServer().getRemotingService().getConnections().size());
 
       session1.close();
-      
+
       assertEquals(0, liveService.getServer().getRemotingService().getConnections().size());
 
-      assertEquals(0, backupService.getServer().getRemotingService().getConnections().size());      
+      assertEquals(0, backupService.getServer().getRemotingService().getConnections().size());
    }
 
    // Package protected ---------------------------------------------

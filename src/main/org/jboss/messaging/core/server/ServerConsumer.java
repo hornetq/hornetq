@@ -25,6 +25,7 @@ package org.jboss.messaging.core.server;
 import java.util.List;
 
 import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.transaction.Transaction;
 
 /**
  * 
@@ -49,7 +50,9 @@ public interface ServerConsumer extends Consumer
 	
 	Queue getQueue();
 
-	MessageReference getReference(long messageID) throws Exception;
+	MessageReference getExpired(long messageID) throws Exception;
+	
+	void acknowledge(boolean autoCommitAcks, Transaction tx, long messageID) throws Exception;
 	
 	void failedOver();
 	

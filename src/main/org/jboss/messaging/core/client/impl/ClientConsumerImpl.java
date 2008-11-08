@@ -56,6 +56,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private final Executor sessionExecutor;
 
    private final int clientWindowSize;
+   
+   private final int ackBatchSize;
 
    private final Queue<ClientMessage> buffer = new LinkedList<ClientMessage>();
 
@@ -72,13 +74,18 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private volatile int creditsToSend;
 
    private volatile Exception lastException;
-
+   
+   private volatile int ackBytes;
+   
+   private volatile ClientMessage lastAckedMessage;
+   
    // Constructors
    // ---------------------------------------------------------------------------------
 
    public ClientConsumerImpl(final ClientSessionInternal session,
                              final long id,
-                             final int clientWindowSize,                          
+                             final int clientWindowSize,     
+                             final int ackBatchSize,
                              final Executor executor,
                              final Channel channel)
    {
@@ -91,6 +98,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       sessionExecutor = executor;
 
       this.clientWindowSize = clientWindowSize;
+      
+      this.ackBatchSize = ackBatchSize;
    }
 
    // ClientConsumer implementation
@@ -274,7 +283,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          return;
       }
 
-      message.onReceipt(session, id);
+      message.onReceipt(this);
 
       if (handler != null)
       {
@@ -317,8 +326,30 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       return creditsToSend;
    }
-
-   // Public
+   
+   public void acknowledge(final ClientMessage message) throws MessagingException
+   {
+      ackBytes += message.getEncodeSize();
+      
+      if (ackBytes >= ackBatchSize)
+      {      
+         doAck(message);
+      }
+      else
+      {
+         lastAckedMessage = message;
+      }
+   }
+   
+   public void flushAcks() throws MessagingException
+   {
+      if (lastAckedMessage != null)
+      {         
+         doAck(lastAckedMessage);
+      }
+   }
+   
+   // Public7
    // ---------------------------------------------------------------------------------------
 
    // Package protected
@@ -454,6 +485,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             receiverThread = null;
          }
 
+         flushAcks();
+         
          if (sendCloseMessage)
          {
             channel.sendBlocking(new SessionConsumerCloseMessage(id));
@@ -464,6 +497,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          session.removeConsumer(this);
       }
    }
+   
+   private void doAck(final ClientMessage message) throws MessagingException
+   {
+      ackBytes = 0;
+      
+      lastAckedMessage = null;
+      
+      session.acknowledge(id, message.getMessageID());
+   }
+   
 
    // Inner classes
    // --------------------------------------------------------------------------------

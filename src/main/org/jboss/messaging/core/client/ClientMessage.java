@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.client;
 
-import org.jboss.messaging.core.client.impl.ClientSessionInternal;
+import org.jboss.messaging.core.client.impl.ClientConsumerInternal;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.Message;
 
@@ -41,7 +41,7 @@ public interface ClientMessage extends Message
    
    void setDeliveryCount(int deliveryCount);
    
-   void onReceipt(ClientSessionInternal session, long consumerID);
+   void onReceipt(ClientConsumerInternal consumer);
    
    void acknowledge() throws MessagingException;
 }

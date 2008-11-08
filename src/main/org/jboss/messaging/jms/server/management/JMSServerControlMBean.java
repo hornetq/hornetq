@@ -75,8 +75,10 @@ public interface JMSServerControlMBean
                                 long callTimeout,
                                 @Parameter(name = "clientID", desc = "ClientID for created connections")
                                 String clientID,
-                                @Parameter(name = "dupsOKBatchSize", desc = "Size of the batch when using DUPS_OK")
+                                @Parameter(name = "dupsOKBatchSize", desc = "Size of the batch in bytes when using DUPS_OK")
                                 int dupsOKBatchSize,
+                                @Parameter(name = "transactionBatchSize", desc = "Size of the batch in bytes when using transacted session")
+                                int transactionBatchSize,
                                 @Parameter(name = "consumerWindowSize", desc = "Consumer's window size")
                                 int consumerWindowSize,
                                 @Parameter(name = "consumerMaxRate", desc = "Consumer's max rate")

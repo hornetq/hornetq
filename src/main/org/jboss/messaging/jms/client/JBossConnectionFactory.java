@@ -12,6 +12,8 @@
 
 package org.jboss.messaging.jms.client;
 
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+
 import java.io.Serializable;
 
 import javax.jms.Connection;
@@ -70,8 +72,10 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    private final int dupsOKBatchSize;
 
+   private final int transactionBatchSize;
+
    private final long pingPeriod;
-   
+
    private final long callTimeout;
 
    private final int consumerWindowSize;
@@ -89,17 +93,18 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    private final boolean blockOnPersistentSend;
 
    private final boolean autoGroupId;
-   
+
    private final int maxConnections;
 
    // Constructors ---------------------------------------------------------------------------------
 
    public JBossConnectionFactory(final TransportConfiguration connectorConfig,
                                  final TransportConfiguration backupConnectorConfig,
-                                 final long pingPeriod,                         
+                                 final long pingPeriod,
                                  final long callTimeout,
                                  final String clientID,
                                  final int dupsOKBatchSize,
+                                 final int transactionBatchSize,
                                  final int consumerWindowSize,
                                  final int consumerMaxRate,
                                  final int sendWindowSize,
@@ -114,6 +119,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.backupConnectorConfig = backupConnectorConfig;
       this.clientID = clientID;
       this.dupsOKBatchSize = dupsOKBatchSize;
+      this.transactionBatchSize = transactionBatchSize;
       this.pingPeriod = pingPeriod;
       this.callTimeout = callTimeout;
       this.consumerMaxRate = consumerMaxRate;
@@ -220,7 +226,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    {
       return pingPeriod;
    }
-   
+
    public long getCallTimeout()
    {
       return callTimeout;
@@ -280,17 +286,16 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    // Protected ------------------------------------------------------------------------------------
 
-   protected JBossConnection createConnectionInternal(final String username,
-                                                      final String password,
-                                                      final boolean isXA,
-                                                      final int type) throws JMSException
-   {
+   protected synchronized JBossConnection createConnectionInternal(final String username,
+                                                                   final String password,
+                                                                   final boolean isXA,
+                                                                   final int type) throws JMSException
+   {     
       if (sessionFactory == null)
       {
-         // It doesn't matter if more than one is created due to a race
          sessionFactory = new ClientSessionFactoryImpl(connectorConfig,
                                                        backupConnectorConfig,
-                                                       pingPeriod,                                                 
+                                                       pingPeriod,
                                                        callTimeout,
                                                        consumerWindowSize,
                                                        consumerMaxRate,
@@ -300,7 +305,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                        blockOnNonPersistentSend,
                                                        blockOnPersistentSend,
                                                        autoGroupId,
-                                                       maxConnections);
+                                                       maxConnections,
+                                                       DEFAULT_ACK_BATCH_SIZE);
 
       }
 
@@ -312,7 +318,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
          try
          {
-            sess = sessionFactory.createSession(username, password, false, false, false, false);
+            sess = sessionFactory.createSession(username, password, false, false, false, false, 0);
          }
          catch (MessagingException e)
          {
@@ -333,7 +339,13 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
          }
       }
 
-      return new JBossConnection(username, password, type, clientID, dupsOKBatchSize, sessionFactory);
+      return new JBossConnection(username,
+                                 password,
+                                 type,
+                                 clientID,
+                                 dupsOKBatchSize,
+                                 transactionBatchSize,
+                                 sessionFactory);
    }
 
    // Private --------------------------------------------------------------------------------------

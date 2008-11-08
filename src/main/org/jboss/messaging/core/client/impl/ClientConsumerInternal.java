@@ -24,6 +24,7 @@ package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.exception.MessagingException;
 
 /**
  * 
@@ -47,4 +48,8 @@ public interface ClientConsumerInternal extends ClientConsumer
    int getCreditsToSend();
 
    void cleanUp() throws Exception;
+   
+   void acknowledge(ClientMessage message) throws MessagingException;
+   
+   void flushAcks() throws MessagingException;
 }

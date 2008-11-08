@@ -42,6 +42,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
 import org.jboss.kernel.spi.deployment.KernelDeployment;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -534,16 +535,18 @@ public class LocalTestServer implements Server, Runnable
                                        boolean blockOnAcknowledge) throws Exception
    {
       log.info("deploying connection factory with name: " + objectName + " and dupsok: " + dupsOkBatchSize);
+                  
       getJMSServerManager().createConnectionFactory(objectName,
                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"),
                                                     null,
-                                                    5000,                                                    
-                                                    5000,
+                                                    ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,                                                       
+                                                    ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                                     clientId,
-                                                    dupsOkBatchSize,
+                                                    dupsOkBatchSize,                                               
+                                                    ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
                                                     prefetchSize,
                                                     -1,
-                                                    1024 * 1024,
+                                                    ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
                                                     -1,
                                                     blockOnAcknowledge,
                                                     true,

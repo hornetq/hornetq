@@ -65,7 +65,7 @@ public class JBossTemporaryTopicTest extends TestCase
    {
       String topicName = randomString();
       JBossConnection connection = new JBossConnection("username", "password", 
-            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1, EasyMock.createMock(ClientSessionFactory.class));
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, 0, 0, EasyMock.createMock(ClientSessionFactory.class));
 
       JBossSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, EasyMock.createMock(ClientSession.class),
@@ -90,7 +90,7 @@ public class JBossTemporaryTopicTest extends TestCase
       replay(clientSession);
 
       JBossConnection connection = new JBossConnection("username", "password",
-            JBossConnection.TYPE_TOPIC_CONNECTION, null, -1, EasyMock.createMock(ClientSessionFactory.class));
+            JBossConnection.TYPE_TOPIC_CONNECTION, null, 0, 0, EasyMock.createMock(ClientSessionFactory.class));
       JBossSession session = new JBossSession(connection, false, false,
             Session.AUTO_ACKNOWLEDGE, clientSession,
             JBossSession.TYPE_TOPIC_SESSION);

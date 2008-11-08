@@ -118,7 +118,7 @@ public class NIOSequentialFile implements SequentialFile
    }
 
    public void close() throws Exception
-   {
+   {      
       channel.close();
 
       rfile.close();

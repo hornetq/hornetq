@@ -40,6 +40,7 @@ import javax.jms.TextMessage;
 import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
 
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
@@ -89,19 +90,20 @@ public class CTSMiscellaneousTest extends JBMServerTestCase
          getJmsServerManager().createConnectionFactory("StrictTCKConnectionFactory",
                                                        new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"),
                                                        null,
-                                                       5000,                                                       
-                                                       5000,
+                                                       ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,                                                       
+                                                       ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                                        null,
-                                                       1000,
-                                                       1024 * 1024,
-                                                       -1,
-                                                       1024 * 1024,
-                                                       -1,
+                                                       ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                                       ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                                       ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                       ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                                       ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                                                       ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                                                        true,
                                                        true,
                                                        true,
-                                                       false,
-                                                       8,
+                                                       ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP_ID,
+                                                       ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
                                                        "/StrictTCKConnectionFactory");
 
          cf = (JBossConnectionFactory)getInitialContext().lookup("/StrictTCKConnectionFactory");

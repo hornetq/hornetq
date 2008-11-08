@@ -37,7 +37,6 @@ import javax.transaction.xa.Xid;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
@@ -137,8 +136,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private final Map<SimpleString, ClientProducerInternal> producerCache;
 
-   private final ClientSessionFactory connectionFactory;
-
    private volatile boolean closed;
 
    private final boolean autoCommitAcks;
@@ -148,11 +145,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final boolean blockOnAcknowledge;
 
    private final boolean autoGroupId;
+   
+   private final int ackBatchSize;
 
    private final Channel channel;
 
    private final int version;
-
+   
    // For testing only
    private boolean forceNotSameRM;
 
@@ -169,10 +168,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final boolean autoCommitSends,
                             final boolean autoCommitAcks,
                             final boolean blockOnAcknowledge,
-                            final boolean autoGroupId,
+                            final boolean autoGroupId,                     
+                            final int ackBatchSize,
                             final RemotingConnection remotingConnection,
                             final RemotingConnection backupConnection,
-                            final ClientSessionFactory connectionFactory,
                             final int version,
                             final Channel channel) throws MessagingException
    {
@@ -183,8 +182,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       this.remotingConnection = remotingConnection;
 
       this.backupConnection = backupConnection;
-
-      this.connectionFactory = connectionFactory;
 
       this.cacheProducers = cacheProducers;
 
@@ -208,10 +205,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       this.blockOnAcknowledge = blockOnAcknowledge;
 
       this.autoGroupId = autoGroupId;
-
+      
       this.channel = channel;
 
       this.version = version;
+      
+      this.ackBatchSize = ackBatchSize;
    }
 
    // ClientSession implementation
@@ -291,8 +290,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       return createConsumer(queueName,
                             filterString,                        
-                            connectionFactory.getConsumerWindowSize(),
-                            connectionFactory.getConsumerMaxRate(),
+                            sessionFactory.getConsumerWindowSize(),
+                            sessionFactory.getConsumerMaxRate(),
                             false);
    }
 
@@ -302,8 +301,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return createConsumer(queueName,
                             filterString,                           
-                            connectionFactory.getConsumerWindowSize(),
-                            connectionFactory.getConsumerMaxRate(),
+                            sessionFactory.getConsumerWindowSize(),
+                            sessionFactory.getConsumerMaxRate(),
                             browseOnly);
    }
 
@@ -362,7 +361,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       ClientConsumerInternal consumer = new ClientConsumerImpl(this,
                                                                consumerID,
-                                                               clientWindowSize,                                                              
+                                                               clientWindowSize, 
+                                                               ackBatchSize,
                                                                executor,
                                                                channel);
 
@@ -381,15 +381,15 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkClosed();
 
-      return createProducer(address, connectionFactory.getProducerMaxRate());
+      return createProducer(address, sessionFactory.getProducerMaxRate());
    }
 
    public ClientProducer createProducer(final SimpleString address, final int maxRate) throws MessagingException
    {
       return createProducer(address,
                             maxRate,
-                            connectionFactory.isBlockOnNonPersistentSend(),
-                            connectionFactory.isBlockOnPersistentSend());
+                            sessionFactory.isBlockOnNonPersistentSend(),
+                            sessionFactory.isBlockOnPersistentSend());
    }
 
    public ClientProducer createProducer(final SimpleString address,
@@ -443,6 +443,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void commit() throws MessagingException
    {
       checkClosed();
+      
+      flushAcks();
 
       channel.sendBlocking(new PacketImpl(PacketImpl.SESS_COMMIT));
    }
@@ -450,6 +452,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void rollback() throws MessagingException
    {
       checkClosed();
+      
+      flushAcks();
 
       // We do a "JMS style" rollback where the session is stopped, and the buffer is cancelled back
       // first before rolling back
@@ -803,6 +807,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          {
             throw new XAException(XAException.XAER_INVAL);
          }
+         
+         flushAcks();
 
          SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
 
@@ -934,17 +940,19 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void rollback(final Xid xid) throws XAException
    {
       checkXA();
-
-      // We need to make sure we don't get any inflight messages
-      for (ClientConsumerInternal consumer : consumers.values())
-      {
-         consumer.clear();
-      }
-
-      SessionXARollbackMessage packet = new SessionXARollbackMessage(xid);
-
+      
       try
-      {
+      {               
+         flushAcks();
+                      
+         // We need to make sure we don't get any inflight messages
+         for (ClientConsumerInternal consumer : consumers.values())
+         {
+            consumer.clear();
+         }
+   
+         SessionXARollbackMessage packet = new SessionXARollbackMessage(xid);
+     
          SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
 
          if (response.isError())
@@ -1129,6 +1137,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       for (ClientProducer producer : producersClone)
       {
          producer.close();
+      }
+   }
+   
+   private void flushAcks() throws MessagingException
+   {
+      for (ClientConsumerInternal consumer: consumers.values())
+      {
+         consumer.flushAcks();
       }
    }
 }

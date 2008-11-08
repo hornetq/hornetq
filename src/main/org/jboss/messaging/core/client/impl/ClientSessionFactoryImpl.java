@@ -75,8 +75,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    
    public static final long DEFAULT_CALL_TIMEOUT = 30000;
       
-
    public static final int DEFAULT_MAX_CONNECTIONS = 8;
+   
+   public static final int DEFAULT_ACK_BATCH_SIZE = 1024 * 1024;
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -117,6 +118,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    private volatile boolean blockOnNonPersistentSend;
 
    private volatile boolean autoGroupId;
+   
+   private volatile int ackBatchSize;
 
    private final Set<ClientSessionInternal> sessions = new HashSet<ClientSessionInternal>();
    
@@ -150,7 +153,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                    final boolean blockOnNonPersistentSend,
                                    final boolean blockOnPersistentSend,
                                    final boolean autoGroupId,
-                                   final int maxConnections)
+                                   final int maxConnections,
+                                   final int ackBatchSize)
    {
       connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
 
@@ -192,6 +196,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       this.blockOnPersistentSend = blockOnPersistentSend;
       this.autoGroupId = autoGroupId;
       this.maxConnections = maxConnections;
+      this.ackBatchSize = ackBatchSize;
    }
 
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
@@ -209,7 +214,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
            DEFAULT_BLOCK_ON_PERSISTENT_SEND,
            DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
            DEFAULT_AUTO_GROUP_ID,
-           DEFAULT_MAX_CONNECTIONS);
+           DEFAULT_MAX_CONNECTIONS,
+           DEFAULT_ACK_BATCH_SIZE);
 
    }
 
@@ -229,9 +235,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                       final boolean xa,
                                       final boolean autoCommitSends,
                                       final boolean autoCommitAcks,
-                                      final boolean cacheProducers) throws MessagingException
+                                      final boolean cacheProducers,
+                                      final int ackBatchSize) throws MessagingException
    {
-      return createSessionInternal(username, password, xa, autoCommitSends, autoCommitAcks, cacheProducers);
+      return createSessionInternal(username, password, xa, autoCommitSends, autoCommitAcks, cacheProducers, ackBatchSize);
    }
 
    public ClientSession createSession(final boolean xa,
@@ -239,7 +246,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                       final boolean autoCommitAcks,
                                       final boolean cacheProducers) throws MessagingException
    {
-      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, cacheProducers);
+      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, cacheProducers, ackBatchSize);
    }
 
    public int getConsumerWindowSize()
@@ -320,6 +327,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    public void setAutoGroupId(boolean autoGroupId)
    {
       this.autoGroupId = autoGroupId;
+   }
+   
+   public int getAckBatchSize()
+   {
+      return ackBatchSize;
+   }
+   
+   public void setAckBatchSize(int ackBatchSize)
+   {
+      this.ackBatchSize = ackBatchSize;
    }
 
    public ConnectorFactory getConnectorFactory()
@@ -515,7 +532,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                final boolean xa,
                                                final boolean autoCommitSends,
                                                final boolean autoCommitAcks,
-                                               final boolean cacheProducers) throws MessagingException
+                                               final boolean cacheProducers,
+                                               final int ackBatchSize) throws MessagingException
    {
       synchronized (createSessionLock)
       {
@@ -601,9 +619,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                                         autoCommitAcks,
                                                                         blockOnAcknowledge,
                                                                         autoGroupId,
+                                                                        ackBatchSize,
                                                                         connection,
-                                                                        backupConnection,
-                                                                        this,
+                                                                        backupConnection,                                                                       
                                                                         response.getServerVersion(),
                                                                         sessionChannel);
                            

@@ -43,7 +43,8 @@ public interface ClientSessionFactory
                                boolean xa,
                                boolean autoCommitSends,
                                boolean autoCommitAcks,
-                               boolean cacheProducers) throws MessagingException;
+                               boolean cacheProducers,
+                               int ackBatchSize) throws MessagingException;
 
    void setConsumerWindowSize(int size);
 
@@ -76,6 +77,10 @@ public interface ClientSessionFactory
    boolean isAutoGroupID();
 
    void setAutoGroupId(boolean autoGroupId);
+   
+   int getAckBatchSize();
+   
+   void setAckBatchSize(int ackBatchSize);
 
    ConnectorFactory getConnectorFactory();
 
