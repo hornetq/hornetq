@@ -75,7 +75,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false, false);
 
@@ -120,7 +120,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false, false);
 
@@ -166,7 +166,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false, false);
 
@@ -202,7 +202,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false, false);
 
@@ -239,7 +239,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false, false);
 
@@ -283,7 +283,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false, false);
 
@@ -316,7 +316,7 @@ public class ConsumerTest extends UnitTestCase
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false, false);
 
@@ -351,7 +351,7 @@ public class ConsumerTest extends UnitTestCase
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false, false);
 

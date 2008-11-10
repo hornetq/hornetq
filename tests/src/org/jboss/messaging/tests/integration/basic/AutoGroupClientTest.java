@@ -36,6 +36,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributionPolicy;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
@@ -48,6 +49,8 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class AutoGroupClientTest extends TestCase
 {
+   private static final Logger log = Logger.getLogger(AutoGroupClientTest.class);
+
    public void testGroupIdAutomaticallySet() throws Exception
    {
       final SimpleString QUEUE = new SimpleString("testGroupQueue");
@@ -67,7 +70,7 @@ public class AutoGroupClientTest extends TestCase
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
       sf.setAutoGroup(true);
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false, false);
 
@@ -78,7 +81,10 @@ public class AutoGroupClientTest extends TestCase
       MyMessageHandler myMessageHandler = new MyMessageHandler(latch);
       MyMessageHandler myMessageHandler2 = new MyMessageHandler(latch);
 
+      log.info("creating consuimer");
+      
       ClientConsumer consumer = session.createConsumer(QUEUE);
+      log.info("created consumer");
       consumer.setMessageHandler(myMessageHandler);
       ClientConsumer consumer2 = session.createConsumer(QUEUE);
       consumer2.setMessageHandler(myMessageHandler2);
@@ -125,7 +131,7 @@ public class AutoGroupClientTest extends TestCase
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
       sf.setAutoGroup(true);
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false, false);
 
@@ -193,7 +199,7 @@ public class AutoGroupClientTest extends TestCase
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false, false);
       

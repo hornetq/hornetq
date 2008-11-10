@@ -48,7 +48,7 @@ public class ManagementClient
    {
       SimpleString replytoQueue = new SimpleString("replyto.adminQueue");
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));
-      final ClientSession clientSession = sessionFactory.createSession(false, true, true, false);
+      final ClientSession clientSession = sessionFactory.createSession(false, true, true);
       SimpleString queue = new SimpleString("queuejms.testQueue");
 
       sendMessages(clientSession, queue);

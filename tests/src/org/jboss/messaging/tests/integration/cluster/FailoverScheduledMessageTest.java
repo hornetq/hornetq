@@ -94,7 +94,7 @@ public class FailoverScheduledMessageTest extends TestCase
       
       sf1.setSendWindowSize(32 * 1024);
   
-      ClientSession session1 = sf1.createSession(false, true, true, false);
+      ClientSession session1 = sf1.createSession(false, true, true);
 
       session1.createQueue(ADDRESS, ADDRESS, null, false, false);
       
@@ -166,7 +166,7 @@ public class FailoverScheduledMessageTest extends TestCase
       session1.close();
       
       //Make sure no more messages
-      ClientSession session2 = sf1.createSession(false, true, true, false);
+      ClientSession session2 = sf1.createSession(false, true, true);
       
       session2.start();
       

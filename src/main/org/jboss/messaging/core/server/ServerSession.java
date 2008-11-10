@@ -34,7 +34,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
@@ -67,13 +66,9 @@ public interface ServerSession
 
    void removeConsumer(ServerConsumer consumer) throws Exception;
 
-   void removeProducer(ServerProducer producer) throws Exception;
-
    void close() throws Exception;
    
    void promptDelivery(Queue queue);
-
-   void send(ServerMessage msg) throws Exception;
 
    void handleAcknowledge(final SessionAcknowledgeMessage packet);
    
@@ -121,19 +116,15 @@ public interface ServerSession
 
    void handleCreateConsumer(SessionCreateConsumerMessage packet);
 
-   void handleCreateProducer(Packet packet);
-
    void handleExecuteQueueQuery(SessionQueueQueryMessage packet);
 
    void handleExecuteBindingQuery(SessionBindingQueryMessage packet);
 
    void handleCloseConsumer(SessionConsumerCloseMessage packet);
 
-   void handleCloseProducer(SessionProducerCloseMessage packet);
-
    void handleReceiveConsumerCredits(SessionConsumerFlowCreditMessage packet);
 
-   void handleSendProducerMessage(SessionSendMessage packet);
+   void handleSend(SessionSendMessage packet);
 
    void handleFailedOver(Packet packet);
    

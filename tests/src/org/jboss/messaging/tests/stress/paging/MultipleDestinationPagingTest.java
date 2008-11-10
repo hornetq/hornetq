@@ -85,8 +85,7 @@ public class MultipleDestinationPagingTest extends IntegrationTestBase
 
       try
       {
-
-         session = factory.createSession(false, false, false, false);
+         session = factory.createSession(false, false, false);
 
          SimpleString address = new SimpleString("page-adr");
          SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };

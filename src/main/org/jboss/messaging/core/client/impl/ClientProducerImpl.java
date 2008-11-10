@@ -18,7 +18,6 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiter;
@@ -44,8 +43,6 @@ public class ClientProducerImpl implements ClientProducerInternal
 
    private final SimpleString address;
 
-   private final long id;
-
    private final ClientSessionInternal session;
 
    private final Channel channel;
@@ -66,8 +63,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientProducerImpl(final ClientSessionInternal session,
-                             final long id,
+   public ClientProducerImpl(final ClientSessionInternal session,                           
                              final SimpleString address,
                              final TokenBucketLimiter rateLimiter,
                              final boolean blockOnNonPersistentSend,
@@ -78,9 +74,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       this.channel = channel;
 
       this.session = session;
-
-      this.id = id;
-
+      
       this.address = address;
 
       this.rateLimiter = rateLimiter;
@@ -137,14 +131,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          return;
       }
 
-      try
-      {
-         channel.sendBlocking(new SessionProducerCloseMessage(id));
-      }
-      finally
-      {
-         doCleanup();
-      }
+      doCleanup();      
    }
 
    public void cleanUp()
@@ -175,13 +162,6 @@ public class ClientProducerImpl implements ClientProducerInternal
    public int getMaxRate()
    {
       return rateLimiter == null ? -1 : rateLimiter.getRate();
-   }
-
-   // ClientProducerInternal implementation --------------------------------------------------------
-
-   public long getID()
-   {
-      return id;
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -224,7 +204,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
       
-      SessionSendMessage message = new SessionSendMessage(id, msg, sendBlocking);
+      SessionSendMessage message = new SessionSendMessage(msg, sendBlocking);
 
       if (sendBlocking)
       {

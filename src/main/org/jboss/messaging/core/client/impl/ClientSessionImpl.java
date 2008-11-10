@@ -21,9 +21,6 @@
  */
 package org.jboss.messaging.core.client.impl;
 
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEPRODUCER;
-
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -76,6 +73,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMess
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.JBMThreadFactory;
@@ -120,19 +118,15 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private final boolean xa;
 
-   private final boolean cacheProducers;
-
    private final Executor executor;
 
    private volatile RemotingConnection remotingConnection;
 
    private volatile RemotingConnection backupConnection;
 
-   private final Map<Long, ClientProducerInternal> producers = new ConcurrentHashMap<Long, ClientProducerInternal>();
+   private final Set<ClientProducerInternal> producers = new ConcurrentHashSet<ClientProducerInternal>();
 
    private final Map<Long, ClientConsumerInternal> consumers = new ConcurrentHashMap<Long, ClientConsumerInternal>();
-
-   private final Map<SimpleString, ClientProducerInternal> producerCache;
 
    private volatile boolean closed;
 
@@ -162,7 +156,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public ClientSessionImpl(final ClientSessionFactoryInternal sessionFactory,
                             final String name,
                             final boolean xa,
-                            final boolean cacheProducers,
                             final boolean autoCommitSends,
                             final boolean autoCommitAcks,
                             final boolean blockOnAcknowledge,
@@ -181,20 +174,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       this.backupConnection = backupConnection;
 
-      this.cacheProducers = cacheProducers;
-
       executor = executorFactory.getExecutor();
 
       this.xa = xa;
-
-      if (cacheProducers)
-      {
-         producerCache = new HashMap<SimpleString, ClientProducerInternal>();
-      }
-      else
-      {
-         producerCache = null;
-      }
 
       this.autoCommitAcks = autoCommitAcks;
 
@@ -319,16 +301,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkClosed();
 
-      SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(queueName,
-                                                                              filterString,                                                                    
-                                                                              browseOnly);
+      SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(queueName, filterString, browseOnly);
 
       channel.sendBlocking(request);
 
       // The actual windows size that gets used is determined by the user since
       // could be overridden on the queue settings
       // The value we send is just a hint
-      
+
       int clientWindowSize;
       if (windowSize == -1)
       {
@@ -393,34 +373,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkClosed();
 
-      ClientProducerInternal producer = null;
-
-      if (cacheProducers)
-      {
-         producer = producerCache.remove(address);
-      }
-
-      if (producer == null)
-      {
-         Packet request = new PacketImpl(SESS_CREATEPRODUCER);
-
-         channel.sendBlocking(request);
-
-         // maxRate and windowSize can be overridden by the server
-
-         // If the producer is not auto-commit sends then messages are never
-         // sent blocking - there is no point
-         // since commit, prepare or rollback will flush any messages sent.
-
-         producer = new ClientProducerImpl(this,
-                                           idGenerator.generateID(),
-                                           address,
-                                           maxRate == -1 ? null : new TokenBucketLimiterImpl(maxRate, false),
-                                           autoCommitSends && blockOnNonPersistentSend,
-                                           autoCommitSends && blockOnPersistentSend,
-                                           autoGroup,
-                                           channel);
-      }
+      ClientProducerInternal producer = new ClientProducerImpl(this,
+                                                               address,
+                                                               maxRate == -1 ? null
+                                                                            : new TokenBucketLimiterImpl(maxRate, false),
+                                                               autoCommitSends && blockOnNonPersistentSend,
+                                                               autoCommitSends && blockOnPersistentSend,
+                                                               autoGroup,
+                                                               channel);
 
       addProducer(producer);
 
@@ -518,11 +478,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return blockOnAcknowledge;
    }
 
-   public boolean isCacheProducers()
-   {
-      return cacheProducers;
-   }
-
    public boolean isXA()
    {
       return xa;
@@ -608,7 +563,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void addProducer(final ClientProducerInternal producer)
    {
-      producers.put(producer.getID(), producer);
+      producers.add(producer);
    }
 
    public void removeConsumer(final ClientConsumerInternal consumer) throws MessagingException
@@ -618,27 +573,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void removeProducer(final ClientProducerInternal producer)
    {
-      producers.remove(producer.getID());
-
-      if (cacheProducers && !producerCache.containsKey(producer.getAddress()))
-      {
-         producerCache.put(producer.getAddress(), producer);
-      }
-   }
-
-   public Set<ClientProducerInternal> getProducers()
-   {
-      return new HashSet<ClientProducerInternal>(producers.values());
-   }
-
-   public Set<ClientConsumerInternal> getConsumers()
-   {
-      return new HashSet<ClientConsumerInternal>(consumers.values());
-   }
-
-   public Map<SimpleString, ClientProducerInternal> getProducerCache()
-   {
-      return new HashMap<SimpleString, ClientProducerInternal>(producerCache);
+      producers.remove(producer);
    }
 
    public void handleReceiveMessage(final long consumerID, final ClientMessage message) throws Exception
@@ -1071,11 +1006,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private void doCleanup()
    {
-      if (cacheProducers)
-      {
-         producerCache.clear();
-      }
-
       remotingConnection.removeFailureListener(this);
 
       synchronized (this)
@@ -1097,7 +1027,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          consumer.cleanUp();
       }
 
-      Set<ClientProducerInternal> producersClone = new HashSet<ClientProducerInternal>(producers.values());
+      Set<ClientProducerInternal> producersClone = new HashSet<ClientProducerInternal>(producers);
 
       for (ClientProducerInternal producer : producersClone)
       {
@@ -1114,7 +1044,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          consumer.close();
       }
 
-      Set<ClientProducer> producersClone = new HashSet<ClientProducer>(producers.values());
+      Set<ClientProducer> producersClone = new HashSet<ClientProducer>(producers);
 
       for (ClientProducer producer : producersClone)
       {

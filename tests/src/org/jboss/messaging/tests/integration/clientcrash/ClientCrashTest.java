@@ -107,7 +107,7 @@ public class ClientCrashTest extends TestCase
       Process p = SpawnedVMSupport.spawnVM(CrashClient.class.getName(),
                                            new String[] { Integer.toString(numberOfConnectionsOnTheClient) });
 
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
       session.createQueue(QUEUE, QUEUE, null, false, false);
       ClientConsumer consumer = session.createConsumer(QUEUE);
       ClientProducer producer = session.createProducer(QUEUE);

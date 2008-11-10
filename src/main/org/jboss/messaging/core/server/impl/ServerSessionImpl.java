@@ -59,7 +59,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
@@ -86,7 +85,6 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.server.ServerProducer;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -130,8 +128,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    private volatile RemotingConnection remotingConnection;
 
    private final Map<Long, ServerConsumer> consumers = new ConcurrentHashMap<Long, ServerConsumer>();
-
-   private final Map<Long, ServerProducer> producers = new ConcurrentHashMap<Long, ServerProducer>();
 
    private final Executor executor;
 
@@ -253,14 +249,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
    }
 
-   public void removeProducer(final ServerProducer producer) throws Exception
-   {
-      if (producers.remove(producer.getID()) == null)
-      {
-         throw new IllegalStateException("Cannot find producer with id " + producer.getID() + " to remove");
-      }
-   }
-
    public void close() throws Exception
    {
       rollback();
@@ -273,16 +261,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
 
       consumers.clear();
-
-      Set<ServerProducer> producersClone = new HashSet<ServerProducer>(producers.values());
-
-      for (ServerProducer producer : producersClone)
-      {
-         producer.close();
-      }
-
-      producers.clear();
-
+     
       server.removeSession(name);
    }
 
@@ -290,47 +269,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    {
       queue.deliverAsync(executor);
    }
-
-   public void send(final ServerMessage msg) throws Exception
-   {
-      // check the user has write access to this address.
-      doSecurity(msg);
-      
-      Long scheduledDeliveryTime =  (Long)msg.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
-
-      if (autoCommitSends)
-      {
-         if (!pager.page(msg))
-         {
-            List<MessageReference> refs = postOffice.route(msg);
-            
-            if (msg.getDurableRefCount() != 0)
-            {
-               storageManager.storeMessage(msg);                              
-            }
-
-            for (MessageReference ref : refs)
-            {
-               if (scheduledDeliveryTime != null)
-               {
-                  ref.setScheduledDeliveryTime(scheduledDeliveryTime.longValue());
-                  
-                  if (ref.getMessage().isDurable() && ref.getQueue().isDurable())
-                  {
-                     storageManager.updateScheduledDeliveryTime(ref);
-                  }
-               }
-               
-               ref.getQueue().addLast(ref);
-            }
-         }
-      }
-      else
-      {
-         tx.addMessage(msg);
-      }
-   }
-
    
    public void doHandleCreateConsumer(final SessionCreateConsumerMessage packet)
    {
@@ -395,7 +333,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
          consumers.put(consumer.getID(), consumer);
          
-         response = new NullResponseMessage();
+         response = new NullResponseMessage();                
       }
       catch (Exception e)
       {
@@ -783,67 +721,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       
       channel.confirm(packet);
       
-      channel.send(response);
-   }
-
-   /**
-    * Create a producer for the specified address
-    *
-    * @param address The address to produce too
-    * @param windowSize - the producer window size to use for flow control. Specify -1 to disable flow control
-    *           completely The actual window size used may be less than the specified window size if it is overridden by
-    *           any producer-window-size specified on the queue
-    */
-   public void handleCreateProducer(final Packet packet)
-   {
-      DelayedResult result = channel.replicatePacket(packet);
-      
-      if (result == null)
-      {
-         doHandleCreateProducer(packet);
-      }
-      else
-      {
-         //Don't process until result has come back from backup
-         result.setResultRunner(new Runnable()
-         {
-            public void run()
-            {
-               doHandleCreateProducer(packet);
-            }
-         });
-      }
-   }
-   
-   public void doHandleCreateProducer(final Packet packet)
-   {      
-      Packet response = null;
-
-      try
-      {
-         ServerProducerImpl producer = new ServerProducerImpl(idGenerator.generateID(),
-                                                              this);
-
-         producers.put(producer.getID(), producer);
-
-         response = new NullResponseMessage();
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to create producer", e);
-
-         if (e instanceof MessagingException)
-         {
-            response = new MessagingExceptionMessage((MessagingException)e);
-         }
-         else
-         {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
-         }
-      }
-      
-      channel.confirm(packet);
-
       channel.send(response);
    }
 
@@ -2174,56 +2051,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       consumer.handleClose(packet);      
    }
 
-   public void handleCloseProducer(final SessionProducerCloseMessage packet)
-   {
-      DelayedResult result = channel.replicatePacket(packet);
-      
-      if (result == null)
-      {
-         doHandleCloseProducer(packet);
-      }
-      else
-      {
-         //Don't process until result has come back from backup
-         result.setResultRunner(new Runnable()
-         {
-            public void run()
-            {
-               doHandleCloseProducer(packet);
-            }
-         });
-      }
-   }
-   
-   public void doHandleCloseProducer(final SessionProducerCloseMessage packet)
-   {
-      Packet response = null;
-
-      try
-      {
-         producers.get(packet.getProducerID()).close();
-
-         response = new NullResponseMessage();
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to close producer", e);
-
-         if (e instanceof MessagingException)
-         {
-            response = new MessagingExceptionMessage((MessagingException)e);
-         }
-         else
-         {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
-         }
-      }
-      
-      channel.confirm(packet);
-
-      channel.send(response);
-   }
-
+        
    public void handleReceiveConsumerCredits(final SessionConsumerFlowCreditMessage packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
@@ -2231,6 +2059,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       try
       {
          //Note we don't wait for response before handling this
+                           
          consumers.get(packet.getConsumerID()).receiveCredits(packet.getCredits());
       }
       catch (Exception e)
@@ -2254,7 +2083,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
    }
 
-   public void handleSendProducerMessage(final SessionSendMessage packet)
+   public void handleSend(final SessionSendMessage packet)
    {         
       //With a send we must make sure it is replicated to backup before being processed on live
       //or can end up with delivery being processed on backup before original send
@@ -2317,11 +2146,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          {
             //It's a management message
             
-            doHandleManagementMessage(message);
+            handleManagementMessage(message);
          }
          else
          {         
-            producers.get(packet.getProducerID()).send(message);
+            send(message);
          }
 
          if (packet.isRequiresResponse())
@@ -2354,8 +2183,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
    }
    
-   private void doHandleManagementMessage(final ServerMessage message) throws Exception
+   private void handleManagementMessage(final ServerMessage message) throws Exception
    {
+      doSecurity(message);
+      
       if (message.containsProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS))
       {
          boolean subscribe = (Boolean)message.getProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS);
@@ -2572,33 +2403,45 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       tx = new TransactionImpl(storageManager, postOffice);
    }
 
-//   private void doAck(final MessageReference ref) throws Exception
-//   {
-//      ServerMessage message = ref.getMessage();
-//
-//      Queue queue = ref.getQueue();
-//
-//      if (message.decrementRefCount() == 0)
-//      {
-//         pager.messageDone(message);
-//      }
-//
-//      if (message.isDurable() && queue.isDurable())
-//      {
-//         int count = message.decrementDurableRefCount();
-//
-//         if (count == 0)
-//         {
-//            storageManager.storeDelete(message.getMessageID());
-//         }
-//         else
-//         {
-//            storageManager.storeAcknowledge(queue.getPersistenceID(), message.getMessageID());
-//         }
-//      }
-//
-//      queue.referenceAcknowledged(ref);
-//   }
+   private void send(final ServerMessage msg) throws Exception
+   {
+      // check the user has write access to this address.
+      doSecurity(msg);
+      
+      Long scheduledDeliveryTime =  (Long)msg.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+
+      if (autoCommitSends)
+      {
+         if (!pager.page(msg))
+         {
+            List<MessageReference> refs = postOffice.route(msg);
+            
+            if (msg.getDurableRefCount() != 0)
+            {
+               storageManager.storeMessage(msg);                              
+            }
+
+            for (MessageReference ref : refs)
+            {
+               if (scheduledDeliveryTime != null)
+               {
+                  ref.setScheduledDeliveryTime(scheduledDeliveryTime.longValue());
+                  
+                  if (ref.getMessage().isDurable() && ref.getQueue().isDurable())
+                  {
+                     storageManager.updateScheduledDeliveryTime(ref);
+                  }
+               }
+               
+               ref.getQueue().addLast(ref);
+            }
+         }
+      }
+      else
+      {
+         tx.addMessage(msg);
+      }
+   }
 
    private void doSecurity(final ServerMessage msg) throws Exception
    {

@@ -234,19 +234,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                       final String password,
                                       final boolean xa,
                                       final boolean autoCommitSends,
-                                      final boolean autoCommitAcks,
-                                      final boolean cacheProducers,
+                                      final boolean autoCommitAcks,                        
                                       final int ackBatchSize) throws MessagingException
    {
-      return createSessionInternal(username, password, xa, autoCommitSends, autoCommitAcks, cacheProducers, ackBatchSize);
+      return createSessionInternal(username, password, xa, autoCommitSends, autoCommitAcks, ackBatchSize);
    }
 
    public ClientSession createSession(final boolean xa,
                                       final boolean autoCommitSends,
-                                      final boolean autoCommitAcks,
-                                      final boolean cacheProducers) throws MessagingException
+                                      final boolean autoCommitAcks) throws MessagingException
    {
-      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, cacheProducers, ackBatchSize);
+      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, ackBatchSize);
    }
 
    public int getConsumerWindowSize()
@@ -531,8 +529,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                final String password,
                                                final boolean xa,
                                                final boolean autoCommitSends,
-                                               final boolean autoCommitAcks,
-                                               final boolean cacheProducers,
+                                               final boolean autoCommitAcks,                                             
                                                final int ackBatchSize) throws MessagingException
    {
       synchronized (createSessionLock)
@@ -613,8 +610,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
          
                   ClientSessionInternal session = new ClientSessionImpl(this,
                                                                         name,
-                                                                        xa,
-                                                                        cacheProducers,
+                                                                        xa,                                                                      
                                                                         autoCommitSends,
                                                                         autoCommitAcks,
                                                                         blockOnAcknowledge,

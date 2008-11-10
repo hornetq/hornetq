@@ -84,7 +84,7 @@ public class XaTimeoutTest extends UnitTestCase
       messagingService.start();
       //then we create a client as normal
       sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
-      clientSession = sessionFactory.createSession(true, false, false, false);
+      clientSession = sessionFactory.createSession(true, false, false);
       clientSession.createQueue(atestq, atestq, null, true, true);
       clientProducer = clientSession.createProducer(atestq);
       clientConsumer = clientSession.createConsumer(atestq);
@@ -155,7 +155,7 @@ public class XaTimeoutTest extends UnitTestCase
       ClientMessage m2 = createTextMessage("m2");
       ClientMessage m3 = createTextMessage("m3");
       ClientMessage m4 = createTextMessage("m4");
-      ClientSession clientSession2 = sessionFactory.createSession(false, true, true, false);
+      ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       clientProducer2.send(m1);
       clientProducer2.send(m2);
@@ -193,7 +193,7 @@ public class XaTimeoutTest extends UnitTestCase
       }
       clientSession.setTransactionTimeout(0);
       clientConsumer.close();
-      clientSession2 = sessionFactory.createSession(false, true, true, false);
+      clientSession2 = sessionFactory.createSession(false, true, true);
       ClientConsumer consumer = clientSession2.createConsumer(atestq);
       clientSession2.start();
       m = consumer.receive(500);
@@ -227,7 +227,7 @@ public class XaTimeoutTest extends UnitTestCase
       ClientMessage m6 = createTextMessage("m6");
       ClientMessage m7 = createTextMessage("m7");
       ClientMessage m8 = createTextMessage("m8");
-      ClientSession clientSession2 = sessionFactory.createSession(false, true, true, false);
+      ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       clientProducer2.send(m1);
       clientProducer2.send(m2);
@@ -269,7 +269,7 @@ public class XaTimeoutTest extends UnitTestCase
       }
       clientSession.setTransactionTimeout(0);
       clientConsumer.close();
-      clientSession2 = sessionFactory.createSession(false, true, true, false);
+      clientSession2 = sessionFactory.createSession(false, true, true);
       ClientConsumer consumer = clientSession2.createConsumer(atestq);
       clientSession2.start();
       m = consumer.receive(500);
@@ -305,7 +305,7 @@ public class XaTimeoutTest extends UnitTestCase
       ClientMessage m6 = createTextMessage("m6");
       ClientMessage m7 = createTextMessage("m7");
       ClientMessage m8 = createTextMessage("m8");
-      ClientSession clientSession2 = sessionFactory.createSession(false, true, true, false);
+      ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       clientProducer2.send(m1);
       clientProducer2.send(m2);
@@ -342,7 +342,7 @@ public class XaTimeoutTest extends UnitTestCase
 
       clientSession.setTransactionTimeout(0);
       clientConsumer.close();
-      clientSession2 = sessionFactory.createSession(false, true, true, false);
+      clientSession2 = sessionFactory.createSession(false, true, true);
       ClientConsumer consumer = clientSession2.createConsumer(atestq);
       clientSession2.start();
       m = consumer.receive(500);
@@ -415,7 +415,7 @@ public class XaTimeoutTest extends UnitTestCase
       Thread.sleep(2600);
       clientSession.prepare(xid);
       clientSession.commit(xid, true);
-      ClientSession clientSession2 = sessionFactory.createSession(false, true, true, false);
+      ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientConsumer consumer = clientSession2.createConsumer(atestq);
       clientSession2.start();
       ClientMessage m = consumer.receive(500);
@@ -446,7 +446,7 @@ public class XaTimeoutTest extends UnitTestCase
       ClientSession[] clientSessions = new ClientSession[xids.length];
       for (int i = 0; i < clientSessions.length; i++)
       {
-         clientSessions[i] = sessionFactory.createSession(true, false, false, false);
+         clientSessions[i] = sessionFactory.createSession(true, false, false);
       }
 
       ClientProducer[] clientProducers = new ClientProducer[xids.length];

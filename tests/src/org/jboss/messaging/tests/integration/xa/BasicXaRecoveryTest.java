@@ -93,7 +93,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       messagingService.start();
       //then we create a client as normal
       sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
-      clientSession = sessionFactory.createSession(true, false, false, false);
+      clientSession = sessionFactory.createSession(true, false, false);
       clientSession.createQueue(atestq, atestq, null, true, true);
       clientProducer = clientSession.createProducer(atestq);
       clientConsumer = clientSession.createConsumer(atestq);
@@ -555,7 +555,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       ClientMessage m6 = createTextMessage("m6");
       ClientMessage m7 = createTextMessage("m7");
       ClientMessage m8 = createTextMessage("m8");
-      ClientSession clientSession2 = sessionFactory.createSession(false, false, true, false);
+      ClientSession clientSession2 = sessionFactory.createSession(false, false, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       clientProducer2.send(m1);
       clientProducer2.send(m2);
@@ -615,7 +615,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       ClientMessage m6 = createTextMessage("m6");
       ClientMessage m7 = createTextMessage("m7");
       ClientMessage m8 = createTextMessage("m8");
-      ClientSession clientSession2 = sessionFactory.createSession(true, false, true, false);
+      ClientSession clientSession2 = sessionFactory.createSession(true, false, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       clientSession2.start(xid2, XAResource.TMNOFLAGS);
       clientProducer2.send(m1);
@@ -689,7 +689,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       ClientMessage m6 = createTextMessage("m6");
       ClientMessage m7 = createTextMessage("m7");
       ClientMessage m8 = createTextMessage("m8");
-      ClientSession clientSession2 = sessionFactory.createSession(true, false, true, false);
+      ClientSession clientSession2 = sessionFactory.createSession(true, false, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       clientSession2.start(xid2, XAResource.TMNOFLAGS);
       clientProducer2.send(m1);
@@ -741,7 +741,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       ClientMessage m6 = createTextMessage("m6");
       ClientMessage m7 = createTextMessage("m7");
       ClientMessage m8 = createTextMessage("m8");
-      ClientSession clientSession2 = sessionFactory.createSession(true, false, true, false);
+      ClientSession clientSession2 = sessionFactory.createSession(true, false, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       clientSession2.start(xid2, XAResource.TMNOFLAGS);
       clientProducer2.send(m1);
@@ -804,7 +804,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       ClientMessage m6 = createTextMessage("m6");
       ClientMessage m7 = createTextMessage("m7");
       ClientMessage m8 = createTextMessage("m8");
-      ClientSession clientSession2 = sessionFactory.createSession(true, false, true, false);
+      ClientSession clientSession2 = sessionFactory.createSession(true, false, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       clientSession2.start(xid, XAResource.TMNOFLAGS);
       clientProducer2.send(m1);
@@ -873,7 +873,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       ClientMessage m2 = createTextMessage("m2");
       ClientMessage m3 = createTextMessage("m3");
       ClientMessage m4 = createTextMessage("m4");
-      ClientSession clientSession2 = sessionFactory.createSession(false, true, true, false);
+      ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       clientProducer2.send(m1);
       clientProducer2.send(m2);
@@ -931,7 +931,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       ClientMessage m2 = createTextMessage("m2");
       ClientMessage m3 = createTextMessage("m3");
       ClientMessage m4 = createTextMessage("m4");
-      ClientSession clientSession2 = sessionFactory.createSession(false, true, true, false);
+      ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       clientProducer2.send(m1);
       clientProducer2.send(m2);
@@ -1004,7 +1004,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       ClientMessage m6 = createTextMessage("m6");
       ClientMessage m7 = createTextMessage("m7");
       ClientMessage m8 = createTextMessage("m8");
-      ClientSession clientSession2 = sessionFactory.createSession(false, true, true, false);
+      ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       SimpleString anewtestq = new SimpleString("anewtestq");
       clientSession.createQueue(anewtestq, anewtestq, null, true, true);
@@ -1018,7 +1018,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       clientProducer3.send(m7);
       clientProducer3.send(m8);
       clientSession2.close();
-      clientSession2 = sessionFactory.createSession(true, false, false, false);
+      clientSession2 = sessionFactory.createSession(true, false, false);
       ClientConsumer clientConsumer2 = clientSession2.createConsumer(anewtestq);
       clientSession2.start(xid2, XAResource.TMNOFLAGS);
       clientSession2.start();
@@ -1094,7 +1094,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       ClientMessage m6 = createTextMessage("m6");
       ClientMessage m7 = createTextMessage("m7");
       ClientMessage m8 = createTextMessage("m8");
-      ClientSession clientSession2 = sessionFactory.createSession(false, true, true, false);
+      ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       SimpleString anewtestq = new SimpleString("anewtestq");
       clientSession.createQueue(anewtestq, anewtestq, null, true, true);
@@ -1108,7 +1108,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       clientProducer3.send(m7);
       clientProducer3.send(m8);
       clientSession2.close();
-      clientSession2 = sessionFactory.createSession(true, false, false, false);
+      clientSession2 = sessionFactory.createSession(true, false, false);
       ClientConsumer clientConsumer2 = clientSession2.createConsumer(anewtestq);
       clientSession2.start(xid2, XAResource.TMNOFLAGS);
       clientSession2.start();
@@ -1241,7 +1241,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
          throws MessagingException
    {
       sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
-      clientSession = sessionFactory.createSession(true, false, true, false);
+      clientSession = sessionFactory.createSession(true, false, true);
       clientProducer = clientSession.createProducer(atestq);
       clientConsumer = clientSession.createConsumer(atestq);
    }

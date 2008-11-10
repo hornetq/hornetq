@@ -232,7 +232,7 @@ public class RandomFailoverTest extends TestCase
 
          sf.setSendWindowSize(32 * 1024);
          
-         ClientSession session = sf.createSession(false, false, false, false);
+         ClientSession session = sf.createSession(false, false, false);
 
          Failer failer = startFailer(1000, session);
 
@@ -265,7 +265,7 @@ public class RandomFailoverTest extends TestCase
       
       log.info("starting================");
 
-      ClientSession s = sf.createSession(false, false, false, false);
+      ClientSession s = sf.createSession(false, false, false);
 
       final int numMessages = 100;
 
@@ -278,7 +278,7 @@ public class RandomFailoverTest extends TestCase
       {
          SimpleString subName = new SimpleString("sub" + i);
 
-         ClientSession sessConsume = sf.createSession(false, true, true, false);
+         ClientSession sessConsume = sf.createSession(false, true, true);
 
          sessConsume.start();
 
@@ -291,7 +291,7 @@ public class RandomFailoverTest extends TestCase
          sessions.add(sessConsume);
       }
 
-      ClientSession sessSend = sf.createSession(false, true, true, false);
+      ClientSession sessSend = sf.createSession(false, true, true);
 
       ClientProducer producer = sessSend.createProducer(ADDRESS);
 
@@ -384,7 +384,7 @@ public class RandomFailoverTest extends TestCase
    {
       long start = System.currentTimeMillis();
 
-      ClientSession s = sf.createSession(false, false, false, false);
+      ClientSession s = sf.createSession(false, false, false);
 
       final int numMessages = 100;
 
@@ -397,7 +397,7 @@ public class RandomFailoverTest extends TestCase
       {
          SimpleString subName = new SimpleString("sub" + i);
 
-         ClientSession sessConsume = sf.createSession(false, true, true, false);
+         ClientSession sessConsume = sf.createSession(false, true, true);
 
          sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
@@ -408,7 +408,7 @@ public class RandomFailoverTest extends TestCase
          sessions.add(sessConsume);
       }
 
-      ClientSession sessSend = sf.createSession(false, true, true, false);
+      ClientSession sessSend = sf.createSession(false, true, true);
 
       ClientProducer producer = sessSend.createProducer(ADDRESS);
 
@@ -497,7 +497,7 @@ public class RandomFailoverTest extends TestCase
    {
       long start = System.currentTimeMillis();
 
-      ClientSession s = sf.createSession(false, false, false, false);
+      ClientSession s = sf.createSession(false, false, false);
 
       final int numMessages = 100;
 
@@ -510,7 +510,7 @@ public class RandomFailoverTest extends TestCase
       {
          SimpleString subName = new SimpleString("sub" + i);
 
-         ClientSession sessConsume = sf.createSession(false, false, false, false);
+         ClientSession sessConsume = sf.createSession(false, false, false);
 
          sessConsume.start();
 
@@ -523,7 +523,7 @@ public class RandomFailoverTest extends TestCase
          sessions.add(sessConsume);
       }
 
-      ClientSession sessSend = sf.createSession(false, true, true, false);
+      ClientSession sessSend = sf.createSession(false, true, true);
 
       ClientProducer producer = sessSend.createProducer(ADDRESS);
 
@@ -650,7 +650,7 @@ public class RandomFailoverTest extends TestCase
    {
       long start = System.currentTimeMillis();
 
-      ClientSession s = sf.createSession(false, false, false, false);
+      ClientSession s = sf.createSession(false, false, false);
 
       final int numMessages = 100;
 
@@ -663,7 +663,7 @@ public class RandomFailoverTest extends TestCase
       {
          SimpleString subName = new SimpleString("sub" + i);
 
-         ClientSession sessConsume = sf.createSession(false, false, false, false);
+         ClientSession sessConsume = sf.createSession(false, false, false);
 
          sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
@@ -674,7 +674,7 @@ public class RandomFailoverTest extends TestCase
          sessions.add(sessConsume);
       }
 
-      ClientSession sessSend = sf.createSession(false, true, true, false);
+      ClientSession sessSend = sf.createSession(false, true, true);
 
       ClientProducer producer = sessSend.createProducer(ADDRESS);
 
@@ -808,7 +808,7 @@ public class RandomFailoverTest extends TestCase
    {
       long start = System.currentTimeMillis();
 
-      ClientSession s = sf.createSession(false, false, false, false);
+      ClientSession s = sf.createSession(false, false, false);
 
       final int numMessages = 100;
 
@@ -821,7 +821,7 @@ public class RandomFailoverTest extends TestCase
       {
          SimpleString subName = new SimpleString("sub" + i);
 
-         ClientSession sessConsume = sf.createSession(false, true, true, false);
+         ClientSession sessConsume = sf.createSession(false, true, true);
 
          sessConsume.start();
 
@@ -834,7 +834,7 @@ public class RandomFailoverTest extends TestCase
          sessions.add(sessConsume);
       }
 
-      ClientSession sessSend = sf.createSession(false, true, true, false);
+      ClientSession sessSend = sf.createSession(false, true, true);
 
       ClientProducer producer = sessSend.createProducer(ADDRESS);
 
@@ -898,7 +898,7 @@ public class RandomFailoverTest extends TestCase
    {
       long start = System.currentTimeMillis();
 
-      ClientSession s = sf.createSession(false, false, false, false);
+      ClientSession s = sf.createSession(false, false, false);
 
       final int numMessages = 100;
 
@@ -911,7 +911,7 @@ public class RandomFailoverTest extends TestCase
       {
          SimpleString subName = new SimpleString("sub" + i);
 
-         ClientSession sessConsume = sf.createSession(false, true, true, false);
+         ClientSession sessConsume = sf.createSession(false, true, true);
 
          sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
@@ -922,7 +922,7 @@ public class RandomFailoverTest extends TestCase
          sessions.add(sessConsume);
       }
 
-      ClientSession sessSend = sf.createSession(false, true, true, false);
+      ClientSession sessSend = sf.createSession(false, true, true);
 
       ClientProducer producer = sessSend.createProducer(ADDRESS);
 
@@ -998,7 +998,7 @@ public class RandomFailoverTest extends TestCase
    {
       long start = System.currentTimeMillis();
 
-      ClientSession s = sf.createSession(false, false, false, false);
+      ClientSession s = sf.createSession(false, false, false);
 
       final int numMessages = 100;
 
@@ -1011,7 +1011,7 @@ public class RandomFailoverTest extends TestCase
       {
          SimpleString subName = new SimpleString("sub" + i);
 
-         ClientSession sessConsume = sf.createSession(false, false, false, false);
+         ClientSession sessConsume = sf.createSession(false, false, false);
 
          sessConsume.start();
 
@@ -1024,7 +1024,7 @@ public class RandomFailoverTest extends TestCase
          sessions.add(sessConsume);
       }
 
-      ClientSession sessSend = sf.createSession(false, false, false, false);
+      ClientSession sessSend = sf.createSession(false, false, false);
 
       ClientProducer producer = sessSend.createProducer(ADDRESS);
 
@@ -1137,7 +1137,7 @@ public class RandomFailoverTest extends TestCase
    {
       long start = System.currentTimeMillis();
 
-      ClientSession s = sf.createSession(false, false, false, false);
+      ClientSession s = sf.createSession(false, false, false);
 
       final int numMessages = 100;
 
@@ -1150,7 +1150,7 @@ public class RandomFailoverTest extends TestCase
       {
          SimpleString subName = new SimpleString("sub" + i);
 
-         ClientSession sessConsume = sf.createSession(false, false, false, false);
+         ClientSession sessConsume = sf.createSession(false, false, false);
 
          sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
@@ -1161,7 +1161,7 @@ public class RandomFailoverTest extends TestCase
          sessions.add(sessConsume);
       }
 
-      ClientSession sessSend = sf.createSession(false, false, false, false);
+      ClientSession sessSend = sf.createSession(false, false, false);
 
       ClientProducer producer = sessSend.createProducer(ADDRESS);
 
@@ -1278,11 +1278,11 @@ public class RandomFailoverTest extends TestCase
 
    protected void doTestI(final ClientSessionFactory sf) throws Exception
    {
-      ClientSession sessCreate = sf.createSession(false, true, true, false);
+      ClientSession sessCreate = sf.createSession(false, true, true);
 
       sessCreate.createQueue(ADDRESS, ADDRESS, null, false, false);
 
-      ClientSession sess = sf.createSession(false, true, true, false);
+      ClientSession sess = sf.createSession(false, true, true);
 
       sess.start();
 
@@ -1314,11 +1314,11 @@ public class RandomFailoverTest extends TestCase
 
    protected void doTestJ(final ClientSessionFactory sf) throws Exception
    {
-      ClientSession sessCreate = sf.createSession(false, true, true, false);
+      ClientSession sessCreate = sf.createSession(false, true, true);
 
       sessCreate.createQueue(ADDRESS, ADDRESS, null, false, false);
 
-      ClientSession sess = sf.createSession(false, true, true, false);
+      ClientSession sess = sf.createSession(false, true, true);
 
       sess.start();
 
@@ -1350,7 +1350,7 @@ public class RandomFailoverTest extends TestCase
 
    protected void doTestK(final ClientSessionFactory sf) throws Exception
    {
-      ClientSession s = sf.createSession(false, false, false, false);
+      ClientSession s = sf.createSession(false, false, false);
 
       s.createQueue(ADDRESS, ADDRESS, null, false, false);
 
@@ -1370,13 +1370,13 @@ public class RandomFailoverTest extends TestCase
 
    protected void doTestL(final ClientSessionFactory sf) throws Exception
    {
-      ClientSession s = sf.createSession(false, false, false, false);
+      ClientSession s = sf.createSession(false, false, false);
 
       final int numSessions = 100;
 
       for (int i = 0; i < numSessions; i++)
       {
-         ClientSession session = sf.createSession(false, false, false, false);
+         ClientSession session = sf.createSession(false, false, false);
 
          session.close();
       }
@@ -1387,11 +1387,11 @@ public class RandomFailoverTest extends TestCase
 
    protected void doTestN(final ClientSessionFactory sf) throws Exception
    {
-      ClientSession sessCreate = sf.createSession(false, true, true, false);
+      ClientSession sessCreate = sf.createSession(false, true, true);
 
       sessCreate.createQueue(ADDRESS, new SimpleString(ADDRESS.toString()), null, false, false);
 
-      ClientSession sess = sf.createSession(false, true, true, false);
+      ClientSession sess = sf.createSession(false, true, true);
 
       sess.stop();
 

@@ -52,7 +52,7 @@ public class ScheduledMessageExample
       {
          ClientSessionFactory sessionFactory =
             new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));
-         clientSession = sessionFactory.createSession(false, true, true, false);
+         clientSession = sessionFactory.createSession(false, true, true);
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);
          ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, false, 0,

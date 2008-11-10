@@ -100,7 +100,7 @@ public class ReplicateConnectionFailureTest extends TestCase
 
       assertEquals(0, backupService.getServer().getRemotingService().getConnections().size());
 
-      ClientSession session1 = sf1.createSession(false, true, true, false);
+      ClientSession session1 = sf1.createSession(false, true, true);
 
       // One connection
       assertEquals(1, liveService.getServer().getRemotingService().getConnections().size());
@@ -116,7 +116,7 @@ public class ReplicateConnectionFailureTest extends TestCase
 
       assertEquals(0, backupService.getServer().getRemotingService().getConnections().size());
 
-      session1 = sf1.createSession(false, true, true, false);
+      session1 = sf1.createSession(false, true, true);
 
       assertEquals(1, liveService.getServer().getRemotingService().getConnections().size());
 

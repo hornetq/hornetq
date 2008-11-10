@@ -33,7 +33,5 @@ import org.jboss.messaging.core.client.ClientProducer;
  */
 public interface ClientProducerInternal extends ClientProducer
 {
-   long getID();
-   
    void cleanUp();
 }

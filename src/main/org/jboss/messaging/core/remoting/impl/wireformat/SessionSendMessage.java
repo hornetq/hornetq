@@ -42,8 +42,6 @@ public class SessionSendMessage extends PacketImpl
    
    // Attributes ----------------------------------------------------
 
-   private long producerID;
-   
    private ClientMessage clientMessage;
    
    private ServerMessage serverMessage;
@@ -54,12 +52,10 @@ public class SessionSendMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionSendMessage(final long producerID, final ClientMessage message, final boolean requiresResponse)
+   public SessionSendMessage(final ClientMessage message, final boolean requiresResponse)
    {
       super(SESS_SEND);
 
-      this.producerID = producerID;
-      
       this.clientMessage = message;
       
       this.requiresResponse = requiresResponse;
@@ -70,11 +66,9 @@ public class SessionSendMessage extends PacketImpl
       super(SESS_SEND);
    }
 
-   protected SessionSendMessage(final byte type, final long producerID, final ClientMessage message, final boolean requiresResponse)
+   protected SessionSendMessage(final byte type, final ClientMessage message, final boolean requiresResponse)
    {
       super(type);
-
-      this.producerID = producerID;
 
       this.clientMessage = message;
 
@@ -88,11 +82,6 @@ public class SessionSendMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public long getProducerID()
-   {
-      return producerID;
-   }
-   
    public ClientMessage getClientMessage()
    {
       return clientMessage;
@@ -110,8 +99,7 @@ public class SessionSendMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(producerID);      
-      
+
       if (clientMessage != null)
       {
          clientMessage.encode(buffer);
@@ -129,8 +117,6 @@ public class SessionSendMessage extends PacketImpl
    {
       //TODO can be optimised
       
-      producerID = buffer.getLong();
-                  
       serverMessage = new ServerMessageImpl();
       
       serverMessage.decode(buffer);

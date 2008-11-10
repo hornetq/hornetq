@@ -78,7 +78,7 @@ public class CoreClientTest extends TestCase
       
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(connectorFactoryClassName));
 
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
       
       session.createQueue(QUEUE, QUEUE, null, false, false);
       

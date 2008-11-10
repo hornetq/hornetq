@@ -89,7 +89,7 @@ public class FailBackupServerTest extends TestCase
 
       sf1.setSendWindowSize(32 * 1024);
 
-      ClientSession session1 = sf1.createSession(false, true, true, false);
+      ClientSession session1 = sf1.createSession(false, true, true);
 
       session1.createQueue(ADDRESS, ADDRESS, null, false, false);
 

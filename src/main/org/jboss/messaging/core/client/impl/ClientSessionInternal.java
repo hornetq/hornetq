@@ -12,14 +12,10 @@
 
 package org.jboss.messaging.core.client.impl;
 
-import java.util.Map;
-import java.util.Set;
-
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * A ClientSessionInternal
@@ -41,12 +37,6 @@ public interface ClientSessionInternal extends ClientSession
    void removeConsumer(ClientConsumerInternal consumer) throws MessagingException;
 
    void removeProducer(ClientProducerInternal producer);
-
-   Set<ClientProducerInternal> getProducers();
-
-   Set<ClientConsumerInternal> getConsumers();
-
-   Map<SimpleString, ClientProducerInternal> getProducerCache();
 
    void handleReceiveMessage(long consumerID, ClientMessage message) throws Exception;
 

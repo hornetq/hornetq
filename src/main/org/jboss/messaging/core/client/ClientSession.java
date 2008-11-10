@@ -93,8 +93,6 @@ public interface ClientSession extends XAResource
 
    boolean isBlockOnAcknowledge();
 
-   boolean isCacheProducers();
-
    boolean isXA();
 
    ClientMessage createClientMessage(final byte type,

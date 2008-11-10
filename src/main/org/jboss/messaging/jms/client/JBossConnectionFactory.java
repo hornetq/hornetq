@@ -318,7 +318,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
          try
          {
-            sess = sessionFactory.createSession(username, password, false, false, false, false, 0);
+            sess = sessionFactory.createSession(username, password, false, false, false, 0);
          }
          catch (MessagingException e)
          {

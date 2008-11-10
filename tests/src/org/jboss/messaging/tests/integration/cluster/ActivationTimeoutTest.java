@@ -94,7 +94,7 @@ public class ActivationTimeoutTest extends TestCase
       sf1.setSendWindowSize(32 * 1024);
       sf2.setSendWindowSize(32 * 1024);
 
-      ClientSession session1 = sf1.createSession(false, true, true, false);
+      ClientSession session1 = sf1.createSession(false, true, true);
 
       session1.createQueue(ADDRESS, ADDRESS, null, false, false);
 
@@ -118,7 +118,7 @@ public class ActivationTimeoutTest extends TestCase
       
       ClientConsumer consumer1 = session1.createConsumer(ADDRESS);
       
-      ClientSession session2 = sf2.createSession(false, true, true, false);
+      ClientSession session2 = sf2.createSession(false, true, true);
       
       //Create another consumer so we have two consumers on the queue
       ClientConsumer consumer2 = session2.createConsumer(ADDRESS);
@@ -181,7 +181,7 @@ public class ActivationTimeoutTest extends TestCase
       sf1.setSendWindowSize(32 * 1024);
       sf2.setSendWindowSize(32 * 1024);
 
-      ClientSession session1 = sf1.createSession(false, true, true, false);
+      ClientSession session1 = sf1.createSession(false, true, true);
 
       session1.createQueue(ADDRESS, ADDRESS, null, false, false);
 
@@ -204,7 +204,7 @@ public class ActivationTimeoutTest extends TestCase
       log.info("Sent messages");
             
       
-      ClientSession session2 = sf2.createSession(false, true, true, false);
+      ClientSession session2 = sf2.createSession(false, true, true);
       
       ClientConsumer consumer1 = session2.createConsumer(ADDRESS);
       

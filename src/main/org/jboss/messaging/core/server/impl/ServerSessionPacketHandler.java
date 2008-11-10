@@ -12,7 +12,6 @@
 
 package org.jboss.messaging.core.server.impl;
 
-
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ACKNOWLEDGE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ADD_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY;
@@ -20,13 +19,11 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_COMMIT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATECONSUMER;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEPRODUCER;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEQUEUE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_DELETE_QUEUE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_EXPIRED;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FAILOVER_COMPLETE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FLOWTOKEN;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_PRODUCER_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REMOVE_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REPLICATE_DELIVERY;
@@ -60,7 +57,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMe
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
@@ -141,11 +137,6 @@ public class ServerSessionPacketHandler implements ChannelHandler
             {
                SessionBindingQueryMessage request = (SessionBindingQueryMessage)packet;
                session.handleExecuteBindingQuery(request);
-               break;
-            }
-            case SESS_CREATEPRODUCER:
-            {
-               session.handleCreateProducer(packet);
                break;
             }
             case SESS_ACKNOWLEDGE:
@@ -277,12 +268,6 @@ public class ServerSessionPacketHandler implements ChannelHandler
                session.handleCloseConsumer(message);
                break;
             }
-            case SESS_PRODUCER_CLOSE:
-            {
-               SessionProducerCloseMessage message = (SessionProducerCloseMessage)packet;
-               session.handleCloseProducer(message);
-               break;
-            }
             case SESS_FLOWTOKEN:
             {
                SessionConsumerFlowCreditMessage message = (SessionConsumerFlowCreditMessage)packet;
@@ -292,7 +277,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             case SESS_SEND:
             {
                SessionSendMessage message = (SessionSendMessage)packet;
-               session.handleSendProducerMessage(message);
+               session.handleSend(message);
                break;
             }
             case SESS_REPLICATE_DELIVERY:

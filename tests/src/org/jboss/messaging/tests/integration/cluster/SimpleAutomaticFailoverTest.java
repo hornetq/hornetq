@@ -88,7 +88,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
       sf.setSendWindowSize(32 * 1024);
       
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, ADDRESS, null, false, false);
 
@@ -144,7 +144,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
       sf.setSendWindowSize(32 * 1024);
       
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, ADDRESS, null, false, false);
 
@@ -187,7 +187,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
       session.close();
 
-      session = sf.createSession(false, true, true, false);
+      session = sf.createSession(false, true, true);
 
       consumer = session.createConsumer(ADDRESS);
 
@@ -225,7 +225,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
       sf.setSendWindowSize(32 * 1024);
       
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, ADDRESS, null, false, false);
 
@@ -271,7 +271,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                    backupParams));
 
-      session = sf.createSession(false, true, true, false);
+      session = sf.createSession(false, true, true);
 
       consumer = session.createConsumer(ADDRESS);
 
@@ -309,7 +309,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
       sf.setSendWindowSize(32 * 1024);
       
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, ADDRESS, null, false, false);
 
@@ -355,7 +355,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                    backupParams));
 
-      session = sf.createSession(false, true, true, false);
+      session = sf.createSession(false, true, true);
 
       consumer = session.createConsumer(ADDRESS);
 
@@ -380,7 +380,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
       sf.setSendWindowSize(32 * 1024);
       
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, ADDRESS, null, false, false);
 
@@ -424,11 +424,11 @@ public class SimpleAutomaticFailoverTest extends TestCase
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                    backupParams));
 
-      ClientSession session1 = sf.createSession(false, true, true, false);
+      ClientSession session1 = sf.createSession(false, true, true);
 
-      ClientSession session2 = sf.createSession(false, true, true, false);
+      ClientSession session2 = sf.createSession(false, true, true);
 
-      ClientSession session3 = sf.createSession(false, true, true, false);
+      ClientSession session3 = sf.createSession(false, true, true);
 
       session.close();
 
@@ -453,7 +453,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
       sf.setSendWindowSize(32 * 1024);
       
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, ADDRESS, null, false, false);
 
@@ -515,7 +515,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                    backupParams));
 
-      session = sf.createSession(false, true, true, false);
+      session = sf.createSession(false, true, true);
 
       consumer = session.createConsumer(ADDRESS);
 
@@ -548,7 +548,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
       for (int i = 0; i < numSessions; i++)
       {
-         ClientSession sess = sf.createSession(false, true, true, false);
+         ClientSession sess = sf.createSession(false, true, true);
 
          SimpleString queueName = new SimpleString("subscription" + i);
 
@@ -563,7 +563,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
          consumers.add(consumer);
       }
 
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -637,7 +637,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
       for (int i = 0; i < numSessions; i++)
       {
-         ClientSession sess = sf.createSession(false, true, true, false);
+         ClientSession sess = sf.createSession(false, true, true);
 
          sessions.add(sess);
       }
@@ -670,7 +670,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
       for (int i = 0; i < numSessions; i++)
       {
-         ClientSession sess = sf.createSession(false, true, true, false);
+         ClientSession sess = sf.createSession(false, true, true);
 
          sessions.add(sess);
       }
@@ -702,7 +702,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
       sf.setSendWindowSize(32 * 1024);
       
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, ADDRESS, null, false, false);
 

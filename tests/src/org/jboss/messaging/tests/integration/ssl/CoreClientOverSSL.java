@@ -70,7 +70,7 @@ public class CoreClientOverSSL
         
          ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));        
          sf.getTransportParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, sslEnabled);
-         ClientSession session = sf.createSession(false, true, true, false);
+         ClientSession session = sf.createSession(false, true, true);
          ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);
 
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,

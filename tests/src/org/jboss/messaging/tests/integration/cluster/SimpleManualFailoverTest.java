@@ -82,7 +82,7 @@ public class SimpleManualFailoverTest extends TestCase
 
    private ClientSession sendAndConsume(final ClientSessionFactory sf) throws Exception
    {
-      ClientSession session = sf.createSession(false, true, true, false);
+      ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, ADDRESS, null, false, false);
 

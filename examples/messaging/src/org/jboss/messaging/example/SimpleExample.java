@@ -59,7 +59,7 @@ public class SimpleExample
 
          //then we create a client as normal       
          ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));
-         clientSession = sessionFactory.createSession(false, true, true, false);
+         clientSession = sessionFactory.createSession(false, true, true);
          SimpleString atestq = new SimpleString("atestq");
          clientSession.createQueue(atestq, atestq, null, false, true);
          ClientProducer clientProducer = clientSession.createProducer(atestq);

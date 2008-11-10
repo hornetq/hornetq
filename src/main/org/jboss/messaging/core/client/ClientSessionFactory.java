@@ -36,14 +36,13 @@ import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
  */
 public interface ClientSessionFactory
 {
-   ClientSession createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks, boolean cacheProducers) throws MessagingException;
+   ClientSession createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks) throws MessagingException;
 
    ClientSession createSession(String username,
                                String password,
                                boolean xa,
                                boolean autoCommitSends,
                                boolean autoCommitAcks,
-                               boolean cacheProducers,
                                int ackBatchSize) throws MessagingException;
 
    void setConsumerWindowSize(int size);
@@ -77,9 +76,9 @@ public interface ClientSessionFactory
    boolean isAutoGroup();
 
    void setAutoGroup(boolean autoGroup);
-   
+
    int getAckBatchSize();
-   
+
    void setAckBatchSize(int ackBatchSize);
 
    ConnectorFactory getConnectorFactory();
@@ -91,8 +90,8 @@ public interface ClientSessionFactory
    Map<String, Object> getBackupTransportParams();
 
    long getPingPeriod();
-   
-   long getCallTimeout();   
-   
+
+   long getCallTimeout();
+
    int getMaxConnections();
 }
