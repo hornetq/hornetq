@@ -28,6 +28,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.jms.client.JBossMessage;
 
 
@@ -90,7 +91,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
          long now = System.currentTimeMillis();
 
          TextMessage tm1 = sess.createTextMessage("testScheduled1");
-         tm1.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 29000);
+         tm1.setLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME.toString(), now + 29000);
          prod.send(tm1);
 
          //First send some non scheduled messages
@@ -110,25 +111,25 @@ public class ScheduledDeliveryTest extends JMSTestCase
          //These numbers have to be large with Hudson, since restart can take some time
 
          TextMessage tm5 = sess.createTextMessage("testScheduled5");
-         tm5.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 27000);
+         tm5.setLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME.toString(), now + 27000);
          prod.send(tm5);
 
          TextMessage tm6 = sess.createTextMessage("testScheduled6");
-         tm6.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 26000);
+         tm6.setLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME.toString(), now + 26000);
          prod.send(tm6);
 
          TextMessage tm7 = sess.createTextMessage("testScheduled7");
-         tm7.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 25000);
+         tm7.setLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME.toString(), now + 25000);
          prod.send(tm7);
 
          TextMessage tm8 = sess.createTextMessage("testScheduled8");
-         tm8.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 28000);
+         tm8.setLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME.toString(), now + 28000);
          prod.send(tm8);
 
          //And one scheduled with a -ve number
 
          TextMessage tm9 = sess.createTextMessage("testScheduled9");
-         tm8.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, -3);
+         tm8.setLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME.toString(), -3);
          prod.send(tm9);
 
          //Now stop the server and restart it
@@ -417,7 +418,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
          long now = System.currentTimeMillis();
 
          TextMessage tm1 = sess.createTextMessage("testScheduled1");
-         tm1.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 7000);
+         tm1.setLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME.toString(), now + 7000);
          prod.send(tm1);
 
          //First send some non scheduled messages
@@ -435,25 +436,25 @@ public class ScheduledDeliveryTest extends JMSTestCase
          //Now send some more scheduled messages
 
          TextMessage tm5 = sess.createTextMessage("testScheduled5");
-         tm5.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 5000);
+         tm5.setLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME.toString(), now + 5000);
          prod.send(tm5);
 
          TextMessage tm6 = sess.createTextMessage("testScheduled6");
-         tm6.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 4000);
+         tm6.setLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME.toString(), now + 4000);
          prod.send(tm6);
 
          TextMessage tm7 = sess.createTextMessage("testScheduled7");
-         tm7.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 3000);
+         tm7.setLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME.toString(), now + 3000);
          prod.send(tm7);
 
          TextMessage tm8 = sess.createTextMessage("testScheduled8");
-         tm8.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, now + 6000);
+         tm8.setLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME.toString(), now + 6000);
          prod.send(tm8);
 
          //And one scheduled with a -ve number
 
          TextMessage tm9 = sess.createTextMessage("testScheduled9");
-         tm8.setLongProperty(JBossMessage.JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME, -3);
+         tm8.setLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME.toString(), -3);
          prod.send(tm9);
 
          if (tx)

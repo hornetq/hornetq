@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.transaction;
 
@@ -50,7 +50,7 @@ public interface Transaction
    void addMessage(ServerMessage message) throws Exception;
 
    void addAcknowledgement(MessageReference acknowledgement) throws Exception;
-   
+
    int getAcknowledgementsCount();
 
    long getID();
@@ -69,9 +69,9 @@ public interface Transaction
 
    void markAsRollbackOnly(MessagingException messagingException);
 
-   void replay(List<MessageReference> messages, List<MessageReference> scheduledMessages, List<MessageReference> acknowledgements, PageTransactionInfo pageTransaction, State prepared) throws Exception;
-
-   void addScheduledMessage(ServerMessage msg, long scheduledDeliveryTime) throws Exception;
+   void replay(List<MessageReference> messages,
+               List<MessageReference> acknowledgements,
+               PageTransactionInfo pageTransaction) throws Exception;
 
    List<MessageReference> timeout() throws Exception;
 

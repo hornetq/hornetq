@@ -127,8 +127,8 @@ public class ConfigurationImplTest extends TestCase
          conf.setCreateJournalDir(b);
          assertEquals(b, conf.isCreateJournalDir());
          
-         i = randomInt() % 3;
-         JournalType journal = i == 0 ? JournalType.ASYNCIO : i == 1 ? JournalType.JDBC : i == 2 ? JournalType.NIO : JournalType.NIO;
+         i = randomInt() % 2;
+         JournalType journal = i == 0 ? JournalType.ASYNCIO : JournalType.NIO;
          conf.setJournalType(journal);
          assertEquals(journal, conf.getJournalType());
          
@@ -206,8 +206,8 @@ public class ConfigurationImplTest extends TestCase
       b = randomBoolean();
       conf.setCreateJournalDir(b);
    
-      i = randomInt() % 3;
-      JournalType journal = i == 0 ? JournalType.ASYNCIO : i == 1 ? JournalType.JDBC : i == 2 ? JournalType.NIO : JournalType.NIO;
+      i = randomInt() % 2;
+      JournalType journal = i == 0 ? JournalType.ASYNCIO : JournalType.NIO;
       conf.setJournalType(journal);
    
       b = randomBoolean();

@@ -113,45 +113,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
    }
 
-   public void testStoreWithProperty() throws Exception
-   {
-      SequentialFileFactory factory = new FakeSequentialFileFactory();
-
-      PagingStore storeImpl = new PagingStoreImpl(null, factory, destinationTestName, new QueueSettings(), executor);
-
-      storeImpl.start();
-
-      assertEquals(0, storeImpl.getNumberOfPages());
-
-      storeImpl.startPaging();
-
-      assertEquals(1, storeImpl.getNumberOfPages());
-
-      List<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
-
-      ByteBuffer buffer = createRandomBuffer(0, 10);
-
-      buffers.add(buffer);
-      SimpleString destination = new SimpleString("test");
-
-      PageMessageImpl msg = createMessage(destination, buffer);
-      msg.getProperties().putLongProperty(new SimpleString("test-property"), 12345l);
-      assertTrue(storeImpl.isPaging());
-
-      assertTrue(storeImpl.page(msg));
-
-      assertEquals(1, storeImpl.getNumberOfPages());
-
-      storeImpl.sync();
-
-      storeImpl = new PagingStoreImpl(null, factory, destinationTestName, new QueueSettings(), executor);
-
-      storeImpl.start();
-
-      assertEquals(2, storeImpl.getNumberOfPages());
-
-   }
-
+   
    public void testDepageOnCurrentPage() throws Exception
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();

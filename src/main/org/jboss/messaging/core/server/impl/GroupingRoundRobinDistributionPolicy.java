@@ -54,7 +54,7 @@ public class GroupingRoundRobinDistributionPolicy extends RoundRobinDistribution
 
    public HandleStatus distribute(MessageReference reference)
    {
-      final SimpleString groupId = (SimpleString) reference.getMessage().getProperty(MessageImpl.GROUP_ID);
+      final SimpleString groupId = (SimpleString) reference.getMessage().getProperty(MessageImpl.HDR_GROUP_ID);
       if (groupId != null)
       {
          boolean bound;

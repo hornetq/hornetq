@@ -78,8 +78,6 @@ public class JBossMessage implements javax.jms.Message
    // Used when bridging a message
    public static final String JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST = "JBM_BRIDGE_MSG_ID_LIST";
 
-   public static final String JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME = "JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME";
-
    public static final byte TYPE = 0;
 
    // Static --------------------------------------------------------
@@ -175,8 +173,6 @@ public class JBossMessage implements javax.jms.Message
 
    // Cache it
    private String jmsType;
-
-   private long scheduledDeliveryTime = 0;
 
    // Constructors --------------------------------------------------
    /**
@@ -379,17 +375,6 @@ public class JBossMessage implements javax.jms.Message
       return jmsCorrelationID;
    }
 
-   public long getScheduledDeliveryTime()
-   {
-      return scheduledDeliveryTime;
-   }
-
-   public void setScheduledDeliveryTime(long scheduledDeliveryTime)
-   {
-      message.putLongProperty(new SimpleString(JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME), scheduledDeliveryTime);
-      this.scheduledDeliveryTime = scheduledDeliveryTime;
-   }
-
    public Destination getJMSReplyTo() throws JMSException
    {
       if (replyTo == null)
@@ -561,7 +546,7 @@ public class JBossMessage implements javax.jms.Message
    public boolean propertyExists(final String name) throws JMSException
    {
       return message.containsProperty(new SimpleString(name)) || name.equals(JMSXDELIVERYCOUNT)
-            || (JMSXGROUPID.equals(name) && message.containsProperty(MessageImpl.GROUP_ID));
+            || (JMSXGROUPID.equals(name) && message.containsProperty(MessageImpl.HDR_GROUP_ID));
    }
 
    public boolean getBooleanProperty(final String name) throws JMSException
@@ -723,7 +708,7 @@ public class JBossMessage implements javax.jms.Message
       Object value;
       if(JMSXGROUPID.equals(name))
       {
-         value = message.getProperty(MessageImpl.GROUP_ID);
+         value = message.getProperty(MessageImpl.HDR_GROUP_ID);
       }
       else
       {
@@ -833,10 +818,6 @@ public class JBossMessage implements javax.jms.Message
    {
       Long l = new Long(value);
       checkProperty(name, l);
-      if(JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME.equals(name))
-      {
-         scheduledDeliveryTime = l;
-      }
       message.putLongProperty(new SimpleString(name), value);
    }
 
@@ -859,7 +840,7 @@ public class JBossMessage implements javax.jms.Message
       checkProperty(name, value);
       if(JMSXGROUPID.equals(name))
       {
-         message.putStringProperty(MessageImpl.GROUP_ID, new SimpleString(value));
+         message.putStringProperty(MessageImpl.HDR_GROUP_ID, new SimpleString(value));
       }
       else
       {

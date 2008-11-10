@@ -392,13 +392,13 @@ public class JBossMessageTest extends TestCase
       JBossMessage message = new JBossMessage();
       message.setStringProperty(JBossMessage.JMSXGROUPID, "testid");
       assertTrue(message.propertyExists(JBossMessage.JMSXGROUPID));
-      assertEquals(new SimpleString("testid"), message.getCoreMessage().getProperty(MessageImpl.GROUP_ID));
+      assertEquals(new SimpleString("testid"), message.getCoreMessage().getProperty(MessageImpl.HDR_GROUP_ID));
    }
 
    public void testGetJMSXGroupIDProperty() throws Exception
    {
       JBossMessage message = new JBossMessage();
-      message.getCoreMessage().putStringProperty(MessageImpl.GROUP_ID, new SimpleString("testid"));
+      message.getCoreMessage().putStringProperty(MessageImpl.HDR_GROUP_ID, new SimpleString("testid"));
       assertTrue(message.propertyExists(JBossMessage.JMSXGROUPID));
       assertEquals("testid", message.getStringProperty(JBossMessage.JMSXGROUPID));
    }

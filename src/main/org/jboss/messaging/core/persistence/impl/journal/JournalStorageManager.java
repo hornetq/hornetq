@@ -110,9 +110,9 @@ public class JournalStorageManager implements StorageManager
 
    public static final byte LAST_PAGE = 35;
 
-   public static final byte SET_SCHEDULED_DELIVERY_TIME = 44;
+   public static final byte SET_SCHEDULED_DELIVERY_TIME = 36;
 
-   //This will produce a unique id **for this node only**
+   // This will produce a unique id **for this node only**
    private final IDGenerator idGenerator = new TimeAndCounterIDGenerator();
 
    private final AtomicLong bindingIDSequence = new AtomicLong(0);
@@ -175,11 +175,9 @@ public class JournalStorageManager implements StorageManager
          log.info("NIO Journal selected");
          journalFF = new NIOSequentialFileFactory(bindingsDir);
       }
-      else if (config.getJournalType() == JournalType.JDBC)
+      else
       {
-         log.info("JDBC Journal selected");
-         // Sanity check only... this is previously tested
-         throw new IllegalArgumentException("JDBC Journal is not supported yet");
+         throw new IllegalArgumentException("Unsupported journal type " + config.getJournalType());
       }
 
       messageJournal = new JournalImpl(config.getJournalFileSize(),
@@ -222,10 +220,12 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendDeleteRecord(messageID);
    }
 
-   public void storeMessageReferenceScheduled(final long queueID, final long messageID, final long scheduledDeliveryTime) throws Exception
+   public void updateScheduledDeliveryTime(final MessageReference ref) throws Exception
    {
-      ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding(scheduledDeliveryTime, queueID);
-      messageJournal.appendUpdateRecord(messageID, SET_SCHEDULED_DELIVERY_TIME, encoding);
+      ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding(ref.getScheduledDeliveryTime(),
+                                                                         ref.getQueue().getPersistenceID());
+
+      messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(), SET_SCHEDULED_DELIVERY_TIME, encoding);
    }
 
    // Transactional operations
@@ -271,15 +271,20 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendUpdateRecordTransactional(txID, messageID, ACKNOWLEDGE_REF, new ACKEncoding(queueID));
    }
 
-   public void storeDeleteTransactional(final long txID, final long recordID) throws Exception
+   public void storeDeletePageTransaction(final long txID, final long recordID) throws Exception
    {
       messageJournal.appendDeleteRecordTransactional(txID, recordID, null);
    }
 
-   public void storeMessageReferenceScheduledTransactional(final long txID, final long queueID, final long messageID, final long scheduledDeliveryTime) throws Exception
+   public void updateScheduledDeliveryTimeTransactional(final long txID, final MessageReference ref) throws Exception
    {
-      ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding(scheduledDeliveryTime, queueID);
-      messageJournal.appendUpdateRecordTransactional(txID, messageID, SET_SCHEDULED_DELIVERY_TIME,  encoding);
+      ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding(ref.getScheduledDeliveryTime(),
+                                                                         ref.getQueue().getPersistenceID());
+
+      messageJournal.appendUpdateRecordTransactional(txID,
+                                                     ref.getMessage().getMessageID(),
+                                                     SET_SCHEDULED_DELIVERY_TIME,
+                                                     encoding);
    }
 
    public void storeDeleteMessageTransactional(final long txID, final long queueID, final long messageID) throws Exception
@@ -321,6 +326,7 @@ public class JournalStorageManager implements StorageManager
       List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 
       messageJournal.load(records, preparedTransactions);
+
       for (RecordInfo record : records)
       {
          byte[] data = record.data;
@@ -436,16 +442,16 @@ public class JournalStorageManager implements StorageManager
 
                Queue queue = queues.get(encoding.queueID);
 
-                  if (queue == null)
-                  {
-                     throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
-                  }
-                  //remove the reference and then add it back in with the scheduled time set.
-                  MessageReference removed = queue.removeReferenceWithID(messageID);
+               if (queue == null)
+               {
+                  throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
+               }
+               // remove the reference and then add it back in with the scheduled time set.
+               MessageReference removed = queue.removeReferenceWithID(messageID);
 
-                  removed.setScheduledDeliveryTime(encoding.scheduledDeliveryTime);
+               removed.setScheduledDeliveryTime(encoding.scheduledDeliveryTime);
 
-                  queue.addLast(removed);
+               queue.addLast(removed);
 
                break;
             }
@@ -661,12 +667,9 @@ public class JournalStorageManager implements StorageManager
 
          Transaction tx = new TransactionImpl(preparedTransaction.id, xid, this, postOffice);
 
-         List<MessageReference> messages = new ArrayList<MessageReference>();
+         List<MessageReference> references = new ArrayList<MessageReference>();
 
-         List<MessageReference> scheduledMessages = new ArrayList<MessageReference>();
-
-         List<MessageReference> messagesToAck = new ArrayList<MessageReference>();
-
+         List<MessageReference> referencesToAck = new ArrayList<MessageReference>();
 
          PageTransactionInfoImpl pageTransactionInfo = null;
 
@@ -691,7 +694,7 @@ public class JournalStorageManager implements StorageManager
 
                   List<MessageReference> refs = postOffice.route(message);
 
-                  messages.addAll(refs);
+                  references.addAll(refs);
 
                   break;
                }
@@ -712,7 +715,7 @@ public class JournalStorageManager implements StorageManager
 
                   MessageReference removed = queue.removeReferenceWithID(messageID);
 
-                  messagesToAck.add(removed);
+                  referencesToAck.add(removed);
 
                   if (removed == null)
                   {
@@ -746,21 +749,21 @@ public class JournalStorageManager implements StorageManager
                      throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
                   }
 
-                  for (MessageReference ref : messages)
+                  for (MessageReference ref : references)
                   {
-                     if(ref.getQueue().getPersistenceID() == encoding.queueID &&
-                           ref.getMessage().getMessageID() == messageID)
+                     if (ref.getQueue().getPersistenceID() == encoding.queueID && ref.getMessage().getMessageID() == messageID)
                      {
                         ref.setScheduledDeliveryTime(encoding.scheduledDeliveryTime);
-                        scheduledMessages.add(ref);
                      }
                   }
 
                   break;
                }
                default:
+               {
                   log.warn("InternalError: Record type " + recordType +
                            " not recognized. Maybe you're using journal files created on a different version");
+               }
             }
          }
 
@@ -787,7 +790,7 @@ public class JournalStorageManager implements StorageManager
 
             MessageReference removed = queue.removeReferenceWithID(messageID);
 
-            messagesToAck.add(removed);
+            referencesToAck.add(removed);
 
             if (removed == null)
             {
@@ -796,7 +799,7 @@ public class JournalStorageManager implements StorageManager
          }
 
          // now we recreate the state of the tx and add to the resource manager
-         tx.replay(messages, scheduledMessages, messagesToAck, pageTransactionInfo, Transaction.State.PREPARED);
+         tx.replay(references, referencesToAck, pageTransactionInfo);
 
          resourceManager.putTransaction(xid, tx);
       }
@@ -1028,6 +1031,7 @@ public class JournalStorageManager implements StorageManager
          super(queueID);
       }
    }
+
    private static class ScheduledDeliveryEncoding extends QueueEncoding
    {
       long scheduledDeliveryTime;
@@ -1040,7 +1044,6 @@ public class JournalStorageManager implements StorageManager
 
       public ScheduledDeliveryEncoding()
       {
-
       }
 
       public int getEncodeSize()

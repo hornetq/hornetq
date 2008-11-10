@@ -34,6 +34,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
@@ -61,7 +62,8 @@ public class ScheduledMessageExample
          log.info("current time " + df.format(cal.getTime()));
          cal.add(Calendar.SECOND, 5);
          log.info("message scheduled for " + df.format(cal.getTime()));
-         clientProducer.send(message, cal.getTimeInMillis());
+         message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, cal.getTimeInMillis());
+         clientProducer.send(message);
          ClientConsumer clientConsumer = clientSession.createConsumer(queue);
          clientSession.start();
          ClientMessage msg = clientConsumer.receive(7000);

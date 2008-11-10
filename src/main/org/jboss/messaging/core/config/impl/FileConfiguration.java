@@ -322,7 +322,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       String s = getString(e, "journal-type", journalType.toString());
 
-      if (s == null || (!s.equals(JournalType.NIO.toString()) && !s.equals(JournalType.ASYNCIO.toString()) && !s.equals(JournalType.JDBC.toString())))
+      if (s == null || (!s.equals(JournalType.NIO.toString()) && !s.equals(JournalType.ASYNCIO.toString())))
       {
          throw new IllegalArgumentException("Invalid journal type " + s);
       }
@@ -335,11 +335,7 @@ public class FileConfiguration extends ConfigurationImpl
       {
          journalType = JournalType.ASYNCIO;
       }
-      else if (s.equals(JournalType.JDBC.toString()))
-      {
-         journalType = JournalType.JDBC;
-      }
-
+      
       journalSyncTransactional = getBoolean(e, "journal-sync-transactional", journalSyncTransactional);
       
       journalSyncNonTransactional = getBoolean(e, "journal-sync-non-transactional", journalSyncNonTransactional);

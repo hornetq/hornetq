@@ -45,7 +45,6 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.TypedProperties;
 
 /**
  *  <p>Look at the <a href="http://wiki.jboss.org/wiki/JBossMessaging2Paging">WIKI</a> for more information.</p>
@@ -92,8 +91,6 @@ public class PagingManagerImpl implements PagingManager
 
    // private static final boolean isTrace = log.isTraceEnabled();
    private static final boolean isTrace = true;
-
-   private static final SimpleString SCHEDULED_DELIVERY_PROP = new SimpleString("JBM_SCHEDULED_DELIVERY_PROP");
 
    // This is just a debug tool method.
    // During debugs you could make log.trace as log.info, and change the
@@ -204,7 +201,6 @@ public class PagingManagerImpl implements PagingManager
       HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
 
       final List<MessageReference> refsToAdd = new ArrayList<MessageReference>();
-      final List<MessageReference> scheduledRefsToAdd = new ArrayList<MessageReference>();
 
       for (PageMessage msg : data)
       {
@@ -240,25 +236,8 @@ public class PagingManagerImpl implements PagingManager
                pageTransactionsToUpdate.add(pageTransactionInfo);
             }
          }
-         Long scheduledDeliveryTime = (Long) msg.getProperties().getProperty(SCHEDULED_DELIVERY_PROP);
-         //if this is a scheduled message we add it to the queue as just that
-         if(scheduledDeliveryTime == null)
-         {
-            refsToAdd.addAll(postOffice.route(msg.getMessage()));
-         }
-         else
-         {
-            List<MessageReference> refs = postOffice.route(msg.getMessage());
-            for (MessageReference ref : refs)
-            {
-               ref.setScheduledDeliveryTime(scheduledDeliveryTime);
-               if(ref.getQueue().isDurable())
-               {
-                  storageManager.storeMessageReferenceScheduledTransactional(depageTransactionID, ref.getQueue().getPersistenceID(), msg.getMessage().getMessageID(), scheduledDeliveryTime);
-               }
-            }
-            scheduledRefsToAdd.addAll(refs);
-         }
+         
+         refsToAdd.addAll(postOffice.route(msg.getMessage()));
 
          if (msg.getMessage().getDurableRefCount() != 0)
          {
@@ -272,7 +251,7 @@ public class PagingManagerImpl implements PagingManager
          {
             // http://wiki.jboss.org/wiki/JBossMessaging2Paging
             // numberOfReads==numberOfWrites -> We delete the record
-            storageManager.storeDeleteTransactional(depageTransactionID, pageWithTransaction.getRecordID());
+            storageManager.storeDeletePageTransaction(depageTransactionID, pageWithTransaction.getRecordID());
             transactions.remove(pageWithTransaction.getTransactionID());
          }
          else
@@ -288,10 +267,6 @@ public class PagingManagerImpl implements PagingManager
          ref.getQueue().addLast(ref);
       }
 
-      for (MessageReference ref : scheduledRefsToAdd)
-      {
-         ref.getQueue().addLast(ref);
-      }
       if (globalMode.get())
       {
          return globalSize.get() < maxGlobalSize - WATERMARK_GLOBAL_PAGE && pagingStore.getMaxSizeBytes() <= 0 ||
@@ -335,20 +310,6 @@ public class PagingManagerImpl implements PagingManager
    public boolean page(final ServerMessage message) throws Exception
    {
       return getPageStore(message.getDestination()).page(new PageMessageImpl(message));
-   }
-
-   public boolean pageScheduled(final ServerMessage message, final long scheduledDeliveryTime) throws Exception
-   {
-      TypedProperties properties = new TypedProperties();
-      properties.putLongProperty(SCHEDULED_DELIVERY_PROP, scheduledDeliveryTime);
-      return getPageStore(message.getDestination()).page(new PageMessageImpl(message, properties));
-   }
-
-   public boolean pageScheduled(final ServerMessage message, final long transactionId, final long scheduledDeliveryTime) throws Exception
-   {
-      TypedProperties properties = new TypedProperties();
-      properties.putLongProperty(SCHEDULED_DELIVERY_PROP, scheduledDeliveryTime);
-      return getPageStore(message.getDestination()).page(new PageMessageImpl(message, properties));
    }
 
    public void addTransaction(final PageTransactionInfo pageTransaction)

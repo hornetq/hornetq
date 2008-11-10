@@ -31,5 +31,5 @@ package org.jboss.messaging.core.server;
  */
 public enum JournalType
 {
-	NIO, ASYNCIO, JDBC;
+	NIO, ASYNCIO;
 }

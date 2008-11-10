@@ -35,6 +35,7 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -66,7 +67,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessag
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionScheduledSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
@@ -300,6 +300,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    {
       // check the user has write access to this address.
       doSecurity(msg);
+      
+      Long scheduledDeliveryTime =  (Long)msg.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
 
       if (autoCommitSends)
       {
@@ -309,11 +311,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             
             if (msg.getDurableRefCount() != 0)
             {
-               storageManager.storeMessage(msg);
+               storageManager.storeMessage(msg);                              
             }
 
             for (MessageReference ref : refs)
             {
+               if (scheduledDeliveryTime != null)
+               {
+                  ref.setScheduledDeliveryTime(scheduledDeliveryTime.longValue());
+                  
+                  if (ref.getMessage().isDurable() && ref.getQueue().isDurable())
+                  {
+                     storageManager.updateScheduledDeliveryTime(ref);
+                  }
+               }
+               
                ref.getQueue().addLast(ref);
             }
          }
@@ -324,39 +336,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
    }
 
-   public void sendScheduled(final ServerMessage msg, final long scheduledDeliveryTime) throws Exception
-   {
-      doSecurity(msg);
-
-      if (autoCommitSends)
-      {
-         if (!pager.pageScheduled(msg, scheduledDeliveryTime))
-         {
-            List<MessageReference> refs = postOffice.route(msg);
-
-            if (msg.getDurableRefCount() != 0)
-            {
-               storageManager.storeMessage(msg);
-            }
-
-            for (MessageReference ref : refs)
-            {
-               if (ref.getQueue().isDurable())
-               {
-                  storageManager.storeMessageReferenceScheduled(ref.getQueue().getPersistenceID(),
-                                                                msg.getMessageID(),
-                                                                scheduledDeliveryTime);
-               }
-               ref.setScheduledDeliveryTime(scheduledDeliveryTime);
-               ref.getQueue().addLast(ref);
-            }
-         }
-      }
-      else
-      {
-         tx.addScheduledMessage(msg, scheduledDeliveryTime);
-      }
-   }
    
    public void doHandleCreateConsumer(final SessionCreateConsumerMessage packet)
    {
@@ -2401,91 +2380,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
    }
    
-   public void handleSendScheduledProducerMessage(final SessionScheduledSendMessage packet)
-   {               
-      ServerMessage msg = packet.getServerMessage();
-      
-      final SendLock lock;
-            
-      if (channel.getReplicatingChannel() != null)
-      {
-         lock = postOffice.getAddressLock(msg.getDestination());
-               
-         lock.beforeSend();
-      }
-      else
-      {
-         lock = null;
-      }
-      
-      if (msg.getMessageID() == 0L)
-      {
-         // must generate message id here, so we know they are in sync on live and backup
-         long id = storageManager.generateUniqueID();
-
-         msg.setMessageID(id);
-      }
-
-      DelayedResult result = channel.replicatePacket(packet);
-      
-      //With a send we must make sure it is replicated to backup before being processed on live
-      //or can end up with delivery being processed on backup before original send
-      
-      if (result == null)
-      {
-         doSendScheduled(packet);                        
-      }
-      else
-      {
-         result.setResultRunner(new Runnable()
-         {
-            public void run()
-            {
-               doSendScheduled(packet);
-               
-               lock.afterSend();
-            }
-         });
-      }
-   }
-
-   private void doSendScheduled(final SessionScheduledSendMessage packet)
-   {
-      Packet response = null;
-
-      try
-      {
-         producers.get(packet.getProducerID()).sendScheduled(packet.getServerMessage(), packet.getScheduledDeliveryTime());
-
-         if (packet.isRequiresResponse())
-         {
-            response = new NullResponseMessage();
-         }
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to send scheduled message", e);
-         if (packet.isRequiresResponse())
-         {
-            if (e instanceof MessagingException)
-            {
-               response = new MessagingExceptionMessage((MessagingException)e);
-            }
-            else
-            {
-               response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
-            }
-         }
-      }
-      
-      channel.confirm(packet);
-
-      if (response != null)
-      {
-         channel.send(response);
-      }
-   }
-   
+  
    public void handleManagementMessage(final SessionSendManagementMessage packet)
    {        
       ServerMessage msg = packet.getServerMessage();

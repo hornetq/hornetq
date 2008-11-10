@@ -92,21 +92,7 @@ public interface PagingManager extends MessagingComponent
     * @param message
     * @return false if destination is not on page mode
     */
-   boolean pageScheduled(ServerMessage message, long scheduledDeliveryTime) throws Exception;
-
-   /**
-    * Page, only if destination is in page mode.
-    * @param message
-    * @return false if destination is not on page mode
-    */
    boolean page(ServerMessage message, long transactionId) throws Exception;
-
-    /**
-    * Page, only if destination is in page mode.
-    * @param message
-    * @return false if destination is not on page mode
-    */
-   boolean pageScheduled(ServerMessage message, long transactionId, long scheduledDeliveryTime) throws Exception;
 
    /**
     * Point to inform/restoring Transactions used when the messages were added into paging
@@ -139,5 +125,4 @@ public interface PagingManager extends MessagingComponent
     * @throws Exception 
     * */
    void clearLastPageRecord(LastPageRecord lastRecord) throws Exception;
-
 }

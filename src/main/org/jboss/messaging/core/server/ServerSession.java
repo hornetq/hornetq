@@ -39,7 +39,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMes
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionScheduledSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
@@ -77,8 +76,6 @@ public interface ServerSession
    void promptDelivery(Queue queue);
 
    void send(ServerMessage msg) throws Exception;
-
-   void sendScheduled(ServerMessage serverMessage, long scheduledDeliveryTime) throws Exception;
 
    void handleAcknowledge(final SessionAcknowledgeMessage packet);
    
@@ -139,8 +136,6 @@ public interface ServerSession
    void handleReceiveConsumerCredits(SessionConsumerFlowCreditMessage packet);
 
    void handleSendProducerMessage(SessionSendMessage packet);
-
-   void handleSendScheduledProducerMessage(SessionScheduledSendMessage packet);
 
    void handleManagementMessage(SessionSendManagementMessage packet);
 

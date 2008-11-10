@@ -148,11 +148,9 @@ public class PacketImpl implements Packet
 
    public static final byte SESS_MANAGEMENT_SEND = 80;
 
-   public static final byte SESS_SCHEDULED_SEND = 81;
+   public static final byte SESS_FAILOVER_COMPLETE = 81;
 
-   public static final byte SESS_FAILOVER_COMPLETE = 82;
-
-   public static final byte SESS_REPLICATE_DELIVERY = 83;
+   public static final byte SESS_REPLICATE_DELIVERY = 82;
 
    // Static --------------------------------------------------------
 

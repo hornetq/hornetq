@@ -37,10 +37,6 @@ public interface ClientProducer
 	
    void send(SimpleString address, ClientMessage message) throws MessagingException;
    
-   void send(final ClientMessage msg, long scheduleDeliveryTime) throws MessagingException;
-
-   void send(final SimpleString address, final ClientMessage msg, long scheduleDeliveryTime) throws MessagingException;
-
    void registerAcknowledgementHandler(AcknowledgementHandler handler);
    
    void unregisterAcknowledgementHandler(AcknowledgementHandler handler);

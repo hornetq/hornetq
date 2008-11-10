@@ -124,13 +124,13 @@ public class MessageReferenceImpl implements MessageReference
       return queue;
    }
 
-   public boolean cancel(final StorageManager persistenceManager,
+   public boolean cancel(final StorageManager storageManager,
                          final PostOffice postOffice,
                          final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       if (message.isDurable() && queue.isDurable())
       {
-         persistenceManager.updateDeliveryCount(this);
+         storageManager.updateDeliveryCount(this);
       }
       
       QueueSettings queueSettings = queueSettingsRepository.getMatch(queue.getName().toString());
@@ -139,7 +139,7 @@ public class MessageReferenceImpl implements MessageReference
       if (maxDeliveries > 0 && deliveryCount >= maxDeliveries)
       {
          log.warn("Message has reached maximum delivery attempts, sending it to DLQ");
-         sendToDLQ(persistenceManager, postOffice, queueSettingsRepository);
+         sendToDLQ(storageManager, postOffice, queueSettingsRepository);
 
          return false;
       }
@@ -150,7 +150,8 @@ public class MessageReferenceImpl implements MessageReference
          if (redeliveryDelay > 0)
          {
             scheduledDeliveryTime = System.currentTimeMillis() + redeliveryDelay;
-            persistenceManager.storeMessageReferenceScheduled(queue.getPersistenceID(), message.getMessageID(), scheduledDeliveryTime);
+            
+            storageManager.updateScheduledDeliveryTime(this);
          }
          queue.referenceCancelled();
 

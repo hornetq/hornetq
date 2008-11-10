@@ -13,17 +13,16 @@
 package org.jboss.messaging.core.transaction.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Collections;
 
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
@@ -59,10 +58,6 @@ public class TransactionImpl implements Transaction
 
    private final List<ServerMessage> pagedMessages = new ArrayList<ServerMessage>();
 
-   private final Map<ServerMessage, Long> scheduledPagedMessages = new HashMap<ServerMessage, Long>();
-
-   private final Map<MessageReference, Long> scheduledReferences = new HashMap<MessageReference, Long>();
-
    private PageTransactionInfo pageTransaction;
 
    private final Xid xid;
@@ -91,12 +86,12 @@ public class TransactionImpl implements Transaction
       }
       else
       {
-         this.pagingManager = postOffice.getPagingManager();
+         pagingManager = postOffice.getPagingManager();
       }
 
-      this.xid = null;
+      xid = null;
 
-      this.id = storageManager.generateUniqueID();
+      id = storageManager.generateUniqueID();
 
       createTime = System.currentTimeMillis();
    }
@@ -113,12 +108,12 @@ public class TransactionImpl implements Transaction
       }
       else
       {
-         this.pagingManager = postOffice.getPagingManager();
+         pagingManager = postOffice.getPagingManager();
       }
 
       this.xid = xid;
 
-      this.id = storageManager.generateUniqueID();
+      id = storageManager.generateUniqueID();
 
       createTime = System.currentTimeMillis();
    }
@@ -139,7 +134,7 @@ public class TransactionImpl implements Transaction
       }
       else
       {
-         this.pagingManager = postOffice.getPagingManager();
+         pagingManager = postOffice.getPagingManager();
       }
 
       createTime = System.currentTimeMillis();
@@ -167,35 +162,6 @@ public class TransactionImpl implements Transaction
       else
       {
          route(message);
-      }
-   }
-
-   public void addScheduledMessage(final ServerMessage message, long scheduledDeliveryTime) throws Exception
-   {
-      if (state != State.ACTIVE)
-      {
-         throw new IllegalStateException("Transaction is in invalid state " + state);
-      }
-
-      if (pagingManager.isPaging(message.getDestination()))
-      {
-         scheduledPagedMessages.put(message, scheduledDeliveryTime);
-      }
-      else
-      {
-         List<MessageReference> refs = route(message);
-
-         for (MessageReference ref : refs)
-         {
-            scheduledReferences.put(ref, scheduledDeliveryTime);
-            if (ref.getQueue().isDurable())
-            {
-               storageManager.storeMessageReferenceScheduledTransactional(id,
-                                                                          ref.getQueue().getPersistenceID(),
-                                                                          message.getMessageID(),
-                                                                          scheduledDeliveryTime);
-            }
-         }
       }
    }
 
@@ -332,16 +298,7 @@ public class TransactionImpl implements Transaction
 
          for (MessageReference ref : refsToAdd)
          {
-            Long scheduled = scheduledReferences.get(ref);
-            if (scheduled == null)
-            {
-               ref.getQueue().addLast(ref);
-            }
-            else
-            {
-               ref.setScheduledDeliveryTime(scheduled);
-               ref.getQueue().addLast(ref);
-            }
+            ref.getQueue().addLast(ref);
          }
 
          // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
@@ -458,25 +415,19 @@ public class TransactionImpl implements Transaction
       return containsPersistent;
    }
 
-   public void markAsRollbackOnly(MessagingException messagingException)
+   public void markAsRollbackOnly(final MessagingException messagingException)
    {
       state = State.ROLLBACK_ONLY;
 
       this.messagingException = messagingException;
    }
 
-   public void replay(List<MessageReference> messages,
-                      List<MessageReference> scheduledMessages,
-                      List<MessageReference> acknowledgements,
-                      PageTransactionInfo pageTransaction,
-                      State prepared) throws Exception
+   public void replay(final List<MessageReference> messages,
+                      final List<MessageReference> acknowledgements,
+                      final PageTransactionInfo pageTransaction) throws Exception
    {
       containsPersistent = true;
       refsToAdd.addAll(messages);
-      for (MessageReference scheduledMessage : scheduledMessages)
-      {
-         this.scheduledReferences.put(scheduledMessage, scheduledMessage.getScheduledDeliveryTime());
-      }
       this.acknowledgements.addAll(acknowledgements);
       this.pageTransaction = pageTransaction;
 
@@ -485,7 +436,7 @@ public class TransactionImpl implements Transaction
          pagingManager.addTransaction(this.pageTransaction);
       }
 
-      state = prepared;
+      state = State.PREPARED;
    }
 
    public void setContainsPersistent(final boolean containsPersistent)
@@ -498,6 +449,8 @@ public class TransactionImpl implements Transaction
 
    private List<MessageReference> route(final ServerMessage message) throws Exception
    {
+      Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+
       List<MessageReference> refs = postOffice.route(message);
 
       refsToAdd.addAll(refs);
@@ -507,6 +460,19 @@ public class TransactionImpl implements Transaction
          storageManager.storeMessageTransactional(id, message);
 
          containsPersistent = true;
+      }
+
+      if (scheduledDeliveryTime != null)
+      {
+         for (MessageReference ref : refs)
+         {
+            ref.setScheduledDeliveryTime(scheduledDeliveryTime);
+
+            if (ref.getMessage().isDurable() && ref.getQueue().isDurable())
+            {
+               storageManager.updateScheduledDeliveryTimeTransactional(id, ref);
+            }
+         }
       }
 
       return refs;
@@ -522,7 +488,7 @@ public class TransactionImpl implements Transaction
       {
          if (pageTransaction == null)
          {
-            pageTransaction = new PageTransactionInfoImpl(this.id);
+            pageTransaction = new PageTransactionInfoImpl(id);
             // To avoid a race condition where depage happens before the transaction is completed, we need to inform the
             // pager about this transaction is being processed
             pagingManager.addTransaction(pageTransaction);
@@ -550,37 +516,6 @@ public class TransactionImpl implements Transaction
          }
       }
 
-      for (ServerMessage message : scheduledPagedMessages.keySet())
-      {
-         long scheduledDeliveryTime = scheduledPagedMessages.get(message);
-         // http://wiki.jboss.org/wiki/JBossMessaging2Paging
-         // Explained under Transaction On Paging. (This is the item B)
-         if (pagingManager.pageScheduled(message, id, scheduledDeliveryTime))
-         {
-            if (message.isDurable())
-            {
-               // We only create pageTransactions if using persistent messages
-               pageTransaction.increment();
-               pagingPersistent = true;
-               pagedDestinationsToSync.add(message.getDestination());
-            }
-         }
-         else
-         {
-            // This could happen when the PageStore left the pageState
-            List<MessageReference> refs = route(message);
-
-            for (MessageReference ref : refs)
-            {
-               scheduledReferences.put(ref, scheduledDeliveryTime);
-               if (ref.getQueue().isDurable())
-               {
-                  storageManager.storeMessageReferenceScheduledTransactional(id, ref.getQueue().getPersistenceID(), message.getMessageID(), scheduledDeliveryTime);
-               }
-            }
-         }
-      }
-
       if (pagingPersistent)
       {
          containsPersistent = true;
@@ -599,9 +534,5 @@ public class TransactionImpl implements Transaction
       acknowledgements.clear();
 
       pagedMessages.clear();
-
-      scheduledPagedMessages.clear();
-
-      scheduledReferences.clear();
    }
 }

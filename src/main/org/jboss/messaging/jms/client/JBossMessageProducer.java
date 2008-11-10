@@ -451,15 +451,7 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
 
       try
       {      	
-      	//check to see if this message needs to be scheduled
-         if(jbm.getScheduledDeliveryTime() > 0)
-         {
-            producer.send(address, coreMessage, jbm.getScheduledDeliveryTime());
-         }
-         else
-         {
-            producer.send(address, coreMessage);
-         }
+      	producer.send(address, coreMessage);         
       }
       catch (MessagingException e)
       {

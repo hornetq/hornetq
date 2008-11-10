@@ -62,7 +62,9 @@ public abstract class MessageImpl implements Message
    
    public static final SimpleString HDR_ORIG_MESSAGE_ID = new SimpleString("JBM_ORIG_MESSAGE_ID");
 
-   public static final SimpleString GROUP_ID = new SimpleString("JBMGroupID");
+   public static final SimpleString HDR_GROUP_ID = new SimpleString("JBM_GROUP_ID");
+   
+   public static final SimpleString HDR_SCHEDULED_DELIVERY_TIME = new SimpleString("JBM_SCHED_DELIVERY");
 
    // Attributes ----------------------------------------------------
 

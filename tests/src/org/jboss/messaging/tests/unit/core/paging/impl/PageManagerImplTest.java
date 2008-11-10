@@ -24,21 +24,16 @@ package org.jboss.messaging.tests.unit.core.paging.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
 
 import org.easymock.EasyMock;
-import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.PageMessage;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.paging.impl.PageMessageImpl;
 import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
-import org.jboss.messaging.core.paging.impl.PagingStoreImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -102,46 +97,7 @@ public class PageManagerImplTest extends UnitTestCase
       EasyMock.verify(spi, store, message, storageManager, po, ref, queue);
    }
 
-   public void testOnDepageScheduledMessage() throws Exception
-   {
-      long time = System.currentTimeMillis() + 10000;
-      List<MessageReference> refs = new ArrayList<MessageReference>();
-      MessageReference ref = EasyMock.createStrictMock(MessageReference.class);
-      refs.add(ref);
-      Queue queue = EasyMock.createStrictMock(Queue.class);
-      HierarchicalRepository<QueueSettings> queueSettings = new HierarchicalObjectRepository<QueueSettings>();
-      queueSettings.setDefault(new QueueSettings());
-      PostOffice po = EasyMock.createStrictMock(PostOffice.class);
-      PagingStoreFactory spi = EasyMock.createMock(PagingStoreFactory.class);
-      PagingStore store = EasyMock.createNiceMock(PagingStore.class);
-      StorageManager storageManager = EasyMock.createStrictMock(StorageManager.class);
-      PagingManagerImpl manager = new PagingManagerImpl(spi, storageManager, queueSettings, -1);
-      manager.setPostOffice(po);
-      ServerMessage message = EasyMock.createStrictMock(ServerMessage.class);
-
-      EasyMock.expect(storageManager.generateUniqueID()).andReturn(1l);
-      EasyMock.expect(po.route(message)).andReturn(refs);
-      EasyMock.expect(message.getDurableRefCount()).andReturn(1);
-      ref.setScheduledDeliveryTime(time);
-      storageManager.storeLastPage(EasyMock.anyLong(), (LastPageRecord) EasyMock.anyObject());
-      storageManager.storeMessageReferenceScheduledTransactional(EasyMock.anyLong(), EasyMock.anyLong(), EasyMock.anyLong(), EasyMock.eq(time));
-      storageManager.storeMessageTransactional(EasyMock.anyLong(), (ServerMessage) EasyMock.anyObject());
-      storageManager.commit(EasyMock.anyLong());
-      EasyMock.expect(ref.getQueue()).andStubReturn(queue);
-      EasyMock.expect(queue.isDurable()).andReturn(true);
-      EasyMock.expect(queue.getPersistenceID()).andStubReturn(1);
-      EasyMock.expect(message.getMessageID()).andStubReturn(2);
-      //storageManager.storeMessageReferenceScheduledTransactional(1,1,2,time);
-      EasyMock.expect(queue.addLast(ref)).andReturn(HandleStatus.HANDLED);
-      EasyMock.replay(spi, store, message, storageManager, po, ref, queue);
-      SimpleString queueName = new SimpleString("aq");
-      PageMessageImpl pageMessage = new PageMessageImpl(message);
-
-      pageMessage.getProperties().putLongProperty(new SimpleString("JBM_SCHEDULED_DELIVERY_PROP"), time);
-      manager.onDepage(0, queueName, store, new PageMessage[] {pageMessage} );
-      EasyMock.verify(spi, store, message, storageManager, po, ref, queue);
-   }
-
+  
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

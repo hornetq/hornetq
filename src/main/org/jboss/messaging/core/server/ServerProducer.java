@@ -38,6 +38,4 @@ public interface ServerProducer
 	void close() throws Exception;
 	
 	void send(ServerMessage msg) throws Exception;
-
-   void sendScheduled(ServerMessage message, long scheduledDeliveryTime) throws Exception;
 }

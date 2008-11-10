@@ -36,6 +36,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -172,7 +173,8 @@ public class ScheduledMessageTest extends UnitTestCase
       ClientMessage message = createMessage(session, "m1");
       long time = System.currentTimeMillis();
       time += 10000;
-      producer.send(message, time);
+      message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      producer.send(message);
 
       producer.close();
 
@@ -335,8 +337,10 @@ public class ScheduledMessageTest extends UnitTestCase
       message.setDurable(true);
       long time = System.currentTimeMillis();
       time += 10000;
-      producer.send(message, time);
+      message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      producer.send(message);
 
+      log.info("Recover is " + recover);
       if (recover)
       {
          producer.close();
@@ -386,15 +390,20 @@ public class ScheduledMessageTest extends UnitTestCase
       ClientMessage m5 = createMessage(session, "m5");
       long time = System.currentTimeMillis();
       time += 10000;
-      producer.send(m1, time);
+      m1.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      producer.send(m1);
       time += 1000;
-      producer.send(m2, time);
+      m2.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      producer.send(m2);
       time += 1000;
-      producer.send(m3, time);
+      m3.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      producer.send(m3);
       time += 1000;
-      producer.send(m4, time);
+      m4.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      producer.send(m4);
       time += 1000;
-      producer.send(m5, time);
+      m5.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      producer.send(m5);
       time -= 4000;
       if (recover)
       {
@@ -467,15 +476,20 @@ public class ScheduledMessageTest extends UnitTestCase
       ClientMessage m5 = createMessage(session, "m5");
       long time = System.currentTimeMillis();
       time += 10000;
-      producer.send(m1, time);
+      m1.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      producer.send(m1);
       time += 3000;
-      producer.send(m2, time);
+      m2.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      producer.send(m2);
       time -= 2000;
-      producer.send(m3, time);
+      m3.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      producer.send(m3);
       time += 3000;
-      producer.send(m4, time);
+      m4.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      producer.send(m4);
       time -= 2000;
-      producer.send(m5, time);
+      m5.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      producer.send(m5);
       time -= 2000;
       ClientConsumer consumer = null;
       if (recover)
@@ -549,13 +563,16 @@ public class ScheduledMessageTest extends UnitTestCase
       ClientMessage m5 = createMessage(session, "m5");
       long time = System.currentTimeMillis();
       time += 10000;
-      producer.send(m1, time);
+      m1.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      producer.send(m1);
       producer.send(m2);
       time += 1000;
-      producer.send(m3, time);
+      m3.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      producer.send(m3);
       producer.send(m4);
       time += 1000;
-      producer.send(m5, time);
+      m5.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
+      producer.send(m5);
       time -= 2000;
       ClientConsumer consumer = null;
       if (recover)
@@ -629,7 +646,8 @@ public class ScheduledMessageTest extends UnitTestCase
       message.setDurable(true);
       Calendar cal = Calendar.getInstance();
       cal.roll(Calendar.SECOND, 10);
-      producer.send(message, cal.getTimeInMillis());
+      message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, cal.getTimeInMillis());
+      producer.send(message);
       session.end(xid, XAResource.TMSUCCESS);
       session.prepare(xid);
       if (recover)

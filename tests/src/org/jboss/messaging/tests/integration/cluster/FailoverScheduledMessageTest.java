@@ -39,6 +39,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
@@ -117,7 +118,9 @@ public class FailoverScheduledMessageTest extends TestCase
          message.putIntProperty(new SimpleString("count"), i);         
          message.getBody().putString("aardvarks");
          message.getBody().flip();
-         producer.send(message, now + delay * i);                
+         long deliveryTime = now + delay * i;
+         message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, deliveryTime);
+         producer.send(message);                
       }
       
       ClientConsumer consumer1 = session1.createConsumer(ADDRESS);

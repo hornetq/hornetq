@@ -53,24 +53,27 @@ public interface StorageManager extends MessagingComponent
 
    long generateUniqueID();
 
+   
    void storeMessage(ServerMessage message) throws Exception;
 
    void storeAcknowledge(long queueID, long messageID) throws Exception;
+   
+   void updateDeliveryCount(MessageReference ref) throws Exception;
+   
+   void updateScheduledDeliveryTime(MessageReference ref) throws Exception;
 
    void storeDelete(long messageID) throws Exception;
-
-   void storeMessageReferenceScheduled(final long queueID, final long messageID, final long scheduledDeliveryTime) throws Exception;
-
+   
+   
+     
    void storeMessageTransactional(long txID, ServerMessage message) throws Exception;
 
    void storeAcknowledgeTransactional(long txID, long queueID, long messageiD) throws Exception;
-
-   void storeMessageReferenceScheduledTransactional(final long txID, final long queueID, final long messageID, final long scheduledDeliveryTime) throws Exception;
+   
+   void updateScheduledDeliveryTimeTransactional(long txID, MessageReference ref) throws Exception;
 
    void storeDeleteMessageTransactional(long txID, long queueID, long messageID) throws Exception;
 
-   /** Used to delete non-messaging data (such as PageTransaction and LasPage) */
-   void storeDeleteTransactional(long txID, long recordID) throws Exception;
 
    void prepare(long txID, Xid xid) throws Exception;
 
@@ -78,12 +81,15 @@ public interface StorageManager extends MessagingComponent
 
    void rollback(long txID) throws Exception;
 
+   
    void storePageTransaction(long txID, PageTransactionInfo pageTransaction) throws Exception;
 
    void storeLastPage(long txID, LastPageRecord pageTransaction) throws Exception;
+   
+   void storeDeletePageTransaction(long txID, long recordID) throws Exception;
 
-   void updateDeliveryCount(MessageReference ref) throws Exception;
-
+   
+   
    void loadMessages(PostOffice postOffice, Map<Long, Queue> queues, ResourceManager resourceManager) throws Exception;
 
    // Bindings related operations
@@ -97,5 +103,4 @@ public interface StorageManager extends MessagingComponent
    boolean deleteDestination(SimpleString destination) throws Exception;
 
    void loadBindings(QueueFactory queueFactory, List<Binding> bindings, List<SimpleString> destinations) throws Exception;
-
 }

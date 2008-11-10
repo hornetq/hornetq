@@ -67,10 +67,5 @@ public class ServerProducerImpl implements ServerProducer
 	public void send(final ServerMessage message) throws Exception
 	{
       session.send(message);  		
-	}
-	
-	public void sendScheduled(final ServerMessage message, final long scheduledDeliveryTime) throws Exception
-   {
-      session.sendScheduled(message, scheduledDeliveryTime);
-   }
+	}	
 }

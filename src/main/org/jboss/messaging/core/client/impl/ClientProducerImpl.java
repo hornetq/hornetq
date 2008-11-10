@@ -19,7 +19,6 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionScheduledSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiter;
@@ -103,28 +102,14 @@ public class ClientProducerImpl implements ClientProducerInternal
    {
       checkClosed();
 
-      doSend(null, msg, 0);
+      doSend(null, msg);
    }
 
    public void send(final SimpleString address, final ClientMessage msg) throws MessagingException
    {
       checkClosed();
 
-      doSend(address, msg, 0);
-   }
-
-   public void send(final ClientMessage msg, long scheduleDeliveryTime) throws MessagingException
-   {
-      checkClosed();
-
-      doSend(null, msg, scheduleDeliveryTime);
-   }
-
-   public void send(final SimpleString address, final ClientMessage msg, long scheduleDeliveryTime) throws MessagingException
-   {
-      checkClosed();
-
-      doSend(address, msg, scheduleDeliveryTime);
+      doSend(address, msg);
    }
 
    public void registerAcknowledgementHandler(final AcknowledgementHandler handler)
@@ -206,7 +191,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       closed = true;
    }
 
-   private void doSend(final SimpleString address, final ClientMessage msg, long scheduledDeliveryTime) throws MessagingException
+   private void doSend(final SimpleString address, final ClientMessage msg) throws MessagingException
    {
       if (address != null)
       {
@@ -226,22 +211,12 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       if (autoGroupId != null)
       {
-         msg.putStringProperty(MessageImpl.GROUP_ID, autoGroupId);
+         msg.putStringProperty(MessageImpl.HDR_GROUP_ID, autoGroupId);
       }
 
       boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
       
-      SessionSendMessage message;
-      
-      // check to see if this message need to be scheduled.
-      if (scheduledDeliveryTime <= 0)
-      {
-         message = new SessionSendMessage(id, msg, sendBlocking);
-      }
-      else
-      {
-         message = new SessionScheduledSendMessage(id, msg, sendBlocking, scheduledDeliveryTime);
-      }
+      SessionSendMessage message = new SessionSendMessage(id, msg, sendBlocking);
 
       if (sendBlocking)
       {
