@@ -101,9 +101,6 @@ public class ManagementServiceImpl implements ManagementService
 
    private final MessageCounterManager messageCounterManager = new MessageCounterManagerImpl(10000);
 
-   // key is a Destination
-   private final Map<SimpleString, NotificationListener> notifListeners = new HashMap<SimpleString, NotificationListener>();
-
    // Static --------------------------------------------------------
 
    public static ObjectName getMessagingServerObjectName() throws Exception
