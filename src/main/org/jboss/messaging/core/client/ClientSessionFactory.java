@@ -74,9 +74,9 @@ public interface ClientSessionFactory
 
    void setBlockOnAcknowledge(final boolean blocking);
 
-   boolean isAutoGroupID();
+   boolean isAutoGroup();
 
-   void setAutoGroupId(boolean autoGroupId);
+   void setAutoGroup(boolean autoGroup);
    
    int getAckBatchSize();
    

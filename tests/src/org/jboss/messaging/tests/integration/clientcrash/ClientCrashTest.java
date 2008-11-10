@@ -23,7 +23,7 @@
 package org.jboss.messaging.tests.integration.clientcrash;
 
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP_ID;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
@@ -171,7 +171,7 @@ public class ClientCrashTest extends TestCase
                                         DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                                         DEFAULT_BLOCK_ON_PERSISTENT_SEND,
                                         DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                        DEFAULT_AUTO_GROUP_ID,
+                                        DEFAULT_AUTO_GROUP,
                                         DEFAULT_MAX_CONNECTIONS,
                                         DEFAULT_ACK_BATCH_SIZE);
    }

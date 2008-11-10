@@ -36,22 +36,17 @@ public class SessionCreateProducerMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-
    private int maxRate;
-
-   private boolean autoGroupId;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateProducerMessage(final int maxRate, final boolean autoGroupId)
+   public SessionCreateProducerMessage(final int maxRate)
    {
       super(SESS_CREATEPRODUCER);
 
       this.maxRate = maxRate;
-
-      this.autoGroupId = autoGroupId;
    }
 
    public SessionCreateProducerMessage()
@@ -66,7 +61,6 @@ public class SessionCreateProducerMessage extends PacketImpl
    {
       StringBuffer buff = new StringBuffer(getParentString());
       buff.append(", maxrate=" + maxRate);
-      buff.append(", autoGroupId=" + autoGroupId);
       buff.append("]");
       return buff.toString();
    }
@@ -76,33 +70,14 @@ public class SessionCreateProducerMessage extends PacketImpl
       return maxRate;
    }
 
-   public boolean isAutoGroupId()
-   {
-      return autoGroupId;
-   }
-
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putInt(maxRate);
-      buffer.putBoolean(autoGroupId);
    }
 
    public void decodeBody(final MessagingBuffer buffer)
    {
       maxRate = buffer.getInt();
-      autoGroupId = buffer.getBoolean();
-   }
-
-   public boolean equals(Object other)
-   {
-      if (other instanceof SessionCreateProducerMessage == false)
-      {
-         return false;
-      }
-
-      SessionCreateProducerMessage r = (SessionCreateProducerMessage)other;
-
-      return super.equals(other) && this.autoGroupId == autoGroupId;
    }
 
    // Package protected ---------------------------------------------

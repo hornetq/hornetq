@@ -22,6 +22,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionProducerCloseMes
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiter;
+import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * The client-side Producer connectionFactory class.
@@ -59,7 +60,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
    private final boolean blockOnPersistentSend;
 
-   private final SimpleString autoGroupId;
+   private final SimpleString groupID;
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -71,7 +72,7 @@ public class ClientProducerImpl implements ClientProducerInternal
                              final TokenBucketLimiter rateLimiter,
                              final boolean blockOnNonPersistentSend,
                              final boolean blockOnPersistentSend,
-                             final SimpleString autoGroupId,
+                             final boolean autoGroup,
                              final Channel channel)
    {
       this.channel = channel;
@@ -88,7 +89,14 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       this.blockOnPersistentSend = blockOnPersistentSend;
 
-      this.autoGroupId = autoGroupId;
+      if (autoGroup)
+      {
+         this.groupID = UUIDGenerator.getInstance().generateSimpleStringUUID();
+      }
+      else
+      {
+         this.groupID = null;
+      }
    }
 
    // ClientProducer implementation ----------------------------------------------------------------
@@ -209,9 +217,9 @@ public class ClientProducerImpl implements ClientProducerInternal
          rateLimiter.limit();
       }
 
-      if (autoGroupId != null)
+      if (groupID != null)
       {
-         msg.putStringProperty(MessageImpl.HDR_GROUP_ID, autoGroupId);
+         msg.putStringProperty(MessageImpl.HDR_GROUP_ID, groupID);
       }
 
       boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;

@@ -140,7 +140,7 @@ public class JMSServerDeployer extends XmlDeployer
          boolean blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
          boolean blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
          boolean blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-         boolean autoGroupId = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP_ID;
+         boolean autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
          int maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
          List<String> jndiBindings = new ArrayList<String>();
          String connectorFactoryClassName = null;
@@ -200,7 +200,7 @@ public class JMSServerDeployer extends XmlDeployer
             }
             else if(AUTO_GROUP_ID_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
-               autoGroupId = Boolean.parseBoolean(children.item(j).getTextContent().trim());
+               autoGroup = Boolean.parseBoolean(children.item(j).getTextContent().trim());
             }
             else if(MAX_CONNECTIONS_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
@@ -410,7 +410,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                   blockOnAcknowledge,
                                                   blockOnNonPersistentSend,
                                                   blockOnPersistentSend,
-                                                  autoGroupId,
+                                                  autoGroup,
                                                   maxConnections,
                                                   jndiBindings);
       }

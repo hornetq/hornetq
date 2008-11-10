@@ -61,11 +61,8 @@ import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.ExecutorFactory;
-import org.jboss.messaging.util.GroupIdGenerator;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.SimpleStringIdGenerator;
 import org.jboss.messaging.util.VersionLoader;
 
 /**
@@ -129,8 +126,6 @@ public class MessagingServerImpl implements MessagingServer
    private Configuration configuration;
 
    private ManagementService managementService;
-
-   private final SimpleStringIdGenerator simpleStringIdGenerator = new GroupIdGenerator(new SimpleString("AutoGroupId-"));
 
    private ConnectionManager replicatingConnectionManager;
 
@@ -634,8 +629,7 @@ public class MessagingServerImpl implements MessagingServer
                                                               executorFactory.getExecutor(),
                                                               channel,
                                                               managementService,
-                                                              this,
-                                                              simpleStringIdGenerator,
+                                                              this,                                                    
                                                               configuration.getManagementAddress());
 
       sessions.put(name, session);

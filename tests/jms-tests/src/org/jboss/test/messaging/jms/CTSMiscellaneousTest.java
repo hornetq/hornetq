@@ -102,7 +102,7 @@ public class CTSMiscellaneousTest extends JBMServerTestCase
                                                        true,
                                                        true,
                                                        true,
-                                                       ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP_ID,
+                                                       ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                                                        ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
                                                        "/StrictTCKConnectionFactory");
 

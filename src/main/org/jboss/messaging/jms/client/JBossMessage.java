@@ -545,8 +545,8 @@ public class JBossMessage implements javax.jms.Message
 
    public boolean propertyExists(final String name) throws JMSException
    {
-      return message.containsProperty(new SimpleString(name)) || name.equals(JMSXDELIVERYCOUNT)
-            || (JMSXGROUPID.equals(name) && message.containsProperty(MessageImpl.HDR_GROUP_ID));
+      return message.containsProperty(new SimpleString(name)) || name.equals(JMSXDELIVERYCOUNT) ||
+             (JMSXGROUPID.equals(name) && message.containsProperty(MessageImpl.HDR_GROUP_ID));
    }
 
    public boolean getBooleanProperty(final String name) throws JMSException
@@ -706,7 +706,7 @@ public class JBossMessage implements javax.jms.Message
          return String.valueOf(message.getDeliveryCount());
       }
       Object value;
-      if(JMSXGROUPID.equals(name))
+      if (JMSXGROUPID.equals(name))
       {
          value = message.getProperty(MessageImpl.HDR_GROUP_ID);
       }
@@ -838,7 +838,7 @@ public class JBossMessage implements javax.jms.Message
    public void setStringProperty(final String name, final String value) throws JMSException
    {
       checkProperty(name, value);
-      if(JMSXGROUPID.equals(name))
+      if (JMSXGROUPID.equals(name))
       {
          message.putStringProperty(MessageImpl.HDR_GROUP_ID, new SimpleString(value));
       }

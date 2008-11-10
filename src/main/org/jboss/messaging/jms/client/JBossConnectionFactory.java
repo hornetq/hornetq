@@ -92,7 +92,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    private final boolean blockOnPersistentSend;
 
-   private final boolean autoGroupId;
+   private final boolean autoGroup;
 
    private final int maxConnections;
 
@@ -112,7 +112,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  final boolean blockOnAcknowledge,
                                  final boolean blockOnNonPersistentSend,
                                  final boolean blockOnPersistentSend,
-                                 final boolean autoGroupId,
+                                 final boolean autoGroup,
                                  final int maxConnections)
    {
       this.connectorConfig = connectorConfig;
@@ -129,7 +129,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.blockOnAcknowledge = blockOnAcknowledge;
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
       this.blockOnPersistentSend = blockOnPersistentSend;
-      this.autoGroupId = autoGroupId;
+      this.autoGroup = autoGroup;
       this.maxConnections = maxConnections;
    }
 
@@ -277,9 +277,9 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       return blockOnPersistentSend;
    }
 
-   public boolean isAutoGroupId()
+   public boolean isAutoGroup()
    {
-      return autoGroupId;
+      return autoGroup;
    }
 
    // Package protected ----------------------------------------------------------------------------
@@ -304,7 +304,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                        blockOnAcknowledge,
                                                        blockOnNonPersistentSend,
                                                        blockOnPersistentSend,
-                                                       autoGroupId,
+                                                       autoGroup,
                                                        maxConnections,
                                                        DEFAULT_ACK_BATCH_SIZE);
 

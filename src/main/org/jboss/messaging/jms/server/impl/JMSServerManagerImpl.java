@@ -201,7 +201,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                           boolean blockOnAcknowledge,
                                           boolean blockOnNonPersistentSend,
                                           boolean blockOnPersistentSend,
-                                          boolean autoGroupId,
+                                          boolean autoGroup,
                                           int maxConnections,
                                           String jndiBinding) throws Exception
    {
@@ -222,7 +222,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                          blockOnAcknowledge,
                                          blockOnNonPersistentSend,
                                          blockOnPersistentSend,
-                                         autoGroupId,
+                                         autoGroup,
                                          maxConnections);
          connectionFactories.put(name, cf);
       }
@@ -258,7 +258,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                           boolean blockOnAcknowledge,
                                           boolean blockOnNonPersistentSend,
                                           boolean blockOnPersistentSend,
-                                          boolean autoGroupId,
+                                          boolean autoGroup,
                                           int maxConnections,
                                           List<String> jndiBindings) throws Exception
    {
@@ -279,7 +279,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                          blockOnAcknowledge,
                                          blockOnNonPersistentSend,
                                          blockOnPersistentSend,
-                                         autoGroupId,
+                                         autoGroup,
                                          maxConnections);
       }
       for (String jndiBinding : jndiBindings)

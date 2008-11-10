@@ -91,7 +91,7 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        boolean blockOnAcknowledge,
                                        boolean blockOnNonPersistentSend,
                                        boolean blockOnPersistentSend,
-                                       boolean autoGroupId,
+                                       boolean autoGroup,
                                        int maxConnections,
                                        String jndiBinding) throws Exception
    {
@@ -113,7 +113,7 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                                        blockOnAcknowledge,
                                                        blockOnNonPersistentSend,
                                                        blockOnPersistentSend,
-                                                       autoGroupId,
+                                                       autoGroup,
                                                        maxConnections,
                                                        jndiBinding);
       if (created)

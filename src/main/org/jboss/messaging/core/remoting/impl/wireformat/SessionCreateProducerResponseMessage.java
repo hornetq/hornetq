@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -38,19 +37,15 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
   
    private int maxRate;
 
-   private SimpleString autoGroupId;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateProducerResponseMessage(final int maxRate, final SimpleString autoGroupId)
+   public SessionCreateProducerResponseMessage(final int maxRate)
    {
       super(SESS_CREATEPRODUCER_RESP);
  
       this.maxRate = maxRate;
-
-      this.autoGroupId = autoGroupId;
    }
    
    public SessionCreateProducerResponseMessage()
@@ -70,21 +65,14 @@ public class SessionCreateProducerResponseMessage extends PacketImpl
    	return maxRate;
    }
 
-   public SimpleString getAutoGroupId()
-   {
-      return autoGroupId;
-   }
-
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putInt(maxRate);
-      buffer.putNullableSimpleString(autoGroupId);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {     
       maxRate = buffer.getInt();
-      autoGroupId = buffer.getNullableSimpleString();
    }
    
 

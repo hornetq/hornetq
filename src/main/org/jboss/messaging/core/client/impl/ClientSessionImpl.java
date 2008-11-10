@@ -143,7 +143,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private final boolean blockOnAcknowledge;
 
-   private final boolean autoGroupId;
+   private final boolean autoGroup;
    
    private final int ackBatchSize;
 
@@ -167,7 +167,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final boolean autoCommitSends,
                             final boolean autoCommitAcks,
                             final boolean blockOnAcknowledge,
-                            final boolean autoGroupId,                     
+                            final boolean autoGroup,                     
                             final int ackBatchSize,
                             final RemotingConnection remotingConnection,
                             final RemotingConnection backupConnection,
@@ -203,7 +203,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       this.blockOnAcknowledge = blockOnAcknowledge;
 
-      this.autoGroupId = autoGroupId;
+      this.autoGroup = autoGroup;
       
       this.channel = channel;
 
@@ -407,7 +407,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (producer == null)
       {
-         SessionCreateProducerMessage request = new SessionCreateProducerMessage(maxRate, autoGroupId);
+         SessionCreateProducerMessage request = new SessionCreateProducerMessage(maxRate);
 
          SessionCreateProducerResponseMessage response = (SessionCreateProducerResponseMessage)channel.sendBlocking(request);
 
@@ -425,7 +425,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                                                    false),
                                            autoCommitSends && blockOnNonPersistentSend,
                                            autoCommitSends && blockOnPersistentSend,
-                                           response.getAutoGroupId(),
+                                           autoGroup,
                                            channel);
       }
 

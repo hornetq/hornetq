@@ -30,7 +30,7 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- * Distributes message based on the message property 'JMSXGroupID'. Once a message has been successfully delivered to a
+ * Distributes message based on the message property 'JBM_GROUP_ID'. Once a message has been successfully delivered to a
  * consumer that consumer is then bound to that group. Any message that has the same group id set will always be
  * delivered to the same consumer.
  * The Initial consumer is the first consumer found, using the round robin policy, that hasn't been bound to a group, If

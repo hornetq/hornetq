@@ -120,7 +120,7 @@ public interface JMSServerManager
                                    boolean blockOnAcknowledge,
                                    boolean blockOnNonPersistentSend,
                                    boolean blockOnPersistentSend,
-                                   boolean autoGroupId,
+                                   boolean autoGroup,
                                    int maxConnections,
                                    String jndiBinding) throws Exception;
 

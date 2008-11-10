@@ -71,7 +71,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
    public static final boolean DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND = false;
 
-   public static final boolean DEFAULT_AUTO_GROUP_ID = false;
+   public static final boolean DEFAULT_AUTO_GROUP = false;
    
    public static final long DEFAULT_CALL_TIMEOUT = 30000;
       
@@ -117,7 +117,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
 
    private volatile boolean blockOnNonPersistentSend;
 
-   private volatile boolean autoGroupId;
+   private volatile boolean autoGroup;
    
    private volatile int ackBatchSize;
 
@@ -152,7 +152,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                    final boolean blockOnAcknowledge,
                                    final boolean blockOnNonPersistentSend,
                                    final boolean blockOnPersistentSend,
-                                   final boolean autoGroupId,
+                                   final boolean autoGroup,
                                    final int maxConnections,
                                    final int ackBatchSize)
    {
@@ -194,7 +194,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       this.blockOnAcknowledge = blockOnAcknowledge;
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
       this.blockOnPersistentSend = blockOnPersistentSend;
-      this.autoGroupId = autoGroupId;
+      this.autoGroup = autoGroup;
       this.maxConnections = maxConnections;
       this.ackBatchSize = ackBatchSize;
    }
@@ -213,7 +213,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
            DEFAULT_BLOCK_ON_ACKNOWLEDGE,
            DEFAULT_BLOCK_ON_PERSISTENT_SEND,
            DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-           DEFAULT_AUTO_GROUP_ID,
+           DEFAULT_AUTO_GROUP,
            DEFAULT_MAX_CONNECTIONS,
            DEFAULT_ACK_BATCH_SIZE);
 
@@ -319,14 +319,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       blockOnAcknowledge = blocking;
    }
 
-   public boolean isAutoGroupID()
+   public boolean isAutoGroup()
    {
-      return autoGroupId;
+      return autoGroup;
    }
 
-   public void setAutoGroupId(boolean autoGroupId)
+   public void setAutoGroup(boolean autoGroup)
    {
-      this.autoGroupId = autoGroupId;
+      this.autoGroup = autoGroup;
    }
    
    public int getAckBatchSize()
@@ -618,7 +618,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                                         autoCommitSends,
                                                                         autoCommitAcks,
                                                                         blockOnAcknowledge,
-                                                                        autoGroupId,
+                                                                        autoGroup,
                                                                         ackBatchSize,
                                                                         connection,
                                                                         backupConnection,                                                                       

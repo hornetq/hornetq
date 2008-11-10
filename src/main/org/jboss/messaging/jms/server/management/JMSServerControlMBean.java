@@ -93,8 +93,8 @@ public interface JMSServerControlMBean
                                 boolean blockOnNonPersistentSend,
                                 @Parameter(name = "blockOnPersistentSend", desc = "Does sending persistent messages block?")
                                 boolean blockOnPersistentSend,
-                                @Parameter(name = "autoGroupId", desc = "Any Messages sent via this factories connections will automatically set th eproperty 'JMSXGroupId'")
-                                boolean autoGroupId,
+                                @Parameter(name = "autoGroup", desc = "Any Messages sent via this factories connections will automatically set the property 'JBM_GroupID'")
+                                boolean autoGroup,
                                 @Parameter(name = "maxConnections", desc = "The maximum number of physical connections created per client using this connection factory. Sessions created will be assigned a connection in a round-robin fashion")
                                 int maxConnections,
                                 @Parameter(name = "jndiBinding", desc = "JNDI Binding")

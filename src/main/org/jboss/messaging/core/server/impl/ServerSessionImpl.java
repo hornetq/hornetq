@@ -99,7 +99,6 @@ import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.SimpleIDGenerator;
 import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.SimpleStringIdGenerator;
 
 /*
  * Session implementation 
@@ -167,8 +166,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
    private final MessagingServer server;
 
-   private final SimpleStringIdGenerator simpleStringIdGenerator;
-   
    private final SimpleString managementAddress;
 
    // Constructors ---------------------------------------------------------------------------------
@@ -189,8 +186,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
                             final Executor executor,
                             final Channel channel,
                             final ManagementService managementService,
-                            final MessagingServer server,
-                            final SimpleStringIdGenerator simpleStringIdGenerator,
+                            final MessagingServer server,                      
                             final SimpleString managementAddress) throws Exception
    {
       this.id = id;
@@ -232,8 +228,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       this.server = server;
 
-      this.simpleStringIdGenerator = simpleStringIdGenerator;
-      
       this.managementAddress = managementAddress;
    }
 
@@ -847,8 +841,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    {      
       int maxRate = packet.getMaxRate();
 
-      boolean autoGroupID = packet.isAutoGroupId();
-
       Packet response = null;
 
       try
@@ -860,14 +852,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
          producers.put(producer.getID(), producer);
 
-         SimpleString groupId = null;
-
-         if (autoGroupID)
-         {
-            groupId = simpleStringIdGenerator.generateID();
-         }
-
-         response = new SessionCreateProducerResponseMessage(maxRateToUse, groupId);
+         response = new SessionCreateProducerResponseMessage(maxRateToUse);
       }
       catch (Exception e)
       {
