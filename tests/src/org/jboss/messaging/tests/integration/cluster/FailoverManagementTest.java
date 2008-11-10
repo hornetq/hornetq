@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.tests.integration.cluster;
 
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -122,7 +124,7 @@ public class FailoverManagementTest extends TestCase
          
          managementMessage.getBody().flip();
          
-         session1.sendManagementMessage(managementMessage);
+         producer.send(DEFAULT_MANAGEMENT_ADDRESS, managementMessage);
       }
                             
       ClientConsumer consumer1 = session1.createConsumer(replyTo);
@@ -143,7 +145,7 @@ public class FailoverManagementTest extends TestCase
          
          managementMessage.getBody().flip();
          
-         session1.sendManagementMessage(managementMessage);
+         producer.send(DEFAULT_MANAGEMENT_ADDRESS, managementMessage);
       }
             
       session1.start();
@@ -217,7 +219,7 @@ public class FailoverManagementTest extends TestCase
          
          managementMessage.getBody().flip();
          
-         session1.sendManagementMessage(managementMessage);
+         producer.send(DEFAULT_MANAGEMENT_ADDRESS, managementMessage);
       }
                             
       ClientConsumer consumer1 = session1.createConsumer(replyTo);

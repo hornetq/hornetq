@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.messaging.core.server.JournalType;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -87,6 +88,10 @@ public interface Configuration extends Serializable
    TransportConfiguration getBackupConnectorConfiguration();
 
    void setBackupConnectorConfiguration(TransportConfiguration config);
+   
+   SimpleString getManagementAddress();
+   
+   void setManagementAddress(SimpleString address);
 
    // Journal related attributes
    // ------------------------------------------------------------

@@ -13,6 +13,7 @@
       <connection-scan-period>6543</connection-scan-period>
       <transaction-timeout>98765</transaction-timeout>
       <transaction-timeout-scan-period>56789</transaction-timeout-scan-period>
+      <management-address>Giraffe</management-address>
       <remoting-interceptors>
          <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1</class-name>
          <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor2</class-name>

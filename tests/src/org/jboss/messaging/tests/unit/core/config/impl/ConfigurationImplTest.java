@@ -31,13 +31,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.List;
 
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.server.JournalType;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -73,6 +73,7 @@ public class ConfigurationImplTest extends TestCase
       assertEquals(ConfigurationImpl.DEFAULT_WILDCARD_ROUTING_ENABLED, conf.isWildcardRoutingEnabled());
       assertEquals(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT, conf.getTransactionTimeout());
       assertEquals(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD, conf.getTransactionTimeoutScanPeriod());
+      assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS, conf.getManagementAddress());
    }
    
    public void testSetGetAttributes()
@@ -150,7 +151,11 @@ public class ConfigurationImplTest extends TestCase
          
          i = randomInt();
          conf.setJournalMaxAIO(i);
-         assertEquals(i, conf.getJournalMaxAIO());        
+         assertEquals(i, conf.getJournalMaxAIO());  
+         
+         s = randomString();
+         conf.setManagementAddress(new SimpleString(s));
+         assertEquals(s, conf.getManagementAddress().toString());
       }
    }
    
@@ -224,6 +229,9 @@ public class ConfigurationImplTest extends TestCase
  
       i = randomInt();
       conf.setJournalMaxAIO(i);
+      
+      s = randomString();
+      conf.setManagementAddress(new SimpleString(s));
   
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ObjectOutputStream oos = new ObjectOutputStream(baos);

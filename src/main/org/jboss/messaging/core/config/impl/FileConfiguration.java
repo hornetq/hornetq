@@ -32,6 +32,7 @@ import java.util.Map;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.JournalType;
+import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -91,6 +92,8 @@ public class FileConfiguration extends ConfigurationImpl
       transactionTimeout = getLong(e, "transaction-timeout", transactionTimeout);
 
       transactionTimeoutScanPeriod = getLong(e, "transaction-timeout-scan-period", transactionTimeoutScanPeriod);
+      
+      managementAddress = new SimpleString(getString(e, "management-address", managementAddress.toString()));
             
       NodeList interceptorNodes = e.getElementsByTagName("remoting-interceptors");
 

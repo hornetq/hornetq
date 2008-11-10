@@ -27,6 +27,7 @@ import java.util.Map;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.FileConfiguration;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -58,7 +59,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(true, conf.isWildcardRoutingEnabled());
       assertEquals(98765, conf.getTransactionTimeout());
       assertEquals(56789, conf.getTransactionTimeoutScanPeriod());
-      
+      assertEquals(new SimpleString("Giraffe"), conf.getManagementAddress());
       assertEquals(2, conf.getInterceptorClassNames().size());
       assertTrue(conf.getInterceptorClassNames().contains("org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1"));
       assertTrue(conf.getInterceptorClassNames().contains("org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor2"));

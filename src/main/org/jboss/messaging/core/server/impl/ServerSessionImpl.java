@@ -67,7 +67,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessag
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
@@ -169,6 +168,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    private final MessagingServer server;
 
    private final SimpleStringIdGenerator simpleStringIdGenerator;
+   
+   private final SimpleString managementAddress;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -189,7 +190,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
                             final Channel channel,
                             final ManagementService managementService,
                             final MessagingServer server,
-                            final SimpleStringIdGenerator simpleStringIdGenerator) throws Exception
+                            final SimpleStringIdGenerator simpleStringIdGenerator,
+                            final SimpleString managementAddress) throws Exception
    {
       this.id = id;
 
@@ -207,7 +209,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       this.postOffice = postOffice;
 
-      pager = postOffice.getPagingManager();
+      this.pager = postOffice.getPagingManager();
 
       this.queueSettingsRepository = queueSettingsRepository;
 
@@ -231,6 +233,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       this.server = server;
 
       this.simpleStringIdGenerator = simpleStringIdGenerator;
+      
+      this.managementAddress = managementAddress;
    }
 
    // ServerSession implementation ----------------------------------------------------------------------------
@@ -2292,7 +2296,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    }
 
    public void handleSendProducerMessage(final SessionSendMessage packet)
-   {                     
+   {         
+      //With a send we must make sure it is replicated to backup before being processed on live
+      //or can end up with delivery being processed on backup before original send
+         
       ServerMessage msg = packet.getServerMessage();
       
       final SendLock lock;
@@ -2341,14 +2348,22 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    
    private void doSend(final SessionSendMessage packet)
    {
-      //With a send we must make sure it is replicated to backup before being processed on live
-      //or can end up with delivery being processed on backup before original send
-         
       Packet response = null;
 
       try
       {
-         producers.get(packet.getProducerID()).send(packet.getServerMessage());
+         ServerMessage message = packet.getServerMessage();
+         
+         if (message.getDestination().equals(managementAddress))
+         {
+            //It's a management message
+            
+            doHandleManagementMessage(message);
+         }
+         else
+         {         
+            producers.get(packet.getProducerID()).send(message);
+         }
 
          if (packet.isRequiresResponse())
          {
@@ -2380,86 +2395,41 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
    }
    
-  
-   public void handleManagementMessage(final SessionSendManagementMessage packet)
-   {        
-      ServerMessage msg = packet.getServerMessage();
-      
-      if (msg.getMessageID() == 0L)
-      {
-         // must generate message id here, so we know they are in sync on live and backup
-         long id = storageManager.generateUniqueID();
-
-         msg.setMessageID(id);
-      }
-      
-      DelayedResult result = channel.replicatePacket(packet);
-      
-      //With a send we must make sure it is replicated to backup before being processed on live
-      //or can end up with delivery being processed on backup before original send
-      
-      if (result == null)
-      {
-         doHandleManagementMessage(packet);                        
-      }
-      else
-      {
-         result.setResultRunner(new Runnable()
-         {
-            public void run()
-            {
-               doHandleManagementMessage(packet);
-            }
-         });
-      }
-   }
-
-   public void doHandleManagementMessage(final SessionSendManagementMessage packet)
+   private void doHandleManagementMessage(final ServerMessage message) throws Exception
    {
-      try
+      if (message.containsProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS))
       {
-         ServerMessage message = packet.getServerMessage();
+         boolean subscribe = (Boolean)message.getProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS);
 
-         if (message.containsProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS))
+         final SimpleString replyTo = (SimpleString)message.getProperty(ManagementHelper.HDR_JMX_REPLYTO);
+
+         if (subscribe)
          {
-            boolean subscribe = (Boolean)message.getProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS);
-
-            final SimpleString replyTo = (SimpleString)message.getProperty(ManagementHelper.HDR_JMX_REPLYTO);
-
-            if (subscribe)
+            if (log.isDebugEnabled())
             {
-               if (log.isDebugEnabled())
-               {
-                  log.debug("added notification listener " + this);
-               }
-
-               managementService.addNotificationListener(this, null, replyTo);
+               log.debug("added notification listener " + this);
             }
-            else
-            {
-               if (log.isDebugEnabled())
-               {
-                  log.debug("removed notification listener " + this);
-               }
 
-               managementService.removeNotificationListener(this);
-            }
+            managementService.addNotificationListener(this, null, replyTo);
          }
          else
          {
-            managementService.handleMessage(message);
-            
-            message.setDestination((SimpleString)message.getProperty(ManagementHelper.HDR_JMX_REPLYTO));
+            if (log.isDebugEnabled())
+            {
+               log.debug("removed notification listener " + this);
+            }
 
-            send(message);
+            managementService.removeNotificationListener(this);
          }
       }
-      catch (Exception e)
+      else
       {
-         log.error("Failed to send management message", e);        
+         managementService.handleMessage(message);
+         
+         message.setDestination((SimpleString)message.getProperty(ManagementHelper.HDR_JMX_REPLYTO));
+
+         send(message);
       }
-      
-      channel.confirm(packet);
    }
 
    public void handleReplicatedDelivery(final SessionReplicateDeliveryMessage packet)

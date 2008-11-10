@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.example;
 
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -57,9 +59,10 @@ public class ManagementClient
 
       // create a management message to subscribe to notifications from the
       // server
+      ClientProducer producer = clientSession.createProducer(DEFAULT_MANAGEMENT_ADDRESS);
       ClientMessage mngmntMessage = clientSession.createClientMessage(false);
       ManagementHelper.putNotificationSubscription(mngmntMessage, replytoQueue, true);
-      clientSession.sendManagementMessage(mngmntMessage);
+      producer.send(DEFAULT_MANAGEMENT_ADDRESS, mngmntMessage);
       System.out.println("send message to subscribe to notifications");
 
       ClientConsumer mngmntConsumer = clientSession.createConsumer(replytoQueue);
@@ -117,7 +120,7 @@ public class ManagementClient
                                               ManagementServiceImpl.getMessagingServerObjectName(),
                                               "setMessageCounterSamplePeriod",
                                               (long)30000);
-      clientSession.sendManagementMessage(mngmntMessage);
+      producer.send(DEFAULT_MANAGEMENT_ADDRESS, mngmntMessage);
       System.out.println("sent management message to set an attribute");
 
       // create a message to retrieve one or many attributes
@@ -128,7 +131,7 @@ public class ManagementClient
                                      "MessageCount",
                                      "Durable");
 
-      clientSession.sendManagementMessage(mngmntMessage);
+      producer.send(DEFAULT_MANAGEMENT_ADDRESS, mngmntMessage);
       System.out.println("sent management message to retrieve attributes");
 
       // create a message to invoke the operation sendMessageToDLQ(long) on the
@@ -139,14 +142,14 @@ public class ManagementClient
                                               ManagementServiceImpl.getQueueObjectName(queue, queue),
                                               "sendMessageToDLQ",
                                               (long)6161);
-      clientSession.sendManagementMessage(mngmntMessage);
+      producer.send(DEFAULT_MANAGEMENT_ADDRESS, mngmntMessage);
       System.out.println("sent management message to invoke operation");
 
       // create a message to unsubscribe from the notifications sent by the
       // server
       mngmntMessage = clientSession.createClientMessage(false);
       ManagementHelper.putNotificationSubscription(mngmntMessage, replytoQueue, false);
-      clientSession.sendManagementMessage(mngmntMessage);
+      producer.send(DEFAULT_MANAGEMENT_ADDRESS, mngmntMessage);
       System.out.println("send message to unsubscribe to notifications");
 
       Thread.sleep(5000);

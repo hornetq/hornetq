@@ -635,7 +635,8 @@ public class MessagingServerImpl implements MessagingServer
                                                               channel,
                                                               managementService,
                                                               this,
-                                                              simpleStringIdGenerator);
+                                                              simpleStringIdGenerator,
+                                                              configuration.getManagementAddress());
 
       sessions.put(name, session);
 

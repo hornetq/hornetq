@@ -63,7 +63,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionFailoverComplete
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendManagementMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
@@ -744,16 +743,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       // Now we can add a failure listener since if a further failure occurs we cleanup since no backup any more
       remotingConnection.addFailureListener(this);
-   }
-   
-   public void sendManagementMessage(final ClientMessage message)
-   {
-      Packet packet = new SessionSendManagementMessage(message);
-      
-      //Fill in the dest - it's not actually used
-      message.setDestination(new SimpleString("JBM"));
-      
-      channel.send(packet);
    }
 
    // XAResource implementation

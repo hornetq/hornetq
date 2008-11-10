@@ -20,6 +20,7 @@ import java.util.Set;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.server.JournalType;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
@@ -80,6 +81,8 @@ public class ConfigurationImpl implements Configuration
    public static final long DEFAULT_TRANSACTION_TIMEOUT = 60000;
 
    public static final long DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD = 1000;
+   
+   public static final SimpleString DEFAULT_MANAGEMENT_ADDRESS = new SimpleString("admin.management");
 
    // Attributes -----------------------------------------------------------------------------
 
@@ -144,6 +147,8 @@ public class ConfigurationImpl implements Configuration
    protected long transactionTimeout = DEFAULT_TRANSACTION_TIMEOUT;
 
    protected long transactionTimeoutScanPeriod = DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD;
+   
+   protected SimpleString managementAddress = DEFAULT_MANAGEMENT_ADDRESS;
 
    public boolean isClustered()
    {
@@ -424,6 +429,16 @@ public class ConfigurationImpl implements Configuration
    {
       return messageCounterEnabled;
    }
+   
+   public SimpleString getManagementAddress()
+   {
+      return managementAddress;
+   }
+   
+   public void setManagementAddress(SimpleString address)
+   {
+      this.managementAddress = address;
+   }
 
    @Override
    public boolean equals(final Object other)
@@ -454,7 +469,8 @@ public class ConfigurationImpl implements Configuration
              cother.getJournalMinFiles() == getJournalMinFiles() &&
              cother.getJournalType() == getJournalType() &&
              cother.getScheduledThreadPoolMaxSize() == getScheduledThreadPoolMaxSize() &&
-             cother.getSecurityInvalidationInterval() == getSecurityInvalidationInterval();
+             cother.getSecurityInvalidationInterval() == getSecurityInvalidationInterval() &&
+             cother.getManagementAddress().equals(getManagementAddress());
    }
 
 }

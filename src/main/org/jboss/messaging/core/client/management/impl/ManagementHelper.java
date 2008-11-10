@@ -63,8 +63,6 @@ public class ManagementHelper
 
    public static final SimpleString HDR_JMX_NOTIFICATION = new SimpleString("JBMJMXNotification");
 
-   public static final SimpleString MANAGEMENT_DESTINATION = new SimpleString("admin.AdminDestination");
-
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
