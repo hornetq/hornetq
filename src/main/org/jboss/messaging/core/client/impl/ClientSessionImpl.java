@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.core.client.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEPRODUCER;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,9 +55,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResp
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
@@ -144,13 +143,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final boolean blockOnAcknowledge;
 
    private final boolean autoGroup;
-   
+
    private final int ackBatchSize;
 
    private final Channel channel;
 
    private final int version;
-   
+
    // For testing only
    private boolean forceNotSameRM;
 
@@ -167,7 +166,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final boolean autoCommitSends,
                             final boolean autoCommitAcks,
                             final boolean blockOnAcknowledge,
-                            final boolean autoGroup,                     
+                            final boolean autoGroup,
                             final int ackBatchSize,
                             final RemotingConnection remotingConnection,
                             final RemotingConnection backupConnection,
@@ -204,11 +203,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       this.blockOnAcknowledge = blockOnAcknowledge;
 
       this.autoGroup = autoGroup;
-      
+
       this.channel = channel;
 
       this.version = version;
-      
+
       this.ackBatchSize = ackBatchSize;
    }
 
@@ -282,24 +281,23 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return createConsumer(queueName, null, false);
    }
 
-   public ClientConsumer createConsumer(final SimpleString queueName,
-                                        final SimpleString filterString) throws MessagingException
+   public ClientConsumer createConsumer(final SimpleString queueName, final SimpleString filterString) throws MessagingException
    {
       checkClosed();
 
       return createConsumer(queueName,
-                            filterString,                        
+                            filterString,
                             sessionFactory.getConsumerWindowSize(),
                             sessionFactory.getConsumerMaxRate(),
                             false);
    }
 
    public ClientConsumer createConsumer(final SimpleString queueName,
-                                        final SimpleString filterString,                                     
+                                        final SimpleString filterString,
                                         final boolean browseOnly) throws MessagingException
    {
       return createConsumer(queueName,
-                            filterString,                           
+                            filterString,
                             sessionFactory.getConsumerWindowSize(),
                             sessionFactory.getConsumerMaxRate(),
                             browseOnly);
@@ -314,53 +312,50 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
     * If we want direct consumers we need to rethink how they work
    */
    public ClientConsumer createConsumer(final SimpleString queueName,
-                                        final SimpleString filterString,                                       
+                                        final SimpleString filterString,
                                         final int windowSize,
                                         final int maxRate,
                                         final boolean browseOnly) throws MessagingException
    {
       checkClosed();
-      
+
       SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(queueName,
-                                                                              filterString,
-                                                                              windowSize,
-                                                                              maxRate,
+                                                                              filterString,                                                                    
                                                                               browseOnly);
 
-      SessionCreateConsumerResponseMessage response = (SessionCreateConsumerResponseMessage)channel.sendBlocking(request);
+      channel.sendBlocking(request);
 
       // The actual windows size that gets used is determined by the user since
       // could be overridden on the queue settings
       // The value we send is just a hint
-      int actualWindowSize = response.getWindowSize();
-
+      
       int clientWindowSize;
-      if (actualWindowSize == -1)
+      if (windowSize == -1)
       {
          // No flow control - buffer can increase without bound! Only use with
          // caution for very fast consumers
-         clientWindowSize = 0;
+         clientWindowSize = -1;
       }
-      else if (actualWindowSize == 1)
+      else if (windowSize == 1)
       {
          // Slow consumer - no buffering
          clientWindowSize = 1;
       }
-      else if (actualWindowSize > 1)
+      else if (windowSize > 1)
       {
          // Client window size is half server window size
-         clientWindowSize = actualWindowSize >> 1;
+         clientWindowSize = windowSize >> 1;
       }
       else
       {
-         throw new IllegalArgumentException("Invalid window size " + actualWindowSize);
+         throw new IllegalArgumentException("Invalid window size " + windowSize);
       }
 
       long consumerID = idGenerator.generateID();
 
       ClientConsumerInternal consumer = new ClientConsumerImpl(this,
                                                                consumerID,
-                                                               clientWindowSize, 
+                                                               clientWindowSize,
                                                                ackBatchSize,
                                                                executor,
                                                                channel);
@@ -371,7 +366,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       // We even send it if windowSize == -1, since we need to start the
       // consumer
 
-      channel.send(new SessionConsumerFlowCreditMessage(consumerID, response.getWindowSize()));
+      channel.send(new SessionConsumerFlowCreditMessage(consumerID, windowSize));
 
       return consumer;
    }
@@ -407,22 +402,20 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (producer == null)
       {
-         SessionCreateProducerMessage request = new SessionCreateProducerMessage(maxRate);
+         Packet request = new PacketImpl(SESS_CREATEPRODUCER);
 
-         SessionCreateProducerResponseMessage response = (SessionCreateProducerResponseMessage)channel.sendBlocking(request);
+         channel.sendBlocking(request);
 
          // maxRate and windowSize can be overridden by the server
 
          // If the producer is not auto-commit sends then messages are never
          // sent blocking - there is no point
          // since commit, prepare or rollback will flush any messages sent.
- 
+
          producer = new ClientProducerImpl(this,
                                            idGenerator.generateID(),
                                            address,
-                                           response.getMaxRate() == -1 ? null
-                                                                      : new TokenBucketLimiterImpl(response.getMaxRate(),
-                                                                                                   false),
+                                           maxRate == -1 ? null : new TokenBucketLimiterImpl(maxRate, false),
                                            autoCommitSends && blockOnNonPersistentSend,
                                            autoCommitSends && blockOnPersistentSend,
                                            autoGroup,
@@ -442,7 +435,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void commit() throws MessagingException
    {
       checkClosed();
-      
+
       flushAcks();
 
       channel.sendBlocking(new PacketImpl(PacketImpl.SESS_COMMIT));
@@ -451,7 +444,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void rollback() throws MessagingException
    {
       checkClosed();
-      
+
       flushAcks();
 
       // We do a "JMS style" rollback where the session is stopped, and the buffer is cancelled back
@@ -598,14 +591,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          channel.send(message);
       }
    }
-   
+
    public void expire(final long consumerID, final long messageID) throws MessagingException
    {
       checkClosed();
 
       SessionExpiredMessage message = new SessionExpiredMessage(consumerID, messageID);
 
-      channel.send(message);      
+      channel.send(message);
    }
 
    public void addConsumer(final ClientConsumerInternal consumer)
@@ -796,7 +789,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          {
             throw new XAException(XAException.XAER_INVAL);
          }
-         
+
          flushAcks();
 
          SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
@@ -929,19 +922,19 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void rollback(final Xid xid) throws XAException
    {
       checkXA();
-      
+
       try
-      {               
+      {
          flushAcks();
-                      
+
          // We need to make sure we don't get any inflight messages
          for (ClientConsumerInternal consumer : consumers.values())
          {
             consumer.clear();
          }
-   
+
          SessionXARollbackMessage packet = new SessionXARollbackMessage(xid);
-     
+
          SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
 
          if (response.isError())
@@ -1044,7 +1037,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return backupConnection;
    }
-   
+
    public void setBackupConnection(RemotingConnection connection)
    {
       this.backupConnection = connection;
@@ -1128,10 +1121,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          producer.close();
       }
    }
-   
+
    private void flushAcks() throws MessagingException
    {
-      for (ClientConsumerInternal consumer: consumers.values())
+      for (ClientConsumerInternal consumer : consumers.values())
       {
          consumer.flushAcks();
       }

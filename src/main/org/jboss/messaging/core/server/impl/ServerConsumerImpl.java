@@ -85,7 +85,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final Lock lock = new ReentrantLock();
 
-   private final AtomicInteger availableCredits;
+   private AtomicInteger availableCredits = new AtomicInteger(0);
 
    private boolean started;
 
@@ -115,8 +115,6 @@ public class ServerConsumerImpl implements ServerConsumer
                              final ServerSession session,
                              final Queue messageQueue,
                              final Filter filter,
-                             final boolean enableFlowControl,
-                             final int maxRate,
                              final boolean started,
                              final boolean browseOnly,
                              final StorageManager storageManager,
@@ -136,16 +134,7 @@ public class ServerConsumerImpl implements ServerConsumer
       this.started = browseOnly || started;
 
       this.browseOnly = browseOnly;
-
-      if (enableFlowControl)
-      {
-         availableCredits = new AtomicInteger(0);
-      }
-      else
-      {
-         availableCredits = null;
-      }
-
+     
       this.storageManager = storageManager;
 
       this.queueSettingsRepository = queueSettingsRepository;
@@ -309,11 +298,16 @@ public class ServerConsumerImpl implements ServerConsumer
    }
 
    public void receiveCredits(final int credits) throws Exception
-   {
-      if (availableCredits != null)
+   {      
+      if (credits == -1)
+      {
+         //No flow control
+         availableCredits = null;
+      }
+      else
       {
          int previous = availableCredits.getAndAdd(credits);
-
+   
          if (previous <= 0 && previous + credits > 0)
          {
             promptDelivery();

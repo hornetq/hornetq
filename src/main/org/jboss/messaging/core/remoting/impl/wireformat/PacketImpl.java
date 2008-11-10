@@ -68,11 +68,7 @@ public class PacketImpl implements Packet
    // Session
    public static final byte SESS_CREATECONSUMER = 40;
 
-   public static final byte SESS_CREATECONSUMER_RESP = 41;
-
    public static final byte SESS_CREATEPRODUCER = 42;
-
-   public static final byte SESS_CREATEPRODUCER_RESP = 43;
 
    public static final byte SESS_ACKNOWLEDGE = 44;
    

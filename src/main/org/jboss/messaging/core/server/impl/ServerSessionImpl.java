@@ -56,9 +56,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResp
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
@@ -341,10 +338,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
       SimpleString filterString = packet.getFilterString();
 
-      int windowSize = packet.getWindowSize();
-
-      int maxRate = packet.getMaxRate();
-
       boolean browseOnly = packet.isBrowseOnly();
 
       Packet response = null;
@@ -366,19 +359,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          {
             filter = new FilterImpl(filterString);
          }
-
-         // Flow control values if specified on queue override those passed in from
-         // client
-
-         QueueSettings qs = queueSettingsRepository.getMatch(queueName.toString());
-
-         Integer queueWindowSize = qs.getConsumerWindowSize();
-
-         windowSize = queueWindowSize != null ? queueWindowSize : windowSize;
-
-         Integer queueMaxRate = queueSettingsRepository.getMatch(queueName.toString()).getConsumerMaxRate();
-
-         maxRate = queueMaxRate != null ? queueMaxRate : maxRate;
 
          Queue theQueue;
          if (browseOnly)
@@ -404,9 +384,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
          ServerConsumer consumer = new ServerConsumerImpl(idGenerator.generateID(),
                                                           this,
                                                           theQueue,
-                                                          filter,
-                                                          windowSize != -1,
-                                                          maxRate,
+                                                          filter,                                            
                                                           started,
                                                           browseOnly,
                                                           storageManager,
@@ -415,9 +393,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
                                                           channel,
                                                           pager);
 
-         response = new SessionCreateConsumerResponseMessage(windowSize);
-
          consumers.put(consumer.getID(), consumer);
+         
+         response = new NullResponseMessage();
       }
       catch (Exception e)
       {
@@ -816,7 +794,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
     *           completely The actual window size used may be less than the specified window size if it is overridden by
     *           any producer-window-size specified on the queue
     */
-   public void handleCreateProducer(final SessionCreateProducerMessage packet)
+   public void handleCreateProducer(final Packet packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
       
@@ -837,22 +815,18 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       }
    }
    
-   public void doHandleCreateProducer(final SessionCreateProducerMessage packet)
+   public void doHandleCreateProducer(final Packet packet)
    {      
-      int maxRate = packet.getMaxRate();
-
       Packet response = null;
 
       try
       {
-         final int maxRateToUse = maxRate;
-
          ServerProducerImpl producer = new ServerProducerImpl(idGenerator.generateID(),
                                                               this);
 
          producers.put(producer.getID(), producer);
 
-         response = new SessionCreateProducerResponseMessage(maxRateToUse);
+         response = new NullResponseMessage();
       }
       catch (Exception e)
       {

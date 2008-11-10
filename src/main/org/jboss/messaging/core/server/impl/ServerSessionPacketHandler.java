@@ -57,7 +57,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMess
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateProducerMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
@@ -146,8 +145,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             }
             case SESS_CREATEPRODUCER:
             {
-               SessionCreateProducerMessage request = (SessionCreateProducerMessage)packet;
-               session.handleCreateProducer(request);
+               session.handleCreateProducer(packet);
                break;
             }
             case SESS_ACKNOWLEDGE:

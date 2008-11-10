@@ -41,10 +41,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
 
    private SimpleString filterString;
 
-   private int windowSize;
-
-   private int maxRate;
-
    private boolean browseOnly;
 
 
@@ -53,14 +49,12 @@ public class SessionCreateConsumerMessage extends PacketImpl
    // Constructors --------------------------------------------------
 
    public SessionCreateConsumerMessage(final SimpleString queueName, final SimpleString filterString,
-   		                              final int windowSize, final int maxRate, final boolean browseOnly)
+   		                              final boolean browseOnly)
    {
       super(SESS_CREATECONSUMER);
 
       this.queueName = queueName;
       this.filterString = filterString;
-      this.windowSize = windowSize;
-      this.maxRate = maxRate;
       this.browseOnly = browseOnly;
    }
 
@@ -77,8 +71,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
       StringBuffer buff = new StringBuffer(getParentString());
       buff.append(", queueName=" + queueName);
       buff.append(", filterString=" + filterString);
-      buff.append(", windowSize=" + windowSize);
-      buff.append(", maxRate=" + maxRate);
       buff.append("]");
       return buff.toString();
    }
@@ -93,16 +85,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
       return filterString;
    }
 
-   public int getWindowSize()
-   {
-   	return windowSize;
-   }
-
-   public int getMaxRate()
-   {
-   	return maxRate;
-   }
-
    public boolean isBrowseOnly()
    {
       return browseOnly;
@@ -112,8 +94,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
    {
       buffer.putSimpleString(queueName);
       buffer.putNullableSimpleString(filterString);
-      buffer.putInt(windowSize);
-      buffer.putInt(maxRate);
       buffer.putBoolean(browseOnly);
    }
 
@@ -121,8 +101,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
    {
       queueName = buffer.getSimpleString();
       filterString = buffer.getNullableSimpleString();
-      windowSize = buffer.getInt();
-      maxRate = buffer.getInt();
       browseOnly = buffer.getBoolean();
    }
 
@@ -137,9 +115,7 @@ public class SessionCreateConsumerMessage extends PacketImpl
       
       return super.equals(other) && 
              this.queueName.equals(r.queueName) &&
-             this.filterString == null ? r.filterString == null : this.filterString.equals(r.filterString) &&
-             this.windowSize == r.windowSize &&
-             this.maxRate == r.maxRate;                  
+             this.filterString == null ? r.filterString == null : this.filterString.equals(r.filterString);                           
    }
    
    // Package protected ---------------------------------------------

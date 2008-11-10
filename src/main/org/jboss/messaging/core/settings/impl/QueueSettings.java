@@ -77,14 +77,6 @@ public class QueueSettings implements Mergeable<QueueSettings>
 
    private SimpleString ExpiryQueue = null;
 
-   private Integer consumerWindowSize = null;
-
-   private Integer consumerMaxRate = null;
-
-   private Integer producerWindowSize = null;
-
-   private Integer producerMaxRate = null;
-
    public Boolean isClustered()
    {
       return clustered != null ? clustered : DEFAULT_CLUSTERED;
@@ -205,46 +197,6 @@ public class QueueSettings implements Mergeable<QueueSettings>
       }
    }
 
-   public Integer getConsumerWindowSize()
-   {
-      return consumerWindowSize;
-   }
-
-   public void setConsumerWindowSize(Integer consumerWindowSize)
-   {
-      this.consumerWindowSize = consumerWindowSize;
-   }
-
-   public Integer getConsumerMaxRate()
-   {
-      return consumerMaxRate;
-   }
-
-   public void setConsumerMaxRate(Integer consumerMaxRate)
-   {
-      this.consumerMaxRate = consumerMaxRate;
-   }
-
-   public Integer getProducerWindowSize()
-   {
-      return producerWindowSize;
-   }
-
-   public void setProducerWindowSize(Integer producerWindowSize)
-   {
-      this.producerWindowSize = producerWindowSize;
-   }
-
-   public Integer getProducerMaxRate()
-   {
-      return producerMaxRate;
-   }
-
-   public void setProducerMaxRate(Integer producerMaxRate)
-   {
-      this.producerMaxRate = producerMaxRate;
-   }
-
    /**
     * merge 2 objects in to 1
     * @param merged
@@ -290,22 +242,6 @@ public class QueueSettings implements Mergeable<QueueSettings>
       if (ExpiryQueue == null)
       {
          ExpiryQueue = merged.ExpiryQueue;
-      }
-      if (consumerWindowSize == null)
-      {
-         consumerWindowSize = merged.consumerWindowSize;
-      }
-      if (consumerMaxRate == null)
-      {
-         consumerMaxRate = merged.consumerMaxRate;
-      }
-      if (producerWindowSize == null)
-      {
-         producerWindowSize = merged.producerWindowSize;
-      }
-      if (producerMaxRate == null)
-      {
-         producerMaxRate = merged.producerMaxRate;
       }
    }
 
