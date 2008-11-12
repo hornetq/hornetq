@@ -24,6 +24,9 @@ package org.jboss.messaging.core.logging;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 /**
  * 
@@ -36,7 +39,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class Logger 
+public class Logger
 {
    private static final ConcurrentMap<Class<?>, Logger> loggers = new ConcurrentHashMap<Class<?>, Logger>();
    
@@ -59,90 +62,87 @@ public class Logger
       return logger;
    }
    
-   private final org.jboss.logging.Logger logger;
+   private final java.util.logging.Logger logger;
    
    private Logger(final Class<?> clazz)
    {
-      if(!"org.jboss.logging.Log4jLoggerPlugin.class".equals(org.jboss.logging.Logger.getPluginClassName()))
-      {
-         org.jboss.logging.Logger.setPluginClassName("org.jboss.messaging.core.logging.JBMLoggerPlugin");
-      }
-      logger = org.jboss.logging.Logger.getLogger(clazz);
+      logger = java.util.logging.Logger.getLogger(clazz.getName());
+      logger.setUseParentHandlers(false);
    }
    
    public boolean isInfoEnabled()
    {
-      return logger.isInfoEnabled();
+      return logger.isLoggable(Level.INFO);
    }
    
    public boolean isDebugEnabled()
    {
-      return logger.isDebugEnabled();
+      return logger.isLoggable(Level.FINE);
    }
    
    public boolean isTraceEnabled()
    {
-      return logger.isTraceEnabled();
+      return logger.isLoggable(Level.FINEST);
    }
    
    public void fatal(final Object message)
    {
-      logger.fatal(message);
+     logger.log(Level.SEVERE, message==null?"NULL":message.toString());
    }
    
    public void fatal(final Object message, final Throwable t)
    {
-      logger.fatal(message, t);
+      logger.log(Level.SEVERE, message==null?"NULL":message.toString(), t);
    }
    
    public void error(final Object message)
    {
-      logger.error(message);
+      logger.log(Level.SEVERE, message==null?"NULL":message.toString());
    }
    
    public void error(final Object message, final Throwable t)
    {
-      logger.error(message, t);
+      logger.log(Level.SEVERE, message==null?"NULL":message.toString(), t);
    }
    
    public void warn(final Object message)
    {
-      logger.warn(message);
+      logger.log(Level.WARNING, message==null?"NULL":message.toString());
    }
    
    public void warn(final Object message, final Throwable t)
    {
-      logger.warn(message, t);
+      logger.log(Level.WARNING, message==null?"NULL":message.toString(), t);
    }
    
    public void info(final Object message)
    {
-      logger.info(message);
+      logger.log(Level.INFO, message==null?"NULL":message.toString());
    }
    
    public void info(final Object message, final Throwable t)
    {
-      logger.info(message, t);
+      logger.log(Level.INFO, message==null?"NULL":message.toString(), t);
    }
    
    public void debug(final Object message)
    {
-      logger.debug(message);
+      logger.log(Level.FINE, message==null?"NULL":message.toString());
    }
    
    public void debug(final Object message, final Throwable t)
    {
-      logger.debug(message, t);
+      logger.log(Level.FINE, message==null?"NULL":message.toString(), t);
    }
    
    public void trace(final Object message)
    {
-      logger.trace(message);
+      logger.log(Level.FINEST, message==null?"NULL":message.toString());
    }
    
    public void trace(final Object message, final Throwable t)
    {
-      logger.trace(message, t);
+      logger.log(Level.FINEST, message==null?"NULL":message.toString(), t);
    }
    
 }

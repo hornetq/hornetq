@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.remoting.impl.netty;
+package org.jboss.messaging.integration.transports.netty;
 
 import java.util.Map;
 

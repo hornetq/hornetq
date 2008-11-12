@@ -40,16 +40,22 @@
    <property name="config.dir" value="config"/>
    <property name="build.dir" value="build"/>
 
-   <path id="compile.classpath">
+   <path id="client.compile.classpath">
       <fileset dir="${lib.dir}">
          <include name="**/*.jar"/>
       </fileset>
-      <pathelement location="${client.jar}"/>
-      <pathelement location="${server.jar}"/>
+      <pathelement location="${client.core.jar}"/>
+      <pathelement location="${transports.jar}"/>
+      <pathelement location="${jms.jar}"/>
+   </path>
+
+   <path id="server.compile.classpath">
+      <path refid="client.compile.classpath"/>
+      <pathelement location="${core.jar}"/>
    </path>
 
    <path id="runtime.classpath">
-      <path refid="compile.classpath"/>
+      <path refid="client.compile.classpath"/>
       <pathelement location="${build.dir}"/>
       <pathelement location="${config.dir}"/>
    </path>
@@ -72,44 +78,52 @@
    </target>
 
 
-   <target name="compile" depends="init">
+   <target name="compile.client" depends="init">
       <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on"
              source="1.5">
-         <classpath refid="compile.classpath"/>
+         <classpath refid="server.compile.classpath"/>
+         <exclude name="org/jboss/messaging/example/SimpleExample.java"/>
       </javac>
    </target>
 
-   <target name="simpleClient" depends="compile">
+   <target name="compile.server" depends="init">
+      <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on"
+             source="1.5">
+         <classpath refid="client.compile.classpath"/>
+      </javac>
+   </target>
+
+   <target name="simpleClient" depends="compile.client">
       <java classname="org.jboss.messaging.example.SimpleClient" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
    </target>
 
-   <target name="sslClient" depends="compile">
+   <target name="sslClient" depends="compile.client">
       <java classname="org.jboss.messaging.example.SSLClient" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
    </target>
 
-   <target name="simpleExample" depends="compile">
+   <target name="simpleExample" depends="compile.server">
       <java classname="org.jboss.messaging.example.SimpleExample" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
    </target>
 
-   <target name="managementClient" depends="compile">
+   <target name="managementClient" depends="compile.client">
       <java classname="org.jboss.messaging.example.ManagementClient" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
    </target>
 
-   <target name="wildCardClient" depends="compile">
+   <target name="wildCardClient" depends="compile.client">
       <java classname="org.jboss.messaging.example.WildCardClient" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>
    </target>
 
-   <target name="scheduledMessageExample" depends="compile">
+   <target name="scheduledMessageExample" depends="compile.client">
       <java classname="org.jboss.messaging.example.ScheduledMessageExample" fork="true">
          <classpath refid="runtime.classpath"/>
       </java>

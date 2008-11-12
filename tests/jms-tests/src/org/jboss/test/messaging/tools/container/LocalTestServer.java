@@ -537,7 +537,7 @@ public class LocalTestServer implements Server, Runnable
       log.info("deploying connection factory with name: " + objectName + " and dupsok: " + dupsOkBatchSize);
                   
       getJMSServerManager().createConnectionFactory(objectName,
-                                                    new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"),
+                                                    new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
                                                     null,
                                                     ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,                                                       
                                                     ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,

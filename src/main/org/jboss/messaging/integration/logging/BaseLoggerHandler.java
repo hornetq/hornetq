@@ -18,30 +18,48 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
+package org.jboss.messaging.integration.logging;
 
-package org.jboss.messaging.core.remoting.impl.mina;
-
-import java.util.Map;
-
-import org.jboss.messaging.core.remoting.spi.Acceptor;
-import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
-import org.jboss.messaging.core.remoting.spi.BufferHandler;
-import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Level;
 
 /**
- * 
- * A MinaAcceptorFactory
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class MinaAcceptorFactory implements AcceptorFactory
+public abstract class BaseLoggerHandler extends Handler
 {
-   public Acceptor createAcceptor(final Map<String, Object> configuration,
-                                  final BufferHandler handler,                                 
-                                  final ConnectionLifeCycleListener listener)
+   public static final int SEVERE = 1000;
+
+   public static final int WARNING = 900;
+
+   public static final int INFO = 800;
+
+   public static final int CONFIG = 700;
+
+   public static final int FINE = 500;
+
+   public static final int FINER = 400;
+
+   public static final int FINEST = 300;
+
+   public void publish(LogRecord record)
    {
-      return new MinaAcceptor(configuration, handler, listener);   
+      String loggerName = record.getLoggerName();
+      Level level = record.getLevel();
+      String message = record.getMessage();
+      Throwable throwable = record.getThrown();
+      publish(loggerName, level, message, throwable);
+   }
+
+   abstract void publish(String loggerName, Level level, String message, Throwable throwable);
+
+   public void flush()
+   {
+   }
+
+   public void close() throws SecurityException
+   {
    }
 }

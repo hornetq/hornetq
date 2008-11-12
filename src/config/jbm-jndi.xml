@@ -2,14 +2,14 @@
 
    <connection-factory name="testConnectionFactory">
       <connector>
-         <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
       </connector>
       <entry name="testConnectionFactory"/>
    </connection-factory>
 
    <connection-factory name="ConnectionFactory">
       <connector>
-         <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
       </connector>
       <entry name="ConnectionFactory"/>
       <entry name="/ConnectionFactory"/>
@@ -20,10 +20,10 @@
 
    <connection-factory name="ClusteredConnectionFactory">
       <connector>
-         <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
       </connector>
       <backup-connector>
-         <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
          <params>
             <param key="jbm.remoting.netty.host" value="somehost" type="String"/>
          </params>
@@ -36,7 +36,7 @@
 
    <connection-factory name="MyExampleConnectionFactory">
       <connector>
-         <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
          <params>
             <param key="jbm.remoting.netty.tcpnodelay" value="true" type="Boolean"/>
          </params>
@@ -83,7 +83,7 @@
    
    <connection-factory name="TestSSLConnectionFactory">
       <connector>
-         <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
          <params>
             <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
             <param key="jbm.remoting.netty.port" value="5500" type="Integer"/>	                       

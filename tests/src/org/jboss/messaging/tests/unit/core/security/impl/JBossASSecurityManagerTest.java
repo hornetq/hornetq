@@ -33,7 +33,7 @@ import org.easymock.EasyMock;
 import org.easymock.IArgumentMatcher;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.security.impl.JBossASSecurityManager;
+import org.jboss.messaging.integration.security.JBossASSecurityManager;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
 import org.jboss.security.SimplePrincipal;

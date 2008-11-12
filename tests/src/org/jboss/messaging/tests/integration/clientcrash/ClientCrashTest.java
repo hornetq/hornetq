@@ -156,11 +156,11 @@ public class ClientCrashTest extends TestCase
       ConfigurationImpl config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
       config.getAcceptorConfigurations()
-            .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory"));
+            .add(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory"));
       messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
       messagingService.start();
 
-      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"),
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
                                         null,
                                         2000,
                                         DEFAULT_CALL_TIMEOUT,

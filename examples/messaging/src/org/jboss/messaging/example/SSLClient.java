@@ -29,7 +29,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.impl.netty.TransportConstants;
+import org.jboss.messaging.integration.transports.netty.TransportConstants;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
@@ -46,7 +46,7 @@ public class SSLClient
       try
       {         
          ClientSessionFactory sessionFactory =
-            new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));  
+            new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));
          sessionFactory.getTransportParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
          clientSession = sessionFactory.createSession(false, true, true);
          SimpleString queue = new SimpleString("queuejms.testQueue");

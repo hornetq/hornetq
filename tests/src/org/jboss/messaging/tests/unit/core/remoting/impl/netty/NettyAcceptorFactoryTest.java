@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.easymock.EasyMock;
-import org.jboss.messaging.core.remoting.impl.netty.NettyAcceptor;
-import org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory;
+import org.jboss.messaging.integration.transports.netty.NettyAcceptor;
+import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;

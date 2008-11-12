@@ -20,30 +20,8 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.remoting.impl.netty;
+package org.jboss.messaging.integration.transports.netty;
 
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_HOST;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_KEYSTORE_PASSWORD;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_KEYSTORE_PATH;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_SSL_ENABLED;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_TCP_NODELAY;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_TRUSTSTORE_PATH;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.DEFAULT_USE_NIO;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.HOST_PROP_NAME;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.KEYSTORE_PASSWORD_PROP_NAME;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.KEYSTORE_PATH_PROP_NAME;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.SSL_ENABLED_PROP_NAME;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.TCP_NODELAY_PROPNAME;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.TRUSTSTORE_PATH_PROP_NAME;
-import static org.jboss.messaging.core.remoting.impl.netty.TransportConstants.USE_NIO_PROP_NAME;
 import static org.jboss.netty.channel.Channels.pipeline;
 
 import java.net.InetSocketAddress;
@@ -129,23 +107,23 @@ public class NettyAcceptor implements Acceptor
       this.listener = listener;
       
       this.sslEnabled =
-         ConfigurationHelper.getBooleanProperty(SSL_ENABLED_PROP_NAME, DEFAULT_SSL_ENABLED, configuration);
+         ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME, TransportConstants.DEFAULT_SSL_ENABLED, configuration);
       this.useNio = 
-         ConfigurationHelper.getBooleanProperty(USE_NIO_PROP_NAME, DEFAULT_USE_NIO, configuration);
+         ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME, TransportConstants.DEFAULT_USE_NIO, configuration);
       this.host =
-         ConfigurationHelper.getStringProperty(HOST_PROP_NAME, DEFAULT_HOST, configuration);
+         ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME, TransportConstants.DEFAULT_HOST, configuration);
       this.port =
-         ConfigurationHelper.getIntProperty(PORT_PROP_NAME, DEFAULT_PORT, configuration);
+         ConfigurationHelper.getIntProperty(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_PORT, configuration);
       if (sslEnabled)
       {
          this.keyStorePath =
-            ConfigurationHelper.getStringProperty(KEYSTORE_PATH_PROP_NAME, DEFAULT_KEYSTORE_PATH, configuration);
+            ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PATH_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PATH, configuration);
          this.keyStorePassword =
-            ConfigurationHelper.getStringProperty(KEYSTORE_PASSWORD_PROP_NAME, DEFAULT_KEYSTORE_PASSWORD, configuration);
+            ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PASSWORD, configuration);
          this.trustStorePath =
-            ConfigurationHelper.getStringProperty(TRUSTSTORE_PATH_PROP_NAME, DEFAULT_TRUSTSTORE_PATH, configuration);
+            ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, TransportConstants.DEFAULT_TRUSTSTORE_PATH, configuration);
          this.trustStorePassword =
-            ConfigurationHelper.getStringProperty(TRUSTSTORE_PASSWORD_PROP_NAME, DEFAULT_TRUSTSTORE_PASSWORD, configuration); 
+            ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD, configuration);
       }   
       else
       {
@@ -156,11 +134,11 @@ public class NettyAcceptor implements Acceptor
       }
       
       this.tcpNoDelay =
-         ConfigurationHelper.getBooleanProperty(TCP_NODELAY_PROPNAME, DEFAULT_TCP_NODELAY, configuration);
+         ConfigurationHelper.getBooleanProperty(TransportConstants.TCP_NODELAY_PROPNAME, TransportConstants.DEFAULT_TCP_NODELAY, configuration);
       this.tcpSendBufferSize =
-         ConfigurationHelper.getIntProperty(TCP_SENDBUFFER_SIZE_PROPNAME, DEFAULT_TCP_SENDBUFFER_SIZE, configuration);
+         ConfigurationHelper.getIntProperty(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME, TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE, configuration);
       this.tcpReceiveBufferSize =
-         ConfigurationHelper.getIntProperty(TCP_RECEIVEBUFFER_SIZE_PROPNAME, DEFAULT_TCP_RECEIVEBUFFER_SIZE, configuration);
+         ConfigurationHelper.getIntProperty(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME, TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE, configuration);
     
    }
 

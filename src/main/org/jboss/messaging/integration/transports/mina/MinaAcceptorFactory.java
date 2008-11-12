@@ -18,39 +18,30 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
-package org.jboss.messaging.tests.unit.core.remoting.impl.mina;
+ */
 
-import java.util.HashMap;
+package org.jboss.messaging.integration.transports.mina;
+
 import java.util.Map;
 
-import org.easymock.EasyMock;
-import org.jboss.messaging.integration.transports.mina.MinaAcceptor;
-import org.jboss.messaging.integration.transports.mina.MinaAcceptorFactory;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
+import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
-import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * 
- * A MinaAcceptorFactoryTest
+ * A MinaAcceptorFactory
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class MinaAcceptorFactoryTest extends UnitTestCase
+public class MinaAcceptorFactory implements AcceptorFactory
 {
-   public void testCreateAcceptor() throws Exception
+   public Acceptor createAcceptor(final Map<String, Object> configuration,
+                                  final BufferHandler handler,                                 
+                                  final ConnectionLifeCycleListener listener)
    {
-      MinaAcceptorFactory factory = new MinaAcceptorFactory();
-      
-      Map<String, Object> params = new HashMap<String, Object>();
-      BufferHandler handler = EasyMock.createStrictMock(BufferHandler.class);    
-      ConnectionLifeCycleListener listener = EasyMock.createStrictMock(ConnectionLifeCycleListener.class);      
-      
-      Acceptor acceptor = factory.createAcceptor(params, handler, listener);
-      
-      assertTrue(acceptor instanceof MinaAcceptor);
+      return new MinaAcceptor(configuration, handler, listener);   
    }
 }

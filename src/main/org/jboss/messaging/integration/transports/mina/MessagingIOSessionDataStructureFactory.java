@@ -17,7 +17,7 @@
  *  under the License.
  *
  */
-package org.jboss.messaging.core.remoting.impl.mina;
+package org.jboss.messaging.integration.transports.mina;
 
 import java.util.HashSet;
 import java.util.Queue;

@@ -117,7 +117,7 @@ public class CoreClientOverSSLTest extends TestCase
 //      config.setSecurityEnabled(false);
 //      Map<String, Object> params = new HashMap<String, Object>();
 //      params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
-//      config.getAcceptorInfos().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory", params));
+//      config.getAcceptorInfos().add(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory", params));
 //      messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);      
 //      messagingService.start();
 //      ConnectorFactory cf = new NettyConnectorFactory();

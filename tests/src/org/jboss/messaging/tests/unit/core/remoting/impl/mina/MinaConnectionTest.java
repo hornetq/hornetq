@@ -23,7 +23,7 @@ package org.jboss.messaging.tests.unit.core.remoting.impl.mina;
 
 import org.apache.mina.core.session.IoSession;
 import org.easymock.EasyMock;
-import org.jboss.messaging.core.remoting.impl.mina.MinaConnection;
+import org.jboss.messaging.integration.transports.mina.MinaConnection;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 

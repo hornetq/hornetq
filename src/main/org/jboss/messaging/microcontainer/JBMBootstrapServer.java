@@ -35,6 +35,7 @@ import org.jboss.kernel.plugins.bootstrap.basic.BasicBootstrap;
 import org.jboss.kernel.plugins.deployment.xml.BeanXMLDeployer;
 import org.jboss.kernel.spi.config.KernelConfig;
 import org.jboss.kernel.spi.deployment.KernelDeployment;
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * This is the method in which the JBM server can be deployed externall outside of jBoss. Alternatively a user can embed
@@ -43,6 +44,7 @@ import org.jboss.kernel.spi.deployment.KernelDeployment;
  */
 public class JBMBootstrapServer extends BasicBootstrap
 {
+   private static Logger log = Logger.getLogger(JBMBootstrapServer.class);
    /**
     * The deployer
     */
@@ -66,6 +68,8 @@ public class JBMBootstrapServer extends BasicBootstrap
     */
    public static void main(final String[] args) throws Exception
    {
+      log.info("Starting server");
+
       JBMBootstrapServer bootstrap = new JBMBootstrapServer(args);
       
       bootstrap.run();

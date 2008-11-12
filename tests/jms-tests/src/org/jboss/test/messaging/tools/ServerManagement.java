@@ -325,7 +325,7 @@ public class ServerManagement
 
       String jgroupsBindAddr = bindAddress;
 
-      sb.append("-D").append(org.jgroups.Global.BIND_ADDR).append("=")
+      sb.append("-D").append("jgroups.bind_addr").append("=")
               .append(jgroupsBindAddr).append(' ');
 
       String database = System.getProperty("test.database");

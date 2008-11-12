@@ -33,7 +33,6 @@ import javax.management.StandardMBean;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
@@ -51,6 +50,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossMessage;

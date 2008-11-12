@@ -45,7 +45,7 @@ public class SimpleClient
       try
       {
          ClientSessionFactory sessionFactory =
-            new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));          
+            new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));          
          clientSession = sessionFactory.createSession(false, true, true);
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);

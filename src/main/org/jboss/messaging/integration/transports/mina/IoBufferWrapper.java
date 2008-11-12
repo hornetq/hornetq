@@ -20,53 +20,49 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.remoting.impl.netty;
+package org.jboss.messaging.integration.transports.mina;
 
 import static org.jboss.messaging.util.DataConstants.FALSE;
 import static org.jboss.messaging.util.DataConstants.NOT_NULL;
 import static org.jboss.messaging.util.DataConstants.NULL;
 import static org.jboss.messaging.util.DataConstants.TRUE;
-import static org.jboss.netty.buffer.ChannelBuffers.copiedBuffer;
-import static org.jboss.netty.buffer.ChannelBuffers.dynamicBuffer;
 
-import java.nio.BufferUnderflowException;
+import java.nio.charset.Charset;
 
+import org.apache.mina.core.buffer.IoBuffer;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
-import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
- * Wraps Netty {@link ChannelBuffer} with {@link MessagingBuffer}.
- * Because there's neither {@code position()} nor {@code limit()} in a Netty
- * buffer.  {@link ChannelBuffer#readerIndex()} and {@link ChannelBuffer#writerIndex()}
- * are used as {@code position} and {@code limit} of the buffer respectively
- * instead.
  *
- * @author <a href="mailto:tlee@redhat.com">Trustin Lee</a>
+ * A BufferWrapper
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
- * @version $Rev$, $Date$
  */
-public class ChannelBufferWrapper implements MessagingBuffer
+public class IoBufferWrapper implements MessagingBuffer
 {
    // Constants -----------------------------------------------------
 
+   private static final Charset utf8 = Charset.forName("UTF-8");
+
    // Attributes ----------------------------------------------------
 
-   private final ChannelBuffer buffer;
+   private final IoBuffer buffer;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ChannelBufferWrapper(final int size)
+   public IoBufferWrapper(final int size)
    {
-      buffer = dynamicBuffer(size);
-      buffer.writerIndex(buffer.capacity());
+      buffer = IoBuffer.allocate(size);
+
+      buffer.setAutoExpand(true);
    }
 
-   public ChannelBufferWrapper(final ChannelBuffer buffer)
+   public IoBufferWrapper(final IoBuffer buffer)
    {
       this.buffer = buffer;
    }
@@ -77,27 +73,27 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public byte[] array()
    {
-      return buffer.toByteBuffer().array();
+      return buffer.array();
    }
 
    public int position()
    {
-      return buffer.readerIndex();
+      return buffer.position();
    }
 
    public void position(final int position)
    {
-      buffer.readerIndex(position);
+      buffer.position(position);
    }
 
    public int limit()
    {
-      return buffer.writerIndex();
+      return buffer.limit();
    }
 
    public void limit(final int limit)
    {
-      buffer.writerIndex(limit);
+      buffer.limit(limit);
    }
 
    public int capacity()
@@ -107,231 +103,184 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public void flip()
    {
-      int oldPosition = position();
-      position(0);
-      limit(oldPosition);
+      buffer.flip();
    }
 
    public MessagingBuffer slice()
    {
-      return new ChannelBufferWrapper(buffer.slice());
+      return new IoBufferWrapper(buffer.slice());
    }
 
    public MessagingBuffer createNewBuffer(int len)
    {
-      return new ChannelBufferWrapper(len);
+      return new IoBufferWrapper(len);
    }
 
    public int remaining()
    {
-      return buffer.readableBytes();
+      return buffer.remaining();
    }
 
    public void rewind()
    {
-      position(0);
-      buffer.markReaderIndex();
+      buffer.rewind();
    }
 
    public void putByte(byte byteValue)
    {
-      flip();
-      buffer.writeByte(byteValue);
-      buffer.readerIndex(buffer.writerIndex());
+      buffer.put(byteValue);
    }
 
    public void putBytes(final byte[] byteArray)
    {
-      flip();
-      buffer.writeBytes(byteArray);
-      buffer.readerIndex(buffer.writerIndex());
+      buffer.put(byteArray);
    }
 
    public void putBytes(final byte[] bytes, int offset, int length)
    {
-      flip();
-      buffer.writeBytes(bytes, offset, length);
-      buffer.readerIndex(buffer.writerIndex());
+      buffer.put(bytes, offset, length);
    }
 
    public void putInt(final int intValue)
    {
-      flip();
-      buffer.writeInt(intValue);
-      buffer.readerIndex(buffer.writerIndex());
+      buffer.putInt(intValue);
    }
 
    public void putInt(final int pos, final int intValue)
    {
-      buffer.setInt(pos, intValue);
+      buffer.putInt(pos, intValue);
    }
 
    public void putLong(final long longValue)
    {
-      flip();
-      buffer.writeLong(longValue);
-      buffer.readerIndex(buffer.writerIndex());
+      buffer.putLong(longValue);
    }
 
    public void putFloat(final float floatValue)
    {
-      putInt(Float.floatToIntBits(floatValue));
+      buffer.putFloat(floatValue);
    }
 
    public void putDouble(final double d)
    {
-      putLong(Double.doubleToLongBits(d));
+      buffer.putDouble(d);
    }
 
    public void putShort(final short s)
    {
-      flip();
-      buffer.writeShort(s);
-      buffer.readerIndex(buffer.writerIndex());
+      buffer.putShort(s);
    }
 
    public void putChar(final char chr)
    {
-      putShort((short) chr);
+      buffer.putChar(chr);
    }
 
    public byte getByte()
    {
-      try {
-         return buffer.readByte();
-      } catch (IndexOutOfBoundsException e) {
-         throw new BufferUnderflowException();
-      }
+      return buffer.get();
    }
 
    public short getUnsignedByte()
    {
-      try {
-         return buffer.readUnsignedByte();
-      } catch (IndexOutOfBoundsException e) {
-         throw new BufferUnderflowException();
-      }
+      return buffer.getUnsigned();
    }
 
    public void getBytes(final byte[] b)
    {
-      try {
-         buffer.readBytes(b);
-      } catch (IndexOutOfBoundsException e) {
-         throw new BufferUnderflowException();
-      }
+      buffer.get(b);
    }
 
    public void getBytes(final byte[] b, final int offset, final int length)
    {
-      try {
-         buffer.readBytes(b, offset, length);
-      } catch (IndexOutOfBoundsException e) {
-         throw new BufferUnderflowException();
-      }
+      buffer.get(b, offset, length);
    }
 
    public int getInt()
    {
-      try {
-         return buffer.readInt();
-      } catch (IndexOutOfBoundsException e) {
-         throw new BufferUnderflowException();
-      }
+      return buffer.getInt();
    }
 
    public long getLong()
    {
-      try {
-         return buffer.readLong();
-      } catch (IndexOutOfBoundsException e) {
-         throw new BufferUnderflowException();
-      }
+      return buffer.getLong();
    }
 
    public float getFloat()
    {
-      return Float.intBitsToFloat(getInt());
+      return buffer.getFloat();
    }
 
    public short getShort()
    {
-      try {
-         return buffer.readShort();
-      } catch (IndexOutOfBoundsException e) {
-         throw new BufferUnderflowException();
-      }
+      return buffer.getShort();
    }
 
    public int getUnsignedShort()
    {
-      try {
-         return buffer.readUnsignedShort();
-      } catch (IndexOutOfBoundsException e) {
-         throw new BufferUnderflowException();
-      }
+      return buffer.getUnsignedShort();
    }
 
    public double getDouble()
    {
-      return Double.longBitsToDouble(getLong());
+      return buffer.getDouble();
    }
 
    public char getChar()
    {
-      return (char) getShort();
+      return buffer.getChar();
    }
 
    public void putBoolean(final boolean b)
    {
       if (b)
       {
-         putByte(TRUE);
+         buffer.put(TRUE);
       } else
       {
-         putByte(FALSE);
+         buffer.put(FALSE);
       }
    }
 
    public boolean getBoolean()
    {
-      byte b = getByte();
+      byte b = buffer.get();
       return b == TRUE;
    }
 
    public void putString(final String nullableString)
    {
-      flip();
-      buffer.writeInt(nullableString.length());
+      buffer.putInt(nullableString.length());
+
       for (int i = 0; i < nullableString.length(); i++)
       {
-         buffer.writeShort((short) nullableString.charAt(i));
+         buffer.putChar(nullableString.charAt(i));
       }
-      buffer.readerIndex(buffer.writerIndex());
    }
 
    public void putNullableString(final String nullableString)
    {
       if (nullableString == null)
       {
-         putByte(NULL);
+         buffer.put(NULL);
       }
       else
       {
-         putByte(NOT_NULL);
+         buffer.put(NOT_NULL);
+
          putString(nullableString);
       }
    }
 
    public String getString()
    {
-      int len = getInt();
+      int len = buffer.getInt();
 
       char[] chars = new char[len];
 
       for (int i = 0; i < len; i++)
       {
-         chars[i] = getChar();
+         chars[i] = buffer.getChar();
       }
 
       return new String(chars);
@@ -339,7 +288,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public String getNullableString()
    {
-      byte check = getByte();
+      byte check = buffer.get();
 
       if (check == NULL)
       {
@@ -353,28 +302,18 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public void putUTF(final String str) throws Exception
    {
-      ChannelBuffer encoded = copiedBuffer(str, "UTF-8");
-      int length = encoded.readableBytes();
-      if (length >= 65536) {
-         throw new IllegalArgumentException(
-               "the specified string is too long (" + length + ")");
-      }
-
-      flip();
-      buffer.writeShort((short) length);
-      buffer.writeBytes(encoded);
-      buffer.readerIndex(buffer.writerIndex());
+      buffer.putPrefixedString(str, utf8.newEncoder());
    }
 
    public void putNullableSimpleString(final SimpleString string)
    {
       if (string == null)
       {
-         putByte(NULL);
+         buffer.put(NULL);
       }
       else
       {
-         putByte(NOT_NULL);
+         buffer.put(NOT_NULL);
          putSimpleString(string);
       }
    }
@@ -383,25 +322,23 @@ public class ChannelBufferWrapper implements MessagingBuffer
    {
       byte[] data = string.getData();
 
-      flip();
-      buffer.writeInt(data.length);
-      buffer.writeBytes(data);
-      buffer.readerIndex(buffer.writerIndex());
+      buffer.putInt(data.length);
+      buffer.put(data);
    }
 
    public SimpleString getSimpleString()
    {
-      int len = getInt();
+      int len = buffer.getInt();
 
       byte[] data = new byte[len];
-      getBytes(data);
+      buffer.get(data);
 
       return new SimpleString(data);
    }
 
    public SimpleString getNullableSimpleString()
    {
-      int b = getByte();
+      int b = buffer.get();
       if (b == NULL)
       {
          return null;
@@ -414,15 +351,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public String getUTF() throws Exception
    {
-      ChannelBuffer utf8value;
-      try {
-         int length = buffer.readUnsignedShort();
-         utf8value = buffer.readSlice(length);
-      } catch (IndexOutOfBoundsException e) {
-         throw new BufferUnderflowException();
-      }
-
-      return utf8value.toString("UTF-8");
+      return buffer.getPrefixedString(utf8.newDecoder());
    }
 
    public Object getUnderlyingBuffer()

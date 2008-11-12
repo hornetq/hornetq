@@ -30,7 +30,7 @@ import junit.framework.TestCase;
 
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.core.session.IoSessionAttributeMap;
-import org.jboss.messaging.core.remoting.impl.mina.MessagingIOSessionDataStructureFactory;
+import org.jboss.messaging.integration.transports.mina.MessagingIOSessionDataStructureFactory;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

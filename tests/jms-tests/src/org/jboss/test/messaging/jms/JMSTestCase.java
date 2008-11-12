@@ -38,7 +38,7 @@ public class JMSTestCase extends JBMServerTestCase
       // both np and p messages are sent synchronously
 
       getJmsServerManager().createConnectionFactory("testsuitecf",
-                                                    new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"),
+                                                    new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
                                                     null,
                                                     ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,                                                       
                                                     ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,

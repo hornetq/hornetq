@@ -66,7 +66,7 @@ public class ManifestTest extends TestCase
       log.trace("userDir is " + userDir);
 
       // The jar must be there
-      File file = new File("build/jars", "jboss-messaging.jar");
+      File file = new File("build/jars", "jbm-core.jar");
       assertTrue(file.exists());
 
       // Open the jar and load MANIFEST.MF

@@ -42,7 +42,7 @@
       
       <!--
       <backup-connector>
-         <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
          <params>
             <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
             <param key="jbm.remoting.netty.port" value="6400" type="Integer"/>
@@ -60,7 +60,7 @@
          </acceptor>
          <!-- Netty standard TCP acceptor -->
          <acceptor>
-            <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
+            <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
             <params>	            	            
 	            <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
 	            <param key="jbm.remoting.netty.port" value="5400" type="Integer"/>	            
@@ -73,7 +73,7 @@
          </acceptor>   
          <!-- Netty SSL Acceptor
          <acceptor>
-            <factory-class>org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
+            <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
             <params>	            	            
 	            <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
 	            <param key="jbm.remoting.netty.port" value="5500" type="Integer"/>	            
@@ -91,7 +91,7 @@
          -->      
          <!-- Mina Acceptor -->
          <acceptor>
-            <factory-class>org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory</factory-class>
+            <factory-class>org.jboss.messaging.integration.transports.mina.MinaAcceptorFactory</factory-class>
             <params>	            	            
 	            <param key="jbm.remoting.mina.host" value="localhost" type="String"/>
 	            <param key="jbm.remoting.mina.port" value="5600" type="Integer"/>	            

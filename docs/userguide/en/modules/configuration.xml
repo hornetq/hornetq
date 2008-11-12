@@ -772,8 +772,8 @@
             <programlisting>
                <![CDATA[
       <bean name="JBMSecurityManager"
-      class="org.jboss.messaging.core.security.impl.JBossASSecurityManager"/>
-               ]]>
+                     class="org.jboss.messaging.integration.security.JBossASSecurityManager"/>
+                              ]]>
             </programlisting>
             <para>To replace the Security Manager implement the following interface:</para>
             <programlisting>org.jboss.messaging.core.security.JBMSecurityManager</programlisting>

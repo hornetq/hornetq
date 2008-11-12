@@ -47,7 +47,7 @@ public class ManagementClient
    public static void main(final String[] args) throws Exception
    {
       SimpleString replytoQueue = new SimpleString("replyto.adminQueue");
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));
       final ClientSession clientSession = sessionFactory.createSession(false, true, true);
       SimpleString queue = new SimpleString("queuejms.testQueue");
 

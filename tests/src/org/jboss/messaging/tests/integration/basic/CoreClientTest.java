@@ -57,8 +57,8 @@ public class CoreClientTest extends TestCase
 
    public void testCoreClient() throws Exception
    {
-      testCoreClient("org.jboss.messaging.core.remoting.impl.mina.MinaAcceptorFactory", "org.jboss.messaging.core.remoting.impl.mina.MinaConnectorFactory");
-      testCoreClient("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory", "org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory");
+      testCoreClient("org.jboss.messaging.integration.transports.mina.MinaAcceptorFactory", "org.jboss.messaging.integration.transports.mina.MinaConnectorFactory");
+      testCoreClient("org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory", "org.jboss.messaging.integration.transports.netty.NettyConnectorFactory");
       testCoreClient("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory", "org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory");
    }
    

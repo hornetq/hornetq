@@ -52,13 +52,13 @@ public class SimpleExample
          //create a new server with an TCP transport
          ConfigurationImpl configuration = new ConfigurationImpl();
          configuration.setSecurityEnabled(false);
-         configuration.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory"));
+         configuration.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory"));
          messagingService = MessagingServiceImpl.newNullStorageMessagingServer(configuration);
          //start the server
          messagingService.start();
 
          //then we create a client as normal       
-         ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));
+         ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));
          clientSession = sessionFactory.createSession(false, true, true);
          SimpleString atestq = new SimpleString("atestq");
          clientSession.createQueue(atestq, atestq, null, false, true);

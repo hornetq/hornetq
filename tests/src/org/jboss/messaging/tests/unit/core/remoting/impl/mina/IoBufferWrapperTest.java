@@ -23,7 +23,7 @@
 package org.jboss.messaging.tests.unit.core.remoting.impl.mina;
 
 import org.apache.mina.core.buffer.IoBuffer;
-import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
+import org.jboss.messaging.integration.transports.mina.IoBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.tests.unit.core.remoting.MessagingBufferTestBase;
 

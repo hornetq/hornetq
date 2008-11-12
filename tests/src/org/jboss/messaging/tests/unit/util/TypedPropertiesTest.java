@@ -38,7 +38,7 @@ import java.util.Iterator;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.remoting.impl.mina.IoBufferWrapper;
+import org.jboss.messaging.integration.transports.mina.IoBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;

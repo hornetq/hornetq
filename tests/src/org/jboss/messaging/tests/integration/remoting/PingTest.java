@@ -39,7 +39,7 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.ConnectionManagerImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
-import org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory;
+import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
@@ -74,7 +74,7 @@ public class PingTest extends TestCase
    protected void setUp() throws Exception
    {
       ConfigurationImpl config = new ConfigurationImpl();
-      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyAcceptorFactory"));
+      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory"));
       messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
       messagingService.start();
    }

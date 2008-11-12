@@ -1,4 +1,4 @@
-package org.jboss.messaging.core.remoting.impl.mina;
+package org.jboss.messaging.integration.transports.netty;
 
 import java.util.Map;
 
@@ -8,19 +8,16 @@ import org.jboss.messaging.core.remoting.spi.Connector;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 
 /**
- * 
- * A MinaConnectorFactory
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * A NettyConnectorFactory
  *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class MinaConnectorFactory implements ConnectorFactory
+public class NettyConnectorFactory implements ConnectorFactory
 {
    public Connector createConnector(final Map<String, Object> configuration,
                                     final BufferHandler handler,
                                     final ConnectionLifeCycleListener listener)
    {
-      return new MinaConnector(configuration, handler, listener);
+      return new NettyConnector(configuration, handler, listener);
    }
-
 }

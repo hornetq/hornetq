@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.easymock.EasyMock;
-import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
+import org.jboss.messaging.integration.transports.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.tests.util.UnitTestCase;
