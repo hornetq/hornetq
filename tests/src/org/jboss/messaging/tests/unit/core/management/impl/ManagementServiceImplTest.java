@@ -54,6 +54,7 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -87,6 +88,7 @@ public class ManagementServiceImplTest extends TestCase
       expect(configuration.isMessageCounterEnabled()).andReturn(false);
       HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
       HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      ResourceManager resourceManager = createMock(ResourceManager.class);
       MessagingServer messagingServer = createMock(MessagingServer.class);
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(false);
@@ -97,7 +99,7 @@ public class ManagementServiceImplTest extends TestCase
       replay(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
 
       ManagementService service = new ManagementServiceImpl(mbeanServer, true);
-      service.registerServer(postOffice, storageManager, configuration, queueSettingsRepository, messagingServer);
+      service.registerServer(postOffice, storageManager, configuration, queueSettingsRepository, resourceManager, messagingServer);
 
       verify(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
    }
@@ -115,6 +117,7 @@ public class ManagementServiceImplTest extends TestCase
       expect(configuration.isMessageCounterEnabled()).andReturn(false);
       HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
       HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      ResourceManager resourceManager = createMock(ResourceManager.class);
       MessagingServer messagingServer = createMock(MessagingServer.class);
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(true);
@@ -126,7 +129,7 @@ public class ManagementServiceImplTest extends TestCase
       replay(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
 
       ManagementService service = new ManagementServiceImpl(mbeanServer, true);
-      service.registerServer(postOffice, storageManager, configuration, queueSettingsRepository, messagingServer);
+      service.registerServer(postOffice, storageManager, configuration, queueSettingsRepository, resourceManager, messagingServer);
 
       verify(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
    }

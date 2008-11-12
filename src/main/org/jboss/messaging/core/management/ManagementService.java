@@ -34,6 +34,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -50,6 +51,7 @@ public interface ManagementService extends NotificationBroadcaster
                                               StorageManager storageManager,
                                               Configuration configuration,                                            
                                               HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                                              ResourceManager resourceManager,
                                               MessagingServer messagingServer) throws Exception;
 
    void unregisterServer() throws Exception;
@@ -69,5 +71,6 @@ public interface ManagementService extends NotificationBroadcaster
    public Object getResource(ObjectName objectName);
 
    void handleMessage(ServerMessage message);
+
 
 }

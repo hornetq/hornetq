@@ -111,6 +111,40 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
    // Static -------------------------------------------------------------------------------
 
+   public static void moveReferencesBackToHeadOfQueues(List<MessageReference> references,
+                                                 PostOffice postOffice,
+                                                 StorageManager storageManager,
+                                                 HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   {
+      Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
+
+      for (MessageReference ref : references)
+      {
+         if (ref.cancel(storageManager, postOffice, queueSettingsRepository))
+         {
+            Queue queue = ref.getQueue();
+
+            LinkedList<MessageReference> list = queueMap.get(queue);
+
+            if (list == null)
+            {
+               list = new LinkedList<MessageReference>();
+
+               queueMap.put(queue, list);
+            }
+
+            list.add(ref);
+         }
+      }
+
+      for (Map.Entry<Queue, LinkedList<MessageReference>> entry : queueMap.entrySet())
+      {
+         LinkedList<MessageReference> refs = entry.getValue();
+
+         entry.getKey().addListFirst(refs);
+      }
+   }
+   
    // Attributes ----------------------------------------------------------------------------
 
    private final boolean trace = log.isTraceEnabled();
@@ -2360,33 +2394,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       // Now cancel the refs back to the queue(s), we sort into queues and cancel back atomically to
       // preserve order
 
-      Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
-
-      for (MessageReference ref : rolledBack)
-      {
-         if (ref.cancel(storageManager, postOffice, queueSettingsRepository))
-         {
-            Queue queue = ref.getQueue();
-
-            LinkedList<MessageReference> list = queueMap.get(queue);
-
-            if (list == null)
-            {
-               list = new LinkedList<MessageReference>();
-
-               queueMap.put(queue, list);
-            }
-
-            list.add(ref);
-         }
-      }
-
-      for (Map.Entry<Queue, LinkedList<MessageReference>> entry : queueMap.entrySet())
-      {
-         LinkedList<MessageReference> refs = entry.getValue();
-
-         entry.getKey().addListFirst(refs);
-      }
+      moveReferencesBackToHeadOfQueues(rolledBack, postOffice, storageManager, queueSettingsRepository);
    }
 
    private void rollback() throws Exception

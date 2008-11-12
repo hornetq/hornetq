@@ -229,6 +229,7 @@ public class MessagingServerImpl implements MessagingServer
                                                           storageManager,
                                                           configuration,
                                                           queueSettingsRepository,
+                                                          resourceManager,
                                                           this);
 
       postOffice.start();

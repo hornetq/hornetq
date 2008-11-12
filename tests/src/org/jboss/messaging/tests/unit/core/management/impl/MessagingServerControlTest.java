@@ -32,12 +32,18 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+import static org.jboss.messaging.tests.util.RandomUtil.randomXid;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.management.NotificationBroadcasterSupport;
+import javax.transaction.xa.Xid;
 
 import junit.framework.TestCase;
 
@@ -54,6 +60,8 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.SimpleString;
 
@@ -72,6 +80,7 @@ public class MessagingServerControlTest extends TestCase
    private Configuration configuration;
    private HierarchicalRepository<Set<Role>> securityRepository;
    private HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   private ResourceManager resourceManager;
    private MessagingServer server;
    private MessageCounterManager messageCounterManager;
 
@@ -484,6 +493,114 @@ public class MessagingServerControlTest extends TestCase
       verifyMockedAttributes();
    }
 
+   public void testListPreparedTransactions() throws Exception
+   {
+      Xid xid1 = randomXid();
+      Xid xid2 = randomXid();
+      Xid xid3 = randomXid();
+      long oldestCreationTime = System.currentTimeMillis();
+      long midCreationTime = oldestCreationTime + 3600;
+      long newestCreationTime = midCreationTime + 3600;
+
+      Map<Xid, Long> xids = new HashMap<Xid, Long>();
+      xids.put(xid3, newestCreationTime);
+      xids.put(xid1, oldestCreationTime);
+      xids.put(xid2, midCreationTime);
+
+      expect(resourceManager.getPreparedTransactionsWithCreationTime()).andStubReturn(xids);
+
+      replayMockedAttributes();
+      
+      MessagingServerControl control = createControl();
+      
+      String[] preparedTransactions = control.listPreparedTransactions();
+
+      assertEquals(3, preparedTransactions.length);
+      // sorted by date, oldest first
+      System.out.println(preparedTransactions[0]);
+      System.out.println(preparedTransactions[1]);
+      System.out.println(preparedTransactions[2]);
+      assertTrue(preparedTransactions[0].contains(xid1.toString()));
+      assertTrue(preparedTransactions[1].contains(xid2.toString()));
+      assertTrue(preparedTransactions[2].contains(xid3.toString()));
+
+      verifyMockedAttributes();
+   }
+
+   public void testCommitPreparedTransactionWithKnownPreparedTransaction() throws Exception
+   {
+      Xid xid = randomXid();
+      String transactionAsBase64 = MessagingServerControl.toBase64String(xid);
+      Transaction tx = createMock(Transaction.class);
+      
+      expect(resourceManager.getPreparedTransactions()).andReturn(Arrays.asList(xid));      
+      expect(resourceManager.removeTransaction(xid)).andReturn(tx);
+      tx.commit();
+      
+      replayMockedAttributes();
+      replay(tx);
+      
+      MessagingServerControl control = createControl();
+      
+      assertTrue(control.commitPreparedTransaction(transactionAsBase64));
+
+      verifyMockedAttributes();
+      verify(tx);
+   }
+
+   public void testCommitPreparedTransactionWithUnknownPreparedTransaction() throws Exception
+   {
+      Xid xid = randomXid();
+      String transactionAsBase64 = MessagingServerControl.toBase64String(xid);
+      
+      expect(resourceManager.getPreparedTransactions()).andStubReturn(Collections.emptyList());      
+
+      replayMockedAttributes();
+      
+      MessagingServerControl control = createControl();
+      
+      assertFalse(control.commitPreparedTransaction(transactionAsBase64));
+
+      verifyMockedAttributes();
+   }
+   
+   public void testRollbackPreparedTransactionWithKnownPreparedTransaction() throws Exception
+   {
+      Xid xid = randomXid();
+      String transactionAsBase64 = MessagingServerControl.toBase64String(xid);
+      Transaction tx = createMock(Transaction.class);
+      
+      expect(resourceManager.getPreparedTransactions()).andReturn(Arrays.asList(xid));      
+      expect(resourceManager.removeTransaction(xid)).andReturn(tx);
+      expect(tx.rollback(queueSettingsRepository)).andStubReturn(Collections.emptyList());
+      
+      replayMockedAttributes();
+      replay(tx);
+      
+      MessagingServerControl control = createControl();
+      
+      assertTrue(control.rollbackPreparedTransaction(transactionAsBase64));
+
+      verifyMockedAttributes();
+      verify(tx);
+   }
+
+   public void testRollbackPreparedTransactionWithUnknownPreparedTransaction() throws Exception
+   {
+      Xid xid = randomXid();
+      String transactionAsBase64 = MessagingServerControl.toBase64String(xid);
+      
+      expect(resourceManager.getPreparedTransactions()).andStubReturn(Collections.emptyList());      
+
+      replayMockedAttributes();
+      
+      MessagingServerControl control = createControl();
+      
+      assertFalse(control.rollbackPreparedTransaction(transactionAsBase64));
+
+      verifyMockedAttributes();
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -499,6 +616,7 @@ public class MessagingServerControlTest extends TestCase
       expect(configuration.isMessageCounterEnabled()).andReturn(false);
       securityRepository = createMock(HierarchicalRepository.class);
       queueSettingsRepository = createMock(HierarchicalRepository.class);
+      resourceManager = createMock(ResourceManager.class);
       server = createMock(MessagingServer.class);
       messageCounterManager = createMock(MessageCounterManager.class);
    }
@@ -511,6 +629,7 @@ public class MessagingServerControlTest extends TestCase
       configuration = null;
       securityRepository = null;
       queueSettingsRepository = null;
+      resourceManager = null;
       server = null;
       messageCounterManager = null;
 
@@ -523,20 +642,20 @@ public class MessagingServerControlTest extends TestCase
    {
       MessagingServerControl control = new MessagingServerControl(postOffice,
             storageManager, configuration, 
-            queueSettingsRepository, server, messageCounterManager, new NotificationBroadcasterSupport());
+            queueSettingsRepository, resourceManager, server, messageCounterManager, new NotificationBroadcasterSupport());
       return control;
    }
 
    private void replayMockedAttributes()
    {
       replay(postOffice, storageManager, configuration, securityRepository,
-            queueSettingsRepository, server, messageCounterManager);
+            queueSettingsRepository, resourceManager, server, messageCounterManager);
    }
 
    private void verifyMockedAttributes()
    {
       verify(postOffice, storageManager, configuration, securityRepository,
-            queueSettingsRepository, server, messageCounterManager);
+            queueSettingsRepository, resourceManager, server, messageCounterManager);
    }
 
    // Inner classes -------------------------------------------------

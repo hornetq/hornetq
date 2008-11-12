@@ -23,29 +23,29 @@
 package org.jboss.messaging.core.transaction.impl;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.LinkedList;
-import java.util.TimerTask;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.transaction.ResourceManager;
-import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.MessagingComponent;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.core.transaction.Transaction;
 
 /**
  * A ResourceManagerImpl
@@ -180,6 +180,18 @@ public class ResourceManagerImpl implements ResourceManager, MessagingComponent
          }
       }
       return xids;
+   }
+   
+   public Map<Xid, Long> getPreparedTransactionsWithCreationTime()
+   {
+      List<Xid> xids = getPreparedTransactions();
+      Map<Xid, Long> xidsWithCreationTime = new HashMap<Xid, Long>();
+
+      for (Xid xid : xids)
+      {
+         xidsWithCreationTime.put(xid, transactions.get(xid).getCreateTime());
+      }
+      return xidsWithCreationTime;      
    }
 
    class TxTimeoutHandler extends TimerTask

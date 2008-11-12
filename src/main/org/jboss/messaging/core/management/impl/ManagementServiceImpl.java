@@ -64,6 +64,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
 
 /*
@@ -108,6 +109,11 @@ public class ManagementServiceImpl implements ManagementService
       return ObjectName.getInstance(DOMAIN + ":module=Core,type=Server");
    }
 
+   public static ObjectName getResourceManagerObjectName() throws Exception
+   {
+      return ObjectName.getInstance(DOMAIN + ":module=Core,type=ResourceManager");
+   }
+
    public static ObjectName getAddressObjectName(final SimpleString address) throws Exception
    {
       return ObjectName.getInstance(String.format("%s:module=Core,type=Address,name=%s",
@@ -147,6 +153,7 @@ public class ManagementServiceImpl implements ManagementService
                                                      final StorageManager storageManager,
                                                      final Configuration configuration,                                     
                                                      final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                                                     final ResourceManager resourceManager,
                                                      final MessagingServer messagingServer) throws Exception
    {
       this.postOffice = postOffice;
@@ -156,6 +163,7 @@ public class ManagementServiceImpl implements ManagementService
                                                  storageManager,
                                                  configuration,                                                
                                                  queueSettingsRepository,
+                                                 resourceManager,
                                                  messagingServer,
                                                  messageCounterManager,
                                                  broadcaster);

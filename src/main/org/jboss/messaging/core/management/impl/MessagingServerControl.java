@@ -22,11 +22,16 @@
 
 package org.jboss.messaging.core.management.impl;
 
+import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanInfo;
@@ -36,6 +41,7 @@ import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.StandardMBean;
+import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -49,8 +55,12 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.impl.ServerSessionImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.util.Base64;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -64,6 +74,8 @@ public class MessagingServerControl extends StandardMBean implements MessagingSe
 
    // Constants -----------------------------------------------------
 
+   private static DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
+
    // Attributes ----------------------------------------------------
 
    private final PostOffice postOffice;
@@ -73,6 +85,8 @@ public class MessagingServerControl extends StandardMBean implements MessagingSe
    private final Configuration configuration;
 
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+
+   private final ResourceManager resourceManager;
 
    private final MessagingServer server;
 
@@ -84,12 +98,31 @@ public class MessagingServerControl extends StandardMBean implements MessagingSe
 
    // Static --------------------------------------------------------
 
+   public static String toBase64String(final Xid xid)
+   {
+      byte[] branchQualifier = xid.getBranchQualifier();
+      byte[] globalTransactionId = xid.getGlobalTransactionId();
+      int formatId = xid.getFormatId();
+      
+      byte[] hashBytes = new byte[branchQualifier.length + globalTransactionId.length + 4];
+      System.arraycopy(branchQualifier, 0, hashBytes, 0, branchQualifier.length);
+      System.arraycopy(globalTransactionId, 0, hashBytes, branchQualifier.length, globalTransactionId.length);
+      byte[] intBytes = new byte[4];
+      for (int i = 0; i < 4; i++)
+      {
+         intBytes[i] = (byte)((formatId >> (i * 8)) % 0xFF);
+      }
+      System.arraycopy(intBytes, 0, hashBytes, branchQualifier.length + globalTransactionId.length, 4);
+      return Base64.encodeBytes(hashBytes);
+   }
+   
    // Constructors --------------------------------------------------
 
    public MessagingServerControl(final PostOffice postOffice,
                                  final StorageManager storageManager,
                                  final Configuration configuration,
                                  final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                                 final ResourceManager resourceManager,
                                  final MessagingServer messagingServer,
                                  final MessageCounterManager messageCounterManager,
                                  final NotificationBroadcasterSupport broadcaster) throws Exception
@@ -99,6 +132,7 @@ public class MessagingServerControl extends StandardMBean implements MessagingSe
       this.storageManager = storageManager;
       this.configuration = configuration;
       this.queueSettingsRepository = queueSettingsRepository;
+      this.resourceManager = resourceManager;
       server = messagingServer;
       this.messageCounterManager = messageCounterManager;
       this.broadcaster = broadcaster;
@@ -461,6 +495,63 @@ public class MessagingServerControl extends StandardMBean implements MessagingSe
          throw new IllegalArgumentException("invalid value: count must be greater than 0");
       }
       messageCounterManager.setMaxDayCount(count);
+   }
+
+   public String[] listPreparedTransactions()
+   {
+      Map<Xid, Long> xids = resourceManager.getPreparedTransactionsWithCreationTime();
+      ArrayList<Entry<Xid, Long>> xidsSortedByCreationTime = new ArrayList<Map.Entry<Xid, Long>>(xids.entrySet());
+      Collections.sort(xidsSortedByCreationTime, new Comparator<Entry<Xid, Long>>()
+      {
+         public int compare(Entry<Xid, Long> entry1, Entry<Xid, Long> entry2)
+         {
+            // sort by creation time, oldest first
+            return (int)(entry1.getValue() - entry2.getValue());
+         }
+      });
+      String[] s = new String[xidsSortedByCreationTime.size()];
+      int i = 0;
+      for (Map.Entry<Xid, Long> entry : xidsSortedByCreationTime)
+      {
+         Date creation = new Date(entry.getValue());
+         Xid xid = entry.getKey();
+         s[i++] = DATE_FORMAT.format(creation) + " base64: " + toBase64String(xid) + " "+ xid.toString();
+      }
+      return s;
+   }
+   
+   public boolean commitPreparedTransaction(String transactionAsBase64) throws Exception
+   {
+      List<Xid> xids = resourceManager.getPreparedTransactions();
+
+      for (Xid xid : xids)
+      {
+         if (toBase64String(xid).equals(transactionAsBase64))
+         {
+            Transaction transaction = resourceManager.removeTransaction(xid);
+            transaction.commit();
+            return true;
+         }
+      }
+      return false;
+   }
+   
+   public boolean rollbackPreparedTransaction(String transactionAsBase64) throws Exception
+   {
+      List<Xid> xids = resourceManager.getPreparedTransactions();
+
+      for (Xid xid : xids)
+      {
+         if (toBase64String(xid).equals(transactionAsBase64))
+         {
+            Transaction transaction = resourceManager.removeTransaction(xid);            
+            List<MessageReference> rolledBack = transaction.rollback(queueSettingsRepository);
+            
+            ServerSessionImpl.moveReferencesBackToHeadOfQueues(rolledBack, postOffice, storageManager, queueSettingsRepository);
+            return true;
+         }
+      }
+      return false;
    }
 
    // NotificationEmitter implementation ----------------------------

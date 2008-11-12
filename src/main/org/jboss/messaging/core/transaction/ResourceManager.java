@@ -22,11 +22,12 @@
 
 package org.jboss.messaging.core.transaction;
 
-import org.jboss.messaging.core.server.MessagingComponent;
-
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.xa.Xid;
+
+import org.jboss.messaging.core.server.MessagingComponent;
 
 
 /**
@@ -49,4 +50,6 @@ public interface ResourceManager extends MessagingComponent
    boolean setTimeoutSeconds(int timeoutSeconds);
 
    List<Xid> getPreparedTransactions();
+
+   Map<Xid, Long> getPreparedTransactionsWithCreationTime();
 }
