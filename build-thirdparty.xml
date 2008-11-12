@@ -33,108 +33,133 @@
 
 <project name="main.build" default="synchronize">
 
-   <!-- ======================================================================================== -->
-   <!-- Configuration                                                                            -->
-   <!-- ======================================================================================== -->
+    <!-- ======================================================================================== -->
+    <!-- Configuration                                                                            -->
+    <!-- ======================================================================================== -->
 
-   <property file="local.properties"/>
-   <property file="synchronize.properties"/>
-   <property name="librariesEntFile" value="./thirdparty/libraries.ent"/>
+    <property file="local.properties"/>
+    <property file="synchronize.properties"/>
+    <property name="librariesEntFile" value="./thirdparty/libraries.ent"/>
 
-   <property environment="ENV"/>
+    <property environment="ENV"/>
 
-   <!--
-      | Allow jbossbuild.repository to be set from (in order or priority)
-      | 1) Command line -Djbossbuild.repository=...
-      | 2) synchronize.properties jbossbuild.repository setting
-      | 3) JBOSS_REPOSITORY environment variable
-   -->
-   <condition property="jbossbuild.repository" value="${ENV.JBOSS_REPOSITORY}">
-      <isset property="ENV.JBOSS_REPOSITORY"/>
-   </condition>
+    <!--
+       | Allow jbossbuild.repository to be set from (in order or priority)
+       | 1) Command line -Djbossbuild.repository=...
+       | 2) synchronize.properties jbossbuild.repository setting
+       | 3) JBOSS_REPOSITORY environment variable
+    -->
+    <condition property="jbossbuild.repository" value="${ENV.JBOSS_REPOSITORY}">
+        <isset property="ENV.JBOSS_REPOSITORY"/>
+    </condition>
 
-   <!--
-      | Fall back to default.
-   -->
-   <property name="jbossbuild.repository" value="http://repository.jboss.com"/>
+    <!--
+       | Fall back to default.
+    -->
+    <property name="jbossbuild.repository" value="http://repository.jboss.com"/>
 
-   <import file="./tools/config/jbossbuild/tasks.xml"/>
+    <import file="./tools/config/jbossbuild/tasks.xml"/>
 
-   <!--
-      | This is where JBoss Messaging external dependencies are declared. The repository is in CVS
-      | under the module repository.jboss.com whose contents are pushed to the
-      | http://repository.jboss.com site.
-   -->
-   <build id="jboss-messaging"
-          impltitle="JBoss Messaging"
-          implversion="undefined"
-          implvendor="JBoss Inc."
-          implurl="http://www.jboss.org"
-          description="JBoss Messaging"
-          cvsroot="${cvs.prefix}@cvs.forge.jboss.com:/cvsroot/jboss"
-          thirdpartypath="./thirdparty/"
-          location="${jbossbuild.repository}"
-          targetdefs="targets">
+    <!--
+       | This is where JBoss Messaging external dependencies are declared. The repository is in CVS
+       | under the module repository.jboss.com whose contents are pushed to the
+       | http://repository.jboss.com site.
+    -->
+    <build id="jboss-messaging"
+           impltitle="JBoss Messaging"
+           implversion="undefined"
+           implvendor="JBoss Inc."
+           implurl="http://www.jboss.org"
+           description="JBoss Messaging"
+           cvsroot="${cvs.prefix}@cvs.forge.jboss.com:/cvsroot/jboss"
+           thirdpartypath="./thirdparty/"
+           location="${jbossbuild.repository}"
+           targetdefs="targets">
 
+        <!--
+            needed for the filters
+        -->
+        <componentref name="sun-javacc" version="3.2"/>
 
-      <!--
-           Dependencies required to build the project.
-      -->
-      <componentref name="retrotranslator" version="0.9.6jboss"/>
-      <componentref name="sun-javacc" version="3.2"/>
-      <componentref name="apache-log4j" version="1.2.14-brew"/>
-      <componentref name="apache-logging" version="1.1.0.jboss"/>
-      <componentref name="javassist" version="3.6.0.GA/"/>
-      <componentref name="jgroups" version="2.4.1.SP3-brew"/>
-      <componentref name="trove" version="1.0.2-brew"/>
-      <componentref name="jboss/common" version="1.2.1.GA"/>
-      <componentref name="jboss/common-core" version="2.2.2.GA"/>
-      <componentref name="jboss/aop" version="2.0.0.beta2"/>
-      <componentref name="jboss/jbossts14" version="4.2.3.SP3"/>
-      <componentref name="jboss/microcontainer" version="2.0.0.Beta5"/>
-      <componentref name="jboss/jboss-security-spi" version="2.0.1.GA"/>
-      <componentref name="jboss/jboss-jaspi-api" version="1.0-BETA1"/>
-      <componentref name="jboss/integration" version="5.0.0.Beta4"/>
-      <componentref name="jboss/jbosssx-client" version="2.0.1.GA"/>
-      <componentref name="jboss/jboss-javaee" version="5.0.0.Beta3"/>
-      <componentref name="jboss/jboss-common-logging-spi" version="2.0.4.GA"/>
-      <componentref name="netty" version="3.0.1.GA"/>
-      <componentref name="apache-mina" version="2.0.0-M3-20080730.120633-1"/>
-      <componentref name="slf4j/log4j" version="1.4.3"/>
-      <componentref name="jpa-api" version="1.0.0.GA"/>
+        <!--
+             Dependencies required to build the transport jar
+        -->
 
-      <!--
-           Dependencies required to test the project.
-      -->
-      <componentref name="junit" version="3.8.2-brew"/>
-      <componentref name="dom4j" version="1.6.1-brew"/>
-      <componentref name="apache-xerces" version="2.7.1-brew"/> <!-- needed by org.jboss.logging.Log4jLoggerPlugin -->
-      <componentref name="jboss/profiler/jvmti" version="1.0.0.CR5-brew"/>
-      <componentref name="jboss/jbossxb" version="2.0.0.CR4"/>
-      <componentref name="jboss/test14" version="1.0.0.GA"/>
-      <componentref name="easymock" version="2.3"/>
-   	  <!-- the extension is used to mock some concrete classes -->
-      <componentref name="easymock-classextension" version="2.3"/>
-   	
-      <!-- This is a non declared dependency of jboss/test14 -->
-      <componentref name="jboss/jboss-retro" version="1.1.2"/>
-      <!-- This is a non declared dependency of jboss/test14 -->
-      <componentref name="jboss/backport-concurrent" version="2.1.0.GA"/>
-      <componentref name="jboss/jnpserver" version="5.0.0.Beta3"/>
+        <componentref name="netty" version="3.0.1.GA"/>
+        <componentref name="apache-mina" version="2.0.0-M3-20080730.120633-1"/>
+
+        <!--
+             Dependencies needed to build the security.jar
+        -->
+
+        <componentref name="jboss/integration" version="5.0.0.Beta4"/>
+        <componentref name="jboss/jboss-security-spi" version="2.0.1.GA"/>
+        <componentref name="jboss/jbosssx-client" version="2.0.1.GA"/>
+        <componentref name="jboss/jboss-jaspi-api" version="1.0-BETA1"/>
+
+        <!--
+            Dependencies required to build the bootstrap.jar
+        -->
+
+        <componentref name="jboss/microcontainer" version="2.0.0.Beta5"/>
+        <componentref name="jboss/common" version="1.2.1.GA"/>
+
+        <!--
+             Dependencies required to build logging.jar
+        -->
+
+        <componentref name="apache-log4j" version="1.2.14-brew"/>
+        <componentref name="jboss/jboss-common-logging-spi" version="2.0.4.GA"/>
+
+        <!--
+            Dependencies required to build jms.jar
+        -->
+
+        <componentref name="jboss/jboss-javaee" version="5.0.0.Beta3"/>
+        <componentref name="jboss/jbossts14" version="4.2.3.SP3"/>
+        <!--already defined <componentref name="jboss/integration" version="5.0.0.Beta4"/>-->
 
 
-   </build>
+        <!--
+            Dependencies required to run the unit tests
+        -->
 
-   <synchronizeinfo/>
+        <componentref name="junit" version="3.8.2-brew"/>
+        <componentref name="easymock" version="2.3"/>
+        <!-- the extension is used to mock some concrete classes -->
+        <componentref name="easymock-classextension" version="2.3"/>
+        <componentref name="trove" version="1.0.2-brew"/>
+        <componentref name="jboss/common-core" version="2.2.2.GA"/>
+        <componentref name="jboss/aop" version="2.0.0.beta2"/>
+        <componentref name="javassist" version="3.6.0.GA/"/>
+        <componentref name="jboss/jbossxb" version="2.0.0.CR4"/>
+        <componentref name="apache-xerces" version="2.7.1-brew"/>
+        <componentref name="jboss/profiler/jvmti" version="1.0.0.CR5-brew"/>
+        <componentref name="slf4j/log4j" version="1.4.3"/>
+        
+        <!--
+            Dependencies required to run the jms tests
+        -->
 
-   <!--
-      | Generate the targets.
-   -->
-   <generate generate="jboss-messaging"/>
+        <componentref name="apache-logging" version="1.1.0.jboss"/>
+        
+        <!--
+             Dependencies required to run the server standalone.
+        -->
 
-   <target name="generate-libraries-ent" depends="synchronize">
-      <gen-lib-file path="tools/config/buildmagic" filename="${librariesEntFile}"/>
-      <visit-componentref-graph componentVisitor="org.jboss.ant.util.graph.ComponentRefGraphLicenseVisitor"/>
-   </target>
+        <componentref name="jboss/jnpserver" version="5.0.0.Beta3"/>
+    </build>
+
+    <synchronizeinfo/>
+
+    <!--
+       | Generate the targets.
+    -->
+    <generate generate="jboss-messaging"/>
+
+    <target name="generate-libraries-ent" depends="synchronize">
+        <gen-lib-file path="tools/config/buildmagic" filename="${librariesEntFile}"/>
+        <visit-componentref-graph componentVisitor="org.jboss.ant.util.graph.ComponentRefGraphLicenseVisitor"/>
+    </target>
 
 </project>

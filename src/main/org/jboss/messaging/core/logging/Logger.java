@@ -67,7 +67,7 @@ public class Logger
    private Logger(final Class<?> clazz)
    {
       logger = java.util.logging.Logger.getLogger(clazz.getName());
-      logger.setUseParentHandlers(false);
+      //logger.setUseParentHandlers(false);
    }
    
    public boolean isInfoEnabled()

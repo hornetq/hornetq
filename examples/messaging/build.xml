@@ -46,7 +46,6 @@
       </fileset>
       <pathelement location="${client.core.jar}"/>
       <pathelement location="${transports.jar}"/>
-      <pathelement location="${jms.jar}"/>
    </path>
 
    <path id="server.compile.classpath">
