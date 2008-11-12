@@ -237,16 +237,15 @@ public class BasicXaRecoveryTest extends UnitTestCase
       testMultipleTxReceiveWithRollback(true);  
    }
    
-// https://jira.jboss.org/jira/browse/JBMESSAGING-1449   
-//   public void testPagingServerRestarted() throws Exception
-//   {
-//      testPaging(true);
-//   }
-//   
-//   public void testPaging() throws Exception
-//   {
-//      testPaging(false);
-//   }
+   public void testPagingServerRestarted() throws Exception
+   {
+      testPaging(true);
+   }
+   
+   public void testPaging() throws Exception
+   {
+      testPaging(false);
+   }
    
    public void testPaging(boolean restartServer) throws Exception
    {
@@ -296,8 +295,12 @@ public class BasicXaRecoveryTest extends UnitTestCase
 
       clientSession.commit(xid, true);
 
-      clientSession.start();
+      clientSession.close();
+      
+      clientSession = sessionFactory.createSession(false, false, false);
 
+      clientSession.start();
+      
       ClientConsumer pageConsumer = clientSession.createConsumer(pageQueue);
 
       for (int i = 0; i < 1000; i++)
@@ -305,6 +308,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
          ClientMessage m = pageConsumer.receive(10000);
          assertNotNull(m);
          m.acknowledge();
+         clientSession.commit();
       }  
       
    }
