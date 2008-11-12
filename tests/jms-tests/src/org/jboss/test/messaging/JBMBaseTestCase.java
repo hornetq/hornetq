@@ -40,7 +40,7 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.microcontainer.JBMBootstrapServer;
+import org.jboss.messaging.integration.bootstrap.JBMBootstrapServer;
 import org.jboss.test.messaging.util.ProxyAssertSupport;
 import org.jboss.tm.TransactionManagerLocator;
 

@@ -470,7 +470,7 @@
          <src>
             <pathelement path="${src.main.dir}"/>
          </src>
-         <include name="org/jboss/messaging/microcontainer/**/*.java"/>
+         <include name="org/jboss/messaging/integration/bootstrap/**/*.java"/>
          <classpath refid="bootstrap.compilation.classpath"/>
       </javac>
    </target>
@@ -1093,7 +1093,7 @@
    <!--server-->
 
    <target name="runServer" depends="jar">
-      <java classname="org.jboss.messaging.microcontainer.JBMBootstrapServer" fork="true">
+      <java classname="org.jboss.messaging.integration.bootstrap.JBMBootstrapServer" fork="true">
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-Xms512M"/>
          <jvmarg value="-Xmx2048M"/>
@@ -1111,7 +1111,7 @@
    </target>
 
    <target name="debugServer" depends="jar">
-      <java classname="org.jboss.messaging.microcontainer.JBMBootstrapServer" fork="true">
+      <java classname="org.jboss.messaging.integration.bootstrap.JBMBootstrapServer" fork="true">
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-Xms512M"/>
          <jvmarg value="-Xmx2048M"/>

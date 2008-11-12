@@ -25,7 +25,7 @@ import java.util.Properties;
 
 import org.jboss.kernel.plugins.config.property.PropertyKernelConfig;
 import org.jboss.kernel.spi.deployment.KernelDeployment;
-import org.jboss.messaging.microcontainer.JBMBootstrapServer;
+import org.jboss.messaging.integration.bootstrap.JBMBootstrapServer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**

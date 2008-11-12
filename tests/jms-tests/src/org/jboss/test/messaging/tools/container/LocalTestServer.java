@@ -55,7 +55,7 @@ import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
-import org.jboss.messaging.microcontainer.JBMBootstrapServer;
+import org.jboss.messaging.integration.bootstrap.JBMBootstrapServer;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.test.messaging.tools.ConfigurationHelper;
 import org.jboss.test.messaging.tools.ServerManagement;
