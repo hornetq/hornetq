@@ -1071,7 +1071,7 @@ public class AcknowledgementTest extends JMSTestCase
          {
             conn.close();
          }
-      }      
+      }           
    }
 
    public void testMessageListenerClientAck() throws Exception

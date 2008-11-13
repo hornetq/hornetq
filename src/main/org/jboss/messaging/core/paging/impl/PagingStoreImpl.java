@@ -284,9 +284,11 @@ public class PagingStoreImpl implements TestSupportPageStore
       // this address
       if (dropMessagesOnSize)
       {
+         //TODO - why?
          return false;
       }
 
+      //TODO why calc this before checking currentPage?
       int bytesToWrite = fileFactory.calculateBlockSize(message.getEncodeSize() + PageImpl.SIZE_RECORD);
 
       // The only thing single-threaded done on paging is positioning and

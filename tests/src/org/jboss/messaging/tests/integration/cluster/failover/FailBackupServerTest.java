@@ -20,10 +20,11 @@
  * site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.cluster;
+package org.jboss.messaging.tests.integration.cluster.failover;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -33,7 +34,6 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
-import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -49,17 +49,19 @@ import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
- * A FailoverExpiredMessageTest
+ * A FailBackupServerTest
+ * 
+ * Make sure live sever continues ok if backup server fails
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 5 Nov 2008 09:33:32
+ * Created 6 Nov 2008 11:27:17
  *
  *
  */
-public class FailoverExpiredMessageTest extends TestCase
+public class FailBackupServerTest extends TestCase
 {
-   private static final Logger log = Logger.getLogger(FailoverExpiredMessageTest.class);
+   private static final Logger log = Logger.getLogger(FailBackupServerTest.class);
 
    // Constants -----------------------------------------------------
 
@@ -79,112 +81,100 @@ public class FailoverExpiredMessageTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   /*
-    * Set messages to expire very soon, send a load of them, so at some of them get expired when they reach the client
-    * After failover make sure all are received ok
-    */
-   public void testExpiredBeforeConsumption() throws Exception
-   {            
+   public void testFailBackup() throws Exception
+   {
       ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                       new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                  backupParams));
-      
+
       sf1.setSendWindowSize(32 * 1024);
-  
+
       ClientSession session1 = sf1.createSession(false, true, true);
 
-      session1.createQueue(ADDRESS, ADDRESS, null, false, false);
-      
-      session1.start();
+      session1.createQueue(ADDRESS, ADDRESS, null, false, false, true);
 
       ClientProducer producer = session1.createProducer(ADDRESS);
 
-      final int numMessages = 10000;
-      
-      //Set time to live so at least some of them will more than likely expire before they are consumed by the client
-      
-      long now = System.currentTimeMillis();
-      
-      long expire = now + 5000;
+      final int numMessages = 1000;
 
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session1.createClientMessage(JBossTextMessage.TYPE,
-                                                             false,
-                                                             expire,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
-         message.putIntProperty(new SimpleString("count"), i);         
+                                                              false,
+                                                              0,
+                                                              System.currentTimeMillis(),
+                                                              (byte)1);
+         message.putIntProperty(new SimpleString("count"), i);
          message.getBody().putString("aardvarks");
          message.getBody().flip();
-         producer.send(message);                  
+         producer.send(message);
       }
+
       ClientConsumer consumer1 = session1.createConsumer(ADDRESS);
-                 
-      final RemotingConnection conn1 = ((ClientSessionImpl)session1).getConnection();
- 
-      Thread t = new Thread()
-      {
-         public void run()
-         {
-            try
-            {
-               //Sleep a little while to ensure that some messages are consumed before failover
-               Thread.sleep(5000);
-            }
-            catch (InterruptedException e)
-            {               
-            }
-            
-            conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
-         }
-      };
-      
-      t.start();
-                   
-      int count = 0;
-      
-      while (true)
+
+      session1.start();
+
+      for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer1.receive(1000);
-                           
-         if (message != null)
+
+         assertNotNull(message);
+
+         assertEquals("aardvarks", message.getBody().getString());
+
+         assertEquals(i, message.getProperty(new SimpleString("count")));
+
+         if (i == 0)
          {
-            message.acknowledge();
-            
-            //We sleep a little to make sure messages aren't consumed too quickly and some
-            //will expire before reaching consumer
-            Thread.sleep(1);
-            
-            count++;
+            // Fail all the replicating connections - this simulates the backup server crashing
+
+            Set<RemotingConnection> conns = liveService.getServer().getRemotingService().getConnections();
+
+            for (RemotingConnection conn : conns)
+            {
+               log.info("Failing replicating connection");
+               conn.getReplicatingConnection().fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
+            }
          }
-         else
-         {
-            log.info("message was null");
-            break;
-         }
-      }           
-      
-      log.info("Got " + count + " messages");
-           
-      t.join();
-                   
-      session1.close();
-      
-      //Make sure no more messages
-      ClientSession session2 = sf1.createSession(false, true, true);
-      
-      session2.start();
-      
-      ClientConsumer consumer2 = session2.createConsumer(ADDRESS);
-      
-      ClientMessage message = consumer2.receive(1000);
-      
+
+         message.acknowledge();
+      }
+
+      ClientMessage message = consumer1.receive(1000);
+
       assertNull(message);
-      
-      session2.close();      
+
+      // Send some more
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         message = session1.createClientMessage(JBossTextMessage.TYPE, false, 0, System.currentTimeMillis(), (byte)1);
+         message.putIntProperty(new SimpleString("count"), i);
+         message.getBody().putString("aardvarks");
+         message.getBody().flip();
+         producer.send(message);
+      }
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         message = consumer1.receive(1000);
+
+         assertNotNull(message);
+
+         assertEquals("aardvarks", message.getBody().getString());
+
+         assertEquals(i, message.getProperty(new SimpleString("count")));
+
+         message.acknowledge();
+      }
+
+      message = consumer1.receive(1000);
+
+      assertNull(message);
+
+      session1.close();
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -230,4 +220,3 @@ public class FailoverExpiredMessageTest extends TestCase
 
    // Inner classes -------------------------------------------------
 }
-

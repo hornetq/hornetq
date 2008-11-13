@@ -72,7 +72,7 @@ public class AutoGroupClientTest extends TestCase
       sf.setAutoGroup(true);
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false, false, true);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -133,7 +133,7 @@ public class AutoGroupClientTest extends TestCase
       sf.setAutoGroup(true);
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false, false, true);
 
       ClientProducer producer = session.createProducer(QUEUE);
       ClientProducer producer2 = session.createProducer(QUEUE);
@@ -201,7 +201,7 @@ public class AutoGroupClientTest extends TestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false, false, true);
       
       ClientProducer producer = session.createProducer(QUEUE);
 

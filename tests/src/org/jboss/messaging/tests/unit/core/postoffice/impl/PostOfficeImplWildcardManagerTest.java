@@ -95,7 +95,7 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       assertTrue(postOffice.containsDestination(address));
       assertTrue(postOffice.containsDestination(address2));
       assertTrue(postOffice.containsDestination(address3));
-      postOffice.addBinding(new SimpleString("test.*"), queueName, null, false, false);
+      postOffice.addBinding(new SimpleString("test.*"), queueName, null, false, false, true);
       postOffice.route(message);
       postOffice.route(message2);
       postOffice.route(message3);
@@ -157,8 +157,8 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       postOffice.addDestination(address2, true);
       postOffice.addDestination(address3, true);
       postOffice.addDestination(address4, true);
-      postOffice.addBinding(new SimpleString("test.*"), queueName, null, false, false);
-      postOffice.addBinding(new SimpleString("test2.*"), queueName2, null, false, false);
+      postOffice.addBinding(new SimpleString("test.*"), queueName, null, false, false, true);
+      postOffice.addBinding(new SimpleString("test2.*"), queueName2, null, false, false, true);
       postOffice.route(message);
       postOffice.route(message2);
       postOffice.route(message3);

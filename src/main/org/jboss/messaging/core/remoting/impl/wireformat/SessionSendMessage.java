@@ -24,6 +24,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
@@ -42,7 +43,7 @@ public class SessionSendMessage extends PacketImpl
    
    // Attributes ----------------------------------------------------
 
-   private ClientMessage clientMessage;
+   private Message clientMessage;
    
    private ServerMessage serverMessage;
    
@@ -52,7 +53,7 @@ public class SessionSendMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionSendMessage(final ClientMessage message, final boolean requiresResponse)
+   public SessionSendMessage(final Message message, final boolean requiresResponse)
    {
       super(SESS_SEND);
 
@@ -65,24 +66,10 @@ public class SessionSendMessage extends PacketImpl
    {
       super(SESS_SEND);
    }
-
-   protected SessionSendMessage(final byte type, final ClientMessage message, final boolean requiresResponse)
-   {
-      super(type);
-
-      this.clientMessage = message;
-
-      this.requiresResponse = requiresResponse;
-   }
-
-   protected SessionSendMessage(byte type)
-   {
-      super(type);
-   }
-
+   
    // Public --------------------------------------------------------
 
-   public ClientMessage getClientMessage()
+   public Message getClientMessage()
    {
       return clientMessage;
    }

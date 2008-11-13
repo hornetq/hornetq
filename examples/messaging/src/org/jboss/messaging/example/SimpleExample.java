@@ -61,7 +61,7 @@ public class SimpleExample
          ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));
          clientSession = sessionFactory.createSession(false, true, true);
          SimpleString atestq = new SimpleString("atestq");
-         clientSession.createQueue(atestq, atestq, null, false, true);
+         clientSession.createQueue(atestq, atestq, null, false, true, true);
          ClientProducer clientProducer = clientSession.createProducer(atestq);
          ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, false, 0,
                  System.currentTimeMillis(), (byte) 1);

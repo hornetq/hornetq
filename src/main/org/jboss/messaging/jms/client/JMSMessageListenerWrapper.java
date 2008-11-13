@@ -126,6 +126,11 @@ public class JMSMessageListenerWrapper implements MessageHandler
             {
                message.acknowledge();
             }
+            
+            if (consumer.isClosed())
+            {
+               log.info("not acking, consumer is closed");
+            }
          }
          catch (MessagingException e)
          {

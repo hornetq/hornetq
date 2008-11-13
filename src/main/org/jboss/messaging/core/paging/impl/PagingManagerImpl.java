@@ -126,12 +126,13 @@ public class PagingManagerImpl implements PagingManager
       return globalMode.get();
    }
 
+   //FIXME - this is not thread safe
    public PagingStore getPageStore(final SimpleString storeName) throws Exception
    {
       PagingStore store = stores.get(storeName);
+      
       if (store == null)
       {
-
          store = newStore(storeName);
 
          PagingStore oldStore = stores.putIfAbsent(storeName, store);
@@ -145,7 +146,6 @@ public class PagingManagerImpl implements PagingManager
       }
 
       return store;
-
    }
 
    /** this will be set by the postOffice itself.
@@ -370,7 +370,7 @@ public class PagingManagerImpl implements PagingManager
       if (store.isDropWhenMaxSize() && size > 0)
       {
          // if destination configured to drop messages && size is over the
-         // limit, we return -1 what means drop the message
+         // limit, we return -1 which means drop the message
          if (store.getAddressSize() + size > maxSize || maxGlobalSize > 0 && globalSize.get() + size > maxGlobalSize)
          {
             if (!store.isDroppedMessage())
@@ -388,7 +388,6 @@ public class PagingManagerImpl implements PagingManager
       }
       else
       {
-
          long currentGlobalSize = globalSize.addAndGet(size);
 
          final long addressSize = store.addAddressSize(size);

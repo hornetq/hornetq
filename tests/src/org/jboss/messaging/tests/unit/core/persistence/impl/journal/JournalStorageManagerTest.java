@@ -437,7 +437,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       EasyMock.expect(queue.getFilter()).andStubReturn(filter);
 
       SimpleString address = new SimpleString("aijsiajs");
-      Binding binding = new BindingImpl(address, queue);
+      Binding binding = new BindingImpl(address, queue, true);
 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       DataOutputStream daos = new DataOutputStream(baos);
@@ -450,13 +450,14 @@ public class JournalStorageManagerTest extends UnitTestCase
       byte[] addressBytes = binding.getAddress().getData();
       daos.writeInt(addressBytes.length);
       daos.write(addressBytes);
-      daos.writeBoolean(filter != null);
+      daos.writeBoolean(filter != null);      
       if (filter != null)
       {
          byte[] filterBytes = queueFilter.getData();
          daos.writeInt(filterBytes.length);
          daos.write(filterBytes);
       }
+      daos.writeBoolean(true);
       daos.flush();
       byte[] data = baos.toByteArray();
 
@@ -639,6 +640,7 @@ public class JournalStorageManagerTest extends UnitTestCase
          daos.writeInt(filterBytes.length);
          daos.write(filterBytes);
       }
+      daos.writeBoolean(true);
       daos.flush();
       byte[] data = baos.toByteArray();
 

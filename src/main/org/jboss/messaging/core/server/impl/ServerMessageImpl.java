@@ -94,7 +94,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       }
 
       refCount.incrementAndGet();
-
+      
       return ref;
    }
 

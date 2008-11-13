@@ -90,8 +90,8 @@ public class MultipleDestinationPagingTest extends IntegrationTestBase
          SimpleString address = new SimpleString("page-adr");
          SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };
 
-         session.createQueue(address, queue[0], null, true, false);
-         session.createQueue(address, queue[1], null, true, false);
+         session.createQueue(address, queue[0], null, true, false, true);
+         session.createQueue(address, queue[1], null, true, false, true);
 
          ClientProducer prod = session.createProducer(address);
 

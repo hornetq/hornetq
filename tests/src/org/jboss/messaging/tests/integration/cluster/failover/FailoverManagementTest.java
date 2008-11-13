@@ -20,10 +20,14 @@
  * site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.cluster;
+package org.jboss.messaging.tests.integration.cluster.failover;
+
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.management.Notification;
 
 import junit.framework.TestCase;
 
@@ -34,39 +38,38 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
-import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
- * A ActivationTimeoutTest
+ * A FailoverManagementTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 4 Nov 2008 16:54:50
+ * Created 5 Nov 2008 15:05:14
  *
  *
  */
-public class ActivationTimeoutTest extends TestCase
+public class FailoverManagementTest extends TestCase
 {
-   private static final Logger log = Logger.getLogger(SimpleAutomaticFailoverTest.class);
+   private static final Logger log = Logger.getLogger(FailoverManagementTest.class);
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private static final long ACTIVATION_TIMEOUT = 5000;
-   
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
    private MessagingService liveService;
@@ -81,184 +84,186 @@ public class ActivationTimeoutTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   public void testTimeoutAfterConsumerFailsToReattach() throws Exception
+   public void testManagementMessages() throws Exception
    {            
       ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                       new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                  backupParams));
       
-      ClientSessionFactoryInternal sf2 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                 backupParams));
-
       sf1.setSendWindowSize(32 * 1024);
-      sf2.setSendWindowSize(32 * 1024);
-
+  
       ClientSession session1 = sf1.createSession(false, true, true);
 
-      session1.createQueue(ADDRESS, ADDRESS, null, false, false);
-
+      session1.createQueue(ADDRESS, ADDRESS, null, false, false, true);
+      
+      SimpleString replyTo = new SimpleString("replyto");
+      
+      session1.createQueue(replyTo, new SimpleString("replyto"), null, false, false, true);
+      
       ClientProducer producer = session1.createProducer(ADDRESS);
-
-      final int numMessages = 1000;
-
+      
+      final int numMessages = 10;
+      
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session1.createClientMessage(JBossTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
-         message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
-         producer.send(message);
+         ClientMessage msg  = session1.createClientMessage(false);
+         
+         msg.getBody().flip();
+         
+         producer.send(msg);
       }
-      log.info("Sent messages");
       
-      ClientConsumer consumer1 = session1.createConsumer(ADDRESS);
-      
-      ClientSession session2 = sf2.createSession(false, true, true);
-      
-      //Create another consumer so we have two consumers on the queue
-      ClientConsumer consumer2 = session2.createConsumer(ADDRESS);
-      
-      long start = System.currentTimeMillis();
-
-      RemotingConnection conn1 = ((ClientSessionImpl)session1).getConnection();
-
-      // Now we fail ONLY the connections on sf1, not on sf2      
+      for (int i = 0; i < numMessages / 2; i++)
+      {
+         ClientMessage managementMessage  = session1.createClientMessage(false);
+         
+         ManagementHelper.putAttributes(managementMessage,
+                                        replyTo,
+                                        ManagementServiceImpl.getQueueObjectName(ADDRESS, ADDRESS),
+                                        "MessageCount");
+         
+         managementMessage.getBody().flip();
+         
+         producer.send(DEFAULT_MANAGEMENT_ADDRESS, managementMessage);
+      }
+                            
+      ClientConsumer consumer1 = session1.createConsumer(replyTo);
+                 
+      final RemotingConnection conn1 = ((ClientSessionImpl)session1).getConnection();
+ 
       conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
-
+      
+      //Send the other half
+      for (int i = 0; i < numMessages / 2; i++)
+      {
+         ClientMessage managementMessage  = session1.createClientMessage(false);
+         
+         ManagementHelper.putAttributes(managementMessage,
+                                        replyTo,
+                                        ManagementServiceImpl.getQueueObjectName(ADDRESS, ADDRESS),
+                                        "MessageCount");
+         
+         managementMessage.getBody().flip();
+         
+         producer.send(DEFAULT_MANAGEMENT_ADDRESS, managementMessage);
+      }
+            
       session1.start();
-
-      //The messages should not be delivered until after activationTimeout ms, since
-      //session 2 didn't reattach
-             
+                   
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(2 * ACTIVATION_TIMEOUT);
+         ClientMessage message = consumer1.receive(1000);
          
          assertNotNull(message);
-         
-         if (i == 0)
-         {
-            long now = System.currentTimeMillis();
-            
-            assertTrue(now - start >= ACTIVATION_TIMEOUT);
-         }
-         
-         assertEquals("aardvarks", message.getBody().getString());
-
-         assertEquals(i, message.getProperty(new SimpleString("count")));
-
+                        
          message.acknowledge();
+         
+         assertTrue(ManagementHelper.isAttributesResult(message));
+         
+         assertEquals(numMessages, message.getProperty(new SimpleString("MessageCount")));
       }
-      
-      ClientMessage message = consumer1.receive(1000);
-      
-      assertNull(message);
       
       session1.close();
       
-      RemotingConnection conn2 = ((ClientSessionImpl)session2).getConnection();
-     
-      conn2.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      //Make sure no more messages
+      ClientSession session2 = sf1.createSession(false, true, true);
       
-      session2.close();
+      session2.start();
+      
+      ClientConsumer consumer2 = session2.createConsumer(replyTo);
+      
+      ClientMessage message = consumer2.receive(1000);
+      
+      assertNull(message);
+      
+      session2.close();      
    }
    
-   public void testTimeoutAfterAllConsumerFailsToReattach() throws Exception
+   public void testManagementMessages2() throws Exception
    {            
       ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                       new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                  backupParams));
       
-      ClientSessionFactoryInternal sf2 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                 backupParams));
-
       sf1.setSendWindowSize(32 * 1024);
-      sf2.setSendWindowSize(32 * 1024);
-
+  
       ClientSession session1 = sf1.createSession(false, true, true);
 
-      session1.createQueue(ADDRESS, ADDRESS, null, false, false);
-
+      session1.createQueue(ADDRESS, ADDRESS, null, false, false, true);
+      
+      SimpleString replyTo = new SimpleString("replyto");
+      
+      session1.createQueue(replyTo, new SimpleString("replyto"), null, false, false, true);
+      
       ClientProducer producer = session1.createProducer(ADDRESS);
-
-      final int numMessages = 1000;
-
+      
+      final int numMessages = 10;
+      
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session1.createClientMessage(JBossTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
-         message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
-         producer.send(message);
+         ClientMessage msg  = session1.createClientMessage(false);
+         
+         msg.getBody().flip();
+         
+         producer.send(msg);
       }
-      log.info("Sent messages");
-            
       
-      ClientSession session2 = sf2.createSession(false, true, true);
-      
-      ClientConsumer consumer1 = session2.createConsumer(ADDRESS);
-      
-      ClientConsumer consumer2 = session2.createConsumer(ADDRESS);
-      
-      long start = System.currentTimeMillis();
-
-      RemotingConnection conn1 = ((ClientSessionImpl)session1).getConnection();
-
-      // Now we fail ONLY the connections on sf1, not on sf2      
-      conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
-
-      session1.start();
-
-      //The messages should not be delivered until after activationTimeout ms, since
-      //session 2 didn't reattach
-              
-      //We now create a new consumer but it shouldn't receive the messages until after the timeout
-      
-      ClientConsumer consumer3 = session1.createConsumer(ADDRESS);
-               
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer3.receive(2 * ACTIVATION_TIMEOUT);
+         ClientMessage managementMessage  = session1.createClientMessage(false);
+         
+         ManagementHelper.putAttributes(managementMessage,
+                                        replyTo,
+                                        ManagementServiceImpl.getQueueObjectName(ADDRESS, ADDRESS),
+                                        "MessageCount");
+         
+         managementMessage.getBody().flip();
+         
+         producer.send(DEFAULT_MANAGEMENT_ADDRESS, managementMessage);
+      }
+                            
+      ClientConsumer consumer1 = session1.createConsumer(replyTo);
+                       
+                      
+      session1.start();
+                   
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = consumer1.receive(1000);
          
          assertNotNull(message);
          
          if (i == 0)
          {
-            long now = System.currentTimeMillis();
+            //Fail after receipt but before ack
+            final RemotingConnection conn1 = ((ClientSessionImpl)session1).getConnection();
             
-            assertTrue(now - start >= ACTIVATION_TIMEOUT);
+            conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
          }
-         
-         assertEquals("aardvarks", message.getBody().getString());
-
-         assertEquals(i, message.getProperty(new SimpleString("count")));
-
+                        
          message.acknowledge();
+         
+         assertTrue(ManagementHelper.isAttributesResult(message));
+         
+         assertEquals(numMessages, message.getProperty(new SimpleString("MessageCount")));
       }
-      
-      ClientMessage message = consumer3.receive(1000);
-      
-      assertNull(message);
       
       session1.close();
       
-      RemotingConnection conn2 = ((ClientSessionImpl)session2).getConnection();
-     
-      conn2.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      //Make sure no more messages
+      ClientSession session2 = sf1.createSession(false, true, true);
       
-      session2.close();
+      session2.start();
+      
+      ClientConsumer consumer2 = session2.createConsumer(replyTo);
+      
+      ClientMessage message = consumer2.receive(1000);
+      
+      assertNull(message);
+      
+      session2.close();      
    }
-
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -268,7 +273,6 @@ public class ActivationTimeoutTest extends TestCase
    {
       Configuration backupConf = new ConfigurationImpl();
       backupConf.setSecurityEnabled(false);
-      backupConf.setQueueActivationTimeout(ACTIVATION_TIMEOUT);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       backupConf.getAcceptorConfigurations()
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
@@ -305,3 +309,5 @@ public class ActivationTimeoutTest extends TestCase
 
    // Inner classes -------------------------------------------------
 }
+
+

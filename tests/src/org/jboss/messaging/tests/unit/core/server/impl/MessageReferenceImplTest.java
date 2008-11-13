@@ -242,7 +242,7 @@ public class MessageReferenceImplTest extends UnitTestCase
       sm.updateDeliveryCount(messageReference);
       
       EasyMock.expect(po.getBinding(dlqName)).andReturn(null);
-      EasyMock.expect(po.addBinding(dlqName, dlqName, null, true, false)).andReturn(dlqBinding);
+      EasyMock.expect(po.addBinding(dlqName, dlqName, null, true, false, false)).andReturn(dlqBinding);
       
       EasyMock.expect(serverMessage.copy()).andReturn(serverMessage);
       
@@ -402,7 +402,7 @@ public class MessageReferenceImplTest extends UnitTestCase
       EasyMock.expect(sm.generateUniqueID()).andReturn(2l);
       EasyMock.expect(sm.generateUniqueID()).andReturn(1l);
       EasyMock.expect(po.getBinding(expQName)).andReturn(null);
-      EasyMock.expect(po.addBinding(expQName, expQName, null, true, false)).andReturn(expQBinding);
+      EasyMock.expect(po.addBinding(expQName, expQName, null, true, false, false)).andReturn(expQBinding);
       EasyMock.expect(serverMessage.copy()).andReturn(serverMessage);
      // serverMessage.setMessageID(2);
       EasyMock.expect(serverMessage.getDestination()).andReturn(queueName);

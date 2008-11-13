@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -25,8 +26,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.OutflowConfiguration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
@@ -35,6 +39,7 @@ import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.paging.impl.PagingManagerFactoryNIO;
 import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Channel;
@@ -63,6 +68,8 @@ import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
+import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.UUIDGenerator;
 import org.jboss.messaging.util.VersionLoader;
 
 /**
@@ -262,6 +269,8 @@ public class MessagingServerImpl implements MessagingServer
                                                                   ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
       }
       remotingService.setMessagingServer(this);
+      
+      startOutflows();
 
       started = true;
    }
@@ -272,6 +281,8 @@ public class MessagingServerImpl implements MessagingServer
       {
          return;
       }
+      
+      stopOutflows();
 
       asyncDeliveryPool.shutdown();
 
@@ -299,7 +310,7 @@ public class MessagingServerImpl implements MessagingServer
       queueFactory = null;
       resourceManager = null;
       serverManagement = null;
-
+            
       started = false;
    }
 
@@ -446,6 +457,53 @@ public class MessagingServerImpl implements MessagingServer
       for (RemotingConnection connection : connections)
       {
          connection.freeze();
+      }
+   }
+   
+   private Set<Forwarder> forwarders = new HashSet<Forwarder>();
+   
+   private void startOutflows() throws Exception
+   {
+      Set<OutflowConfiguration> outflows = configuration.getOutflowConfigurations();
+      
+      for (OutflowConfiguration outflowConfig: outflows)
+      {
+         for (TransportConfiguration connectorConfig: outflowConfig.getConnectors())
+         {
+            SimpleString queueName = new SimpleString("outflow." + outflowConfig.getName() + "." + 
+                                                      UUIDGenerator.getInstance().generateSimpleStringUUID());
+            
+            Binding binding = postOffice.getBinding(queueName);
+                     
+            //TODO need to delete store and forward queues that are no longer in the config
+            //and also allow ability to change filterstring etc. while keeping the same name
+            if (binding == null)
+            {
+               SimpleString address = new SimpleString(outflowConfig.getAddress());
+               
+               SimpleString filterString = outflowConfig.getFilterString() == null ? null : new SimpleString(outflowConfig.getFilterString());
+               
+               Filter filter = filterString == null ? null : new FilterImpl(filterString);
+               
+               binding = postOffice.addBinding(address, queueName, filter, true, false, outflowConfig.isFanout());
+            }
+            
+            Forwarder forwarder = new Forwarder(binding.getQueue(), connectorConfig, executorFactory.getExecutor(),
+                                                outflowConfig.getMaxBatchSize(), outflowConfig.getMaxBatchTime(),
+                                                storageManager, postOffice, queueSettingsRepository);
+            
+            forwarders.add(forwarder);
+            
+            binding.getQueue().addConsumer(forwarder);
+         }
+      }
+   }
+   
+   private void stopOutflows() throws Exception
+   {
+      for (Forwarder forwarder: forwarders)
+      {
+         forwarder.close();
       }
    }
 

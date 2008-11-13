@@ -89,6 +89,10 @@ public interface Configuration extends Serializable
 
    void setBackupConnectorConfiguration(TransportConfiguration config);
    
+   Set<OutflowConfiguration> getOutflowConfigurations();
+
+   void setOutFlowConfigurations(final Set<OutflowConfiguration> configs);
+   
    SimpleString getManagementAddress();
    
    void setManagementAddress(SimpleString address);

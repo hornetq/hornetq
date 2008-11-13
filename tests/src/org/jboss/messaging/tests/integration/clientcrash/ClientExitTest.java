@@ -106,7 +106,7 @@ public class ClientExitTest extends TestCase
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));
       session = sf.createSession(false, true, true);
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false, false, true);
       consumer = session.createConsumer(QUEUE);
       session.start();
    }

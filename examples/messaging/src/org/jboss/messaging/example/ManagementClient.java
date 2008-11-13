@@ -55,7 +55,7 @@ public class ManagementClient
 
       // add temporary destination and queue
       clientSession.addDestination(replytoQueue, false, true);
-      clientSession.createQueue(replytoQueue, replytoQueue, null, false, true);
+      clientSession.createQueue(replytoQueue, replytoQueue, null, false, true, true);
 
       // create a management message to subscribe to notifications from the
       // server

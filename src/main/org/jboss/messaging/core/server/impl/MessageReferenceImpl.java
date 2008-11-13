@@ -165,13 +165,14 @@ public class MessageReferenceImpl implements MessageReference
    {
       SimpleString dlq = queueSettingsRepository.getMatch(queue.getName().toString()).getDLQ();
 
+      //FIXME - this is not thread safe
       if (dlq != null)
       {
          Binding dlqBinding = postOffice.getBinding(dlq);
 
          if (dlqBinding == null)
          {
-            dlqBinding = postOffice.addBinding(dlq, dlq, null, true, false);
+            dlqBinding = postOffice.addBinding(dlq, dlq, null, true, false, false);
          }
 
          move(dlqBinding, persistenceManager, postOffice, false);
@@ -200,7 +201,7 @@ public class MessageReferenceImpl implements MessageReference
          //might try and create the binding twice?
          if (expiryBinding == null)
          {
-            expiryBinding = postOffice.addBinding(expiryQueue, expiryQueue, null, true, false);
+            expiryBinding = postOffice.addBinding(expiryQueue, expiryQueue, null, true, false, false);
          }
 
          move(expiryBinding, persistenceManager, postOffice, true);

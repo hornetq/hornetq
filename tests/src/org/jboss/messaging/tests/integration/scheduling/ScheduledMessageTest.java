@@ -168,7 +168,7 @@ public class ScheduledMessageTest extends UnitTestCase
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
       ClientSession session = sessionFactory.createSession(false, true, false);
-      session.createQueue(atestq, atestq, null, true, true);
+      session.createQueue(atestq, atestq, null, true, true, true);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage message = createMessage(session, "m1");
       long time = System.currentTimeMillis();
@@ -210,8 +210,8 @@ public class ScheduledMessageTest extends UnitTestCase
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
       ClientSession session = sessionFactory.createSession(false, true, false);
-      session.createQueue(atestq, atestq, null, true, true);
-      session.createQueue(atestq, atestq2, null, true, true);
+      session.createQueue(atestq, atestq, null, true, true, true);
+      session.createQueue(atestq, atestq2, null, true, true, true);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage message = createMessage(session, "m1");
       producer.send(message);
@@ -265,8 +265,8 @@ public class ScheduledMessageTest extends UnitTestCase
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
       ClientSession session = sessionFactory.createSession(false, true, false);
-      session.createQueue(atestq, atestq, null, true, true);
-      session.createQueue(atestq, atestq2, null, true, true);
+      session.createQueue(atestq, atestq, null, true, true, true);
+      session.createQueue(atestq, atestq2, null, true, true, true);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage message = createMessage(session, "m1");
       producer.send(message);
@@ -325,7 +325,7 @@ public class ScheduledMessageTest extends UnitTestCase
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
       ClientSession session = sessionFactory.createSession(false, true, false);
-      session.createQueue(atestq, atestq, null, true, true);
+      session.createQueue(atestq, atestq, null, true, true, true);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
                                                           false,
@@ -381,7 +381,7 @@ public class ScheduledMessageTest extends UnitTestCase
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
       ClientSession session = sessionFactory.createSession(false, true, false);
-      session.createQueue(atestq, atestq, null, true, true);
+      session.createQueue(atestq, atestq, null, true, true, true);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage m1 = createMessage(session, "m1");
       ClientMessage m2 = createMessage(session, "m2");
@@ -467,7 +467,7 @@ public class ScheduledMessageTest extends UnitTestCase
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
       ClientSession session = sessionFactory.createSession(false, true, false);
-      session.createQueue(atestq, atestq, null, true, true);
+      session.createQueue(atestq, atestq, null, true, true, true);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage m1 = createMessage(session, "m1");
       ClientMessage m2 = createMessage(session, "m2");
@@ -554,7 +554,7 @@ public class ScheduledMessageTest extends UnitTestCase
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
       ClientSession session = sessionFactory.createSession(false, true, false);
-      session.createQueue(atestq, atestq, null, true, true);
+      session.createQueue(atestq, atestq, null, true, true, true);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage m1 = createMessage(session, "m1");
       ClientMessage m2 = createMessage(session, "m2");
@@ -633,7 +633,7 @@ public class ScheduledMessageTest extends UnitTestCase
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
       ClientSession session = sessionFactory.createSession(true, false, false);
-      session.createQueue(atestq, atestq, null, true, false);
+      session.createQueue(atestq, atestq, null, true, false, true);
       session.start(xid, XAResource.TMNOFLAGS);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,

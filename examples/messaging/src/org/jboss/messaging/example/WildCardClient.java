@@ -39,6 +39,7 @@ import org.jboss.messaging.util.SimpleString;
 public class WildCardClient
 {
    final static Logger log = Logger.getLogger(WildCardClient.class);
+
    public static void main(final String[] args)
    {
       ClientSession clientSession = null;
@@ -46,23 +47,28 @@ public class WildCardClient
       SimpleString wildCardQ = new SimpleString("queuejms.#");
       try
       {
-         ClientSessionFactory sessionFactory =
-            new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));
+         ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));
          clientSession = sessionFactory.createSession(false, true, true);
          SimpleString queue = new SimpleString("queuejms.testQueue");
          SimpleString queue2 = new SimpleString("queuejms.MyQueue");
 
          ClientProducer clientProducer = clientSession.createProducer(queue);
          ClientProducer clientProducer2 = clientSession.createProducer(queue2);
-         ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, false, 0,
-                                                       System.currentTimeMillis(), (byte) 1);
+         ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE,
+                                                                   false,
+                                                                   0,
+                                                                   System.currentTimeMillis(),
+                                                                   (byte)1);
          message.getBody().putString("This is a message from queue " + queue);
-         ClientMessage message2 = clientSession.createClientMessage(JBossTextMessage.TYPE, false, 0,
-                                                       System.currentTimeMillis(), (byte) 1);
+         ClientMessage message2 = clientSession.createClientMessage(JBossTextMessage.TYPE,
+                                                                    false,
+                                                                    0,
+                                                                    System.currentTimeMillis(),
+                                                                    (byte)1);
          message2.getBody().putString("This is a message from queue " + queue2);
 
-
-         clientSession.createQueue(wildCardQ, wildCardQ, null, false, true);clientConsumer = clientSession.createConsumer(wildCardQ);
+         clientSession.createQueue(wildCardQ, wildCardQ, null, false, true, true);
+         clientConsumer = clientSession.createConsumer(wildCardQ);
          clientProducer.send(message);
          log.info("message sent to " + queue);
          clientProducer2.send(message2);
@@ -75,13 +81,13 @@ public class WildCardClient
          msg2.acknowledge();
          log.info("message received: " + msg2.getBody().getString());
       }
-      catch(Exception e)
+      catch (Exception e)
       {
          e.printStackTrace();
       }
       finally
       {
-         if(clientConsumer != null)
+         if (clientConsumer != null)
          {
             try
             {

@@ -20,7 +20,7 @@
  * site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.cluster;
+package org.jboss.messaging.tests.integration.cluster.failover;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -84,7 +84,7 @@ public class SimpleManualFailoverTest extends TestCase
    {
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session.createQueue(ADDRESS, ADDRESS, null, false, false, true);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 

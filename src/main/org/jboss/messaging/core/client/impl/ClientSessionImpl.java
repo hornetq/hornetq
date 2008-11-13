@@ -200,11 +200,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                            final SimpleString queueName,
                            final SimpleString filterString,
                            final boolean durable,
-                           final boolean temp) throws MessagingException
+                           final boolean temp,
+                           final boolean fanout) throws MessagingException
    {
       checkClosed();
 
-      SessionCreateQueueMessage request = new SessionCreateQueueMessage(address, queueName, filterString, durable, temp);
+      SessionCreateQueueMessage request = new SessionCreateQueueMessage(address, queueName, filterString, durable, temp, fanout);
 
       channel.sendBlocking(request);
    }

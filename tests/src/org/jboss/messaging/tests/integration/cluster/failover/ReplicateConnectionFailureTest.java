@@ -20,7 +20,7 @@
  * site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.cluster;
+package org.jboss.messaging.tests.integration.cluster.failover;
 
 import java.util.HashMap;
 import java.util.Map;

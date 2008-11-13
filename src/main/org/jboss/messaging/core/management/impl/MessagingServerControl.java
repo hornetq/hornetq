@@ -389,17 +389,19 @@ public class MessagingServerControl extends StandardMBean implements MessagingSe
       return postOffice.addDestination(new SimpleString(address), false);
    }
 
+   //TODO - do we really need this method?
    public void createQueue(final String address, final String name) throws Exception
    {
       SimpleString sAddress = new SimpleString(address);
       SimpleString sName = new SimpleString(name);
       if (postOffice.getBinding(sAddress) == null)
       {
-         postOffice.addBinding(sAddress, sName, null, true, false);
+         postOffice.addBinding(sAddress, sName, null, true, false, true);
       }
    }
 
-   public void createQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
+   public void createQueue(final String address, final String name, final String filterStr, final boolean durable,
+                           final boolean fanout) throws Exception
    {
       SimpleString sAddress = new SimpleString(address);
       SimpleString sName = new SimpleString(name);
@@ -411,7 +413,7 @@ public class MessagingServerControl extends StandardMBean implements MessagingSe
       }
       if (postOffice.getBinding(sAddress) == null)
       {
-         postOffice.addBinding(sAddress, sName, filter, durable, false);
+         postOffice.addBinding(sAddress, sName, filter, durable, false, fanout);
       }
    }
 

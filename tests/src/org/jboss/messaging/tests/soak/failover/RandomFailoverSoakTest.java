@@ -23,7 +23,7 @@
 
 package org.jboss.messaging.tests.soak.failover;
 
-import org.jboss.messaging.tests.integration.cluster.RandomFailoverTest;
+import org.jboss.messaging.tests.integration.cluster.failover.RandomFailoverTest;
 
 /**
  * A RandomFailoverSoakTest

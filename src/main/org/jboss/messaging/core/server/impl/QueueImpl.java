@@ -126,7 +126,7 @@ public class QueueImpl implements Queue
 
    // Queue implementation
    // -------------------------------------------------------------------
-
+  
    public boolean isClustered()
    {
       return clustered;

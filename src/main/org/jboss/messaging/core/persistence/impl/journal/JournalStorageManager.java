@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.persistence.impl.journal;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
+
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -493,7 +495,8 @@ public class JournalStorageManager implements StorageManager
 
       BindingEncoding bindingEncoding = new BindingEncoding(binding.getQueue().getName(),
                                                             binding.getAddress(),
-                                                            filterString);
+                                                            filterString,                                                          
+                                                            binding.isFanout());
 
       bindingsJournal.appendAddRecord(queueID, BINDING_RECORD, bindingEncoding);
    }
@@ -578,7 +581,7 @@ public class JournalStorageManager implements StorageManager
 
             Queue queue = queueFactory.createQueue(id, encodeBinding.queueName, filter, true, false);
 
-            Binding binding = new BindingImpl(encodeBinding.address, queue);
+            Binding binding = new BindingImpl(encodeBinding.address, queue, encodeBinding.fanout);
 
             bindings.add(binding);
          }
@@ -876,16 +879,22 @@ public class JournalStorageManager implements StorageManager
 
       SimpleString filter;
 
+      boolean fanout;
+
       public BindingEncoding()
       {
       }
 
-      public BindingEncoding(final SimpleString queueName, final SimpleString address, final SimpleString filter)
+      public BindingEncoding(final SimpleString queueName,
+                             final SimpleString address,
+                             final SimpleString filter,                            
+                             final boolean fanout)
       {
          super();
          this.queueName = queueName;
          this.address = address;
          this.filter = filter;
+         this.fanout = fanout;
       }
 
       public void decode(final MessagingBuffer buffer)
@@ -893,6 +902,7 @@ public class JournalStorageManager implements StorageManager
          queueName = buffer.getSimpleString();
          address = buffer.getSimpleString();
          filter = buffer.getNullableSimpleString();
+         fanout = buffer.getBoolean();
       }
 
       public void encode(final MessagingBuffer buffer)
@@ -900,12 +910,14 @@ public class JournalStorageManager implements StorageManager
          buffer.putSimpleString(queueName);
          buffer.putSimpleString(address);
          buffer.putNullableSimpleString(filter);
+         buffer.putBoolean(fanout);
       }
 
       public int getEncodeSize()
       {
          return SimpleString.sizeofString(queueName) + SimpleString.sizeofString(address) + 1 + // HasFilter?
-                ((filter != null) ? SimpleString.sizeofString(filter) : 0);
+                ((filter != null) ? SimpleString.sizeofString(filter) : 0) +              
+                SIZE_BOOLEAN;
       }
    }
 

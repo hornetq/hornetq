@@ -113,7 +113,8 @@ public interface MessagingServerControlMBean
          @Parameter(name = "address", desc = "Address of the queue") String address,
          @Parameter(name = "name", desc = "Name of the queue") String name,
          @Parameter(name = "filter", desc = "Filter of the queue") String filter,
-         @Parameter(name = "durable", desc = "Is the queue durable?") boolean durable
+         @Parameter(name = "durable", desc = "Is the queue durable?") boolean durable,
+         @Parameter(name = "fanout", desc = "Should the queue be bound as a fanout binding") boolean fanout
         )
          throws Exception;
 

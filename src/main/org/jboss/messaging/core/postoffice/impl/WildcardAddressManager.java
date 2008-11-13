@@ -85,7 +85,7 @@ public class WildcardAddressManager extends SimpleAddressManager
          // add this as a wildcard binding and add a new binding to any linked addresses.
          for (Address destination : add.getLinkedAddresses())
          {
-            BindingImpl binding1 = new BindingImpl(destination.getAddress(), binding.getQueue());
+            BindingImpl binding1 = new BindingImpl(destination.getAddress(), binding.getQueue(), binding.isFanout());
             super.addMapping(destination.getAddress(), binding1);
          }
          List<Binding> bindings = new CopyOnWriteArrayList<Binding>();

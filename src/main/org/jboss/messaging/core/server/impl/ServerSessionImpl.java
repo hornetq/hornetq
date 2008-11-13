@@ -420,6 +420,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       boolean temporary = packet.isTemporary();
 
       boolean durable = packet.isDurable();
+      
+      boolean fanout = packet.isFanout();
 
       Packet response = null;
 
@@ -445,7 +447,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
             filter = new FilterImpl(filterString);
          }
 
-         binding = postOffice.addBinding(address, queueName, filter, durable, temporary);
+         binding = postOffice.addBinding(address, queueName, filter, durable, temporary, fanout);
 
          if (temporary)
          {

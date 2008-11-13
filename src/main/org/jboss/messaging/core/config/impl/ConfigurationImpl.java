@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.OutflowConfiguration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.util.SimpleString;
@@ -109,6 +110,8 @@ public class ConfigurationImpl implements Configuration
    protected Set<TransportConfiguration> acceptorConfigs = new HashSet<TransportConfiguration>();
 
    protected TransportConfiguration backupConnectorConfig;
+   
+   protected Set<OutflowConfiguration> outFlowConfigs = new HashSet<OutflowConfiguration>();
 
    // Paging related attributes
 
@@ -248,6 +251,16 @@ public class ConfigurationImpl implements Configuration
    public void setBackupConnectorConfiguration(final TransportConfiguration config)
    {
       backupConnectorConfig = config;
+   }
+   
+   public Set<OutflowConfiguration> getOutflowConfigurations()
+   {
+      return outFlowConfigs;
+   }
+
+   public void setOutFlowConfigurations(final Set<OutflowConfiguration> configs)
+   {
+      this.outFlowConfigs = configs;
    }
 
    public String getBindingsDirectory()
@@ -439,6 +452,7 @@ public class ConfigurationImpl implements Configuration
    {
       this.managementAddress = address;
    }
+      
 
    @Override
    public boolean equals(final Object other)

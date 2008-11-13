@@ -39,15 +39,21 @@ public class BindingImpl implements Binding
    
    private final Queue queue;
    
+   private final boolean fanout;
+   
    private boolean hashAssigned;
    
    private int hash;
+   
+   private volatile long routings;
       
-   public BindingImpl(final SimpleString address, final Queue queue)
+   public BindingImpl(final SimpleString address, final Queue queue, final boolean fanout)
    {
       this.address = address;
       
       this.queue = queue;
+      
+      this.fanout = fanout;
    }
    
    public SimpleString getAddress()
@@ -58,6 +64,21 @@ public class BindingImpl implements Binding
    public Queue getQueue()
    {
       return queue;
+   }
+   
+   public boolean isFanout()
+   {
+      return fanout;
+   }
+   
+   public long getRoutings()
+   {
+      return routings;
+   }
+   
+   public void incrementRoutings()
+   {
+      routings++;
    }
 
    public boolean equals(Object other)

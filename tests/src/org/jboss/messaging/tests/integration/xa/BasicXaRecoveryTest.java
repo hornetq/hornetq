@@ -94,7 +94,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       //then we create a client as normal
       sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
       clientSession = sessionFactory.createSession(true, false, false);
-      clientSession.createQueue(atestq, atestq, null, true, true);
+      clientSession.createQueue(atestq, atestq, null, true, true, true);
       clientProducer = clientSession.createProducer(atestq);
       clientConsumer = clientSession.createConsumer(atestq);
    }
@@ -261,7 +261,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
 
       addSettings();
       
-      clientSession.createQueue(pageQueue, pageQueue, null, true, true);
+      clientSession.createQueue(pageQueue, pageQueue, null, true, true, true);
       
       clientSession.start(xid, XAResource.TMNOFLAGS);
       
@@ -337,7 +337,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
 
       addSettings();
       
-      clientSession.createQueue(pageQueue, pageQueue, null, true, true);
+      clientSession.createQueue(pageQueue, pageQueue, null, true, true, true);
       
       clientSession.start(xid, XAResource.TMNOFLAGS);
       
@@ -1011,7 +1011,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       SimpleString anewtestq = new SimpleString("anewtestq");
-      clientSession.createQueue(anewtestq, anewtestq, null, true, true);
+      clientSession.createQueue(anewtestq, anewtestq, null, true, true, true);
       ClientProducer clientProducer3 = clientSession2.createProducer(anewtestq);
       clientProducer2.send(m1);
       clientProducer2.send(m2);
@@ -1101,7 +1101,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       SimpleString anewtestq = new SimpleString("anewtestq");
-      clientSession.createQueue(anewtestq, anewtestq, null, true, true);
+      clientSession.createQueue(anewtestq, anewtestq, null, true, true, true);
       ClientProducer clientProducer3 = clientSession2.createProducer(anewtestq);
       clientProducer2.send(m1);
       clientProducer2.send(m2);

@@ -25,8 +25,6 @@ package org.jboss.messaging.core.logging;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 
 /**
  * 

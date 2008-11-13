@@ -16,6 +16,7 @@ import org.jboss.messaging.core.client.AcknowledgementHandler;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
@@ -100,14 +101,14 @@ public class ClientProducerImpl implements ClientProducerInternal
       return address;
    }
 
-   public void send(final ClientMessage msg) throws MessagingException
+   public void send(final Message msg) throws MessagingException
    {
       checkClosed();
 
       doSend(null, msg);
    }
 
-   public void send(final SimpleString address, final ClientMessage msg) throws MessagingException
+   public void send(final SimpleString address, final Message msg) throws MessagingException
    {
       checkClosed();
 
@@ -179,7 +180,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       closed = true;
    }
 
-   private void doSend(final SimpleString address, final ClientMessage msg) throws MessagingException
+   private void doSend(final SimpleString address, final Message msg) throws MessagingException
    {
       if (address != null)
       {

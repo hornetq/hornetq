@@ -38,4 +38,10 @@ public interface Binding
    SimpleString getAddress();
    
    Queue getQueue();
+   
+   boolean isFanout();
+   
+   long getRoutings();
+   
+   void incrementRoutings();
 }

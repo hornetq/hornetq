@@ -60,7 +60,8 @@ public class FakePostOffice implements PostOffice
                              SimpleString queueName,
                              Filter filter,
                              boolean durable,
-                             boolean temporary) throws Exception
+                             boolean temporary,
+                             boolean fanout) throws Exception
    {
       Queue queue = queueFactory.createQueue(-1, queueName, filter, durable, false);
       Binding binding = new FakeBinding(address, queue);

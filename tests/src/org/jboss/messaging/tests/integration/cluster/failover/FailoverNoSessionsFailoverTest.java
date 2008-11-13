@@ -20,11 +20,10 @@
  * site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.cluster;
+package org.jboss.messaging.tests.integration.cluster.failover;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -37,9 +36,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.MessagingService;
@@ -48,20 +45,19 @@ import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**
+ * Test situation where none of the sessions failover, but a new session is created
  * 
- * A FailBackupServerTest
- * 
- * Make sure live sever continues ok if backup server fails
+ * A FailoverNoSessionsFailoverTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 6 Nov 2008 11:27:17
+ * Created 6 Nov 2008 17:39:23
  *
  *
  */
-public class FailBackupServerTest extends TestCase
+public class FailoverNoSessionsFailoverTest extends TestCase
 {
-   private static final Logger log = Logger.getLogger(FailBackupServerTest.class);
+   private static final Logger log = Logger.getLogger(FailoverNoSessionsFailoverTest.class);
 
    // Constants -----------------------------------------------------
 
@@ -81,17 +77,17 @@ public class FailBackupServerTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   public void testFailBackup() throws Exception
-   {
+   public void testNoFailoverAndCreateNewSession() throws Exception
+   {            
       ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                       new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                  backupParams));
-
+      
       sf1.setSendWindowSize(32 * 1024);
 
       ClientSession session1 = sf1.createSession(false, true, true);
 
-      session1.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session1.createQueue(ADDRESS, ADDRESS, null, false, false, true);
 
       ClientProducer producer = session1.createProducer(ADDRESS);
 
@@ -100,10 +96,10 @@ public class FailBackupServerTest extends TestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session1.createClientMessage(JBossTextMessage.TYPE,
-                                                              false,
-                                                              0,
-                                                              System.currentTimeMillis(),
-                                                              (byte)1);
+                                                             false,
+                                                             0,
+                                                             System.currentTimeMillis(),
+                                                             (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBody().putString("aardvarks");
          message.getBody().flip();
@@ -111,70 +107,76 @@ public class FailBackupServerTest extends TestCase
       }
 
       ClientConsumer consumer1 = session1.createConsumer(ADDRESS);
-
+                 
       session1.start();
-
+      
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer1.receive(1000);
-
+         
          assertNotNull(message);
-
+         
          assertEquals("aardvarks", message.getBody().getString());
 
          assertEquals(i, message.getProperty(new SimpleString("count")));
 
-         if (i == 0)
-         {
-            // Fail all the replicating connections - this simulates the backup server crashing
-
-            Set<RemotingConnection> conns = liveService.getServer().getRemotingService().getConnections();
-
-            for (RemotingConnection conn : conns)
-            {
-               log.info("Failing replicating connection");
-               conn.getReplicatingConnection().fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
-            }
-         }
-
          message.acknowledge();
       }
-
+      
       ClientMessage message = consumer1.receive(1000);
-
+      
       assertNull(message);
-
-      // Send some more
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         message = session1.createClientMessage(JBossTextMessage.TYPE, false, 0, System.currentTimeMillis(), (byte)1);
-         message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
-         producer.send(message);
-      }
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         message = consumer1.receive(1000);
-
-         assertNotNull(message);
-
-         assertEquals("aardvarks", message.getBody().getString());
-
-         assertEquals(i, message.getProperty(new SimpleString("count")));
-
-         message.acknowledge();
-      }
-
-      message = consumer1.receive(1000);
-
-      assertNull(message);
-
+      
       session1.close();
-   }
+      
+      //Now create another sesion direct on the backup
+      
+      ClientSessionFactoryInternal sf2 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                 backupParams));
+      
+      sf2.setSendWindowSize(32 * 1024);
 
+      ClientSession session2 = sf2.createSession(false, true, true);
+      
+      ClientProducer producer2 = session2.createProducer(ADDRESS);
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message2 = session2.createClientMessage(JBossTextMessage.TYPE,
+                                                             false,
+                                                             0,
+                                                             System.currentTimeMillis(),
+                                                             (byte)1);
+         message2.putIntProperty(new SimpleString("count"), i);
+         message2.getBody().putString("aardvarks");
+         message2.getBody().flip();
+         producer2.send(message2);
+      }
+
+      ClientConsumer consumer2 = session2.createConsumer(ADDRESS);
+                 
+      session2.start();
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message2 = consumer2.receive(1000);
+         
+         assertNotNull(message2);
+         
+         assertEquals("aardvarks", message2.getBody().getString());
+
+         assertEquals(i, message2.getProperty(new SimpleString("count")));
+
+         message2.acknowledge();
+      }
+      
+      ClientMessage message2 = consumer2.receive(1000);
+      
+      assertNull(message2);
+      
+      session2.close();
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -220,3 +222,4 @@ public class FailBackupServerTest extends TestCase
 
    // Inner classes -------------------------------------------------
 }
+
