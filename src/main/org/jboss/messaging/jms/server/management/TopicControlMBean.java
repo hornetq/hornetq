@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.jms.server.management;
 
+import static javax.management.MBeanOperationInfo.ACTION;
+
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.management.Operation;
@@ -76,4 +78,13 @@ public interface TopicControlMBean extends DestinationControlMBean
    @Operation(desc = "List only the non durable subscriptions")
    SubscriptionInfo[] listNonDurableSubscriptionInfos();
 
+   @Operation(desc = "Drop a durable subscription", impact = ACTION)
+   void dropDurableSubscription(
+         @Parameter(name = "clientID", desc = "the client ID") String clientID,
+         @Parameter(name = "subscriptionName", desc = "the name of the durable subscription") String subscriptionName)
+         throws Exception;
+   
+
+   @Operation(desc = "Drop all subscriptions from this topic", impact = ACTION)
+   void dropAllSubscriptions() throws Exception;
 }

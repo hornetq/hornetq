@@ -218,6 +218,36 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
          queue.deleteAllReferences(storageManager);
       }
    }
+   
+   public void dropDurableSubscription(String clientID, String subscriptionName) throws Exception
+   {
+      String queueName = JBossTopic.createQueueNameForDurableSubscription(clientID, subscriptionName);
+      Binding binding = postOffice.getBinding(new SimpleString(queueName));
+
+      if (binding == null)
+      {
+         throw new IllegalArgumentException("No durable subscription for clientID=" + clientID + ", subcription=" + subscriptionName);
+      }
+
+      Queue queue = binding.getQueue();
+
+      queue.deleteAllReferences(storageManager);
+
+      postOffice.removeBinding(queue.getName());
+   }
+
+   public void dropAllSubscriptions() throws Exception
+   {
+      List<Binding> bindings = postOffice.getBindingsForAddress(managedTopic
+                                                                .getSimpleAddress());
+
+      for (Binding binding : bindings)
+      {
+         Queue queue = binding.getQueue();
+         queue.deleteAllReferences(storageManager);
+         postOffice.removeBinding(queue.getName());
+      }
+   }
 
    // Package protected ---------------------------------------------
 
