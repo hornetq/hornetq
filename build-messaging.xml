@@ -227,6 +227,7 @@
       <path location="${build.jars.dir}/${transports.jar.name}"/>
       <path location="${build.jars.dir}/${security.jar.name}"/>
       <path location="${build.jars.dir}/${bootstrap.jar.name}"/>
+      <path location="${build.jars.dir}/${logging.jar.name}"/>
    </path>
 
    <path id="jms.test.compilation.classpath">
