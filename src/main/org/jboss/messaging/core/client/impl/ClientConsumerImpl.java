@@ -69,6 +69,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private volatile MessageHandler handler;
 
+   private volatile boolean closing;
+   
    private volatile boolean closed;
 
    private volatile int creditsToSend;
@@ -277,7 +279,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public synchronized void handleMessage(final ClientMessage message) throws Exception
    {
-      if (closed)
+      if (closing)
       {
          // This is ok - we just ignore the message
          return;
@@ -416,7 +418,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private void callOnMessage() throws Exception
    {
-      if (closed)
+      if (closing)
       {
          return;
       }
@@ -466,14 +468,19 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             return;
          }
-
-         closed = true;
-
+             
+         //We need an extra flag closing, since we need to prevent any more messages getting queued to execute
+         //after this and we can't just set the closed flag to true here, since after/in onmessage the message
+         //might be acked and if the consumer is already closed, the ack will be ignored
+         closing = true;
+         
          // Now we wait for any current handler runners to run.
          waitForOnMessageToComplete();
-
+  
+         closed = true;
+         
          synchronized (this)
-         {
+         {                        
             if (receiverThread != null)
             {
                // Wake up any receive() thread that might be waiting
