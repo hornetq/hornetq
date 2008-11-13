@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.management;
+package org.jboss.test.messaging.jms;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
@@ -34,7 +34,6 @@ import javax.management.MBeanServerInvocationHandler;
 
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
-import org.jboss.test.messaging.jms.JMSTestCase;
 
 /**
  * A TopicControlTest
