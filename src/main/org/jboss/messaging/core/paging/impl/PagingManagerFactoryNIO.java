@@ -24,7 +24,9 @@ package org.jboss.messaging.core.paging.impl;
 
 import java.io.File;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
@@ -50,7 +52,7 @@ public class PagingManagerFactoryNIO implements PagingStoreFactory
 
    private final String directory;
 
-   private final Executor executor;
+   private final ExecutorService executor;
 
    private PagingManager pagingManager;
 
@@ -64,17 +66,17 @@ public class PagingManagerFactoryNIO implements PagingStoreFactory
       executor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-depaging-threads"));
    }
 
-   public PagingManagerFactoryNIO(final String directory, final Executor executor)
-   {
-      this.directory = directory;
-      this.executor = executor;
-   }
-
    // Public --------------------------------------------------------
 
    public Executor getPagingExecutor()
    {
       return executor;
+   }
+   
+   public void stop() throws InterruptedException
+   {
+      executor.shutdown();
+      executor.awaitTermination(60, TimeUnit.SECONDS);
    }
 
    public PagingStore newStore(final SimpleString destinationName, final QueueSettings settings)

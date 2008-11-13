@@ -25,6 +25,7 @@ package org.jboss.messaging.core.postoffice.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -453,13 +454,35 @@ public class PostOfficeImpl implements PostOffice
       }
 
       storageManager.loadMessages(this, queues, resourceManager);
+      
+      // TODO: This is related to http://www.jboss.com/index.html?module=bb&op=viewtopic&t=145597
+      HashSet<SimpleString> addresses = new HashSet<SimpleString>();
+      
+      for (Binding binding: bindings)
+      {
+         addresses.add(binding.getAddress());
+      }
+      
+      for (SimpleString destination: dests)
+      {
+         addresses.add(destination);
+      }
+      
+      // End TODO -------------------------------------
 
-      for (SimpleString destination : dests)
+      for (SimpleString destination : addresses)
       {
          if (!pagingManager.isGlobalPageMode())
          {
             PagingStore store = pagingManager.getPageStore(destination);
-            store.startDepaging();
+            if (store.isPaging() && store.getMaxSizeBytes() < 0)
+            {
+               pagingManager.setGlobalPageMode(true);
+            }
+            else
+            {
+               store.startDepaging();
+            }
          }
       }
    }

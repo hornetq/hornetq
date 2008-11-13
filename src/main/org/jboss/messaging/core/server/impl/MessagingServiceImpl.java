@@ -140,8 +140,8 @@ public class MessagingServiceImpl implements MessagingService
    public void stop() throws Exception
    {
       remotingService.stop();
-      storageManager.stop();
       server.stop();
+      storageManager.stop();
    }
    
    public MessagingServer getServer()

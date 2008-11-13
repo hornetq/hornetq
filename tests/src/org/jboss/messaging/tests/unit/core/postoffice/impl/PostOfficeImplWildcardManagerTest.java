@@ -66,6 +66,7 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+      EasyMock.expect(pgm.isGlobalPageMode()).andStubReturn(true);
 
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true, null, wildCardRoutingEnabled, false);
 

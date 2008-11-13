@@ -38,6 +38,8 @@ public interface PagingStoreFactory
    PagingStore newStore(org.jboss.messaging.util.SimpleString destinationName, QueueSettings queueSettings);
 
    Executor getPagingExecutor();
+   
+   void stop() throws InterruptedException;
 
    void setPagingManager(PagingManager manager);
 

@@ -25,7 +25,9 @@ package org.jboss.messaging.core.paging.impl;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -75,7 +77,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private final PagingManager pagingManager;
 
-   private final Executor executor;
+   private final ExecutorService executor;
 
    // Bytes consumed by the queue on the memory
    private final AtomicLong sizeInBytes = new AtomicLong();
@@ -96,7 +98,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-   private volatile boolean initialized = false;
+   private volatile boolean running = false;
 
    private volatile LastPageRecord lastPageRecord;
 
@@ -108,7 +110,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                           final SequentialFileFactory fileFactory,
                           final SimpleString storeName,
                           final QueueSettings queueSettings,
-                          final Executor executor)
+                          final ExecutorService executor)
    {
       this.fileFactory = fileFactory;
       this.storeName = storeName;
@@ -418,18 +420,22 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public synchronized boolean isStarted()
    {
-      return initialized;
+      return running;
    }
 
    public synchronized void stop() throws Exception
    {
-      if (initialized)
+      if (running)
       {
          lock.writeLock().lock();
 
          try
          {
-            initialized = false;
+            running = false;
+            
+            executor.shutdown();
+            executor.awaitTermination(60, TimeUnit.SECONDS);
+            
             if (currentPage != null)
             {
                currentPage.close();
@@ -445,7 +451,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    public synchronized void start() throws Exception
    {
 
-      if (initialized)
+      if (running)
       {
          // don't throw an exception.
          // You could have two threads adding PagingStore to a
@@ -483,7 +489,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             }
          }
 
-         initialized = true;
+         running = true;
 
          if (numberOfPages != 0)
          {
@@ -635,12 +641,11 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          try
          {
-            boolean needMorePages = false;
-            do
+            boolean needMorePages = true;
+            while (needMorePages && running)
             {
                needMorePages = readPage();
             }
-            while (needMorePages);
          }
          catch (Exception e)
          {

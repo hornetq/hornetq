@@ -121,7 +121,9 @@ public class PostOfficeImplTest extends UnitTestCase
       EasyMock.expect(queue.getName()).andStubReturn(queueName);
       EasyMock.expect(queue.getPersistenceID()).andStubReturn(1);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
+      
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+      EasyMock.expect(pgm.isGlobalPageMode()).andStubReturn(true);
 
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true, null, wildCardRoutingEnabled, false);
 
@@ -133,11 +135,11 @@ public class PostOfficeImplTest extends UnitTestCase
                       (Map<Long, Queue>)EasyMock.anyObject(),
                       (ResourceManager)EasyMock.anyObject());
 
-      EasyMock.replay(pm, qf, binding, queue);
+      EasyMock.replay(pm, pgm, qf, binding, queue);
 
       postOffice.start();
 
-      EasyMock.verify(pm, qf, binding, queue);
+      EasyMock.verify(pm, pgm, qf, binding, queue);
 
       assertTrue(postOffice.isStarted());
       assertEquals(postOffice.getBinding(queueName), binding);
@@ -170,6 +172,7 @@ public class PostOfficeImplTest extends UnitTestCase
       QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+      EasyMock.expect(pgm.isGlobalPageMode()).andStubReturn(true);
 
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true, null, wildCardRoutingEnabled, false);
 
@@ -267,6 +270,7 @@ public class PostOfficeImplTest extends UnitTestCase
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
+      EasyMock.expect(pgm.isGlobalPageMode()).andStubReturn(true);
 
       PostOffice postOffice = new PostOfficeImpl(pm, pgm, qf, ms, true, null, wildCardRoutingEnabled, false);
 

@@ -125,8 +125,13 @@ public class PagingManagerImpl implements PagingManager
    {
       return globalMode.get();
    }
+   
+   public void setGlobalPageMode(boolean globalMode)
+   {
+      this.globalMode.set(globalMode);
+   }
 
-   //FIXME - this is not thread safe
+   // Synchronization of this method is done per ConcurrentHashMap
    public PagingStore getPageStore(final SimpleString storeName) throws Exception
    {
       PagingStore store = stores.get(storeName);
@@ -261,6 +266,8 @@ public class PagingManagerImpl implements PagingManager
       }
 
       storageManager.commit(depageTransactionID);
+      
+      trace("Depage committed");
 
       for (MessageReference ref : refsToAdd)
       {
@@ -341,6 +348,8 @@ public class PagingManagerImpl implements PagingManager
    public void stop() throws Exception
    {
       started = false;
+      
+      pagingSPI.stop();
 
       for (PagingStore store : stores.values())
       {
@@ -454,7 +463,7 @@ public class PagingManagerImpl implements PagingManager
       {
          try
          {
-            while (globalSize.get() < maxGlobalSize)
+            while (globalSize.get() < maxGlobalSize && started)
             {
                boolean depaged = false;
                // Round robin depaging one page at the time from each
@@ -483,7 +492,7 @@ public class PagingManagerImpl implements PagingManager
                }
             }
 
-            if (globalSize.get() < maxGlobalSize)
+            if (globalSize.get() < maxGlobalSize && started)
             {
 
                globalMode.set(false);

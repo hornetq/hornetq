@@ -312,7 +312,14 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         rwlock.readLock().unlock();
+         try
+         {
+            rwlock.readLock().unlock();
+         }
+         catch (Exception ignored)
+         {
+            // This could happen if the thread was interrupted
+         }
       }
    }
 
@@ -350,7 +357,14 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         rwlock.readLock().unlock();
+         try
+         {
+            rwlock.readLock().unlock();
+         }
+         catch (Exception ignored)
+         {
+            // This could happen if the thread was interrupted
+         }
       }
    }
 
@@ -385,7 +399,14 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         rwlock.readLock().unlock();
+         try
+         {
+            rwlock.readLock().unlock();
+         }
+         catch (Exception ignored)
+         {
+            // This could happen if the thread was interrupted
+         }
       }
    }
 
@@ -424,7 +445,14 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         rwlock.readLock().unlock();
+         try
+         {
+            rwlock.readLock().unlock();
+         }
+         catch (Exception ignored)
+         {
+            // This could happen if the thread was interrupted
+         }
       }
    }
 
@@ -461,7 +489,14 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         rwlock.readLock().unlock();
+         try
+         {
+            rwlock.readLock().unlock();
+         }
+         catch (Exception ignored)
+         {
+            // This could happen if the thread was interrupted
+         }
       }
    }
 
@@ -497,7 +532,14 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         rwlock.readLock().unlock();
+         try
+         {
+            rwlock.readLock().unlock();
+         }
+         catch (Exception ignored)
+         {
+            // This could happen if the thread was interrupted
+         }
       }
    }
 
@@ -535,7 +577,14 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         rwlock.readLock().unlock();
+         try
+         {
+            rwlock.readLock().unlock();
+         }
+         catch (Exception ignored)
+         {
+            // This could happen if the thread was interrupted
+         }
       }
 
       // We should wait this outside of the lock, to increase throuput
@@ -590,7 +639,14 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         rwlock.readLock().unlock();
+         try
+         {
+            rwlock.readLock().unlock();
+         }
+         catch (Exception ignored)
+         {
+            // This could happen if the thread was interrupted
+         }
       }
 
       // We should wait this outside of the lock, to increase throuput
@@ -636,7 +692,14 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         rwlock.readLock().unlock();
+         try
+         {
+            rwlock.readLock().unlock();
+         }
+         catch (Exception ignored)
+         {
+            // This could happen if the thread was interrupted
+         }
       }
 
       // We should wait this outside of the lock, to increase throuput
@@ -1513,37 +1576,50 @@ public class JournalImpl implements TestableJournal
 
    public synchronized void stop() throws Exception
    {
+      trace("Stopping the journal");
+      
       if (state == STATE_STOPPED)
       {
          throw new IllegalStateException("Journal is already stopped");
       }
 
-      if (currentFile != null)
+      positionLock.acquire();
+      rwlock.writeLock().lock();
+
+      try
       {
-         currentFile.getFile().close();
+         filesExecutor.shutdown();
+
+         if (!filesExecutor.awaitTermination(60, TimeUnit.SECONDS))
+         {
+            log.warn("Couldn't stop journal executor after 60 seconds");
+         }
+
+         if (currentFile != null)
+         {
+            currentFile.getFile().close();
+         }
+
+         for (JournalFile file : openedFiles)
+         {
+            file.getFile().close();
+         }
+
+         currentFile = null;
+
+         dataFiles.clear();
+
+         freeFiles.clear();
+
+         openedFiles.clear();
+
+         state = STATE_STOPPED;
       }
-
-      filesExecutor.shutdown();
-
-      if (!filesExecutor.awaitTermination(60, TimeUnit.SECONDS))
+      finally
       {
-         log.warn("Couldn't stop journal executor after 60 seconds");
+         positionLock.release();
+         rwlock.writeLock().unlock();
       }
-
-      for (JournalFile file : openedFiles)
-      {
-         file.getFile().close();
-      }
-
-      currentFile = null;
-
-      dataFiles.clear();
-
-      freeFiles.clear();
-
-      openedFiles.clear();
-
-      state = STATE_STOPPED;
    }
 
    // Public
@@ -1855,6 +1931,11 @@ public class JournalImpl implements TestableJournal
 
       try
       {
+         if (state != STATE_LOADED)
+         {
+            throw new IllegalStateException("The journal was stopped");
+         }
+
          int size = bb.limit();
 
          if (size % currentFile.getFile().getAlignment() != 0)

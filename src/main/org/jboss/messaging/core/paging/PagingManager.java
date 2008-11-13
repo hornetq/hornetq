@@ -58,7 +58,11 @@ import org.jboss.messaging.util.SimpleString;
 public interface PagingManager extends MessagingComponent
 {
 
+   /** The system is paging because of global-page-mode */
    boolean isGlobalPageMode();
+   
+   /** During startup PostOffice may set GlobalPageMode as true */
+   void setGlobalPageMode(boolean globalMode);
 
    /** To return the PageStore associated with the address */
    PagingStore getPageStore(SimpleString address) throws Exception;

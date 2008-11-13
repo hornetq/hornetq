@@ -31,7 +31,7 @@ import org.jboss.messaging.util.SimpleString;
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  */
-public class MultipleDestinationPagingTest extends IntegrationTestBase
+public class PageStressTest extends IntegrationTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -45,37 +45,140 @@ public class MultipleDestinationPagingTest extends IntegrationTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
-   public void testGlobalPage() throws Exception
+   
+   public void testStopDuringGlobalDepage() throws Exception
    {
-      testPage(true);
+      testStopDuringDepage(true);
    }
-
-   public void testRegularPage() throws Exception
+   
+   public void testStopDuringRegularDepage() throws Exception
    {
-      testPage(false);
+      testStopDuringDepage(false);
    }
-
-   public void testPage(boolean globalPage) throws Exception
+   
+   
+   public void testStopDuringDepage(boolean globalPage) throws Exception
    {
-      Configuration config = createDefaultConfig();
-
       HashMap<String, QueueSettings> settings = new HashMap<String, QueueSettings>();
 
-      if (globalPage)
+      Configuration config = createConfig(globalPage, settings);
+
+      service = createService(true, false, config, settings);
+      service.start();
+
+      ClientSessionFactory factory = createInVMFactory();
+      factory.setBlockOnAcknowledge(true);
+      ClientSession session = null;
+
+      try
       {
-         config.setPagingMaxGlobalSizeBytes(20 * 1024 * 1024);
-         QueueSettings setting = new QueueSettings();
-         setting.setMaxSizeBytes(-1);
-         settings.put("page-adr", setting);
+
+         final int NUMBER_OF_MESSAGES = 60000;
+         
+         session = factory.createSession(null, null, false, false, true, 1024 * NUMBER_OF_MESSAGES);
+
+         SimpleString address = new SimpleString("page-adr");
+
+         session.createQueue(address, address, null, true, false, true);
+
+         ClientProducer prod = session.createProducer(address);
+
+         ClientMessage message = createBytesMessage(session, new byte[700], true);
+
+         for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+         {
+            if (i % 10000 == 0)
+               System.out.println("Sent " + i);
+            prod.send(message);
+         }
+
+         session.commit();
+
+         session.start();
+
+         ClientConsumer consumer = session.createConsumer(address);
+
+
+         int msgs = 0;
+         ClientMessage msg = null;
+         do
+         {
+            msg = consumer.receive(1000);
+            if (msg != null)
+            {
+               msg.acknowledge();
+               if ((++msgs) % 1000 == 0)
+               {
+                  System.out.println("Received " + msgs);
+               }
+            }
+         } while (msg != null);
+
+         session.commit();
+         
+         session.close();
+         
+         service.stop();
+         
+         System.out.println("server stopped, nr msgs: " + msgs);
+
+         settings = new HashMap<String, QueueSettings>();
+         config = createConfig(globalPage, settings);
+
+         service = createService(true, false, config, settings);
+         service.start();
+         
+         
+         factory = createInVMFactory();
+         
+         session = factory.createSession(false, false, false);
+
+         consumer = session.createConsumer(address);
+         
+         session.start();
+         
+         msg = null;
+         do
+         {
+            msg = consumer.receive(1000);
+            if (msg != null)
+            {
+               msg.acknowledge();
+               session.commit();
+               if ((++msgs) % 1000 == 0)
+               {
+                  System.out.println("Received " + msgs);
+               }
+             }
+         } while (msg != null);
+         
+         System.out.println("msgs second time: " + msgs);
+         
+         assertEquals(NUMBER_OF_MESSAGES, msgs);
       }
-      else
+      finally
       {
-         config.setPagingMaxGlobalSizeBytes(-1);
-         QueueSettings setting = new QueueSettings();
-         setting.setMaxSizeBytes(20 * 1024 * 1024);
-         settings.put("page-adr", setting);
+         session.close();
+         service.stop();
       }
+
+   }
+
+   public void testGlobalPageOnMultipleDestinations() throws Exception
+   {
+      testPageOnMultipleDestinations(true);
+   }
+
+   public void testRegularPageOnMultipleDestinations() throws Exception
+   {
+      testPageOnMultipleDestinations(false);
+   }
+
+   public void testPageOnMultipleDestinations(boolean globalPage) throws Exception
+   {
+      HashMap<String, QueueSettings> settings = new HashMap<String, QueueSettings>();
+
+      Configuration config = createConfig(globalPage, settings);
 
       service = createService(true, false, config, settings);
       service.start();
@@ -176,6 +279,35 @@ public class MultipleDestinationPagingTest extends IntegrationTestBase
 
       return msgs;
    }
+   
+   /**
+    * @param globalPage
+    * @param settings
+    * @return
+    */
+   private Configuration createConfig(boolean globalPage, HashMap<String, QueueSettings> settings)
+   {
+      Configuration config = createDefaultConfig();
+
+      if (globalPage)
+      {
+         config.setPagingMaxGlobalSizeBytes(20 * 1024 * 1024);
+         QueueSettings setting = new QueueSettings();
+         setting.setMaxSizeBytes(-1);
+         settings.put("page-adr", setting);
+      }
+      else
+      {
+         config.setPagingMaxGlobalSizeBytes(-1);
+         QueueSettings setting = new QueueSettings();
+         setting.setMaxSizeBytes(20 * 1024 * 1024);
+         settings.put("page-adr", setting);
+      }
+      return config;
+   }
+
+   
+
 
    // Package protected ---------------------------------------------
 
