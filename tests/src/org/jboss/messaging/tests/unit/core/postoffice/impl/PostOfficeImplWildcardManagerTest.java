@@ -49,7 +49,7 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       wildCardRoutingEnabled = true;
    }
 
-   public void testPostOfficeRouteToWildcardBinding() throws Exception
+   /*public void testPostOfficeRouteToWildcardBinding() throws Exception
    {
       SimpleString queueName = new SimpleString("testQ");
       ServerMessage message = EasyMock.createStrictMock(ServerMessage.class);
@@ -101,9 +101,9 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       postOffice.route(message2);
       postOffice.route(message3);
       EasyMock.verify(pgm, pm, qf, message, message2, message3, queue);
-   }
+   }*/
 
-   public void testPostOfficeRouteToMultipleWildcardBinding() throws Exception
+   /*public void testPostOfficeRouteToMultipleWildcardBinding() throws Exception
    {
       SimpleString queueName = new SimpleString("testQ");
       SimpleString queueName2 = new SimpleString("testQ2");
@@ -165,5 +165,5 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       postOffice.route(message3);
       postOffice.route(message4);
       EasyMock.verify(pgm, pm, qf, message, message2, message3, message4,queue, queue2);
-   }
+   }*/
 }

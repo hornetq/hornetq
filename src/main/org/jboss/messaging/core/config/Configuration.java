@@ -154,6 +154,8 @@ public interface Configuration extends Serializable
 
    boolean isWildcardRoutingEnabled();
 
+   void setWildcardRoutingEnabled(boolean enabled);
+
    long getTransactionTimeout();
 
    void setTransactionTimeout(long timeout);

@@ -50,6 +50,9 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.jms.client.JBossTextMessage;
 
 /**
  * 
@@ -61,7 +64,10 @@ import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 public class UnitTestCase extends TestCase
 {
    // Constants -----------------------------------------------------
-   
+
+   public static final String INVM_ACCEPTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory";
+
+   public static final String INVM_CONNECTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory";
    // Attributes ----------------------------------------------------
    
    // Static --------------------------------------------------------
@@ -443,6 +449,19 @@ public class UnitTestCase extends TestCase
       return ((size / alignment) + (size % alignment != 0 ? 1 : 0)) * alignment;
    }
 
+
+   protected ClientMessage createTextMessage(String s, ClientSession clientSession)
+   {
+      return createTextMessage(s, true, clientSession);
+   }
+
+   protected ClientMessage createTextMessage(String s, boolean durable, ClientSession clientSession)
+   {
+      ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, durable, 0, System.currentTimeMillis(), (byte) 1);
+      message.getBody().putString(s);
+      message.getBody().flip();
+      return message;
+   }
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------

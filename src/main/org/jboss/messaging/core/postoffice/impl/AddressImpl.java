@@ -23,6 +23,7 @@ package org.jboss.messaging.core.postoffice.impl;
 
 import static org.jboss.messaging.core.postoffice.impl.WildcardAddressManager.DELIM;
 import static org.jboss.messaging.core.postoffice.impl.WildcardAddressManager.SINGLE_WORD;
+import static org.jboss.messaging.core.postoffice.impl.WildcardAddressManager.ANY_WORDS;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +47,7 @@ public class AddressImpl implements Address
    {
       this.address = address;
       this.addressParts = address.split(DELIM);
-      containsWildCard = address.contains(SINGLE_WORD);
+      containsWildCard = address.contains(SINGLE_WORD) || address.contains(ANY_WORDS);
    }
 
    public SimpleString getAddress()

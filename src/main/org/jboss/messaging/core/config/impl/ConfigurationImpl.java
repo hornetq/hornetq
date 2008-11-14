@@ -378,6 +378,11 @@ public class ConfigurationImpl implements Configuration
       return wildcardRoutingEnabled;
    }
 
+   public void setWildcardRoutingEnabled(boolean enabled)
+   {
+      this.wildcardRoutingEnabled = enabled;
+   }
+
    public long getTransactionTimeout()
    {
       return transactionTimeout;

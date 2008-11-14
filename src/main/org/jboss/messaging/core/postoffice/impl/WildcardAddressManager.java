@@ -23,9 +23,8 @@ package org.jboss.messaging.core.postoffice.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jboss.messaging.core.postoffice.Address;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -49,20 +48,10 @@ public class WildcardAddressManager extends SimpleAddressManager
    static final SimpleString ANY_WORDS_SIMPLESTRING = new SimpleString("#");
 
    /**
-    * This is the actual wild card binding, for every binding added here 1 or more actual bindings will be added.
-    * i.e. A binding for A.* will bind the same queue to A.B and A.C if they are its linked addresses
+    * This is all the addresses, we use this so we can link back from the actual address to its linked wilcard addresses
+    * or vice versa
     */
-   private final ConcurrentMap<SimpleString, List<Binding>> wildcardBindings = new ConcurrentHashMap<SimpleString, List<Binding>>();
-
-   /**
-    * All the wild card destinations. So if A.B is added to the actual destinations we add A.*, *.B, *.* etc.
-    */
-   private final ConcurrentMap<SimpleString, Address> wildcardDestinations = new ConcurrentHashMap<SimpleString, Address>();
-
-   /**
-    * This is all the actual destinations, we use this so we can link back from the actual address to its linked wilcard addresses
-    */
-   private final ConcurrentMap<SimpleString, Address> actualDestinations = new ConcurrentHashMap<SimpleString, Address>();
+   private final Map<SimpleString, Address> addresses = new HashMap<SimpleString, Address>();
 
    /**
     * If the address to add the binding to contains a wildcard then a copy of the binding (with the same underlying queue)
@@ -74,30 +63,30 @@ public class WildcardAddressManager extends SimpleAddressManager
     */
    public boolean addMapping(final SimpleString address, final Binding binding)
    {
-      Address add = wildcardDestinations.get(address);
-      // if this isnt a wildcard destination then just add normally
-      if (add == null)
+      Address add = addAndUpdateAddressMap(address);
+      if (!add.containsWildCard())
       {
+         for (Address destination : add.getLinkedAddresses())
+         {
+            List<Binding> bindings = getBindings(destination.getAddress());
+            if (bindings != null)
+            {
+               for (Binding b : bindings)
+               {
+                  super.addMapping(address, b);
+               }
+            }
+         }
          return super.addMapping(address, binding);
       }
       else
       {
-         // add this as a wildcard binding and add a new binding to any linked addresses.
          for (Address destination : add.getLinkedAddresses())
          {
             BindingImpl binding1 = new BindingImpl(destination.getAddress(), binding.getQueue(), binding.isFanout());
             super.addMapping(destination.getAddress(), binding1);
          }
-         List<Binding> bindings = new CopyOnWriteArrayList<Binding>();
-         List<Binding> prevBindings = wildcardBindings.putIfAbsent(address, bindings);
-
-         if (prevBindings != null)
-         {
-            bindings = prevBindings;
-         }
-
-         bindings.add(binding);
-         return prevBindings != null;
+         return super.addMapping(address, binding);
       }
    }
 
@@ -111,11 +100,22 @@ public class WildcardAddressManager extends SimpleAddressManager
     */
    public boolean removeMapping(final SimpleString address, final SimpleString queueName)
    {
-      Address add = wildcardDestinations.get(address);
-      // if this isnt a wildcard binding just remove normally
-      if (add == null)
+      Address add = removeAndUpdateAddressMap(address);
+      if (!add.containsWildCard())
       {
-         return super.removeMapping(address, queueName);
+         boolean removed = super.removeMapping(address, queueName);
+         for (Address destination : add.getLinkedAddresses())
+         {
+            List<Binding> bindings = getBindings(destination.getAddress());
+            if (bindings != null)
+            {
+               for (Binding b : bindings)
+               {
+                  super.removeMapping(address, b.getQueue().getName());
+               }
+            }
+         }
+         return removed;
       }
       else
       {
@@ -123,98 +123,67 @@ public class WildcardAddressManager extends SimpleAddressManager
          {
             super.removeMapping(destination.getAddress(), queueName);
          }
-         List<Binding> bindings = wildcardBindings.get(address);
-         Binding binding = removeMapping(queueName, bindings);
-
-         if (bindings.isEmpty())
-         {
-            wildcardBindings.remove(binding.getAddress());
-         }
-         return bindings.isEmpty();
+         return super.removeMapping(address, queueName);
       }
    }
 
    public void clear()
    {
       super.clear();
-      wildcardBindings.clear();
-      wildcardDestinations.clear();
+      addresses.clear();
    }
 
-   /**
-    * When we add a new destination we calculate all its corresponding wild card matches and add those. We also link the
-    * wild card address added to the actual address.
-    *
-    * @param address the address to add
-    * @return true if it didn't already exist
-    */
-   public boolean addDestination(final SimpleString address)
+   private synchronized Address addAndUpdateAddressMap(SimpleString address)
    {
-      boolean added = super.addDestination(address);
-      // if this is a new destination we compute any wilcard addresses that would match and add if necessary
-      synchronized (actualDestinations)
+      Address add = addresses.get(address);
+      if(add == null)
       {
-         if (added)
+         add = new AddressImpl(address);
+         addresses.put(address, add);
+      }
+      if (!add.containsWildCard())
+      {
+         List<SimpleString> adds = getAddresses(add);
+         for (SimpleString simpleString : adds)
          {
-            Address add = new AddressImpl(address);
-            Address prevAddress = actualDestinations.putIfAbsent(address, add);
-            if (prevAddress != null)
+            Address addressToAdd = addresses.get(simpleString);
+            if(addressToAdd == null)
             {
-               add = prevAddress;
+               addressToAdd = new AddressImpl(simpleString);
+               addresses.put(simpleString, addressToAdd);
             }
-            List<SimpleString> adds = getAddresses(add);
-            for (SimpleString simpleString : adds)
+            addressToAdd.addLinkedAddress(add);
+            add.addLinkedAddress(addressToAdd);
+         }
+      }
+      return add;
+   }
+
+   private synchronized Address removeAndUpdateAddressMap(SimpleString address)
+   {
+      Address add = addresses.get(address);
+      if(add == null)
+      {
+         return new AddressImpl(address);
+      }
+      if (!add.containsWildCard())
+      {
+         List<Binding> bindings1 = getBindings(address);
+         if(bindings1 == null || bindings1.size() == 0)
+         {
+            add = addresses.remove(address);
+         }
+         List<Address> addresses = add.getLinkedAddresses();
+         for (Address address1 : addresses)
+         {
+            address1.removLinkedAddress(add);
+            if (address1.getLinkedAddresses().size() == 0)
             {
-               Address addressToAdd = new AddressImpl(simpleString);
-               Address prev = wildcardDestinations.putIfAbsent(simpleString, addressToAdd);
-               if (prev != null)
-               {
-                  addressToAdd = prev;
-               }
-               addressToAdd.addLinkedAddress(add);
-               add.addLinkedAddress(addressToAdd);
+               this.addresses.remove(address1.getAddress());
             }
          }
       }
-      return added;
-   }
-
-   /**
-    * If the address is removed then we need to de-link it from its wildcard addresses.
-    * If the wildcard address is then empty then we can remove it completely
-    *
-    * @param address the address to remove
-    * @return if the address was removed
-    */
-   public boolean removeDestination(final SimpleString address)
-   {
-      boolean removed = super.removeDestination(address);
-      synchronized (actualDestinations)
-      {
-         if (removed)
-         {
-            Address actualAddress = actualDestinations.remove(address);
-            List<Address> addresses = actualAddress.getLinkedAddresses();
-            for (Address address1 : addresses)
-            {
-               address1.removLinkedAddress(actualAddress);
-               if (address1.getLinkedAddresses().size() == 0)
-               {
-                  wildcardDestinations.remove(address1.getAddress());
-               }
-            }
-         }
-      }
-      return removed;
-   }
-
-   /**
-    * @param address the address to check
-    * @return true if the address exists or if a wildcard address exists
-    */
-   public boolean containsDestination(final SimpleString address)
-   {
-      return super.containsDestination(address) || wildcardDestinations.keySet().contains(address);
+      return add;
    }
 
    private List<SimpleString> getAddresses(final Address address)
