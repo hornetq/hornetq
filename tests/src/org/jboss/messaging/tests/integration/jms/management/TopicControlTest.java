@@ -28,8 +28,12 @@ import java.lang.management.ManagementFactory;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
+import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
 import javax.management.MBeanServerInvocationHandler;
 
 import junit.framework.TestCase;
@@ -74,12 +78,6 @@ public class TopicControlTest extends TestCase
 
    // Static --------------------------------------------------------
 
-   private static void assertDurableSubscriptions(Topic topic, int expectedCount) throws Exception
-   {
-      TopicControlMBean topicControl = createTopicControl(topic);
-      assertEquals(expectedCount, topicControl.getDurableSubcriptionsCount());
-   }
-
    private static TopicControlMBean createTopicControl(Topic topic) throws Exception
    {
       TopicControlMBean topicControl = (TopicControlMBean)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
@@ -89,6 +87,89 @@ public class TopicControlTest extends TestCase
       return topicControl;
    }
 
+   private static TopicSubscriber createDurableSubscriber(Topic topic, String clientID, String subscriptionName) throws JMSException
+   {
+      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                             null,
+                                                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                                                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                                             null,
+                                                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                                             ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                                             true,
+                                                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                                                             ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
+
+      Connection conn = cf.createConnection();
+
+      conn.setClientID(clientID);
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      return s.createDurableSubscriber(topic, subscriptionName);
+   }
+
+   private static TopicSubscriber createSubscriber(Topic topic) throws JMSException
+   {
+      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                             null,
+                                                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                                                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                                             null,
+                                                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                                             ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                                             true,
+                                                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                                                             ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
+
+      TopicConnection conn = cf.createTopicConnection();
+
+      TopicSession s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      return s.createSubscriber(topic);
+   }
+
+   private static void sendMessages(Topic topic, int messagesToSend) throws Exception
+   {
+      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                             null,
+                                                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                                                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                                             null,
+                                                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                                             ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                                             true,
+                                                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                                                             ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
+
+      Connection conn = cf.createConnection();
+
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer producer = s.createProducer(topic);
+
+      for (int i = 0; i < messagesToSend; i++)
+      {
+         producer.send(s.createTextMessage(randomString()));
+      }
+   }
+   
    // Constructors --------------------------------------------------
 
    public TopicControlTest(String name)
@@ -98,25 +179,58 @@ public class TopicControlTest extends TestCase
 
    // Public --------------------------------------------------------
 
+   public void testGetXXXSubscriptionsCount() throws Exception
+   {
+      // 1 non-durable subscriber, 2 durable subscribers
+      createSubscriber(topic);
+      createDurableSubscriber(topic, clientID, subscriptionName);
+      createDurableSubscriber(topic, clientID, subscriptionName + "2");
+
+      TopicControlMBean topicControl = createTopicControl(topic);
+      assertEquals(3, topicControl.getSubcriptionsCount());
+      assertEquals(1, topicControl.getNonDurableSubcriptionsCount());
+      assertEquals(2, topicControl.getDurableSubcriptionsCount());
+   }
+
+   public void testGetXXXMessagesCount() throws Exception
+   {
+      // 1 non-durable subscriber, 2 durable subscribers
+      createSubscriber(topic);
+      createDurableSubscriber(topic, clientID, subscriptionName);
+      createDurableSubscriber(topic, clientID, subscriptionName + "2");
+
+      TopicControlMBean topicControl = createTopicControl(topic);
+
+      assertEquals(0, topicControl.getMessageCount());
+      assertEquals(0, topicControl.getNonDurableMessagesCount());
+      assertEquals(0, topicControl.getDurableMessagesCount());
+
+      sendMessages(topic, 2);
+
+      assertEquals(3 * 2, topicControl.getMessageCount());
+      assertEquals(1 * 2, topicControl.getNonDurableMessagesCount());
+      assertEquals(2 * 2, topicControl.getDurableMessagesCount());
+   }
+
    public void testDropDurableSubscriptionWithExistingSubscription() throws Exception
    {
       createDurableSubscriber(topic, clientID, subscriptionName);
 
-      assertDurableSubscriptions(topic, 1);
-
       TopicControlMBean topicControl = createTopicControl(topic);
+      assertEquals(1, topicControl.getDurableSubcriptionsCount());
+
       topicControl.dropDurableSubscription(clientID, subscriptionName);
 
-      assertDurableSubscriptions(topic, 0);
+      assertEquals(0, topicControl.getDurableSubcriptionsCount());
    }
 
    public void testDropDurableSubscriptionWithUnknownSubscription() throws Exception
    {
       createDurableSubscriber(topic, clientID, subscriptionName);
 
-      assertDurableSubscriptions(topic, 1);
-
       TopicControlMBean topicControl = createTopicControl(topic);
+      assertEquals(1, topicControl.getDurableSubcriptionsCount());
+
       try
       {
          topicControl.dropDurableSubscription(clientID, "this subscription does not exist");
@@ -127,20 +241,21 @@ public class TopicControlTest extends TestCase
 
       }
 
-      assertDurableSubscriptions(topic, 1);
+      assertEquals(1, topicControl.getDurableSubcriptionsCount());
    }
 
    public void testDropAllSubscriptions() throws Exception
    {
+      createSubscriber(topic);
       createDurableSubscriber(topic, clientID, subscriptionName);
       createDurableSubscriber(topic, clientID, subscriptionName + "2");
 
-      assertDurableSubscriptions(topic, 2);
-
       TopicControlMBean topicControl = createTopicControl(topic);
+      assertEquals(3, topicControl.getSubcriptionsCount());
+
       topicControl.dropAllSubscriptions();
 
-      assertDurableSubscriptions(topic, 0);
+      assertEquals(0, topicControl.getSubcriptionsCount());
    }
 
    // Package protected ---------------------------------------------
@@ -180,33 +295,6 @@ public class TopicControlTest extends TestCase
    }
 
    // Private -------------------------------------------------------
-
-   private void createDurableSubscriber(Topic topic, String clientID, String subscriptionName) throws JMSException
-   {
-      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             null,
-                                                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
-                                                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                                                             null,
-                                                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                                                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                                                             ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
-                                                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                             true,
-                                                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                                                             ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
-
-      Connection conn = cf.createConnection();
-
-      conn.setClientID(clientID);
-      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      s.createDurableSubscriber(topic, subscriptionName);
-   }
 
    // Inner classes -------------------------------------------------
 
