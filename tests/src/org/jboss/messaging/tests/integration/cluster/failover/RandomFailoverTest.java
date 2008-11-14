@@ -1452,6 +1452,8 @@ public class RandomFailoverTest extends TestCase
       
       log.info("************ Ended test " + this.getName());
       
+      InVMRegistry.instance.clear();
+      
       super.tearDown();
    }
      
