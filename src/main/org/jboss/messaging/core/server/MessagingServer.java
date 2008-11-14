@@ -27,6 +27,7 @@ import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.version.Version;
 
 /**
@@ -100,4 +101,6 @@ public interface MessagingServer extends MessagingComponent
    PostOffice getPostOffice();
 
    RemotingConnection getReplicatingConnection();
+
+   ResourceManager getResourceManager();
 }

@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.management.NotificationBroadcasterSupport;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -34,9 +35,12 @@ import javax.naming.NamingException;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.impl.MessagingServerControl;
+import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.JBossQueue;
@@ -44,6 +48,7 @@ import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSManagementService;
+import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.util.JNDIUtil;
 
 /**
@@ -77,6 +82,15 @@ public class JMSServerManagerImpl implements JMSServerManager
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
 
    private final JMSManagementService managementService;
+
+   public static JMSServerManagerImpl newJMSServerManagerImpl(MessagingServer server) throws Exception
+   {
+      MessagingServerControlMBean control = new MessagingServerControl(server.getPostOffice(), server.getStorageManager(), server.getConfiguration(), 
+                                                                       server.getQueueSettingsRepository(), server.getResourceManager(), server, new MessageCounterManagerImpl(1000), new NotificationBroadcasterSupport());
+      JMSManagementService jmsManagementService = new JMSManagementServiceImpl(server.getManagementService());
+      return new JMSServerManagerImpl(control, server.getPostOffice(), server.getStorageManager(), 
+                                      server.getQueueSettingsRepository(), jmsManagementService);
+   }
 
    public JMSServerManagerImpl(final MessagingServerControlMBean server,
                                final PostOffice postOffice,
@@ -148,7 +162,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       managementService.registerTopic(jBossTopic, jndiBinding, postOffice, storageManager);
       return added;
    }
-   
+
    public boolean undeployDestination(String name) throws Exception
    {
       List<String> jndiBindings = destinations.get(name);

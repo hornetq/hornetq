@@ -403,6 +403,11 @@ public class MessagingServerImpl implements MessagingServer
       return queueSettingsRepository;
    }
 
+   public ResourceManager getResourceManager()
+   {
+      return resourceManager;
+   }
+   
    public Version getVersion()
    {
       return version;

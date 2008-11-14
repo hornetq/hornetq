@@ -61,7 +61,7 @@ public class MessagingServiceImpl implements MessagingService
 
       JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
       
-      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), false);
+      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), config.isJMXManagementEnabled());
       
       MessagingServer server = new MessagingServerImpl();
       
