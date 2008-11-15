@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -55,6 +54,7 @@ import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
+import org.jboss.messaging.core.server.Forwarder;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
@@ -493,7 +493,7 @@ public class MessagingServerImpl implements MessagingServer
                binding = postOffice.addBinding(address, queueName, filter, true, false, outflowConfig.isFanout());
             }
             
-            Forwarder forwarder = new Forwarder(binding.getQueue(), connectorConfig, executorFactory.getExecutor(),
+            Forwarder forwarder = new ForwarderImpl(binding.getQueue(), connectorConfig, executorFactory.getExecutor(),
                                                 outflowConfig.getMaxBatchSize(), outflowConfig.getMaxBatchTime(),
                                                 storageManager, postOffice, queueSettingsRepository);
             

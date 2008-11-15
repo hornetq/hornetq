@@ -34,7 +34,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.Consumer;
+import org.jboss.messaging.core.server.Forwarder;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
@@ -45,7 +45,7 @@ import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.Future;
 
 /**
- * A Forwarder
+ * A ForwarderImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
@@ -53,11 +53,11 @@ import org.jboss.messaging.util.Future;
  *
  *
  */
-public class Forwarder implements Consumer
+public class ForwarderImpl implements Forwarder
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(Forwarder.class);
+   private static final Logger log = Logger.getLogger(ForwarderImpl.class);
 
    // Attributes ----------------------------------------------------
 
@@ -95,7 +95,7 @@ public class Forwarder implements Consumer
 
    // Public --------------------------------------------------------
 
-   public Forwarder(final Queue queue,
+   public ForwarderImpl(final Queue queue,
                     final TransportConfiguration connectorConfig, final Executor executor, final int maxBatchSize,
                     final long maxBatchTime,
                     final StorageManager storageManager, final PostOffice postOffice,
