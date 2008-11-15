@@ -152,7 +152,7 @@ public class Forwarder implements Consumer
    public HandleStatus handle(final MessageReference reference) throws Exception
    {
       if (busy)
-      {
+      {         
          return HandleStatus.BUSY;
       }
 
@@ -190,10 +190,7 @@ public class Forwarder implements Consumer
       {
          synchronized (this)
          {
-            // /TODO initially we just send batch in one tx and then acknowledge in another tx locally
-            // In event of failure this could result in duplicates on restart.
-            // To remedy that we will implement duplicate detection on the sendee by adding a unique header
-            // in the first message in the tx, and storing it on the server side.
+            //TODO - duplicate detection on sendee and if batch size = 1 then don't need tx
    
             while (true)
             {
@@ -218,6 +215,8 @@ public class Forwarder implements Consumer
             createTx();
    
             busy = false;
+            
+            count = 0;
          }
          
          queue.deliverAsync(executor);
@@ -238,7 +237,7 @@ public class Forwarder implements Consumer
    }
 
    private void createTx()
-   {
+   {      
       tx = new TransactionImpl(storageManager, postOffice);
    }
 

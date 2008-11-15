@@ -32,7 +32,6 @@ package org.jboss.messaging.core.paging;
  */
 public interface Page
 {
-
    int getPageId();
 
    void write(PageMessage message) throws Exception;
@@ -50,5 +49,4 @@ public interface Page
    void close() throws Exception;
 
    void delete() throws Exception;
-
 }

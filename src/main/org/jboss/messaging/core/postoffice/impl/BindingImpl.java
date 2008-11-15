@@ -71,6 +71,7 @@ public class BindingImpl implements Binding
       return fanout;
    }
    
+   //TODO use better method for round-robin'ing - since this may wrap
    public long getRoutings()
    {
       return routings;

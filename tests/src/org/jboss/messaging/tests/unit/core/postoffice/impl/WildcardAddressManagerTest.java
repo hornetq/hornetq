@@ -22,7 +22,6 @@
 package org.jboss.messaging.tests.unit.core.postoffice.impl;
 
 import org.jboss.messaging.core.postoffice.impl.WildcardAddressManager;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

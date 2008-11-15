@@ -33,7 +33,6 @@ import org.jboss.messaging.core.journal.EncodingSupport;
  */
 public interface PageTransactionInfo extends EncodingSupport
 {
-
    boolean waitCompletion() throws Exception;
 
    void complete();
@@ -53,5 +52,4 @@ public interface PageTransactionInfo extends EncodingSupport
    int getNumberOfMessages();
 
    void markIncomplete();
-
 }

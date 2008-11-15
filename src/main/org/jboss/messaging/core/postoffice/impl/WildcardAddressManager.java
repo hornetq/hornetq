@@ -22,10 +22,11 @@
 package org.jboss.messaging.core.postoffice.impl;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.Address;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.util.SimpleString;
@@ -37,6 +38,8 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class WildcardAddressManager extends SimpleAddressManager
 {
+   private static final Logger log = Logger.getLogger(WildcardAddressManager.class);
+   
    static final char SINGLE_WORD = '*';
 
    static final char ANY_WORDS = '#';
@@ -62,7 +65,7 @@ public class WildcardAddressManager extends SimpleAddressManager
     * @return true if the address was a new mapping
     */
    public boolean addMapping(final SimpleString address, final Binding binding)
-   {
+   {      
       Address add = addAndUpdateAddressMap(address);
       if (!add.containsWildCard())
       {

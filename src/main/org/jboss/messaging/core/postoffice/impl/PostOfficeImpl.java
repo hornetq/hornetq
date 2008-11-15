@@ -248,7 +248,7 @@ public class PostOfficeImpl implements PostOffice
          //I suspect it is being called after the managementservice has been shut down.
          log.warn("Failed to unregister queue", e);
       }
-      
+
       return binding;
    }
 
@@ -300,7 +300,7 @@ public class PostOfficeImpl implements PostOffice
          {
             Binding theBinding = null;
             
-            long lowestRoutings = 0;
+            long lowestRoutings = -1;
             
             for (Binding binding : bindings)
             {
@@ -322,7 +322,7 @@ public class PostOfficeImpl implements PostOffice
                      //We choose the queue with the lowest routings value  
                      long routings = binding.getRoutings();
                      
-                     if (routings <= lowestRoutings)
+                     if (routings <= lowestRoutings || lowestRoutings == -1)
                      {                        
                         //TODO - take num consumers into account
                         lowestRoutings = routings;
@@ -334,13 +334,14 @@ public class PostOfficeImpl implements PostOffice
             }
             
             if (theBinding != null)
-            {
+            {             
                MessageReference reference = message.createReference(theBinding.getQueue());
 
                refs.add(reference);
                
                theBinding.incrementRoutings();
             }
+
          }
 
          return refs;

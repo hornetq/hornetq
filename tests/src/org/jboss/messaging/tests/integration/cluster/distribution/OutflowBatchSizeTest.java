@@ -50,17 +50,17 @@ import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
- * A ActivationTimeoutTest
+ * A OutflowBatchSizeTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 4 Nov 2008 16:54:50
+ * Created 15 Nov 2008 09:06:55
  *
  *
  */
-public class SimpleOutflowTest extends TestCase
+public class OutflowBatchSizeTest extends TestCase
 {
-   private static final Logger log = Logger.getLogger(SimpleOutflowTest.class);
+   private static final Logger log = Logger.getLogger(OutflowBatchSizeTest.class);
 
    // Constants -----------------------------------------------------
 
@@ -76,7 +76,7 @@ public class SimpleOutflowTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   public void testSimpleOutflowFanout() throws Exception
+   public void testBatchSize() throws Exception
    {
       Configuration service0Conf = new ConfigurationImpl();
       service0Conf.setSecurityEnabled(false);
@@ -101,9 +101,11 @@ public class SimpleOutflowTest extends TestCase
                                                                     service1Params);
       connectors.add(server1tc);
       
-      final SimpleString testAddress = new SimpleString("testaddress");
-
-      OutflowConfiguration ofconfig = new OutflowConfiguration("outflow1", testAddress.toString(), null, true, 1, 0, connectors);
+      final SimpleString address1 = new SimpleString("testaddress");
+                       
+      final int batchSize = 10;
+ 
+      OutflowConfiguration ofconfig = new OutflowConfiguration("outflow1", address1.toString(), null, true, batchSize, 0, connectors);
       Set<OutflowConfiguration> ofconfigs = new HashSet<OutflowConfiguration>();
       ofconfigs.add(ofconfig);
       service0Conf.setOutFlowConfigurations(ofconfigs);
@@ -122,160 +124,74 @@ public class SimpleOutflowTest extends TestCase
       
       ClientSession session1 = csf1.createSession(false, true, true);
       
-      session0.createQueue(testAddress, testAddress, null, false, false, true);
+      session0.createQueue(address1, address1, null, false, false, true);
+
+      session1.createQueue(address1, address1, null, false, false, true);  
       
-      session1.createQueue(testAddress, testAddress, null, false, false, true);
+      ClientProducer prod0_1 = session0.createProducer(address1);
+         
+      ClientConsumer cons0_1 = session0.createConsumer(address1);
       
-      ClientProducer prod0 = session0.createProducer(testAddress);
-      
-      ClientConsumer cons0 = session0.createConsumer(testAddress);
-      
-      ClientConsumer cons1 = session1.createConsumer(testAddress);
-      
+      ClientConsumer cons1_1 = session1.createConsumer(address1);
+
       session0.start();
       
       session1.start();
       
-      final int numMessages = 100;
-      
       final SimpleString propKey = new SimpleString("testkey");
       
-      for (int i = 0; i < numMessages; i++)
-      {      
-         ClientMessage message = session0.createClientMessage(false);
-         message.putIntProperty(propKey, i);
-         message.getBody().flip();
-              
-         prod0.send(message);
-      }
-      
-      for (int i = 0; i < numMessages; i++)
+      for (int j = 0; j < 10; j++)
       {
-         ClientMessage rmessage0 = cons0.receive(1000);
-         
-         assertNotNull(rmessage0);
-         
-         assertEquals(i, rmessage0.getProperty(propKey));
-         
-         ClientMessage rmessage1 = cons1.receive(1000);
-         
-         assertNotNull(rmessage1);
-         
-         assertEquals(i, rmessage1.getProperty(propKey));  
-      }
-   }
-   
-   public void testSimpleOutflowRoundRobin() throws Exception
-   {
-      Configuration service0Conf = new ConfigurationImpl();
-      service0Conf.setSecurityEnabled(false);
-      Map<String, Object> service0Params = new HashMap<String, Object>();
-      service0Params.put(TransportConstants.SERVER_ID_PROP_NAME, 0);
-      service0Conf.getAcceptorConfigurations()
-                  .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
-                                                  service0Params));
-
-      Configuration service1Conf = new ConfigurationImpl();
-      service1Conf.setSecurityEnabled(false);
-      Map<String, Object> service1Params = new HashMap<String, Object>();
-      service1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-
-      service1Conf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
-                                                                              service1Params));
-      service1 = MessagingServiceImpl.newNullStorageMessagingServer(service1Conf);
-      service1.start();
-
-      List<TransportConfiguration> connectors = new ArrayList<TransportConfiguration>();
-      TransportConfiguration server1tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service1Params);
-      connectors.add(server1tc);
-      
-      final SimpleString testAddress = new SimpleString("testaddress");
-
-      OutflowConfiguration ofconfig = new OutflowConfiguration("outflow1", testAddress.toString(), null, false, 1, 0, connectors);
-      Set<OutflowConfiguration> ofconfigs = new HashSet<OutflowConfiguration>();
-      ofconfigs.add(ofconfig);
-      service0Conf.setOutFlowConfigurations(ofconfigs);
-
-      service0 = MessagingServiceImpl.newNullStorageMessagingServer(service0Conf);
-      service0.start();
-      
-      TransportConfiguration server0tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service0Params);
-      
-      ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
-      
-      ClientSession session0 = csf0.createSession(false, true, true);
-      
-      ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
-      
-      ClientSession session1 = csf1.createSession(false, true, true);
-      
-      session0.createQueue(testAddress, testAddress, null, false, false, false);
-      
-      session1.createQueue(testAddress, testAddress, null, false, false, false);
-      
-      ClientProducer prod0 = session0.createProducer(testAddress);
-      
-      ClientConsumer cons0 = session0.createConsumer(testAddress);
-      
-      ClientConsumer cons1 = session1.createConsumer(testAddress);
-      
-      session0.start();
-      
-      session1.start();
-      
-      final int numMessages = 100;
-      
-      final SimpleString propKey = new SimpleString("testkey");
-      
-      for (int i = 0; i < numMessages; i++)
-      {      
-         ClientMessage message = session0.createClientMessage(false);
-         message.putIntProperty(propKey, i);
-         message.getBody().flip();
-              
-         prod0.send(message);
-      }
-      
-      ClientMessage msg = cons0.receive(1000);
-      
-      boolean toggle = msg != null;
-      
-      int i;
-      if (toggle)
-      {
-         assertEquals(0, msg.getProperty(propKey));
-         
-         i = 1;
-      }
-      else
-      {
-         i = 0;
-      }
-      
-      for (; i < numMessages; i++)
-      {
-         if (!toggle)
-         {
-            ClientMessage rmessage0 = cons0.receive(1000);
-            
-            assertNotNull(rmessage0);
-            
-            assertEquals(i, rmessage0.getProperty(propKey));
+          
+         for (int i = 0; i < batchSize - 1; i++)
+         {      
+            ClientMessage message = session0.createClientMessage(false);
+            message.putIntProperty(propKey, i);        
+            message.getBody().flip();
+                 
+            prod0_1.send(message);
          }
-         else
+              
+         for (int i = 0; i < batchSize - 1; i++)
          {
-            ClientMessage rmessage1 = cons1.receive(1000);
+            ClientMessage rmessage1 = cons0_1.receive(1000);
             
             assertNotNull(rmessage1);
             
-            assertEquals(i, rmessage1.getProperty(propKey));  
+            assertEquals(i, rmessage1.getProperty(propKey));         
          }
          
-         toggle = !toggle;
+         ClientMessage rmessage1 = cons1_1.receive(250);
+         
+         assertNull(rmessage1);
+         
+         ClientMessage message = session0.createClientMessage(false);
+         message.putIntProperty(propKey, batchSize - 1);        
+         message.getBody().flip();
+              
+         prod0_1.send(message);
+         
+         rmessage1 = cons0_1.receive(1000);
+         
+         assertNotNull(rmessage1);
+         
+         assertEquals(batchSize - 1, rmessage1.getProperty(propKey));  
+         
+         for (int i = 0; i < batchSize; i++)
+         {
+            rmessage1 = cons1_1.receive(1000);
+            
+            assertNotNull(rmessage1);
+            
+            assertEquals(i, rmessage1.getProperty(propKey));         
+         }
       }
+            
+      session0.close();
+      
+      session1.close();
    }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -303,3 +219,5 @@ public class SimpleOutflowTest extends TestCase
 
    // Inner classes -------------------------------------------------
 }
+
+

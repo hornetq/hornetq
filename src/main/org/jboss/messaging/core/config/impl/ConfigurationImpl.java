@@ -75,7 +75,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_JOURNAL_REUSE_BUFFER_SIZE = -1;
 
-   public static final boolean DEFAULT_WILDCARD_ROUTING_ENABLED = false;
+   public static final boolean DEFAULT_WILDCARD_ROUTING_ENABLED = true;
 
    public static final boolean DEFAULT_MESSAGE_COUNTER_ENABLED = false;
 
