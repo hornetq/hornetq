@@ -236,18 +236,7 @@ public class PostOfficeImpl implements PostOffice
          storageManager.deleteBinding(binding);
       }
 
-      try
-      {
-         managementService.unregisterQueue(queueName, binding.getAddress());
-      }
-      catch (Exception e)
-      {
-         //FIXME - temporary hack to get test suite running
-         //For an unknown reason this is sometimes throwing an exception and preventing
-         //the delete queue from succeeding.
-         //I suspect it is being called after the managementservice has been shut down.
-         log.warn("Failed to unregister queue", e);
-      }
+      managementService.unregisterQueue(queueName, binding.getAddress());
 
       return binding;
    }

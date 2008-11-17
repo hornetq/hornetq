@@ -349,7 +349,10 @@ public class ManagementServiceImpl implements ManagementService
       mbeanServer.registerMBean(managedResource, objectName);
    }
 
-   private void unregisterFromJMX(final ObjectName objectName) throws Exception
+   // the JMX unregistration is synchronized to avoid race conditions if 2 clients tries to 
+   // unregister the same resource (e.g. a queue) at the same time since unregisterMBean()
+   // will throw an exception if the MBean has already been unregistered 
+   private synchronized void unregisterFromJMX(final ObjectName objectName) throws Exception
    {
       if (!jmxManagementEnabled)
       {
