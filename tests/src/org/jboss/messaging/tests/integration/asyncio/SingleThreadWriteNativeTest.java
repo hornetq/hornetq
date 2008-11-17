@@ -98,7 +98,14 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          catch (Throwable ignored)
          {
          }
-         controller.close();
+         try
+         {
+            controller.close();
+            fail("Supposed to throw exception as the file wasn't opened");
+         }
+         catch (Throwable ignored)
+         {
+         }
 
       }
    }

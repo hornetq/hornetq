@@ -157,10 +157,10 @@ public class AsynchronousFileImpl implements AsynchronousFile
          this.maxIO = maxIO;
          writeSemaphore = new Semaphore(this.maxIO);
 
-         opened = true;
          this.fileName = fileName;
-         addMax(this.maxIO);
          handler = init(fileName, this.maxIO, log);
+         opened = true;
+         addMax(this.maxIO);
       }
       finally
       {
@@ -193,7 +193,10 @@ public class AsynchronousFileImpl implements AsynchronousFile
          }
 
          closeInternal(handler);
-         addMax(maxIO * -1);
+         if (handler != 0)
+         {
+            addMax(maxIO * -1);
+         }
          opened = false;
          handler = 0;
       }
