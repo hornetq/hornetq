@@ -200,6 +200,16 @@ public class JMSQueueControl extends StandardMBean implements
       }
    }
 
+   public void setExpiryQueue(String expiryQueueName)
+   {
+      QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
+      
+      if (expiryQueueName != null)
+      {
+         queueSettings.setExpiryQueue(new SimpleString(expiryQueueName));
+      }
+   }
+
    public boolean removeMessage(final String messageID) throws Exception
    {
       Filter filter = createFilterForJMSMessageID(messageID);
