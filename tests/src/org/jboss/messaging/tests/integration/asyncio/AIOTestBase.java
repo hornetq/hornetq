@@ -69,7 +69,7 @@ public abstract class AIOTestBase extends UnitTestCase
    {
       super.tearDown();
       assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
-      // deleteDirectory(new File(fileDir));
+      deleteDirectory(new File(fileDir));
    }
 
    protected void encodeBufer(final ByteBuffer buffer)
