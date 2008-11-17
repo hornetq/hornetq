@@ -73,6 +73,7 @@ AsyncFile::AsyncFile(std::string & _fileName, AIOController * _controller, int _
 	fileHandle = ::open(fileName.data(),  O_RDWR | O_CREAT | O_DIRECT, 0666);
 	if (fileHandle < 0)
 	{
+		io_queue_release(aioContext);
 		throw AIOException(1, "Can't open file"); 
 	}
 	

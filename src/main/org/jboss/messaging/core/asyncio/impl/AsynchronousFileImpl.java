@@ -53,7 +53,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private static boolean loaded = false;
 
-   private static int EXPECTED_NATIVE_VERSION = 15;
+   private static int EXPECTED_NATIVE_VERSION = 16;
 
    static void addMax(final int io)
    {
@@ -159,8 +159,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
          opened = true;
          this.fileName = fileName;
-         handler = init(fileName, this.maxIO, log);
          addMax(this.maxIO);
+         handler = init(fileName, this.maxIO, log);
       }
       finally
       {

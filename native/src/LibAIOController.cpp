@@ -45,11 +45,12 @@
 JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_init
   (JNIEnv * env, jclass clazz, jstring jstrFileName, jint maxIO, jobject logger)
 {
+	AIOController * controller = 0;
 	try
 	{
 		std::string fileName = convertJavaString(env, jstrFileName);
 		
-		AIOController * controller = new AIOController(fileName, (int) maxIO);
+		controller = new AIOController(fileName, (int) maxIO);
 		controller->done = env->GetMethodID(clazz,"callbackDone","(Lorg/jboss/messaging/core/asyncio/AIOCallback;Ljava/nio/ByteBuffer;)V");
 		if (!controller->done) return 0;
 		
@@ -70,6 +71,10 @@ JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousF
 	    return (jlong)controller;
 	}
 	catch (AIOException& e){
+		if (controller != 0)
+		{
+			delete controller;
+		}
 		throwException(env, "java/lang/RuntimeException", e.what());
 		return 0;
 	}
@@ -180,9 +185,12 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 {
 	try
 	{
-		AIOController * controller = (AIOController *) controllerAddress;
-		controller->destroy(env);
-		delete controller;
+		if (controllerAddress != 0)
+		{
+			AIOController * controller = (AIOController *) controllerAddress;
+			controller->destroy(env);
+			delete controller;
+		}
 	}
 	catch (AIOException& e)
 	{

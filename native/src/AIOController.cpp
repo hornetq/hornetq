@@ -49,7 +49,10 @@ void AIOController::log(THREAD_CONTEXT threadContext, short level, const char * 
 
 void AIOController::destroy(THREAD_CONTEXT context)
 {
-	context->DeleteGlobalRef(logger);
+	if (logger != 0)
+	{
+		context->DeleteGlobalRef(logger);
+	}
 }
 
 /*

@@ -84,6 +84,24 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
 
       }
    }
+   
+   public void testFileNonExistent() throws Exception
+   {
+      final AsynchronousFileImpl controller = new AsynchronousFileImpl();
+      for (int i = 0; i < 1000; i++)
+      {
+         try
+         {
+            controller.open("/non-existent/IDontExist.error", 10000);
+            fail ("Exception expected! The test could create a file called /non-existent/IDontExist.error when it was supposed to fail.");
+         }
+         catch (Throwable ignored)
+         {
+         }
+         controller.close();
+
+      }
+   }
 
    /**
     * This test is validating if the AIO layer can open two different
