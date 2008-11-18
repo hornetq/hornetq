@@ -73,6 +73,30 @@
    <target name="compile" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="compile"/>
    </target>
+   
+   <target name="compile-core" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="compile-core"/>
+   </target>
+   
+   <target name="compile-jms" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="compile-jms"/>
+   </target>   
+   
+   <target name="compile-transports" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="compile-transports"/>
+   </target>   
+   
+   <target name="compile-security" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="compile-security"/>
+   </target>
+   
+   <target name="compile-boostrap" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="compile-bootstrap"/>
+   </target>  
+   
+   <target name="compile-logging" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="compile-logging"/>
+   </target>
 
    <target name="build-native" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="build-native"/>
@@ -88,6 +112,30 @@
    <target name="jar" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="jar"/>
    </target>
+   
+   <target name="jar-core" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="jar-core"/>
+   </target>  
+   
+   <target name="jar-jms" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="jar-jms"/>
+   </target>  
+   
+   <target name="jar-transports" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="jar-transports"/>
+   </target>   
+   
+   <target name="jar-security" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="jar-security"/>
+   </target> 
+   
+   <target name="jar-bootstrap" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="jar-bootstrap"/>
+   </target> 
+   
+   <target name="jar-logging" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="jar-logging"/>
+   </target> 
 
    <target name="client-jar" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="client-jar"/>
