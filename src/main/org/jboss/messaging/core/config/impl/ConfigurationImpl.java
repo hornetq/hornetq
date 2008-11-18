@@ -86,6 +86,14 @@ public class ConfigurationImpl implements Configuration
    public static final long DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD = 1000;
    
    public static final SimpleString DEFAULT_MANAGEMENT_ADDRESS = new SimpleString("admin.management");
+   
+   public static final long DEFAULT_BROADCAST_PERIOD = 5000;
+   
+   public static final long DEFAULT_BROADCAST_REFRESH_TIMEOUT = 10000;
+   
+   public static final int DEFAULT_MAX_FORWARD_BATCH_SIZE = 1;
+
+   public static final long DEFAULT_MAX_FORWARD_BATCH_TIME = -1;
 
    // Attributes -----------------------------------------------------------------------------
 
@@ -113,7 +121,7 @@ public class ConfigurationImpl implements Configuration
 
    protected TransportConfiguration backupConnectorConfig;
    
-   protected Set<MessageFlowConfiguration> outFlowConfigs = new HashSet<MessageFlowConfiguration>();
+   protected Set<MessageFlowConfiguration> messageFlowConfigurations = new HashSet<MessageFlowConfiguration>();
    
    protected Set<BroadcastGroupConfiguration> broadcastGroupConfigurations = new HashSet<BroadcastGroupConfiguration>();
    
@@ -262,12 +270,12 @@ public class ConfigurationImpl implements Configuration
    
    public Set<MessageFlowConfiguration> getMessageFlowConfigurations()
    {
-      return outFlowConfigs;
+      return messageFlowConfigurations;
    }
 
    public void setMessageFlowConfigurations(final Set<MessageFlowConfiguration> configs)
    {
-      this.outFlowConfigs = configs;
+      this.messageFlowConfigurations = configs;
    }
    
    public Set<BroadcastGroupConfiguration> getBroadcastGroupConfigurations()

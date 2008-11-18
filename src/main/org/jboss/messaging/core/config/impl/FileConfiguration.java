@@ -18,18 +18,25 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.config.impl;
+
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MAX_FORWARD_BATCH_SIZE;
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MAX_FORWARD_BATCH_TIME;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.util.SimpleString;
@@ -48,19 +55,19 @@ import org.w3c.dom.NodeList;
 public class FileConfiguration extends ConfigurationImpl
 {
    private static final long serialVersionUID = -4766689627675039596L;
-   
+
    private static final Logger log = Logger.getLogger(FileConfiguration.class);
 
    // Constants ------------------------------------------------------------------------
-   
+
    private static final String DEFAULT_CONFIGURATION_URL = "jbm-configuration.xml";
-   
-   // Attributes ----------------------------------------------------------------------    
-      
+
+   // Attributes ----------------------------------------------------------------------
+
    private String configurationUrl = DEFAULT_CONFIGURATION_URL;
 
    // Public -------------------------------------------------------------------------
-   
+
    public void start() throws Exception
    {
       URL url = getClass().getClassLoader().getResource(configurationUrl);
@@ -70,31 +77,31 @@ public class FileConfiguration extends ConfigurationImpl
       Element e = XMLUtil.stringToElement(xml);
 
       clustered = getBoolean(e, "clustered", clustered);
-      
+
       backup = getBoolean(e, "backup", backup);
-      
+
       queueActivationTimeout = getLong(e, "queue-activation-timeout", queueActivationTimeout);
 
-      //NOTE! All the defaults come from the super class
-      
+      // NOTE! All the defaults come from the super class
+
       scheduledThreadPoolMaxSize = getInteger(e, "scheduled-max-pool-size", scheduledThreadPoolMaxSize);
-      
+
       requireDestinations = getBoolean(e, "require-destinations", requireDestinations);
-      
+
       securityEnabled = getBoolean(e, "security-enabled", securityEnabled);
-      
+
       jmxManagementEnabled = getBoolean(e, "jmx-management-enabled", jmxManagementEnabled);
-      
+
       securityInvalidationInterval = getLong(e, "security-invalidation-interval", securityInvalidationInterval);
-      
+
       connectionScanPeriod = getLong(e, "connection-scan-period", connectionScanPeriod);
 
       transactionTimeout = getLong(e, "transaction-timeout", transactionTimeout);
 
       transactionTimeoutScanPeriod = getLong(e, "transaction-timeout-scan-period", transactionTimeoutScanPeriod);
-      
+
       managementAddress = new SimpleString(getString(e, "management-address", managementAddress.toString()));
-            
+
       NodeList interceptorNodes = e.getElementsByTagName("remoting-interceptors");
 
       ArrayList<String> interceptorList = new ArrayList<String>();
@@ -103,210 +110,66 @@ public class FileConfiguration extends ConfigurationImpl
       {
          NodeList interceptors = interceptorNodes.item(0).getChildNodes();
 
-         for (int k = 0; k < interceptors.getLength(); k++)
+         for (int i = 0; i < interceptors.getLength(); i++)
          {
-            if ("class-name".equalsIgnoreCase(interceptors.item(k).getNodeName()))
+            if ("class-name".equalsIgnoreCase(interceptors.item(i).getNodeName()))
             {
-               String clazz = interceptors.item(k).getTextContent();
-               
+               String clazz = interceptors.item(i).getTextContent();
+
                interceptorList.add(clazz);
             }
          }
       }
-      this.interceptorClassNames = interceptorList;
       
+      interceptorClassNames = interceptorList;
+
       NodeList backups = e.getElementsByTagName("backup-connector");
-      
-      //TODO  combine all these duplicated transport config parsing code - it's messy!
+
+      // There should be only one - this will be enforced by the DTD
+
       if (backups.getLength() > 0)
       {
-         Node backup = backups.item(0);
-         
-         NodeList children = backup.getChildNodes();
-         
-         String clazz = null;
-         
-         Map<String, Object> params = new HashMap<String, Object>();
-                        
-         for (int l = 0; l < children.getLength(); l++)
-         {                                  
-            String nodeName = children.item(l).getNodeName();
-            
-            if ("factory-class".equalsIgnoreCase(nodeName))
-            {                    
-               clazz = children.item(l).getTextContent();
-            }
-            else if ("params".equalsIgnoreCase(nodeName))
-            {                                                             
-               NodeList nlParams = children.item(l).getChildNodes();
-               
-               for (int m = 0; m < nlParams.getLength(); m++)
-               {
-                  if ("param".equalsIgnoreCase(nlParams.item(m).getNodeName()))
-                  {
-                     Node paramNode = nlParams.item(m);
-                     
-                     NamedNodeMap attributes = paramNode.getAttributes();
-                     
-                     Node nkey = attributes.getNamedItem("key");
-                     
-                     String key = nkey.getTextContent();
-                     
-                     Node nValue = attributes.getNamedItem("value");
-                     
-                     String value = nValue.getTextContent();
-                     
-                     Node nType = attributes.getNamedItem("type");
-                     
-                     String type = nType.getTextContent();
-                     
-                     if (type.equalsIgnoreCase("Integer"))
-                     {
-                        try
-                        {
-                           Integer iVal = Integer.parseInt(value);
-                           
-                           params.put(key, iVal);
-                        }
-                        catch (NumberFormatException e2)
-                        {
-                           throw new IllegalArgumentException("Remoting acceptor parameter " + value + " is not a valid Integer");
-                        }
-                     }
-                     else if (type.equalsIgnoreCase("Long"))
-                     {
-                        try
-                        {
-                           Long lVal = Long.parseLong(value);
-                           
-                           params.put(key, lVal);
-                        }
-                        catch (NumberFormatException e2)
-                        {
-                           throw new IllegalArgumentException("Remoting acceptor parameter " + value + " is not a valid Long");
-                        }
-                     }
-                     else if (type.equalsIgnoreCase("String"))
-                     {
-                        params.put(key, value);                             
-                     }
-                     else if (type.equalsIgnoreCase("Boolean"))
-                     {
-                        Boolean lVal = Boolean.parseBoolean(value);
-                           
-                        params.put(key, lVal);                              
-                     }
-                     else
-                     {
-                        throw new IllegalArgumentException("Invalid parameter type " + type);
-                     }
-                  }
-               }
-            }
-            
-            this.backupConnectorConfig = new TransportConfiguration(clazz, params);
-         }
+         Node backupNode = backups.item(0);
 
+         backupConnectorConfig = parseTransportConfiguration(backupNode);
+      }
+
+      NodeList acceptorNodes = e.getElementsByTagName("acceptor");
+
+      for (int i = 0; i < acceptorNodes.getLength(); i++)
+      {
+         Node acceptorNode = acceptorNodes.item(i);
+
+         TransportConfiguration acceptorConfig = parseTransportConfiguration(acceptorNode);
+
+         acceptorConfigs.add(acceptorConfig);
+      }
+
+      NodeList bgNodes = e.getElementsByTagName("broadcast-group");
+
+      for (int i = 0; i < bgNodes.getLength(); i++)
+      {
+         Element bgNode = (Element)bgNodes.item(i);
+
+         parseBroadcastGroupConfiguration(bgNode);
       }
       
-      NodeList acceptorNodes = e.getElementsByTagName("remoting-acceptors");
-      
-      if (acceptorNodes.getLength() > 0)
+      NodeList dgNodes = e.getElementsByTagName("discovery-group");
+
+      for (int i = 0; i < dgNodes.getLength(); i++)
       {
-         NodeList acceptors = acceptorNodes.item(0).getChildNodes();
-         
-         for (int k = 0; k < acceptors.getLength(); k++)
-         {
-            if ("acceptor".equalsIgnoreCase(acceptors.item(k).getNodeName()))
-            {
-               NodeList children = acceptors.item(k).getChildNodes();
-               
-               String clazz = null;
-               
-               Map<String, Object> params = new HashMap<String, Object>();
-                              
-               for (int l = 0; l < children.getLength(); l++)
-               {                                  
-                  String nodeName = children.item(l).getNodeName();
-                  
-                  if ("factory-class".equalsIgnoreCase(nodeName))
-                  {                    
-                     clazz = children.item(l).getTextContent();
-                  }
-                  else if ("params".equalsIgnoreCase(nodeName))
-                  {                                                             
-                     NodeList nlParams = children.item(l).getChildNodes();
-                     
-                     for (int m = 0; m < nlParams.getLength(); m++)
-                     {
-                        if ("param".equalsIgnoreCase(nlParams.item(m).getNodeName()))
-                        {
-                           Node paramNode = nlParams.item(m);
-                           
-                           NamedNodeMap attributes = paramNode.getAttributes();
-                           
-                           Node nkey = attributes.getNamedItem("key");
-                           
-                           String key = nkey.getTextContent();
-                           
-                           Node nValue = attributes.getNamedItem("value");
-                           
-                           String value = nValue.getTextContent();
-                           
-                           Node nType = attributes.getNamedItem("type");
-                           
-                           String type = nType.getTextContent();
-                           
-                           if (type.equalsIgnoreCase("Integer"))
-                           {
-                              try
-                              {
-                                 Integer iVal = Integer.parseInt(value);
-                                 
-                                 params.put(key, iVal);
-                              }
-                              catch (NumberFormatException e2)
-                              {
-                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value + " is not a valid Integer");
-                              }
-                           }
-                           else if (type.equalsIgnoreCase("Long"))
-                           {
-                              try
-                              {
-                                 Long lVal = Long.parseLong(value);
-                                 
-                                 params.put(key, lVal);
-                              }
-                              catch (NumberFormatException e2)
-                              {
-                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value + " is not a valid Long");
-                              }
-                           }
-                           else if (type.equalsIgnoreCase("String"))
-                           {
-                              params.put(key, value);                             
-                           }
-                           else if (type.equalsIgnoreCase("Boolean"))
-                           {
-                              Boolean lVal = Boolean.parseBoolean(value);
-                                 
-                              params.put(key, lVal);                              
-                           }
-                           else
-                           {
-                              throw new IllegalArgumentException("Invalid parameter type " + type);
-                           }
-                        }
-                     }
-                  }                                                                  
-               }
+         Element dgNode = (Element)dgNodes.item(i);
+
+         parseDiscoveryGroupConfiguration(dgNode);
+      }
       
-               TransportConfiguration info = new TransportConfiguration(clazz, params);
-               
-               acceptorConfigs.add(info);    
-            }
-         }
+      NodeList mfNodes = e.getElementsByTagName("message-flow");
+
+      for (int i = 0; i < mfNodes.getLength(); i++)
+      {
+         Element mfNode = (Element)mfNodes.item(i);
+
+         parseMessageFlowConfiguration(mfNode);
       }
 
       // Persistence config
@@ -316,9 +179,9 @@ public class FileConfiguration extends ConfigurationImpl
       createBindingsDir = getBoolean(e, "create-bindings-dir", createBindingsDir);
 
       journalDirectory = getString(e, "journal-directory", journalDirectory);
-      
+
       pagingDirectory = getString(e, "paging-directory", pagingDirectory);
-      
+
       pagingMaxGlobalSize = getLong(e, "paging-max-global-size-bytes", pagingMaxGlobalSize);
 
       createJournalDir = getBoolean(e, "create-journal-dir", createJournalDir);
@@ -338,13 +201,13 @@ public class FileConfiguration extends ConfigurationImpl
       {
          journalType = JournalType.ASYNCIO;
       }
-      
+
       journalSyncTransactional = getBoolean(e, "journal-sync-transactional", journalSyncTransactional);
-      
+
       journalSyncNonTransactional = getBoolean(e, "journal-sync-non-transactional", journalSyncNonTransactional);
 
       journalFileSize = getInteger(e, "journal-file-size", journalFileSize);
-      
+
       journalBufferReuseSize = getInteger(e, "journal-buffer-reuse-size", journalBufferReuseSize);
 
       journalMinFiles = getInteger(e, "journal-min-files", journalMinFiles);
@@ -354,7 +217,7 @@ public class FileConfiguration extends ConfigurationImpl
       wildcardRoutingEnabled = getBoolean(e, "wild-card-routing-enabled", wildcardRoutingEnabled);
 
       messageCounterEnabled = getBoolean(e, "message-counter-enabled", messageCounterEnabled);
-}
+   }
 
    public String getConfigurationUrl()
    {
@@ -365,15 +228,15 @@ public class FileConfiguration extends ConfigurationImpl
    {
       this.configurationUrl = configurationUrl;
    }
-   
+
    // Private -------------------------------------------------------------------------
 
    private Boolean getBoolean(Element e, String name, Boolean def)
    {
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)
-      {         
-         return Boolean.valueOf(nl.item(0).getTextContent().trim());
+      {
+         return parseBoolean(nl.item(0));
       }
       return def;
    }
@@ -383,7 +246,7 @@ public class FileConfiguration extends ConfigurationImpl
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)
       {
-         return Integer.valueOf(nl.item(0).getTextContent().trim());
+         return parseInt(nl.item(0));
       }
       return def;
    }
@@ -393,7 +256,7 @@ public class FileConfiguration extends ConfigurationImpl
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)
       {
-         return Long.valueOf(nl.item(0).getTextContent().trim());
+         return parseLong(nl.item(0));
       }
       return def;
    }
@@ -406,5 +269,301 @@ public class FileConfiguration extends ConfigurationImpl
          return nl.item(0).getTextContent().trim();
       }
       return def;
+   }
+
+   private TransportConfiguration parseTransportConfiguration(final Node node)
+   {
+      NodeList children = node.getChildNodes();
+
+      String clazz = null;
+
+      Map<String, Object> params = new HashMap<String, Object>();
+
+      for (int i = 0; i < children.getLength(); i++)
+      {
+         String nodeName = children.item(i).getNodeName();
+
+         if ("factory-class".equalsIgnoreCase(nodeName))
+         {
+            clazz = children.item(i).getTextContent();
+         }
+         else if ("params".equalsIgnoreCase(nodeName))
+         {
+            NodeList nlParams = children.item(i).getChildNodes();
+
+            for (int j = 0; j < nlParams.getLength(); j++)
+            {
+               if ("param".equalsIgnoreCase(nlParams.item(j).getNodeName()))
+               {
+                  Node paramNode = nlParams.item(j);
+
+                  NamedNodeMap attributes = paramNode.getAttributes();
+
+                  Node nkey = attributes.getNamedItem("key");
+
+                  String key = nkey.getTextContent();
+
+                  Node nValue = attributes.getNamedItem("value");
+
+                  Node nType = attributes.getNamedItem("type");
+
+                  String type = nType.getTextContent();
+
+                  if (type.equalsIgnoreCase("Integer"))
+                  {
+                     int iVal = parseInt(nValue);
+
+                     params.put(key, iVal);
+                  }
+                  else if (type.equalsIgnoreCase("Long"))
+                  {
+                     long lVal = parseLong(nValue);
+
+                     params.put(key, lVal);
+                  }
+                  else if (type.equalsIgnoreCase("String"))
+                  {
+                     params.put(key, nValue.getTextContent().trim());
+                  }
+                  else if (type.equalsIgnoreCase("Boolean"))
+                  {
+                     boolean bVal = parseBoolean(nValue);
+
+                     params.put(key, bVal);
+                  }
+                  else
+                  {
+                     throw new IllegalArgumentException("Invalid parameter type " + type);
+                  }
+               }
+            }
+         }
+      }
+
+      return new TransportConfiguration(clazz, params);
+   }
+   
+   private void parseBroadcastGroupConfiguration(final Element bgNode)
+   {
+      String name = bgNode.getAttribute("name");
+
+      String localBindAddress = null;
+
+      int localBindPort = -1;
+
+      String groupAddress = null;
+
+      int groupPort = -1;
+
+      long broadcastPeriod = ConfigurationImpl.DEFAULT_BROADCAST_PERIOD;
+
+      NodeList children = bgNode.getChildNodes();
+
+      for (int j = 0; j < children.getLength(); j++)
+      {
+         Node child = children.item(j);
+
+         if (child.getNodeName().equals("local-bind-address"))
+         {
+            localBindAddress = child.getTextContent().trim();
+         }
+         else if (child.getNodeName().equals("local-bind-port"))
+         {
+            localBindPort = parseInt(child);
+         }
+         else if (child.getNodeName().equals("group-address"))
+         {
+            groupAddress = child.getTextContent().trim();
+         }
+         else if (child.getNodeName().equals("group-port"))
+         {
+            groupPort = parseInt(child);
+         }
+         else if (child.getNodeName().equals("broadcast-period"))
+         {
+            broadcastPeriod = parseLong(child);
+         }
+      }
+
+      BroadcastGroupConfiguration config = new BroadcastGroupConfiguration(name,
+                                                                           localBindAddress,
+                                                                           localBindPort,
+                                                                           groupAddress,
+                                                                           groupPort,
+                                                                           broadcastPeriod);
+      
+      broadcastGroupConfigurations.add(config);
+   }
+   
+   private void parseDiscoveryGroupConfiguration(final Element bgNode)
+   {
+      String name = bgNode.getAttribute("name");
+
+      String groupAddress = null;
+
+      int groupPort = -1;
+
+      long refreshTimeout = ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT;
+
+      NodeList children = bgNode.getChildNodes();
+
+      for (int j = 0; j < children.getLength(); j++)
+      {
+         Node child = children.item(j);
+
+         if (child.getNodeName().equals("group-address"))
+         {
+            groupAddress = child.getTextContent().trim();
+         }
+         else if (child.getNodeName().equals("group-port"))
+         {
+            groupPort = parseInt(child);
+         }
+         else if (child.getNodeName().equals("refresh-timeout"))
+         {
+            refreshTimeout = parseLong(child);
+         }
+      }
+
+      DiscoveryGroupConfiguration config = new DiscoveryGroupConfiguration(name,
+                                                                           groupAddress,
+                                                                           groupPort,                                                              
+                                                                           refreshTimeout);
+      
+      discoveryGroupConfigurations.add(config);
+   }
+   
+   private void parseMessageFlowConfiguration(final Element bgNode)
+   {
+      String name = bgNode.getAttribute("name");
+
+      String address = null;
+
+      String filterString = null;
+
+      boolean fanout = false;
+
+      int maxBatchSize = DEFAULT_MAX_FORWARD_BATCH_SIZE;
+
+      long maxBatchTime = DEFAULT_MAX_FORWARD_BATCH_TIME;
+
+      List<TransportConfiguration> staticConnectors = new ArrayList<TransportConfiguration>();
+
+      String discoveryGroupName = null;
+
+      String transformerClassName = null;
+
+      NodeList children = bgNode.getChildNodes();
+
+      for (int j = 0; j < children.getLength(); j++)
+      {
+         Node child = children.item(j);
+
+         if (child.getNodeName().equals("address"))
+         {
+            address = child.getTextContent().trim();
+         }
+         else if (child.getNodeName().equals("filter-string"))
+         {
+            filterString = child.getTextContent().trim();
+         }
+         else if (child.getNodeName().equals("fanout"))
+         {
+            fanout = parseBoolean(child);
+         }
+         else if (child.getNodeName().equals("max-batch-size"))
+         {
+            maxBatchSize = parseInt(child);
+         }
+         else if (child.getNodeName().equals("max-batch-time"))
+         {
+            maxBatchTime = parseLong(child);
+         }
+         else if (child.getNodeName().equals("discovery-group-name"))
+         {
+            discoveryGroupName = child.getTextContent().trim();
+         }
+         else if (child.getNodeName().equals("transformer-class-name"))
+         {
+            transformerClassName = child.getTextContent().trim();
+         }
+         else if (child.getNodeName().equals("connectors"))
+         {
+            NodeList connectorNodes = ((Element)child).getElementsByTagName("connector");
+            
+            for (int k = 0; k < connectorNodes.getLength(); k++)
+            {
+               TransportConfiguration connector = parseTransportConfiguration(connectorNodes.item(k));
+               
+               staticConnectors.add(connector);
+            }
+         }
+      }
+
+      MessageFlowConfiguration config;
+      
+      if (!staticConnectors.isEmpty())
+      {
+         config = new MessageFlowConfiguration(name, address, filterString, fanout, maxBatchSize, maxBatchTime,
+                                               transformerClassName, staticConnectors);
+      }
+      else
+      {
+         config = new MessageFlowConfiguration(name, address, filterString, fanout, maxBatchSize, maxBatchTime,
+                                               transformerClassName, discoveryGroupName);
+      }
+      
+      messageFlowConfigurations.add(config);
+   }
+
+   private long parseLong(final Node elem)
+   {
+      String value = elem.getTextContent().trim();
+
+      try
+      {
+         return Long.parseLong(value);
+      }
+      catch (NumberFormatException e)
+      {
+         throw new IllegalArgumentException("Element " + elem +
+                                            " requires a valid Long value, but '" +
+                                            value +
+                                            "' cannot be parsed as a Long");
+      }
+   }
+
+   private int parseInt(final Node elem)
+   {
+      String value = elem.getTextContent().trim();
+
+      try
+      {
+         return Integer.parseInt(value);
+      }
+      catch (NumberFormatException e)
+      {
+         throw new IllegalArgumentException("Element " + elem +
+                                            " requires a valid Integer value, but '" +
+                                            value +
+                                            "' cannot be parsed as an Integer");
+      }
+   }
+
+   private boolean parseBoolean(final Node elem)
+   {
+      String value = elem.getTextContent().trim();
+
+      try
+      {
+         return Boolean.parseBoolean(value);
+      }
+      catch (NumberFormatException e)
+      {
+         throw new IllegalArgumentException("Element " + elem +
+                                            " requires a valid Boolean value, but '" +
+                                            value +
+                                            "' cannot be parsed as a Boolean");
+      }
    }
 }

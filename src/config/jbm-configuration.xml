@@ -2,7 +2,34 @@
    <configuration>
 
       <clustered>false</clustered>
-
+      
+      <!-- Clustering configuration -->
+      
+      <broadcast-group name="bg-group1">
+      	<local-bind-address>localhost</local-bind-address>
+      	<local-bind-port>1234</local-bind-port>
+      	<group-address>231.7.7.7</group-address>
+      	<group-port>9876</group-port>
+      	<broadcast-period>5000</broadcast-period>
+      </broadcast-group>
+      
+      <discovery-group name="dg-group1">
+      	<group-address>231.7.7.7</group-address>
+      	<group-port>9876</group-port>
+      	<refresh-timeout>10000</refresh-timeout>
+      </discovery-group>
+      
+      <message-flow name="jms-distributed-queues">
+         <address>jmsqueues.#</address>
+         <discovery-group-name>dg-group1</discovery-group-name>       
+      </message-flow>
+      
+      <message-flow name="jms-distributed-topics">
+         <address>jmstopics.#</address>
+         <discovery-group-name>dg-group1</discovery-group-name> 
+         <fanout>true</fanout>      
+      </message-flow>
+      
       <!-- Maximum number of threads to use for scheduled deliveries -->
       <scheduled-max-pool-size>30</scheduled-max-pool-size>
 
