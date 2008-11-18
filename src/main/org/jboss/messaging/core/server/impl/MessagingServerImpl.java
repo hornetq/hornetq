@@ -25,11 +25,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.config.OutflowConfiguration;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
@@ -38,7 +38,6 @@ import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.paging.impl.PagingManagerFactoryNIO;
 import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Channel;
@@ -54,11 +53,12 @@ import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
-import org.jboss.messaging.core.server.Forwarder;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerSession;
+import org.jboss.messaging.core.server.cluster.ClusterManager;
+import org.jboss.messaging.core.server.cluster.impl.ClusterManagerImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -68,8 +68,6 @@ import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.UUIDGenerator;
 import org.jboss.messaging.util.VersionLoader;
 
 /**
@@ -121,6 +119,8 @@ public class MessagingServerImpl implements MessagingServer
    private MessagingServerControlMBean serverManagement;
 
    private final Map<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
+
+   private ClusterManager clusterManager;
 
    // plugins
 
@@ -218,7 +218,11 @@ public class MessagingServerImpl implements MessagingServer
 
       storeFactory.setPagingManager(pagingManager);
 
-      resourceManager = new ResourceManagerImpl((int) configuration.getTransactionTimeout()/1000, configuration.getTransactionTimeoutScanPeriod(), storageManager, postOffice, queueSettingsRepository);
+      resourceManager = new ResourceManagerImpl((int)configuration.getTransactionTimeout() / 1000,
+                                                configuration.getTransactionTimeoutScanPeriod(),
+                                                storageManager,
+                                                postOffice,
+                                                queueSettingsRepository);
       postOffice = new PostOfficeImpl(storageManager,
                                       pagingManager,
                                       queueFactory,
@@ -269,9 +273,35 @@ public class MessagingServerImpl implements MessagingServer
                                                                   ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
       }
       remotingService.setMessagingServer(this);
-      
-      startOutflows();
 
+      if (configuration.isClustered())
+      {
+         clusterManager = new ClusterManagerImpl(executorFactory,
+                                                 storageManager,
+                                                 postOffice,
+                                                 queueSettingsRepository,
+                                                 scheduledExecutor);
+
+         clusterManager.start();
+         
+         //Deploy the cluster artifacts
+         
+         for (BroadcastGroupConfiguration config: configuration.getBroadcastGroupConfigurations())
+         {
+            clusterManager.deployBroadcastGroup(config);
+         }
+         
+         for (DiscoveryGroupConfiguration config: configuration.getDiscoveryGroupConfigurations())
+         {
+            clusterManager.deployDiscoveryGroup(config);
+         }
+         
+         for (MessageFlowConfiguration config: configuration.getMessageFlowConfigurations())
+         {
+            clusterManager.deployMessageFlow(config);
+         }
+      }
+            
       started = true;
    }
 
@@ -281,8 +311,11 @@ public class MessagingServerImpl implements MessagingServer
       {
          return;
       }
-      
-      stopOutflows();
+
+      if (clusterManager != null)
+      {
+         clusterManager.stop();
+      }
 
       asyncDeliveryPool.shutdown();
 
@@ -310,7 +343,7 @@ public class MessagingServerImpl implements MessagingServer
       queueFactory = null;
       resourceManager = null;
       serverManagement = null;
-            
+
       started = false;
    }
 
@@ -407,7 +440,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       return resourceManager;
    }
-   
+
    public Version getVersion()
    {
       return version;
@@ -462,53 +495,6 @@ public class MessagingServerImpl implements MessagingServer
       for (RemotingConnection connection : connections)
       {
          connection.freeze();
-      }
-   }
-   
-   private Set<Forwarder> forwarders = new HashSet<Forwarder>();
-   
-   private void startOutflows() throws Exception
-   {
-      Set<OutflowConfiguration> outflows = configuration.getOutflowConfigurations();
-      
-      for (OutflowConfiguration outflowConfig: outflows)
-      {
-         for (TransportConfiguration connectorConfig: outflowConfig.getConnectors())
-         {
-            SimpleString queueName = new SimpleString("outflow." + outflowConfig.getName() + "." + 
-                                                      UUIDGenerator.getInstance().generateSimpleStringUUID());
-            
-            Binding binding = postOffice.getBinding(queueName);
-                     
-            //TODO need to delete store and forward queues that are no longer in the config
-            //and also allow ability to change filterstring etc. while keeping the same name
-            if (binding == null)
-            {
-               SimpleString address = new SimpleString(outflowConfig.getAddress());
-               
-               SimpleString filterString = outflowConfig.getFilterString() == null ? null : new SimpleString(outflowConfig.getFilterString());
-               
-               Filter filter = filterString == null ? null : new FilterImpl(filterString);
-               
-               binding = postOffice.addBinding(address, queueName, filter, true, false, outflowConfig.isFanout());
-            }
-            
-            Forwarder forwarder = new ForwarderImpl(binding.getQueue(), connectorConfig, executorFactory.getExecutor(),
-                                                outflowConfig.getMaxBatchSize(), outflowConfig.getMaxBatchTime(),
-                                                storageManager, postOffice, queueSettingsRepository);
-            
-            forwarders.add(forwarder);
-            
-            binding.getQueue().addConsumer(forwarder);
-         }
-      }
-   }
-   
-   private void stopOutflows() throws Exception
-   {
-      for (Forwarder forwarder: forwarders)
-      {
-         forwarder.close();
       }
    }
 
@@ -569,7 +555,7 @@ public class MessagingServerImpl implements MessagingServer
                                                      final boolean autoCommitAcks,
                                                      final boolean xa,
                                                      final int sendWindowSize) throws Exception
-   {      
+   {
       checkActivate(connection);
 
       return doCreateSession(name,
@@ -693,7 +679,7 @@ public class MessagingServerImpl implements MessagingServer
                                                               executorFactory.getExecutor(),
                                                               channel,
                                                               managementService,
-                                                              this,                                                    
+                                                              this,
                                                               configuration.getManagementAddress());
 
       sessions.put(name, session);
@@ -703,7 +689,7 @@ public class MessagingServerImpl implements MessagingServer
       channel.setHandler(handler);
 
       connection.addFailureListener(session);
-      
+
       return new CreateSessionResponseMessage(version.getIncrementingVersion());
    }
 

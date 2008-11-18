@@ -20,14 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
-package org.jboss.messaging.core.config;
+package org.jboss.messaging.core.config.cluster;
 
 import java.io.Serializable;
 import java.util.List;
 
+import org.jboss.messaging.core.config.TransportConfiguration;
+
 /**
- * A OutflowConfiguration
+ * A MessageFlowConfiguration
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
@@ -35,46 +36,73 @@ import java.util.List;
  *
  *
  */
-public class OutflowConfiguration implements Serializable
+public class MessageFlowConfiguration implements Serializable
 {
    private static final long serialVersionUID = 6583525368508418953L;
 
    private final String name;
-   
-   private final String address;
-   
-   private final String filterString;
-   
-   private final boolean fanout;
-   
-   private final int maxBatchSize;
-   
-   private final long maxBatchTime;
-   
-   private final List<TransportConfiguration> connectors;
 
-   public OutflowConfiguration(final String name,
-                               final String address,
-                               final String filterString,
-                               final boolean fanout,
-                               final int maxBatchSize,
-                               final long maxBatchTime,
-                               final List<TransportConfiguration> connectors)
-   {    
+   private final String address;
+
+   private final String filterString;
+
+   private final boolean fanout;
+
+   private final int maxBatchSize;
+
+   private final long maxBatchTime;
+
+   private final List<TransportConfiguration> staticConnectors;
+
+   private final String discoveryGroupName;
+
+   private final String transformerClassName;
+
+   public MessageFlowConfiguration(final String name,
+                                   final String address,
+                                   final String filterString,
+                                   final boolean fanout,
+                                   final int maxBatchSize,
+                                   final long maxBatchTime,
+                                   final String transformerClassName,
+                                   final List<TransportConfiguration> connectors)
+   {
       this.name = name;
       this.address = address;
       this.filterString = filterString;
       this.fanout = fanout;
       this.maxBatchSize = maxBatchSize;
       this.maxBatchTime = maxBatchTime;
-      this.connectors = connectors;
+      this.transformerClassName = transformerClassName;
+      this.staticConnectors = connectors;
+      this.discoveryGroupName = null;
+   }
+
+   public MessageFlowConfiguration(final String name,
+                                   final String address,
+                                   final String filterString,
+                                   final boolean fanout,
+                                   final int maxBatchSize,
+                                   final long maxBatchTime,
+                                   final String transformerClassName,
+                                   final String discoveryGroupName)
+   {
+      this.name = name;
+      this.address = address;
+      this.filterString = filterString;
+      this.fanout = fanout;
+      this.maxBatchSize = maxBatchSize;
+      this.maxBatchTime = maxBatchTime;
+      this.transformerClassName = transformerClassName;
+      this.staticConnectors = null;
+      this.discoveryGroupName = discoveryGroupName;
    }
 
    public String getName()
    {
       return name;
    }
-   
+
    public String getAddress()
    {
       return address;
@@ -100,8 +128,18 @@ public class OutflowConfiguration implements Serializable
       return maxBatchTime;
    }
 
+   public String getTransformerClassName()
+   {
+      return transformerClassName;
+   }
+
    public List<TransportConfiguration> getConnectors()
    {
-      return connectors;
+      return staticConnectors;
+   }
+
+   public String getDiscoveryGroupName()
+   {
+      return this.discoveryGroupName;
    }
 }

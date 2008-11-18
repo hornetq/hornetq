@@ -38,8 +38,8 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.config.OutflowConfiguration;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
@@ -79,6 +79,7 @@ public class SimpleOutflowTest extends TestCase
    public void testSimpleOutflowFanout() throws Exception
    {
       Configuration service0Conf = new ConfigurationImpl();
+      service0Conf.setClustered(true);
       service0Conf.setSecurityEnabled(false);
       Map<String, Object> service0Params = new HashMap<String, Object>();
       service0Params.put(TransportConstants.SERVER_ID_PROP_NAME, 0);
@@ -87,6 +88,7 @@ public class SimpleOutflowTest extends TestCase
                                                   service0Params));
 
       Configuration service1Conf = new ConfigurationImpl();
+      service1Conf.setClustered(true);
       service1Conf.setSecurityEnabled(false);
       Map<String, Object> service1Params = new HashMap<String, Object>();
       service1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
@@ -103,10 +105,10 @@ public class SimpleOutflowTest extends TestCase
       
       final SimpleString testAddress = new SimpleString("testaddress");
 
-      OutflowConfiguration ofconfig = new OutflowConfiguration("outflow1", testAddress.toString(), null, true, 1, 0, connectors);
-      Set<OutflowConfiguration> ofconfigs = new HashSet<OutflowConfiguration>();
+      MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1", testAddress.toString(), null, true, 1, 0, null, connectors);
+      Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
       ofconfigs.add(ofconfig);
-      service0Conf.setOutFlowConfigurations(ofconfigs);
+      service0Conf.setMessageFlowConfigurations(ofconfigs);
 
       service0 = MessagingServiceImpl.newNullStorageMessagingServer(service0Conf);
       service0.start();
@@ -168,6 +170,7 @@ public class SimpleOutflowTest extends TestCase
    public void testSimpleOutflowRoundRobin() throws Exception
    {
       Configuration service0Conf = new ConfigurationImpl();
+      service0Conf.setClustered(true);
       service0Conf.setSecurityEnabled(false);
       Map<String, Object> service0Params = new HashMap<String, Object>();
       service0Params.put(TransportConstants.SERVER_ID_PROP_NAME, 0);
@@ -176,6 +179,7 @@ public class SimpleOutflowTest extends TestCase
                                                   service0Params));
 
       Configuration service1Conf = new ConfigurationImpl();
+      service1Conf.setClustered(true);
       service1Conf.setSecurityEnabled(false);
       Map<String, Object> service1Params = new HashMap<String, Object>();
       service1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
@@ -192,10 +196,10 @@ public class SimpleOutflowTest extends TestCase
       
       final SimpleString testAddress = new SimpleString("testaddress");
 
-      OutflowConfiguration ofconfig = new OutflowConfiguration("outflow1", testAddress.toString(), null, false, 1, 0, connectors);
-      Set<OutflowConfiguration> ofconfigs = new HashSet<OutflowConfiguration>();
+      MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1", testAddress.toString(), null, false, 1, 0, null, connectors);
+      Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
       ofconfigs.add(ofconfig);
-      service0Conf.setOutFlowConfigurations(ofconfigs);
+      service0Conf.setMessageFlowConfigurations(ofconfigs);
 
       service0 = MessagingServiceImpl.newNullStorageMessagingServer(service0Conf);
       service0.start();

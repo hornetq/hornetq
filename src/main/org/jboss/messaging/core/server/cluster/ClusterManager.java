@@ -21,19 +21,33 @@
  */
 
 
-package org.jboss.messaging.core.server;
+package org.jboss.messaging.core.server.cluster;
 
+import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
+import org.jboss.messaging.core.server.MessagingComponent;
 
 /**
- * A Forwarder
+ * A ClusterManager
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 15 Nov 2008 09:42:31
+ * Created 18 Nov 2008 09:23:26
  *
  *
  */
-public interface Forwarder extends Consumer
+public interface ClusterManager extends MessagingComponent
 {
-   void close() throws Exception;
+   void deployBroadcastGroup(BroadcastGroupConfiguration broadcastGroupConfig) throws Exception;
+   
+   void deployDiscoveryGroup(DiscoveryGroupConfiguration discoveryGroupConfig) throws Exception;
+   
+   void deployMessageFlow(MessageFlowConfiguration messageFlowConfig) throws Exception;
+   
+   void undeployBroadcastGroup(String name) throws Exception;
+   
+   void undeployDiscoveryGroup(String name) throws Exception;
+   
+   void undeployMessageFlow(String name) throws Exception;
 }

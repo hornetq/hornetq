@@ -62,15 +62,59 @@ public class TransportConfiguration implements Serializable
       return params;
    }
    
-   public boolean equals(Object other)
+   private int hash = -1;
+   
+   public int hashCode()
+   {
+      return factoryClassName.hashCode();
+   }
+   
+   public boolean equals(final Object other)
    {
       if (other instanceof TransportConfiguration == false)
       {
          return false;
       }
       
-      TransportConfiguration ai = (TransportConfiguration)other;
-      
-      return this.factoryClassName.equals(ai.factoryClassName);
+      TransportConfiguration kother = (TransportConfiguration)other;
+
+      if (factoryClassName.equals(kother.factoryClassName))
+      {
+         if (params == null)
+         {
+            return kother.params == null;
+         }
+         else
+         {
+            if (kother.params == null)
+            {
+               return false;
+            }
+            else if (params.size() == kother.params.size())
+            {
+               for (Map.Entry<String, Object> entry : params.entrySet())
+               {
+                  Object thisVal = entry.getValue();
+
+                  Object otherVal = kother.params.get(entry.getKey());
+
+                  if (otherVal == null || !otherVal.equals(thisVal))
+                  {
+                     return false;
+                  }
+               }
+               return true;
+            }
+            else
+            {
+               return false;
+            }
+         }
+      }
+      else
+      {
+         return false;
+      }
    }
+   
 }

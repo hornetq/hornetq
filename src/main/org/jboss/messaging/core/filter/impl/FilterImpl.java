@@ -46,6 +46,7 @@ import org.jboss.messaging.util.SimpleString;
 * JBMTimestamp - the timestamp of the message
 * JBMDurable - "DURABLE" or "NON_DURABLE"
 * JBMExpiration - the expiration of the message
+* JBMSize - the encoded size of the full message in bytes
 * Any other identifers that appear in a filter expression represent header values for the message
 * 
 * String values must be set as <code>SimpleString</code>, not <code>java.lang.String</code> (see JBMESSAGING-1307).
@@ -81,6 +82,8 @@ public class FilterImpl implements Filter
   private static final SimpleString JBM_PRIORITY = new SimpleString("JBMPriority");
 
   private static final SimpleString JBM_MESSAGE_ID = new SimpleString("JBMMessageID");
+  
+  private static final SimpleString JBM_SIZE = new SimpleString("JBMSize");
 
   private static final SimpleString JBM_PREFIX = new SimpleString("JBM");
    
@@ -179,6 +182,10 @@ public class FilterImpl implements Filter
      else if (JBM_EXPIRATION.equals(fieldName))
      {
         return msg.getExpiration();
+     }
+     else if (JBM_SIZE.equals(fieldName))
+     {
+        return msg.getEncodeSize();
      }
      else
      {

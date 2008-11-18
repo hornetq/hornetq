@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.server.impl;
+package org.jboss.messaging.core.server.cluster.impl;
 
 import java.util.LinkedList;
 import java.util.concurrent.Executor;
@@ -31,13 +31,14 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.Forwarder;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.cluster.Forwarder;
+import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
@@ -75,8 +76,6 @@ public class ForwarderImpl implements Forwarder
 
    private java.util.Queue<MessageReference> refs = new LinkedList<MessageReference>();
 
-   private boolean closed;
-
    private Transaction tx;
 
    private final StorageManager storageManager;
@@ -84,10 +83,16 @@ public class ForwarderImpl implements Forwarder
    private final PostOffice postOffice;
 
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   
+   private final Transformer transformer;
 
-   private final ClientSession session;
+   private final ClientSessionFactory csf;
+   
+   private ClientSession session;
 
-   private final ClientProducer producer;
+   private ClientProducer producer;
+      
+   private volatile boolean started;
 
    // Static --------------------------------------------------------
 
@@ -96,41 +101,56 @@ public class ForwarderImpl implements Forwarder
    // Public --------------------------------------------------------
 
    public ForwarderImpl(final Queue queue,
-                    final TransportConfiguration connectorConfig, final Executor executor, final int maxBatchSize,
-                    final long maxBatchTime,
-                    final StorageManager storageManager, final PostOffice postOffice,
-                    final HierarchicalRepository<QueueSettings> queueSettingsRepository)
-      throws Exception
+                        final TransportConfiguration connectorConfig,
+                        final Executor executor,
+                        final int maxBatchSize,
+                        final long maxBatchTime,
+                        final StorageManager storageManager,
+                        final PostOffice postOffice,
+                        final HierarchicalRepository<QueueSettings> queueSettingsRepository,                        
+                        final Transformer transformer) throws Exception
    {
       this.queue = queue;
-      
+
       this.executor = executor;
-      
+
       this.maxBatchSize = maxBatchSize;
-      
+
       this.maxBatchTime = maxBatchTime;
-      
+
       this.storageManager = storageManager;
-      
+
       this.postOffice = postOffice;
-      
+
       this.queueSettingsRepository = queueSettingsRepository;
+      
+      this.transformer = transformer;
+      
+      this.csf = new ClientSessionFactoryImpl(connectorConfig);      
+   }
+   
+   public synchronized void start() throws Exception
+   {
+      if (started)
+      {
+         return;
+      }
       
       createTx();
       
-      ClientSessionFactory csf = new ClientSessionFactoryImpl(connectorConfig);
-      
       session = csf.createSession(false, false, false);
-      
+
       producer = session.createProducer(null);
+
+      queue.addConsumer(this);       
       
-      queue.addConsumer(this);
+      started = true;
    }
 
-   public synchronized void close() throws Exception
+   public synchronized void stop() throws Exception
    {
-      closed = true;
-      
+      started = false;
+
       queue.removeConsumer(this);
 
       // Wait until all batches are complete
@@ -145,6 +165,15 @@ public class ForwarderImpl implements Forwarder
       {
          log.warn("Timed out waiting for batch to be sent");
       }
+      
+      session.close();
+      
+      started = false;
+   }
+   
+   public boolean isStarted()
+   {
+      return started;
    }
 
    // Consumer implementation ---------------------------------------
@@ -152,13 +181,13 @@ public class ForwarderImpl implements Forwarder
    public HandleStatus handle(final MessageReference reference) throws Exception
    {
       if (busy)
-      {         
+      {
          return HandleStatus.BUSY;
       }
 
       synchronized (this)
       {
-         if (closed)
+         if (!started)
          {
             return HandleStatus.BUSY;
          }
@@ -171,7 +200,7 @@ public class ForwarderImpl implements Forwarder
          {
             busy = true;
 
-            executor.execute(new BatchSender());                        
+            executor.execute(new BatchSender());
          }
 
          return HandleStatus.HANDLED;
@@ -190,35 +219,40 @@ public class ForwarderImpl implements Forwarder
       {
          synchronized (this)
          {
-            //TODO - duplicate detection on sendee and if batch size = 1 then don't need tx
-   
+            // TODO - duplicate detection on sendee and if batch size = 1 then don't need tx
+
             while (true)
             {
                MessageReference ref = refs.poll();
-   
+
                if (ref == null)
                {
                   break;
                }
-   
+
                tx.addAcknowledgement(ref);
-   
-               Message message = ref.getMessage();
+
+               ServerMessage message = ref.getMessage();
                
+               if (transformer != null)
+               {
+                  message = transformer.transform(message);
+               }
+
                producer.send(message.getDestination(), message);
             }
-   
+
             session.commit();
-   
+
             tx.commit();
-   
+
             createTx();
-   
+
             busy = false;
-            
+
             count = 0;
          }
-         
+
          queue.deliverAsync(executor);
       }
       catch (Exception e)
@@ -237,7 +271,7 @@ public class ForwarderImpl implements Forwarder
    }
 
    private void createTx()
-   {      
+   {
       tx = new TransactionImpl(storageManager, postOffice);
    }
 

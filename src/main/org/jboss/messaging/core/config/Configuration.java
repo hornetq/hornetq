@@ -26,6 +26,9 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.util.SimpleString;
 
@@ -89,9 +92,17 @@ public interface Configuration extends Serializable
 
    void setBackupConnectorConfiguration(TransportConfiguration config);
    
-   Set<OutflowConfiguration> getOutflowConfigurations();
+   Set<BroadcastGroupConfiguration> getBroadcastGroupConfigurations();
+   
+   void setBroadcastGroupConfigurations(Set<BroadcastGroupConfiguration> configs);
+   
+   Set<DiscoveryGroupConfiguration> getDiscoveryGroupConfigurations();
+   
+   void setDiscoveryGroupConfigurations(Set<DiscoveryGroupConfiguration> configs);
+   
+   Set<MessageFlowConfiguration> getMessageFlowConfigurations();
 
-   void setOutFlowConfigurations(final Set<OutflowConfiguration> configs);
+   void setMessageFlowConfigurations(final Set<MessageFlowConfiguration> configs);
    
    SimpleString getManagementAddress();
    

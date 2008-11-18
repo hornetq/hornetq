@@ -18,8 +18,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.config.OutflowConfiguration;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.util.SimpleString;
 
@@ -111,8 +113,13 @@ public class ConfigurationImpl implements Configuration
 
    protected TransportConfiguration backupConnectorConfig;
    
-   protected Set<OutflowConfiguration> outFlowConfigs = new HashSet<OutflowConfiguration>();
+   protected Set<MessageFlowConfiguration> outFlowConfigs = new HashSet<MessageFlowConfiguration>();
+   
+   protected Set<BroadcastGroupConfiguration> broadcastGroupConfigurations = new HashSet<BroadcastGroupConfiguration>();
+   
+   protected Set<DiscoveryGroupConfiguration> discoveryGroupConfigurations = new HashSet<DiscoveryGroupConfiguration>();
 
+      
    // Paging related attributes
 
    protected long pagingMaxGlobalSize = -1;
@@ -253,15 +260,36 @@ public class ConfigurationImpl implements Configuration
       backupConnectorConfig = config;
    }
    
-   public Set<OutflowConfiguration> getOutflowConfigurations()
+   public Set<MessageFlowConfiguration> getMessageFlowConfigurations()
    {
       return outFlowConfigs;
    }
 
-   public void setOutFlowConfigurations(final Set<OutflowConfiguration> configs)
+   public void setMessageFlowConfigurations(final Set<MessageFlowConfiguration> configs)
    {
       this.outFlowConfigs = configs;
    }
+   
+   public Set<BroadcastGroupConfiguration> getBroadcastGroupConfigurations()
+   {
+      return broadcastGroupConfigurations;
+   }
+
+   public void setBroadcastGroupConfigurations(Set<BroadcastGroupConfiguration> broadcastGroupConfigurations)
+   {
+      this.broadcastGroupConfigurations = broadcastGroupConfigurations;
+   }
+
+   public Set<DiscoveryGroupConfiguration> getDiscoveryGroupConfigurations()
+   {
+      return discoveryGroupConfigurations;
+   }
+
+   public void setDiscoveryGroupConfigurations(Set<DiscoveryGroupConfiguration> discoveryGroupConfigurations)
+   {
+      this.discoveryGroupConfigurations = discoveryGroupConfigurations;
+   }
+
 
    public String getBindingsDirectory()
    {
@@ -491,5 +519,7 @@ public class ConfigurationImpl implements Configuration
              cother.getSecurityInvalidationInterval() == getSecurityInvalidationInterval() &&
              cother.getManagementAddress().equals(getManagementAddress());
    }
+   
+   
 
 }
