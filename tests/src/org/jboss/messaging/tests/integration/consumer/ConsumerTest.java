@@ -514,6 +514,47 @@ public class ConsumerTest extends UnitTestCase
       session.close();
    }
 
+    public void testConsumerAckImmediateCloseSession() throws Exception
+   {
+
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      ClientSession session = sf.createSession(false, true, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = createMessage(session, "m" + i);
+         producer.send(message);
+      }
+
+      ClientConsumer consumer = session.createConsumer(QUEUE);
+      session.start();
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message2 = consumer.receive(1000);
+
+         assertEquals("m" + i, message2.getBody().getString());
+         if(i < 50)
+         {
+            message2.acknowledge();
+         }
+      }
+      // assert that all the messages are there and none have been acked
+      assertEquals(messagingService.getServer().getPostOffice().getBinding(QUEUE).getQueue().getDeliveringCount(), 0);
+      assertEquals(messagingService.getServer().getPostOffice().getBinding(QUEUE).getQueue().getMessageCount(), 0);
+
+      session.close();
+
+      assertEquals(messagingService.getServer().getPostOffice().getBinding(QUEUE).getQueue().getDeliveringCount(), 0);
+      assertEquals(messagingService.getServer().getPostOffice().getBinding(QUEUE).getQueue().getMessageCount(), 0);
+   }
+
    private ClientMessage createMessage(ClientSession session, String msg)
    {
       ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,

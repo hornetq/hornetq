@@ -542,7 +542,7 @@ public class ServerConsumerImpl implements ServerConsumer
             return HandleStatus.NO_MATCH;
          }
 
-         if (!browseOnly || preCommitAcks)
+         if (!browseOnly && !preCommitAcks)
          {
             deliveringRefs.add(ref);
          }
