@@ -53,9 +53,11 @@ public class CreateSessionMessage extends PacketImpl
    private boolean autoCommitSends;
    
    private boolean autoCommitAcks;
+
+   private boolean preCommitAcks;
    
    private int windowSize;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -64,7 +66,7 @@ public class CreateSessionMessage extends PacketImpl
                                final int version, final String username, final String password,
                                final int minLargeMessageSize, 
                                final boolean xa, final boolean autoCommitSends,
-                               final boolean autoCommitAcks, final int windowSize)
+                               final boolean autoCommitAcks, final boolean preCommitAcks, final int windowSize)
    {
       super(CREATESESSION);
       
@@ -87,6 +89,8 @@ public class CreateSessionMessage extends PacketImpl
       this.autoCommitAcks = autoCommitAcks;
       
       this.windowSize = windowSize;
+
+      this.preCommitAcks = preCommitAcks;
    }
    
    public CreateSessionMessage()
@@ -135,7 +139,12 @@ public class CreateSessionMessage extends PacketImpl
    {
       return this.autoCommitAcks;
    }
-   
+
+   public boolean isPreCommitAcks()
+   {
+      return preCommitAcks;
+   }
+
    public int getWindowSize()
    {
       return this.windowSize;
@@ -153,6 +162,7 @@ public class CreateSessionMessage extends PacketImpl
       buffer.putBoolean(autoCommitSends);
       buffer.putBoolean(autoCommitAcks);
       buffer.putInt(windowSize);
+      buffer.putBoolean(preCommitAcks);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
@@ -167,6 +177,7 @@ public class CreateSessionMessage extends PacketImpl
       autoCommitSends = buffer.getBoolean();
       autoCommitAcks = buffer.getBoolean();
       windowSize = buffer.getInt();
+      preCommitAcks = buffer.getBoolean();
    }
    
    public boolean equals(Object other)

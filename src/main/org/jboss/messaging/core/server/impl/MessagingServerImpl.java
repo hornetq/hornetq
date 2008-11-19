@@ -72,7 +72,7 @@ import org.jboss.messaging.util.VersionLoader;
 
 /**
  * The messaging server implementation
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
  * @version <tt>$Revision: 3543 $</tt> <p/> $Id: ServerPeer.java 3543 2008-01-07 22:31:58Z clebert.suconic@jboss.com $
@@ -264,7 +264,7 @@ public class MessagingServerImpl implements MessagingServer
                                                         "\"",
                                                e);
          }
-         
+
          Map<String, Object> backupConnectorParams = backupConnector.getParams();
 
          // TODO don't hardcode ping interval and code timeout
@@ -285,25 +285,25 @@ public class MessagingServerImpl implements MessagingServer
                                                  scheduledExecutor);
 
          clusterManager.start();
-         
+
          //Deploy the cluster artifacts
-         
+
          for (BroadcastGroupConfiguration config: configuration.getBroadcastGroupConfigurations())
          {
             clusterManager.deployBroadcastGroup(config);
          }
-         
+
          for (DiscoveryGroupConfiguration config: configuration.getDiscoveryGroupConfigurations())
          {
             clusterManager.deployDiscoveryGroup(config);
          }
-         
+
          for (MessageFlowConfiguration config: configuration.getMessageFlowConfigurations())
          {
             clusterManager.deployMessageFlow(config);
          }
       }
-            
+
       started = true;
    }
 
@@ -525,17 +525,18 @@ public class MessagingServerImpl implements MessagingServer
    }
 
    public CreateSessionResponseMessage replicateCreateSession(final String name,
-                                                                           final long channelID,
-                                                                           final String username,
-                                                                           final String password,
-                                                                           final int minLargeMessageSize,
-                                                                           final int incrementingVersion,
-                                                                           final RemotingConnection connection,
-                                                                           final boolean autoCommitSends,
-                                                                           final boolean autoCommitAcks,
-                                                                           final boolean xa,
-                                                                           final int sendWindowSize) throws Exception
-{
+                                                              final long channelID,
+                                                              final String username,
+                                                              final String password,
+                                                              final int minLargeMessageSize,
+                                                              final int incrementingVersion,
+                                                              final RemotingConnection connection,
+                                                              final boolean autoCommitSends,
+                                                              final boolean autoCommitAcks,
+                                                              final boolean preCommitAcks,
+                                                              final boolean xa,
+                                                              final int sendWindowSize) throws Exception
+   {
       return doCreateSession(name,
                              channelID,
                              username,
@@ -545,6 +546,7 @@ public class MessagingServerImpl implements MessagingServer
                              connection,
                              autoCommitSends,
                              autoCommitAcks,
+                             preCommitAcks,
                              xa,
                              sendWindowSize);
    }
@@ -558,6 +560,7 @@ public class MessagingServerImpl implements MessagingServer
                                                      final RemotingConnection connection,
                                                      final boolean autoCommitSends,
                                                      final boolean autoCommitAcks,
+                                                     final boolean preCommitAcks,
                                                      final boolean xa,
                                                      final int sendWindowSize) throws Exception
    {
@@ -572,6 +575,7 @@ public class MessagingServerImpl implements MessagingServer
                              connection,
                              autoCommitSends,
                              autoCommitAcks,
+                             preCommitAcks,
                              xa,
                              sendWindowSize);
    }
@@ -632,11 +636,12 @@ public class MessagingServerImpl implements MessagingServer
                                                         final long channelID,
                                                         final String username,
                                                         final String password,
-                                                        final int minLargeMessageSize, 
+                                                        final int minLargeMessageSize,
                                                         final int incrementingVersion,
                                                         final RemotingConnection connection,
                                                         final boolean autoCommitSends,
                                                         final boolean autoCommitAcks,
+                                                        final boolean preCommitAcks,
                                                         final boolean xa,
                                                         final int sendWindowSize) throws Exception
    {
@@ -677,6 +682,7 @@ public class MessagingServerImpl implements MessagingServer
                                                               minLargeMessageSize,
                                                               autoCommitSends,
                                                               autoCommitAcks,
+                                                              preCommitAcks,
                                                               xa,
                                                               connection,
                                                               storageManager,

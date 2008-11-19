@@ -93,6 +93,7 @@ public class ReplicateConnectionFailureTest extends TestCase
                                                                       ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
                                                                       ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                                                                       ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
+                                                                      ClientSessionFactoryImpl.DEFAULT_PRE_COMMIT_ACKS,
                                                                       ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
       
 

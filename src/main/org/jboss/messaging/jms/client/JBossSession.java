@@ -96,6 +96,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
    public static final int TYPE_TOPIC_SESSION = 2;
 
+   public static final int SERVER_ACKNOWLEDGE = 4;
    // Static --------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(JBossSession.class);
@@ -117,6 +118,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
    private boolean recoverCalled;
 
    private final Set<JBossMessageConsumer> consumers = new HashSet<JBossMessageConsumer>();
+
 
    // Constructors --------------------------------------------------
 

@@ -28,11 +28,9 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 
 /**
- * 
  * A ClientSessionFactory
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface ClientSessionFactory
 {
@@ -43,7 +41,13 @@ public interface ClientSessionFactory
                                boolean xa,
                                boolean autoCommitSends,
                                boolean autoCommitAcks,
+                               final boolean preCommitAcks,
                                int ackBatchSize) throws MessagingException;
+
+   ClientSession createSession(final boolean xa,
+                               final boolean autoCommitSends,
+                               final boolean autoCommitAcks,
+                               final boolean preCommitAcks) throws MessagingException;
 
    void setConsumerWindowSize(int size);
 

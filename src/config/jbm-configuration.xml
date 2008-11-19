@@ -86,7 +86,7 @@
             </params>            
          </acceptor>
          <!-- Netty standard TCP acceptor -->
-         <acceptor>
+         <acceptor name="netty">
             <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
             <params>	            	            
 	            <param key="jbm.remoting.netty.host" value="localhost" type="String"/>

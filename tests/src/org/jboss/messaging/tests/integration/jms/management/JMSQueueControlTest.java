@@ -172,7 +172,8 @@ public class JMSQueueControlTest extends TestCase
                                                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
                                                              true,
                                                              ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                                                             ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
+                                                             ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
+                                                             ClientSessionFactoryImpl.DEFAULT_PRE_COMMIT_ACKS);
 
       Connection conn = cf.createConnection();
 

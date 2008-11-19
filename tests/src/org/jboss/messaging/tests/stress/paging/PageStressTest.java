@@ -90,7 +90,7 @@ public class PageStressTest extends ServiceTestBase
 
          final int NUMBER_OF_MESSAGES = 60000;
          
-         session = factory.createSession(null, null, false, false, true, 1024 * NUMBER_OF_MESSAGES);
+         session = factory.createSession(null, null, false, false, true, false, 1024 * NUMBER_OF_MESSAGES);
 
          SimpleString address = new SimpleString("page-adr");
 

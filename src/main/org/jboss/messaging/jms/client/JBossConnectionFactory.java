@@ -98,6 +98,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    private final int maxConnections;
 
+   private final boolean preCommitAcks;
+
    // Constructors ---------------------------------------------------------------------------------
 
    public JBossConnectionFactory(final TransportConfiguration connectorConfig,
@@ -116,7 +118,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  final boolean blockOnNonPersistentSend,
                                  final boolean blockOnPersistentSend,
                                  final boolean autoGroup,
-                                 final int maxConnections)
+                                 final int maxConnections,
+                                 final boolean preCommitAcks)
    {
       this.connectorConfig = connectorConfig;
       this.backupConnectorConfig = backupConnectorConfig;
@@ -135,6 +138,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.blockOnPersistentSend = blockOnPersistentSend;
       this.autoGroup = autoGroup;
       this.maxConnections = maxConnections;
+      this.preCommitAcks = preCommitAcks;
    }
 
    // ConnectionFactory implementation -------------------------------------------------------------
@@ -311,6 +315,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                        blockOnPersistentSend,
                                                        autoGroup,
                                                        maxConnections,
+                                                       preCommitAcks,
                                                        DEFAULT_ACK_BATCH_SIZE);
 
       }
@@ -323,7 +328,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
          try
          {
-            sess = sessionFactory.createSession(username, password, false, false, false, 0);
+            sess = sessionFactory.createSession(username, password, false, false, false, false, 0);
          }
          catch (MessagingException e)
          {

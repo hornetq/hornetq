@@ -124,7 +124,7 @@ public class ChunkTestBase extends ServiceTestBase
             sf.setBlockOnAcknowledge(true);
          }
 
-         ClientSession session = sf.createSession(null, null, false, true, true, 0);
+         ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
          session.createQueue(ADDRESS, ADDRESS, null, true, false, true);
 
@@ -198,7 +198,7 @@ public class ChunkTestBase extends ServiceTestBase
             sf = createInVMFactory();
          }
 
-         session = sf.createSession(null, null, false, true, true, 0);
+         session = sf.createSession(null, null, false, true, true, false, 0);
 
          ClientConsumer consumer = null;
 

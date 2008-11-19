@@ -554,6 +554,7 @@ public class LocalTestServer implements Server, Runnable
                                                     true,
                                                     false,
                                                     8,
+                                                    false,
                                                     jndiBindings);
    }
 

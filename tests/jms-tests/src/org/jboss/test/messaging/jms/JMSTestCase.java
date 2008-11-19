@@ -55,6 +55,7 @@ public class JMSTestCase extends JBMServerTestCase
                                                     true,
                                                     ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                                                     ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
+                                                    ClientSessionFactoryImpl.DEFAULT_PRE_COMMIT_ACKS,
                                                     "/testsuitecf");
       
       cf = (JBossConnectionFactory)getInitialContext().lookup("/testsuitecf");

@@ -53,6 +53,8 @@ public class ReplicateCreateSessionMessage extends PacketImpl
    private boolean autoCommitSends;
 
    private boolean autoCommitAcks;
+
+   private boolean preCommitAcks;
    
    private int windowSize;
 
@@ -69,6 +71,7 @@ public class ReplicateCreateSessionMessage extends PacketImpl
                                         final boolean xa,
                                         final boolean autoCommitSends,
                                         final boolean autoCommitAcks,
+                                        final boolean preCommitAcks,
                                         final int windowSize)
    {
       super(REPLICATE_CREATESESSION);
@@ -90,7 +93,9 @@ public class ReplicateCreateSessionMessage extends PacketImpl
       this.autoCommitSends = autoCommitSends;
 
       this.autoCommitAcks = autoCommitAcks;
-      
+
+      this.preCommitAcks = preCommitAcks;
+
       this.windowSize = windowSize;
    }
 
@@ -145,7 +150,12 @@ public class ReplicateCreateSessionMessage extends PacketImpl
    {
       return this.autoCommitAcks;
    }
-   
+
+   public boolean isPreCommitAcks()
+   {
+      return preCommitAcks;
+   }
+
    public int getWindowSize()
    {
       return this.windowSize;
@@ -163,6 +173,7 @@ public class ReplicateCreateSessionMessage extends PacketImpl
       buffer.putBoolean(autoCommitSends);
       buffer.putBoolean(autoCommitAcks);
       buffer.putInt(windowSize);
+      buffer.putBoolean(preCommitAcks);
    }
 
    public void decodeBody(final MessagingBuffer buffer)
@@ -177,6 +188,7 @@ public class ReplicateCreateSessionMessage extends PacketImpl
       autoCommitSends = buffer.getBoolean();
       autoCommitAcks = buffer.getBoolean();
       windowSize = buffer.getInt();
+      preCommitAcks = buffer.getBoolean();
    }
 
    public boolean equals(Object other)

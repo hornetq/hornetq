@@ -94,6 +94,7 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        boolean blockOnPersistentSend,
                                        boolean autoGroup,
                                        int maxConnections,
+                                       boolean preCommitAcks,
                                        String jndiBinding) throws Exception
    {
       List<String> bindings = new ArrayList<String>();
@@ -117,6 +118,7 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                                        blockOnPersistentSend,
                                                        autoGroup,
                                                        maxConnections,
+                                                       preCommitAcks,
                                                        jndiBinding);
       if (created)
       {

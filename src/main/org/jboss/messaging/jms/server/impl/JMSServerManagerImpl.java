@@ -55,7 +55,7 @@ import org.jboss.messaging.util.JNDIUtil;
 /**
  * A Deployer used to create and add to JNDI queues, topics and connection
  * factories. Typically this would only be used in an app server env.
- * 
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
@@ -86,10 +86,10 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public static JMSServerManagerImpl newJMSServerManagerImpl(MessagingServer server) throws Exception
    {
-      MessagingServerControlMBean control = new MessagingServerControl(server.getPostOffice(), server.getStorageManager(), server.getConfiguration(), 
+      MessagingServerControlMBean control = new MessagingServerControl(server.getPostOffice(), server.getStorageManager(), server.getConfiguration(),
                                                                        server.getQueueSettingsRepository(), server.getResourceManager(), server, new MessageCounterManagerImpl(1000), new NotificationBroadcasterSupport());
       JMSManagementService jmsManagementService = new JMSManagementServiceImpl(server.getManagementService());
-      return new JMSServerManagerImpl(control, server.getPostOffice(), server.getStorageManager(), 
+      return new JMSServerManagerImpl(control, server.getPostOffice(), server.getStorageManager(),
                                       server.getQueueSettingsRepository(), jmsManagementService);
    }
 
@@ -219,6 +219,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                           boolean blockOnPersistentSend,
                                           boolean autoGroup,
                                           int maxConnections,
+                                          boolean preCommitAcks,
                                           String jndiBinding) throws Exception
    {
       ArrayList<String> bindings = new ArrayList<String>(1);
@@ -242,6 +243,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                      blockOnPersistentSend,
                                      autoGroup,
                                      maxConnections,
+                                     preCommitAcks,
                                      bindings);
    }
 
@@ -263,6 +265,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                           boolean blockOnPersistentSend,
                                           boolean autoGroup,
                                           int maxConnections,
+                                          boolean preCommitAcks,
                                           List<String> jndiBindings) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
@@ -285,7 +288,8 @@ public class JMSServerManagerImpl implements JMSServerManager
                                          blockOnNonPersistentSend,
                                          blockOnPersistentSend,
                                          autoGroup,
-                                         maxConnections);
+                                         maxConnections,
+                                         preCommitAcks);
       }
       for (String jndiBinding : jndiBindings)
       {

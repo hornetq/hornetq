@@ -67,6 +67,8 @@ public class JMSServerDeployer extends XmlDeployer
    
    private static final String MAX_CONNECTIONS_ELEMENT = "max-connections";
 
+   private static final String PRE_COMMIT_ACKS_ELEMENT = "pre-commit-acks";
+
    private static final String CONNECTOR_ELEMENT = "connector";
 
    private static final String BACKUP_CONNECTOR_ELEMENT = "backup-connector";
@@ -145,6 +147,7 @@ public class JMSServerDeployer extends XmlDeployer
          boolean blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
          boolean autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
          int maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
+         boolean preCommitAcks = ClientSessionFactoryImpl.DEFAULT_PRE_COMMIT_ACKS;
          List<String> jndiBindings = new ArrayList<String>();
          String connectorFactoryClassName = null;
          Map<String, Object> params = new HashMap<String, Object>();
@@ -212,6 +215,10 @@ public class JMSServerDeployer extends XmlDeployer
             else if(MAX_CONNECTIONS_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
                maxConnections = Integer.parseInt(children.item(j).getTextContent().trim());
+            }
+            else if(PRE_COMMIT_ACKS_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               preCommitAcks = Boolean.parseBoolean(children.item(j).getTextContent().trim());;
             }
             else if (ENTRY_NODE_NAME.equalsIgnoreCase(children.item(j).getNodeName()))
             {
@@ -420,6 +427,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                   blockOnPersistentSend,
                                                   autoGroup,
                                                   maxConnections,
+                                                  preCommitAcks,
                                                   jndiBindings);
       }
       else if (node.getNodeName().equals(QUEUE_NODE_NAME))

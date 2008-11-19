@@ -164,6 +164,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
 
    private final boolean autoCommitAcks;
 
+   private final boolean preCommitAcks;
+
    private volatile RemotingConnection remotingConnection;
 
    private final Map<Long, ServerConsumer> consumers = new ConcurrentHashMap<Long, ServerConsumer>();
@@ -211,6 +213,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
                             final int minLargeMessageSize,
                             final boolean autoCommitSends,
                             final boolean autoCommitAcks,
+                            final boolean preCommitAcks,
                             final boolean xa,
                             final RemotingConnection remotingConnection,
                             final StorageManager storageManager,
@@ -235,6 +238,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       this.autoCommitSends = autoCommitSends;
 
       this.autoCommitAcks = autoCommitAcks;
+
+      this.preCommitAcks = preCommitAcks;
 
       this.remotingConnection = remotingConnection;
 
@@ -392,7 +397,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
                                                           queueSettingsRepository,
                                                           postOffice,
                                                           channel,
-                                                          pager);
+                                                          pager,
+                                                          preCommitAcks);
 
          consumers.put(consumer.getID(), consumer);
 

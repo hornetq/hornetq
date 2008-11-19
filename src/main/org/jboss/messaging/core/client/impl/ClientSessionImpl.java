@@ -135,6 +135,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private final boolean autoCommitAcks;
 
+   private final boolean preCommitAcks;
+
    private final boolean autoCommitSends;
 
    private final boolean blockOnAcknowledge;
@@ -161,6 +163,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final boolean xa,
                             final boolean autoCommitSends,
                             final boolean autoCommitAcks,
+                            final boolean preCommitAcks,
                             final boolean blockOnAcknowledge,
                             final boolean autoGroup,
                             final int ackBatchSize,
@@ -182,6 +185,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       this.xa = xa;
 
       this.autoCommitAcks = autoCommitAcks;
+
+      this.preCommitAcks = preCommitAcks;
 
       this.autoCommitSends = autoCommitSends;
 
@@ -551,6 +556,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    // This acknowledges all messages received by the consumer so far
    public void acknowledge(final long consumerID, final long messageID) throws MessagingException
    {
+      //if we've pre commited then we don't need to do anything
+      if(preCommitAcks)
+      {
+         return;
+      }
       checkClosed();
 
       SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(consumerID, messageID, blockOnAcknowledge);

@@ -267,7 +267,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
             ClientSession session = null;
             try
             {
-               session = sessionFactory.createSession(username, password, false, true, true, 0);
+               session = sessionFactory.createSession(username, password, false, true, true, false, 0);
 
                // Remove any temporary queues and addresses
 
@@ -455,19 +455,23 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
          if (acknowledgeMode == Session.SESSION_TRANSACTED)
          {
-            session = sessionFactory.createSession(username, password, isXA, false, false, transactionBatchSize);
+            session = sessionFactory.createSession(username, password, isXA, false, false, false, transactionBatchSize);
          }
          else if (acknowledgeMode == Session.AUTO_ACKNOWLEDGE)
          {
-            session = sessionFactory.createSession(username, password, isXA, true, true, 0);
+            session = sessionFactory.createSession(username, password, isXA, true, true, false, 0);
          }
          else if (acknowledgeMode == Session.DUPS_OK_ACKNOWLEDGE)
          {
-            session = sessionFactory.createSession(username, password, isXA, true, true, dupsOKBatchSize);
+            session = sessionFactory.createSession(username, password, isXA, true, true, false, dupsOKBatchSize);
          }
          else if (acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
          {
-            session = sessionFactory.createSession(username, password, isXA, true, false, transactionBatchSize);
+            session = sessionFactory.createSession(username, password, isXA, true, false, false, transactionBatchSize);
+         }
+         else if (acknowledgeMode == JBossSession.SERVER_ACKNOWLEDGE)
+         {
+            session = sessionFactory.createSession(username, password, isXA, true, false, true, transactionBatchSize);
          }
          else
          {

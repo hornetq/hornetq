@@ -158,7 +158,7 @@ public class MessageChunkTest extends ChunkTestBase
          mockFactory.setBlockOnPersistentSend(false);
          mockFactory.setBlockOnAcknowledge(false);
 
-         session = mockFactory.createSession(null, null, false, true, true, 0);
+         session = mockFactory.createSession(null, null, false, true, true, false,  0);
 
          callback.session = session;
 
@@ -296,7 +296,7 @@ public class MessageChunkTest extends ChunkTestBase
 
          ClientSessionFactory sf = createInVMFactory();
 
-         ClientSession session = sf.createSession(null, null, false, true, true, 0);
+         ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
          session.createQueue(ADDRESS, queue[0], null, true, false, true);
          session.createQueue(ADDRESS, queue[1], null, true, false, true);
@@ -387,7 +387,7 @@ public class MessageChunkTest extends ChunkTestBase
 
          ClientSessionFactory sf = createInVMFactory();
 
-         ClientSession session = sf.createSession(null, null, false, true, true, 0);
+         ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
          session.createQueue(ADDRESS, queue[0], null, true, false, true);
          session.createQueue(ADDRESS, queue[1], null, true, false, true);
@@ -417,7 +417,7 @@ public class MessageChunkTest extends ChunkTestBase
 
             sf = createInVMFactory();
 
-            session = sf.createSession(null, null, false, true, true, 0);
+            session = sf.createSession(null, null, false, true, true, false, 0);
          }
 
          readMessage(session, queue[0], numberOfIntegers);
@@ -488,7 +488,7 @@ public class MessageChunkTest extends ChunkTestBase
             sf.setBlockOnAcknowledge(true);
          }
 
-         ClientSession session = sf.createSession(null, null, false, true, true, 0);
+         ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
          session.createQueue(ADDRESS, ADDRESS, null, true, false, true);
 
@@ -539,7 +539,7 @@ public class MessageChunkTest extends ChunkTestBase
             sf = createInVMFactory();
          }
 
-         session = sf.createSession(null, null, false, true, true, 0);
+         session = sf.createSession(null, null, false, true, true, false, 0);
 
          ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -577,7 +577,7 @@ public class MessageChunkTest extends ChunkTestBase
 
          session.close();
 
-         session = sf.createSession(null, null, false, true, true, 0);
+         session = sf.createSession(null, null, false, true, true, false, 0);
 
          readMessage(session, ADDRESS, numberOfIntegersBigMessage);
 

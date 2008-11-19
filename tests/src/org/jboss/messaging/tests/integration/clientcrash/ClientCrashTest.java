@@ -34,6 +34,7 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_COMMIT_ACKS;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -145,7 +146,7 @@ public class ClientCrashTest extends ServiceTestBase
    {
       super.setUp();
 
-      
+
       Configuration config = createDefaultConfig(true);
       config.setSecurityEnabled(false);
       messagingService = createService(false, config);
@@ -165,8 +166,9 @@ public class ClientCrashTest extends ServiceTestBase
                                         DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
                                         DEFAULT_AUTO_GROUP,
                                         DEFAULT_MAX_CONNECTIONS,
+                                        DEFAULT_PRE_COMMIT_ACKS,
                                         DEFAULT_ACK_BATCH_SIZE);
-      
+
    }
 
    @Override

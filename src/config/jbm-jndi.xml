@@ -18,6 +18,19 @@
       <entry name="java:/XAConnectionFactory"/>
    </connection-factory>
 
+   <connection-factory name="ServerAckConnectionFactory">
+      <connector>
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+      </connector>
+      <pre-commit-acks>true</pre-commit-acks>
+      <entry name="ServerAckConnectionFactory"/>
+      <entry name="/ServerAckConnectionFactory"/>
+      <entry name="/ServerAckXAConnectionFactory"/>
+      <entry name="java:/ServerAckConnectionFactory"/>
+      <entry name="java:/ServerAckXAConnectionFactory"/>
+   </connection-factory>
+
+
    <connection-factory name="ClusteredConnectionFactory">
       <connector>
          <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
@@ -69,8 +82,10 @@
       <send-p-messages-synchronously>true</send-p-messages-synchronously>
       <!--If true, any connections will automatically set a unique group id (per producer) on every message sent-->
       <auto-group-id>true</auto-group-id>
+      <!--if true then the server will pre ack any message before delivery to a consumer-->
+      <pre-commit-acks>false</pre-commit-acks>
    </connection-factory>
-   
+
    <connection-factory name="TestInVMConnectionFactory">
       <connector>
          <factory-class>org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory</factory-class>
@@ -80,19 +95,19 @@
       </connector>
       <entry name="/TestInVMConnectionFactory"/>
    </connection-factory>
-   
+
    <connection-factory name="TestSSLConnectionFactory">
       <connector>
          <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
          <params>
             <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
-            <param key="jbm.remoting.netty.port" value="5500" type="Integer"/>	                       
+            <param key="jbm.remoting.netty.port" value="5500" type="Integer"/>
             <param key="jbm.remoting.netty.sslenabled" value="true" type="Boolean"/>
             <param key="jbm.remoting.netty.keystorepath" value="messaging.keystore" type="String"/>
             <param key="jbm.remoting.netty.keystorepassword" value="secureexample" type="String"/>
          </params>
-      </connector>      
-      <entry name="/TestSSLConnectionFactory"/>      
+      </connector>
+      <entry name="/TestSSLConnectionFactory"/>
    </connection-factory>
 
    <queue name="MyQueue">

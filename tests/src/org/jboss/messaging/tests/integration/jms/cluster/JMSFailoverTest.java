@@ -106,7 +106,8 @@ public class JMSFailoverTest extends TestCase
                                                                ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
                                                                ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
                                                                ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                                                               ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
+                                                               ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
+                                                               ClientSessionFactoryImpl.DEFAULT_PRE_COMMIT_ACKS);
 
       Connection conn = jbcf.createConnection();
 
@@ -185,7 +186,8 @@ public class JMSFailoverTest extends TestCase
                                                                    ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
                                                                    true,
                                                                    ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                                                                   ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
+                                                                   ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
+                                                                   ClientSessionFactoryImpl.DEFAULT_PRE_COMMIT_ACKS);
 
       JBossConnectionFactory jbcfBackup = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams),
@@ -204,7 +206,8 @@ public class JMSFailoverTest extends TestCase
                                                                      ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
                                                                      ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
                                                                      ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                                                                     ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
+                                                                     ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
+                                                                     ClientSessionFactoryImpl.DEFAULT_PRE_COMMIT_ACKS);
 
       Connection connLive = jbcfLive.createConnection();
 

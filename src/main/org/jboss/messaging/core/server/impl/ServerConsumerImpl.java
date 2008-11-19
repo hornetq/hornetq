@@ -120,6 +120,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private volatile boolean closed;
 
+   private final boolean preCommitAcks;
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -133,7 +135,8 @@ public class ServerConsumerImpl implements ServerConsumer
                              final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                              final PostOffice postOffice,
                              final Channel channel,
-                             final PagingManager pager)
+                             final PagingManager pager,
+                             final boolean preCommitAcks)
    {
       this.id = id;
 
@@ -156,6 +159,8 @@ public class ServerConsumerImpl implements ServerConsumer
       this.channel = channel;
       
       this.pager = pager;
+
+      this.preCommitAcks = preCommitAcks;
 
       messageQueue.addConsumer(this);
       
@@ -375,7 +380,7 @@ public class ServerConsumerImpl implements ServerConsumer
       while (ref.getMessage().getMessageID() != messageID);
 
    }
-      
+
    public MessageReference getExpired(final long messageID) throws Exception
    {
       if (browseOnly)
@@ -537,7 +542,7 @@ public class ServerConsumerImpl implements ServerConsumer
             return HandleStatus.NO_MATCH;
          }
 
-         if (!browseOnly)
+         if (!browseOnly || preCommitAcks)
          {
             deliveringRefs.add(ref);
          }
@@ -552,6 +557,11 @@ public class ServerConsumerImpl implements ServerConsumer
          else
          {
             sendRegularMessage(ref, message);
+         }
+
+         if(preCommitAcks)
+         {
+            doAck(ref);
          }
 
          return HandleStatus.HANDLED;
