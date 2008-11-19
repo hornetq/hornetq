@@ -1157,7 +1157,7 @@
          <jvmarg value="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory"/>
          <jvmarg value="-Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"/>
          <arg line="jbm-standalone-beans.xml"/>
-         <classpath refid="jms.test.execution.classpath"/>
+         <classpath refid="jms.standalone.server.classpath"/>
       </java>
    </target>
 
