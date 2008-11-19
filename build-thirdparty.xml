@@ -85,7 +85,7 @@
            Dependencies required to build the transport jar
       -->
 
-      <componentref name="netty" version="3.0.1.GA"/>
+      <componentref name="netty" version="3.0.2.GA"/>
       <componentref name="apache-mina" version="2.0.0-M3-20080730.120633-1"/>
 
       <!--
