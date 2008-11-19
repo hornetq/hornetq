@@ -22,8 +22,13 @@
 
 package org.jboss.messaging.core.paging.impl;
 
+import java.nio.ByteBuffer;
+
 import org.jboss.messaging.core.paging.PageMessage;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.core.server.ServerLargeMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.util.DataConstants;
@@ -49,7 +54,10 @@ public class PageMessageImpl implements PageMessage
 
    // Public --------------------------------------------------------
 
-   private final ServerMessage message;
+   /** Large messages will need to be instatiated lazily during getMessage when the StorageManager is available */
+   private byte[] largeMessageLazyData;
+   
+   private ServerMessage message;
 
    private long transactionID = -1;
 
@@ -69,8 +77,15 @@ public class PageMessageImpl implements PageMessage
       this(new ServerMessageImpl());
    }
 
-   public ServerMessage getMessage()
+   public ServerMessage getMessage(StorageManager storage)
    {
+      if (this.largeMessageLazyData != null)
+      {
+         this.message = storage.createLargeMessageStorage();
+         MessagingBuffer buffer = new ByteBufferWrapper(ByteBuffer.wrap(largeMessageLazyData));
+         message.decode(buffer);
+         largeMessageLazyData = null;
+      }
       return message;
    }
 
@@ -84,18 +99,40 @@ public class PageMessageImpl implements PageMessage
    public void decode(final MessagingBuffer buffer)
    {
       transactionID = buffer.getLong();
-      message.decode(buffer);
+      
+      boolean isLargeMessage = buffer.getBoolean();
+      
+      if (isLargeMessage)
+      {
+         int largeMessageHeaderSize = buffer.getInt();
+         
+         this.largeMessageLazyData = new byte[largeMessageHeaderSize];
+         
+         buffer.getBytes(largeMessageLazyData);
+         
+      }
+      else
+      {
+         buffer.getInt(); // This value is only used on LargeMessages for now
+         message = new ServerMessageImpl();
+         message.decode(buffer);
+      }
+      
    }
 
    public void encode(final MessagingBuffer buffer)
    {
       buffer.putLong(transactionID);
+      buffer.putBoolean(message instanceof ServerLargeMessage);
+      buffer.putInt(message.getEncodeSize());
       message.encode(buffer);
    }
 
    public int getEncodeSize()
    {
-      return DataConstants.SIZE_LONG  + message.getEncodeSize();
+      return DataConstants.SIZE_LONG + DataConstants.SIZE_BYTE +
+             DataConstants.SIZE_INT  +
+             message.getEncodeSize();
    }
 
    // Package protected ---------------------------------------------

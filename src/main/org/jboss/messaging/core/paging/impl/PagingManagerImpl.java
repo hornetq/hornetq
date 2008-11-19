@@ -58,7 +58,6 @@ public class PagingManagerImpl implements PagingManager
 {
 
    // Constants -----------------------------------------------------
-   private static final long WATERMARK_GLOBAL_PAGE = QueueSettings.DEFAULT_PAGE_SIZE_BYTES;
 
    // Attributes ----------------------------------------------------
 
@@ -79,6 +78,8 @@ public class PagingManagerImpl implements PagingManager
    private final PagingStoreFactory pagingSPI;
 
    private final StorageManager storageManager;
+
+   private final long defaultPageSize;
 
    private PostOffice postOffice;
 
@@ -107,11 +108,13 @@ public class PagingManagerImpl implements PagingManager
    public PagingManagerImpl(final PagingStoreFactory pagingSPI,
                             final StorageManager storageManager,
                             final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-                            final long maxGlobalSize)
+                            final long maxGlobalSize,
+                            final long defaultPageSize)
    {
       this.pagingSPI = pagingSPI;
       this.queueSettingsRepository = queueSettingsRepository;
       this.storageManager = storageManager;
+      this.defaultPageSize = defaultPageSize;
       this.maxGlobalSize = maxGlobalSize;
    }
 
@@ -131,8 +134,11 @@ public class PagingManagerImpl implements PagingManager
       this.globalMode.set(globalMode);
    }
 
-   // Synchronization of this method is done per ConcurrentHashMap
-   public PagingStore getPageStore(final SimpleString storeName) throws Exception
+   /**
+    * @param destination
+    * @return
+    */
+   public synchronized PagingStore createPageStore(SimpleString storeName) throws Exception
    {
       PagingStore store = stores.get(storeName);
       
@@ -148,6 +154,20 @@ public class PagingManagerImpl implements PagingManager
          }
 
          store.start();
+      }
+
+      return store;
+   }
+
+
+   
+    public PagingStore getPageStore(final SimpleString storeName) throws Exception
+   {
+      PagingStore store = stores.get(storeName);
+      
+      if (store == null)
+      {
+         throw new IllegalStateException("Store " + storeName + " not found on paging");
       }
 
       return store;
@@ -209,6 +229,10 @@ public class PagingManagerImpl implements PagingManager
 
       for (PageMessage msg : data)
       {
+         ServerMessage pagedMessage = null;
+
+         pagedMessage = (ServerMessage)msg.getMessage(storageManager);
+
          final long transactionIdDuringPaging = msg.getTransactionID();
          if (transactionIdDuringPaging >= 0)
          {
@@ -221,7 +245,7 @@ public class PagingManagerImpl implements PagingManager
             {
                if (isTrace)
                {
-                  trace("Transaction " + msg.getTransactionID() + " not found, ignoring message " + msg.getMessage());
+                  trace("Transaction " + msg.getTransactionID() + " not found, ignoring message " + pagedMessage);
                }
                continue;
             }
@@ -230,23 +254,23 @@ public class PagingManagerImpl implements PagingManager
             // before the commit arrived
             if (!pageTransactionInfo.waitCompletion())
             {
-               trace("Rollback was called after prepare, ignoring message " + msg.getMessage());
+               trace("Rollback was called after prepare, ignoring message " + pagedMessage);
                continue;
             }
 
             // / Update information about transactions
-            if (msg.getMessage().isDurable())
+            if (pagedMessage.isDurable())
             {
                pageTransactionInfo.decrement();
                pageTransactionsToUpdate.add(pageTransactionInfo);
             }
          }
          
-         refsToAdd.addAll(postOffice.route(msg.getMessage()));
+         refsToAdd.addAll(postOffice.route(pagedMessage));
 
-         if (msg.getMessage().getDurableRefCount() != 0)
+         if (pagedMessage.getDurableRefCount() != 0)
          {
-            storageManager.storeMessageTransactional(depageTransactionID, msg.getMessage());
+            storageManager.storeMessageTransactional(depageTransactionID, pagedMessage);
          }
       }
 
@@ -276,7 +300,8 @@ public class PagingManagerImpl implements PagingManager
 
       if (globalMode.get())
       {
-         return globalSize.get() < maxGlobalSize - WATERMARK_GLOBAL_PAGE && pagingStore.getMaxSizeBytes() <= 0 ||
+         // We use the Default Page Size when in global mode for the calculation of the Watermark
+         return globalSize.get() < maxGlobalSize - defaultPageSize && pagingStore.getMaxSizeBytes() <= 0 ||
                 pagingStore.getAddressSize() < pagingStore.getMaxSizeBytes();
       }
       else
@@ -286,6 +311,11 @@ public class PagingManagerImpl implements PagingManager
          return pagingStore.getMaxSizeBytes() <= 0 || pagingStore.getAddressSize() < pagingStore.getMaxSizeBytes();
       }
 
+   }
+
+   public long getDefaultPageSize()
+   {
+      return defaultPageSize;
    }
 
    public void setLastPage(final LastPageRecord lastPage) throws Exception
@@ -429,7 +459,21 @@ public class PagingManagerImpl implements PagingManager
          {
             // When in Global mode, we use the default page size as the minimal
             // watermark to start depage
-            if (globalMode.get() && currentGlobalSize < maxGlobalSize - QueueSettings.DEFAULT_PAGE_SIZE_BYTES)
+
+            if (isTrace)
+            {
+               log.trace("globalMode.get = " + globalMode.get() +
+                         " currentGlobalSize = " +
+                         currentGlobalSize +
+                         " defaultPageSize = " +
+                         defaultPageSize +
+                         " maxGlobalSize = " +
+                         maxGlobalSize +
+                         "maxGlobalSize - defaultPageSize = " +
+                         (maxGlobalSize - defaultPageSize));
+            }
+
+            if (globalMode.get() && currentGlobalSize < maxGlobalSize - defaultPageSize)
             {
                startGlobalDepage();
             }

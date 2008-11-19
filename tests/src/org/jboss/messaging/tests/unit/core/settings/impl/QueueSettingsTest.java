@@ -42,7 +42,7 @@ public class QueueSettingsTest extends TestCase
       assertEquals(queueSettings.getExpiryQueue(), null);
       assertEquals(queueSettings.getMaxDeliveryAttempts(), QueueSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS);
       assertEquals(queueSettings.getMaxSizeBytes(), QueueSettings.DEFAULT_MAX_SIZE_BYTES);
-      assertEquals(queueSettings.getPageSizeBytes(), QueueSettings.DEFAULT_PAGE_SIZE_BYTES);
+      assertEquals(queueSettings.getPageSizeBytes(), null);
       assertEquals(queueSettings.getMessageCounterHistoryDayLimit(), QueueSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT);
       assertEquals(queueSettings.getRedeliveryDelay(), QueueSettings.DEFAULT_REDELIVER_DELAY);
 

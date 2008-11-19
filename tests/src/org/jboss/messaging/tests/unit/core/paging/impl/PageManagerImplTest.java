@@ -61,9 +61,6 @@ public class PageManagerImplTest extends UnitTestCase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
-   
-
    public void testOnDepage() throws Exception
    {
       long time = System.currentTimeMillis() + 10000;
@@ -77,7 +74,7 @@ public class PageManagerImplTest extends UnitTestCase
       PagingStoreFactory spi = EasyMock.createMock(PagingStoreFactory.class);
       PagingStore store = EasyMock.createNiceMock(PagingStore.class);
       StorageManager storageManager = EasyMock.createStrictMock(StorageManager.class);
-      PagingManagerImpl manager = new PagingManagerImpl(spi, storageManager, queueSettings, -1);
+      PagingManagerImpl manager = new PagingManagerImpl(spi, storageManager, queueSettings, -1, 1024 * 1024);
       manager.setPostOffice(po);
       ServerMessage message = EasyMock.createStrictMock(ServerMessage.class);
 
@@ -97,7 +94,6 @@ public class PageManagerImplTest extends UnitTestCase
       EasyMock.verify(spi, store, message, storageManager, po, ref, queue);
    }
 
-  
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -21,6 +21,7 @@
  */
 package org.jboss.messaging.core.client.impl;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ import javax.transaction.xa.Xid;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.FileClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
@@ -59,6 +61,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionFailoverComplete
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendChunkMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
@@ -205,7 +208,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkClosed();
 
-      SessionCreateQueueMessage request = new SessionCreateQueueMessage(address, queueName, filterString, durable, temp, fanout);
+      SessionCreateQueueMessage request = new SessionCreateQueueMessage(address,
+                                                                        queueName,
+                                                                        filterString,
+                                                                        durable,
+                                                                        temp,
+                                                                        fanout);
 
       channel.sendBlocking(request);
    }
@@ -300,56 +308,59 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                         final int maxRate,
                                         final boolean browseOnly) throws MessagingException
    {
+      return internalCreateConsumer(queueName, filterString, windowSize, browseOnly, null);
+   }
+
+   public ClientConsumer createFileConsumer(final File directory, final SimpleString queueName) throws MessagingException
+   {
       checkClosed();
 
-      SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(queueName, filterString, browseOnly);
+      return createFileConsumer(directory, queueName, null, false);
+   }
 
-      channel.sendBlocking(request);
+   public ClientConsumer createFileConsumer(final File directory,
+                                            final SimpleString queueName,
+                                            final SimpleString filterString) throws MessagingException
+   {
+      checkClosed();
 
-      // The actual windows size that gets used is determined by the user since
-      // could be overridden on the queue settings
-      // The value we send is just a hint
+      return createFileConsumer(directory,
+                                queueName,
+                                filterString,
+                                sessionFactory.getConsumerWindowSize(),
+                                sessionFactory.getConsumerMaxRate(),
+                                false);
+   }
 
-      int clientWindowSize;
-      if (windowSize == -1)
-      {
-         // No flow control - buffer can increase without bound! Only use with
-         // caution for very fast consumers
-         clientWindowSize = -1;
-      }
-      else if (windowSize == 1)
-      {
-         // Slow consumer - no buffering
-         clientWindowSize = 1;
-      }
-      else if (windowSize > 1)
-      {
-         // Client window size is half server window size
-         clientWindowSize = windowSize >> 1;
-      }
-      else
-      {
-         throw new IllegalArgumentException("Invalid window size " + windowSize);
-      }
+   public ClientConsumer createFileConsumer(final File directory,
+                                            final SimpleString queueName,
+                                            final SimpleString filterString,
+                                            final boolean browseOnly) throws MessagingException
+   {
+      return createFileConsumer(directory,
+                                queueName,
+                                filterString,
+                                sessionFactory.getConsumerWindowSize(),
+                                sessionFactory.getConsumerMaxRate(),
+                                browseOnly);
+   }
 
-      long consumerID = idGenerator.generateID();
-
-      ClientConsumerInternal consumer = new ClientConsumerImpl(this,
-                                                               consumerID,
-                                                               clientWindowSize,
-                                                               ackBatchSize,
-                                                               executor,
-                                                               channel);
-
-      addConsumer(consumer);
-
-      // Now we send window size credits to start the consumption
-      // We even send it if windowSize == -1, since we need to start the
-      // consumer
-
-      channel.send(new SessionConsumerFlowCreditMessage(consumerID, windowSize));
-
-      return consumer;
+   /*
+    * Note, we DO NOT currently support direct consumers (i.e. consumers we're delivery occurs on the remoting thread.
+    * Direct consumers have issues with blocking and failover.
+    * E.g. if direct then inside MessageHandler call a blocking method like rollback or acknowledge (blocking)
+    * This can block until failove completes, which disallows the thread to be used to deliver any responses to the client
+    * during that period, so failover won't occur.
+    * If we want direct consumers we need to rethink how they work
+   */
+   public ClientConsumer createFileConsumer(final File directory,
+                                            final SimpleString queueName,
+                                            final SimpleString filterString,
+                                            final int windowSize,
+                                            final int maxRate,
+                                            final boolean browseOnly) throws MessagingException
+   {
+      return internalCreateConsumer(queueName, filterString, windowSize, browseOnly, directory);
    }
 
    public ClientProducer createProducer(final SimpleString address) throws MessagingException
@@ -381,6 +392,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                autoCommitSends && blockOnNonPersistentSend,
                                                                autoCommitSends && blockOnPersistentSend,
                                                                autoGroup,
+                                                               sessionFactory.getMinLargeMessageSize(),
                                                                channel);
 
       addProducer(producer);
@@ -457,6 +469,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       MessagingBuffer body = remotingConnection.createBuffer(INITIAL_MESSAGE_BODY_SIZE);
 
       return new ClientMessageImpl(durable, body);
+   }
+
+   public FileClientMessage createFileMessage(final boolean durable)
+   {
+      return new FileClientMessageImpl(durable);
    }
 
    public boolean isClosed()
@@ -585,6 +602,17 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          consumer.handleMessage(message);
       }
+   }
+
+   public void handleReceiveChunk(final long consumerID, final SessionSendChunkMessage chunk) throws Exception
+   {
+      ClientConsumerInternal consumer = consumers.get(consumerID);
+
+      if (consumer != null)
+      {
+         consumer.handleChunk(chunk);
+      }
+
    }
 
    public void close() throws MessagingException
@@ -987,6 +1015,73 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // Private
    // ----------------------------------------------------------------------------
+
+   /**
+    * @param queueName
+    * @param filterString
+    * @param windowSize
+    * @param browseOnly
+    * @return
+    * @throws MessagingException
+    */
+   private ClientConsumer internalCreateConsumer(final SimpleString queueName,
+                                                 final SimpleString filterString,
+                                                 final int windowSize,
+                                                 final boolean browseOnly,
+                                                 final File directory) throws MessagingException
+   {
+      checkClosed();
+
+      SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(queueName, filterString, browseOnly);
+
+      channel.sendBlocking(request);
+
+      // The actual windows size that gets used is determined by the user since
+      // could be overridden on the queue settings
+      // The value we send is just a hint
+
+      int clientWindowSize;
+      if (windowSize == -1)
+      {
+         // No flow control - buffer can increase without bound! Only use with
+         // caution for very fast consumers
+         clientWindowSize = -1;
+      }
+      else if (windowSize == 1)
+      {
+         // Slow consumer - no buffering
+         clientWindowSize = 1;
+      }
+      else if (windowSize > 1)
+      {
+         // Client window size is half server window size
+         clientWindowSize = windowSize >> 1;
+      }
+      else
+      {
+         throw new IllegalArgumentException("Invalid window size " + windowSize);
+      }
+
+      long consumerID = idGenerator.generateID();
+
+      ClientConsumerInternal consumer = new ClientConsumerImpl(this,
+                                                               consumerID,
+                                                               clientWindowSize,
+                                                               ackBatchSize,
+                                                               executor,
+                                                               channel,
+                                                               directory);
+
+      addConsumer(consumer);
+
+      // Now we send window size credits to start the consumption
+      // We even send it if windowSize == -1, since we need to start the
+      // consumer
+
+      channel.send(new SessionConsumerFlowCreditMessage(consumerID, windowSize));
+
+      return consumer;
+   }
 
    private void checkXA() throws XAException
    {

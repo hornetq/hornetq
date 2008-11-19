@@ -46,7 +46,7 @@ public class JournalFileImpl implements JournalFile
 
    private final int orderingID;
 
-   private int offset;
+   private long offset;
 
    private final AtomicInteger posCount = new AtomicInteger(0);
 
@@ -110,7 +110,7 @@ public class JournalFileImpl implements JournalFile
       offset += delta;
    }
 
-   public int getOffset()
+   public long getOffset()
    {
       return offset;
    }
@@ -120,7 +120,7 @@ public class JournalFileImpl implements JournalFile
       return orderingID;
    }
 
-   public void setOffset(final int offset)
+   public void setOffset(final long offset)
    {
       this.offset = offset;
    }

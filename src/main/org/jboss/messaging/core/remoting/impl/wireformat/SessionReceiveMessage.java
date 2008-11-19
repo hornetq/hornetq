@@ -27,6 +27,7 @@ import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -95,6 +96,12 @@ public class SessionReceiveMessage extends PacketImpl
       return deliveryCount;
    }
 
+   
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG + DataConstants.SIZE_INT + serverMessage.getEncodeSize();
+   }
+   
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putLong(consumerID);

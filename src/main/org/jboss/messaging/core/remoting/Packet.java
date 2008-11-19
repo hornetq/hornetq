@@ -45,9 +45,12 @@ public interface Packet
       
    void decode(MessagingBuffer buffer);
    
+   int getPacketSize();
+   
+   int getRequiredBufferSize();
+
+   
    boolean isRequiresConfirmations();
    
    boolean isWriteAlways();     
-   
-   int getPacketSize();
 }

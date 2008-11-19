@@ -93,6 +93,33 @@ public class UnitTestCase extends TestCase
       return buff.toString();      
    }
    
+   
+   public static String dumbBytesHex(final byte[] buffer, int bytesPerLine)
+   {
+
+      StringBuffer buff = new StringBuffer();
+
+      buff.append("[");
+
+      for (int i = 0; i < buffer.length; i++)
+      {
+         buff.append(String.format("%1$2X", buffer[i]));
+         if (i + 1 < buffer.length) 
+         {
+            buff.append(", ");
+         }
+         if ((i + 1) % bytesPerLine == 0)
+         {
+            buff.append("\n ");
+         }
+      }
+      buff.append("]");
+      
+      return buff.toString();
+   }
+
+
+   
    public static void assertEqualsByteArrays(byte[] expected, byte[] actual)
    {
       assertEquals(expected.length, actual.length);

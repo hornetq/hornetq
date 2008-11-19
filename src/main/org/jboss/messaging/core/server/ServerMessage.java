@@ -41,11 +41,11 @@ public interface ServerMessage extends Message, EncodingSupport
 
    int decrementDurableRefCount();
    
-   int incrementReference(boolean durable);
-   
    int getDurableRefCount();
    
    int decrementRefCount();
+   
+   int incrementDurableRefCount();
    
    int getRefCount();
    

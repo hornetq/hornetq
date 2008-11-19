@@ -38,6 +38,8 @@ public interface SequentialFile
     * Creates the file if it doesn't already exist, then opens it
     */
    void open() throws Exception;
+   
+   boolean isOpen();
 
    /**
     * For certain operations (like loading) we don't need open the file with full maxIO
@@ -66,14 +68,16 @@ public interface SequentialFile
 
    int read(ByteBuffer bytes) throws Exception;
 
-   void position(int pos) throws Exception;
+   void position(long pos) throws Exception;
 
-   int position() throws Exception;
+   long position() throws Exception;
 
    void close() throws Exception;
 
    void sync() throws Exception;
 
    long size() throws Exception;
+   
+   void renameTo(SequentialFile file) throws Exception;
 
 }

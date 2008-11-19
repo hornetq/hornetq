@@ -51,11 +51,11 @@ public interface JournalFile
 
    void extendOffset(final int delta);
 
-   int getOffset();
+   long getOffset();
 
    int getOrderingID();
 
-   void setOffset(final int offset);
+   void setOffset(final long offset);
 
    SequentialFile getFile();
 }

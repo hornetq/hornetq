@@ -32,6 +32,7 @@ import javax.jms.MessageFormatException;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
  * This class implements javax.jms.BytesMessage.
@@ -103,7 +104,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return body.getBoolean();
+         return getBody().getBoolean();
       }
       catch (BufferUnderflowException e)
       {
@@ -116,7 +117,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return body.getByte();
+         return getBody().getByte();
       }
       catch (BufferUnderflowException e)
       {
@@ -129,7 +130,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return body.getUnsignedByte();
+         return getBody().getUnsignedByte();
       }
       catch (BufferUnderflowException e)
       {
@@ -142,7 +143,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return body.getShort();
+         return getBody().getShort();
       }
       catch (BufferUnderflowException e)
       {
@@ -155,7 +156,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return body.getUnsignedShort();
+         return getBody().getUnsignedShort();
       }
       catch (BufferUnderflowException e)
       {
@@ -168,7 +169,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return body.getChar();
+         return getBody().getChar();
       }
       catch (BufferUnderflowException e)
       {
@@ -181,7 +182,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return body.getInt();
+         return getBody().getInt();
       }
       catch (BufferUnderflowException e)
       {
@@ -194,7 +195,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return body.getLong();
+         return getBody().getLong();
       }
       catch (BufferUnderflowException e)
       {
@@ -207,7 +208,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return body.getFloat();
+         return getBody().getFloat();
       }
       catch (BufferUnderflowException e)
       {
@@ -220,7 +221,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return body.getDouble();
+         return getBody().getDouble();
       }
       catch (BufferUnderflowException e)
       {
@@ -233,7 +234,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkRead();
       try
       {
-         return body.getUTF();
+         return getBody().getUTF();
       }
       catch (BufferUnderflowException e)
       {
@@ -257,13 +258,13 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
    {
       checkRead();
 
-      if (body.remaining() == 0) { return -1; }
+      if (getBody().remaining() == 0) { return -1; }
 
-      int read = Math.min(length, body.remaining());
+      int read = Math.min(length, getBody().remaining());
 
       if (read != 0)
       {
-         body.getBytes(value, 0, read);
+         getBody().getBytes(value, 0, read);
       }
 
       return read;
@@ -272,49 +273,49 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
    public void writeBoolean(final boolean value) throws JMSException
    {
       checkWrite();
-      body.putBoolean(value);
+      getBody().putBoolean(value);
    }
 
    public void writeByte(final byte value) throws JMSException
    {
       checkWrite();
-      body.putByte(value);
+      getBody().putByte(value);
    }
 
    public void writeShort(final short value) throws JMSException
    {
       checkWrite();
-      body.putShort(value);
+      getBody().putShort(value);
    }
 
    public void writeChar(final char value) throws JMSException
    {
       checkWrite();
-      body.putChar(value);
+      getBody().putChar(value);
    }
 
    public void writeInt(final int value) throws JMSException
    {
       checkWrite();
-      body.putInt(value);
+      getBody().putInt(value);
    }
 
    public void writeLong(final long value) throws JMSException
    {
       checkWrite();
-      body.putLong(value);
+      getBody().putLong(value);
    }
 
    public void writeFloat(final float value) throws JMSException
    {
       checkWrite();
-      body.putFloat(value);
+      getBody().putFloat(value);
    }
 
    public void writeDouble(final double value) throws JMSException
    {
       checkWrite();
-      body.putDouble(value);
+      getBody().putDouble(value);
    }
 
    public void writeUTF(final String value) throws JMSException
@@ -322,7 +323,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       checkWrite();
       try
       {
-         body.putUTF(value);
+         getBody().putUTF(value);
       }
       catch (Exception e)
       {
@@ -335,14 +336,14 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
    public void writeBytes(final byte[] value) throws JMSException
    {
       checkWrite();
-      body.putBytes(value);
+      getBody().putBytes(value);
    }
 
    public void writeBytes(final byte[] value, final int offset, final int length)
          throws JMSException
    {
       checkWrite();
-      body.putBytes(value, offset, length);
+      getBody().putBytes(value, offset, length);
    }
 
    public void writeObject(final Object value) throws JMSException
@@ -401,11 +402,11 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       {
          readOnly = true;
 
-         body.flip();
+         getBody().flip();
       }
       else
       {
-         body.rewind();
+         getBody().rewind();
       }
    }
 
@@ -414,22 +415,20 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
    public void clearBody() throws JMSException
    {
       super.clearBody();
-
-      body = body.createNewBuffer(1024);
+      MessagingBuffer currentBody = message.getBody();
+      message.setBody(currentBody.createNewBuffer(1024));
    }
 
    public long getBodyLength() throws JMSException
    {
       checkRead();
 
-      return body.limit();
+      return getBody().limit();
    }
 
    public void doBeforeSend() throws Exception
    {
       reset();
-
-      message.setBody(body);
    }
 
    // Public --------------------------------------------------------

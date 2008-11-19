@@ -163,8 +163,8 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
       for (int i = 0; i < 10; i++)
       {
-         assertEquals(0, msg[i].getMessage().getMessageID());
-         assertEqualsByteArrays(buffers.get(i).array(), msg[i].getMessage().getBody().array());
+         assertEquals(0, (msg[i].getMessage(null)).getMessageID());
+         assertEqualsByteArrays(buffers.get(i).array(), (msg[i].getMessage(null)).getBody().array());
       }
 
    }
@@ -226,8 +226,8 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
          for (int i = 0; i < 5; i++)
          {
-            assertEquals(0, msg[i].getMessage().getMessageID());
-            assertEqualsByteArrays(buffers.get(pageNr * 5 + i).array(), msg[i].getMessage().getBody().array());
+            assertEquals(0, (msg[i].getMessage(null)).getMessageID());
+            assertEqualsByteArrays(buffers.get(pageNr * 5 + i).array(), (msg[i].getMessage(null)).getBody().array());
          }
       }
 
@@ -269,9 +269,9 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
       assertEquals(1, msgs.length);
 
-      assertEquals(0l, msgs[0].getMessage().getMessageID());
+      assertEquals(0l, (msgs[0].getMessage(null)).getMessageID());
 
-      assertEqualsByteArrays(buffers.get(0).array(), msgs[0].getMessage().getBody().array());
+      assertEqualsByteArrays(buffers.get(0).array(), (msgs[0].getMessage(null)).getBody().array());
 
       assertEquals(1, storeImpl.getNumberOfPages());
 

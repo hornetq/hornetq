@@ -28,6 +28,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ADD_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY_RESP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CHUNK_SEND;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_COMMIT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_CLOSE;
@@ -116,6 +117,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryRespon
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendChunkMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
@@ -758,6 +760,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             packet = new NullResponseMessage();
             break;
          }
+         case SESS_CHUNK_SEND:
+         {
+            packet = new SessionSendChunkMessage();
+            break;
+         }
          case SESS_REPLICATE_DELIVERY:
          {
             packet = new SessionReplicateDeliveryMessage();
@@ -902,7 +909,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          {
             packet.setChannelID(id);
 
-            final MessagingBuffer buffer = connection.transportConnection.createBuffer(PacketImpl.INITIAL_BUFFER_SIZE);
+            final MessagingBuffer buffer = connection.transportConnection.createBuffer(packet.getRequiredBufferSize());
 
             int size = packet.encode(buffer);
 
@@ -970,7 +977,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          {   
             packet.setChannelID(id);
    
-            final MessagingBuffer buffer = connection.transportConnection.createBuffer(PacketImpl.INITIAL_BUFFER_SIZE);
+            final MessagingBuffer buffer = connection.transportConnection.createBuffer(packet.getRequiredBufferSize());
    
             int size = packet.encode(buffer);
    
@@ -1310,7 +1317,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       private void doWrite(final Packet packet)
       {
-         final MessagingBuffer buffer = connection.transportConnection.createBuffer(PacketImpl.INITIAL_BUFFER_SIZE);
+         final MessagingBuffer buffer = connection.transportConnection.createBuffer(packet.getRequiredBufferSize());
 
          packet.encode(buffer);
 

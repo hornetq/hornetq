@@ -108,16 +108,11 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return durableRefCount.decrementAndGet();
    }
 
-   public int incrementReference(final boolean durable)
+   public int incrementDurableRefCount()
    {
-      if (durable)
-      {
-         durableRefCount.incrementAndGet();
-      }
-
-      return refCount.incrementAndGet();
+      return durableRefCount.incrementAndGet();
    }
-
+   
    public int decrementRefCount()
    {
       return refCount.decrementAndGet();

@@ -450,7 +450,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testChangeConsumersAndDeliver() throws Exception
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, createMockPostOffice());
 
       final int numMessages = 10;
 
@@ -720,7 +720,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testDeleteAllReferences() throws Exception
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, createMockPostOffice());
 
       StorageManager storageManager = EasyMock.createStrictMock(StorageManager.class);
 
@@ -940,7 +940,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testConsumeWithFiltersAddAndRemoveConsumer() throws Exception
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, createMockPostOffice());
 
       Filter filter = new FakeFilter("fruit", "orange");
 
@@ -1013,7 +1013,7 @@ public class QueueImplTest extends UnitTestCase
 
    private void testConsumerWithFilters(boolean direct) throws Exception
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, createMockPostOffice());
 
       Filter filter = new FakeFilter("fruit", "orange");
 
@@ -1251,7 +1251,7 @@ public class QueueImplTest extends UnitTestCase
    {
       long messageID = randomLong();
       final SimpleString expiryQueue = new SimpleString("expiryQueue");
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, createMockPostOffice());
       MessageReference messageReference = generateReference(queue, messageID);
       StorageManager storageManager = EasyMock.createMock(StorageManager.class);
       EasyMock.expect(storageManager.generateUniqueID()).andReturn(randomLong());
@@ -1309,7 +1309,7 @@ public class QueueImplTest extends UnitTestCase
    {
       long messageID = randomLong();
       final SimpleString dlqName = new SimpleString("dlq");
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, createMockPostOffice());
       MessageReference messageReference = generateReference(queue, messageID);
       StorageManager storageManager = createMock(StorageManager.class);
       expect(storageManager.generateUniqueID()).andReturn(randomLong());
@@ -1368,7 +1368,7 @@ public class QueueImplTest extends UnitTestCase
       long newMessageID = randomLong();
       long tid = randomLong();
       final SimpleString toQueueName = new SimpleString("toQueueName");
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, createMockPostOffice());
       Queue toQueue = createMock(Queue.class);
     
       MessageReference messageReference = generateReference(queue, messageID);
@@ -1414,6 +1414,19 @@ public class QueueImplTest extends UnitTestCase
 
       EasyMock.verify(storageManager, postOffice, queueSettingsRepository, toBinding, pm);
    }
+
+   /**
+    * @return
+    */
+   private PostOffice createMockPostOffice()
+   {
+      PagingManager niceManager = EasyMock.createNiceMock(PagingManager.class);
+      PostOffice nicePostOffice = EasyMock.createNiceMock(PostOffice.class);
+      EasyMock.expect(nicePostOffice.getPagingManager()).andStubReturn(niceManager);
+      EasyMock.replay(niceManager, nicePostOffice);
+      return nicePostOffice;
+   }
+
    
    // Inner classes ---------------------------------------------------------------
 

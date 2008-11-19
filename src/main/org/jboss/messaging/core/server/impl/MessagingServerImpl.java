@@ -214,7 +214,8 @@ public class MessagingServerImpl implements MessagingServer
       pagingManager = new PagingManagerImpl(storeFactory,
                                             storageManager,
                                             queueSettingsRepository,
-                                            configuration.getPagingMaxGlobalSizeBytes());
+                                            configuration.getPagingMaxGlobalSizeBytes(),
+                                            configuration.getPagingDefaultSize());
 
       storeFactory.setPagingManager(pagingManager);
 
@@ -263,6 +264,7 @@ public class MessagingServerImpl implements MessagingServer
                                                         "\"",
                                                e);
          }
+         
          Map<String, Object> backupConnectorParams = backupConnector.getParams();
 
          // TODO don't hardcode ping interval and code timeout
@@ -523,20 +525,22 @@ public class MessagingServerImpl implements MessagingServer
    }
 
    public CreateSessionResponseMessage replicateCreateSession(final String name,
-                                                              final long channelID,
-                                                              final String username,
-                                                              final String password,
-                                                              final int incrementingVersion,
-                                                              final RemotingConnection connection,
-                                                              final boolean autoCommitSends,
-                                                              final boolean autoCommitAcks,
-                                                              final boolean xa,
-                                                              final int sendWindowSize) throws Exception
-   {
+                                                                           final long channelID,
+                                                                           final String username,
+                                                                           final String password,
+                                                                           final int minLargeMessageSize,
+                                                                           final int incrementingVersion,
+                                                                           final RemotingConnection connection,
+                                                                           final boolean autoCommitSends,
+                                                                           final boolean autoCommitAcks,
+                                                                           final boolean xa,
+                                                                           final int sendWindowSize) throws Exception
+{
       return doCreateSession(name,
                              channelID,
                              username,
                              password,
+                             minLargeMessageSize,
                              incrementingVersion,
                              connection,
                              autoCommitSends,
@@ -549,6 +553,7 @@ public class MessagingServerImpl implements MessagingServer
                                                      final long channelID,
                                                      final String username,
                                                      final String password,
+                                                     final int minLargeMessageSize,
                                                      final int incrementingVersion,
                                                      final RemotingConnection connection,
                                                      final boolean autoCommitSends,
@@ -562,6 +567,7 @@ public class MessagingServerImpl implements MessagingServer
                              channelID,
                              username,
                              password,
+                             minLargeMessageSize,
                              incrementingVersion,
                              connection,
                              autoCommitSends,
@@ -626,6 +632,7 @@ public class MessagingServerImpl implements MessagingServer
                                                         final long channelID,
                                                         final String username,
                                                         final String password,
+                                                        final int minLargeMessageSize, 
                                                         final int incrementingVersion,
                                                         final RemotingConnection connection,
                                                         final boolean autoCommitSends,
@@ -667,6 +674,7 @@ public class MessagingServerImpl implements MessagingServer
                                                               channelID,
                                                               username,
                                                               password,
+                                                              minLargeMessageSize,
                                                               autoCommitSends,
                                                               autoCommitAcks,
                                                               xa,

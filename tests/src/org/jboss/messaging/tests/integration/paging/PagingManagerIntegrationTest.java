@@ -69,10 +69,11 @@ public class PagingManagerIntegrationTest extends UnitTestCase
       PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingManagerFactoryNIO(journalDir),
                                                             null,
                                                             queueSettings,
-                                                            -1);
+                                                            -1,
+                                                            1024 * 1024);
       managerImpl.start();
 
-      PagingStore store = managerImpl.getPageStore(new SimpleString("simple-test"));
+      PagingStore store = managerImpl.createPageStore(new SimpleString("simple-test"));
 
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(10));
 
@@ -92,7 +93,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
       assertEquals(1, msgs.length);
 
-      assertEqualsByteArrays(msg.getBody().array(), msgs[0].getMessage().getBody().array());
+      assertEqualsByteArrays(msg.getBody().array(), (msgs[0].getMessage(null)).getBody().array());
 
       assertTrue(store.isPaging());
 
@@ -115,8 +116,11 @@ public class PagingManagerIntegrationTest extends UnitTestCase
       PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingManagerFactoryNIO(journalDir),
                                                             null,
                                                             queueSettings,
-                                                            -1);
+                                                            -1,
+                                                            1024 * 1024);
       managerImpl.start();
+      
+      managerImpl.createPageStore(new SimpleString("simple-test"));
 
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(100));
 

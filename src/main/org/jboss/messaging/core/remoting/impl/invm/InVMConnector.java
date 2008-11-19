@@ -94,13 +94,12 @@ public class InVMConnector implements Connector
 
    public Connection createConnection()
    {
-      Connection conn = new InVMConnection(acceptor.getHandler(), new Listener());
+      Connection conn = internalCreateConnection(acceptor.getHandler(), new Listener());
       
       acceptor.connect((String)conn.getID(), handler, this);
            
       return conn;
    }
-
    public synchronized void start()
    {          
       started = true;
@@ -125,6 +124,15 @@ public class InVMConnector implements Connector
          conn.close();
       }
    }
+
+
+   // This may be an injection point for mocks on tests
+   protected Connection internalCreateConnection(final BufferHandler handler, final ConnectionLifeCycleListener listener)
+   {
+      return new InVMConnection(handler, listener);
+   }
+
+   
    
    private class Listener implements ConnectionLifeCycleListener
    {

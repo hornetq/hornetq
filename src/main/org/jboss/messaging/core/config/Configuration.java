@@ -41,8 +41,7 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface Configuration extends Serializable
 {
-   // General attributes
-   // -------------------------------------------------------------------
+   // General attributes -------------------------------------------------------------------
 
    boolean isClustered();
 
@@ -108,8 +107,8 @@ public interface Configuration extends Serializable
    
    void setManagementAddress(SimpleString address);
 
-   // Journal related attributes
-   // ------------------------------------------------------------
+
+   // Journal related attributes ------------------------------------------------------------
 
    String getBindingsDirectory();
 
@@ -118,10 +117,6 @@ public interface Configuration extends Serializable
    String getJournalDirectory();
 
    void setJournalDirectory(String dir);
-
-   String getPagingDirectory();
-
-   void setPagingDirectory(String dir);
 
    JournalType getJournalType();
 
@@ -159,9 +154,26 @@ public interface Configuration extends Serializable
 
    void setCreateJournalDir(boolean create);
 
+   
+   // Paging Properties --------------------------------------------------------------------
+   
+   String getPagingDirectory();
+
+   void setPagingDirectory(String dir);
+
    long getPagingMaxGlobalSizeBytes();
 
    void setPagingMaxGlobalSizeBytes(long maxGlobalSize);
+   
+   long getPagingDefaultSize();
+   
+   void setPagingDefaultSize(long pageSize);
+   
+   // Large Messages Properties ------------------------------------------------------------
+   
+   String getLargeMessagesDirectory();
+   
+   void setLargeMessagesDirectory(String directory);
 
    boolean isWildcardRoutingEnabled();
 

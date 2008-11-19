@@ -159,6 +159,8 @@ public class PostOfficeImpl implements PostOffice
 
    public synchronized boolean addDestination(final SimpleString address, final boolean durable) throws Exception
    {
+      pagingManager.createPageStore(address);
+
       boolean added = addressManager.addDestination(address);
 
       if (added)
@@ -223,6 +225,8 @@ public class PostOfficeImpl implements PostOffice
       {
          storageManager.addBinding(binding);
       }
+      
+      pagingManager.createPageStore(address);
 
       return binding;
    }
@@ -453,9 +457,6 @@ public class PostOfficeImpl implements PostOffice
 
          queues.put(binding.getQueue().getPersistenceID(), binding.getQueue());
       }
-
-      storageManager.loadMessages(this, queues, resourceManager);
-      
       // TODO: This is related to http://www.jboss.com/index.html?module=bb&op=viewtopic&t=145597
       HashSet<SimpleString> addresses = new HashSet<SimpleString>();
       
@@ -469,13 +470,21 @@ public class PostOfficeImpl implements PostOffice
          addresses.add(destination);
       }
       
-      // End TODO -------------------------------------
-
       for (SimpleString destination : addresses)
       {
+         pagingManager.createPageStore(destination);
+      }
+      
+      // End TODO -------------------------------------
+
+
+      storageManager.loadMessages(this, queues, resourceManager);
+      
+      for (SimpleString destination : addresses)
+      {
+         PagingStore store = pagingManager.getPageStore(destination);
          if (!pagingManager.isGlobalPageMode())
          {
-            PagingStore store = pagingManager.getPageStore(destination);
             if (store.isPaging() && store.getMaxSizeBytes() < 0)
             {
                pagingManager.setGlobalPageMode(true);

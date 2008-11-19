@@ -29,6 +29,7 @@ import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.ConnectionManagerImpl;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
@@ -56,6 +57,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    private static final Logger log = Logger.getLogger(ClientSessionFactoryImpl.class);
 
    public static final long DEFAULT_PING_PERIOD = 5000;
+
+   // Any message beyond this size is considered a big message (to be chunked)
+   public static final int DEFAULT_BIG_MESSAGE_SIZE = 100 * 1024;
 
    public static final int DEFAULT_CONSUMER_WINDOW_SIZE = 1024 * 1024;
 
@@ -102,6 +106,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    private volatile ConnectionManager connectionManager;
 
    private volatile ConnectionManager backupConnectionManager;
+   
+   private volatile int minLargeMessageSize;
 
    private volatile int consumerWindowSize;
 
@@ -149,6 +155,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                    final int consumerMaxRate,
                                    final int sendWindowSize,
                                    final int producerMaxRate,
+                                   final int minLargeMessageSize,
                                    final boolean blockOnAcknowledge,
                                    final boolean blockOnNonPersistentSend,
                                    final boolean blockOnPersistentSend,
@@ -194,6 +201,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       this.blockOnAcknowledge = blockOnAcknowledge;
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
       this.blockOnPersistentSend = blockOnPersistentSend;
+      this.minLargeMessageSize = minLargeMessageSize;
       this.autoGroup = autoGroup;
       this.maxConnections = maxConnections;
       this.ackBatchSize = ackBatchSize;
@@ -210,13 +218,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
            DEFAULT_CONSUMER_MAX_RATE,
            DEFAULT_SEND_WINDOW_SIZE,
            DEFAULT_PRODUCER_MAX_RATE,
+           DEFAULT_BIG_MESSAGE_SIZE,
            DEFAULT_BLOCK_ON_ACKNOWLEDGE,
            DEFAULT_BLOCK_ON_PERSISTENT_SEND,
            DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
            DEFAULT_AUTO_GROUP,
            DEFAULT_MAX_CONNECTIONS,
            DEFAULT_ACK_BATCH_SIZE);
-
    }
 
    /**
@@ -370,6 +378,22 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    public int getMaxConnections()
    {
       return maxConnections;
+   }
+
+   /**
+    * @return the minLargeMessageSize
+    */
+   public int getMinLargeMessageSize()
+   {
+      return minLargeMessageSize;
+   }
+
+   /**
+    * @param minLargeMessageSize the minLargeMessageSize to set
+    */
+   public void setMinLargeMessageSize(int minLargeMessageSize)
+   {
+      this.minLargeMessageSize = minLargeMessageSize;
    }
 
    // ClientSessionFactoryInternal implementation
@@ -580,6 +604,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                          clientVersion.getIncrementingVersion(),
                                                          username,
                                                          password,
+                                                         minLargeMessageSize,
                                                          xa,
                                                          autoCommitSends,
                                                          autoCommitAcks,

@@ -82,7 +82,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
    // Public --------------------------------------------------------
 
-   public SequentialFile createSequentialFile(final String fileName, final int maxAIO) throws Exception
+   public SequentialFile createSequentialFile(final String fileName, final int maxAIO)
    {
       FakeSequentialFile sf = fileMap.get(fileName);
 
@@ -416,7 +416,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          return bytesRead.length;
       }
 
-      public void position(final int pos) throws Exception
+      public void position(final long pos) throws Exception
       {
          if (!open)
          {
@@ -425,10 +425,10 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
          checkAlignment(pos);
 
-         data.position(pos);
+         data.position((int)pos);
       }
 
-      public int position() throws Exception
+      public long position() throws Exception
       {
          return data.position();
       }
@@ -546,12 +546,20 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          return "FakeSequentialFile:" + fileName;
       }
 
-      private void checkAlignment(final int position)
+      private void checkAlignment(final long position)
       {
          if (position % alignment != 0)
          {
             throw new IllegalStateException("Position is not aligned to " + alignment);
          }
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.SequentialFile#renameTo(org.jboss.messaging.core.journal.SequentialFile)
+       */
+      public void renameTo(SequentialFile file) throws Exception
+      {
+         throw new IllegalStateException("Method rename not supoprted on FakeSequentialFile");
       }
 
    }

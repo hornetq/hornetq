@@ -35,6 +35,7 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.core.server.ServerLargeMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
@@ -73,6 +74,9 @@ public interface StorageManager extends MessagingComponent
    void updateScheduledDeliveryTimeTransactional(long txID, MessageReference ref) throws Exception;
 
    void storeDeleteMessageTransactional(long txID, long queueID, long messageID) throws Exception;
+   
+   /** Create an area that will get LargeMessage bytes on the server size*/
+   ServerLargeMessage createLargeMessageStorage();
 
 
    void prepare(long txID, Xid xid) throws Exception;

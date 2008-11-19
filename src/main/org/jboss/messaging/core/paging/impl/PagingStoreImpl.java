@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
@@ -74,7 +75,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    private final boolean dropMessagesOnSize;
 
    private boolean droppedMessages;
-
+   
    private final PagingManager pagingManager;
 
    private final ExecutorService executor;
@@ -115,7 +116,18 @@ public class PagingStoreImpl implements TestSupportPageStore
       this.fileFactory = fileFactory;
       this.storeName = storeName;
       maxSize = queueSettings.getMaxSizeBytes();
-      pageSize = queueSettings.getPageSizeBytes();
+      if (queueSettings.getPageSizeBytes() != null)
+      {
+         this.pageSize = queueSettings.getPageSizeBytes();
+      }
+      else if (pagingManager != null)
+      {
+         this.pageSize = pagingManager.getDefaultPageSize();
+      }
+      else
+      {
+         this.pageSize = ConfigurationImpl.DEFAULT_DEFAULT_PAGE_SIZE;
+      }
       dropMessagesOnSize = queueSettings.isDropMessagesWhenFull();
       this.executor = executor;
       this.pagingManager = pagingManager;

@@ -84,6 +84,13 @@ public class MessagingException extends Exception
       this.code = code;
    }
    
+   public MessagingException(int code, String msg, Throwable cause)
+   {
+      super(msg, cause);
+      
+      this.code = code;
+   }
+   
    public int getCode()
    {
       return code;

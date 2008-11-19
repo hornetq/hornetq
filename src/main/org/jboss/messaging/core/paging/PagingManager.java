@@ -63,6 +63,13 @@ public interface PagingManager extends MessagingComponent
    /** During startup PostOffice may set GlobalPageMode as true */
    void setGlobalPageMode(boolean globalMode);
 
+   /**
+    * @param destination
+    * @return
+    * @throws Exception 
+    */
+   PagingStore createPageStore(SimpleString destination) throws Exception;
+
    /** To return the PageStore associated with the address */
    PagingStore getPageStore(SimpleString address) throws Exception;
 
@@ -128,4 +135,9 @@ public interface PagingManager extends MessagingComponent
     * @throws Exception 
     * */
    void clearLastPageRecord(LastPageRecord lastRecord) throws Exception;
+   /**
+    * @return
+    */
+   long getDefaultPageSize();
+
 }

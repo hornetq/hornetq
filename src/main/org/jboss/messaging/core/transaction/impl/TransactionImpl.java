@@ -196,11 +196,6 @@ public class TransactionImpl implements Transaction
 
       ServerMessage message = acknowledgement.getMessage();
 
-      if (message.decrementRefCount() == 0 && pagingManager != null)
-      {
-         pagingManager.messageDone(message);
-      }
-
       if (message.isDurable())
       {
          Queue queue = acknowledgement.getQueue();
@@ -364,6 +359,15 @@ public class TransactionImpl implements Transaction
 
       for (MessageReference ref : acknowledgements)
       {
+         Queue queue = ref.getQueue();
+
+         ServerMessage message = ref.getMessage();
+
+         if (message.isDurable() && queue.isDurable())
+         {
+            message.incrementDurableRefCount();
+
+         }
          toCancel.add(ref);
       }
 

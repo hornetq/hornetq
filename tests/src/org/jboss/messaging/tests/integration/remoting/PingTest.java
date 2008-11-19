@@ -28,6 +28,7 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -44,6 +45,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
+import org.jboss.messaging.tests.util.ServiceTestBase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -52,7 +54,7 @@ import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class PingTest extends TestCase
+public class PingTest extends ServiceTestBase
 {
    // Constants -----------------------------------------------------
    
@@ -61,8 +63,6 @@ public class PingTest extends TestCase
    private static final long PING_INTERVAL = 500;
 
    // Attributes ----------------------------------------------------
-
-   private MessagingService messagingService;
 
    // Static --------------------------------------------------------
 
@@ -73,9 +73,8 @@ public class PingTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      ConfigurationImpl config = new ConfigurationImpl();
-      config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory"));
-      messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
+      Configuration config = createDefaultConfig(true);
+      messagingService = createService(false, config);
       messagingService.start();
    }
 
@@ -109,7 +108,7 @@ public class PingTest extends TestCase
       Map<String, Object> params = new HashMap<String, Object>();
       
       ConnectionManager cm = new ConnectionManagerImpl(cf, params, PING_INTERVAL, 5000, 1);
-      
+
       RemotingConnection conn = cm.getConnection();
       assertNotNull(conn);
       assertEquals(1, cm.numConnections());

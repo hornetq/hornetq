@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.message.impl;
 
@@ -59,17 +59,17 @@ public abstract class MessageImpl implements Message
    public static final SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("JBM_ACTUAL_EXPIRY");
 
    public static final SimpleString HDR_ORIGIN_QUEUE = new SimpleString("JBM_ORIG_DESTINATION");
-   
+
    public static final SimpleString HDR_ORIG_MESSAGE_ID = new SimpleString("JBM_ORIG_MESSAGE_ID");
 
    public static final SimpleString HDR_GROUP_ID = new SimpleString("JBM_GROUP_ID");
-   
+
    public static final SimpleString HDR_SCHEDULED_DELIVERY_TIME = new SimpleString("JBM_SCHED_DELIVERY");
 
    // Attributes ----------------------------------------------------
 
    protected long messageID;
-   
+
    private SimpleString destination;
 
    private byte type;
@@ -91,7 +91,7 @@ public abstract class MessageImpl implements Message
 
    protected MessageImpl()
    {
-      this.properties = new TypedProperties();
+      properties = new TypedProperties();
    }
 
    /**
@@ -103,8 +103,12 @@ public abstract class MessageImpl implements Message
     * @param priority
     * @param body
     */
-   protected MessageImpl(final byte type, final boolean durable, final long expiration,
-                         final long timestamp, final byte priority, MessagingBuffer body)
+   protected MessageImpl(final byte type,
+                         final boolean durable,
+                         final long expiration,
+                         final long timestamp,
+                         final byte priority,
+                         final MessagingBuffer body)
    {
       this();
       this.type = type;
@@ -132,6 +136,7 @@ public abstract class MessageImpl implements Message
       this.body = other.body;
    }
    
+
    protected MessageImpl(final long messageID)
    {
       this();
@@ -140,33 +145,66 @@ public abstract class MessageImpl implements Message
 
    // Message implementation ----------------------------------------
 
-   public void encode(MessagingBuffer buff)
+   public void encode(final MessagingBuffer buffer)
    {
-      buff.putLong(messageID);
-      buff.putSimpleString(destination);
-      buff.putByte(type);
-      buff.putBoolean(durable);
-      buff.putLong(expiration);
-      buff.putLong(timestamp);
-      buff.putByte(priority);
-      properties.encode(buff);
-      buff.putInt(body.limit());    
-      buff.putBytes(body.array(), 0, body.limit());
+      encodeProperties(buffer);
+      buffer.putInt(getBodySize());
+      encodeBody(buffer);
    }
 
    public int getEncodeSize()
    {
-      return SIZE_LONG + /* Destination */ SimpleString.sizeofString(destination) +
-      /* Type */ SIZE_BYTE +
-      /* Durable */ SIZE_BOOLEAN +
-      /* Expiration */ SIZE_LONG +
-      /* Timestamp */ SIZE_LONG +
-      /* Priority */ SIZE_BYTE +
-      /* PropertySize and Properties */ properties.getEncodeSize() +
-      /* BodySize and Body */ SIZE_INT + body.limit();
+      return getPropertiesEncodeSize() + SIZE_INT + getBodySize();
+   }
+
+   public int getPropertiesEncodeSize()
+   {
+      return SIZE_LONG + /* Destination */SimpleString.sizeofString(destination) +
+      /* Type */SIZE_BYTE +
+      /* Durable */SIZE_BOOLEAN +
+      /* Expiration */SIZE_LONG +
+      /* Timestamp */SIZE_LONG +
+      /* Priority */SIZE_BYTE +
+      /* PropertySize and Properties */properties.getEncodeSize();
+   }
+
+   public int getBodySize()
+   {
+      return /* BodySize and Body */body.limit();
+   }
+
+   public void encodeProperties(MessagingBuffer buffer)
+   {
+      buffer.putLong(messageID);
+      buffer.putSimpleString(destination);
+      buffer.putByte(type);
+      buffer.putBoolean(durable);
+      buffer.putLong(expiration);
+      buffer.putLong(timestamp);
+      buffer.putByte(priority);
+      properties.encode(buffer);
+   }
+
+   public void encodeBody(MessagingBuffer buffer)
+   {
+      MessagingBuffer localBody = getBody();
+      buffer.putBytes(localBody.array(), 0, localBody.limit());
+   }
+
+   // Used on Message chunk
+   public void encodeBody(MessagingBuffer buffer, long start, int size)
+   {
+      buffer.putBytes(body.array(), (int)start, size);
    }
 
    public void decode(final MessagingBuffer buffer)
+   {
+      decodeProperties(buffer);
+
+      decodeBody(buffer);
+   }
+
+   public void decodeProperties(final MessagingBuffer buffer)
    {
       messageID = buffer.getLong();
       destination = buffer.getSimpleString();
@@ -175,32 +213,37 @@ public abstract class MessageImpl implements Message
       expiration = buffer.getLong();
       timestamp = buffer.getLong();
       priority = buffer.getByte();
-
       properties.decode(buffer);
-      int len = buffer.getInt();
+   }
 
-      //TODO - this can be optimised
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      int len = buffer.getInt();
+      // TODO - this can be optimised
       byte[] bytes = new byte[len];
       buffer.getBytes(bytes);
+      // body = new ByteBufferWrapper(ByteBuffer.wrap(bytes));
+      // body.position(body.limit());
       body = buffer.createNewBuffer(len);
-      body.putBytes(bytes);      
+      body.putBytes(bytes);
+
    }
-   
+
    public long getMessageID()
    {
       return messageID;
    }
-   
+
    public SimpleString getDestination()
    {
       return destination;
    }
-   
-   public void setDestination(SimpleString destination)
+
+   public void setDestination(final SimpleString destination)
    {
       this.destination = destination;
    }
-   
+
    public byte getType()
    {
       return type;
@@ -210,7 +253,7 @@ public abstract class MessageImpl implements Message
    {
       return durable;
    }
-   
+
    public void setDurable(final boolean durable)
    {
       this.durable = durable;
@@ -230,12 +273,12 @@ public abstract class MessageImpl implements Message
    {
       return timestamp;
    }
-   
+
    public void setTimestamp(final long timestamp)
    {
       this.timestamp = timestamp;
    }
- 
+
    public byte getPriority()
    {
       return priority;
@@ -245,105 +288,110 @@ public abstract class MessageImpl implements Message
    {
       this.priority = priority;
    }
-     
+
    public boolean isExpired()
    {
       if (expiration == 0)
       {
          return false;
       }
-      
+
       return System.currentTimeMillis() - expiration >= 0;
    }
-   
-   // Properties 
+
+   // Properties
    // ---------------------------------------------------------------------------------------
-   
+
    public void putBooleanProperty(final SimpleString key, final boolean value)
    {
       properties.putBooleanProperty(key, value);
    }
-            
+
    public void putByteProperty(final SimpleString key, final byte value)
    {
       properties.putByteProperty(key, value);
    }
-   
+
    public void putBytesProperty(final SimpleString key, final byte[] value)
    {
       properties.putBytesProperty(key, value);
    }
-   
+
    public void putShortProperty(final SimpleString key, final short value)
    {
       properties.putShortProperty(key, value);
    }
-   
+
    public void putIntProperty(final SimpleString key, final int value)
    {
       properties.putIntProperty(key, value);
    }
-   
+
    public void putLongProperty(final SimpleString key, final long value)
    {
       properties.putLongProperty(key, value);
    }
-   
+
    public void putFloatProperty(final SimpleString key, final float value)
    {
       properties.putFloatProperty(key, value);
    }
-   
+
    public void putDoubleProperty(final SimpleString key, final double value)
    {
       properties.putDoubleProperty(key, value);
    }
-   
+
    public void putStringProperty(final SimpleString key, final SimpleString value)
    {
       properties.putStringProperty(key, value);
    }
-   
+
    public Object getProperty(final SimpleString key)
    {
       return properties.getProperty(key);
-   }  
-   
+   }
+
    public Object removeProperty(final SimpleString key)
    {
       return properties.removeProperty(key);
    }
-   
+
    public boolean containsProperty(final SimpleString key)
    {
       return properties.containsProperty(key);
    }
-   
+
    public Set<SimpleString> getPropertyNames()
    {
       return properties.getPropertyNames();
    }
-   
+
    // Body
    // -------------------------------------------------------------------------------------
-   
+
    public MessagingBuffer getBody()
    {
       return body;
    }
-   
+
    public void setBody(final MessagingBuffer body)
    {
       this.body = body;
    }
-      
+
    // Public --------------------------------------------------------
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
+   protected TypedProperties getProperties()
+   {
+      return this.properties;
+   }
+   
    // Private -------------------------------------------------------
 
-   // Inner classes -------------------------------------------------  
+   // Inner classes -------------------------------------------------
 }

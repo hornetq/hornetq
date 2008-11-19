@@ -21,7 +21,6 @@
  */
 package org.jboss.messaging.tests.integration.xa;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,69 +33,50 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.jms.client.JBossBytesMessage;
 import org.jboss.messaging.jms.client.JBossTextMessage;
-import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.util.id.GUID;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public class BasicXaRecoveryTest extends UnitTestCase
+public class BasicXaRecoveryTest extends ServiceTestBase
 {
-   private static final String ACCEPTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory";
-   private static final String CONNECTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory";
-   
    private Map<String, QueueSettings> queueSettings = new HashMap<String, QueueSettings>();
-
-   private String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/xa-recovery-test/journal";
-   private String bindingsDir = System.getProperty("java.io.tmpdir", "/tmp") + "/xa-recovery-test/bindings";
-   private String pageDir = System.getProperty("java.io.tmpdir", "/tmp") + "/xa-recovery-test/page";
    private MessagingService messagingService;
    private ClientSession clientSession;
    private ClientProducer clientProducer;
    private ClientConsumer clientConsumer;
    private ClientSessionFactory sessionFactory;
-   private ConfigurationImpl configuration;
+   private Configuration configuration;
    private SimpleString atestq = new SimpleString("atestq");
 
    protected void setUp() throws Exception
    {
+      clearData();
       queueSettings.clear();
-      File file = new File(journalDir);
-      File file2 = new File(bindingsDir);
-      File file3 = new File(pageDir);
-      deleteDirectory(file);
-      file.mkdirs();
-      deleteDirectory(file2);
-      file2.mkdirs();
-      deleteDirectory(file3);
-      file3.mkdirs();
-      configuration = new ConfigurationImpl();
+      configuration = createDefaultConfig();
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
       configuration.setPagingDirectory(pageDir);
 
-      TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
-      configuration.getAcceptorConfigurations().add(transportConfig);
-      messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
+      messagingService = createService(true, configuration, queueSettings);
+
       //start the server
       messagingService.start();
+
       //then we create a client as normal
-      sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
-      clientSession = sessionFactory.createSession(true, false, false);
-      clientSession.createQueue(atestq, atestq, null, true, true, true);
-      clientProducer = clientSession.createProducer(atestq);
-      clientConsumer = clientSession.createConsumer(atestq);
+      createClients(true, false);
    }
 
    protected void tearDown() throws Exception
@@ -129,6 +109,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
 
    public void testBasicSendWithCommit() throws Exception
    {
+
       testBasicSendWithCommit(false);
    }
 
@@ -903,7 +884,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       assertNotNull(m);
       assertEquals(m.getBody().getString(), "m4");
       clientSession.end(xid, XAResource.TMSUCCESS);
-      clientSession.prepare(xid);
+      assertEquals("Expected XA_OK", XAResource.XA_OK, clientSession.prepare(xid));
 
       if (stopServer)
       {
@@ -1197,9 +1178,7 @@ public class BasicXaRecoveryTest extends UnitTestCase
       clientSession = null;
       messagingService.stop();
       messagingService = null;
-      messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
-      
-      addSettings();
+      messagingService = createService(true, configuration, queueSettings);
       
       messagingService.start();
       createClients();
@@ -1241,11 +1220,21 @@ public class BasicXaRecoveryTest extends UnitTestCase
       return message;
    }
 
-   private void createClients()
+   private void createClients() throws MessagingException
+   {
+      createClients(false, true);
+   }
+
+   private void createClients(boolean createQueue, boolean commitACKs)
          throws MessagingException
    {
-      sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
-      clientSession = sessionFactory.createSession(true, false, true);
+
+      sessionFactory = createInVMFactory();
+      clientSession = sessionFactory.createSession(true, false, commitACKs);
+      if (createQueue)
+      {
+         clientSession.createQueue(atestq, atestq, null, true, true, true);
+      }
       clientProducer = clientSession.createProducer(atestq);
       clientConsumer = clientSession.createConsumer(atestq);
    }

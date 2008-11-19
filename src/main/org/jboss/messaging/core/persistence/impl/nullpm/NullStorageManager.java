@@ -36,6 +36,7 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.core.server.ServerLargeMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.IDGenerator;
@@ -148,6 +149,15 @@ public class NullStorageManager implements StorageManager
    public void updateDeliveryCount(MessageReference ref) throws Exception
 	{
 	}
+   
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.persistence.StorageManager#createLargeMessageStorage(long, int, int)
+    */
+   public ServerLargeMessage createLargeMessageStorage()
+   {
+      return new NullStorageLargeMessageImpl();
+   }
+
 
 	public long generateUniqueID()
 	{

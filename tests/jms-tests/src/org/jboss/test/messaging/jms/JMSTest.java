@@ -95,6 +95,8 @@ public class JMSTest extends JMSTestCase
 	      conn.start();
 
 	      TextMessage rm = (TextMessage)cons.receive();
+	      
+	      assertNotNull(rm);
 
 	      assertEquals("message one", rm.getText());
       }

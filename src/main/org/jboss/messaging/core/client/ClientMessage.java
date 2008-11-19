@@ -44,4 +44,8 @@ public interface ClientMessage extends Message
    void onReceipt(ClientConsumerInternal consumer);
    
    void acknowledge() throws MessagingException;
+   
+   void setLargeMessage(boolean largeMessage);
+   
+   boolean isLargeMessage();
 }

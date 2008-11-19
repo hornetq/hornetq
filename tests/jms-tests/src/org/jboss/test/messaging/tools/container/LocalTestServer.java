@@ -548,6 +548,7 @@ public class LocalTestServer implements Server, Runnable
                                                     -1,
                                                     ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
                                                     -1,
+                                                    -1,
                                                     blockOnAcknowledge,
                                                     true,
                                                     true,

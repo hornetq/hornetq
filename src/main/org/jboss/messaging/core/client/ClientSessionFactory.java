@@ -61,6 +61,10 @@ public interface ClientSessionFactory
 
    int getProducerMaxRate();
 
+   int getMinLargeMessageSize();
+   
+   void setMinLargeMessageSize(final int minLargeMessageSize);
+
    boolean isBlockOnPersistentSend();
 
    void setBlockOnPersistentSend(final boolean blocking);

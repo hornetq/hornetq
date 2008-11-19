@@ -22,12 +22,12 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
+import org.jboss.messaging.util.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -111,6 +111,18 @@ public class SessionSendMessage extends PacketImpl
       serverMessage.getBody().flip();
       
       requiresResponse = buffer.getBoolean();
+   }
+
+   public int getRequiredBufferSize()
+   {
+      if (clientMessage != null)
+      {
+         return BASIC_PACKET_SIZE + clientMessage.getEncodeSize() + DataConstants.SIZE_BOOLEAN;
+      }
+      else
+      {
+         return BASIC_PACKET_SIZE + serverMessage.getEncodeSize() + DataConstants.SIZE_BOOLEAN;
+      }
    }
 
 

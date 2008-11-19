@@ -443,7 +443,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    
    public void doBeforeSend() throws Exception
    {
-      map.encode(body);
+      map.encode(message.getBody());
       
       super.doBeforeSend();
    }
@@ -452,7 +452,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {        
       super.doBeforeReceive();
       
-      map.decode(body);
+      map.decode(message.getBody());
    }
    
    // Package protected ---------------------------------------------

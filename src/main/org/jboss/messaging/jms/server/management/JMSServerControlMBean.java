@@ -87,6 +87,8 @@ public interface JMSServerControlMBean
                                 int producerWindowSize,
                                 @Parameter(name = "producerMaxRate", desc = "Producer's max rate")
                                 int producerMaxRate,
+                                @Parameter(name = "minLargeMessageSize", desc = "Size of what is considered a big message requiring sending in chunks") 
+                                int minLargeMessageSize, 
                                 @Parameter(name = "blockOnAcknowledge", desc = "Does acknowlegment block?")
                                 boolean blockOnAcknowledge,
                                 @Parameter(name = "blockOnNonPersistentSend", desc = "Does sending non persistent messages block?")

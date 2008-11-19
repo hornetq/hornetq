@@ -26,6 +26,7 @@ import java.lang.management.ManagementFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.journal.Journal;
+import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.management.ManagementService;
@@ -78,7 +79,7 @@ public class MessagingServiceImpl implements MessagingService
       return new MessagingServiceImpl(server, storageManager, remotingService);
    }
 
-   public static MessagingServiceImpl newNioStorageMessagingServer(final Configuration config, String journalDir, String bindingsDir)
+   public static MessagingServiceImpl newNioStorageMessagingServer(final Configuration config, String journalDir, String bindingsDir, String largeMessagesDir)
    {
       NIOSequentialFileFactory sequentialFileFactory = new NIOSequentialFileFactory(journalDir);
       NIOSequentialFileFactory sequentialFileFactory2 = new NIOSequentialFileFactory(bindingsDir);
@@ -92,8 +93,10 @@ public class MessagingServiceImpl implements MessagingService
 	   		config.getJournalMinFiles(), config.isJournalSyncTransactional(),
 	   		config.isJournalSyncNonTransactional(), sequentialFileFactory,
 	   		"jbm-bindings", "jbm", config.getJournalMaxAIO(), 0);
+      
+      SequentialFileFactory largeMessagesFactory = new NIOSequentialFileFactory(largeMessagesDir);
 
-      StorageManager storageManager = new JournalStorageManager(msgs, bindings);
+      StorageManager storageManager = new JournalStorageManager(msgs, bindings, largeMessagesFactory);
 
       RemotingService remotingService = new RemotingServiceImpl(config);
 

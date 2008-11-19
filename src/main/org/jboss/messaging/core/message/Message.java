@@ -73,6 +73,26 @@ public interface Message
    
    void decode(MessagingBuffer buffer);
    
+   
+   int getPropertiesEncodeSize();
+   
+   void encodeProperties(MessagingBuffer buffer);
+   
+   void decodeProperties(MessagingBuffer buffer);
+   
+   
+   int getBodySize();
+   
+   
+   // Used on Message chunk
+   void encodeBody(MessagingBuffer buffer, long start, int size);
+   
+   void encodeBody(MessagingBuffer buffer);
+   
+   void decodeBody(MessagingBuffer buffer);
+   
+   
+   
    // Properties
    // ------------------------------------------------------------------
    

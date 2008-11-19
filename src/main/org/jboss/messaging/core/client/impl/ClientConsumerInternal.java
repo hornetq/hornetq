@@ -25,6 +25,8 @@ package org.jboss.messaging.core.client.impl;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendChunkMessage;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
  * 
@@ -38,6 +40,8 @@ public interface ClientConsumerInternal extends ClientConsumer
    long getID();
 
    void handleMessage(ClientMessage message) throws Exception;
+   
+   void handleChunk(SessionSendChunkMessage chunk) throws Exception;
 
    void clear();
 
@@ -48,6 +52,8 @@ public interface ClientConsumerInternal extends ClientConsumer
    int getCreditsToSend();
 
    void cleanUp() throws Exception;
+   
+   ClientMessage createFileMessage(MessagingBuffer propertiesBuffer) throws Exception;
    
    void acknowledge(ClientMessage message) throws MessagingException;
    

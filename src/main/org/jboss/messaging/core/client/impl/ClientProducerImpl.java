@@ -1,25 +1,40 @@
 /*
- * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors by
- * the @authors tag. See the copyright.txt in the distribution for a full listing of individual contributors. This is
- * free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.
- * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details. You should have received a copy of the GNU Lesser General Public License along with this software; if not,
- * write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
- * site: http://www.fsf.org.
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
 package org.jboss.messaging.core.client.impl;
 
+import java.nio.ByteBuffer;
+
 import org.jboss.messaging.core.client.AcknowledgementHandler;
-import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.FileClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendChunkMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TokenBucketLimiter;
 import org.jboss.messaging.util.UUIDGenerator;
@@ -59,6 +74,8 @@ public class ClientProducerImpl implements ClientProducerInternal
    private final boolean blockOnPersistentSend;
 
    private final SimpleString groupID;
+   
+   private final int minLargeMessageSize;
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -70,6 +87,7 @@ public class ClientProducerImpl implements ClientProducerInternal
                              final boolean blockOnNonPersistentSend,
                              final boolean blockOnPersistentSend,
                              final boolean autoGroup,
+                             final int minLargeMessageSize,
                              final Channel channel)
    {
       this.channel = channel;
@@ -92,6 +110,9 @@ public class ClientProducerImpl implements ClientProducerInternal
       {
          this.groupID = null;
       }
+      
+      this.minLargeMessageSize = minLargeMessageSize;
+
    }
 
    // ClientProducer implementation ----------------------------------------------------------------
@@ -207,6 +228,11 @@ public class ClientProducerImpl implements ClientProducerInternal
       
       SessionSendMessage message = new SessionSendMessage(msg, sendBlocking);
 
+      if (msg.getEncodeSize() > minLargeMessageSize)
+      {
+         sendMessageInChunks(true, msg);
+      }
+      else
       if (sendBlocking)
       {
          channel.sendBlocking(message);
@@ -214,6 +240,79 @@ public class ClientProducerImpl implements ClientProducerInternal
       else
       {
          channel.send(message);
+      }
+   }
+
+   /**
+    * @param msg
+    * @throws MessagingException
+    */
+   private void sendMessageInChunks(final boolean sendBlocking, final Message msg) throws MessagingException
+   {
+      int headerSize = msg.getPropertiesEncodeSize();
+
+      if (headerSize > minLargeMessageSize)
+      {
+         throw new MessagingException(MessagingException.ILLEGAL_STATE,
+                                      "Header size is too big, use the messageBody for large data");
+      }
+
+      MessagingBuffer headerBuffer = new ByteBufferWrapper(ByteBuffer.allocate(headerSize));
+      msg.encodeProperties(headerBuffer);
+
+      final int bodySize = msg.getBodySize();
+
+      int bodyLength = minLargeMessageSize - headerSize;
+
+      MessagingBuffer bodyBuffer = new ByteBufferWrapper(ByteBuffer.allocate(bodyLength));
+
+      msg.encodeBody(bodyBuffer, 0, bodyLength);
+
+      SessionSendChunkMessage chunk = new SessionSendChunkMessage(-1,
+                                                                  headerBuffer.array(),
+                                                                  bodyBuffer.array(),
+                                                                  bodyLength < bodySize,
+                                                                  sendBlocking);
+
+      if (sendBlocking)
+      {
+         channel.sendBlocking(chunk);
+      }
+      else
+      {
+         channel.send(chunk);
+      }
+
+      for (int pos = bodyLength; pos < bodySize;)
+      {
+         bodyLength = Math.min(bodySize - pos, minLargeMessageSize);
+         bodyBuffer = new ByteBufferWrapper(ByteBuffer.allocate(bodyLength));
+
+         msg.encodeBody(bodyBuffer, pos, bodyLength);
+
+         chunk = new SessionSendChunkMessage(-1, null, bodyBuffer.array(), pos + bodyLength < bodySize, sendBlocking);
+
+         if (sendBlocking)
+         {
+            channel.sendBlocking(chunk);
+         }
+         else
+         {
+            channel.send(chunk);
+         }
+
+         pos += bodyLength;
+      }
+      
+      if (msg instanceof FileClientMessage)
+      {
+         try
+         {
+            ((FileClientMessage)msg).closeChannel();
+         }
+         catch (Exception e)
+         {
+         }
       }
    }
 

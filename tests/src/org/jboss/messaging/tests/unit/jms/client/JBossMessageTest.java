@@ -151,7 +151,7 @@ public class JBossMessageTest extends TestCase
       clientSession = createStrictMock(ClientSession.class);
       clientMessage = createStrictMock(ClientMessage.class);
       MessagingBuffer buffer = createStrictMock(MessagingBuffer.class);
-      expect(clientMessage.getBody()).andReturn(buffer);
+      expect(clientMessage.getBody()).andStubReturn(buffer);
       expect(clientMessage.getProperty(JBossMessage.JBM_MESSAGE_ID)).andReturn(
             messageID);
       replay(clientSession, clientMessage, buffer);
@@ -409,7 +409,7 @@ public class JBossMessageTest extends TestCase
       clientSession = createStrictMock(ClientSession.class);
       clientMessage = createStrictMock(ClientMessage.class);
       MessagingBuffer buffer = createStrictMock(MessagingBuffer.class);
-      expect(clientMessage.getBody()).andReturn(buffer);
+      expect(clientMessage.getBody()).andStubReturn(buffer);
       clientMessage.putStringProperty(JBossMessage.JBM_MESSAGE_ID,
             new SimpleString(messageID));
       replay(clientSession, clientMessage, buffer);
@@ -427,7 +427,7 @@ public class JBossMessageTest extends TestCase
       clientSession = createStrictMock(ClientSession.class);
       clientMessage = createStrictMock(ClientMessage.class);
       MessagingBuffer buffer = createStrictMock(MessagingBuffer.class);
-      expect(clientMessage.getBody()).andReturn(buffer);
+      expect(clientMessage.getBody()).andStubReturn(buffer);
       replay(clientSession, clientMessage, buffer);
 
       JBossMessage message = new JBossMessage(clientMessage, clientSession);
@@ -450,7 +450,7 @@ public class JBossMessageTest extends TestCase
       clientSession = createStrictMock(ClientSession.class);
       clientMessage = createStrictMock(ClientMessage.class);
       MessagingBuffer buffer = createStrictMock(MessagingBuffer.class);
-      expect(clientMessage.getBody()).andReturn(buffer);
+      expect(clientMessage.getBody()).andStubReturn(buffer);
       expect(clientMessage.removeProperty(JBossMessage.JBM_MESSAGE_ID))
             .andReturn(null);
       replay(clientSession, clientMessage, buffer);
@@ -1345,7 +1345,7 @@ public class JBossMessageTest extends TestCase
       clientMessage = createStrictMock(ClientMessage.class);
       clientSession = createStrictMock(ClientSession.class);
       MessagingBuffer buffer = createStrictMock(MessagingBuffer.class);
-      expect(clientMessage.getBody()).andReturn(buffer);
+      expect(clientMessage.getBody()).andStubReturn(buffer);
       clientSession.commit();
       replay(clientMessage, clientSession, buffer);
       
@@ -1360,7 +1360,7 @@ public class JBossMessageTest extends TestCase
       clientMessage = createStrictMock(ClientMessage.class);
       clientSession = createStrictMock(ClientSession.class);
       MessagingBuffer buffer = createStrictMock(MessagingBuffer.class);
-      expect(clientMessage.getBody()).andReturn(buffer);
+      expect(clientMessage.getBody()).andStubReturn(buffer);
       clientSession.commit();
       EasyMock.expectLastCall().andThrow(new MessagingException());
       replay(clientMessage, clientSession, buffer);
@@ -1398,7 +1398,7 @@ public class JBossMessageTest extends TestCase
       clientMessage = createStrictMock(ClientMessage.class);
       MessagingBuffer buffer = createStrictMock(MessagingBuffer.class);
       expect(clientMessage.getType()).andReturn(expectedType);
-      expect(clientMessage.getBody()).andReturn(buffer);
+      expect(clientMessage.getBody()).andStubReturn(buffer);
       replay(clientSession, clientMessage, buffer);
 
       JBossMessage message = JBossMessage.createMessage(clientMessage,

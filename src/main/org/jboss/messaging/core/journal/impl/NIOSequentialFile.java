@@ -43,11 +43,6 @@ import org.jboss.messaging.core.logging.Logger;
 public class NIOSequentialFile implements SequentialFile
 {
    private static final Logger log = Logger.getLogger(NIOSequentialFile.class);
-
-   private final String journalDir;
-
-   private final String fileName;
-
    private File file;
 
    private FileChannel channel;
@@ -58,9 +53,7 @@ public class NIOSequentialFile implements SequentialFile
 
    public NIOSequentialFile(final String journalDir, final String fileName)
    {
-      this.journalDir = journalDir;
-
-      this.fileName = fileName;
+       this.file = new File(journalDir + "/" + fileName);
    }
 
    public int getAlignment()
@@ -75,13 +68,16 @@ public class NIOSequentialFile implements SequentialFile
 
    public String getFileName()
    {
-      return fileName;
+      return file.getName();
+   }
+   
+   public synchronized boolean isOpen()
+   {
+      return channel != null;
    }
 
    public synchronized void open() throws Exception
    {
-      file = new File(journalDir + "/" + fileName);
-
       rfile = new RandomAccessFile(file, "rw");
 
       channel = rfile.getChannel();
@@ -119,22 +115,29 @@ public class NIOSequentialFile implements SequentialFile
 
    public void close() throws Exception
    {      
-      channel.close();
+      if (channel != null)
+      {
+         channel.close();
+      }
 
-      rfile.close();
+      if (rfile != null)
+      {
+         rfile.close();
+      }
 
       channel = null;
 
       rfile = null;
-
-      file = null;
    }
 
    public void delete() throws Exception
    {
-      file.delete();
+      if (isOpen())
+      {
+         close();
+      }
 
-      close();
+      file.delete();
    }
 
    public int read(final ByteBuffer bytes) throws Exception
@@ -207,7 +210,8 @@ public class NIOSequentialFile implements SequentialFile
          throw e;
       }
    }
-
+   
+   
    public void sync() throws Exception
    {
       channel.force(false);
@@ -218,14 +222,30 @@ public class NIOSequentialFile implements SequentialFile
       return channel.size();
    }
 
-   public void position(final int pos) throws Exception
+   public void position(final long pos) throws Exception
    {
       channel.position(pos);
    }
 
-   public int position() throws Exception
+   public long position() throws Exception
    {
-      return (int)channel.position();
+      return channel.position();
    }
 
+   public void renameTo(SequentialFile newFile) throws Exception
+   {
+      close();
+      this.file.renameTo(((NIOSequentialFile)newFile).file);
+      file = ((NIOSequentialFile)newFile).file;
+   }
+   
+   
+   
+   public String toString()
+   {
+      return "NIOSequentialFile " + this.file;
+   }
+
+   
+   
 }

@@ -103,6 +103,9 @@ public interface Queue
 
    MessageReference removeReferenceWithID(long id);
    
+   /** Remove message from queue, add it to the scheduled delivery list without affect reference counting */
+   void rescheduleDelivery(long id, long scheduledDeliveryTime);
+   
    MessageReference getReference(long id);
    
    void deleteAllReferences(StorageManager storageManager) throws Exception;

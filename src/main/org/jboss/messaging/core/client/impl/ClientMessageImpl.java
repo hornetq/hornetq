@@ -18,12 +18,13 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
@@ -38,58 +39,64 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 public class ClientMessageImpl extends MessageImpl implements ClientMessage
 {
    private int deliveryCount;
-   
+
    private ClientConsumerInternal consumer;
-           
+
+   private boolean largeMessage;
+
+
    /*
     * Constructor for when reading from network
     */
    public ClientMessageImpl(final int deliveryCount)
-   {      
+   {
       super();
-      
+
       this.deliveryCount = deliveryCount;
    }
-   
+
    /*
     * Construct messages before sending
     */
-   public ClientMessageImpl(final byte type, final boolean durable, final long expiration,
-                            final long timestamp, final byte priority, MessagingBuffer body)
+   public ClientMessageImpl(final byte type,
+                            final boolean durable,
+                            final long expiration,
+                            final long timestamp,
+                            final byte priority,
+                            MessagingBuffer body)
    {
       super(type, durable, expiration, timestamp, priority, body);
    }
-   
+
    public ClientMessageImpl(final byte type, final boolean durable, MessagingBuffer body)
    {
       super(type, durable, 0, System.currentTimeMillis(), (byte)4, body);
    }
-   
+
    public ClientMessageImpl(final boolean durable, MessagingBuffer body)
    {
-      super((byte) 0, durable, 0, System.currentTimeMillis(), (byte)4, body);
+      super((byte)0, durable, 0, System.currentTimeMillis(), (byte)4, body);
    }
-   
-   /* Only used in testing */
+
    public ClientMessageImpl()
-   {      
+   {
    }
-   
+
    public void onReceipt(final ClientConsumerInternal consumer)
    {
       this.consumer = consumer;
    }
-   
+
    public void setDeliveryCount(final int deliveryCount)
    {
       this.deliveryCount = deliveryCount;
    }
-   
+
    public int getDeliveryCount()
    {
       return this.deliveryCount;
    }
-   
+
    public void acknowledge() throws MessagingException
    {
       if (consumer != null)
@@ -97,4 +104,21 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
          consumer.acknowledge(this);
       }
    }
+
+   /**
+    * @return the largeMessage
+    */
+   public boolean isLargeMessage()
+   {
+      return largeMessage;
+   }
+
+   /**
+    * @param largeMessage the largeMessage to set
+    */
+   public void setLargeMessage(boolean largeMessage)
+   {
+      this.largeMessage = largeMessage;
+   }
+
 }

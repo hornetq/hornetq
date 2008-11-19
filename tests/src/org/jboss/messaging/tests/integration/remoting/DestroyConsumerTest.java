@@ -23,9 +23,9 @@
 
 package org.jboss.messaging.tests.integration.remoting;
 
-import org.jboss.messaging.tests.integration.base.IntegrationTestBase;
+import org.jboss.messaging.tests.util.ServiceTestBase;
 
-public class DestroyConsumerTest extends IntegrationTestBase
+public class DestroyConsumerTest extends ServiceTestBase
 {
    
    // Constants -----------------------------------------------------

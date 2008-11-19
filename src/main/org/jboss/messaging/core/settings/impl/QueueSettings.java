@@ -49,8 +49,6 @@ public class QueueSettings implements Mergeable<QueueSettings>
 
    public static final Boolean DEFAULT_DROP_MESSAGES_WHEN_FULL = Boolean.FALSE;
 
-   public static final Integer DEFAULT_PAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10M Bytes
-
    public static final Integer DEFAULT_MAX_DELIVERY_ATTEMPTS = 10;
 
    public static final Integer DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT = 0;
@@ -89,7 +87,7 @@ public class QueueSettings implements Mergeable<QueueSettings>
 
    public Integer getPageSizeBytes()
    {
-      return pageSizeBytes != null ? pageSizeBytes : DEFAULT_PAGE_SIZE_BYTES;
+      return pageSizeBytes;
    }
 
    public Boolean isDropMessagesWhenFull()

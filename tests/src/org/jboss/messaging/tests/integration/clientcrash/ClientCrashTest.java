@@ -24,6 +24,7 @@ package org.jboss.messaging.tests.integration.clientcrash;
 
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BIG_MESSAGE_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
@@ -33,7 +34,6 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
-import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -41,13 +41,12 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
+import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
 import org.jboss.messaging.util.SimpleString;
 
@@ -59,7 +58,7 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @version <tt>$Revision: 4032 $</tt>
  */
-public class ClientCrashTest extends TestCase
+public class ClientCrashTest extends ServiceTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -75,16 +74,9 @@ public class ClientCrashTest extends TestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService messagingService;
-
    private ClientSessionFactory sf;
 
    // Constructors --------------------------------------------------
-
-   public ClientCrashTest(String name)
-   {
-      super(name);
-   }
 
    // Public --------------------------------------------------------
 
@@ -153,11 +145,10 @@ public class ClientCrashTest extends TestCase
    {
       super.setUp();
 
-      ConfigurationImpl config = new ConfigurationImpl();
+      
+      Configuration config = createDefaultConfig(true);
       config.setSecurityEnabled(false);
-      config.getAcceptorConfigurations()
-            .add(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory"));
-      messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
+      messagingService = createService(false, config);
       messagingService.start();
 
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
@@ -168,12 +159,14 @@ public class ClientCrashTest extends TestCase
                                         DEFAULT_CONSUMER_MAX_RATE,
                                         DEFAULT_SEND_WINDOW_SIZE,
                                         DEFAULT_PRODUCER_MAX_RATE,
+                                        DEFAULT_BIG_MESSAGE_SIZE,
                                         DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                                         DEFAULT_BLOCK_ON_PERSISTENT_SEND,
                                         DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
                                         DEFAULT_AUTO_GROUP,
                                         DEFAULT_MAX_CONNECTIONS,
                                         DEFAULT_ACK_BATCH_SIZE);
+      
    }
 
    @Override

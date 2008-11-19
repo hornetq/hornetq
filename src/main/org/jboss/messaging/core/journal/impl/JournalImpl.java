@@ -801,8 +801,6 @@ public class JournalImpl implements TestableJournal
 
       int lastDataPos = SIZE_HEADER;
 
-      long maxTransactionID = -1;
-
       long maxID = -1;
 
       for (JournalFile file : orderedFiles)
@@ -879,8 +877,6 @@ public class JournalImpl implements TestableJournal
                }
 
                transactionID = bb.getLong();
-
-               maxTransactionID = Math.max(maxTransactionID, transactionID);
             }
 
             long recordID = 0;

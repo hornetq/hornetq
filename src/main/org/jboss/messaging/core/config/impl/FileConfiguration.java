@@ -174,6 +174,8 @@ public class FileConfiguration extends ConfigurationImpl
 
       // Persistence config
 
+      largeMessagesDirectory = getString(e, "large-messages-directory", largeMessagesDirectory);
+      
       bindingsDirectory = getString(e, "bindings-directory", bindingsDirectory);
 
       createBindingsDir = getBoolean(e, "create-bindings-dir", createBindingsDir);
@@ -183,6 +185,8 @@ public class FileConfiguration extends ConfigurationImpl
       pagingDirectory = getString(e, "paging-directory", pagingDirectory);
 
       pagingMaxGlobalSize = getLong(e, "paging-max-global-size-bytes", pagingMaxGlobalSize);
+      
+      pagingDefaultSize = getLong(e, "paging-default-size", pagingDefaultSize);
 
       createJournalDir = getBoolean(e, "create-journal-dir", createJournalDir);
 

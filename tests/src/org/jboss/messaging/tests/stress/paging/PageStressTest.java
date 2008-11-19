@@ -23,7 +23,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
-import org.jboss.messaging.tests.integration.base.IntegrationTestBase;
+import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -31,7 +31,7 @@ import org.jboss.messaging.util.SimpleString;
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  */
-public class PageStressTest extends IntegrationTestBase
+public class PageStressTest extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -59,11 +59,26 @@ public class PageStressTest extends IntegrationTestBase
    
    public void testStopDuringDepage(boolean globalPage) throws Exception
    {
+      Configuration config = createDefaultConfig();
+
       HashMap<String, QueueSettings> settings = new HashMap<String, QueueSettings>();
 
-      Configuration config = createConfig(globalPage, settings);
+      if (globalPage)
+      {
+         config.setPagingMaxGlobalSizeBytes(20 * 1024 * 1024);
+         QueueSettings setting = new QueueSettings();
+         setting.setMaxSizeBytes(-1);
+         settings.put("page-adr", setting);
+      }
+      else
+      {
+         config.setPagingMaxGlobalSizeBytes(-1);
+         QueueSettings setting = new QueueSettings();
+         setting.setMaxSizeBytes(20 * 1024 * 1024);
+         settings.put("page-adr", setting);
+      }
 
-      service = createService(true, false, config, settings);
+      service = createService(true, config, settings);
       service.start();
 
       ClientSessionFactory factory = createInVMFactory();
@@ -122,10 +137,7 @@ public class PageStressTest extends IntegrationTestBase
          
          System.out.println("server stopped, nr msgs: " + msgs);
 
-         settings = new HashMap<String, QueueSettings>();
-         config = createConfig(globalPage, settings);
-
-         service = createService(true, false, config, settings);
+         service = createService(true, config, settings);
          service.start();
          
          
@@ -176,11 +188,26 @@ public class PageStressTest extends IntegrationTestBase
 
    public void testPageOnMultipleDestinations(boolean globalPage) throws Exception
    {
+      Configuration config = createDefaultConfig();
+
       HashMap<String, QueueSettings> settings = new HashMap<String, QueueSettings>();
 
-      Configuration config = createConfig(globalPage, settings);
+      if (globalPage)
+      {
+         config.setPagingMaxGlobalSizeBytes(20 * 1024 * 1024);
+         QueueSettings setting = new QueueSettings();
+         setting.setMaxSizeBytes(-1);
+         settings.put("page-adr", setting);
+      }
+      else
+      {
+         config.setPagingMaxGlobalSizeBytes(-1);
+         QueueSettings setting = new QueueSettings();
+         setting.setMaxSizeBytes(20 * 1024 * 1024);
+         settings.put("page-adr", setting);
+      }
 
-      service = createService(true, false, config, settings);
+      service = createService(true, config, settings);
       service.start();
 
       ClientSessionFactory factory = createInVMFactory();

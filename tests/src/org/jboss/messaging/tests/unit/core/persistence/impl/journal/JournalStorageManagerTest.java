@@ -76,11 +76,12 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       ServerMessage msg = EasyMock.createStrictMock(ServerMessage.class);
       long msgID = 1021092;
-      EasyMock.expect(msg.getMessageID()).andReturn(msgID);
+      EasyMock.expect(msg.getMessageID()).andStubReturn(msgID);
+      
       messageJournal.appendAddRecord(msgID, JournalStorageManager.ADD_MESSAGE, msg);
       EasyMock.replay(messageJournal, bindingsJournal, msg);
       jsm.storeMessage(msg);
@@ -92,7 +93,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       final long queueID = 1210981;
       final long messageID = 101921092;
@@ -110,7 +111,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       final long messageID = 101921092;
 
@@ -125,11 +126,11 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       ServerMessage msg = EasyMock.createStrictMock(ServerMessage.class);
       long msgID = 1021092;
-      EasyMock.expect(msg.getMessageID()).andReturn(msgID);
+      EasyMock.expect(msg.getMessageID()).andStubReturn(msgID);
       long txID = 192872;
       messageJournal.appendAddRecordTransactional(txID, msgID, JournalStorageManager.ADD_MESSAGE, msg);
       EasyMock.replay(messageJournal, bindingsJournal, msg);
@@ -142,7 +143,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       final long queueID = 1210981;
       final long messageID = 101921092;
@@ -162,7 +163,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       final long messageID = 101921092;
       final long txID = 1209373;
@@ -178,7 +179,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       final long txID = 1209373;
 
@@ -196,7 +197,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       final long txID = 1209373;
 
@@ -211,7 +212,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       final long txID = 1209373;
 
@@ -226,7 +227,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       final long msgID = 120912901;
       final long queueID = 1283743;
@@ -254,7 +255,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       messageJournal.load((List<RecordInfo>)EasyMock.anyObject(), (List<PreparedTransactionInfo>)EasyMock.anyObject());
 
@@ -422,7 +423,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       Queue queue = EasyMock.createStrictMock(Queue.class);
       SimpleString queueName = new SimpleString("saiohsiudh");
@@ -442,7 +443,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       DataOutputStream daos = new DataOutputStream(baos);
 
-      queue.setPersistenceID(0);
+      queue.setPersistenceID(EasyMock.anyLong());
 
       byte[] nameBytes = queueName.getData();
       daos.writeInt(nameBytes.length);
@@ -464,7 +465,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       log.debug("** data length is " + data.length);
       log.debug(UnitTestCase.dumpBytes(data));
 
-      bindingsJournal.appendAddRecord(EasyMock.eq(0L),
+      bindingsJournal.appendAddRecord(EasyMock.anyLong(),
                                       EasyMock.eq(JournalStorageManager.BINDING_RECORD),
                                       compareEncodingSupport(data));
 
@@ -494,7 +495,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       Binding binding = EasyMock.createStrictMock(Binding.class);
       Queue queue = EasyMock.createStrictMock(Queue.class);
@@ -516,7 +517,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       Binding binding = EasyMock.createStrictMock(Binding.class);
       Queue queue = EasyMock.createStrictMock(Queue.class);
@@ -544,7 +545,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       SimpleString dest = new SimpleString("oaskokas");
 
@@ -555,7 +556,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       daos.write(destBytes);
       daos.flush();
       byte[] data = baos.toByteArray();
-      bindingsJournal.appendAddRecord(EasyMock.eq(0L),
+      bindingsJournal.appendAddRecord(EasyMock.anyLong(),
                                       EasyMock.eq(JournalStorageManager.DESTINATION_RECORD),
                                       compareEncodingSupport(data));
 
@@ -588,7 +589,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       daos.write(destBytes);
       daos.flush();
       data = baos.toByteArray();
-      bindingsJournal.appendAddRecord(EasyMock.eq(2L),
+      bindingsJournal.appendAddRecord(EasyMock.anyLong(),
                                       EasyMock.eq(JournalStorageManager.DESTINATION_RECORD),
                                       compareEncodingSupport(data));
 
@@ -600,7 +601,7 @@ public class JournalStorageManagerTest extends UnitTestCase
 
       EasyMock.reset(messageJournal, bindingsJournal);
 
-      bindingsJournal.appendDeleteRecord(2);
+      bindingsJournal.appendDeleteRecord(EasyMock.anyLong());
 
       EasyMock.replay(messageJournal, bindingsJournal);
 
@@ -669,7 +670,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       bindingsJournal.load((List<RecordInfo>)EasyMock.anyObject(), (List<PreparedTransactionInfo>)EasyMock.anyObject());
 
@@ -736,7 +737,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       assertFalse(jsm.isStarted());
       bindingsJournal.start();
@@ -790,7 +791,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       Journal messageJournal = EasyMock.createStrictMock(Journal.class);
       Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
 
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal);
+      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
 
       long id = jsm.generateUniqueID();
 

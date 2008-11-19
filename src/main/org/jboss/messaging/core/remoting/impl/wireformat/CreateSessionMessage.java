@@ -46,6 +46,8 @@ public class CreateSessionMessage extends PacketImpl
    
    private String password;
    
+   private int minLargeMessageSize;
+   
    private boolean xa;
    
    private boolean autoCommitSends;
@@ -60,6 +62,7 @@ public class CreateSessionMessage extends PacketImpl
 
    public CreateSessionMessage(final String name, final long sessionChannelID,
                                final int version, final String username, final String password,
+                               final int minLargeMessageSize, 
                                final boolean xa, final boolean autoCommitSends,
                                final boolean autoCommitAcks, final int windowSize)
    {
@@ -74,6 +77,8 @@ public class CreateSessionMessage extends PacketImpl
       this.username = username;
       
       this.password = password;
+      
+      this.minLargeMessageSize = minLargeMessageSize;
       
       this.xa = xa;
       
@@ -143,6 +148,7 @@ public class CreateSessionMessage extends PacketImpl
       buffer.putInt(version);
       buffer.putNullableString(username);
       buffer.putNullableString(password);
+      buffer.putInt(minLargeMessageSize);
       buffer.putBoolean(xa);
       buffer.putBoolean(autoCommitSends);
       buffer.putBoolean(autoCommitAcks);
@@ -156,6 +162,7 @@ public class CreateSessionMessage extends PacketImpl
       version = buffer.getInt();
       username = buffer.getNullableString();
       password = buffer.getNullableString();
+      minLargeMessageSize = buffer.getInt();
       xa = buffer.getBoolean();
       autoCommitSends = buffer.getBoolean();
       autoCommitAcks = buffer.getBoolean();
@@ -189,6 +196,14 @@ public class CreateSessionMessage extends PacketImpl
       return false;
    }
 
+   /**
+    * @return
+    */
+   public int getMinLargeMessageSize()
+   {
+      return minLargeMessageSize;
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

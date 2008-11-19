@@ -229,15 +229,16 @@ public abstract class PagingStoreTestBase extends UnitTestCase
 
          for (PageMessage msg : msgs)
          {
-            msg.getMessage().getBody().rewind();
-            long id = msg.getMessage().getBody().getLong();
-            msg.getMessage().getBody().rewind();
+            (msg.getMessage(null)).getBody().rewind();
+            long id = (msg.getMessage(null)).getBody().getLong();
+            (msg.getMessage(null)).getBody().rewind();
 
             PageMessageImpl msgWritten = buffers.remove(id);
             buffers2.put(id, msg);
             assertNotNull(msgWritten);
-            assertEquals(msg.getMessage().getDestination(), msgWritten.getMessage().getDestination());
-            assertEqualsByteArrays(msgWritten.getMessage().getBody().array(), msg.getMessage().getBody().array());
+            assertEquals((msg.getMessage(null)).getDestination(), (msgWritten.getMessage(null)).getDestination());
+            assertEqualsByteArrays((msgWritten.getMessage(null)).getBody().array(), (msg.getMessage(null)).getBody()
+                                                                                                          .array());
          }
       }
 
@@ -293,12 +294,13 @@ public abstract class PagingStoreTestBase extends UnitTestCase
          for (PageMessage msg : msgs)
          {
 
-            msg.getMessage().getBody().rewind();
-            long id = msg.getMessage().getBody().getLong();
+            (msg.getMessage(null)).getBody().rewind();
+            long id = (msg.getMessage(null)).getBody().getLong();
             PageMessage msgWritten = buffers2.remove(id);
             assertNotNull(msgWritten);
-            assertEquals(msg.getMessage().getDestination(), msgWritten.getMessage().getDestination());
-            assertEqualsByteArrays(msgWritten.getMessage().getBody().array(), msg.getMessage().getBody().array());
+            assertEquals((msg.getMessage(null)).getDestination(), (msgWritten.getMessage(null)).getDestination());
+            assertEqualsByteArrays((msgWritten.getMessage(null)).getBody().array(), (msg.getMessage(null)).getBody()
+                                                                                                          .array());
          }
       }
 
@@ -307,9 +309,10 @@ public abstract class PagingStoreTestBase extends UnitTestCase
       lastPage.close();
       assertEquals(1, lastMessages.length);
 
-      lastMessages[0].getMessage().getBody().rewind();
-      assertEquals(lastMessages[0].getMessage().getBody().getLong(), lastMessageId);
-      assertEqualsByteArrays(lastMessages[0].getMessage().getBody().array(), lastMsg.getMessage().getBody().array());
+      (lastMessages[0].getMessage(null)).getBody().rewind();
+      assertEquals((lastMessages[0].getMessage(null)).getBody().getLong(), lastMessageId);
+      assertEqualsByteArrays((lastMessages[0].getMessage(null)).getBody().array(), (lastMsg.getMessage(null)).getBody()
+                                                                                                             .array());
 
       assertEquals(0, buffers2.size());
 

@@ -22,6 +22,10 @@
 
 package org.jboss.messaging.core.persistence.impl.journal;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
+
 import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
 
 import java.io.File;
@@ -31,17 +35,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.journal.Journal;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
+import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
@@ -63,12 +72,14 @@ import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.core.server.ServerLargeMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.IDGenerator;
+import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TimeAndCounterIDGenerator;
 
@@ -85,12 +96,6 @@ public class JournalStorageManager implements StorageManager
 {
    private static final Logger log = Logger.getLogger(JournalStorageManager.class);
 
-   private static final int SIZE_LONG = 8;
-
-   private static final int SIZE_INT = 4;
-
-   private static final int SIZE_BYTE = 1;
-
    // Bindings journal record type
 
    public static final byte BINDING_RECORD = 21;
@@ -101,6 +106,8 @@ public class JournalStorageManager implements StorageManager
    public static final int SIZE_FIELDS = SIZE_INT + SIZE_LONG + SIZE_LONG + SIZE_BYTE;
 
    // Message journal record types
+
+   public static final byte ADD_LARGE_MESSAGE = 30;
 
    public static final byte ADD_MESSAGE = 31;
 
@@ -117,18 +124,23 @@ public class JournalStorageManager implements StorageManager
    // This will produce a unique id **for this node only**
    private final IDGenerator idGenerator = new TimeAndCounterIDGenerator();
 
-   private final AtomicLong bindingIDSequence = new AtomicLong(0);
-
    private final Journal messageJournal;
 
    private final Journal bindingsJournal;
 
+   private final SequentialFileFactory largeMessagesFactory;
+
    private final ConcurrentMap<SimpleString, Long> destinationIDMap = new ConcurrentHashMap<SimpleString, Long>();
 
    private volatile boolean started;
-
+   
+   private final ExecutorService executor;
+   
+   
    public JournalStorageManager(final Configuration config)
    {
+      this.executor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-journal-storage-manager"));
+      
       if (config.getJournalType() != JournalType.NIO && config.getJournalType() != JournalType.ASYNCIO)
       {
          throw new IllegalArgumentException("Only NIO and AsyncIO are supported journals");
@@ -154,7 +166,7 @@ public class JournalStorageManager implements StorageManager
          throw new NullPointerException("journal-dir is null");
       }
 
-      checkAndCreateDir(journalDir, config.isCreateBindingsDir());
+      checkAndCreateDir(journalDir, config.isCreateJournalDir());
 
       SequentialFileFactory journalFF = null;
 
@@ -191,13 +203,23 @@ public class JournalStorageManager implements StorageManager
                                        "jbm",
                                        config.getJournalMaxAIO(),
                                        config.getJournalBufferReuseSize());
+      
+      String largeMessagesDirectory = config.getLargeMessagesDirectory();
+      
+      checkAndCreateDir(largeMessagesDirectory, config.isCreateJournalDir());
+
+      largeMessagesFactory = new NIOSequentialFileFactory(config.getLargeMessagesDirectory());
    }
 
    /* This constructor is only used for testing */
-   public JournalStorageManager(final Journal messageJournal, final Journal bindingsJournal)
+   public JournalStorageManager(final Journal messageJournal,
+                                final Journal bindingsJournal,
+                                final SequentialFileFactory largeMessagesFactory)
    {
+      this.executor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-journal-storage-manager"));
       this.messageJournal = messageJournal;
       this.bindingsJournal = bindingsJournal;
+      this.largeMessagesFactory = largeMessagesFactory;
    }
 
    public long generateUniqueID()
@@ -205,11 +227,31 @@ public class JournalStorageManager implements StorageManager
       return idGenerator.generateID();
    }
 
+   /** Create an area that will get LargeMessage bytes on the server size*/
+   public ServerLargeMessage createLargeMessageStorage()
+   {
+      return new JournalLargeMessageImpl(this);
+   }
+
    // Non transactional operations
 
    public void storeMessage(final ServerMessage message) throws Exception
    {
-      messageJournal.appendAddRecord(message.getMessageID(), ADD_MESSAGE, message);
+      if (message.getMessageID() <= 0)
+      {
+         throw new MessagingException(MessagingException.ILLEGAL_STATE, "MessageId was not assigned to Message");
+      }
+
+      if (message instanceof ServerLargeMessage)
+      {
+         messageJournal.appendAddRecord(message.getMessageID(),
+                                        ADD_LARGE_MESSAGE,
+                                        new LargeMessageEncoding((ServerLargeMessage)message));
+      }
+      else
+      {
+         messageJournal.appendAddRecord(message.getMessageID(), ADD_MESSAGE, message);
+      }
    }
 
    public void storeAcknowledge(final long queueID, final long messageID) throws Exception
@@ -234,7 +276,23 @@ public class JournalStorageManager implements StorageManager
 
    public void storeMessageTransactional(final long txID, final ServerMessage message) throws Exception
    {
-      messageJournal.appendAddRecordTransactional(txID, message.getMessageID(), ADD_MESSAGE, message);
+      if (message.getMessageID() <= 0)
+      {
+         throw new MessagingException(MessagingException.ILLEGAL_STATE, "MessageId was not assigned to Message");
+      }
+
+      if (message instanceof ServerLargeMessage)
+      {
+         messageJournal.appendAddRecordTransactional(txID,
+                                                     message.getMessageID(),
+                                                     ADD_LARGE_MESSAGE,
+                                                     new LargeMessageEncoding(((ServerLargeMessage)message)));
+      }
+      else
+      {
+         messageJournal.appendAddRecordTransactional(txID, message.getMessageID(), ADD_MESSAGE, message);
+      }
+
    }
 
    public void storePageTransaction(final long txID, final PageTransactionInfo pageTransaction) throws Exception
@@ -341,6 +399,23 @@ public class JournalStorageManager implements StorageManager
 
          switch (recordType)
          {
+            case ADD_LARGE_MESSAGE:
+            {
+               ServerLargeMessage largeMessage = this.createLargeMessageStorage();
+
+               LargeMessageEncoding messageEncoding = new LargeMessageEncoding(largeMessage);
+
+               messageEncoding.decode(buff);
+
+               List<MessageReference> refs = postOffice.route(largeMessage);
+
+               for (MessageReference ref : refs)
+               {
+                  ref.getQueue().addLast(ref);
+               }
+
+               break;
+            }
             case ADD_MESSAGE:
             {
                ServerMessage message = new ServerMessageImpl(record.id);
@@ -449,11 +524,7 @@ public class JournalStorageManager implements StorageManager
                   throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
                }
                // remove the reference and then add it back in with the scheduled time set.
-               MessageReference removed = queue.removeReferenceWithID(messageID);
-
-               removed.setScheduledDeliveryTime(encoding.scheduledDeliveryTime);
-
-               queue.addLast(removed);
+               queue.rescheduleDelivery(messageID, encoding.scheduledDeliveryTime);
 
                break;
             }
@@ -476,7 +547,7 @@ public class JournalStorageManager implements StorageManager
 
       // We generate the queue id here
 
-      long queueID = bindingIDSequence.getAndIncrement();
+      long queueID = idGenerator.generateID();
 
       queue.setPersistenceID(queueID);
 
@@ -515,7 +586,7 @@ public class JournalStorageManager implements StorageManager
 
    public boolean addDestination(final SimpleString destination) throws Exception
    {
-      long destinationID = bindingIDSequence.getAndIncrement();
+      long destinationID = idGenerator.generateID();
 
       if (destinationIDMap.putIfAbsent(destination, destinationID) != null)
       {
@@ -556,7 +627,7 @@ public class JournalStorageManager implements StorageManager
 
       List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 
-      long maxID = bindingsJournal.load(records, preparedTransactions);
+      bindingsJournal.load(records, preparedTransactions);
 
       for (RecordInfo record : records)
       {
@@ -600,8 +671,6 @@ public class JournalStorageManager implements StorageManager
             throw new IllegalStateException("Invalid record type " + rec);
          }
       }
-
-      bindingIDSequence.set(maxID + 1);
    }
 
    // MessagingComponent implementation
@@ -613,6 +682,8 @@ public class JournalStorageManager implements StorageManager
       {
          return;
       }
+      
+      cleanupIncompleteFiles();
 
       bindingsJournal.start();
 
@@ -627,10 +698,14 @@ public class JournalStorageManager implements StorageManager
       {
          return;
       }
+      
+      executor.shutdown();
 
       bindingsJournal.stop();
 
       messageJournal.stop();
+
+      executor.awaitTermination(60, TimeUnit.SECONDS);
 
       started = false;
    }
@@ -640,8 +715,7 @@ public class JournalStorageManager implements StorageManager
       return started;
    }
 
-   // Public
-   // -----------------------------------------------------------------------------------
+   // Public -----------------------------------------------------------------------------------
 
    public Journal getMessageJournal()
    {
@@ -653,8 +727,45 @@ public class JournalStorageManager implements StorageManager
       return bindingsJournal;
    }
 
-   // Private
-   // ----------------------------------------------------------------------------------
+   // Package protected ---------------------------------------------
+   
+   // This should be accessed from this package only
+   void deleteFile(final SequentialFile file)
+   {
+      this.executor.execute(new Runnable() {
+
+         public void run()
+         {
+            try
+            {
+               file.delete();
+            }
+            catch (Exception e)
+            {
+               log.warn(e.getMessage(), e);
+            }
+         }
+         
+      });
+   }
+
+   /**
+    * @param messageID
+    * @return
+    */
+   SequentialFile createFileForLargeMessage(final long messageID, final boolean completeFile)
+   {
+      if (completeFile)
+      {
+         return largeMessagesFactory.createSequentialFile(messageID + ".msg", -1);
+      }
+      else
+      {
+         return largeMessagesFactory.createSequentialFile(messageID + ".tmp", -1);
+      }
+   }
+
+   // Private ----------------------------------------------------------------------------------
 
    private void loadPreparedTransactions(final PostOffice postOffice,
                                          final Map<Long, Queue> queues,
@@ -838,6 +949,23 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
+   /**
+    * @throws Exception
+    */
+   private void cleanupIncompleteFiles() throws Exception
+   {
+      if (largeMessagesFactory != null)
+      {
+         List<String> tmpFiles = this.largeMessagesFactory.listFiles("tmp");
+         for (String tmpFile : tmpFiles)
+         {
+            SequentialFile file = largeMessagesFactory.createSequentialFile(tmpFile, -1);
+            log.info("cleaning up file " + file);
+            file.delete();
+         }
+      }
+   }
+
    // Inner Classes
    // ----------------------------------------------------------------------------
 
@@ -951,6 +1079,42 @@ public class JournalStorageManager implements StorageManager
 
    }
 
+   private static class LargeMessageEncoding implements EncodingSupport
+   {
+
+      private final ServerLargeMessage message;
+
+      public LargeMessageEncoding(ServerLargeMessage message)
+      {
+         this.message = message;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.EncodingSupport#decode(org.jboss.messaging.core.remoting.spi.MessagingBuffer)
+       */
+      public void decode(final MessagingBuffer buffer)
+      {
+         message.decode(buffer);
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.EncodingSupport#encode(org.jboss.messaging.core.remoting.spi.MessagingBuffer)
+       */
+      public void encode(final MessagingBuffer buffer)
+      {
+         message.encode(buffer);
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.EncodingSupport#getEncodeSize()
+       */
+      public int getEncodeSize()
+      {
+         return message.getEncodeSize();
+      }
+
+   }
+
    private static class DeliveryCountUpdateEncoding implements EncodingSupport
    {
       long queueID;
@@ -1046,6 +1210,7 @@ public class JournalStorageManager implements StorageManager
 
    private static class ScheduledDeliveryEncoding extends QueueEncoding
    {
+
       long scheduledDeliveryTime;
 
       private ScheduledDeliveryEncoding(long scheduledDeliveryTime, long queueID)
@@ -1075,4 +1240,5 @@ public class JournalStorageManager implements StorageManager
          scheduledDeliveryTime = buffer.getLong();
       }
    }
+
 }

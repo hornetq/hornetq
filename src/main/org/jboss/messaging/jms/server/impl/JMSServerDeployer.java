@@ -40,7 +40,7 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String CLIENTID_ELEMENT = "client-id";
 
    private static final String PING_PERIOD_ELEMENT = "ping-period";
-   
+
    private static final String CALL_TIMEOUT_ELEMENT = "call-timeout";
 
    private static final String DUPS_OK_BATCH_SIZE_ELEMENT = "dups-ok-batch-size";
@@ -54,7 +54,9 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String SEND_WINDOW_SIZE = "send-window-size";
 
    private static final String PRODUCER_MAX_RATE_ELEMENT = "producer-max-rate";
-
+   
+   private static final String BIG_MESSAGE_ELEMENT = "big-message-size";
+   
    private static final String BLOCK_ON_ACKNOWLEDGE_ELEMENT = "block-on-acknowledge";
 
    private static final String SEND_NP_MESSAGES_SYNCHRONOUSLY_ELEMENT = "send-np-messages-synchronously";
@@ -137,6 +139,7 @@ public class JMSServerDeployer extends XmlDeployer
          int consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
          int sendWindowSize = ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
          int producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
+         int minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_BIG_MESSAGE_SIZE;
          boolean blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
          boolean blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
          boolean blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
@@ -173,6 +176,10 @@ public class JMSServerDeployer extends XmlDeployer
             else if (PRODUCER_MAX_RATE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
                producerMaxRate = Integer.parseInt(children.item(j).getTextContent().trim());
+            }
+            else if (BIG_MESSAGE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            {
+               minLargeMessageSize  = Integer.parseInt(children.item(j).getTextContent().trim());
             }
             else if (CLIENTID_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
             {
@@ -407,6 +414,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                   consumerMaxRate,
                                                   sendWindowSize,
                                                   producerMaxRate,
+                                                  minLargeMessageSize,
                                                   blockOnAcknowledge,
                                                   blockOnNonPersistentSend,
                                                   blockOnPersistentSend,

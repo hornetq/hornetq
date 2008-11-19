@@ -30,6 +30,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.transaction.xa.Xid;
 
 import org.easymock.EasyMock;
+import org.jboss.messaging.core.paging.PagingManager;
+import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
@@ -534,14 +536,24 @@ public class TransactionImplTest extends UnitTestCase
    
    public void testAckCommit() throws Exception
    {
-      //Durable queue
-      Queue queue1 = new QueueImpl(12, new SimpleString("queue1"), null, false, true, false, scheduledExecutor, null);
+      
+      PagingManager pagingManager = EasyMock.createStrictMock(PagingManager.class);
+      PostOffice postOffice = EasyMock.createMock(PostOffice.class);
+      PagingStore pagingStore = EasyMock.createStrictMock(PagingStore.class);
+      
+      EasyMock.expect(pagingManager.getPageStore((SimpleString)EasyMock.anyObject())).andStubReturn(pagingStore);
+      EasyMock.expect(postOffice.getPagingManager()).andStubReturn(pagingManager);
+      
+      EasyMock.replay(pagingManager, postOffice);
       
       //Durable queue
-      Queue queue2 = new QueueImpl(34, new SimpleString("queue2"), null, false, true, false, scheduledExecutor, null);
+      Queue queue1 = new QueueImpl(12, new SimpleString("queue1"), null, false, true, false, scheduledExecutor, postOffice);
+      
+      //Durable queue
+      Queue queue2 = new QueueImpl(34, new SimpleString("queue2"), null, false, true, false, scheduledExecutor, postOffice);
       
       //Non durable queue
-      Queue queue3 = new QueueImpl(65, new SimpleString("queue3"), null, false, false, false, scheduledExecutor, null);
+      Queue queue3 = new QueueImpl(65, new SimpleString("queue3"), null, false, false, false, scheduledExecutor, postOffice);
       
       //Some refs to ack
       
@@ -570,7 +582,9 @@ public class TransactionImplTest extends UnitTestCase
       
       EasyMock.expect(sm.generateUniqueID()).andReturn(txID);
       
-      EasyMock.replay(sm);
+      EasyMock.reset(postOffice, pagingManager, pagingStore);
+      
+      EasyMock.replay(sm, postOffice, pagingManager, pagingStore);
             
       Transaction tx = new TransactionImpl(sm, po);
       
@@ -578,16 +592,16 @@ public class TransactionImplTest extends UnitTestCase
       
       assertFalse(tx.isContainsPersistent());
             
-      EasyMock.verify(sm);
+      EasyMock.verify(sm, postOffice, pagingManager, pagingStore);
       
-      EasyMock.reset(sm);
+      EasyMock.reset(sm, postOffice, pagingManager, pagingStore);
       
       //Expect:
       
       sm.storeAcknowledgeTransactional(txID, queue1.getPersistenceID(), message1.getMessageID());
       sm.storeDeleteMessageTransactional(txID, queue2.getPersistenceID(), message1.getMessageID());
       
-      EasyMock.replay(sm);
+      EasyMock.replay(sm, postOffice, pagingManager, pagingStore);
       
       tx.addAcknowledgement(ref3);
       
@@ -605,35 +619,39 @@ public class TransactionImplTest extends UnitTestCase
       
       assertEquals(3, tx.getAcknowledgementsCount());
       
-      EasyMock.verify(sm);
+      EasyMock.verify(sm, postOffice, pagingManager, pagingStore);
       
-      EasyMock.reset(sm);
+      EasyMock.reset(sm, postOffice, pagingManager, pagingStore);
       
       //Expect:
       
       //Nothing
       
-      EasyMock.replay(sm);
+      EasyMock.replay(sm, postOffice, pagingManager, pagingStore);
       
       tx.addAcknowledgement(ref4);
       
       assertEquals(4, tx.getAcknowledgementsCount());
       
-      EasyMock.verify(sm);
+      EasyMock.verify(sm, postOffice, pagingManager, pagingStore);
       
-      EasyMock.reset(sm);
+      EasyMock.reset(sm, postOffice, pagingManager, pagingStore);
       
       //Expect:
       
       sm.commit(txID);
       
-      EasyMock.replay(sm);
+      pagingManager.messageDone(message1);
+      
+      pagingManager.messageDone(message2);
+      
+      EasyMock.replay(sm, postOffice, pagingManager, pagingStore);
       
       tx.commit();
       
-      EasyMock.verify(sm);
+      EasyMock.verify(sm, postOffice, pagingManager, pagingStore);
       
-      EasyMock.reset(sm);            
+      EasyMock.reset(sm, postOffice, pagingManager, pagingStore);            
       
       //TODO test messages are routed and refs count reduced
    }

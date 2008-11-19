@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.paging;
 
 import org.jboss.messaging.core.journal.EncodingSupport;
+import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.server.ServerMessage;
 
 /**
@@ -35,7 +36,7 @@ import org.jboss.messaging.core.server.ServerMessage;
  */
 public interface PageMessage extends EncodingSupport
 {
-   ServerMessage getMessage();
+   ServerMessage getMessage(StorageManager storageManager);
 
    long getTransactionID();
 }

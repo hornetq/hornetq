@@ -26,6 +26,7 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -92,6 +93,8 @@ public class QueueImpl implements Queue
 
    private final Runnable deliverRunner = new DeliverRunner();
 
+   private final PagingManager pagingManager;
+
    private volatile boolean backup;
 
    private int consumersToFailover = -1;
@@ -118,6 +121,15 @@ public class QueueImpl implements Queue
       this.temporary = temporary;
 
       this.postOffice = postOffice;
+
+      if (postOffice == null)
+      {
+         this.pagingManager = null;
+      }
+      else
+      {
+         this.pagingManager = postOffice.getPagingManager();
+      }
 
       direct = true;
 
@@ -254,6 +266,15 @@ public class QueueImpl implements Queue
 
             removed = ref;
 
+            try
+            {
+               referenceRemoved(removed);
+            }
+            catch (Exception e)
+            {
+               log.warn(e.getMessage(), e);
+            }
+
             break;
          }
       }
@@ -265,6 +286,30 @@ public class QueueImpl implements Queue
       }
 
       return removed;
+   }
+
+   // Remove message from queue, add it to the scheduled delivery list without affect reference counting
+   public void rescheduleDelivery(final long id, final long scheduledDeliveryTime)
+   {
+      Iterator<MessageReference> iterator = messageReferences.iterator();
+      while (iterator.hasNext())
+      {
+         MessageReference ref = iterator.next();
+
+         if (ref.getMessage().getMessageID() == id)
+         {
+            iterator.remove();
+
+            ref.setScheduledDeliveryTime(scheduledDeliveryTime);
+
+            if (!scheduledDeliveryHandler.checkAndSchedule(ref, backup))
+            {
+               messageReferences.addFirst(ref, ref.getMessage().getPriority());
+            }
+
+            break;
+         }
+      }
    }
 
    public synchronized MessageReference getReference(final long id)
@@ -321,9 +366,9 @@ public class QueueImpl implements Queue
 
    public void referenceAcknowledged(MessageReference ref) throws Exception
    {
-      deliveringCount.decrementAndGet();
 
-      sizeBytes.addAndGet(-ref.getMessage().getEncodeSize());
+      referenceRemoved(ref);
+
    }
 
    public void referenceCancelled()
@@ -745,6 +790,23 @@ public class QueueImpl implements Queue
       }
 
       return status;
+   }
+
+   /**
+    * To be called when a reference is removed from the queue.
+    * @param ref
+    * @throws Exception
+    */
+   private void referenceRemoved(MessageReference ref) throws Exception
+   {
+      deliveringCount.decrementAndGet();
+
+      sizeBytes.addAndGet(-ref.getMessage().getEncodeSize());
+
+      if (ref.getMessage().decrementRefCount() == 0)
+      {
+         pagingManager.messageDone(ref.getMessage());
+      }
    }
 
    // Inner classes

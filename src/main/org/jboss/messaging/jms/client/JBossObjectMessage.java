@@ -33,6 +33,7 @@ import javax.jms.ObjectMessage;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.ObjectInputStreamWithClassLoader;
 
 /**
@@ -113,8 +114,8 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
          
          byte[] data = baos.toByteArray();
          
-         body.putInt(data.length);
-         body.putBytes(data);
+         getBody().putInt(data.length);
+         getBody().putBytes(data);
       }
       
       super.doBeforeSend();
@@ -137,9 +138,9 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       {
          try
          {
-            int len = body.getInt();
+            int len = getBody().getInt();
             byte[] data = new byte[len];
-            body.getBytes(data);
+            getBody().getBytes(data);
             ByteArrayInputStream bais = new ByteArrayInputStream(data);
             ObjectInputStream ois = new ObjectInputStreamWithClassLoader(bais);
             object = (Serializable)ois.readObject();

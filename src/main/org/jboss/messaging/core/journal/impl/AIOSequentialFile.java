@@ -67,13 +67,18 @@ public class AIOSequentialFile implements SequentialFile
    // AIO using a single thread.
    private ExecutorService executor;
 
-   public AIOSequentialFile(final String journalDir, final String fileName, final int maxIO) throws Exception
+   public AIOSequentialFile(final String journalDir, final String fileName, final int maxIO)
    {
       this.journalDir = journalDir;
       this.fileName = fileName;
       this.maxIO = maxIO;
    }
 
+   public boolean isOpen() 
+   {
+      return opened;
+   }
+   
    public int getAlignment() throws Exception
    {
       checkOpened();
@@ -174,6 +179,14 @@ public class AIOSequentialFile implements SequentialFile
       open(maxIO);
    }
 
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.journal.SequentialFile#renameTo(org.jboss.messaging.core.journal.SequentialFile)
+    */
+   public void renameTo(SequentialFile file) throws Exception
+   {
+      throw new IllegalStateException ("method rename not supported on AIO");
+      
+   }
    public synchronized void open(final int currentMaxIO) throws Exception
    {
       opened = true;
@@ -189,14 +202,14 @@ public class AIOSequentialFile implements SequentialFile
       aioFile.setBufferCallback(callback);
    }
 
-   public void position(final int pos) throws Exception
+   public void position(final long pos) throws Exception
    {
       position.set(pos);
    }
 
-   public int position() throws Exception
+   public long position() throws Exception
    {
-      return (int)position.get();
+      return position.get();
    }
 
    public int read(final ByteBuffer bytes, final IOCallback callback) throws Exception
@@ -363,4 +376,5 @@ public class AIOSequentialFile implements SequentialFile
          return;
       }
    }
+
 }

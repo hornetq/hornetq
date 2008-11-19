@@ -180,7 +180,6 @@ public class MessageReferenceImplTest extends UnitTestCase
       EasyMock.expect(po.route(serverMessage)).andReturn(new ArrayList<MessageReference>());
       
       EasyMock.expect(serverMessage.getDurableRefCount()).andReturn(0);
-      EasyMock.expect(serverMessage.decrementRefCount()).andReturn(1);
       EasyMock.expect(serverMessage.decrementDurableRefCount()).andReturn(0);
       
       EasyMock.expect(sm.generateUniqueID()).andReturn(1l);
@@ -299,7 +298,6 @@ public class MessageReferenceImplTest extends UnitTestCase
       EasyMock.expect(repos.getMatch(queueName.toString())).andStubReturn(queueSettings);
       EasyMock.expect(serverMessage.isDurable()).andStubReturn(true);
       EasyMock.expect(serverMessage.getMessageID()).andStubReturn(999l);
-      EasyMock.expect(serverMessage.decrementRefCount()).andReturn(1);
       EasyMock.expect(queue.isDurable()).andStubReturn(true);
       EasyMock.expect(serverMessage.decrementDurableRefCount()).andReturn(0);
       EasyMock.expect(sm.generateUniqueID()).andReturn(1l);

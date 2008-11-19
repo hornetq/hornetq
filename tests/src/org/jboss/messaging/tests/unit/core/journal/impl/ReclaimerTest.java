@@ -757,7 +757,7 @@ public class ReclaimerTest extends UnitTestCase
          return null;
       }
 
-      public int getOffset()
+      public long getOffset()
       {
          return 0;
       }
@@ -767,7 +767,7 @@ public class ReclaimerTest extends UnitTestCase
          return 0;
       }
 
-      public void setOffset(final int offset)
+      public void setOffset(final long offset)
       {
       }
 

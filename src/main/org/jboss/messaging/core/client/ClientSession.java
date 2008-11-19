@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.client;
 
+import java.io.File;
+
 import javax.transaction.xa.XAResource;
 
 import org.jboss.messaging.core.exception.MessagingException;
@@ -64,10 +66,26 @@ public interface ClientSession extends XAResource
    ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean browseOnly) throws MessagingException;
 
    ClientConsumer createConsumer(SimpleString queueName,
-                                 SimpleString filterString,                    
+                                 SimpleString filterString,
                                  int windowSize,
                                  int maxRate,
                                  boolean browseOnly) throws MessagingException;
+
+   ClientConsumer createFileConsumer(File directory, SimpleString queueName) throws MessagingException;
+
+   ClientConsumer createFileConsumer(File directory, SimpleString queueName, SimpleString filterString) throws MessagingException;
+
+   ClientConsumer createFileConsumer(File directory,
+                                     SimpleString queueName,
+                                     SimpleString filterString,
+                                     boolean browseOnly) throws MessagingException;
+
+   ClientConsumer createFileConsumer(File directory,
+                                     SimpleString queueName,
+                                     SimpleString filterString,
+                                     int windowSize,
+                                     int maxRate,
+                                     boolean browseOnly) throws MessagingException;
 
    ClientProducer createProducer(SimpleString address) throws MessagingException;
 
@@ -105,6 +123,8 @@ public interface ClientSession extends XAResource
    ClientMessage createClientMessage(final byte type, final boolean durable);
 
    ClientMessage createClientMessage(final boolean durable);
+
+   FileClientMessage createFileMessage(final boolean durable);
 
    void start() throws MessagingException;
 

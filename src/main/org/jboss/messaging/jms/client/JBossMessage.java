@@ -152,8 +152,6 @@ public class JBossMessage implements javax.jms.Message
    // The underlying message
    protected ClientMessage message;
 
-   protected MessagingBuffer body;
-
    private ClientSession session;
 
    // Read-only?
@@ -187,8 +185,6 @@ public class JBossMessage implements javax.jms.Message
                                       (byte)4,
                                       new ByteBufferWrapper(ByteBuffer.allocate(1024)));
 
-      // TODO - can we lazily create this?
-      body = message.getBody();
    }
 
    public JBossMessage(byte type)
@@ -200,8 +196,6 @@ public class JBossMessage implements javax.jms.Message
                                       (byte)4,
                                       new ByteBufferWrapper(ByteBuffer.allocate(1024)));
 
-      // TODO - can we lazily create this?
-      body = message.getBody();
    }
 
    /*
@@ -211,8 +205,6 @@ public class JBossMessage implements javax.jms.Message
    {
       message = session.createClientMessage(type, true, 0, System.currentTimeMillis(), (byte)4);
 
-      // TODO - can we lazily create this?
-      body = message.getBody();
    }
 
    public JBossMessage(final ClientSession session)
@@ -230,8 +222,6 @@ public class JBossMessage implements javax.jms.Message
       this.readOnly = true;
 
       this.session = session;
-
-      this.body = message.getBody();
    }
 
    /*
@@ -917,14 +907,16 @@ public class JBossMessage implements javax.jms.Message
 
    public void doBeforeSend() throws Exception
    {
-      body.flip();
-
-      message.setBody(body);
+      message.getBody().flip();
    }
 
    public void doBeforeReceive() throws Exception
    {
-      body = message.getBody();
+      MessagingBuffer body = message.getBody();
+      if (body != null)
+      {
+         body.rewind();
+      }
    }
 
    public byte getType()
@@ -965,6 +957,11 @@ public class JBossMessage implements javax.jms.Message
       {
          throw new MessageNotReadableException("Message is write-only");
       }
+   }
+   
+   protected MessagingBuffer getBody()
+   {
+      return message.getBody();
    }
 
    // Private ------------------------------------------------------------

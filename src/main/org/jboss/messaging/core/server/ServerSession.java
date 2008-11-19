@@ -37,6 +37,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendChunkMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
@@ -63,6 +64,8 @@ public interface ServerSession
    String getUsername();
 
    String getPassword();
+   
+   int getMinLargeMessageSize();
 
    void removeConsumer(ServerConsumer consumer) throws Exception;
 
@@ -123,6 +126,8 @@ public interface ServerSession
    void handleCloseConsumer(SessionConsumerCloseMessage packet);
 
    void handleReceiveConsumerCredits(SessionConsumerFlowCreditMessage packet);
+
+   public void handleSendChunkMessage(SessionSendChunkMessage packet);
 
    void handleSend(SessionSendMessage packet);
 

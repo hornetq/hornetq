@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.client.impl;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EXCEPTION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CHUNK_SEND;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_MSG;
 
 import org.jboss.messaging.core.logging.Logger;
@@ -31,6 +32,7 @@ import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendChunkMessage;
 
 /**
  *
@@ -48,20 +50,27 @@ public class ClientSessionPacketHandler implements ChannelHandler
    private final Channel channel;
 
    public ClientSessionPacketHandler(final ClientSessionInternal clientSesssion, final Channel channel)
-   {     
+   {
       this.clientSession = clientSesssion;
       
       this.channel = channel;
    }
-      
+
    public void handlePacket(final Packet packet)
    {
       byte type = packet.getType();
-       
+
       try
       {
          switch (type)
          {
+            case SESS_CHUNK_SEND:
+            {
+               SessionSendChunkMessage chunk = (SessionSendChunkMessage)packet;
+               clientSession.handleReceiveChunk(chunk.getTargetID(), chunk);
+
+               break;
+            }
             case SESS_RECEIVE_MSG:
             {
                SessionReceiveMessage message = (SessionReceiveMessage) packet;

@@ -40,6 +40,11 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
    public NIOSequentialFileFactory(final String journalDir)
    {
       super(journalDir);
+      
+      if (journalDir == null)
+      {
+         new Exception ("journalDir is null").printStackTrace();
+      }
    }
 
    // maxIO is ignored on NIO

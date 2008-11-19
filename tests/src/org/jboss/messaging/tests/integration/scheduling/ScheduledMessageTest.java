@@ -21,7 +21,6 @@
  */
 package org.jboss.messaging.tests.integration.scheduling;
 
-import java.io.File;
 import java.util.Calendar;
 
 import javax.transaction.xa.XAResource;
@@ -32,60 +31,38 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
-import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.util.id.GUID;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class ScheduledMessageTest extends UnitTestCase
+public class ScheduledMessageTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(ScheduledMessageTest.class);
   
-   private static final String ACCEPTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory";
-
-   private static final String CONNECTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory";
-
-   private String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/ScheduledMessageRecoveryTest/journal";
-
-   private String bindingsDir = System.getProperty("java.io.tmpdir", "/tmp") + "/ScheduledMessageRecoveryTest/bindings";
-
-   private String pageDir = System.getProperty("java.io.tmpdir", "/tmp") + "/ScheduledMessageRecoveryTest/page";
-
    private SimpleString atestq = new SimpleString("ascheduledtestq");
 
    private SimpleString atestq2 = new SimpleString("ascheduledtestq2");
 
-   private MessagingService messagingService;
-
-   private ConfigurationImpl configuration;
+   private Configuration configuration;
 
    protected void setUp() throws Exception
    {
-      File file = new File(journalDir);
-      File file2 = new File(bindingsDir);
-      File file3 = new File(pageDir);
-      deleteDirectory(file);
-      file.mkdirs();
-      deleteDirectory(file2);
-      file2.mkdirs();
-      deleteDirectory(file3);
-      file3.mkdirs();
-      configuration = new ConfigurationImpl();
+      super.clearData();
+      configuration = createDefaultConfig();
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
-      configuration.setPagingDirectory(pageDir);
+      configuration.setPagingMaxGlobalSizeBytes(-1);
+      messagingService = createService(true, configuration);
+      messagingService.start();
    }
 
    protected void tearDown() throws Exception
@@ -102,9 +79,7 @@ public class ScheduledMessageTest extends UnitTestCase
             // ignore
          }
       }
-      new File(journalDir).delete();
-      new File(bindingsDir).delete();
-      new File(pageDir).delete();
+      deleteData();
    }
 
    public void testRecoveredMessageDeliveredCorrectly() throws Exception
@@ -159,14 +134,8 @@ public class ScheduledMessageTest extends UnitTestCase
 
    public void testPagedMessageDeliveredCorrectly() throws Exception
    {
-      TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
-      configuration.getAcceptorConfigurations().add(transportConfig);
-      configuration.setPagingMaxGlobalSizeBytes(0);
-      messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
-      // start the server
-      messagingService.start();
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = createInVMFactory(); 
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true, true, true);
       ClientProducer producer = session.createProducer(atestq);
@@ -198,17 +167,11 @@ public class ScheduledMessageTest extends UnitTestCase
 
    public void testPagedMessageDeliveredMultipleConsumersCorrectly() throws Exception
    {
-      TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
-      configuration.getAcceptorConfigurations().add(transportConfig);
-      configuration.setPagingMaxGlobalSizeBytes(0);
-      messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
-      // start the server
-      messagingService.start();
       QueueSettings qs = new QueueSettings();
       qs.setRedeliveryDelay(5000l);
       messagingService.getServer().getQueueSettingsRepository().addMatch(atestq2.toString(), qs);
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true, true, true);
       session.createQueue(atestq, atestq2, null, true, true, true);
@@ -253,17 +216,11 @@ public class ScheduledMessageTest extends UnitTestCase
    public void testPagedMessageDeliveredMultipleConsumersAfterRecoverCorrectly() throws Exception
    {
 
-      TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
-      configuration.getAcceptorConfigurations().add(transportConfig);
-      configuration.setPagingMaxGlobalSizeBytes(0);
-      messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
-      // start the server
-      messagingService.start();
       QueueSettings qs = new QueueSettings();
       qs.setRedeliveryDelay(5000l);
       messagingService.getServer().getQueueSettingsRepository().addMatch(atestq2.toString(), qs);
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true, true, true);
       session.createQueue(atestq, atestq2, null, true, true, true);
@@ -289,9 +246,9 @@ public class ScheduledMessageTest extends UnitTestCase
       session.close();
       messagingService.stop();
       messagingService = null;
-      messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
+      messagingService = createService(true, configuration);
       messagingService.start();
-      sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
+      sessionFactory = createInVMFactory();
       session = sessionFactory.createSession(false, true, true);
       consumer = session.createConsumer(atestq);
       consumer2 = session.createConsumer(atestq2);
@@ -317,13 +274,8 @@ public class ScheduledMessageTest extends UnitTestCase
    public void testMessageDeliveredCorrectly(boolean recover) throws Exception
    {
 
-      TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
-      configuration.getAcceptorConfigurations().add(transportConfig);
-      messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
-      // start the server
-      messagingService.start();
-      // then we create a client as normal
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
+       // then we create a client as normal
+      ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true, true, true);
       ClientProducer producer = session.createProducer(atestq);
@@ -347,9 +299,9 @@ public class ScheduledMessageTest extends UnitTestCase
          session.close();
          messagingService.stop();
          messagingService = null;
-         messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
+         messagingService = createService(true, configuration);
          messagingService.start();
-         sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
+         sessionFactory = createInVMFactory();
          session = sessionFactory.createSession(false, true, true);
       }
       ClientConsumer consumer = session.createConsumer(atestq);
@@ -373,13 +325,7 @@ public class ScheduledMessageTest extends UnitTestCase
    public void testScheduledMessagesDeliveredCorrectly(boolean recover) throws Exception
    {
 
-      TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
-      configuration.getAcceptorConfigurations().add(transportConfig);
-      messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
-      // start the server
-      messagingService.start();
-      // then we create a client as normal
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true, true, true);
       ClientProducer producer = session.createProducer(atestq);
@@ -411,10 +357,10 @@ public class ScheduledMessageTest extends UnitTestCase
          session.close();
          messagingService.stop();
          messagingService = null;
-         messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
+         messagingService = createService(true, configuration);
          messagingService.start();
 
-         sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
+         sessionFactory = createInVMFactory();
 
          session = sessionFactory.createSession(false, true, true);
       }
@@ -459,13 +405,7 @@ public class ScheduledMessageTest extends UnitTestCase
    public void testScheduledMessagesDeliveredCorrectlyDifferentOrder(boolean recover) throws Exception
    {
 
-      TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
-      configuration.getAcceptorConfigurations().add(transportConfig);
-      messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
-      // start the server
-      messagingService.start();
-      // then we create a client as normal
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true, true, true);
       ClientProducer producer = session.createProducer(atestq);
@@ -498,10 +438,10 @@ public class ScheduledMessageTest extends UnitTestCase
          session.close();
          messagingService.stop();
          messagingService = null;
-         messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
+         messagingService = createService(true, configuration);
          messagingService.start();
 
-         sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
+         sessionFactory = createInVMFactory();
 
          session = sessionFactory.createSession(false, true, true);
 
@@ -546,13 +486,7 @@ public class ScheduledMessageTest extends UnitTestCase
    public void testScheduledAndNormalMessagesDeliveredCorrectly(boolean recover) throws Exception
    {
 
-      TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
-      configuration.getAcceptorConfigurations().add(transportConfig);
-      messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
-      // start the server
-      messagingService.start();
-      // then we create a client as normal
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true, true, true);
       ClientProducer producer = session.createProducer(atestq);
@@ -581,10 +515,10 @@ public class ScheduledMessageTest extends UnitTestCase
          session.close();
          messagingService.stop();
          messagingService = null;
-         messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
+         messagingService = createService(true, configuration);
          messagingService.start();
 
-         sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
+         sessionFactory = createInVMFactory();
 
          session = sessionFactory.createSession(false, true, true);
       }
@@ -625,13 +559,9 @@ public class ScheduledMessageTest extends UnitTestCase
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
       Xid xid2 = new XidImpl("xa2".getBytes(), 1, new GUID().toString().getBytes());
-      TransportConfiguration transportConfig = new TransportConfiguration(ACCEPTOR_FACTORY);
-      configuration.getAcceptorConfigurations().add(transportConfig);
-      messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
-      // start the server
-      messagingService.start();
-      // then we create a client as normal
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
+
+      
+      ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(true, false, false);
       session.createQueue(atestq, atestq, null, true, false, true);
       session.start(xid, XAResource.TMNOFLAGS);
@@ -656,10 +586,10 @@ public class ScheduledMessageTest extends UnitTestCase
          session.close();
          messagingService.stop();
          messagingService = null;
-         messagingService = MessagingServiceImpl.newNioStorageMessagingServer(configuration, journalDir, bindingsDir);
+         messagingService = createService(true, configuration);
          messagingService.start();
 
-         sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(CONNECTOR_FACTORY));
+         sessionFactory = createInVMFactory();
 
          session = sessionFactory.createSession(true, false, false);
       }

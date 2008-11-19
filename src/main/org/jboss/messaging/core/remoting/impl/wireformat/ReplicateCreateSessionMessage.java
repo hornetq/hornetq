@@ -45,6 +45,8 @@ public class ReplicateCreateSessionMessage extends PacketImpl
    private String username;
 
    private String password;
+   
+   private int minLargeMessageSize;
 
    private boolean xa;
 
@@ -63,6 +65,7 @@ public class ReplicateCreateSessionMessage extends PacketImpl
                                         final int version,
                                         final String username,
                                         final String password,
+                                        final int minLargeMessageSize,
                                         final boolean xa,
                                         final boolean autoCommitSends,
                                         final boolean autoCommitAcks,
@@ -79,6 +82,8 @@ public class ReplicateCreateSessionMessage extends PacketImpl
       this.username = username;
 
       this.password = password;
+      
+      this.minLargeMessageSize = minLargeMessageSize;
 
       this.xa = xa;
 
@@ -120,6 +125,11 @@ public class ReplicateCreateSessionMessage extends PacketImpl
    {
       return password;
    }
+   
+   public int getMinLargeMessageSize()
+   {
+      return minLargeMessageSize;
+   }
 
    public boolean isXA()
    {
@@ -148,6 +158,7 @@ public class ReplicateCreateSessionMessage extends PacketImpl
       buffer.putInt(version);
       buffer.putNullableString(username);
       buffer.putNullableString(password);
+      buffer.putInt(minLargeMessageSize);
       buffer.putBoolean(xa);
       buffer.putBoolean(autoCommitSends);
       buffer.putBoolean(autoCommitAcks);
@@ -161,6 +172,7 @@ public class ReplicateCreateSessionMessage extends PacketImpl
       version = buffer.getInt();
       username = buffer.getNullableString();
       password = buffer.getNullableString();
+      minLargeMessageSize = buffer.getInt();
       xa = buffer.getBoolean();
       autoCommitSends = buffer.getBoolean();
       autoCommitAcks = buffer.getBoolean();
@@ -184,6 +196,7 @@ public class ReplicateCreateSessionMessage extends PacketImpl
                         this.autoCommitAcks == r.autoCommitAcks &&
                         (this.username == null ? r.username == null : this.username.equals(r.username)) &&
                         (this.password == null ? r.password == null : this.password.equals(r.password)) &&
+                        this.minLargeMessageSize == r.minLargeMessageSize &&
                         this.windowSize == r.windowSize;
 
       return matches;

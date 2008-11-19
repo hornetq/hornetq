@@ -28,7 +28,10 @@ public class PacketImpl implements Packet
 
    private static final Logger log = Logger.getLogger(PacketImpl.class);
 
-   public static final int INITIAL_BUFFER_SIZE = 1024;
+   public static final int DEFAULT_PACKET_SIZE = 1024;
+   
+   // The minimal size for all the packets, Common data for all the packets (look at PacketImpl.encode)
+   protected static final int BASIC_PACKET_SIZE = DataConstants.SIZE_INT + DataConstants.SIZE_BYTE + DataConstants.SIZE_LONG;
 
    private long channelID;
 
@@ -142,6 +145,8 @@ public class PacketImpl implements Packet
 
    public static final byte SESS_REPLICATE_DELIVERY = 81;
 
+   public static final byte SESS_CHUNK_SEND = 95;
+
    // Static --------------------------------------------------------
 
    public PacketImpl(final byte type)
@@ -151,6 +156,7 @@ public class PacketImpl implements Packet
 
    // Public --------------------------------------------------------
 
+   
    public byte getType()
    {
       return type;
@@ -196,9 +202,14 @@ public class PacketImpl implements Packet
       size = buffer.position();
    }
    
-   public int getPacketSize()
+   public final int getPacketSize()
    {
       return size;
+   }
+   
+   public int getRequiredBufferSize()
+   {
+      return DEFAULT_PACKET_SIZE;
    }
 
    public boolean isResponse()

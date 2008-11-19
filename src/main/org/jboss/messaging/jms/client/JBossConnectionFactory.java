@@ -85,6 +85,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    private final int sendWindowSize;
 
    private final int producerMaxRate;
+   
+   private final int minLargeMessageSize;
 
    private final boolean blockOnAcknowledge;
 
@@ -109,6 +111,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  final int consumerMaxRate,
                                  final int sendWindowSize,
                                  final int producerMaxRate,
+                                 final int minLargeMessageSize,
                                  final boolean blockOnAcknowledge,
                                  final boolean blockOnNonPersistentSend,
                                  final boolean blockOnPersistentSend,
@@ -127,6 +130,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.producerMaxRate = producerMaxRate;
       this.sendWindowSize = sendWindowSize;
       this.blockOnAcknowledge = blockOnAcknowledge;
+      this.minLargeMessageSize = minLargeMessageSize;
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
       this.blockOnPersistentSend = blockOnPersistentSend;
       this.autoGroup = autoGroup;
@@ -301,6 +305,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                        consumerMaxRate,
                                                        sendWindowSize,
                                                        producerMaxRate,
+                                                       minLargeMessageSize,
                                                        blockOnAcknowledge,
                                                        blockOnNonPersistentSend,
                                                        blockOnPersistentSend,

@@ -49,6 +49,7 @@ public class JMSTestCase extends JBMServerTestCase
                                                     ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
                                                     ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
                                                     ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                                    -1,
                                                     true,
                                                     true,
                                                     true,

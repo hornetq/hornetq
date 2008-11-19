@@ -18,9 +18,11 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.client;
+
+import java.io.File;
 
 import org.jboss.messaging.core.exception.MessagingException;
 
@@ -30,20 +32,23 @@ import org.jboss.messaging.core.exception.MessagingException;
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  */
 public interface ClientConsumer
-{      
-	ClientMessage receive() throws MessagingException;
-	
+{
+   ClientMessage receive() throws MessagingException;
+
    ClientMessage receive(long timeout) throws MessagingException;
-   
+
    ClientMessage receiveImmediate() throws MessagingException;
-   
+
    MessageHandler getMessageHandler() throws MessagingException;
 
    void setMessageHandler(MessageHandler handler) throws MessagingException;
-   
+
    void close() throws MessagingException;
    
    boolean isClosed();   
    
+
+   boolean isFileConsumer();
+
    Exception getLastException();
 }

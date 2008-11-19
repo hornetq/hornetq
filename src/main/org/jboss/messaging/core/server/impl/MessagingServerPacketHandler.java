@@ -68,7 +68,8 @@ public class MessagingServerPacketHandler implements ChannelHandler
 
          Packet replPacket = new ReplicateCreateSessionMessage(msg.getName(), msg.getSessionChannelID(),
                                                                msg.getVersion(), msg.getUsername(),
-                                                               msg.getPassword(), msg.isXA(),
+                                                               msg.getPassword(), msg.getMinLargeMessageSize(), 
+                                                               msg.isXA(),
                                                                msg.isAutoCommitSends(),
                                                                msg.isAutoCommitAcks(),
                                                                msg.getWindowSize());
@@ -94,6 +95,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
                                                request.getSessionChannelID(),
                                                request.getUsername(),
                                                request.getPassword(),
+                                               request.getMinLargeMessageSize(),
                                                request.getVersion(),
                                                connection,
                                                request.isAutoCommitSends(),
@@ -110,6 +112,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
                                                         request.getSessionChannelID(),
                                                         request.getUsername(),
                                                         request.getPassword(),
+                                                        request.getMinLargeMessageSize(),
                                                         request.getVersion(),
                                                         connection,
                                                         request.isAutoCommitSends(),

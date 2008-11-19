@@ -130,13 +130,13 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    {
       complete = true;
       /** 
-       * this is to avoid a race condition where the transaction still being committed another thread is depaging messages
+       * this is to avoid a race condition where the transaction still being committed while another thread is depaging messages
        */
       countDownCompleted.countDown();
    }
 
    /** 
-    * this is to avoid a race condition where the transaction still being committed another thread is depaging messages
+    * this is to avoid a race condition where the transaction still being committed while another thread is depaging messages
     */
    public boolean waitCompletion() throws InterruptedException
    {

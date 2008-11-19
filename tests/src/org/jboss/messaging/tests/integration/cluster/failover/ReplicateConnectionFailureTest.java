@@ -87,12 +87,14 @@ public class ReplicateConnectionFailureTest extends TestCase
                                                                       ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
                                                                       ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
                                                                       ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                                                      ClientSessionFactoryImpl.DEFAULT_BIG_MESSAGE_SIZE,
                                                                       ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                                                                       ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
                                                                       ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
                                                                       ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                                                                       ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
                                                                       ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
+      
 
       sf1.setSendWindowSize(32 * 1024);
 

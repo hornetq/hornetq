@@ -60,6 +60,10 @@ public class ConfigurationImpl implements Configuration
    public static final String DEFAULT_JOURNAL_DIR = "data/journal";
 
    public static final String DEFAULT_PAGING_DIR = "data/paging";
+   
+   public static final long DEFAULT_DEFAULT_PAGE_SIZE = 10 * 1024 * 1024;
+   
+   public static final String DEFAULT_LARGEMESSAGES_DIR = "data/largemessages";
 
    public static final boolean DEFAULT_CREATE_JOURNAL_DIR = true;
 
@@ -127,15 +131,19 @@ public class ConfigurationImpl implements Configuration
    
    protected Set<DiscoveryGroupConfiguration> discoveryGroupConfigurations = new HashSet<DiscoveryGroupConfiguration>();
 
-      
-   // Paging related attributes
+   // Paging related attributes ------------------------------------------------------------
 
    protected long pagingMaxGlobalSize = -1;
+   
+   protected long pagingDefaultSize = DEFAULT_DEFAULT_PAGE_SIZE;
 
    protected String pagingDirectory = DEFAULT_PAGING_DIR;
+   
 
-   // Journal related attributes
+   // File related attributes -----------------------------------------------------------
 
+   protected String largeMessagesDirectory = DEFAULT_LARGEMESSAGES_DIR;
+   
    protected String bindingsDirectory = DEFAULT_BINDINGS_DIRECTORY;
 
    protected boolean createBindingsDir = DEFAULT_CREATE_BINDINGS_DIR;
@@ -478,6 +486,34 @@ public class ConfigurationImpl implements Configuration
    {
       pagingMaxGlobalSize = maxGlobalSize;
    }
+   
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.config.Configuration#getPagingDefaultSize()
+    */
+   public long getPagingDefaultSize()
+   {
+      return pagingDefaultSize;
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.config.Configuration#setPagingDefaultSize(long)
+    */
+   public void setPagingDefaultSize(long pageSize)
+   {
+      this.pagingDefaultSize = pageSize;
+   }
+   
+   
+   public String getLargeMessagesDirectory()
+   {
+      return largeMessagesDirectory;
+   }
+   
+   public void setLargeMessagesDirectory(final String directory)
+   {
+      this.largeMessagesDirectory = directory;
+   }
+   
 
    public boolean isMessageCounterEnabled()
    {
@@ -517,6 +553,7 @@ public class ConfigurationImpl implements Configuration
              cother.isRequireDestinations() == isRequireDestinations() &&
              cother.isSecurityEnabled() == isSecurityEnabled() &&
              cother.isWildcardRoutingEnabled() == isWildcardRoutingEnabled() &&
+             cother.getLargeMessagesDirectory().equals(getLargeMessagesDirectory()) &&
              cother.getBindingsDirectory().equals(getBindingsDirectory()) &&
              cother.getJournalDirectory().equals(getJournalDirectory()) &&
              cother.getJournalFileSize() == getJournalFileSize() &&
@@ -525,8 +562,12 @@ public class ConfigurationImpl implements Configuration
              cother.getJournalType() == getJournalType() &&
              cother.getScheduledThreadPoolMaxSize() == getScheduledThreadPoolMaxSize() &&
              cother.getSecurityInvalidationInterval() == getSecurityInvalidationInterval() &&
-             cother.getManagementAddress().equals(getManagementAddress());
+             cother.getManagementAddress().equals(getManagementAddress()) &&
+             cother.getPagingDefaultSize() == getPagingDefaultSize();
    }
+   
+   
+
    
    
 
