@@ -247,6 +247,11 @@ public class MessagingServerImpl implements MessagingServer
       postOffice.start();
       resourceManager.start();
 
+      if (!postOffice.containsDestination(configuration.getManagementNotificationAddress()))
+      {
+         postOffice.addDestination(configuration.getManagementNotificationAddress(), true);
+      }
+
       TransportConfiguration backupConnector = configuration.getBackupConnectorConfiguration();
 
       if (backupConnector != null)

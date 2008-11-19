@@ -48,6 +48,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -624,12 +625,5 @@ public class MessagingServerControl extends StandardMBean implements MessagingSe
       messageCounterManager.resetAllCounters();
 
       messageCounterManager.resetAllCounterHistories();
-   }
-
-   // Inner classes -------------------------------------------------
-
-   public static enum NotificationType
-   {
-      QUEUE_CREATED, QUEUE_DESTROYED, ADDRESS_ADDED, ADDRESS_REMOVED;
    }
 }

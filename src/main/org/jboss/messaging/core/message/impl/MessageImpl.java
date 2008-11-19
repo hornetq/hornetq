@@ -347,6 +347,11 @@ public abstract class MessageImpl implements Message
       properties.putStringProperty(key, value);
    }
 
+   public void putTypedProperties(TypedProperties otherProps)
+   {
+      properties.putTypedProperties(otherProps);
+   }
+
    public Object getProperty(final SimpleString key)
    {
       return properties.getProperty(key);

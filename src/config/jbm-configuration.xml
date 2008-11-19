@@ -41,11 +41,14 @@
 
       <wild-card-routing-enabled>true</wild-card-routing-enabled>
 
-      <!-- by default, message counter is disabled -->
-      <message-counter-enabled>false</message-counter-enabled>
+      <management-address>admin.management</management-address>
+      <management-notification-address>admin.notification</management-notification-address>      
 
       <!-- true to expose JBoss Messaging resources through JMX -->
       <jmx-management-enabled>true</jmx-management-enabled>
+
+      <!-- by default, message counter is disabled -->
+      <message-counter-enabled>false</message-counter-enabled>
     
       <connection-scan-period>10000</connection-scan-period>
 
@@ -64,9 +67,7 @@
       <backup>false</backup>
       
       <queue-activation-timeout>30000</queue-activation-timeout>
-      
-      <management-address>admin.management</management-address>
-      
+
       <!--
       <backup-connector>
          <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>

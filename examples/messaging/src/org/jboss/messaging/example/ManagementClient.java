@@ -22,6 +22,9 @@
 package org.jboss.messaging.example;
 
 import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
+
+import java.util.Set;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -47,6 +50,7 @@ public class ManagementClient
    public static void main(final String[] args) throws Exception
    {
       SimpleString replytoQueue = new SimpleString("replyto.adminQueue");
+
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));
       final ClientSession clientSession = sessionFactory.createSession(false, true, true);
       SimpleString queue = new SimpleString("queuejms.testQueue");
@@ -57,14 +61,6 @@ public class ManagementClient
       clientSession.addDestination(replytoQueue, false, true);
       clientSession.createQueue(replytoQueue, replytoQueue, null, false, true, true);
 
-      // create a management message to subscribe to notifications from the
-      // server
-      ClientProducer producer = clientSession.createProducer(DEFAULT_MANAGEMENT_ADDRESS);
-      ClientMessage mngmntMessage = clientSession.createClientMessage(false);
-      ManagementHelper.putNotificationSubscription(mngmntMessage, replytoQueue, true);
-      producer.send(DEFAULT_MANAGEMENT_ADDRESS, mngmntMessage);
-      System.out.println("send message to subscribe to notifications");
-
       ClientConsumer mngmntConsumer = clientSession.createConsumer(replytoQueue);
       mngmntConsumer.setMessageHandler(new MessageHandler()
       {
@@ -72,11 +68,7 @@ public class ManagementClient
          public void onMessage(final ClientMessage message)
          {
             System.out.println("received management message");
-            if (ManagementHelper.isNotification(message))
-            {
-               System.out.println("\tnotification: " + ManagementHelper.getNotification(message));
-            }
-            else if (ManagementHelper.isOperationResult(message))
+            if (ManagementHelper.isOperationResult(message))
             {
                System.out.println("\toperation succeeded:" + ManagementHelper.hasOperationSucceeded(message));
                if (ManagementHelper.hasOperationSucceeded(message))
@@ -105,6 +97,33 @@ public class ManagementClient
          }
 
       });
+
+      SimpleString notifQueue = new SimpleString("notifQueue");
+      clientSession.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, null, false, true, true);
+      ClientConsumer notifConsumer = clientSession.createConsumer(notifQueue);
+      notifConsumer.setMessageHandler(new MessageHandler()
+      {
+
+         public void onMessage(final ClientMessage message)
+         {
+            System.out.println("received notification" + message);
+            Set<SimpleString> propertyNames = message.getPropertyNames();
+
+            for (SimpleString key : propertyNames)
+            {
+               System.out.println(key + "=" + message.getProperty(key));
+            }
+            try
+            {
+               message.acknowledge();
+            }
+            catch (MessagingException e)
+            {
+               e.printStackTrace();
+            }
+         }
+
+      });
       clientSession.start();
 
       // add and remove a destination to receive two notifications from the
@@ -112,9 +131,11 @@ public class ManagementClient
       clientSession.addDestination(new SimpleString("anotherQueue"), false, true);
       clientSession.removeDestination(new SimpleString("anotherQueue"), false);
 
+      ClientProducer producer = clientSession.createProducer(replytoQueue);
+
       // to set a new value for an attribute, invoke the corresponding setter
       // method
-      mngmntMessage = clientSession.createClientMessage(false);
+      ClientMessage mngmntMessage = clientSession.createClientMessage(false);
       ManagementHelper.putOperationInvocation(mngmntMessage,
                                               replytoQueue,
                                               ManagementServiceImpl.getMessagingServerObjectName(),
@@ -145,21 +166,16 @@ public class ManagementClient
       producer.send(DEFAULT_MANAGEMENT_ADDRESS, mngmntMessage);
       System.out.println("sent management message to invoke operation");
 
-      // create a message to unsubscribe from the notifications sent by the
-      // server
-      mngmntMessage = clientSession.createClientMessage(false);
-      ManagementHelper.putNotificationSubscription(mngmntMessage, replytoQueue, false);
-      producer.send(DEFAULT_MANAGEMENT_ADDRESS, mngmntMessage);
-      System.out.println("send message to unsubscribe to notifications");
-
       Thread.sleep(5000);
 
       mngmntConsumer.close();
 
       consumeMessages(clientSession, queue);
 
+      notifConsumer.close();
       clientSession.removeDestination(replytoQueue, false);
       clientSession.deleteQueue(replytoQueue);
+      clientSession.deleteQueue(notifQueue);
 
       clientSession.close();
    }
@@ -171,7 +187,10 @@ public class ManagementClient
       do
       {
          m = clientConsumer.receive(5000);
-         m.acknowledge();
+         if (m != null)
+         {
+            m.acknowledge();
+         }
       }
       while (m != null);
       clientSession.commit();

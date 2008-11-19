@@ -107,7 +107,11 @@ public interface Configuration extends Serializable
    
    void setManagementAddress(SimpleString address);
 
+   SimpleString getManagementNotificationAddress();
+   
+   void setManagementNotificationAddress(SimpleString address);
 
+   
    // Journal related attributes ------------------------------------------------------------
 
    String getBindingsDirectory();

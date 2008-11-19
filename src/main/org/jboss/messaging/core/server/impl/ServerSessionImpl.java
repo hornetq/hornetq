@@ -23,8 +23,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
-import javax.management.Notification;
-import javax.management.NotificationListener;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
@@ -106,7 +104,7 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  */
-public class ServerSessionImpl implements ServerSession, FailureListener, NotificationListener
+public class ServerSessionImpl implements ServerSession, FailureListener
 {
    // Constants -----------------------------------------------------------------------------
 
@@ -2317,39 +2315,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
    {
       doSecurity(message);
 
-      if (message.containsProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS))
-      {
-         boolean subscribe = (Boolean)message.getProperty(ManagementHelper.HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS);
+      managementService.handleMessage(message);
 
-         final SimpleString replyTo = (SimpleString)message.getProperty(ManagementHelper.HDR_JMX_REPLYTO);
+      message.setDestination((SimpleString)message.getProperty(ManagementHelper.HDR_JMX_REPLYTO));
 
-         if (subscribe)
-         {
-            if (log.isDebugEnabled())
-            {
-               log.debug("added notification listener " + this);
-            }
-
-            managementService.addNotificationListener(this, null, replyTo);
-         }
-         else
-         {
-            if (log.isDebugEnabled())
-            {
-               log.debug("removed notification listener " + this);
-            }
-
-            managementService.removeNotificationListener(this);
-         }
-      }
-      else
-      {
-         managementService.handleMessage(message);
-
-         message.setDestination((SimpleString)message.getProperty(ManagementHelper.HDR_JMX_REPLYTO));
-
-         send(message);
-      }
+      send(message);
    }
 
    public void handleReplicatedDelivery(final SessionReplicateDeliveryMessage packet)
@@ -2426,25 +2396,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, Notifi
       catch (Throwable t)
       {
          log.error("Failed to close connection " + this);
-      }
-   }
-
-   // NotificationListener implementation -------------------------------------
-
-   public void handleNotification(final Notification notification, final Object replyTo)
-   {
-      // FIXME this won't work with replication
-      ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
-      notificationMessage.setDestination((SimpleString)replyTo);
-      notificationMessage.setBody(new ByteBufferWrapper(ByteBuffer.allocate(2048)));
-      ManagementHelper.storeNotification(notificationMessage, notification);
-      try
-      {
-         send(notificationMessage);
-      }
-      catch (Exception e)
-      {
-         log.warn("problem while sending a notification message " + notification, e);
       }
    }
 

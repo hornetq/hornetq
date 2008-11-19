@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.TypedProperties;
 
 /**
  * A message is a routable instance that has a payload.
@@ -114,7 +115,8 @@ public interface Message
    
    void putStringProperty(SimpleString key, SimpleString value);
    
-   
+   void putTypedProperties(TypedProperties properties);
+
    // TODO - should have typed property getters and do conversions herein
    
    Object getProperty(SimpleString key);

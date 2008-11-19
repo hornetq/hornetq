@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
@@ -139,6 +140,21 @@ public class TypedProperties
       doPutValue(key, new CharValue(value));
    }
 
+   public void putTypedProperties(final TypedProperties otherProps)
+   {
+      if (otherProps == null || otherProps.properties == null)
+      {
+         return;
+      }
+      
+      checkCreateProperties();
+      Set<Entry<SimpleString,PropertyValue>> otherEntries = otherProps.properties.entrySet();
+      for (Entry<SimpleString, PropertyValue> otherEntry : otherEntries)
+      {
+         doPutValue(otherEntry.getKey(), otherEntry.getValue());
+      }
+   }
+   
    public Object getProperty(final SimpleString key)
    {
       return doGetProperty(key);

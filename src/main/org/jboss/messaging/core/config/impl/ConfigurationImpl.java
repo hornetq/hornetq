@@ -91,6 +91,8 @@ public class ConfigurationImpl implements Configuration
    
    public static final SimpleString DEFAULT_MANAGEMENT_ADDRESS = new SimpleString("admin.management");
    
+   public static final SimpleString DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleString("admin.notification");
+
    public static final long DEFAULT_BROADCAST_PERIOD = 5000;
    
    public static final long DEFAULT_BROADCAST_REFRESH_TIMEOUT = 10000;
@@ -175,6 +177,8 @@ public class ConfigurationImpl implements Configuration
    protected long transactionTimeoutScanPeriod = DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD;
    
    protected SimpleString managementAddress = DEFAULT_MANAGEMENT_ADDRESS;
+
+   protected SimpleString managementNotificationAddress = DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
 
    public boolean isClustered()
    {
@@ -528,6 +532,16 @@ public class ConfigurationImpl implements Configuration
    public void setManagementAddress(SimpleString address)
    {
       this.managementAddress = address;
+   }
+   
+   public SimpleString getManagementNotificationAddress()
+   {
+      return managementNotificationAddress ;
+   }
+   
+   public void setManagementNotificationAddress(SimpleString address)
+   {
+      this.managementNotificationAddress = address;
    }
       
 

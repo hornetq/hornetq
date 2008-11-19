@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import javax.management.Notification;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
@@ -59,21 +58,15 @@ public class ManagementHelper
 
    public static final SimpleString HDR_JMX_OPERATION_EXCEPTION = new SimpleString("JBMJMXOperationException");
 
-   public static final SimpleString HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS = new SimpleString("JBMJMXSubscribeToNotification");
+   public static final SimpleString HDR_NOTIFICATION_TYPE = new SimpleString("JBMNotifType");
 
-   public static final SimpleString HDR_JMX_NOTIFICATION = new SimpleString("JBMJMXNotification");
+   public static final SimpleString HDR_NOTIFICATION_MESSAGE = new SimpleString("JBMNotifMessage");
+
+   public static final SimpleString HDR_NOTIFICATION_TIMESTAMP = new SimpleString("JBMNotifTimestamp");
 
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-
-   public static void putNotificationSubscription(final Message message,
-                                                  final SimpleString replyTo,
-                                                  final boolean subscribeToNotifications)
-   {
-      message.putStringProperty(HDR_JMX_REPLYTO, replyTo);
-      message.putBooleanProperty(HDR_JMX_SUBSCRIBE_TO_NOTIFICATIONS, subscribeToNotifications);
-   }
 
    public static void putAttributes(final Message message,
                                     final SimpleString replyTo,
@@ -108,46 +101,6 @@ public class ManagementHelper
       }
    }
 
-   public static void storeNotification(final Message message, final Notification notification)
-   {
-      message.putBooleanProperty(HDR_JMX_NOTIFICATION, true);
-      message.putStringProperty(new SimpleString("message"), new SimpleString(notification.getMessage()));
-      message.putStringProperty(new SimpleString("type"), new SimpleString(notification.getType()));
-      message.putLongProperty(new SimpleString("sequenceNumber"), notification.getSequenceNumber());
-      message.putLongProperty(new SimpleString("timestamp"), notification.getTimeStamp());
-      if (notification.getSource() instanceof ObjectName)
-      {
-         message.putStringProperty(new SimpleString("source"), new SimpleString(notification.getSource().toString()));
-      }
-   }
-
-   public static Notification getNotification(final Message message)
-   {
-      SimpleString sourceStr = (SimpleString)message.getProperty(new SimpleString("source"));
-      Object source = null;
-      if (sourceStr != null)
-      {
-         try
-         {
-            source = ObjectName.getInstance(sourceStr.toString());
-         }
-         catch (Exception e)
-         {
-         }
-      }
-      SimpleString type = (SimpleString)message.getProperty(new SimpleString("type"));
-      long sequenceNumber = (Long)message.getProperty(new SimpleString("sequenceNumber"));
-      long timestamp = (Long)message.getProperty(new SimpleString("timestamp"));
-
-      Notification notif = new Notification(type.toString(), source, sequenceNumber, timestamp, message.toString());
-      return notif;
-   }
-
-   public static boolean isNotification(final Message message)
-   {
-      return message.containsProperty(HDR_JMX_NOTIFICATION);
-   }
-
    public static boolean isOperationResult(final Message message)
    {
       return message.containsProperty(HDR_JMX_OPERATION_SUCCEEDED);
@@ -155,7 +108,7 @@ public class ManagementHelper
 
    public static boolean isAttributesResult(final Message message)
    {
-      return !(isNotification(message) && isOperationResult(message));
+      return !(isOperationResult(message));
    }
 
    public static TabularData getTabularDataProperty(final Message message, final String key)

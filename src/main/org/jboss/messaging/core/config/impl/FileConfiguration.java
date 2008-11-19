@@ -22,9 +22,6 @@
 
 package org.jboss.messaging.core.config.impl;
 
-import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MAX_FORWARD_BATCH_SIZE;
-import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MAX_FORWARD_BATCH_TIME;
-
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
@@ -101,6 +98,8 @@ public class FileConfiguration extends ConfigurationImpl
       transactionTimeoutScanPeriod = getLong(e, "transaction-timeout-scan-period", transactionTimeoutScanPeriod);
 
       managementAddress = new SimpleString(getString(e, "management-address", managementAddress.toString()));
+
+      managementNotificationAddress = new SimpleString(getString(e, "management-notification-address", managementNotificationAddress.toString()));
 
       NodeList interceptorNodes = e.getElementsByTagName("remoting-interceptors");
 

@@ -28,6 +28,7 @@ import static javax.management.ObjectName.quote;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,13 +37,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-import javax.management.ListenerNotFoundException;
-import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanServer;
-import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
-import javax.management.NotificationFilter;
-import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
@@ -51,21 +47,25 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.QueueControlMBean;
-import org.jboss.messaging.core.management.impl.MessagingServerControl.NotificationType;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.TypedProperties;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -90,9 +90,9 @@ public class ManagementServiceImpl implements ManagementService
 
    private final NotificationBroadcasterSupport broadcaster;
 
-   private AtomicLong notifSeq = new AtomicLong(0);
-
    private PostOffice postOffice;
+
+   private StorageManager storageManager;
 
    private HierarchicalRepository<Set<Role>> securityRepository;
 
@@ -101,6 +101,9 @@ public class ManagementServiceImpl implements ManagementService
    private MessagingServerControlMBean managedServer;
 
    private final MessageCounterManager messageCounterManager = new MessageCounterManagerImpl(10000);
+
+   private SimpleString managementNotificationAddress;
+
 
    // Static --------------------------------------------------------
 
@@ -137,7 +140,6 @@ public class ManagementServiceImpl implements ManagementService
       this.jmxManagementEnabled = jmxManagementEnabled;
       registry = new HashMap<ObjectName, Object>();
       broadcaster = new NotificationBroadcasterSupport();
-      notifSeq = new AtomicLong(0);
    }
 
    // Public --------------------------------------------------------
@@ -158,7 +160,8 @@ public class ManagementServiceImpl implements ManagementService
    {
       this.postOffice = postOffice;
       this.queueSettingsRepository = queueSettingsRepository;
-      
+      this.storageManager = storageManager;
+      this.managementNotificationAddress = configuration.getManagementNotificationAddress();
       managedServer = new MessagingServerControl(postOffice,
                                                  storageManager,
                                                  configuration,                                                
@@ -303,25 +306,6 @@ public class ManagementServiceImpl implements ManagementService
       return registry.get(objectName);
    }
 
-   // NotificatioBroadcaster implementation -----------------------------------
-
-   public void addNotificationListener(final NotificationListener listener,
-                                       final NotificationFilter filter,
-                                       final Object handback) throws IllegalArgumentException
-   {
-      broadcaster.addNotificationListener(listener, filter, handback);
-   }
-
-   public MBeanNotificationInfo[] getNotificationInfo()
-   {
-      return broadcaster.getNotificationInfo();
-   }
-
-   public void removeNotificationListener(final NotificationListener listener) throws ListenerNotFoundException
-   {
-      broadcaster.removeNotificationListener(listener);
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -370,15 +354,40 @@ public class ManagementServiceImpl implements ManagementService
       }
    }
 
-   private void sendNotification(final MessagingServerControl.NotificationType type, final String message) throws Exception
+   public void sendNotification(final NotificationType type, final String message) throws Exception
+   {
+     sendNotification(type, message, null);
+   }
+   
+   public void sendNotification(final NotificationType type, final String message, TypedProperties props) throws Exception
    {
       if (managedServer != null)
       {
-         Notification notif = new Notification(type.toString(),
-                                               getMessagingServerObjectName(),
-                                               notifSeq.incrementAndGet(),
-                                               message);
-         broadcaster.sendNotification(notif);
+         ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
+         notificationMessage.setDestination(managementNotificationAddress);
+         notificationMessage.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
+         
+         TypedProperties notifProps;
+         if (props != null)
+         {
+            notifProps = props;
+         } else
+         {
+            notifProps = new TypedProperties();
+         }
+         
+         notifProps.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE, new SimpleString(type.toString()));
+         notifProps.putStringProperty(ManagementHelper.HDR_NOTIFICATION_MESSAGE, new SimpleString(message)); 
+         notifProps.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis()); 
+         
+         notificationMessage.putTypedProperties(notifProps);
+
+         List<MessageReference> refs = postOffice.route(notificationMessage);
+         
+         for (MessageReference ref : refs)
+         {
+            ref.getQueue().addLast(ref);
+         }
       }
    }
 

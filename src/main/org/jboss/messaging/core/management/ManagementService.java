@@ -22,9 +22,9 @@
 
 package org.jboss.messaging.core.management;
 
-import javax.management.NotificationBroadcaster;
 import javax.management.ObjectName;
 
+import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -36,6 +36,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.TypedProperties;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -43,7 +44,7 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public interface ManagementService extends NotificationBroadcaster
+public interface ManagementService
 {
    MessageCounterManager getMessageCounterManager();
 
@@ -72,5 +73,19 @@ public interface ManagementService extends NotificationBroadcaster
 
    void handleMessage(ServerMessage message);
 
+   void sendNotification(NotificationType type, String message) throws Exception;
 
+   /** 
+    * the message corresponding to a notification will always contain the properties:
+    * <ul>
+    *   <li><code>ManagementHelper.HDR_NOTIFICATION_TYPE</code> - the type of notification (SimpleString)</li>
+    *   <li><code>ManagementHelper.HDR_NOTIFICATION_MESSAGE</code> - a message contextual to the notification (SimpleString)</li>
+    *   <li><code>ManagementHelper.HDR_NOTIFICATION_TIMESTAMP</code> - the timestamp when the notification occured (long)</li>
+    * </ul>
+    * 
+    * in addition to the properties defined in <code>props</code>
+    * 
+    * @see ManagementHelper
+    */
+   void sendNotification(NotificationType type, String message, TypedProperties props) throws Exception;
 }
