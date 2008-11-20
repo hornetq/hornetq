@@ -39,7 +39,6 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface PagingStore extends MessagingComponent
 {
-
    int getNumberOfPages();
 
    SimpleString getStoreName();
@@ -89,5 +88,4 @@ public interface PagingStore extends MessagingComponent
    LastPageRecord getLastRecord();
 
    void setLastRecord(LastPageRecord record);
-
 }

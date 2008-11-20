@@ -41,7 +41,6 @@ import org.jboss.messaging.util.VariableLatch;
  */
 public class PageImpl implements Page
 {
-
    // Constants -----------------------------------------------------
 
    private static final int SIZE_INTEGER = 4;
@@ -98,7 +97,6 @@ public class PageImpl implements Page
 
    public PageMessage[] read() throws Exception
    {
-
       ArrayList<PageMessage> messages = new ArrayList<PageMessage>();
 
       ByteBuffer buffer = fileFactory.newBuffer((int)file.size());
@@ -257,7 +255,5 @@ public class PageImpl implements Page
          this.errorCode = errorCode;
          countLatch.down();
       }
-
    }
-
 }

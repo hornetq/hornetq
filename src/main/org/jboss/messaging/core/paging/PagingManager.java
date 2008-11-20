@@ -59,7 +59,7 @@ public interface PagingManager extends MessagingComponent
 {
    /** The system is paging because of global-page-mode */
    boolean isGlobalPageMode();
-   
+
    /** During startup PostOffice may set GlobalPageMode as true */
    void setGlobalPageMode(boolean globalMode);
 
@@ -135,9 +135,9 @@ public interface PagingManager extends MessagingComponent
     * @throws Exception 
     * */
    void clearLastPageRecord(LastPageRecord lastRecord) throws Exception;
+
    /**
     * @return
     */
    long getDefaultPageSize();
-
 }

@@ -35,7 +35,7 @@ import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStoreFactory;
-import org.jboss.messaging.core.paging.impl.PagingManagerFactoryNIO;
+import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
 import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -209,7 +209,7 @@ public class MessagingServerImpl implements MessagingServer
                                                           new JBMThreadFactory("JBM-scheduled-threads"));
       queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);
 
-      PagingStoreFactory storeFactory = new PagingManagerFactoryNIO(configuration.getPagingDirectory());
+      PagingStoreFactory storeFactory = new PagingStoreFactoryNIO(configuration.getPagingDirectory());
 
       pagingManager = new PagingManagerImpl(storeFactory,
                                             storageManager,

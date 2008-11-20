@@ -36,7 +36,6 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
  */
 public class PageTransactionInfoImpl implements PageTransactionInfo
 {
-
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -90,6 +89,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    public int decrement()
    {
       final int value = numberOfMessages.decrementAndGet();
+
       if (value < 0)
       {
          throw new IllegalStateException("Internal error Negative value on Paging transactions!");
@@ -110,9 +110,9 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       transactionID = buffer.getLong();
       numberOfMessages.set(buffer.getInt());
       countDownCompleted = null; // if it is being readed, probably it was
-                                 // committed
+      // committed
       complete = true; // Unless it is a incomplete prepare, which is marked by
-                        // markIcomplete
+      // markIcomplete
    }
 
    public synchronized void encode(final MessagingBuffer buffer)
@@ -168,5 +168,4 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-
 }

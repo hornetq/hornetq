@@ -33,7 +33,6 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class LastPageRecordImpl implements LastPageRecord
 {
-
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -52,14 +51,12 @@ public class LastPageRecordImpl implements LastPageRecord
 
    public LastPageRecordImpl(final long lastId, final SimpleString destination)
    {
-      super();
       this.lastId = lastId;
       this.destination = destination;
    }
 
    public LastPageRecordImpl()
    {
-      super();
    }
 
    public long getRecordId()

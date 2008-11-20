@@ -43,7 +43,6 @@ import org.jboss.messaging.util.DataConstants;
  */
 public class PageMessageImpl implements PageMessage
 {
-
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -56,7 +55,7 @@ public class PageMessageImpl implements PageMessage
 
    /** Large messages will need to be instatiated lazily during getMessage when the StorageManager is available */
    private byte[] largeMessageLazyData;
-   
+
    private ServerMessage message;
 
    private long transactionID = -1;
@@ -77,7 +76,7 @@ public class PageMessageImpl implements PageMessage
       this(new ServerMessageImpl());
    }
 
-   public ServerMessage getMessage(StorageManager storage)
+   public ServerMessage getMessage(final StorageManager storage)
    {
       if (this.largeMessageLazyData != null)
       {
@@ -99,17 +98,17 @@ public class PageMessageImpl implements PageMessage
    public void decode(final MessagingBuffer buffer)
    {
       transactionID = buffer.getLong();
-      
+
       boolean isLargeMessage = buffer.getBoolean();
-      
+
       if (isLargeMessage)
       {
          int largeMessageHeaderSize = buffer.getInt();
-         
+
          this.largeMessageLazyData = new byte[largeMessageHeaderSize];
-         
+
          buffer.getBytes(largeMessageLazyData);
-         
+
       }
       else
       {
@@ -117,7 +116,7 @@ public class PageMessageImpl implements PageMessage
          message = new ServerMessageImpl();
          message.decode(buffer);
       }
-      
+
    }
 
    public void encode(final MessagingBuffer buffer)
@@ -130,9 +129,7 @@ public class PageMessageImpl implements PageMessage
 
    public int getEncodeSize()
    {
-      return DataConstants.SIZE_LONG + DataConstants.SIZE_BYTE +
-             DataConstants.SIZE_INT  +
-             message.getEncodeSize();
+      return DataConstants.SIZE_LONG + DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + message.getEncodeSize();
    }
 
    // Package protected ---------------------------------------------

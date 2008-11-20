@@ -43,9 +43,8 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class PagingManagerFactoryNIO implements PagingStoreFactory
+public class PagingStoreFactoryNIO implements PagingStoreFactory
 {
-
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -60,9 +59,10 @@ public class PagingManagerFactoryNIO implements PagingStoreFactory
 
    // Constructors --------------------------------------------------
 
-   public PagingManagerFactoryNIO(final String directory)
+   public PagingStoreFactoryNIO(final String directory)
    {
       this.directory = directory;
+      
       executor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-depaging-threads"));
    }
 
@@ -109,5 +109,4 @@ public class PagingManagerFactoryNIO implements PagingStoreFactory
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-
 }

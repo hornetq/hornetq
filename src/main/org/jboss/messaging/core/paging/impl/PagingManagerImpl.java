@@ -56,7 +56,6 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class PagingManagerImpl implements PagingManager
 {
-
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -128,7 +127,7 @@ public class PagingManagerImpl implements PagingManager
    {
       return globalMode.get();
    }
-   
+
    public void setGlobalPageMode(boolean globalMode)
    {
       this.globalMode.set(globalMode);
@@ -138,10 +137,10 @@ public class PagingManagerImpl implements PagingManager
     * @param destination
     * @return
     */
-   public synchronized PagingStore createPageStore(SimpleString storeName) throws Exception
+   public synchronized PagingStore createPageStore(final SimpleString storeName) throws Exception
    {
       PagingStore store = stores.get(storeName);
-      
+
       if (store == null)
       {
          store = newStore(storeName);
@@ -159,12 +158,10 @@ public class PagingManagerImpl implements PagingManager
       return store;
    }
 
-
-   
-    public PagingStore getPageStore(final SimpleString storeName) throws Exception
+   public PagingStore getPageStore(final SimpleString storeName) throws Exception
    {
       PagingStore store = stores.get(storeName);
-      
+
       if (store == null)
       {
          throw new IllegalStateException("Store " + storeName + " not found on paging");
@@ -221,6 +218,7 @@ public class PagingManagerImpl implements PagingManager
       }
 
       lastPage.setLastId(pageId);
+      
       storageManager.storeLastPage(depageTransactionID, lastPage);
 
       HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
@@ -265,7 +263,7 @@ public class PagingManagerImpl implements PagingManager
                pageTransactionsToUpdate.add(pageTransactionInfo);
             }
          }
-         
+
          refsToAdd.addAll(postOffice.route(pagedMessage));
 
          if (pagedMessage.getDurableRefCount() != 0)
@@ -290,7 +288,7 @@ public class PagingManagerImpl implements PagingManager
       }
 
       storageManager.commit(depageTransactionID);
-      
+
       trace("Depage committed");
 
       for (MessageReference ref : refsToAdd)
@@ -378,7 +376,7 @@ public class PagingManagerImpl implements PagingManager
    public void stop() throws Exception
    {
       started = false;
-      
+
       pagingSPI.stop();
 
       for (PagingStore store : stores.values())
@@ -501,7 +499,7 @@ public class PagingManagerImpl implements PagingManager
 
    // Inner classes -------------------------------------------------
 
-   class GlobalDepager implements Runnable
+   private class GlobalDepager implements Runnable
    {
       public void run()
       {
@@ -552,7 +550,5 @@ public class PagingManagerImpl implements PagingManager
             globalDepageRunning.set(false);
          }
       }
-
    }
-
 }

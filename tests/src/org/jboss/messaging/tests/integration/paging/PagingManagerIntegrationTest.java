@@ -29,7 +29,7 @@ import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PageMessage;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.paging.impl.PageMessageImpl;
-import org.jboss.messaging.core.paging.impl.PagingManagerFactoryNIO;
+import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
 import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -66,7 +66,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
       HierarchicalRepository<QueueSettings> queueSettings = new HierarchicalObjectRepository<QueueSettings>();
       queueSettings.setDefault(new QueueSettings());
 
-      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingManagerFactoryNIO(journalDir),
+      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(journalDir),
                                                             null,
                                                             queueSettings,
                                                             -1,
@@ -113,7 +113,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
       queueSettings.addMatch("simple-test", simpleTestSettings);
 
-      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingManagerFactoryNIO(journalDir),
+      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(journalDir),
                                                             null,
                                                             queueSettings,
                                                             -1,

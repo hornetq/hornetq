@@ -25,6 +25,7 @@ package org.jboss.messaging.core.paging;
 import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * The integration point between the PagingManger and the File System (aka SequentialFiles)
@@ -34,13 +35,11 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
  */
 public interface PagingStoreFactory
 {
-
-   PagingStore newStore(org.jboss.messaging.util.SimpleString destinationName, QueueSettings queueSettings);
+   PagingStore newStore(SimpleString destinationName, QueueSettings queueSettings);
 
    Executor getPagingExecutor();
-   
+
    void stop() throws InterruptedException;
 
    void setPagingManager(PagingManager manager);
-
 }

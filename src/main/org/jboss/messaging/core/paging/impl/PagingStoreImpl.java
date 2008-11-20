@@ -24,7 +24,6 @@ package org.jboss.messaging.core.paging.impl;
 
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -54,7 +53,6 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class PagingStoreImpl implements TestSupportPageStore
 {
-
    // Constants -----------------------------------------------------
    private static final Logger log = Logger.getLogger(PagingStoreImpl.class);
 
@@ -75,7 +73,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    private final boolean dropMessagesOnSize;
 
    private boolean droppedMessages;
-   
+
    private final PagingManager pagingManager;
 
    private final ExecutorService executor;
@@ -219,7 +217,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       page.delete();
 
       return addressNotFull;
-
    }
 
    /** 
@@ -230,9 +227,9 @@ public class PagingStoreImpl implements TestSupportPageStore
    public Page depage() throws Exception
    {
       positioningGlobalLock.acquire(); // Can't change currentPage or any of ids
-                                       // without a global lock
+      // without a global lock
       lock.writeLock().lock(); // Wait pending writes to finish before
-                                 // entering the block
+      // entering the block
 
       try
       {
@@ -298,11 +295,11 @@ public class PagingStoreImpl implements TestSupportPageStore
       // this address
       if (dropMessagesOnSize)
       {
-         //TODO - why?
+         // TODO - why?
          return false;
       }
 
-      //TODO why calc this before checking currentPage?
+      // TODO why calc this before checking currentPage?
       int bytesToWrite = fileFactory.calculateBlockSize(message.getEncodeSize() + PageImpl.SIZE_RECORD);
 
       // The only thing single-threaded done on paging is positioning and
@@ -444,10 +441,10 @@ public class PagingStoreImpl implements TestSupportPageStore
          try
          {
             running = false;
-            
+
             executor.shutdown();
             executor.awaitTermination(60, TimeUnit.SECONDS);
-            
+
             if (currentPage != null)
             {
                currentPage.close();
@@ -643,7 +640,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    // Inner classes -------------------------------------------------
 
-   class DepageRunnable implements Runnable
+   private class DepageRunnable implements Runnable
    {
       public DepageRunnable()
       {
@@ -669,5 +666,4 @@ public class PagingStoreImpl implements TestSupportPageStore
          }
       }
    }
-
 }
