@@ -37,9 +37,9 @@ public class QueueSettingsTest extends TestCase
       QueueSettings queueSettings = new QueueSettings();
       assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
       assertEquals(queueSettings.getDistributionPolicyClass(), null);
-      assertEquals(queueSettings.getDLQ(), null);
+      assertEquals(queueSettings.getDeadLetterAddress(), null);
       assertEquals(queueSettings.isClustered(), Boolean.valueOf(false));
-      assertEquals(queueSettings.getExpiryQueue(), null);
+      assertEquals(queueSettings.getExpiryAddress(), null);
       assertEquals(queueSettings.getMaxDeliveryAttempts(), QueueSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS);
       assertEquals(queueSettings.getMaxSizeBytes(), QueueSettings.DEFAULT_MAX_SIZE_BYTES);
       assertEquals(queueSettings.getPageSizeBytes(), null);
@@ -55,8 +55,8 @@ public class QueueSettingsTest extends TestCase
       queueSettingsToMerge.setClustered(true);
       SimpleString DLQ = new SimpleString("testDLQ");
       SimpleString exp = new SimpleString("testExpiryQueue");
-      queueSettingsToMerge.setDLQ(DLQ);
-      queueSettingsToMerge.setExpiryQueue(exp);
+      queueSettingsToMerge.setDeadLetterAddress(DLQ);
+      queueSettingsToMerge.setExpiryAddress(exp);
       queueSettingsToMerge.setMaxDeliveryAttempts(1000);
       queueSettingsToMerge.setDropMessagesWhenFull(true);
       queueSettingsToMerge.setMaxSizeBytes(1001);
@@ -67,8 +67,8 @@ public class QueueSettingsTest extends TestCase
       assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
       assertEquals(queueSettings.getDistributionPolicyClass(), null);
       assertEquals(queueSettings.isClustered(), Boolean.valueOf(true));
-      assertEquals(queueSettings.getDLQ(), DLQ);
-      assertEquals(queueSettings.getExpiryQueue(), exp);
+      assertEquals(queueSettings.getDeadLetterAddress(), DLQ);
+      assertEquals(queueSettings.getExpiryAddress(), exp);
       assertEquals(queueSettings.getMaxDeliveryAttempts(), Integer.valueOf(1000));
       assertEquals(queueSettings.getMaxSizeBytes(), Integer.valueOf(1001));
       assertEquals(queueSettings.getMessageCounterHistoryDayLimit(), Integer.valueOf(1002));
@@ -84,8 +84,8 @@ public class QueueSettingsTest extends TestCase
       queueSettingsToMerge.setClustered(true);
       SimpleString DLQ = new SimpleString("testDLQ");
       SimpleString exp = new SimpleString("testExpiryQueue");
-      queueSettingsToMerge.setDLQ(DLQ);
-      queueSettingsToMerge.setExpiryQueue(exp);
+      queueSettingsToMerge.setDeadLetterAddress(DLQ);
+      queueSettingsToMerge.setExpiryAddress(exp);
       queueSettingsToMerge.setMaxDeliveryAttempts(1000);
       queueSettingsToMerge.setMaxSizeBytes(1001);
       queueSettingsToMerge.setMessageCounterHistoryDayLimit(1002);
@@ -94,7 +94,7 @@ public class QueueSettingsTest extends TestCase
       QueueSettings queueSettingsToMerge2 = new QueueSettings();
       queueSettingsToMerge2.setClustered(true);
       SimpleString exp2 = new SimpleString("testExpiryQueue2");
-      queueSettingsToMerge2.setExpiryQueue(exp2);
+      queueSettingsToMerge2.setExpiryAddress(exp2);
       queueSettingsToMerge2.setMaxSizeBytes(2001);
       queueSettingsToMerge2.setRedeliveryDelay((long)2003);
       queueSettings.merge(queueSettingsToMerge2);
@@ -102,8 +102,8 @@ public class QueueSettingsTest extends TestCase
       assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
       assertEquals(queueSettings.getDistributionPolicyClass(), null);
       assertEquals(queueSettings.isClustered(), Boolean.valueOf(true));
-      assertEquals(queueSettings.getDLQ(), DLQ);
-      assertEquals(queueSettings.getExpiryQueue(), exp);
+      assertEquals(queueSettings.getDeadLetterAddress(), DLQ);
+      assertEquals(queueSettings.getExpiryAddress(), exp);
       assertEquals(queueSettings.getMaxDeliveryAttempts(), Integer.valueOf(1000));
       assertEquals(queueSettings.getMaxSizeBytes(), Integer.valueOf(1001));
       assertEquals(queueSettings.getMessageCounterHistoryDayLimit(), Integer.valueOf(1002));
@@ -117,8 +117,8 @@ public class QueueSettingsTest extends TestCase
       queueSettingsToMerge.setClustered(true);
       SimpleString DLQ = new SimpleString("testDLQ");
       SimpleString exp = new SimpleString("testExpiryQueue");
-      queueSettingsToMerge.setDLQ(DLQ);
-      queueSettingsToMerge.setExpiryQueue(exp);
+      queueSettingsToMerge.setDeadLetterAddress(DLQ);
+      queueSettingsToMerge.setExpiryAddress(exp);
       queueSettingsToMerge.setMaxSizeBytes(1001);
       queueSettingsToMerge.setRedeliveryDelay((long)1003);
       queueSettings.merge(queueSettingsToMerge);
@@ -127,8 +127,8 @@ public class QueueSettingsTest extends TestCase
       queueSettingsToMerge2.setClustered(false);
       SimpleString exp2 = new SimpleString("testExpiryQueue2");
       SimpleString DLQ2 = new SimpleString("testDlq2");
-      queueSettingsToMerge2.setExpiryQueue(exp2);
-      queueSettingsToMerge2.setDLQ(DLQ2);
+      queueSettingsToMerge2.setExpiryAddress(exp2);
+      queueSettingsToMerge2.setDeadLetterAddress(DLQ2);
       queueSettingsToMerge2.setMaxDeliveryAttempts(2000);
       queueSettingsToMerge2.setMaxSizeBytes(2001);
       queueSettingsToMerge2.setMessageCounterHistoryDayLimit(2002);
@@ -138,8 +138,8 @@ public class QueueSettingsTest extends TestCase
       assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
       assertEquals(queueSettings.getDistributionPolicyClass(), null);
       assertEquals(queueSettings.isClustered(), Boolean.valueOf(true));
-      assertEquals(queueSettings.getDLQ(), DLQ);
-      assertEquals(queueSettings.getExpiryQueue(), exp);
+      assertEquals(queueSettings.getDeadLetterAddress(), DLQ);
+      assertEquals(queueSettings.getExpiryAddress(), exp);
       assertEquals(queueSettings.getMaxDeliveryAttempts(), Integer.valueOf(2000));
       assertEquals(queueSettings.getMaxSizeBytes(), Integer.valueOf(1001));
       assertEquals(queueSettings.getMessageCounterHistoryDayLimit(), Integer.valueOf(2002));

@@ -1271,13 +1271,13 @@ public class QueueImplTest extends UnitTestCase
       
       Binding expiryBinding = createMock(Binding.class);
       EasyMock.expect(expiryBinding.getAddress()).andStubReturn(expiryQueue);
-      EasyMock.expect(postOffice.getBinding(expiryQueue)).andReturn(expiryBinding );
+      //EasyMock.expect(postOffice.getBinding(expiryQueue)).andReturn(expiryBinding );
       EasyMock.expect(postOffice.route(EasyMock.isA(ServerMessage.class))).andReturn(new ArrayList<MessageReference>());
       HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
       QueueSettings queueSettings = new QueueSettings() 
       {
          @Override
-         public SimpleString getExpiryQueue()
+         public SimpleString getExpiryAddress()
          {
             return expiryQueue;
          } 
@@ -1328,13 +1328,13 @@ public class QueueImplTest extends UnitTestCase
       
       Binding dlqBinding = createMock(Binding.class);
       expect(dlqBinding.getAddress()).andStubReturn(dlqName);
-      expect(postOffice.getBinding(dlqName)).andReturn(dlqBinding );
+      //expect(postOffice.getBinding(dlqName)).andReturn(dlqBinding );
       expect(postOffice.route(isA(ServerMessage.class))).andReturn(new ArrayList<MessageReference>());
       HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
       QueueSettings queueSettings = new QueueSettings() 
       {
          @Override
-         public SimpleString getDLQ()
+         public SimpleString getDeadLetterAddress()
          {
             return dlqName;
          } 
@@ -1353,7 +1353,7 @@ public class QueueImplTest extends UnitTestCase
       assertEquals(0, queue.getDeliveringCount());
       assertTrue(queue.getSizeBytes() > 0);
       
-      queue.sendMessageToDLQ(messageID, storageManager , postOffice, queueSettingsRepository);
+      queue.sendMessageToDeadLetterAddress(messageID, storageManager , postOffice, queueSettingsRepository);
       
       assertEquals(0, queue.getMessageCount());
       assertEquals(0, queue.getDeliveringCount());

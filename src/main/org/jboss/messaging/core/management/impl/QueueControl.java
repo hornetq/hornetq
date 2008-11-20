@@ -158,14 +158,14 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
       return queue.getSizeBytes();
    }
 
-   public String getDLQ()
+   public String getDeadLetterAddress()
    {
-      return queueSettingsRepository.getMatch(getName()).getDLQ().toString();
+      return queueSettingsRepository.getMatch(getName()).getDeadLetterAddress().toString();
    }
 
    public String getExpiryQueue()
    {
-      return queueSettingsRepository.getMatch(getName()).getExpiryQueue()
+      return queueSettingsRepository.getMatch(getName()).getExpiryAddress()
             .toString();
    }
 
@@ -325,7 +325,7 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
 
    public boolean sendMessageToDLQ(final long messageID) throws Exception
    {
-      return queue.sendMessageToDLQ(messageID, storageManager, postOffice,
+      return queue.sendMessageToDeadLetterAddress(messageID, storageManager, postOffice,
             queueSettingsRepository);
    }
 

@@ -64,13 +64,13 @@
    </security>
 
    <queue-settings match="queuejms.QueueWithOwnDLQAndExpiryQueue">
-      <dlq>queuejms.PrivateDLQ</dlq>
+      <dead-letter-address>queuejms.PrivateDLQ</dead-letter-address>
       <expiry-queue>queuejms.PrivateExpiryQueue</expiry-queue>
    </queue-settings>
 
    <queue-settings match="topicjms.TopicWithOwnDLQAndExpiryQueue">
-      <dlq>queuejms.PrivateDLQ</dlq>
-      <expiry-queue>queuejms.PrivateExpiryQueue</expiry-queue>
+      <dead-letter-address>queuejms.PrivateDLQ</dead-letter-address>
+      <expiry-address>queuejms.PrivateExpiryQueue</expiry-address>
    </queue-settings>
 
    <queue-settings match="queuejms.QueueWithOwnRedeliveryDelay">
@@ -109,8 +109,8 @@
    <!--default for catch all-->
    <queue-settings match="*">
       <clustered>false</clustered>
-      <dlq>queuejms.DLQ</dlq>
-      <expiry-queue>queuejms.ExpiryQueue</expiry-queue>
+      <dead-letter-address>queuejms.DLQ</dead-letter-address>
+      <expiry-address>queuejms.ExpiryQueue</expiry-address>
       <redelivery-delay>0</redelivery-delay>
       <max-size-bytes>-1</max-size-bytes>
       <distribution-policy-class>org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy</distribution-policy-class>

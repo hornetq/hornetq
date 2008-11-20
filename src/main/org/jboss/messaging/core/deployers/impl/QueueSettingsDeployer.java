@@ -37,9 +37,9 @@ public class QueueSettingsDeployer extends XmlDeployer
 {   
    private static final String CLUSTERED_NODE_NAME = "manageConfirmations";
    
-   private static final String DLQ_NODE_NAME = "dlq";
+   private static final String DEAD_LETTER_ADDRESS_NODE_NAME = "dead-letter-address";
    
-   private static final String EXPIRY_QUEUE_NODE_NAME = "expiry-queue";
+   private static final String EXPIRY_ADDRESS_NODE_NAME = "expiry-address";
    
    private static final String REDELIVERY_DELAY_NODE_NAME = "redelivery-delay";
    
@@ -54,7 +54,7 @@ public class QueueSettingsDeployer extends XmlDeployer
    private static final String MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME = "message-counter-history-day-limit";
 
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
-   
+
    public QueueSettingsDeployer(final DeploymentManager deploymentManager, final HierarchicalRepository<QueueSettings> queueSettingsRepository)
    {
    	super(deploymentManager);
@@ -91,15 +91,15 @@ public class QueueSettingsDeployer extends XmlDeployer
          {
             queueSettings.setClustered(Boolean.valueOf(child.getTextContent()));
          }
-         else if (DLQ_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (DEAD_LETTER_ADDRESS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             SimpleString queueName = new SimpleString(child.getTextContent());
-            queueSettings.setDLQ(queueName);
+            queueSettings.setDeadLetterAddress(queueName);
          }
-         else if (EXPIRY_QUEUE_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (EXPIRY_ADDRESS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
          	SimpleString queueName = new SimpleString(child.getTextContent());
-            queueSettings.setExpiryQueue(queueName);
+            queueSettings.setExpiryAddress(queueName);
          }
          else if (REDELIVERY_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {

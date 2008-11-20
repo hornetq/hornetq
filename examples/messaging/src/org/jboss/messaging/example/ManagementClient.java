@@ -73,7 +73,7 @@ public class ManagementClient
                System.out.println("\toperation succeeded:" + ManagementHelper.hasOperationSucceeded(message));
                if (ManagementHelper.hasOperationSucceeded(message))
                {
-                  System.out.println("\t- result=" + message.getProperty(new SimpleString("sendMessageToDLQ")));
+                  System.out.println("\t- result=" + message.getProperty(new SimpleString("sendMessageToDeadLetterAddress")));
                }
                else
                {
@@ -155,13 +155,13 @@ public class ManagementClient
       producer.send(DEFAULT_MANAGEMENT_ADDRESS, mngmntMessage);
       System.out.println("sent management message to retrieve attributes");
 
-      // create a message to invoke the operation sendMessageToDLQ(long) on the
+      // create a message to invoke the operation sendMessageToDeadLetterAddress(long) on the
       // queue
       mngmntMessage = clientSession.createClientMessage(false);
       ManagementHelper.putOperationInvocation(mngmntMessage,
                                               replytoQueue,
                                               ManagementServiceImpl.getQueueObjectName(queue, queue),
-                                              "sendMessageToDLQ",
+                                              "sendMessageToDeadLetterAddress",
                                               (long)6161);
       producer.send(DEFAULT_MANAGEMENT_ADDRESS, mngmntMessage);
       System.out.println("sent management message to invoke operation");

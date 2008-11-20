@@ -40,8 +40,8 @@ public class QueueSettingsDeployerTest extends TestCase
 {
    private String conf = "<queue-settings match=\"queues.*\">\n" +
            "      <manageConfirmations>false</manageConfirmations>\n" +
-           "      <dlq>DLQtest</dlq>\n" +
-           "      <expiry-queue>ExpiryQueueTest</expiry-queue>\n" +
+           "      <dead-letter-address>DLQtest</dead-letter-address>\n" +
+           "      <expiry-address>ExpiryQueueTest</expiry-address>\n" +
            "      <redelivery-delay>100</redelivery-delay>\n" +
            "      <max-size-bytes>-100</max-size-bytes>\n" +
            "      <distribution-policy-class>org.jboss.messaging.core.impl.RoundRobinDistributionPolicy</distribution-policy-class>\n" +
@@ -67,8 +67,8 @@ public class QueueSettingsDeployerTest extends TestCase
       queueSettings.setMaxSizeBytes(-100);
       queueSettings.setDistributionPolicyClass("org.jboss.messaging.core.impl.RoundRobinDistributionPolicy");
       queueSettings.setMessageCounterHistoryDayLimit(1000);
-      queueSettings.setDLQ(new SimpleString("DLQtest"));
-      queueSettings.setExpiryQueue(new SimpleString("ExpiryQueueTest"));
+      queueSettings.setDeadLetterAddress(new SimpleString("DLQtest"));
+      queueSettings.setExpiryAddress(new SimpleString("ExpiryQueueTest"));
 
       repository.addMatch(EasyMock.eq("queues.*"),(QueueSettings) EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
@@ -81,8 +81,8 @@ public class QueueSettingsDeployerTest extends TestCase
             assertEquals(q.getMaxSizeBytes(), queueSettings.getMaxSizeBytes());
             assertEquals(q.getDistributionPolicyClass(), queueSettings.getDistributionPolicyClass());
             assertEquals(q.getMessageCounterHistoryDayLimit(), queueSettings.getMessageCounterHistoryDayLimit());
-            assertEquals(q.getDLQ(), queueSettings.getDLQ());
-            assertEquals(q.getExpiryQueue(), queueSettings.getExpiryQueue());
+            assertEquals(q.getDeadLetterAddress(), queueSettings.getDeadLetterAddress());
+            assertEquals(q.getExpiryAddress(), queueSettings.getExpiryAddress());
             return null;
          }
       });

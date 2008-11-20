@@ -236,7 +236,7 @@ public class JMSQueueControlTest extends TestCase
       QueueSettings settings = new QueueSettings()
       {
          @Override
-         public SimpleString getDLQ()
+         public SimpleString getDeadLetterAddress()
          {
             return new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + dlq);
          }
@@ -246,7 +246,7 @@ public class JMSQueueControlTest extends TestCase
       replayMockedAttributes();
 
       JMSQueueControl control = createControl();
-      assertEquals(dlq, control.getDLQ());
+      assertEquals(dlq, control.getDeadLetterAddress());
 
       verifyMockedAttributes();
    }
@@ -258,7 +258,7 @@ public class JMSQueueControlTest extends TestCase
       QueueSettings settings = new QueueSettings()
       {
          @Override
-         public SimpleString getExpiryQueue()
+         public SimpleString getExpiryAddress()
          {
             return new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX
                   + expiryQueue);
@@ -453,7 +453,7 @@ public class JMSQueueControlTest extends TestCase
       refs.add(ref);
       expect(coreQueue.list(isA(Filter.class))).andReturn(refs);
       expect(
-            coreQueue.sendMessageToDLQ(messageID, storageManager, postOffice,
+            coreQueue.sendMessageToDeadLetterAddress(messageID, storageManager, postOffice,
                   queueSettingsRepository)).andReturn(true);
 
       replayMockedAttributes();

@@ -174,12 +174,12 @@ public class JMSQueueControl extends StandardMBean implements
       return binding;
    }
 
-   public String getDLQ()
+   public String getDeadLetterAddress()
    {
       QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
-      if (queueSettings != null && queueSettings.getDLQ() != null)
+      if (queueSettings != null && queueSettings.getDeadLetterAddress() != null)
       {
-         return JBossDestination.fromAddress(queueSettings.getDLQ().toString())
+         return JBossDestination.fromAddress(queueSettings.getDeadLetterAddress().toString())
                .getName();
       } else
       {
@@ -190,23 +190,23 @@ public class JMSQueueControl extends StandardMBean implements
    public String getExpiryQueue()
    {
       QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
-      if (queueSettings != null && queueSettings.getExpiryQueue() != null)
+      if (queueSettings != null && queueSettings.getExpiryAddress() != null)
       {
          return JBossDestination.fromAddress(
-               queueSettings.getExpiryQueue().toString()).getName();
+               queueSettings.getExpiryAddress().toString()).getName();
       } else
       {
          return null;
       }
    }
 
-   public void setExpiryQueue(String expiryQueueName)
+   public void setExpiryAddress(String expiryQueueName)
    {
       QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
       
       if (expiryQueueName != null)
       {
-         queueSettings.setExpiryQueue(new SimpleString(expiryQueueName));
+         queueSettings.setExpiryAddress(new SimpleString(expiryQueueName));
       }
    }
 
@@ -320,7 +320,7 @@ public class JMSQueueControl extends StandardMBean implements
          throw new IllegalArgumentException(
                "No message found for JMSMessageID: " + messageID);
       }
-      return coreQueue.sendMessageToDLQ(
+      return coreQueue.sendMessageToDeadLetterAddress(
             refs.get(0).getMessage().getMessageID(), storageManager,
             postOffice, queueSettingsRepository);
    }

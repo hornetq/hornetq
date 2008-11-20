@@ -276,7 +276,7 @@ public class QueueControlTest extends TestCase
       QueueSettings queueSettings = new QueueSettings()
       {
          @Override
-         public SimpleString getDLQ()
+         public SimpleString getDeadLetterAddress()
          {
             return new SimpleString(dlqName);
          }
@@ -287,7 +287,7 @@ public class QueueControlTest extends TestCase
       replayMockedAttributes();
 
       QueueControlMBean control = createControl();
-      assertEquals(dlqName, control.getDLQ());
+      assertEquals(dlqName, control.getDeadLetterAddress());
 
       verifyMockedAttributes();
    }
@@ -300,7 +300,7 @@ public class QueueControlTest extends TestCase
       QueueSettings queueSettings = new QueueSettings()
       {
          @Override
-         public SimpleString getExpiryQueue()
+         public SimpleString getExpiryAddress()
          {
             return new SimpleString(expiryQueueName);
          }
@@ -619,7 +619,7 @@ public class QueueControlTest extends TestCase
    {
       long messageID = randomLong();
       expect(
-            queue.sendMessageToDLQ(messageID, storageManager, postOffice,
+            queue.sendMessageToDeadLetterAddress(messageID, storageManager, postOffice,
                   repository)).andReturn(true);
 
       replayMockedAttributes();
@@ -634,7 +634,7 @@ public class QueueControlTest extends TestCase
    {
       long messageID = randomLong();
       expect(
-            queue.sendMessageToDLQ(messageID, storageManager, postOffice,
+            queue.sendMessageToDeadLetterAddress(messageID, storageManager, postOffice,
                   repository)).andReturn(false);
 
       replayMockedAttributes();

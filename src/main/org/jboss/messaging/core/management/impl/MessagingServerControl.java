@@ -202,7 +202,7 @@ public class MessagingServerControl extends StandardMBean implements MessagingSe
          List<MessageReference> refs = queue.list(filter);
          for (MessageReference ref : refs)
          {
-            queue.sendMessageToDLQ(ref.getMessage().getMessageID(), storageManager, postOffice, queueSettingsRepository);
+            queue.sendMessageToDeadLetterAddress(ref.getMessage().getMessageID(), storageManager, postOffice, queueSettingsRepository);
          }
          return refs.size();
       }

@@ -118,7 +118,7 @@ public interface Queue
          HierarchicalRepository<QueueSettings> queueSettingsRepository)
          throws Exception;
 
-   boolean sendMessageToDLQ(long messageID, StorageManager storageManager,
+   boolean sendMessageToDeadLetterAddress(long messageID, StorageManager storageManager,
          PostOffice postOffice,
          HierarchicalRepository<QueueSettings> queueSettingsRepository)
          throws Exception;

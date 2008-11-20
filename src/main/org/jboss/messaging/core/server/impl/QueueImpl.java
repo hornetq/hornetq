@@ -471,7 +471,7 @@ public class QueueImpl implements Queue
       return false;
    }
 
-   public boolean sendMessageToDLQ(final long messageID,
+   public boolean sendMessageToDeadLetterAddress(final long messageID,
                                    final StorageManager storageManager,
                                    final PostOffice postOffice,
                                    final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
@@ -484,7 +484,7 @@ public class QueueImpl implements Queue
          if (ref.getMessage().getMessageID() == messageID)
          {
             deliveringCount.incrementAndGet();
-            ref.sendToDLQ(storageManager, postOffice, queueSettingsRepository);
+            ref.sendToDeadLetterAddress(storageManager, postOffice, queueSettingsRepository);
             iter.remove();
             return true;
          }

@@ -27,7 +27,6 @@ import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIGIN_QUEUE
 import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIG_MESSAGE_ID;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -138,8 +137,8 @@ public class MessageReferenceImpl implements MessageReference
 
       if (maxDeliveries > 0 && deliveryCount >= maxDeliveries)
       {
-         log.warn("Message has reached maximum delivery attempts, sending it to DLQ");
-         sendToDLQ(storageManager, postOffice, queueSettingsRepository);
+         log.warn("Message has reached maximum delivery attempts, sending it to Dead Letter Address");
+         sendToDeadLetterAddress(storageManager, postOffice, queueSettingsRepository);
 
          return false;
       }
@@ -159,27 +158,18 @@ public class MessageReferenceImpl implements MessageReference
       }
    }
 
-   public void sendToDLQ(final StorageManager persistenceManager,
+   public void sendToDeadLetterAddress(final StorageManager persistenceManager,
                          final PostOffice postOffice,
                          final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
-      SimpleString dlq = queueSettingsRepository.getMatch(queue.getName().toString()).getDLQ();
-
-      //FIXME - this is not thread safe
-      if (dlq != null)
+      SimpleString deadLetterAddress = queueSettingsRepository.getMatch(queue.getName().toString()).getDeadLetterAddress();
+      if (deadLetterAddress != null)
       {
-         Binding dlqBinding = postOffice.getBinding(dlq);
-
-         if (dlqBinding == null)
-         {
-            dlqBinding = postOffice.addBinding(dlq, dlq, null, true, false, false);
-         }
-
-         move(dlqBinding, persistenceManager, postOffice, false);
+         move(deadLetterAddress, persistenceManager, postOffice, false);
       }
       else
       {
-         log.warn("Message has exceeded max delivery attempts. No DLQ configured for queue " + queue.getName() + " so dropping it");
+         log.warn("Message has exceeded max delivery attempts. No Dead Letter Address configured for queue " + queue.getName() + " so dropping it");
          
          Transaction tx = new TransactionImpl(persistenceManager, postOffice);
          tx.addAcknowledgement(this);
@@ -191,20 +181,11 @@ public class MessageReferenceImpl implements MessageReference
                       final PostOffice postOffice,
                       final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
-      SimpleString expiryQueue = queueSettingsRepository.getMatch(queue.getName().toString()).getExpiryQueue();
+      SimpleString expiryQueue = queueSettingsRepository.getMatch(queue.getName().toString()).getExpiryAddress();
 
       if (expiryQueue != null)
       {
-         Binding expiryBinding = postOffice.getBinding(expiryQueue);
-
-         //FIXME - this is not threadsafe - what if two refs get expired for same queue at same time
-         //might try and create the binding twice?
-         if (expiryBinding == null)
-         {
-            expiryBinding = postOffice.addBinding(expiryQueue, expiryQueue, null, true, false, false);
-         }
-
-         move(expiryBinding, persistenceManager, postOffice, true);
+         move(expiryQueue, persistenceManager, postOffice, true);
       }
       else
       {
@@ -255,10 +236,28 @@ public class MessageReferenceImpl implements MessageReference
       tx.commit();
    }
 
+    private void move(final SimpleString address,
+                     final StorageManager persistenceManager,
+                     final PostOffice postOffice,
+                     final boolean expiry) throws Exception
+   {
+      Transaction tx = new TransactionImpl(persistenceManager, postOffice);
+
+      ServerMessage copyMessage = makeCopy(expiry, persistenceManager);
+
+      copyMessage.setDestination(address);
+
+      tx.addMessage(copyMessage);
+
+      tx.addAcknowledgement(this);
+
+      tx.commit();
+   }
+
    private ServerMessage makeCopy(final boolean expiry, final StorageManager pm) throws Exception
    {
       /*
-       We copy the message and send that to the dlq/expiry queue - this is
+       We copy the message and send that to the dla/expiry queue - this is
        because otherwise we may end up with a ref with the same message id in the
        queue more than once which would barf - this might happen if the same message had been
        expire from multiple subscriptions of a topic for example

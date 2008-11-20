@@ -45,9 +45,9 @@ public interface JMSQueueControlMBean extends DestinationControlMBean
    
    String getExpiryQueue();
    
-   void setExpiryQueue(@Parameter(name = "expiryQueue", desc = "Name of the expiry queueur") String expiryQueue);
+   void setExpiryAddress(@Parameter(name = "expiryQueue", desc = "Name of the expiry queueur") String expiryQueue);
 
-   String getDLQ();
+   String getDeadLetterAddress();
    
    int getMessagesAdded();
 

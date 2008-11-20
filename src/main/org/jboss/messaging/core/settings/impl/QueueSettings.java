@@ -71,9 +71,9 @@ public class QueueSettings implements Mergeable<QueueSettings>
 
    private Long redeliveryDelay = null;
 
-   private SimpleString DLQ = null;
+   private SimpleString deadLetterAddress = null;
 
-   private SimpleString ExpiryQueue = null;
+   private SimpleString ExpiryAddress = null;
 
    public Boolean isClustered()
    {
@@ -156,24 +156,24 @@ public class QueueSettings implements Mergeable<QueueSettings>
       this.distributionPolicyClass = distributionPolicyClass;
    }
 
-   public SimpleString getDLQ()
+   public SimpleString getDeadLetterAddress()
    {
-      return DLQ;
+      return deadLetterAddress;
    }
 
-   public void setDLQ(SimpleString DLQ)
+   public void setDeadLetterAddress(SimpleString deadLetterAddress)
    {
-      this.DLQ = DLQ;
+      this.deadLetterAddress = deadLetterAddress;
    }
 
-   public SimpleString getExpiryQueue()
+   public SimpleString getExpiryAddress()
    {
-      return ExpiryQueue;
+      return ExpiryAddress;
    }
 
-   public void setExpiryQueue(SimpleString expiryQueue)
+   public void setExpiryAddress(SimpleString expiryAddress)
    {
-      ExpiryQueue = expiryQueue;
+      ExpiryAddress = expiryAddress;
    }
 
    public DistributionPolicy getDistributionPolicy()
@@ -233,13 +233,13 @@ public class QueueSettings implements Mergeable<QueueSettings>
       {
          distributionPolicyClass = merged.distributionPolicyClass;
       }
-      if (DLQ == null)
+      if (deadLetterAddress == null)
       {
-         DLQ = merged.DLQ;
+         deadLetterAddress = merged.deadLetterAddress;
       }
-      if (ExpiryQueue == null)
+      if (ExpiryAddress == null)
       {
-         ExpiryQueue = merged.ExpiryQueue;
+         ExpiryAddress = merged.ExpiryAddress;
       }
    }
 

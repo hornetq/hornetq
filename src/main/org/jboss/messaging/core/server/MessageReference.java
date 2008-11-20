@@ -66,7 +66,7 @@ public interface MessageReference
    boolean cancel(StorageManager storageManager, PostOffice postOffice,
    		         HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;  
    
-   void sendToDLQ(StorageManager storageManager, PostOffice postOffice,
+   void sendToDeadLetterAddress(StorageManager storageManager, PostOffice postOffice,
                   HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
    
    void expire(StorageManager storageManager, PostOffice postOffice,

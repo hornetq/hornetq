@@ -64,7 +64,7 @@ public interface QueueControlMBean
    
    String getExpiryQueue();
    
-   String getDLQ();
+   String getDeadLetterAddress();
    
    boolean isBackup();
 
