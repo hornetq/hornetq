@@ -247,6 +247,8 @@ public class MessagingServerImpl implements MessagingServer
       postOffice.start();
       resourceManager.start();
 
+      // FIXME the destination corresponding to the notification address is always created 
+      // so that queues can be created wether the address is allowable or not (to revisit later)
       if (!postOffice.containsDestination(configuration.getManagementNotificationAddress()))
       {
          postOffice.addDestination(configuration.getManagementNotificationAddress(), true);
