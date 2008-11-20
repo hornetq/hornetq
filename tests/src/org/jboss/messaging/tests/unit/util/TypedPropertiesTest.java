@@ -244,6 +244,42 @@ public class TypedPropertiesTest extends TestCase
       assertEquals(c, cc);
    }
 
+   public void testTypedProperties() throws Exception
+   {
+      SimpleString longKey = randomSimpleString();
+      long longValue = randomLong();
+      SimpleString simpleStringKey = randomSimpleString();
+      SimpleString simpleStringValue = randomSimpleString();
+      TypedProperties otherProps = new TypedProperties();
+      otherProps.putLongProperty(longKey, longValue);
+      otherProps.putStringProperty(simpleStringKey, simpleStringValue);
+      
+      props.putTypedProperties(otherProps);
+      
+      long ll = (Long) props.getProperty(longKey);
+      assertEquals(longValue, ll);
+      SimpleString ss = (SimpleString) props.getProperty(simpleStringKey);
+      assertEquals(simpleStringValue, ss);
+   }
+   
+   public void testEmptyTypedProperties() throws Exception
+   {     
+      assertEquals(0, props.getPropertyNames().size());
+      
+      props.putTypedProperties(new TypedProperties());
+      
+      assertEquals(0, props.getPropertyNames().size());
+   }
+   
+   public void testNullTypedProperties() throws Exception
+   {     
+      assertEquals(0, props.getPropertyNames().size());
+      
+      props.putTypedProperties(null);
+      
+      assertEquals(0, props.getPropertyNames().size());
+   }
+   
    public void testEncodeDecode() throws Exception
    {
       props.putByteProperty(randomSimpleString(), randomByte());
