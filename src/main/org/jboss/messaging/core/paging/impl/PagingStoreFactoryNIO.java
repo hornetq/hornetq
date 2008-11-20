@@ -81,6 +81,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    public PagingStore newStore(final SimpleString destinationName, final QueueSettings settings)
    {
+      // FIXME: This directory creation should be done inside PagingStoreImpl, or this method should be made synchornized
       final String destinationDirectory = directory + "/" + destinationName.toString();
       File destinationFile = new File(destinationDirectory);
       destinationFile.mkdirs();
