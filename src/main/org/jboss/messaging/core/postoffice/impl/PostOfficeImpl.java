@@ -459,6 +459,10 @@ public class PostOfficeImpl implements PostOffice
          queues.put(binding.getQueue().getPersistenceID(), binding.getQueue());
       }
       // TODO: This is related to http://www.jboss.com/index.html?module=bb&op=viewtopic&t=145597
+      
+      //FIXME This is incorrect - you cannot assume there is an allowable address in existence
+      //for every address in the post office.
+      //This code is unnecessary if paging stores are loaded lazily
       HashSet<SimpleString> addresses = new HashSet<SimpleString>();
       
       for (Binding binding: bindings)
