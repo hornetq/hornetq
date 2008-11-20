@@ -42,8 +42,6 @@ public interface LastPageRecord extends EncodingSupport
 
    SimpleString getDestination();
 
-   void setDestination(SimpleString destination);
-
    /** Last Page ID*/
    long getLastId();
 

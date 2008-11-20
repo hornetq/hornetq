@@ -22,6 +22,10 @@
 
 package org.jboss.messaging.core.paging.impl;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
+
 import java.nio.ByteBuffer;
 
 import org.jboss.messaging.core.paging.PageMessage;
@@ -31,7 +35,6 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.ServerLargeMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
-import org.jboss.messaging.util.DataConstants;
 
 /**
  * 
@@ -129,7 +132,7 @@ public class PageMessageImpl implements PageMessage
 
    public int getEncodeSize()
    {
-      return DataConstants.SIZE_LONG + DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + message.getEncodeSize();
+      return SIZE_LONG + SIZE_BYTE + SIZE_INT + message.getEncodeSize();
    }
 
    // Package protected ---------------------------------------------

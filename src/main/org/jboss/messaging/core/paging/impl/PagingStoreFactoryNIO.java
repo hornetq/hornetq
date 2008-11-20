@@ -76,7 +76,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    public void stop() throws InterruptedException
    {
       executor.shutdown();
-      executor.awaitTermination(60, TimeUnit.SECONDS);
+      executor.awaitTermination(30, TimeUnit.SECONDS);
    }
 
    public PagingStore newStore(final SimpleString destinationName, final QueueSettings settings)

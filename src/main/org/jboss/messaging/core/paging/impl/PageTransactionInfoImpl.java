@@ -22,15 +22,18 @@
 
 package org.jboss.messaging.core.paging.impl;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.util.DataConstants;
 
 /**
- * 
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -42,13 +45,13 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 
    private long transactionID;
 
-   private long recordID;
+   private volatile long recordID;
 
    private CountDownLatch countDownCompleted;
 
    private volatile boolean complete;
 
-   final AtomicInteger numberOfMessages = new AtomicInteger(0);
+   private final AtomicInteger numberOfMessages = new AtomicInteger(0);
 
    // Static --------------------------------------------------------
 
@@ -123,7 +126,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 
    public synchronized int getEncodeSize()
    {
-      return 8 /* long */+ 4 /* int */;
+      return SIZE_LONG + SIZE_INT;
    }
 
    public void complete()

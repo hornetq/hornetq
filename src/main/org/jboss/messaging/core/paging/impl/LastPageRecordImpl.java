@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.paging.impl;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
+
 import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
@@ -37,11 +39,11 @@ public class LastPageRecordImpl implements LastPageRecord
 
    // Attributes ----------------------------------------------------
 
-   private long recordId = 0;
+   private volatile long recordId = 0;
 
-   private SimpleString destination;
+   private volatile SimpleString destination;
 
-   private long lastId;
+   private volatile long lastId;
 
    // Static --------------------------------------------------------
 
@@ -103,7 +105,7 @@ public class LastPageRecordImpl implements LastPageRecord
 
    public int getEncodeSize()
    {
-      return 8 + SimpleString.sizeofString(destination);
+      return SIZE_LONG + SimpleString.sizeofString(destination);
    }
 
    // Package protected ---------------------------------------------

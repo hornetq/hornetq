@@ -22,6 +22,9 @@
 
 package org.jboss.messaging.core.paging.impl;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,15 +46,11 @@ public class PageImpl implements Page
 {
    // Constants -----------------------------------------------------
 
-   private static final int SIZE_INTEGER = 4;
+   public static final int SIZE_RECORD = SIZE_BYTE + SIZE_INT + SIZE_BYTE;
 
-   private static final int SIZE_BYTE = 1;
+   private static final byte START_BYTE = (byte)'{';
 
-   public static final int SIZE_RECORD = SIZE_BYTE + SIZE_INTEGER + SIZE_BYTE;
-
-   public static final byte START_BYTE = (byte)'{';
-
-   public static final byte END_BYTE = (byte)'}';
+   private static final byte END_BYTE = (byte)'}';
 
    // Attributes ----------------------------------------------------
 
@@ -113,7 +112,7 @@ public class PageImpl implements Page
 
          if (byteRead == START_BYTE)
          {
-            if (buffer.position() + SIZE_INTEGER < buffer.limit())
+            if (buffer.position() + SIZE_INT < buffer.limit())
             {
                int messageSize = buffer.getInt();
                int oldPos = buffer.position();
