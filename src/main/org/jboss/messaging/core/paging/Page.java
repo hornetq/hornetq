@@ -34,9 +34,9 @@ public interface Page
 {
    int getPageId();
 
-   void write(PageMessage message) throws Exception;
+   void write(PagedMessage message) throws Exception;
 
-   PageMessage[] read() throws Exception;
+   PagedMessage[] read() throws Exception;
 
    int getSize();
 

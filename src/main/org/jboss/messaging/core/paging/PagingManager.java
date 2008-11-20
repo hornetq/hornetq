@@ -80,7 +80,7 @@ public interface PagingManager extends MessagingComponent
     * @param pagingStoreImpl 
     * @return false if the listener can't handle more pages
     */
-   boolean onDepage(int pageId, SimpleString destination, PagingStore pagingStoreImpl, PageMessage[] data) throws Exception;
+   boolean onDepage(int pageId, SimpleString destination, PagingStore pagingStoreImpl, PagedMessage[] data) throws Exception;
 
    /**
     * To be used by transactions only.

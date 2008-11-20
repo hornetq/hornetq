@@ -227,8 +227,7 @@ public class JournalStorageManager implements StorageManager
       return idGenerator.generateID();
    }
 
-   /** Create an area that will get LargeMessage bytes on the server size*/
-   public ServerLargeMessage createLargeMessageStorage()
+   public ServerLargeMessage createLargeMessage()
    {
       return new JournalLargeMessageImpl(this);
    }
@@ -401,7 +400,7 @@ public class JournalStorageManager implements StorageManager
          {
             case ADD_LARGE_MESSAGE:
             {
-               ServerLargeMessage largeMessage = this.createLargeMessageStorage();
+               ServerLargeMessage largeMessage = this.createLargeMessage();
 
                LargeMessageEncoding messageEncoding = new LargeMessageEncoding(largeMessage);
 

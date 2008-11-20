@@ -67,7 +67,7 @@ public interface PagingStore extends MessagingComponent
 
    public boolean readPage() throws Exception;
 
-   boolean page(PageMessage message) throws Exception;
+   boolean page(PagedMessage message) throws Exception;
 
    /** 
     * Remove the first page from the Writing Queue.

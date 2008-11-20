@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.util.DataConstants;
 
 /**
  *
@@ -161,6 +160,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    public void markIncomplete()
    {
       complete = false;
+      
       countDownCompleted = new CountDownLatch(1);
    }
 

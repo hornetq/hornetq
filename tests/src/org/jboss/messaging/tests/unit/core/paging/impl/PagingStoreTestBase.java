@@ -35,8 +35,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.paging.Page;
-import org.jboss.messaging.core.paging.PageMessage;
-import org.jboss.messaging.core.paging.impl.PageMessageImpl;
+import org.jboss.messaging.core.paging.PagedMessage;
+import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreImpl;
 import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
@@ -95,7 +95,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
 
       final CountDownLatch latchStart = new CountDownLatch(numberOfThreads);
 
-      final ConcurrentHashMap<Long, PageMessageImpl> buffers = new ConcurrentHashMap<Long, PageMessageImpl>();
+      final ConcurrentHashMap<Long, PagedMessageImpl> buffers = new ConcurrentHashMap<Long, PagedMessageImpl>();
 
       final ArrayList<Page> readPages = new ArrayList<Page>();
 
@@ -133,7 +133,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
                while (true)
                {
                   long id = messageIdGenerator.incrementAndGet();
-                  PageMessageImpl msg = createMessage(destination, createRandomBuffer(id, 5));
+                  PagedMessageImpl msg = createMessage(destination, createRandomBuffer(id, 5));
                   if (storeImpl.page(msg))
                   {
                      buffers.put(id, msg);
@@ -219,21 +219,21 @@ public abstract class PagingStoreTestBase extends UnitTestCase
 
       System.out.println("Reading " + buffers.size() + " messages, " + readPages.size() + " pages");
 
-      final ConcurrentHashMap<Long, PageMessage> buffers2 = new ConcurrentHashMap<Long, PageMessage>();
+      final ConcurrentHashMap<Long, PagedMessage> buffers2 = new ConcurrentHashMap<Long, PagedMessage>();
 
       for (Page page : readPages)
       {
          page.open();
-         PageMessage msgs[] = page.read();
+         PagedMessage msgs[] = page.read();
          page.close();
 
-         for (PageMessage msg : msgs)
+         for (PagedMessage msg : msgs)
          {
             (msg.getMessage(null)).getBody().rewind();
             long id = (msg.getMessage(null)).getBody().getLong();
             (msg.getMessage(null)).getBody().rewind();
 
-            PageMessageImpl msgWritten = buffers.remove(id);
+            PagedMessageImpl msgWritten = buffers.remove(id);
             buffers2.put(id, msg);
             assertNotNull(msgWritten);
             assertEquals((msg.getMessage(null)).getDestination(), (msgWritten.getMessage(null)).getDestination());
@@ -269,7 +269,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
       assertEquals(numberOfPages, storeImpl2.getNumberOfPages());
 
       long lastMessageId = messageIdGenerator.incrementAndGet();
-      PageMessage lastMsg = createMessage(destination, createRandomBuffer(lastMessageId, 5));
+      PagedMessage lastMsg = createMessage(destination, createRandomBuffer(lastMessageId, 5));
 
       storeImpl2.page(lastMsg);
       buffers2.put(lastMessageId, lastMsg);
@@ -287,16 +287,16 @@ public abstract class PagingStoreTestBase extends UnitTestCase
 
          page.open();
 
-         PageMessage[] msgs = page.read();
+         PagedMessage[] msgs = page.read();
 
          page.close();
 
-         for (PageMessage msg : msgs)
+         for (PagedMessage msg : msgs)
          {
 
             (msg.getMessage(null)).getBody().rewind();
             long id = (msg.getMessage(null)).getBody().getLong();
-            PageMessage msgWritten = buffers2.remove(id);
+            PagedMessage msgWritten = buffers2.remove(id);
             assertNotNull(msgWritten);
             assertEquals((msg.getMessage(null)).getDestination(), (msgWritten.getMessage(null)).getDestination());
             assertEqualsByteArrays((msgWritten.getMessage(null)).getBody().array(), (msg.getMessage(null)).getBody()
@@ -305,7 +305,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
       }
 
       lastPage.open();
-      PageMessage lastMessages[] = lastPage.read();
+      PagedMessage lastMessages[] = lastPage.read();
       lastPage.close();
       assertEquals(1, lastMessages.length);
 
@@ -318,7 +318,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
 
    }
 
-   protected PageMessageImpl createMessage(final SimpleString destination, final ByteBuffer buffer)
+   protected PagedMessageImpl createMessage(final SimpleString destination, final ByteBuffer buffer)
    {
       ServerMessage msg = new ServerMessageImpl((byte)1,
                                                 true,
@@ -328,7 +328,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
                                                 new ByteBufferWrapper(buffer));
 
       msg.setDestination(destination);
-      return new PageMessageImpl(msg);
+      return new PagedMessageImpl(msg);
    }
 
    protected ByteBuffer createRandomBuffer(final long id, final int size)

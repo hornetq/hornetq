@@ -28,7 +28,7 @@ import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
 import java.nio.ByteBuffer;
 
-import org.jboss.messaging.core.paging.PageMessage;
+import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
@@ -38,13 +38,13 @@ import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 
 /**
  * 
- * This class is used to encapsulate ServerMessage and TransactionID on Paging
+ * This class represents a paged message
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  *
  */
-public class PageMessageImpl implements PageMessage
+public class PagedMessageImpl implements PagedMessage
 {
    // Constants -----------------------------------------------------
 
@@ -63,27 +63,27 @@ public class PageMessageImpl implements PageMessage
 
    private long transactionID = -1;
 
-   public PageMessageImpl(final ServerMessage message, final long transactionID)
+   public PagedMessageImpl(final ServerMessage message, final long transactionID)
    {
       this.message = message;
       this.transactionID = transactionID;
    }
 
-   public PageMessageImpl(final ServerMessage message)
+   public PagedMessageImpl(final ServerMessage message)
    {
       this.message = message;
    }
 
-   public PageMessageImpl()
+   public PagedMessageImpl()
    {
       this(new ServerMessageImpl());
    }
 
    public ServerMessage getMessage(final StorageManager storage)
    {
-      if (this.largeMessageLazyData != null)
+      if (largeMessageLazyData != null)
       {
-         this.message = storage.createLargeMessageStorage();
+         message = storage.createLargeMessage();
          MessagingBuffer buffer = new ByteBufferWrapper(ByteBuffer.wrap(largeMessageLazyData));
          message.decode(buffer);
          largeMessageLazyData = null;
@@ -108,15 +108,16 @@ public class PageMessageImpl implements PageMessage
       {
          int largeMessageHeaderSize = buffer.getInt();
 
-         this.largeMessageLazyData = new byte[largeMessageHeaderSize];
+         largeMessageLazyData = new byte[largeMessageHeaderSize];
 
          buffer.getBytes(largeMessageLazyData);
-
       }
       else
       {
          buffer.getInt(); // This value is only used on LargeMessages for now
+         
          message = new ServerMessageImpl();
+         
          message.decode(buffer);
       }
 
@@ -125,8 +126,11 @@ public class PageMessageImpl implements PageMessage
    public void encode(final MessagingBuffer buffer)
    {
       buffer.putLong(transactionID);
+      
       buffer.putBoolean(message instanceof ServerLargeMessage);
+      
       buffer.putInt(message.getEncodeSize());
+      
       message.encode(buffer);
    }
 

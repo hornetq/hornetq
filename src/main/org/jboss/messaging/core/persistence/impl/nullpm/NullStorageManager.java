@@ -153,7 +153,7 @@ public class NullStorageManager implements StorageManager
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.persistence.StorageManager#createLargeMessageStorage(long, int, int)
     */
-   public ServerLargeMessage createLargeMessageStorage()
+   public ServerLargeMessage createLargeMessage()
    {
       return new NullStorageLargeMessageImpl();
    }

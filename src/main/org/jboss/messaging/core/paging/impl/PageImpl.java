@@ -29,13 +29,11 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.paging.Page;
-import org.jboss.messaging.core.paging.PageMessage;
+import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
-import org.jboss.messaging.util.VariableLatch;
 
 /**
  * 
@@ -62,8 +60,6 @@ public class PageImpl implements Page
 
    private final SequentialFileFactory fileFactory;
 
-   private final PagingCallback callback;
-
    private final AtomicInteger size = new AtomicInteger(0);
 
    // Static --------------------------------------------------------
@@ -75,14 +71,6 @@ public class PageImpl implements Page
       this.pageId = pageId;
       this.file = file;
       fileFactory = factory;
-      if (factory.isSupportsCallbacks())
-      {
-         callback = new PagingCallback();
-      }
-      else
-      {
-         callback = null;
-      }
    }
 
    // Public --------------------------------------------------------
@@ -94,9 +82,9 @@ public class PageImpl implements Page
       return pageId;
    }
 
-   public PageMessage[] read() throws Exception
+   public PagedMessage[] read() throws Exception
    {
-      ArrayList<PageMessage> messages = new ArrayList<PageMessage>();
+      ArrayList<PagedMessage> messages = new ArrayList<PagedMessage>();
 
       ByteBuffer buffer = fileFactory.newBuffer((int)file.size());
       file.position(0);
@@ -118,7 +106,7 @@ public class PageImpl implements Page
                int oldPos = buffer.position();
                if (buffer.position() + messageSize < buffer.limit() && buffer.get(oldPos + messageSize) == END_BYTE)
                {
-                  PageMessage msg = instantiateObject();
+                  PagedMessage msg = new PagedMessageImpl();
                   msg.decode(messageBuffer);
                   messages.add(msg);
                }
@@ -136,10 +124,10 @@ public class PageImpl implements Page
 
       numberOfMessages.set(messages.size());
 
-      return messages.toArray(instantiateArray(messages.size()));
+      return messages.toArray(new PagedMessage[messages.size()]);
    }
 
-   public void write(final PageMessage message) throws Exception
+   public void write(final PagedMessage message) throws Exception
    {
       ByteBuffer buffer = fileFactory.newBuffer(message.getEncodeSize() + SIZE_RECORD);
       buffer.put(START_BYTE);
@@ -148,31 +136,15 @@ public class PageImpl implements Page
       buffer.put(END_BYTE);
       buffer.rewind();
 
-      if (callback != null)
-      {
-         callback.countUp();
-         file.write(buffer, callback);
-      }
-      else
-      {
-         file.write(buffer, false);
-      }
+      file.write(buffer, false);      
 
       numberOfMessages.incrementAndGet();
       size.addAndGet(buffer.limit());
-
    }
 
    public void sync() throws Exception
    {
-      if (callback != null)
-      {
-         callback.waitCompletion();
-      }
-      else
-      {
-         file.sync();
-      }
+      file.sync();      
    }
 
    public void open() throws Exception
@@ -206,53 +178,7 @@ public class PageImpl implements Page
 
    // Protected -----------------------------------------------------
 
-   protected PageMessage instantiateObject()
-   {
-      return new PageMessageImpl();
-   }
-
-   protected PageMessage[] instantiateArray(final int size)
-   {
-      return new PageMessage[size];
-   }
-
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-
-   private static class PagingCallback implements IOCallback
-   {
-      private final VariableLatch countLatch = new VariableLatch();
-
-      private volatile String errorMessage = null;
-
-      private volatile int errorCode = 0;
-
-      public void countUp()
-      {
-         countLatch.up();
-      }
-
-      public void done()
-      {
-         countLatch.down();
-      }
-
-      public void waitCompletion() throws InterruptedException
-      {
-         countLatch.waitCompletion();
-
-         if (errorMessage != null)
-         {
-            throw new IllegalStateException("Error on Callback: " + errorCode + " - " + errorMessage);
-         }
-      }
-
-      public void onError(final int errorCode, final String errorMessage)
-      {
-         this.errorMessage = errorMessage;
-         this.errorCode = errorCode;
-         countLatch.down();
-      }
-   }
 }

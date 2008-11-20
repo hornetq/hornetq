@@ -27,10 +27,10 @@ import java.util.List;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.paging.LastPageRecord;
-import org.jboss.messaging.core.paging.PageMessage;
+import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.paging.PagingStoreFactory;
-import org.jboss.messaging.core.paging.impl.PageMessageImpl;
+import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
 import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -88,9 +88,9 @@ public class PageManagerImplTest extends UnitTestCase
       EasyMock.expect(queue.addLast(ref)).andReturn(null);
       EasyMock.replay(spi, store, message, storageManager, po, ref, queue);
       SimpleString queueName = new SimpleString("aq");
-      PageMessageImpl pageMessage = new PageMessageImpl(message);
+      PagedMessageImpl pageMessage = new PagedMessageImpl(message);
 
-      manager.onDepage(0, queueName, store, new PageMessage[] {pageMessage} );
+      manager.onDepage(0, queueName, store, new PagedMessage[] {pageMessage} );
       EasyMock.verify(spi, store, message, storageManager, po, ref, queue);
    }
 

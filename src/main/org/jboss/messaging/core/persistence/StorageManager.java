@@ -75,8 +75,7 @@ public interface StorageManager extends MessagingComponent
 
    void storeDeleteMessageTransactional(long txID, long queueID, long messageID) throws Exception;
    
-   /** Create an area that will get LargeMessage bytes on the server size*/
-   ServerLargeMessage createLargeMessageStorage();
+   ServerLargeMessage createLargeMessage();
 
 
    void prepare(long txID, Xid xid) throws Exception;

@@ -31,7 +31,6 @@ import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFile
  */
 public class PageImplTest extends PageImplTestBase
 {
-
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -41,11 +40,6 @@ public class PageImplTest extends PageImplTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
-   public void testPageFakeWithCallbacks() throws Exception
-   {
-      testAdd(new FakeSequentialFileFactory(512, true), 10);
-   }
 
    public void testPageFakeWithoutCallbacks() throws Exception
    {

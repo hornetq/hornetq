@@ -26,9 +26,9 @@ import java.io.File;
 import java.nio.ByteBuffer;
 
 import org.jboss.messaging.core.paging.Page;
-import org.jboss.messaging.core.paging.PageMessage;
+import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.paging.PagingStore;
-import org.jboss.messaging.core.paging.impl.PageMessageImpl;
+import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
 import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
@@ -77,17 +77,17 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(10));
 
-      assertFalse(store.page(new PageMessageImpl(msg)));
+      assertFalse(store.page(new PagedMessageImpl(msg)));
 
       store.startPaging();
 
-      assertTrue(store.page(new PageMessageImpl(msg)));
+      assertTrue(store.page(new PagedMessageImpl(msg)));
 
       Page page = store.depage();
 
       page.open();
 
-      PageMessage msgs[] = page.read();
+      PagedMessage msgs[] = page.read();
 
       page.close();
 
@@ -99,7 +99,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
       assertNull(store.depage());
 
-      assertFalse(store.page(new PageMessageImpl(msg)));
+      assertFalse(store.page(new PagedMessageImpl(msg)));
    }
 
    public void testPagingManagerAddressFull() throws Exception

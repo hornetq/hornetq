@@ -49,18 +49,6 @@ public class PagingIntegrationTest extends PageImplTestBase
 
    // Public --------------------------------------------------------
 
-   public void testPageWithAIO() throws Exception
-   {
-      if (!AsynchronousFileImpl.isLoaded())
-      {
-         fail(String.format("libAIO is not loaded on %s %s %s",
-                            System.getProperty("os.name"),
-                            System.getProperty("os.arch"),
-                            System.getProperty("os.version")));
-      }
-      testAdd(new AIOSequentialFileFactory(journalDir), 1000);
-   }
-
    public void testPageWithNIO() throws Exception
    {
       testAdd(new NIOSequentialFileFactory(journalDir), 1000);

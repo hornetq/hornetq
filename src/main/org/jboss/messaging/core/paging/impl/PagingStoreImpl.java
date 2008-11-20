@@ -38,7 +38,7 @@ import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.Page;
-import org.jboss.messaging.core.paging.PageMessage;
+import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -212,7 +212,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          return false;
       }
       page.open();
-      PageMessage messages[] = page.read();
+      PagedMessage messages[] = page.read();
       boolean addressNotFull = pagingManager.onDepage(page.getPageId(), storeName, PagingStoreImpl.this, messages);
       page.delete();
 
@@ -233,14 +233,12 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       try
       {
-
          if (numberOfPages == 0)
          {
             return null;
          }
          else
          {
-
             numberOfPages--;
 
             final Page returnPage;
@@ -289,7 +287,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    }
 
-   public boolean page(final PageMessage message) throws Exception
+   public boolean page(final PagedMessage message) throws Exception
    {
       // Max-size is set, but reject is activated, what means.. never page on
       // this address

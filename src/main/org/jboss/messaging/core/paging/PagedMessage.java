@@ -28,13 +28,14 @@ import org.jboss.messaging.core.server.ServerMessage;
 
 /**
  * 
- * The record taken by Page.
+ * A Paged message
+ * 
  * We can't just record the ServerMessage as we need other information (such as the TransactionID used during paging)
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public interface PageMessage extends EncodingSupport
+public interface PagedMessage extends EncodingSupport
 {
    ServerMessage getMessage(StorageManager storageManager);
 

@@ -2412,7 +2412,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private ServerLargeMessage createLargeMessageStorage(long producerID, long messageID, byte[] header) throws Exception
    {
-      ServerLargeMessage largeMessage = storageManager.createLargeMessageStorage();
+      ServerLargeMessage largeMessage = storageManager.createLargeMessage();
 
       MessagingBuffer headerBuffer = new ByteBufferWrapper(ByteBuffer.wrap(header));
 

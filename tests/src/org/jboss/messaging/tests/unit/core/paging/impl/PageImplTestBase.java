@@ -27,9 +27,9 @@ import java.util.ArrayList;
 
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
-import org.jboss.messaging.core.paging.PageMessage;
+import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.paging.impl.PageImpl;
-import org.jboss.messaging.core.paging.impl.PageMessageImpl;
+import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
@@ -99,7 +99,7 @@ public abstract class PageImplTestBase extends UnitTestCase
 
          msg.setDestination(simpleDestination);
 
-         impl.write(new PageMessageImpl(msg));
+         impl.write(new PagedMessageImpl(msg));
 
          assertEquals(i + 1, impl.getNumberOfMessages());
       }
@@ -111,7 +111,7 @@ public abstract class PageImplTestBase extends UnitTestCase
       file.open();
       impl = new PageImpl(factory, file, 10);
 
-      PageMessage msgs[] = impl.read();
+      PagedMessage msgs[] = impl.read();
 
       assertEquals(numberOfElements, msgs.length);
 

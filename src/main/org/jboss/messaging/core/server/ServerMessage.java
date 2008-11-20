@@ -47,8 +47,6 @@ public interface ServerMessage extends Message, EncodingSupport
    
    int incrementDurableRefCount();
    
-   int getRefCount();
-   
    ServerMessage copy();
    
    int getMemoryEstimate();

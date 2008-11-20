@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.LastPageRecord;
-import org.jboss.messaging.core.paging.PageMessage;
+import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
@@ -151,8 +151,10 @@ public class PagingManagerImpl implements PagingManager
          {
             store = oldStore;
          }
-
-         store.start();
+         else
+         {
+            store.start();
+         }
       }
 
       return store;
@@ -181,23 +183,25 @@ public class PagingManagerImpl implements PagingManager
    public void clearLastPageRecord(final LastPageRecord lastRecord) throws Exception
    {
       trace("Clearing lastRecord information " + lastRecord.getLastId());
+      
       storageManager.storeDelete(lastRecord.getRecordId());
    }
 
    /**
-    * This method will remove files from the page system and add them into the journal, doing it transactionally
+    * This method will remove files from the page system and and route them, doing it transactionally
     * 
     * A Transaction will be opened only if persistent messages are used.
+    * 
     * If persistent messages are also used, it will update eventual PageTransactions
     */
    public boolean onDepage(final int pageId,
                            final SimpleString destination,
                            final PagingStore pagingStore,
-                           final PageMessage[] data) throws Exception
+                           final PagedMessage[] data) throws Exception
    {
       trace("Depaging....");
 
-      // / Depage has to be done atomically, in case of failure it should be
+      // Depage has to be done atomically, in case of failure it should be
       // back to where it was
       final long depageTransactionID = storageManager.generateUniqueID();
 
@@ -225,13 +229,14 @@ public class PagingManagerImpl implements PagingManager
 
       final List<MessageReference> refsToAdd = new ArrayList<MessageReference>();
 
-      for (PageMessage msg : data)
+      for (PagedMessage msg : data)
       {
          ServerMessage pagedMessage = null;
 
          pagedMessage = (ServerMessage)msg.getMessage(storageManager);
 
          final long transactionIdDuringPaging = msg.getTransactionID();
+         
          if (transactionIdDuringPaging >= 0)
          {
             final PageTransactionInfo pageTransactionInfo = transactions.get(transactionIdDuringPaging);
@@ -256,7 +261,7 @@ public class PagingManagerImpl implements PagingManager
                continue;
             }
 
-            // / Update information about transactions
+            // Update information about transactions
             if (pagedMessage.isDurable())
             {
                pageTransactionInfo.decrement();
@@ -319,6 +324,7 @@ public class PagingManagerImpl implements PagingManager
    public void setLastPage(final LastPageRecord lastPage) throws Exception
    {
       trace("LastPage loaded was " + lastPage.getLastId() + " recordID = " + lastPage.getRecordId());
+      
       getPageStore(lastPage.getDestination()).setLastRecord(lastPage);
    }
 
@@ -339,12 +345,12 @@ public class PagingManagerImpl implements PagingManager
 
    public boolean page(final ServerMessage message, final long transactionId) throws Exception
    {
-      return getPageStore(message.getDestination()).page(new PageMessageImpl(message, transactionId));
+      return getPageStore(message.getDestination()).page(new PagedMessageImpl(message, transactionId));
    }
 
    public boolean page(final ServerMessage message) throws Exception
    {
-      return getPageStore(message.getDestination()).page(new PageMessageImpl(message));
+      return getPageStore(message.getDestination()).page(new PagedMessageImpl(message));
    }
 
    public void addTransaction(final PageTransactionInfo pageTransaction)
@@ -368,13 +374,23 @@ public class PagingManagerImpl implements PagingManager
       return started;
    }
 
-   public void start() throws Exception
+   public synchronized void start() throws Exception
    {
+      if (started)
+      {
+         return;
+      }
+      
       started = true;
    }
 
-   public void stop() throws Exception
+   public synchronized void stop() throws Exception
    {
+      if (!started)
+      {
+         return;
+      }
+      
       started = false;
 
       pagingSPI.stop();
@@ -413,6 +429,7 @@ public class PagingManagerImpl implements PagingManager
             if (!store.isDroppedMessage())
             {
                store.setDroppedMessage(true);
+               
                log.warn("Messages are being dropped on adress " + store.getStoreName());
             }
 
@@ -536,7 +553,6 @@ public class PagingManagerImpl implements PagingManager
 
             if (globalSize.get() < maxGlobalSize && started)
             {
-
                globalMode.set(false);
                // Clearing possible messages still in page-mode
                for (PagingStore store : stores.values())

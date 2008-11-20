@@ -28,9 +28,9 @@ import java.util.List;
 
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.paging.Page;
-import org.jboss.messaging.core.paging.PageMessage;
+import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.paging.PagingStore;
-import org.jboss.messaging.core.paging.impl.PageMessageImpl;
+import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreImpl;
 import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -95,7 +95,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
       buffers.add(buffer);
       SimpleString destination = new SimpleString("test");
 
-      PageMessageImpl msg = createMessage(destination, buffer);
+      PagedMessageImpl msg = createMessage(destination, buffer);
 
       assertTrue(storeImpl.isPaging());
 
@@ -137,7 +137,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
          buffers.add(buffer);
 
-         PageMessageImpl msg = createMessage(destination, buffer);
+         PagedMessageImpl msg = createMessage(destination, buffer);
 
          assertTrue(storeImpl.page(msg));
       }
@@ -150,7 +150,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
       page.open();
 
-      PageMessage msg[] = page.read();
+      PagedMessage msg[] = page.read();
 
       assertEquals(10, msg.length);
       assertEquals(1, storeImpl.getNumberOfPages());
@@ -203,7 +203,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
             storeImpl.forceAnotherPage();
          }
 
-         PageMessageImpl msg = createMessage(destination, buffer);
+         PagedMessageImpl msg = createMessage(destination, buffer);
 
          assertTrue(storeImpl.page(msg));
       }
@@ -218,7 +218,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
          page.open();
 
-         PageMessage msg[] = page.read();
+         PagedMessage msg[] = page.read();
 
          page.close();
 
@@ -235,7 +235,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
       assertTrue(storeImpl.isPaging());
 
-      PageMessageImpl msg = createMessage(destination, buffers.get(0));
+      PagedMessageImpl msg = createMessage(destination, buffers.get(0));
 
       assertTrue(storeImpl.page(msg));
 
@@ -265,7 +265,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
       page.open();
 
-      PageMessage msgs[] = page.read();
+      PagedMessage msgs[] = page.read();
 
       assertEquals(1, msgs.length);
 

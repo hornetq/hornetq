@@ -118,11 +118,6 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return refCount.decrementAndGet();
    }
 
-   public int getRefCount()
-   {
-      return refCount.get();
-   }
-
    public int getMemoryEstimate()
    {
       // This is just an estimate...
