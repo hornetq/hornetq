@@ -48,6 +48,7 @@ import org.w3c.dom.NodeList;
  * This class allows the Configuration class to be configured via a config file.
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
 public class FileConfiguration extends ConfigurationImpl
 {

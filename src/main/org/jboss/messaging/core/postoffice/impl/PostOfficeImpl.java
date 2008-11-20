@@ -313,11 +313,12 @@ public class PostOfficeImpl implements PostOffice
                   else
                   {
                      //We choose the queue with the lowest routings value  
+                     //This gives us a weighted round robin, where the weight
+                     //Can be determined from the number of consumers on the queue
                      long routings = binding.getRoutings();
                      
                      if (routings <= lowestRoutings || lowestRoutings == -1)
                      {                        
-                        //TODO - take num consumers into account
                         lowestRoutings = routings;
                         
                         theBinding = binding;

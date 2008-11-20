@@ -45,8 +45,13 @@ public class BindingImpl implements Binding
    
    private int hash;
    
-   private volatile long routings;
-      
+   private long routings;
+   
+   //TODO - currently we don't use weight - it's a placeholder for the future
+   private int weight = 1;
+   
+   private int routingCount;
+         
    public BindingImpl(final SimpleString address, final Queue queue, final boolean fanout)
    {
       this.address = address;
@@ -71,17 +76,29 @@ public class BindingImpl implements Binding
       return fanout;
    }
    
-   //TODO use better method for round-robin'ing - since this may wrap
-   public long getRoutings()
+   public synchronized long getRoutings()
    {
       return routings;
    }
    
-   public void incrementRoutings()
+   public synchronized void incrementRoutings()
    {
-      routings++;
+      routingCount++;
+      
+      if (routingCount >= weight)
+      {
+         routingCount = 0;
+         
+         routings++;
+      }
    }
-
+   
+   public synchronized void setWeight(final int weight)
+   {
+      this.weight = weight;      
+   }
+      
+   
    public boolean equals(Object other)
    {
       if (this == other)
