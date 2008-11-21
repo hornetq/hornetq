@@ -61,9 +61,9 @@ public class ConfigurationImpl implements Configuration
 
    public static final String DEFAULT_PAGING_DIR = "data/paging";
    
-   public static final long DEFAULT_DEFAULT_PAGE_SIZE = 10 * 1024 * 1024;
+   public static final long DEFAULT_PAGE_SIZE = 10 * 1024 * 1024;
    
-   public static final String DEFAULT_LARGEMESSAGES_DIR = "data/largemessages";
+   public static final String DEFAULT_LARGE_MESSAGES_DIR = "data/largemessages";
 
    public static final boolean DEFAULT_CREATE_JOURNAL_DIR = true;
 
@@ -137,14 +137,14 @@ public class ConfigurationImpl implements Configuration
 
    protected long pagingMaxGlobalSize = -1;
    
-   protected long pagingDefaultSize = DEFAULT_DEFAULT_PAGE_SIZE;
+   protected long pagingDefaultSize = DEFAULT_PAGE_SIZE;
 
    protected String pagingDirectory = DEFAULT_PAGING_DIR;
    
 
    // File related attributes -----------------------------------------------------------
 
-   protected String largeMessagesDirectory = DEFAULT_LARGEMESSAGES_DIR;
+   protected String largeMessagesDirectory = DEFAULT_LARGE_MESSAGES_DIR;
    
    protected String bindingsDirectory = DEFAULT_BINDINGS_DIRECTORY;
 

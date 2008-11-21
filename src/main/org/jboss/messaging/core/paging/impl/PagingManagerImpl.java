@@ -194,6 +194,8 @@ public class PagingManagerImpl implements PagingManager
     * 
     * If persistent messages are also used, it will update eventual PageTransactions
     */
+   
+   //TODO - this method should be moved to PagingStoreImpl
    public boolean onDepage(final int pageId,
                            final SimpleString destination,
                            final PagingStore pagingStore,
@@ -205,12 +207,13 @@ public class PagingManagerImpl implements PagingManager
       // back to where it was
       final long depageTransactionID = storageManager.generateUniqueID();
 
-      LastPageRecord lastPage = pagingStore.getLastRecord();
+      LastPageRecord lastPage = pagingStore.getLastPageRecord();
 
       if (lastPage == null)
       {
          lastPage = new LastPageRecordImpl(pageId, destination);
-         pagingStore.setLastRecord(lastPage);
+         
+         pagingStore.setLastPageRecord(lastPage);
       }
       else
       {
@@ -321,11 +324,11 @@ public class PagingManagerImpl implements PagingManager
       return defaultPageSize;
    }
 
-   public void setLastPage(final LastPageRecord lastPage) throws Exception
+   public void setLastPageRecord(final LastPageRecord lastPage) throws Exception
    {
       trace("LastPage loaded was " + lastPage.getLastId() + " recordID = " + lastPage.getRecordId());
       
-      getPageStore(lastPage.getDestination()).setLastRecord(lastPage);
+      getPageStore(lastPage.getDestination()).setLastPageRecord(lastPage);
    }
 
    public boolean isPaging(final SimpleString destination) throws Exception
@@ -381,6 +384,8 @@ public class PagingManagerImpl implements PagingManager
          return;
       }
       
+      pagingSPI.setPagingManager(this);
+      
       started = true;
    }
 
@@ -412,6 +417,7 @@ public class PagingManagerImpl implements PagingManager
       return pagingSPI.newStore(destinationName, queueSettingsRepository.getMatch(destinationName.toString()));
    }
 
+   //TODO - this method should be moved to PagingStoreImpl
    private long addSize(final SimpleString destination, final long size) throws Exception
    {
       final PagingStore store = getPageStore(destination);
@@ -426,9 +432,9 @@ public class PagingManagerImpl implements PagingManager
          // limit, we return -1 which means drop the message
          if (store.getAddressSize() + size > maxSize || maxGlobalSize > 0 && globalSize.get() + size > maxGlobalSize)
          {
-            if (!store.isDroppedMessage())
+            if (!store.isPrintedDropMessagesWarning())
             {
-               store.setDroppedMessage(true);
+               store.setPrintedDropMessagesWarning(true);
                
                log.warn("Messages are being dropped on adress " + store.getStoreName());
             }
@@ -451,6 +457,7 @@ public class PagingManagerImpl implements PagingManager
             if (maxGlobalSize > 0 && currentGlobalSize > maxGlobalSize)
             {
                globalMode.set(true);
+               
                if (store.startPaging())
                {
                   if (isTrace)

@@ -128,7 +128,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       return SIZE_LONG + SIZE_INT;
    }
 
-   public void complete()
+   public void commit()
    {
       complete = true;
       /** 
@@ -150,7 +150,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       return complete;
    }
 
-   public void forget()
+   public void rollback()
    {
       complete = false;
 

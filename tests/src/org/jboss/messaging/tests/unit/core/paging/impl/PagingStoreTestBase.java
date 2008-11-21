@@ -32,10 +32,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.easymock.classextension.EasyMock;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PagedMessage;
+import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreImpl;
 import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
@@ -102,7 +105,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
       QueueSettings settings = new QueueSettings();
       settings.setPageSizeBytes(MAX_SIZE);
 
-      final TestSupportPageStore storeImpl = new PagingStoreImpl(null,
+      final TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),
                                                                  factory,
                                                                  new SimpleString("test"),
                                                                  settings,
@@ -256,7 +259,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
          fileTmp.close();
       }
 
-      TestSupportPageStore storeImpl2 = new PagingStoreImpl(null, factory, new SimpleString("test"), settings, executor);
+      TestSupportPageStore storeImpl2 = new PagingStoreImpl(createMockManager(), factory, new SimpleString("test"), settings, executor);
       storeImpl2.start();
 
       int numberOfPages = storeImpl2.getNumberOfPages();
@@ -342,6 +345,17 @@ public abstract class PagingStoreTestBase extends UnitTestCase
          buffer.put(RandomUtil.randomByte());
       }
       return buffer;
+   }
+
+   /**
+    * @return
+    */
+   protected PagingManager createMockManager()
+   {
+      PagingManager mockManager = EasyMock.createNiceMock(PagingManager.class);
+      EasyMock.expect(mockManager.getDefaultPageSize()).andStubReturn(ConfigurationImpl.DEFAULT_PAGE_SIZE);
+      EasyMock.replay(mockManager);
+      return mockManager;
    }
 
    // Private -------------------------------------------------------

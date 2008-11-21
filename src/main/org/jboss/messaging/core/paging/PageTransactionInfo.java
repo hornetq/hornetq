@@ -35,9 +35,9 @@ public interface PageTransactionInfo extends EncodingSupport
 {
    boolean waitCompletion() throws Exception;
 
-   void complete();
+   void commit();
 
-   void forget();
+   void rollback();
 
    long getRecordID();
 

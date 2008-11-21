@@ -62,7 +62,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    public PagingStoreFactoryNIO(final String directory)
    {
       this.directory = directory;
-      
+
       executor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-depaging-threads"));
    }
 
@@ -72,18 +72,22 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    {
       return executor;
    }
-   
+
    public void stop() throws InterruptedException
    {
       executor.shutdown();
+
       executor.awaitTermination(30, TimeUnit.SECONDS);
    }
 
    public PagingStore newStore(final SimpleString destinationName, final QueueSettings settings)
    {
-      // FIXME: This directory creation should be done inside PagingStoreImpl, or this method should be made synchornized
+      // FIXME: This directory creation should be done inside PagingStoreImpl::start, or this method should be made
+      // synchornized
       final String destinationDirectory = directory + "/" + destinationName.toString();
+
       File destinationFile = new File(destinationDirectory);
+
       destinationFile.mkdirs();
 
       return new PagingStoreImpl(pagingManager,

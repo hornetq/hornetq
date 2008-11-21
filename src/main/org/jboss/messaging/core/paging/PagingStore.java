@@ -46,9 +46,9 @@ public interface PagingStore extends MessagingComponent
    /** Maximum number of bytes allowed in memory */
    long getMaxSizeBytes();
 
-   boolean isDroppedMessage();
+   boolean isPrintedDropMessagesWarning();
 
-   void setDroppedMessage(boolean droppedMessages);
+   void setPrintedDropMessagesWarning(boolean droppedMessages);
 
    boolean isDropWhenMaxSize();
 
@@ -85,7 +85,7 @@ public interface PagingStore extends MessagingComponent
     */
    boolean startDepaging();
 
-   LastPageRecord getLastRecord();
+   LastPageRecord getLastPageRecord();
 
-   void setLastRecord(LastPageRecord record);
+   void setLastPageRecord(LastPageRecord record);
 }

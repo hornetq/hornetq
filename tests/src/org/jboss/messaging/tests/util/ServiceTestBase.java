@@ -84,7 +84,7 @@ public class ServiceTestBase extends UnitTestCase
    protected MessagingService messagingService;
 
    // Static --------------------------------------------------------
-   private static final Logger log = Logger.getLogger(ServiceTestBase.class);
+   private final Logger log = Logger.getLogger(this.getClass());
 
    // Constructors --------------------------------------------------
 

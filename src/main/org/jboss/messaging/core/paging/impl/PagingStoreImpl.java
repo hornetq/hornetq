@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
@@ -70,9 +69,9 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private final long pageSize;
 
-   private final boolean dropMessagesOnSize;
+   private final boolean dropMessagesWhenFull;
 
-   private boolean droppedMessages;
+   private boolean printedDropMessagesWarning;
 
    private final PagingManager pagingManager;
 
@@ -85,7 +84,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private volatile int numberOfPages;
 
-   private volatile int firstPageId = Integer.MAX_VALUE;
+   private volatile int firstPageId;
 
    private volatile int currentPageId;
 
@@ -111,23 +110,30 @@ public class PagingStoreImpl implements TestSupportPageStore
                           final QueueSettings queueSettings,
                           final ExecutorService executor)
    {
+      if (pagingManager == null)
+      {
+         throw new IllegalStateException("Paging Manager can't be null");
+      }
+      
       this.fileFactory = fileFactory;
+      
       this.storeName = storeName;
+      
       maxSize = queueSettings.getMaxSizeBytes();
+      
       if (queueSettings.getPageSizeBytes() != null)
       {
          this.pageSize = queueSettings.getPageSizeBytes();
-      }
-      else if (pagingManager != null)
+      }     
+      else
       {
          this.pageSize = pagingManager.getDefaultPageSize();
       }
-      else
-      {
-         this.pageSize = ConfigurationImpl.DEFAULT_DEFAULT_PAGE_SIZE;
-      }
-      dropMessagesOnSize = queueSettings.isDropMessagesWhenFull();
+
+      dropMessagesWhenFull = queueSettings.isDropMessagesWhenFull();
+      
       this.executor = executor;
+      
       this.pagingManager = pagingManager;
    }
 
@@ -135,14 +141,16 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    // PagingStore implementation ------------------------------------
 
-   public boolean isDroppedMessage()
+   //TODO - this methods shouldn't be necessary if move functionality from
+   //PagingManagerImpl to PagingStoreImpl
+   public boolean isPrintedDropMessagesWarning()
    {
-      return droppedMessages;
+      return printedDropMessagesWarning;
    }
 
-   public void setDroppedMessage(final boolean droppedMessages)
+   public void setPrintedDropMessagesWarning(final boolean droppedMessages)
    {
-      this.droppedMessages = droppedMessages;
+      this.printedDropMessagesWarning = droppedMessages;
    }
 
    public long getAddressSize()
@@ -163,7 +171,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public boolean isDropWhenMaxSize()
    {
-      return dropMessagesOnSize;
+      return dropMessagesWhenFull;
    }
 
    public long getPageSizeBytes()
@@ -199,21 +207,29 @@ public class PagingStoreImpl implements TestSupportPageStore
     * @return
     * @throws Exception
     */
+   //FIXME - why is this public?
    public boolean readPage() throws Exception
    {
       Page page = depage();
+      
       if (page == null)
       {
          if (lastPageRecord != null)
          {
             pagingManager.clearLastPageRecord(lastPageRecord);
          }
+         
          lastPageRecord = null;
+         
          return false;
       }
+      
       page.open();
+      
       PagedMessage messages[] = page.read();
+      
       boolean addressNotFull = pagingManager.onDepage(page.getPageId(), storeName, PagingStoreImpl.this, messages);
+      
       page.delete();
 
       return addressNotFull;
@@ -224,6 +240,7 @@ public class PagingStoreImpl implements TestSupportPageStore
     *  The method calling this method will remove the page and will start reading it outside of any locks. 
     *  
     * */
+   //FIXME - why is this public?
    public Page depage() throws Exception
    {
       positioningGlobalLock.acquire(); // Can't change currentPage or any of ids
@@ -291,63 +308,82 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       // Max-size is set, but reject is activated, what means.. never page on
       // this address
-      if (dropMessagesOnSize)
+      if (dropMessagesWhenFull)
       {
-         // TODO - why?
          return false;
       }
+      
+      lock.readLock().lock();
+      
+      try
+      {
+         // First done without a global lock, to avoid synchronization and increase throuput
+         if (currentPage == null)
+         {
+            return false;
+         }
+      }
+      finally
+      {
+         lock.readLock().unlock();
+      }
 
-      // TODO why calc this before checking currentPage?
-      int bytesToWrite = fileFactory.calculateBlockSize(message.getEncodeSize() + PageImpl.SIZE_RECORD);
 
       // The only thing single-threaded done on paging is positioning and
       // check-files (verifying if we need to open a new page file)
       positioningGlobalLock.acquire();
+      
+      boolean gotReadLock = false;
 
       // After we have it locked we keep all the threads working until we need
       // to move to a new file (in which case we demand a writeLock, to wait for
       // the writes to finish)
       try
       {
-         if (currentPage == null)
+         try
          {
-            return false;
+            if (currentPage == null)
+            {
+               return false;
+            }
+
+            int bytesToWrite = fileFactory.calculateBlockSize(message.getEncodeSize() + PageImpl.SIZE_RECORD);
+   
+            if (pageUsedSize.addAndGet(bytesToWrite) > pageSize && currentPage.getNumberOfMessages() > 0)
+            {
+               // Wait any pending write on the current page to finish before we
+               // can open another page.
+               lock.writeLock().lock();
+               try
+               {
+                  openNewPage();
+                  // openNewPage will zero pageUsedSize, that's why this is done again
+                  pageUsedSize.addAndGet(bytesToWrite);
+               }
+               finally
+               {
+                  lock.writeLock().unlock();
+               }
+            }
+            // we must get the readLock before we release the synchronizedBlockLock
+            // or else we could end up with files records being added to the
+            // currentPage even if the max size was already achieved.
+            // (Condition tested by PagingStoreTestPage::testConcurrentPaging, The
+            // test would eventually fail, 1 in 100)
+            // This is because the checkSize and positioning has to be done
+            // protected. We only allow writing the file in multi-thread.
+            lock.readLock().lock();
+            
+            gotReadLock = true;
+   
+         }
+         finally
+         {
+            positioningGlobalLock.release();
          }
 
-         if (pageUsedSize.addAndGet(bytesToWrite) > pageSize && currentPage.getNumberOfMessages() > 0)
-         {
-            // Wait any pending write on the current page to finish before we
-            // can open another page.
-            lock.writeLock().lock();
-            try
-            {
-               openNewPage();
-               pageUsedSize.addAndGet(bytesToWrite);
-            }
-            finally
-            {
-               lock.writeLock().unlock();
-            }
-         }
-         // we must get the readLock before we release the synchronizedBlockLock
-         // or else we could end up with files records being added to the
-         // currentPage even if the max size was already achieved.
-         // (Condition tested by PagingStoreTestPage::testConcurrentPaging, The
-         // test would eventually fail, 1 in 100)
-         // This is because the checkSize and positioning has to be done
-         // protected. We only allow writing the file in multi-thread.
-         lock.readLock().lock();
+         // End of a synchronized block..
 
-      }
-      finally
-      {
-         positioningGlobalLock.release();
-      }
-
-      // End of a synchronized block..
-
-      try
-      {
          if (currentPage != null)
          {
             currentPage.write(message);
@@ -360,7 +396,10 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
       finally
       {
-         lock.readLock().unlock();
+         if (gotReadLock)
+         {
+            lock.readLock().unlock();
+         }
       }
    }
 
@@ -413,12 +452,12 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
 
-   public LastPageRecord getLastRecord()
+   public LastPageRecord getLastPageRecord()
    {
       return lastPageRecord;
    }
 
-   public void setLastRecord(final LastPageRecord record)
+   public void setLastPageRecord(final LastPageRecord record)
    {
       lastPageRecord = record;
    }
@@ -457,7 +496,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public synchronized void start() throws Exception
    {
-
       if (running)
       {
          // don't throw an exception.
@@ -476,7 +514,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       try
       {
-
          List<String> files = fileFactory.listFiles("page");
 
          numberOfPages = files.size();
@@ -535,6 +572,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          if (currentPage == null)
          {
             openNewPage();
+            
             return true;
          }
          else
@@ -573,6 +611,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       try
       {
          numberOfPages++;
+         
          currentPageId++;
 
          if (currentPageId < firstPageId)
@@ -590,7 +629,6 @@ public class PagingStoreImpl implements TestSupportPageStore
          pageUsedSize.set(0);
 
          currentPage.open();
-
       }
       finally
       {
@@ -601,6 +639,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    private Page createPage(final int page) throws Exception
    {
       String fileName = createFileName(page);
+      
       SequentialFile file = fileFactory.createSequentialFile(fileName, 1000);
 
       file.open();

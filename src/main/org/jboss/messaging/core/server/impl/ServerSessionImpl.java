@@ -2151,7 +2151,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void handleSendChunkMessage(final SessionSendChunkMessage packet)
    {
-
       if (packet.getMessageID() == 0)
       {
          packet.setMessageID(storageManager.generateUniqueID());
@@ -2490,6 +2489,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                storageManager.storeMessage(msg);
             }
 
+            //TODO - this code is also duplicated in transactionimpl and in depaging
+            //it should all be centralised
+            
             for (MessageReference ref : refs)
             {
                if (scheduledDeliveryTime != null)

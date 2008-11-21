@@ -504,7 +504,7 @@ public class JournalStorageManager implements StorageManager
 
                PagingManager pagingManager = postOffice.getPagingManager();
 
-               pagingManager.setLastPage(recordImpl);
+               pagingManager.setLastPageRecord(recordImpl);
 
                break;
             }

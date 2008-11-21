@@ -61,7 +61,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();
 
-      PagingStore storeImpl = new PagingStoreImpl(null, factory, destinationTestName, new QueueSettings(), executor);
+      PagingStore storeImpl = new PagingStoreImpl(createMockManager(), factory, destinationTestName, new QueueSettings(), executor);
 
       storeImpl.start();
 
@@ -78,7 +78,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();
 
-      PagingStore storeImpl = new PagingStoreImpl(null, factory, destinationTestName, new QueueSettings(), executor);
+      PagingStore storeImpl = new PagingStoreImpl(createMockManager(), factory, destinationTestName, new QueueSettings(), executor);
 
       storeImpl.start();
 
@@ -105,7 +105,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
       storeImpl.sync();
 
-      storeImpl = new PagingStoreImpl(null, factory, destinationTestName, new QueueSettings(), executor);
+      storeImpl = new PagingStoreImpl(createMockManager(), factory, destinationTestName, new QueueSettings(), executor);
 
       storeImpl.start();
 
@@ -118,7 +118,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();
 
-      PagingStore storeImpl = new PagingStoreImpl(null, factory, destinationTestName, new QueueSettings(), executor);
+      PagingStore storeImpl = new PagingStoreImpl(createMockManager(), factory, destinationTestName, new QueueSettings(), executor);
 
       storeImpl.start();
 
@@ -173,7 +173,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();
 
-      TestSupportPageStore storeImpl = new PagingStoreImpl(null,
+      TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),
                                                            factory,
                                                            destinationTestName,
                                                            new QueueSettings(),
@@ -291,6 +291,10 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
       testConcurrentPaging(factory, 10);
 
+   }
+   
+   public void testFoo()
+   {      
    }
 
    // Protected ----------------------------------------------------

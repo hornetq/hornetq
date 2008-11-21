@@ -113,7 +113,7 @@ public interface PagingManager extends MessagingComponent
     * 
     * Duplication detection for paging processing
     *  */
-   void setLastPage(LastPageRecord lastPage) throws Exception;
+   void setLastPageRecord(LastPageRecord lastPage) throws Exception;
 
    /** 
     * 

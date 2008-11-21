@@ -301,7 +301,7 @@ public class TransactionImpl implements Transaction
          // or else we could deliver the messages out of order
          if (pageTransaction != null)
          {
-            pageTransaction.complete();
+            pageTransaction.commit();
          }
 
          for (MessageReference reference : acknowledgements)
@@ -352,7 +352,7 @@ public class TransactionImpl implements Transaction
 
       if (state == State.PREPARED && pageTransaction != null)
       {
-         pageTransaction.forget();
+         pageTransaction.rollback();
       }
 
       LinkedList<MessageReference> toCancel = new LinkedList<MessageReference>();

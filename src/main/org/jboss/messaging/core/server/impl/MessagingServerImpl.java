@@ -209,15 +209,12 @@ public class MessagingServerImpl implements MessagingServer
                                                           new JBMThreadFactory("JBM-scheduled-threads"));
       queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);
 
-      PagingStoreFactory storeFactory = new PagingStoreFactoryNIO(configuration.getPagingDirectory());
-
-      pagingManager = new PagingManagerImpl(storeFactory,
+      pagingManager = new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory()),
                                             storageManager,
                                             queueSettingsRepository,
                                             configuration.getPagingMaxGlobalSizeBytes(),
                                             configuration.getPagingDefaultSize());
-
-      storeFactory.setPagingManager(pagingManager);
+      pagingManager.start();
 
       resourceManager = new ResourceManagerImpl((int)configuration.getTransactionTimeout() / 1000,
                                                 configuration.getTransactionTimeoutScanPeriod(),

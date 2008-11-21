@@ -53,7 +53,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
+   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test2";
 
    // Static --------------------------------------------------------
 
@@ -65,12 +65,13 @@ public class PagingManagerIntegrationTest extends UnitTestCase
    {
       HierarchicalRepository<QueueSettings> queueSettings = new HierarchicalObjectRepository<QueueSettings>();
       queueSettings.setDefault(new QueueSettings());
-
+      
       PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(journalDir),
                                                             null,
                                                             queueSettings,
                                                             -1,
                                                             1024 * 1024);
+
       managerImpl.start();
 
       PagingStore store = managerImpl.createPageStore(new SimpleString("simple-test"));
