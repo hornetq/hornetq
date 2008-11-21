@@ -1271,7 +1271,9 @@ public class QueueImplTest extends UnitTestCase
       
       Binding expiryBinding = createMock(Binding.class);
       EasyMock.expect(expiryBinding.getAddress()).andStubReturn(expiryQueue);
-      //EasyMock.expect(postOffice.getBinding(expiryQueue)).andReturn(expiryBinding );
+      List<Binding> bindings = new ArrayList<Binding>();
+      bindings.add(expiryBinding);
+      EasyMock.expect(postOffice.getBindingsForAddress(expiryQueue)).andReturn(bindings);
       EasyMock.expect(postOffice.route(EasyMock.isA(ServerMessage.class))).andReturn(new ArrayList<MessageReference>());
       HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
       QueueSettings queueSettings = new QueueSettings() 
@@ -1328,7 +1330,9 @@ public class QueueImplTest extends UnitTestCase
       
       Binding dlqBinding = createMock(Binding.class);
       expect(dlqBinding.getAddress()).andStubReturn(dlqName);
-      //expect(postOffice.getBinding(dlqName)).andReturn(dlqBinding );
+      List<Binding> bindings = new ArrayList<Binding>();
+      bindings.add(dlqBinding);
+      expect(postOffice.getBindingsForAddress(dlqName)).andReturn(bindings );
       expect(postOffice.route(isA(ServerMessage.class))).andReturn(new ArrayList<MessageReference>());
       HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
       QueueSettings queueSettings = new QueueSettings() 
