@@ -124,7 +124,7 @@ public interface ClientSession extends XAResource
 
    ClientMessage createClientMessage(final boolean durable);
 
-   FileClientMessage createFileMessage(final boolean durable);
+   ClientFileMessage createFileMessage(final boolean durable);
 
    void start() throws MessagingException;
 

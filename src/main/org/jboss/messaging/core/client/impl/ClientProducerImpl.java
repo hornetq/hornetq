@@ -25,7 +25,7 @@ package org.jboss.messaging.core.client.impl;
 import java.nio.ByteBuffer;
 
 import org.jboss.messaging.core.client.AcknowledgementHandler;
-import org.jboss.messaging.core.client.FileClientMessage;
+import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
@@ -74,14 +74,14 @@ public class ClientProducerImpl implements ClientProducerInternal
    private final boolean blockOnPersistentSend;
 
    private final SimpleString groupID;
-   
+
    private final int minLargeMessageSize;
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientProducerImpl(final ClientSessionInternal session,                           
+   public ClientProducerImpl(final ClientSessionInternal session,
                              final SimpleString address,
                              final TokenBucketLimiter rateLimiter,
                              final boolean blockOnNonPersistentSend,
@@ -93,13 +93,13 @@ public class ClientProducerImpl implements ClientProducerInternal
       this.channel = channel;
 
       this.session = session;
-      
+
       this.address = address;
 
       this.rateLimiter = rateLimiter;
 
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
-      
+
       this.blockOnPersistentSend = blockOnPersistentSend;
 
       if (autoGroup)
@@ -110,9 +110,8 @@ public class ClientProducerImpl implements ClientProducerInternal
       {
          this.groupID = null;
       }
-      
-      this.minLargeMessageSize = minLargeMessageSize;
 
+      this.minLargeMessageSize = minLargeMessageSize;
    }
 
    // ClientProducer implementation ----------------------------------------------------------------
@@ -153,7 +152,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          return;
       }
 
-      doCleanup();      
+      doCleanup();
    }
 
    public void cleanUp()
@@ -225,15 +224,14 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
 
       boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
-      
+
       SessionSendMessage message = new SessionSendMessage(msg, sendBlocking);
 
       if (msg.getEncodeSize() > minLargeMessageSize)
       {
          sendMessageInChunks(true, msg);
       }
-      else
-      if (sendBlocking)
+      else if (sendBlocking)
       {
          channel.sendBlocking(message);
       }
@@ -254,7 +252,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       if (headerSize > minLargeMessageSize)
       {
          throw new MessagingException(MessagingException.ILLEGAL_STATE,
-                                      "Header size is too big, use the messageBody for large data");
+                                      "Header size is too big, use the messageBody for large data, or increase minLargeMessageSize");
       }
 
       MessagingBuffer headerBuffer = new ByteBufferWrapper(ByteBuffer.allocate(headerSize));
@@ -262,16 +260,16 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       final int bodySize = msg.getBodySize();
 
-      int bodyLength = minLargeMessageSize - headerSize;
+      int chunkLength = minLargeMessageSize - headerSize;
 
-      MessagingBuffer bodyBuffer = new ByteBufferWrapper(ByteBuffer.allocate(bodyLength));
+      MessagingBuffer bodyBuffer = new ByteBufferWrapper(ByteBuffer.allocate(chunkLength));
 
-      msg.encodeBody(bodyBuffer, 0, bodyLength);
+      msg.encodeBody(bodyBuffer, 0, chunkLength);
 
       SessionSendChunkMessage chunk = new SessionSendChunkMessage(-1,
                                                                   headerBuffer.array(),
                                                                   bodyBuffer.array(),
-                                                                  bodyLength < bodySize,
+                                                                  chunkLength < bodySize,
                                                                   sendBlocking);
 
       if (sendBlocking)
@@ -283,14 +281,15 @@ public class ClientProducerImpl implements ClientProducerInternal
          channel.send(chunk);
       }
 
-      for (int pos = bodyLength; pos < bodySize;)
+      for (int pos = chunkLength; pos < bodySize;)
       {
-         bodyLength = Math.min(bodySize - pos, minLargeMessageSize);
-         bodyBuffer = new ByteBufferWrapper(ByteBuffer.allocate(bodyLength));
+         chunkLength = Math.min(bodySize - pos, minLargeMessageSize);
+         
+         bodyBuffer = new ByteBufferWrapper(ByteBuffer.allocate(chunkLength));
 
-         msg.encodeBody(bodyBuffer, pos, bodyLength);
+         msg.encodeBody(bodyBuffer, pos, chunkLength);
 
-         chunk = new SessionSendChunkMessage(-1, null, bodyBuffer.array(), pos + bodyLength < bodySize, sendBlocking);
+         chunk = new SessionSendChunkMessage(-1, null, bodyBuffer.array(), pos + chunkLength < bodySize, sendBlocking);
 
          if (sendBlocking)
          {
@@ -301,14 +300,14 @@ public class ClientProducerImpl implements ClientProducerInternal
             channel.send(chunk);
          }
 
-         pos += bodyLength;
+         pos += chunkLength;
       }
-      
-      if (msg instanceof FileClientMessage)
+
+      if (msg instanceof ClientFileMessage)
       {
          try
          {
-            ((FileClientMessage)msg).closeChannel();
+            ((ClientFileMessage)msg).closeChannel();
          }
          catch (Exception e)
          {

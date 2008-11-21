@@ -37,7 +37,7 @@ import javax.transaction.xa.Xid;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.FileClientMessage;
+import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
@@ -476,9 +476,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return new ClientMessageImpl(durable, body);
    }
 
-   public FileClientMessage createFileMessage(final boolean durable)
+   public ClientFileMessage createFileMessage(final boolean durable)
    {
-      return new FileClientMessageImpl(durable);
+      return new ClientFileMessageImpl(durable);
    }
 
    public boolean isClosed()
@@ -622,7 +622,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          consumer.handleChunk(chunk);
       }
-
    }
 
    public void close() throws MessagingException

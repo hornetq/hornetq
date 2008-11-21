@@ -200,7 +200,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private final SimpleString managementAddress;
 
-   private ServerLargeMessage largeMessage;
+   private volatile ServerLargeMessage largeMessage;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -324,8 +324,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          }
          catch (Throwable error)
          {
-            log.warn(error.toString(), error);
-
+            log.error("Failed to delete large message file", error);
          }
       }
 
@@ -394,8 +393,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                                                           storageManager,
                                                           queueSettingsRepository,
                                                           postOffice,
-                                                          channel,
-                                                          pager,
+                                                          channel,                                                         
                                                           preCommitAcks);
 
          consumers.put(consumer.getID(), consumer);
@@ -2164,7 +2162,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          if (packet.getHeader() != null)
          {
-            largeMessage = createLargeMessageStorage(packet.getTargetID(), packet.getMessageID(), packet.getHeader());
+            largeMessage = createLargeMessageStorage(packet.getMessageID(), packet.getHeader());
          }
 
          largeMessage.addBytes(packet.getBody());
@@ -2172,9 +2170,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          if (!packet.isContinues())
          {
             final ServerLargeMessage message = largeMessage;
+            
             largeMessage = null;
 
             message.complete();
+            
             send(message);
          }
 
@@ -2182,7 +2182,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             response = new NullResponseMessage();
          }
-
       }
       catch (Exception e)
       {
@@ -2409,7 +2408,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    // Private
    // ----------------------------------------------------------------------------
 
-   private ServerLargeMessage createLargeMessageStorage(long producerID, long messageID, byte[] header) throws Exception
+   private ServerLargeMessage createLargeMessageStorage(long messageID, byte[] header) throws Exception
    {
       ServerLargeMessage largeMessage = storageManager.createLargeMessage();
 

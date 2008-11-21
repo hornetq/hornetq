@@ -84,7 +84,6 @@ public class JournalLargeMessageImpl extends ServerMessageImpl implements Server
       file.position(file.size());
 
       file.write(ByteBuffer.wrap(bytes), false);
-
    }
 
    @Override

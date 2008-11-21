@@ -33,7 +33,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
@@ -88,7 +87,7 @@ public class ServerConsumerImpl implements ServerConsumer
    private final Filter filter;
 
    private final int minLargeMessageSize;
-   
+
    private final ServerSession session;
 
    private final Lock lock = new ReentrantLock();
@@ -96,8 +95,8 @@ public class ServerConsumerImpl implements ServerConsumer
    private AtomicInteger availableCredits = new AtomicInteger(0);
 
    private boolean started;
-   
-   private volatile LargeMessageControl largeMessage = null;
+
+   private volatile LargeMessageSender largeMessageSender = null;
 
    /**
     * if we are a browse only consumer we don't need to worry about acknowledgemenets or being started/stopeed by the session.
@@ -111,12 +110,8 @@ public class ServerConsumerImpl implements ServerConsumer
    private final PostOffice postOffice;
 
    private final java.util.Queue<MessageReference> deliveringRefs = new ConcurrentLinkedQueue<MessageReference>();
-   
-   
 
    private final Channel channel;
-   
-   private final PagingManager pager;
 
    private volatile boolean closed;
 
@@ -135,7 +130,6 @@ public class ServerConsumerImpl implements ServerConsumer
                              final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                              final PostOffice postOffice,
                              final Channel channel,
-                             final PagingManager pager,
                              final boolean preCommitAcks)
    {
       this.id = id;
@@ -149,7 +143,7 @@ public class ServerConsumerImpl implements ServerConsumer
       this.started = browseOnly || started;
 
       this.browseOnly = browseOnly;
-     
+
       this.storageManager = storageManager;
 
       this.queueSettingsRepository = queueSettingsRepository;
@@ -157,13 +151,11 @@ public class ServerConsumerImpl implements ServerConsumer
       this.postOffice = postOffice;
 
       this.channel = channel;
-      
-      this.pager = pager;
 
       this.preCommitAcks = preCommitAcks;
 
       messageQueue.addConsumer(this);
-      
+
       this.minLargeMessageSize = session.getMinLargeMessageSize();
    }
 
@@ -317,16 +309,16 @@ public class ServerConsumerImpl implements ServerConsumer
    }
 
    public void receiveCredits(final int credits) throws Exception
-   {      
+   {
       if (credits == -1)
       {
-         //No flow control
+         // No flow control
          availableCredits = null;
       }
       else
       {
          int previous = availableCredits.getAndAdd(credits);
-   
+
          if (previous <= 0 && previous + credits > 0)
          {
             promptDelivery();
@@ -339,8 +331,7 @@ public class ServerConsumerImpl implements ServerConsumer
       return messageQueue;
    }
 
-   public void acknowledge(final boolean autoCommitAcks, final Transaction tx, final long messageID)
-      throws Exception
+   public void acknowledge(final boolean autoCommitAcks, final Transaction tx, final long messageID) throws Exception
    {
       if (browseOnly)
       {
@@ -375,7 +366,7 @@ public class ServerConsumerImpl implements ServerConsumer
             // Del count is not actually updated in storage unless it's
             // cancelled
             ref.incrementDeliveryCount();
-         }         
+         }
       }
       while (ref.getMessage().getMessageID() != messageID);
 
@@ -387,27 +378,27 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          return null;
       }
-      
-      //Expiries can come in our of sequence with respect to delivery order
-      
+
+      // Expiries can come in our of sequence with respect to delivery order
+
       Iterator<MessageReference> iter = deliveringRefs.iterator();
-      
+
       MessageReference ref = null;
-      
+
       while (iter.hasNext())
       {
          MessageReference theRef = iter.next();
-         
+
          if (theRef.getMessage().getMessageID() == messageID)
          {
             iter.remove();
-            
+
             ref = theRef;
-            
+
             break;
          }
       }
-      
+
       if (ref == null)
       {
          throw new IllegalStateException("Could not find reference with id " + messageID +
@@ -416,7 +407,7 @@ public class ServerConsumerImpl implements ServerConsumer
                                          " closed " +
                                          closed);
       }
-      
+
       return ref;
    }
 
@@ -492,12 +483,12 @@ public class ServerConsumerImpl implements ServerConsumer
 
       queue.referenceAcknowledged(ref);
    }
-   
+
    private void promptDelivery()
    {
-      if (largeMessage != null)
+      if (largeMessageSender != null)
       {
-         if (largeMessage.sendLargeMessage())
+         if (largeMessageSender.sendLargeMessage())
          {
             // prompt Delivery only if chunk was finished
             session.promptDelivery(messageQueue);
@@ -522,7 +513,7 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          // If there is a pendingLargeMessage we can't take another message
          // This has to be checked inside the lock as the set to null is done inside the lock
-         if (largeMessage != null)
+         if (largeMessageSender != null)
          {
             return HandleStatus.BUSY;
          }
@@ -547,19 +538,19 @@ public class ServerConsumerImpl implements ServerConsumer
             deliveringRefs.add(ref);
          }
 
-
          if (message instanceof ServerLargeMessage)
          {
             // TODO: How to inform the backup node about the LargeMessage being sent?
-            largeMessage = new LargeMessageControl((ServerLargeMessage)message);
-            largeMessage.sendLargeMessage();
+            largeMessageSender = new LargeMessageSender((ServerLargeMessage)message);
+
+            largeMessageSender.sendLargeMessage();
          }
          else
          {
-            sendRegularMessage(ref, message);
+            sendStandardMessage(ref, message);
          }
 
-         if(preCommitAcks)
+         if (preCommitAcks)
          {
             doAck(ref);
          }
@@ -576,7 +567,7 @@ public class ServerConsumerImpl implements ServerConsumer
     * @param ref
     * @param message
     */
-   private void sendRegularMessage(final MessageReference ref, final ServerMessage message)
+   private void sendStandardMessage(final MessageReference ref, final ServerMessage message)
    {
       if (availableCredits != null)
       {
@@ -605,45 +596,36 @@ public class ServerConsumerImpl implements ServerConsumer
       }
    }
 
-   
-   
-   
-   
-   
    // Inner classes
    // ------------------------------------------------------------------------
-   
-   
+
    /** Internal encapsulation of the logic on sending LargeMessages.
     *  This Inner class was created to avoid a bunch of loose properties about the current LargeMessage being sent*/
-   class LargeMessageControl
+   private class LargeMessageSender
    {
-      private volatile long sizePendingLargeMessage;
+      private long sizePendingLargeMessage;
 
       /** The current message being processed */
-      private volatile ServerLargeMessage pendingLargeMessage;
-      
+      private ServerLargeMessage pendingLargeMessage;
+
       /** The current position on the message being processed */
-      private volatile long positionPendingLargeMessage;
-      
-      private SessionSendChunkMessage readAheadChunk = null;
-      
-      public LargeMessageControl(ServerLargeMessage message)
+      private long positionPendingLargeMessage;
+
+      private SessionSendChunkMessage readAheadChunk;
+
+      public LargeMessageSender(final ServerLargeMessage message)
       {
          pendingLargeMessage = (ServerLargeMessage)message;
-         positionPendingLargeMessage = 0;
+
          sizePendingLargeMessage = pendingLargeMessage.getBodySize();
       }
-      
-      
+
       public boolean sendLargeMessage()
       {
-         
          lock.lock();
 
          try
          {
-            
             if (pendingLargeMessage == null)
             {
                return true;
@@ -657,18 +639,21 @@ public class ServerConsumerImpl implements ServerConsumer
             if (readAheadChunk != null)
             {
                int chunkLen = readAheadChunk.getBody().length;
+               
                positionPendingLargeMessage += chunkLen;
+               
                channel.send(readAheadChunk);
+               
                readAheadChunk = null;
+               
                if (availableCredits != null)
                {
                   availableCredits.addAndGet(-chunkLen);
                }
             }
-            
+
             while (positionPendingLargeMessage < sizePendingLargeMessage)
             {
-               
                if (availableCredits != null && availableCredits.get() <= 0)
                {
                   if (readAheadChunk == null)
@@ -677,41 +662,39 @@ public class ServerConsumerImpl implements ServerConsumer
                   }
                   return false;
                }
-               
+
                SessionSendChunkMessage chunk = createChunkSend();
-               
+
                int chunkLen = chunk.getBody().length;
 
                if (availableCredits != null)
                {
                   availableCredits.addAndGet(-chunkLen);
                }
-      
+
                channel.send(chunk);
-               
+
                positionPendingLargeMessage += chunkLen;
             }
-      
+
             pendingLargeMessage.releaseResources();
 
-            ServerConsumerImpl.this.largeMessage = null;
-      
+            ServerConsumerImpl.this.largeMessageSender = null;
+
             return true;
          }
          finally
          {
             lock.unlock();
          }
-         
-
       }
 
       private SessionSendChunkMessage createChunkSend()
       {
          SessionSendChunkMessage chunk;
-         
+
          int localChunkLen = 0;
-         
+
          if (positionPendingLargeMessage == 0)
          {
             int headerSize = pendingLargeMessage.getPropertiesEncodeSize();
@@ -723,7 +706,6 @@ public class ServerConsumerImpl implements ServerConsumer
 
             MessagingBuffer bodyBuffer = new ByteBufferWrapper(ByteBuffer.allocate((int)localChunkLen));
             pendingLargeMessage.encodeBody(bodyBuffer, 0, localChunkLen);
-
 
             chunk = new SessionSendChunkMessage(id,
                                                 headerBuffer.array(),
@@ -745,11 +727,8 @@ public class ServerConsumerImpl implements ServerConsumer
                                                 positionPendingLargeMessage + localChunkLen < sizePendingLargeMessage,
                                                 false);
          }
-         
-         return chunk;
-         
-      }
-      
-   }
 
+         return chunk;
+      }
+   }
 }

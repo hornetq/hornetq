@@ -20,7 +20,7 @@ import java.util.Queue;
 import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.FileClientMessage;
+import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -73,7 +73,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private File directory;
 
    private ClientMessage currentChunkMessage;
-
    
    private volatile Thread receiverThread;
 
@@ -217,32 +216,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          receiverThread = null;
       }
    }
-
-   
-   public ClientMessage createFileMessage(MessagingBuffer propertiesBuffer) throws Exception
-   {
-      if (isFileConsumer())
-      {
-         if (!this.directory.exists())
-         {
-            directory.mkdirs();
-         }
-         
-         FileClientMessageImpl message = new FileClientMessageImpl();
-         message.decodeProperties(propertiesBuffer);
-         message.setFile(new File(this.directory, message.getMessageID() + "-" + this.session.getName() + "-" + this.getID() + ".jbm"));
-         message.setLargeMessage(true);
-         return message;
-      }
-      else
-      {
-         ClientMessageImpl message = new ClientMessageImpl();
-         message.decodeProperties(propertiesBuffer);
-         message.setLargeMessage(true);
-         return message;
-      }
-   }
-   
+        
    public ClientMessage receive() throws MessagingException
    {
       return receive(0);
@@ -338,8 +312,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
       
       ClientMessage messageToHandle = message;
-      
-      
+            
       if (isFileConsumer())
       {
          messageToHandle = cloneAsFileMessage(message);
@@ -372,19 +345,17 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       
       flowControl(chunk.getBody().length);
       
-
       if (chunk.getHeader() != null)
       {
-
          // The Header only comes on the first message, so a buffer has to be created on the client
          // to hold either a file or a big message
          MessagingBuffer header = new ByteBufferWrapper(ByteBuffer.wrap(chunk.getHeader()));
 
          currentChunkMessage = createFileMessage(header);
 
-         if (currentChunkMessage instanceof FileClientMessage)
+         if (currentChunkMessage instanceof ClientFileMessage)
          {
-            FileClientMessage fileMessage = (FileClientMessage)currentChunkMessage;
+            ClientFileMessage fileMessage = (ClientFileMessage)currentChunkMessage;
             addBytesBody(fileMessage, chunk.getBody());
          }
          else
@@ -398,9 +369,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // No header.. this is then a continuation of a previous message
          ByteBuffer body = ByteBuffer.wrap(chunk.getBody());
 
-         if (currentChunkMessage instanceof FileClientMessage)
+         if (currentChunkMessage instanceof ClientFileMessage)
          {
-            FileClientMessage fileMessage = (FileClientMessage)currentChunkMessage;
+            ClientFileMessage fileMessage = (ClientFileMessage)currentChunkMessage;
             addBytesBody(fileMessage, chunk.getBody());
          }
          else
@@ -419,18 +390,17 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       if (!chunk.isContinues())
       {
          // Close the file that was being generated
-         if (currentChunkMessage instanceof FileClientMessage)
+         if (currentChunkMessage instanceof ClientFileMessage)
          {
-            ((FileClientMessage)currentChunkMessage).closeChannel();
+            ((ClientFileMessage)currentChunkMessage).closeChannel();
          }
+         
          ClientMessage msgToSend = currentChunkMessage;
          currentChunkMessage = null;
          handleMessage(msgToSend);
-      }
-      
+      }      
    }
    
-
    public void clear()
    {
       synchronized (this)
@@ -642,19 +612,19 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       session.acknowledge(id, message.getMessageID());
    }
    
-
-   private FileClientMessage cloneAsFileMessage(ClientMessage message) throws Exception
+   private ClientFileMessage cloneAsFileMessage(final ClientMessage message) throws Exception
    {
       int propertiesSize = message.getPropertiesEncodeSize();
+      
       MessagingBuffer bufferProperties = message.getBody().createNewBuffer(propertiesSize);
 
-      // FIXME: Find a better way to clone this ClientMessageImpl as FileClientMessageImpl without using the MessagingBuffer.
+      // FIXME: Find a better way to clone this ClientMessageImpl as ClientFileMessageImpl without using the MessagingBuffer.
       //        There is no direct access into the Properties, and I couldn't add a direct cast to this method without loose abstraction
       message.encodeProperties(bufferProperties);
       
       bufferProperties.rewind();
 
-      FileClientMessageImpl cloneMessage = new FileClientMessageImpl();
+      ClientFileMessageImpl cloneMessage = new ClientFileMessageImpl();
       
       cloneMessage.decodeProperties(bufferProperties);
       
@@ -667,15 +637,35 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       addBytesBody(cloneMessage, message.getBody().array());
       
       cloneMessage.closeChannel();
-     
-      
+           
       return cloneMessage;
    }
    
+   private ClientMessage createFileMessage(final MessagingBuffer propertiesBuffer) throws Exception
+   {
+      if (isFileConsumer())
+      {
+         if (!this.directory.exists())
+         {
+            directory.mkdirs();
+         }
+         
+         ClientFileMessageImpl message = new ClientFileMessageImpl();
+         message.decodeProperties(propertiesBuffer);
+         message.setFile(new File(this.directory, message.getMessageID() + "-" + this.session.getName() + "-" + this.getID() + ".jbm"));
+         message.setLargeMessage(true);
+         return message;
+      }
+      else
+      {
+         ClientMessageImpl message = new ClientMessageImpl();
+         message.decodeProperties(propertiesBuffer);
+         message.setLargeMessage(true);
+         return message;
+      }
+   }
 
-
-
-   private void addBytesBody(FileClientMessage fileMessage, byte[] body) throws Exception
+   private void addBytesBody(final ClientFileMessage fileMessage, final byte[] body) throws Exception
    {
       FileChannel channel = fileMessage.getChannel();
       channel.write(ByteBuffer.wrap(body));

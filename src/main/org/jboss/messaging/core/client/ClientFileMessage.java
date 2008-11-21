@@ -28,7 +28,7 @@ import java.nio.channels.FileChannel;
 import org.jboss.messaging.core.exception.MessagingException;
 
 /**
- * A FileClientMessage
+ * A ClientFileMessage
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * 
@@ -36,7 +36,7 @@ import org.jboss.messaging.core.exception.MessagingException;
  *
  *
  */
-public interface FileClientMessage extends ClientMessage
+public interface ClientFileMessage extends ClientMessage
 {
    File getFile();
 
@@ -44,7 +44,5 @@ public interface FileClientMessage extends ClientMessage
    
    FileChannel getChannel() throws MessagingException;
    
-   void closeChannel() throws MessagingException;  
-   
-
+   void closeChannel() throws MessagingException;     
 }

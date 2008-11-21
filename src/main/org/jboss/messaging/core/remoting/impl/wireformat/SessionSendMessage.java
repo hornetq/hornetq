@@ -86,7 +86,6 @@ public class SessionSendMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-
       if (clientMessage != null)
       {
          clientMessage.encode(buffer);

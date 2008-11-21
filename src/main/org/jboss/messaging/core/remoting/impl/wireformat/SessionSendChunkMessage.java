@@ -44,7 +44,7 @@ public class SessionSendChunkMessage extends PacketImpl
 
    private boolean continues;
 
-   private long messageID = 0;
+   private long messageID;
 
    private boolean requiresResponse;
 

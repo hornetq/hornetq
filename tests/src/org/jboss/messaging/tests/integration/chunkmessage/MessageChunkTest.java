@@ -34,7 +34,7 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.FileClientMessage;
+import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.config.Configuration;
@@ -166,7 +166,7 @@ public class MessageChunkTest extends ChunkTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         FileClientMessage clientLarge = createLargeClientMessage(session, numberOfIntegersBigMessage);
+         ClientFileMessage clientLarge = createLargeClientMessage(session, numberOfIntegersBigMessage);
 
          try
          {
@@ -523,7 +523,7 @@ public class MessageChunkTest extends ChunkTestBase
             producer.send(message);
          }
 
-         FileClientMessage clientFile = createLargeClientMessage(session, numberOfIntegersBigMessage);
+         ClientFileMessage clientFile = createLargeClientMessage(session, numberOfIntegersBigMessage);
 
          producer.send(clientFile);
 

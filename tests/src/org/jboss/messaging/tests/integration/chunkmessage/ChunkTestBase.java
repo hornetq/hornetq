@@ -34,7 +34,7 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.FileClientMessage;
+import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
@@ -137,7 +137,7 @@ public class ChunkTestBase extends ServiceTestBase
             for (int i = 0; i < numberOfMessages; i++)
             {
                ClientMessage message = session.createFileMessage(true);
-               ((FileClientMessage)message).setFile(tmpData);
+               ((ClientFileMessage)message).setFile(tmpData);
                message.putIntProperty(new SimpleString("counter-message"), i);
                long timeStart = System.currentTimeMillis();
                if (delayDelivery > 0)
@@ -223,7 +223,7 @@ public class ChunkTestBase extends ServiceTestBase
             
             if (realFiles)
             {
-               assertTrue (message instanceof FileClientMessage);
+               assertTrue (message instanceof ClientFileMessage);
             }
 
             if (testTime)
@@ -250,9 +250,9 @@ public class ChunkTestBase extends ServiceTestBase
 
             if (!testTime)
             {
-               if (message instanceof FileClientMessage)
+               if (message instanceof ClientFileMessage)
                {
-                  checkFileRead(((FileClientMessage)message).getFile(), numberOfIntegers);
+                  checkFileRead(((ClientFileMessage)message).getFile(), numberOfIntegers);
                }
                else
                {
@@ -298,10 +298,10 @@ public class ChunkTestBase extends ServiceTestBase
 
    }
 
-   protected FileClientMessage createLargeClientMessage(final ClientSession session, final int numberOfIntegers) throws Exception
+   protected ClientFileMessage createLargeClientMessage(final ClientSession session, final int numberOfIntegers) throws Exception
    {
 
-      FileClientMessage clientMessage = session.createFileMessage(true);
+      ClientFileMessage clientMessage = session.createFileMessage(true);
 
       File tmpFile = createLargeFile(temporaryDir, "tmpUpload.data", numberOfIntegers);
 
@@ -374,17 +374,17 @@ public class ChunkTestBase extends ServiceTestBase
 
       assertNotNull(clientMessage);
       
-      if (!(clientMessage instanceof FileClientMessage))
+      if (!(clientMessage instanceof ClientFileMessage))
       {
          System.out.println("Size = " + clientMessage.getBodySize());
       }
 
       
-      if (clientMessage instanceof FileClientMessage)
+      if (clientMessage instanceof ClientFileMessage)
       {
-         assertTrue(clientMessage instanceof FileClientMessage);
+         assertTrue(clientMessage instanceof ClientFileMessage);
    
-         FileClientMessage fileClientMessage = (FileClientMessage)clientMessage;
+         ClientFileMessage fileClientMessage = (ClientFileMessage)clientMessage;
    
          assertNotNull(fileClientMessage);
          File receivedFile = fileClientMessage.getFile();

@@ -29,15 +29,13 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.FileClientMessage;
+import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
- * A FileClientMessageImpl
+ * A ClientFileMessageImpl
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * 
@@ -45,22 +43,17 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
  *
  *
  */
-public class FileClientMessageImpl extends ClientMessageImpl implements FileClientMessage
+public class ClientFileMessageImpl extends ClientMessageImpl implements ClientFileMessage
 {
+   private File file;
 
-   File file;
+   private FileChannel currentChannel;
 
-   FileChannel currentChannel;
-
-   /**
-    * 
-    */
-   public FileClientMessageImpl()
+   public ClientFileMessageImpl()
    {
-      super();
    }
 
-   public FileClientMessageImpl(final boolean durable)
+   public ClientFileMessageImpl(final boolean durable)
    {
       super(durable, null);
    }
@@ -73,7 +66,7 @@ public class FileClientMessageImpl extends ClientMessageImpl implements FileClie
     * @param priority
     * @param body
     */
-   public FileClientMessageImpl(final byte type,
+   public ClientFileMessageImpl(final byte type,
                                 final boolean durable,
                                 final long expiration,
                                 final long timestamp,
@@ -88,7 +81,7 @@ public class FileClientMessageImpl extends ClientMessageImpl implements FileClie
     * @param durable
     * @param body
     */
-   public FileClientMessageImpl(final byte type, final boolean durable, final MessagingBuffer body)
+   public ClientFileMessageImpl(final byte type, final boolean durable, final MessagingBuffer body)
    {
       super(type, durable, body);
    }
@@ -96,20 +89,10 @@ public class FileClientMessageImpl extends ClientMessageImpl implements FileClie
    /**
     * @param deliveryCount
     */
-   public FileClientMessageImpl(final int deliveryCount)
+   public ClientFileMessageImpl(final int deliveryCount)
    {
       super(deliveryCount);
    }
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    /**
     * @return the file
@@ -181,13 +164,11 @@ public class FileClientMessageImpl extends ClientMessageImpl implements FileClie
       {
          throw new RuntimeException(e.getMessage(), e);
       }
-
    }
 
    @Override
    public void setBody(final MessagingBuffer body)
    {
-
       throw new RuntimeException("Not supported");
    }
 
@@ -224,12 +205,6 @@ public class FileClientMessageImpl extends ClientMessageImpl implements FileClie
       return (int)file.length();
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
    /**
     * @return
     * @throws FileNotFoundException
@@ -240,9 +215,11 @@ public class FileClientMessageImpl extends ClientMessageImpl implements FileClie
       try
       {
          RandomAccessFile randomFile = new RandomAccessFile(getFile(), "rw");
+         
          randomFile.seek(0);
 
          FileChannel channel = randomFile.getChannel();
+         
          return channel;
       }
       catch (IOException e)
@@ -250,7 +227,5 @@ public class FileClientMessageImpl extends ClientMessageImpl implements FileClie
          throw new MessagingException(MessagingException.INTERNAL_ERROR, e.getMessage(), e);
       }
    }
-
-   // Inner classes -------------------------------------------------
 
 }
