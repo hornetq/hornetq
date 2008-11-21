@@ -32,7 +32,6 @@ import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
-import org.jboss.messaging.tests.unit.core.journal.impl.fakes.ByteArrayEncoding;
 
 /**
  * 
@@ -212,7 +211,7 @@ public class RemoteJournalAppender
                
                if (transactionSize != 0)
                {
-                  journal.appendAddRecordTransactional(transactionId, id, (byte)99, new ByteArrayEncoding(buffer.array()));
+                  journal.appendAddRecordTransactional(transactionId, id, (byte)99, buffer.array());
         
                   if (++transactionCounter == transactionSize)
                   {
@@ -224,7 +223,7 @@ public class RemoteJournalAppender
                }
                else
                {
-                  journal.appendAddRecord(id, (byte)99, new ByteArrayEncoding(buffer.array()));
+                  journal.appendAddRecord(id, (byte)99, buffer.array());
                }
             }
    

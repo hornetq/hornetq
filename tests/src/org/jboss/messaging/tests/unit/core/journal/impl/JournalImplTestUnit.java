@@ -28,7 +28,6 @@ import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.tests.unit.core.journal.impl.fakes.ByteArrayEncoding;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 
 /**
@@ -2259,7 +2258,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       {
          byte[] record = generateRecord(10 + (int)(1500 * Math.random()));
 
-         journal.appendAddRecord(i, (byte)0, new ByteArrayEncoding(record));
+         journal.appendAddRecord(i, (byte)0, record);
 
          records.add(new RecordInfo(i, (byte)0, record, false));
       }
@@ -2268,7 +2267,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       {
          byte[] record = generateRecord(10 + (int)(1024 * Math.random()));
 
-         journal.appendUpdateRecord(i, (byte)0, new ByteArrayEncoding(record));
+         journal.appendUpdateRecord(i, (byte)0, record);
 
          records.add(new RecordInfo(i, (byte)0, record, true));
       }

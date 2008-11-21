@@ -61,6 +61,7 @@ import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.TestableJournal;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.VariableLatch;
 
@@ -283,6 +284,11 @@ public class JournalImpl implements TestableJournal
    // Journal implementation
    // ----------------------------------------------------------------
 
+   public void appendAddRecord(final long id, final byte recordType, final byte[] record) throws Exception
+   {
+      appendAddRecord(id, recordType, new ByteArrayEncoding(record));
+   }
+
    public void appendAddRecord(final long id, final byte recordType, final EncodingSupport record) throws Exception
    {
       if (state != STATE_LOADED)
@@ -321,6 +327,11 @@ public class JournalImpl implements TestableJournal
             // This could happen if the thread was interrupted
          }
       }
+   }
+
+   public void appendUpdateRecord(final long id, final byte recordType, final byte[] record) throws Exception
+   {
+      appendUpdateRecord(id, recordType, new ByteArrayEncoding(record));
    }
 
    public void appendUpdateRecord(final long id, final byte recordType, final EncodingSupport record) throws Exception
@@ -410,6 +421,12 @@ public class JournalImpl implements TestableJournal
       }
    }
 
+   public void appendAddRecordTransactional(final long txID, final long id, final byte recordType, final byte[] record) throws Exception
+   {
+      appendAddRecordTransactional(txID, id, recordType, new ByteArrayEncoding(record));
+
+   }
+
    public void appendAddRecordTransactional(final long txID,
                                             final long id,
                                             final byte recordType,
@@ -459,6 +476,14 @@ public class JournalImpl implements TestableJournal
    public void appendUpdateRecordTransactional(final long txID,
                                                final long id,
                                                final byte recordType,
+                                               final byte[] record) throws Exception
+   {
+      appendUpdateRecordTransactional(txID, id, recordType, new ByteArrayEncoding(record));
+   }
+
+   public void appendUpdateRecordTransactional(final long txID,
+                                               final long id,
+                                               final byte recordType,
                                                final EncodingSupport record) throws Exception
    {
       if (state != STATE_LOADED)
@@ -500,6 +525,11 @@ public class JournalImpl implements TestableJournal
       }
    }
 
+   public void appendDeleteRecordTransactional(final long txID, final long id, final byte[] record) throws Exception
+   {
+      appendDeleteRecordTransactional(txID, id, new ByteArrayEncoding(record));
+   }
+
    public void appendDeleteRecordTransactional(final long txID, final long id, final EncodingSupport record) throws Exception
    {
       if (state != STATE_LOADED)
@@ -520,6 +550,45 @@ public class JournalImpl implements TestableJournal
       {
          record.encode(bb);
       }
+      bb.putInt(size);
+
+      try
+      {
+         JournalFile usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
+
+         JournalTransaction tx = getTransactionInfo(txID);
+
+         tx.addNegative(usedFile, id);
+      }
+      finally
+      {
+         try
+         {
+            rwlock.readLock().unlock();
+         }
+         catch (Exception ignored)
+         {
+            // This could happen if the thread was interrupted
+         }
+      }
+   }
+
+   public void appendDeleteRecordTransactional(final long txID, final long id) throws Exception
+   {
+      if (state != STATE_LOADED)
+      {
+         throw new IllegalStateException("Journal must be loaded first");
+      }
+
+      int size = SIZE_DELETE_RECORD_TX;
+
+      ByteBufferWrapper bb = new ByteBufferWrapper(newBuffer(size));
+
+      bb.putByte(DELETE_RECORD_TX);
+      bb.putInt(-1); // skip ID part
+      bb.putLong(txID);
+      bb.putLong(id);
+      bb.putInt(0);
       bb.putInt(size);
 
       try
@@ -2552,5 +2621,51 @@ public class JournalImpl implements TestableJournal
       }
 
    }
+   
+   
+   private class ByteArrayEncoding implements EncodingSupport
+   {
+
+      // Constants -----------------------------------------------------
+      final byte[] data;
+
+      // Attributes ----------------------------------------------------
+
+      // Static --------------------------------------------------------
+
+      // Constructors --------------------------------------------------
+
+      public ByteArrayEncoding(final byte[] data)
+      {
+         this.data = data;
+      }
+
+      // Public --------------------------------------------------------
+
+      public void decode(final MessagingBuffer buffer)
+      {
+         throw new IllegalStateException("operation not supported");
+      }
+
+      public void encode(final MessagingBuffer buffer)
+      {
+         buffer.putBytes(data);
+      }
+
+      public int getEncodeSize()
+      {
+         return data.length;
+      }
+
+      // Package protected ---------------------------------------------
+
+      // Protected -----------------------------------------------------
+
+      // Private -------------------------------------------------------
+
+      // Inner classes -------------------------------------------------
+
+   }
+
 
 }

@@ -300,7 +300,7 @@ public class JournalStorageManager implements StorageManager
       {
          // Instead of updating the record, we delete the old one as that is
          // better for reclaiming
-         messageJournal.appendDeleteRecordTransactional(txID, pageTransaction.getRecordID(), null);
+         messageJournal.appendDeleteRecordTransactional(txID, pageTransaction.getRecordID());
       }
 
       pageTransaction.setRecordID(generateUniqueID());
@@ -317,7 +317,7 @@ public class JournalStorageManager implements StorageManager
       {
          // To avoid linked list effect on reclaiming, we delete and add a new
          // record, instead of simply updating it
-         messageJournal.appendDeleteRecordTransactional(txID, lastPage.getRecordId(), null);
+         messageJournal.appendDeleteRecordTransactional(txID, lastPage.getRecordId());
       }
 
       lastPage.setRecordId(generateUniqueID());
@@ -332,7 +332,7 @@ public class JournalStorageManager implements StorageManager
 
    public void storeDeletePageTransaction(final long txID, final long recordID) throws Exception
    {
-      messageJournal.appendDeleteRecordTransactional(txID, recordID, null);
+      messageJournal.appendDeleteRecordTransactional(txID, recordID);
    }
 
    public void updateScheduledDeliveryTimeTransactional(final long txID, final MessageReference ref) throws Exception

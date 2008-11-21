@@ -38,7 +38,6 @@ import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.tests.unit.core.journal.impl.fakes.ByteArrayEncoding;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -209,7 +208,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          {
             bytes[j] = (byte)i;
          }
-         journalImpl.appendAddRecord(i * 100l, (byte)i, new ByteArrayEncoding(bytes));
+         journalImpl.appendAddRecord(i * 100l, (byte)i, bytes);
       }
 
       for (int i = 25; i < 50; i++)
@@ -244,7 +243,7 @@ public class AlignedJournalImplTest extends UnitTestCase
             bytes[j] = (byte)'x';
          }
 
-         journalImpl.appendUpdateRecord(i * 100l, (byte)i, new ByteArrayEncoding(bytes));
+         journalImpl.appendUpdateRecord(i * 100l, (byte)i, bytes);
       }
 
       setupJournal(JOURNAL_SIZE, 1024);
@@ -512,7 +511,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendDeleteRecordTransactional(2l, i, null);
+         journalImpl.appendDeleteRecordTransactional(2l, i);
          journalImpl.forceMoveNextFile();
       }
 
@@ -818,7 +817,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendDeleteRecordTransactional(2l, i, null);
+         journalImpl.appendDeleteRecordTransactional(2l, i);
       }
 
       journalImpl.appendCommitRecord(2l);
@@ -863,7 +862,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          {
             journalImpl.forceMoveNextFile();
          }
-         journalImpl.appendDeleteRecordTransactional(2l, i, null);
+         journalImpl.appendDeleteRecordTransactional(2l, i);
       }
 
       journalImpl.appendCommitRecord(2l);
@@ -979,7 +978,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendDeleteRecordTransactional(2l, i, null);
+         journalImpl.appendDeleteRecordTransactional(2l, i);
       }
 
       SimpleEncoding xid2 = new SimpleEncoding(15, (byte)2);

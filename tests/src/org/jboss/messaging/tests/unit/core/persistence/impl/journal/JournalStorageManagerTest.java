@@ -168,7 +168,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       final long messageID = 101921092;
       final long txID = 1209373;
 
-      messageJournal.appendDeleteRecordTransactional(txID, messageID, null);
+      messageJournal.appendDeleteRecordTransactional(txID, messageID);
       EasyMock.replay(messageJournal, bindingsJournal);
       jsm.storeDeletePageTransaction(txID, messageID);
       EasyMock.verify(messageJournal, bindingsJournal);

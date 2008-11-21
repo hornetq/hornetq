@@ -38,7 +38,6 @@ import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.TestableJournal;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.tests.unit.core.journal.impl.fakes.ByteArrayEncoding;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
@@ -217,7 +216,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       {
          byte[] record = generateRecord(size);
 
-         journal.appendAddRecord(element, (byte)0, new ByteArrayEncoding(record));
+         journal.appendAddRecord(element, (byte)0, record);
 
          records.add(new RecordInfo(element, (byte)0, record, false));
       }
@@ -231,7 +230,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       {
          byte[] updateRecord = generateRecord(recordLength);
 
-         journal.appendUpdateRecord(element, (byte)0, new ByteArrayEncoding(updateRecord));
+         journal.appendUpdateRecord(element, (byte)0, updateRecord);
 
          records.add(new RecordInfo(element, (byte)0, updateRecord, true));
       }
@@ -261,7 +260,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
          // SIZE_BYTE
          byte[] record = generateRecord(recordLength - JournalImpl.SIZE_ADD_RECORD_TX);
 
-         journal.appendAddRecordTransactional(txID, element, (byte)0, new ByteArrayEncoding(record));
+         journal.appendAddRecordTransactional(txID, element, (byte)0, record);
 
          tx.records.add(new RecordInfo(element, (byte)0, record, false));
 
@@ -278,7 +277,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       {
          byte[] updateRecord = generateRecord(recordLength - JournalImpl.SIZE_UPDATE_RECORD_TX);
 
-         journal.appendUpdateRecordTransactional(txID, element, (byte)0, new ByteArrayEncoding(updateRecord));
+         journal.appendUpdateRecordTransactional(txID, element, (byte)0, updateRecord);
 
          tx.records.add(new RecordInfo(element, (byte)0, updateRecord, true));
       }
@@ -291,7 +290,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
       for (long element : arguments)
       {
-         journal.appendDeleteRecordTransactional(txID, element, null);
+         journal.appendDeleteRecordTransactional(txID, element);
 
          tx.deletes.add(new RecordInfo(element, (byte)0, null, true));
       }

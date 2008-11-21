@@ -31,7 +31,6 @@ import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.unit.core.journal.impl.JournalImplTestBase;
-import org.jboss.messaging.tests.unit.core.journal.impl.fakes.ByteArrayEncoding;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 
 /**
@@ -157,7 +156,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       for (int count = 0; count < NUMBER_OF_RECORDS; count++)
       {
-         journal.appendAddRecord(count, (byte)0, new ByteArrayEncoding(record));
+         journal.appendAddRecord(count, (byte)0, record);
          
          if (count >= NUMBER_OF_RECORDS / 2)
          {
