@@ -35,10 +35,14 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.jms.client.JBossMessage;
 
 import javax.transaction.xa.Xid;
 import javax.transaction.xa.XAResource;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -149,6 +153,85 @@ public class DeadLetterAddressTest extends UnitTestCase
       m = clientConsumer.receive(500);
       assertNull(m);
       clientConsumer.close();
+   }
+
+   public void testHeadersSet() throws Exception
+   {
+      final int MAX_DELIVERIES = 16;
+      final int NUM_MESSAGES = 5;
+      Xid xid = new XidImpl("bq".getBytes(), 0, "gt".getBytes());
+      SimpleString dla = new SimpleString("DLA");
+      SimpleString qName = new SimpleString("q1");
+      QueueSettings queueSettings = new QueueSettings();
+      queueSettings.setMaxDeliveryAttempts(MAX_DELIVERIES);
+      queueSettings.setDeadLetterAddress(dla);
+      messagingService.getServer().getQueueSettingsRepository().addMatch(qName.toString(), queueSettings);
+      SimpleString dlq = new SimpleString("DLQ1");
+      clientSession.createQueue(dla, dlq, null, false, false, false);
+      clientSession.createQueue(qName, qName, null, false, false, false);
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      ClientSession sendSession = sessionFactory.createSession(false, true, true);
+      ClientProducer producer = sendSession.createProducer(qName);
+      Map<String, Long> origIds = new HashMap<String, Long>();
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage tm = createTextMessage("Message:" + i, clientSession);
+         producer.send(tm);
+      }
+
+      ClientConsumer clientConsumer = clientSession.createConsumer(qName);
+      clientSession.start();
+
+      for (int i = 0; i < MAX_DELIVERIES; i++)
+      {
+         clientSession.start(xid, XAResource.TMNOFLAGS);
+         for (int j = 0; j < NUM_MESSAGES; j++)
+         {
+            ClientMessage tm = clientConsumer.receive(1000);
+
+            assertNotNull(tm);
+            tm.acknowledge();
+            if(i == 0)
+            {
+               origIds.put("Message:" + j, tm.getMessageID());
+            }
+            assertEquals("Message:" + j, tm.getBody().getString());
+         }
+         clientSession.end(xid, XAResource.TMSUCCESS);
+         clientSession.rollback(xid);
+      }
+
+      assertEquals(messagingService.getServer().getPostOffice().getBinding(qName).getQueue().getMessageCount(), 0);
+      ClientMessage m = clientConsumer.receive(1000);
+      assertNull(m);
+      //All the messages should now be in the DLQ
+
+      ClientConsumer cc3 = clientSession.createConsumer(dlq);
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage tm = cc3.receive(1000);
+
+         assertNotNull(tm);
+
+         String text = tm.getBody().getString();
+         assertEquals("Message:" + i, text);
+
+         // Check the headers
+         SimpleString origDest =
+               (SimpleString) tm.getProperty(MessageImpl.HDR_ORIGIN_QUEUE);
+
+         Long origMessageId =
+               (Long) tm.getProperty(MessageImpl.HDR_ORIG_MESSAGE_ID);
+
+         assertEquals(qName, origDest);
+
+         Long origId = origIds.get(text);
+
+         assertEquals(origId, origMessageId);
+      }
+
    }
 
    @Override

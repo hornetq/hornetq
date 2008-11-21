@@ -39,6 +39,8 @@ import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.SimpleString;
 
+import java.util.List;
+
 /**
  * Implementation of a MessageReference
  *
@@ -165,7 +167,15 @@ public class MessageReferenceImpl implements MessageReference
       SimpleString deadLetterAddress = queueSettingsRepository.getMatch(queue.getName().toString()).getDeadLetterAddress();
       if (deadLetterAddress != null)
       {
-         move(deadLetterAddress, persistenceManager, postOffice, false);
+         List<Binding> bindingList = postOffice.getBindingsForAddress(deadLetterAddress);
+         if(bindingList == null || bindingList.size() == 0)
+         {
+             log.warn("Message has exceeded max delivery attempts. No bindings for Dead Letter Address " + deadLetterAddress + " so dropping it");
+         }
+         else
+         {
+            move(deadLetterAddress, persistenceManager, postOffice, false);
+         }
       }
       else
       {
@@ -181,11 +191,19 @@ public class MessageReferenceImpl implements MessageReference
                       final PostOffice postOffice,
                       final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
-      SimpleString expiryQueue = queueSettingsRepository.getMatch(queue.getName().toString()).getExpiryAddress();
+      SimpleString expiryAddress = queueSettingsRepository.getMatch(queue.getName().toString()).getExpiryAddress();
 
-      if (expiryQueue != null)
+      if (expiryAddress != null)
       {
-         move(expiryQueue, persistenceManager, postOffice, true);
+         List<Binding> bindingList = postOffice.getBindingsForAddress(expiryAddress);
+         if(bindingList == null || bindingList.size() == 0)
+         {
+             log.warn("Message has expired. No bindings for Expiry Address " + expiryAddress + " so dropping it");
+         }
+         else
+         {
+            move(expiryAddress, persistenceManager, postOffice, true);
+         }
       }
       else
       {

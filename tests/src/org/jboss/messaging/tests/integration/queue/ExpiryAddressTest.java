@@ -34,7 +34,15 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.transaction.impl.XidImpl;
+import org.jboss.messaging.core.message.impl.MessageImpl;
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ACTUAL_EXPIRY_TIME;
 import org.jboss.messaging.util.SimpleString;
+
+import javax.transaction.xa.Xid;
+import javax.transaction.xa.XAResource;
+import java.util.Map;
+import java.util.HashMap;
 
 
 /**
@@ -126,6 +134,53 @@ public class ExpiryAddressTest extends UnitTestCase
       ClientMessage m = clientConsumer.receive(500);
       assertNull(m);
       clientConsumer.close();
+   }
+
+    public void testHeadersSet() throws Exception
+   {
+      final int NUM_MESSAGES = 5;
+      SimpleString ea = new SimpleString("DLA");
+      SimpleString qName = new SimpleString("q1");
+      QueueSettings queueSettings = new QueueSettings();
+      queueSettings.setExpiryAddress(ea);
+      messagingService.getServer().getQueueSettingsRepository().addMatch(qName.toString(), queueSettings);
+      SimpleString eq = new SimpleString("EA1");
+      clientSession.createQueue(ea, eq, null, false, false, false);
+      clientSession.createQueue(qName, qName, null, false, false, false);
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      ClientSession sendSession = sessionFactory.createSession(false, true, true);
+      ClientProducer producer = sendSession.createProducer(qName);
+
+         long expiration = System.currentTimeMillis();
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage tm = createTextMessage("Message:" + i, clientSession);
+         tm.setExpiration(expiration);
+         producer.send(tm);
+      }
+
+      ClientConsumer clientConsumer = clientSession.createConsumer(qName);
+      clientSession.start();
+      ClientMessage m = clientConsumer.receive(1000);
+      assertNull(m);
+      //All the messages should now be in the EQ
+
+      ClientConsumer cc3 = clientSession.createConsumer(eq);
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage tm = cc3.receive(1000);
+
+         assertNotNull(tm);
+
+         String text = tm.getBody().getString();
+         assertEquals("Message:" + i, text);
+
+         // Check the headers
+         Long actualExpiryTime = (Long) tm.getProperty(HDR_ACTUAL_EXPIRY_TIME);
+         assertTrue(actualExpiryTime >= expiration);
+      }
+
    }
 
    @Override
