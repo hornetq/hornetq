@@ -24,6 +24,9 @@ package org.jboss.messaging.core.server.cluster.impl;
 
 import java.util.LinkedList;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
@@ -77,13 +80,15 @@ public class ForwarderImpl implements Forwarder
    private java.util.Queue<MessageReference> refs = new LinkedList<MessageReference>();
 
    private Transaction tx;
-
+   
+   private long lastReceivedTime = -1;
+   
    private final StorageManager storageManager;
 
    private final PostOffice postOffice;
 
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
-   
+     
    private final Transformer transformer;
 
    private final ClientSessionFactory csf;
@@ -93,6 +98,8 @@ public class ForwarderImpl implements Forwarder
    private ClientProducer producer;
       
    private volatile boolean started;
+   
+   private final ScheduledFuture<?> future;
 
    // Static --------------------------------------------------------
 
@@ -107,7 +114,8 @@ public class ForwarderImpl implements Forwarder
                         final long maxBatchTime,
                         final StorageManager storageManager,
                         final PostOffice postOffice,
-                        final HierarchicalRepository<QueueSettings> queueSettingsRepository,                        
+                        final HierarchicalRepository<QueueSettings> queueSettingsRepository,  
+                        final ScheduledExecutorService scheduledExecutor,
                         final Transformer transformer) throws Exception
    {
       this.queue = queue;
@@ -126,7 +134,16 @@ public class ForwarderImpl implements Forwarder
       
       this.transformer = transformer;
       
-      this.csf = new ClientSessionFactoryImpl(connectorConfig);      
+      this.csf = new ClientSessionFactoryImpl(connectorConfig);  
+      
+      if (maxBatchTime != -1)
+      {
+         future = scheduledExecutor.scheduleAtFixedRate(new BatchTimeout(), maxBatchTime, maxBatchTime, TimeUnit.MILLISECONDS);
+      }
+      else
+      {
+         future = null;
+      }
    }
    
    public synchronized void start() throws Exception
@@ -152,6 +169,11 @@ public class ForwarderImpl implements Forwarder
       started = false;
 
       queue.removeConsumer(this);
+      
+      if (future != null)
+      {
+         future.cancel(false);
+      }
 
       // Wait until all batches are complete
 
@@ -177,7 +199,7 @@ public class ForwarderImpl implements Forwarder
    }
 
    // Consumer implementation ---------------------------------------
-
+   
    public HandleStatus handle(final MessageReference reference) throws Exception
    {
       if (busy)
@@ -193,6 +215,11 @@ public class ForwarderImpl implements Forwarder
          }
 
          refs.add(reference);
+         
+         if (maxBatchTime != -1)
+         {
+            lastReceivedTime = System.currentTimeMillis();
+         }
 
          count++;
 
@@ -213,12 +240,35 @@ public class ForwarderImpl implements Forwarder
 
    // Private -------------------------------------------------------
 
+   private synchronized void timeoutBatch()
+   {
+      if (!started)
+      {
+         return;
+      }
+      
+      if (lastReceivedTime != -1 && count > 0)
+      {
+         long now = System.currentTimeMillis();
+         
+         if (now - lastReceivedTime >= maxBatchTime)
+         {
+            sendBatch();
+         }
+      }      
+   }
+   
    private void sendBatch()
    {
       try
       {
          synchronized (this)
          {
+            if (count == 0)
+            {
+               return;
+            }
+            
             // TODO - duplicate detection on sendee and if batch size = 1 then don't need tx
 
             while (true)
@@ -282,6 +332,14 @@ public class ForwarderImpl implements Forwarder
       public void run()
       {
          sendBatch();
+      }
+   }
+   
+   private class BatchTimeout implements Runnable
+   {
+      public void run()
+      {
+         timeoutBatch();
       }
    }
 

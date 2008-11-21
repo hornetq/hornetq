@@ -70,10 +70,6 @@ public class FailoverPreCommitMessageTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   /*
-    * Set messages to expire very soon, send a load of them, so at some of them get expired when they reach the client
-    * After failover make sure all are received ok
-    */
    public void testPreCommitFailoverTest() throws Exception
    {
       ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
@@ -133,10 +129,6 @@ public class FailoverPreCommitMessageTest extends TestCase
          if (message != null)
          {
             message.acknowledge();
-
-            //We sleep a little to make sure messages aren't consumed too quickly and some
-            //will expire before reaching consumer
-            Thread.sleep(1);
 
             count++;
          }

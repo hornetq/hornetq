@@ -33,6 +33,7 @@ import java.util.concurrent.ScheduledFuture;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
@@ -56,6 +57,8 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class ClusterManagerImpl implements ClusterManager
 {
+   private static final Logger log = Logger.getLogger(ClusterManagerImpl.class);
+
    private final Map<String, BroadcastGroup> broadcastGroups = new HashMap<String, BroadcastGroup>();
 
    private final Map<String, DiscoveryGroup> discoveryGroups = new HashMap<String, DiscoveryGroup>();
@@ -97,18 +100,18 @@ public class ClusterManagerImpl implements ClusterManager
       {
          return;
       }
-      
-      for (BroadcastGroup group: broadcastGroups.values())
+
+      for (BroadcastGroup group : broadcastGroups.values())
       {
          group.start();
       }
-      
-      for (DiscoveryGroup group: discoveryGroups.values())
+
+      for (DiscoveryGroup group : discoveryGroups.values())
       {
          group.start();
       }
-      
-      for (MessageFlow flow: this.messageFlows.values())
+
+      for (MessageFlow flow : this.messageFlows.values())
       {
          flow.start();
       }
@@ -122,18 +125,18 @@ public class ClusterManagerImpl implements ClusterManager
       {
          return;
       }
-      
-      for (BroadcastGroup group: broadcastGroups.values())
+
+      for (BroadcastGroup group : broadcastGroups.values())
       {
          group.stop();
       }
-      
-      for (DiscoveryGroup group: discoveryGroups.values())
+
+      for (DiscoveryGroup group : discoveryGroups.values())
       {
          group.stop();
       }
-      
-      for (MessageFlow flow: this.messageFlows.values())
+
+      for (MessageFlow flow : this.messageFlows.values())
       {
          flow.stop();
       }
@@ -150,8 +153,10 @@ public class ClusterManagerImpl implements ClusterManager
    {
       if (broadcastGroups.containsKey(config.getName()))
       {
-         throw new IllegalArgumentException("There is already a broadcast-group with name " + config.getName() +
-                                            " deployed");
+         log.warn("There is already a broadcast-group with name " + config.getName() +
+                  " deployed. This one will not be deployed.");
+         
+         return;
       }
 
       InetAddress localBindAddress = InetAddress.getByName(config.getLocalBindAddress());
@@ -179,8 +184,10 @@ public class ClusterManagerImpl implements ClusterManager
    {
       if (discoveryGroups.containsKey(config.getName()))
       {
-         throw new IllegalArgumentException("There is already a discovery-group with name " + config.getName() +
-                                            " deployed");
+         log.warn("There is already a discovery-group with name " + config.getName() +
+                  " deployed. This one will not be deployed.");
+
+         return;
       }
 
       InetAddress groupAddress = InetAddress.getByName(config.getGroupAddress());
@@ -194,10 +201,40 @@ public class ClusterManagerImpl implements ClusterManager
 
    public synchronized void deployMessageFlow(final MessageFlowConfiguration config) throws Exception
    {
+      if (config.getName() == null)
+      {
+         log.warn("Must specify a unique name for each message flow. This one will not be deployed.");
+
+         return;
+      }
+      
+      if (config.getAddress() == null)
+      {
+         log.warn("Must specify an address each message flow. This one will not be deployed.");
+
+         return;
+      }
+      
       if (messageFlows.containsKey(config.getName()))
       {
-         throw new IllegalArgumentException("There is already a message-flow with name " + config.getName() +
-                                            " deployed");
+         log.warn("There is already a message-flow with name " + config.getName() +
+                  " deployed. This one will not be deployed.");
+
+         return;
+      }
+      
+      if (config.getMaxBatchTime() == 0 || config.getMaxBatchTime() < -1)
+      {
+         log.warn("Invalid value for max-batch-time. Valid values are -1 or > 0");
+         
+         return;
+      }
+      
+      if (config.getMaxBatchSize() < 1)
+      {
+         log.warn("Invalid value for max-batch-size. Valid values are > 0");
+         
+         return;
       }
 
       Transformer transformer = null;
@@ -235,6 +272,7 @@ public class ClusterManagerImpl implements ClusterManager
                                     storageManager,
                                     postOffice,
                                     queueSettingsRepository,
+                                    scheduledExecutor,
                                     transformer,
                                     config.getConnectors());
       }
@@ -246,8 +284,10 @@ public class ClusterManagerImpl implements ClusterManager
 
          if (group == null)
          {
-            throw new IllegalArgumentException("There is no discovery-group with name " + config.getDiscoveryGroupName() +
-                                               " deployed");
+            log.warn("There is no discovery-group with name " + config.getDiscoveryGroupName() +
+                     " deployed. This one will not be deployed.");
+
+            return;
          }
 
          flow = new MessageFlowImpl(new SimpleString(config.getName()),
@@ -261,6 +301,7 @@ public class ClusterManagerImpl implements ClusterManager
                                     storageManager,
                                     postOffice,
                                     queueSettingsRepository,
+                                    scheduledExecutor,
                                     transformer,
                                     group);
       }

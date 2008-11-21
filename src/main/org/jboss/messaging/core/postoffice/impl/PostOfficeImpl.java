@@ -218,7 +218,7 @@ public class PostOfficeImpl implements PostOffice
                                           final boolean fanout) throws Exception
    {
       Binding binding = createBinding(address, queueName, filter, durable, temporary, fanout);
-
+      
       addBindingInMemory(binding);
 
       if (durable)
@@ -317,7 +317,7 @@ public class PostOfficeImpl implements PostOffice
                      //Can be determined from the number of consumers on the queue
                      long routings = binding.getRoutings();
                      
-                     if (routings <= lowestRoutings || lowestRoutings == -1)
+                     if (routings < lowestRoutings || lowestRoutings == -1)
                      {                        
                         lowestRoutings = routings;
                         

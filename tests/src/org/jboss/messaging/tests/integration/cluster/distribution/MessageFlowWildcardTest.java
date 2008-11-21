@@ -29,28 +29,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
-import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
- * A OutflowWithWildcardTest
+ * A MessageFlowWildcardTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
@@ -58,18 +52,14 @@ import org.jboss.messaging.util.SimpleString;
  *
  *
  */
-public class OutflowWithWildcardTest extends TestCase
+public class MessageFlowWildcardTest extends MessageFlowTestBase
 {
-   private static final Logger log = Logger.getLogger(OutflowWithWildcardTest.class);
+   private static final Logger log = Logger.getLogger(MessageFlowWildcardTest.class);
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService service0;
-
-   private MessagingService service1;
-   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -78,24 +68,11 @@ public class OutflowWithWildcardTest extends TestCase
 
    public void testWithWildcard() throws Exception
    {
-      Configuration service0Conf = new ConfigurationImpl();
-      service0Conf.setClustered(true);
-      service0Conf.setSecurityEnabled(false);
-      Map<String, Object> service0Params = new HashMap<String, Object>();
-      service0Params.put(TransportConstants.SERVER_ID_PROP_NAME, 0);
-      service0Conf.getAcceptorConfigurations()
-                  .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
-                                                  service0Params));
-
-      Configuration service1Conf = new ConfigurationImpl();
-      service1Conf.setClustered(true);
-      service1Conf.setSecurityEnabled(false);
-      Map<String, Object> service1Params = new HashMap<String, Object>();
-      service1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-
-      service1Conf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
-                                                                              service1Params));
-      service1 = MessagingServiceImpl.newNullStorageMessagingServer(service1Conf);
+      Map<String, Object> service0Params = new HashMap<String, Object>();      
+      MessagingService service0 = createMessagingService(0, service0Params);
+      
+      Map<String, Object> service1Params = new HashMap<String, Object>();      
+      MessagingService service1 = createMessagingService(1, service1Params);      
       service1.start();
 
       List<TransportConfiguration> connectors = new ArrayList<TransportConfiguration>();
@@ -114,12 +91,11 @@ public class OutflowWithWildcardTest extends TestCase
       final SimpleString match1 = new SimpleString("cheese.#");
       
             
-      MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1", match1.toString(), null, true, 1, 0, null, connectors);
+      MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1", match1.toString(), null, true, 1, -1, null, connectors);
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
       ofconfigs.add(ofconfig);
-      service0Conf.setMessageFlowConfigurations(ofconfigs);
-
-      service0 = MessagingServiceImpl.newNullStorageMessagingServer(service0Conf);
+      service0.getServer().getConfiguration().setMessageFlowConfigurations(ofconfigs);
+     
       service0.start();
       
       TransportConfiguration server0tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
@@ -276,6 +252,12 @@ public class OutflowWithWildcardTest extends TestCase
       session0.close();
       
       session1.close();
+      
+      service0.stop();      
+      service1.stop();
+      
+      assertEquals(0, service0.getServer().getRemotingService().getConnections().size());
+      assertEquals(0, service1.getServer().getRemotingService().getConnections().size());
    }
    
    // Package protected ---------------------------------------------
@@ -289,15 +271,7 @@ public class OutflowWithWildcardTest extends TestCase
 
    @Override
    protected void tearDown() throws Exception
-   {
-      service0.stop();
-      
-      assertEquals(0, service0.getServer().getRemotingService().getConnections().size());
-
-      service1.stop();
-
-      assertEquals(0, service1.getServer().getRemotingService().getConnections().size());
-
+   {      
       assertEquals(0, InVMRegistry.instance.size());
    }
 

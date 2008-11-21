@@ -29,73 +29,50 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
-import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
- * A OutflowBatchSizeTest
+ * A MessageFlowWithFilterTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 15 Nov 2008 09:06:55
+ * Created 15 Nov 2008 08:58:49
  *
  *
  */
-public class OutflowBatchSizeTest extends TestCase
+public class MessageFlowWithFilterTest extends MessageFlowTestBase
 {
-   private static final Logger log = Logger.getLogger(OutflowBatchSizeTest.class);
+   private static final Logger log = Logger.getLogger(MessageFlowWithFilterTest.class);
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService service0;
-
-   private MessagingService service1;
-   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
 
-   public void testBatchSize() throws Exception
+   public void testWithWildcard() throws Exception
    {
-      Configuration service0Conf = new ConfigurationImpl();
-      service0Conf.setClustered(true);
-      service0Conf.setSecurityEnabled(false);
-      Map<String, Object> service0Params = new HashMap<String, Object>();
-      service0Params.put(TransportConstants.SERVER_ID_PROP_NAME, 0);
-      service0Conf.getAcceptorConfigurations()
-                  .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
-                                                  service0Params));
-
-      Configuration service1Conf = new ConfigurationImpl();
-      service1Conf.setClustered(true);
-      service1Conf.setSecurityEnabled(false);
-      Map<String, Object> service1Params = new HashMap<String, Object>();
-      service1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-
-      service1Conf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
-                                                                              service1Params));
-      service1 = MessagingServiceImpl.newNullStorageMessagingServer(service1Conf);
+      Map<String, Object> service0Params = new HashMap<String, Object>();      
+      MessagingService service0 = createMessagingService(0, service0Params);
+      
+      Map<String, Object> service1Params = new HashMap<String, Object>();      
+      MessagingService service1 = createMessagingService(1, service1Params);      
       service1.start();
 
       List<TransportConfiguration> connectors = new ArrayList<TransportConfiguration>();
@@ -104,15 +81,14 @@ public class OutflowBatchSizeTest extends TestCase
       connectors.add(server1tc);
       
       final SimpleString address1 = new SimpleString("testaddress");
-                       
-      final int batchSize = 10;
- 
-      MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1", address1.toString(), null, true, batchSize, 0, null, connectors);
+                 
+      final String filter = "selectorkey='ORANGES'";
+      
+      MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1", address1.toString(), filter, true, 1, -1, null, connectors);
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
       ofconfigs.add(ofconfig);
-      service0Conf.setMessageFlowConfigurations(ofconfigs);
-
-      service0 = MessagingServiceImpl.newNullStorageMessagingServer(service0Conf);
+      service0.getServer().getConfiguration().setMessageFlowConfigurations(ofconfigs);
+   
       service0.start();
       
       TransportConfiguration server0tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
@@ -140,58 +116,72 @@ public class OutflowBatchSizeTest extends TestCase
       
       session1.start();
       
+      final int numMessages = 100;
+      
       final SimpleString propKey = new SimpleString("testkey");
       
-      for (int j = 0; j < 10; j++)
-      {
-          
-         for (int i = 0; i < batchSize - 1; i++)
-         {      
-            ClientMessage message = session0.createClientMessage(false);
-            message.putIntProperty(propKey, i);        
-            message.getBody().flip();
-                 
-            prod0_1.send(message);
-         }
-              
-         for (int i = 0; i < batchSize - 1; i++)
-         {
-            ClientMessage rmessage1 = cons0_1.receive(1000);
-            
-            assertNotNull(rmessage1);
-            
-            assertEquals(i, rmessage1.getProperty(propKey));         
-         }
-         
-         ClientMessage rmessage1 = cons1_1.receive(250);
-         
-         assertNull(rmessage1);
-         
+      final SimpleString propKey2 = new SimpleString("selectorkey");
+      
+      for (int i = 0; i < numMessages; i++)
+      {      
          ClientMessage message = session0.createClientMessage(false);
-         message.putIntProperty(propKey, batchSize - 1);        
+         message.putIntProperty(propKey, i);
+         message.putStringProperty(propKey2, new SimpleString("ORANGES"));
          message.getBody().flip();
               
          prod0_1.send(message);
-         
-         rmessage1 = cons0_1.receive(1000);
+      }
+      for (int i = 0; i < numMessages; i++)
+      {      
+         ClientMessage message = session0.createClientMessage(false);
+         message.putIntProperty(propKey, i);
+         message.putStringProperty(propKey2, new SimpleString("APPLES"));
+         message.getBody().flip();
+              
+         prod0_1.send(message);
+      }
+   
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage rmessage1 = cons0_1.receive(1000);
          
          assertNotNull(rmessage1);
          
-         assertEquals(batchSize - 1, rmessage1.getProperty(propKey));  
+         assertEquals(i, rmessage1.getProperty(propKey));
          
-         for (int i = 0; i < batchSize; i++)
-         {
-            rmessage1 = cons1_1.receive(1000);
-            
-            assertNotNull(rmessage1);
-            
-            assertEquals(i, rmessage1.getProperty(propKey));         
-         }
+         ClientMessage rmessage2 = cons1_1.receive(1000);
+         
+         assertNotNull(rmessage2);
+         
+         assertEquals(i, rmessage2.getProperty(propKey));         
       }
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage rmessage1 = cons0_1.receive(1000);
+         
+         assertNotNull(rmessage1);
+         
+         assertEquals(i, rmessage1.getProperty(propKey));                      
+      }
+      
+      ClientMessage rmessage1 = cons0_1.receiveImmediate();
+      
+      assertNull(rmessage1);
+      
+      ClientMessage rmessage2 = cons1_1.receiveImmediate();
+      
+      assertNull(rmessage2);
             
       session0.close();
       
       session1.close();
+      
+      service0.stop();      
+      service1.stop();
+      
+      assertEquals(0, service0.getServer().getRemotingService().getConnections().size());
+      assertEquals(0, service1.getServer().getRemotingService().getConnections().size());
    }
    
    // Package protected ---------------------------------------------
@@ -206,14 +196,6 @@ public class OutflowBatchSizeTest extends TestCase
    @Override
    protected void tearDown() throws Exception
    {
-      service0.stop();
-      
-      assertEquals(0, service0.getServer().getRemotingService().getConnections().size());
-
-      service1.stop();
-
-      assertEquals(0, service1.getServer().getRemotingService().getConnections().size());
-
       assertEquals(0, InVMRegistry.instance.size());
    }
 
@@ -221,5 +203,4 @@ public class OutflowBatchSizeTest extends TestCase
 
    // Inner classes -------------------------------------------------
 }
-
 

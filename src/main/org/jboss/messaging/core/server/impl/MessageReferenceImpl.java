@@ -133,7 +133,7 @@ public class MessageReferenceImpl implements MessageReference
       {
          storageManager.updateDeliveryCount(this);
       }
-      
+
       QueueSettings queueSettings = queueSettingsRepository.getMatch(queue.getName().toString());
       int maxDeliveries = queueSettings.getMaxDeliveryAttempts();
 
@@ -147,11 +147,11 @@ public class MessageReferenceImpl implements MessageReference
       else
       {
          long redeliveryDelay = queueSettings.getRedeliveryDelay();
-         
+
          if (redeliveryDelay > 0)
          {
             scheduledDeliveryTime = System.currentTimeMillis() + redeliveryDelay;
-            
+
             storageManager.updateScheduledDeliveryTime(this);
          }
          queue.referenceCancelled();
@@ -161,16 +161,19 @@ public class MessageReferenceImpl implements MessageReference
    }
 
    public void sendToDeadLetterAddress(final StorageManager persistenceManager,
-                         final PostOffice postOffice,
-                         final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+                                       final PostOffice postOffice,
+                                       final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
-      SimpleString deadLetterAddress = queueSettingsRepository.getMatch(queue.getName().toString()).getDeadLetterAddress();
+      SimpleString deadLetterAddress = queueSettingsRepository.getMatch(queue.getName().toString())
+                                                              .getDeadLetterAddress();
       if (deadLetterAddress != null)
       {
          List<Binding> bindingList = postOffice.getBindingsForAddress(deadLetterAddress);
-         if(bindingList == null || bindingList.size() == 0)
+         
+         if (bindingList.isEmpty())
          {
-             log.warn("Message has exceeded max delivery attempts. No bindings for Dead Letter Address " + deadLetterAddress + " so dropping it");
+            log.warn("Message has exceeded max delivery attempts. No bindings for Dead Letter Address " + deadLetterAddress +
+                     " so dropping it");
          }
          else
          {
@@ -179,8 +182,9 @@ public class MessageReferenceImpl implements MessageReference
       }
       else
       {
-         log.warn("Message has exceeded max delivery attempts. No Dead Letter Address configured for queue " + queue.getName() + " so dropping it");
-         
+         log.warn("Message has exceeded max delivery attempts. No Dead Letter Address configured for queue " + queue.getName() +
+                  " so dropping it");
+
          Transaction tx = new TransactionImpl(persistenceManager, postOffice);
          tx.addAcknowledgement(this);
          tx.commit();
@@ -196,9 +200,10 @@ public class MessageReferenceImpl implements MessageReference
       if (expiryAddress != null)
       {
          List<Binding> bindingList = postOffice.getBindingsForAddress(expiryAddress);
-         if(bindingList == null || bindingList.size() == 0)
+         
+         if (bindingList.isEmpty())
          {
-             log.warn("Message has expired. No bindings for Expiry Address " + expiryAddress + " so dropping it");
+            log.warn("Message has expired. No bindings for Expiry Address " + expiryAddress + " so dropping it");
          }
          else
          {
@@ -244,7 +249,7 @@ public class MessageReferenceImpl implements MessageReference
       Transaction tx = new TransactionImpl(persistenceManager, postOffice);
 
       ServerMessage copyMessage = makeCopy(expiry, persistenceManager);
-      
+
       copyMessage.setDestination(otherBinding.getAddress());
 
       tx.addMessage(copyMessage);
@@ -254,7 +259,7 @@ public class MessageReferenceImpl implements MessageReference
       tx.commit();
    }
 
-    private void move(final SimpleString address,
+   private void move(final SimpleString address,
                      final StorageManager persistenceManager,
                      final PostOffice postOffice,
                      final boolean expiry) throws Exception

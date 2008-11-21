@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.filter.Filter;
@@ -85,6 +86,8 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
    private Map<TransportConfiguration, Forwarder> forwarders = new HashMap<TransportConfiguration, Forwarder>();
 
    private final DiscoveryGroup discoveryGroup;
+   
+   private final ScheduledExecutorService scheduledExecutor;
 
    private volatile boolean started;
 
@@ -101,6 +104,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
                           final StorageManager storageManager,
                           final PostOffice postOffice,
                           final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                          final ScheduledExecutorService scheduledExecutor,
                           final Transformer transformer,
                           final List<TransportConfiguration> connectors) throws Exception
    {
@@ -127,6 +131,8 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
       this.transformer = transformer;
 
       this.discoveryGroup = null;
+      
+      this.scheduledExecutor = scheduledExecutor;
 
       this.updateConnectors(connectors);
    }
@@ -144,6 +150,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
                           final StorageManager storageManager,
                           final PostOffice postOffice,
                           final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                          final ScheduledExecutorService scheduledExecutor,
                           final Transformer transformer,
                           final DiscoveryGroup discoveryGroup) throws Exception
    {
@@ -166,6 +173,8 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
       this.postOffice = postOffice;
 
       this.queueSettingsRepository = queueSettingsRepository;
+      
+      this.scheduledExecutor = scheduledExecutor;
 
       this.transformer = transformer;
 
@@ -278,6 +287,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
                                                     storageManager,
                                                     postOffice,
                                                     queueSettingsRepository,
+                                                    scheduledExecutor,
                                                     transformer);
 
             forwarders.put(connector, forwarder);
