@@ -22,6 +22,7 @@
 package org.jboss.messaging.tests.unit.core.server.impl;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.message.impl.MessageImpl;
@@ -162,8 +163,9 @@ public class MessageReferenceImplTest extends UnitTestCase
       EasyMock.expect(queue.isDurable()).andStubReturn(true);
       
       sm.updateDeliveryCount(messageReference);
-      
-      //EasyMock.expect(po.getBinding(dlqName)).andReturn(dlqBinding);
+       List<Binding> bindings = new ArrayList<Binding>();
+      bindings.add(dlqBinding);
+      EasyMock.expect(po.getBindingsForAddress(dlqName)).andReturn(bindings);
       
       EasyMock.expect(serverMessage.copy()).andReturn(serverMessage);
       
@@ -266,7 +268,9 @@ public class MessageReferenceImplTest extends UnitTestCase
       EasyMock.expect(queue.isDurable()).andStubReturn(true);
       EasyMock.expect(sm.generateUniqueID()).andReturn(2l);
       EasyMock.expect(sm.generateUniqueID()).andReturn(1l);
-      //EasyMock.expect(po.getBinding(expQName)).andReturn(expQBinding);
+      List<Binding> bindings = new ArrayList<Binding>();
+      bindings.add(expQBinding);
+      EasyMock.expect(po.getBindingsForAddress(expQName)).andReturn(bindings);
       EasyMock.expect(serverMessage.copy()).andReturn(serverMessage);
       //serverMessage.setMessageID(2);
       EasyMock.expect(serverMessage.getDestination()).andReturn(queueName);
