@@ -55,9 +55,34 @@ public class JMSUtil
 
    // Static --------------------------------------------------------
 
-   static MessageConsumer createConsumer(Destination destination, boolean startConnection) throws JMSException
+   static Connection createConnection(String connectorFactory) throws JMSException
    {
-      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(connectorFactory),
+                                                             null,
+                                                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                                                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                                             null,
+                                                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                                             ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                                             ClientSessionFactoryImpl.DEFAULT_BIG_MESSAGE_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                                             true,
+                                                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                                                             ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
+                                                             ClientSessionFactoryImpl.DEFAULT_PRE_COMMIT_ACKS);
+
+      return cf.createConnection();
+   }
+   
+
+   static MessageConsumer createConsumer(Destination destination, boolean startConnection, String connectorFactory) throws JMSException
+   {
+      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(connectorFactory),
                                                              null,
                                                              ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                                                              ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
@@ -87,7 +112,13 @@ public class JMSUtil
 
       return s.createConsumer(destination);
    }
+   
+   static MessageConsumer createConsumer(Destination destination, boolean startConnection) throws JMSException
+   {
+      return createConsumer(destination, startConnection, "org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory");
+   }
 
+   
    static TopicSubscriber createDurableSubscriber(Topic topic, String clientID, String subscriptionName) throws JMSException
    {
       JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
@@ -148,6 +179,7 @@ public class JMSUtil
          producer.send(s.createTextMessage(randomString()));
       }
    }
+
 
    // Constructors --------------------------------------------------
 

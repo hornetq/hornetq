@@ -150,4 +150,9 @@ public interface MessagingServerControlMBean
    @Operation(desc = "Rollback a prepared transaction")
    boolean rollbackPreparedTransaction(@Parameter(desc = "the Base64 representation of a transaction", name = "transactionAsBase64") String transactionAsBase64) throws Exception;
 
+   String[] listRemoteAddresses();
+
+   String[] listRemoteAddresses(String ipAddress);
+
+   boolean closeConnectionsForAddress(String ipAddress);
 }

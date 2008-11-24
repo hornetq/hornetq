@@ -49,6 +49,7 @@ import org.jboss.messaging.core.management.impl.MessagingServerControl;
 import org.jboss.messaging.core.management.impl.QueueControl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
@@ -91,6 +92,7 @@ public class ManagementServiceImplTest extends TestCase
       HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
       HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
       ResourceManager resourceManager = createMock(ResourceManager.class);
+      RemotingService remotingService = createMock(RemotingService.class);
       MessagingServer messagingServer = createMock(MessagingServer.class);
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(false);
@@ -98,12 +100,12 @@ public class ManagementServiceImplTest extends TestCase
             mbeanServer.registerMBean(isA(MessagingServerControl.class),
                   eq(objectName))).andReturn(objectInstance);
 
-      replay(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
+      replay(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, resourceManager, remotingService, messagingServer);
 
       ManagementService service = new ManagementServiceImpl(mbeanServer, true);
-      service.registerServer(postOffice, storageManager, configuration, queueSettingsRepository, resourceManager, messagingServer);
+      service.registerServer(postOffice, storageManager, configuration, queueSettingsRepository, resourceManager, remotingService, messagingServer);
 
-      verify(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
+      verify(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, resourceManager, remotingService, messagingServer);
    }
 
    public void testRegisterAlreadyRegisteredMessagingServer() throws Exception
@@ -121,6 +123,7 @@ public class ManagementServiceImplTest extends TestCase
       HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
       HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
       ResourceManager resourceManager = createMock(ResourceManager.class);
+      RemotingService remotingService = createMock(RemotingService.class);
       MessagingServer messagingServer = createMock(MessagingServer.class);
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(true);
@@ -129,12 +132,12 @@ public class ManagementServiceImplTest extends TestCase
             mbeanServer.registerMBean(isA(MessagingServerControlMBean.class),
                   eq(objectName))).andReturn(objectInstance);
 
-      replay(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
+      replay(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, resourceManager, remotingService, messagingServer);
 
       ManagementService service = new ManagementServiceImpl(mbeanServer, true);
-      service.registerServer(postOffice, storageManager, configuration, queueSettingsRepository, resourceManager, messagingServer);
+      service.registerServer(postOffice, storageManager, configuration, queueSettingsRepository, resourceManager, remotingService, messagingServer);
 
-      verify(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, messagingServer);
+      verify(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, resourceManager, remotingService, messagingServer);
    }
 
    public void testUnregisterMessagingServer() throws Exception

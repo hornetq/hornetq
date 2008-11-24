@@ -54,6 +54,7 @@ import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -83,6 +84,7 @@ public class MessagingServerControlTest extends TestCase
    private ResourceManager resourceManager;
    private MessagingServer server;
    private MessageCounterManager messageCounterManager;
+   private RemotingService remotingService;
 
    // Constants -----------------------------------------------------
 
@@ -617,6 +619,7 @@ public class MessagingServerControlTest extends TestCase
       expect(configuration.isMessageCounterEnabled()).andReturn(false);
       securityRepository = createMock(HierarchicalRepository.class);
       queueSettingsRepository = createMock(HierarchicalRepository.class);
+      remotingService = createMock(RemotingService.class);
       resourceManager = createMock(ResourceManager.class);
       server = createMock(MessagingServer.class);
       messageCounterManager = createMock(MessageCounterManager.class);
@@ -631,6 +634,7 @@ public class MessagingServerControlTest extends TestCase
       securityRepository = null;
       queueSettingsRepository = null;
       resourceManager = null;
+      remotingService = null;
       server = null;
       messageCounterManager = null;
 
@@ -643,20 +647,20 @@ public class MessagingServerControlTest extends TestCase
    {
       MessagingServerControl control = new MessagingServerControl(postOffice,
             storageManager, configuration, 
-            queueSettingsRepository, resourceManager, server, messageCounterManager, new NotificationBroadcasterSupport());
+            queueSettingsRepository, resourceManager, remotingService, server, messageCounterManager, new NotificationBroadcasterSupport());
       return control;
    }
 
    private void replayMockedAttributes()
    {
       replay(postOffice, storageManager, configuration, securityRepository,
-            queueSettingsRepository, resourceManager, server, messageCounterManager);
+            queueSettingsRepository, resourceManager, remotingService, server, messageCounterManager);
    }
 
    private void verifyMockedAttributes()
    {
       verify(postOffice, storageManager, configuration, securityRepository,
-            queueSettingsRepository, resourceManager, server, messageCounterManager);
+            queueSettingsRepository, resourceManager, remotingService, server, messageCounterManager);
    }
 
    // Inner classes -------------------------------------------------

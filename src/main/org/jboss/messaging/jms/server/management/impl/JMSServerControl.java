@@ -218,6 +218,21 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                                                      this.getClass().getName(),
                                                                      "Notifications emitted by a JMS Server") };
    }
+   
+   public String[] listRemoteAddresses()
+   {
+      return server.listRemoteAddresses();
+   }
+
+   public String[] listRemoteAddresses(final String ipAddress)
+   {
+      return server.listRemoteAddresses(ipAddress);
+   }
+
+   public boolean closeConnectionsForAddress(final String ipAddress)
+   {
+      return server.closeConnectionsForAddress(ipAddress);
+   }
 
    // StandardMBean overrides
    // ---------------------------------------------------

@@ -29,6 +29,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -53,6 +54,7 @@ public interface ManagementService
                                               Configuration configuration,                                            
                                               HierarchicalRepository<QueueSettings> queueSettingsRepository,
                                               ResourceManager resourceManager,
+                                              RemotingService remotingService,
                                               MessagingServer messagingServer) throws Exception;
 
    void unregisterServer() throws Exception;

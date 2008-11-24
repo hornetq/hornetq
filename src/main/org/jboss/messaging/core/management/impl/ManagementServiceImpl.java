@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.MBeanServer;
 import javax.management.NotificationBroadcasterSupport;
@@ -54,6 +53,7 @@ import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessageReference;
@@ -156,6 +156,7 @@ public class ManagementServiceImpl implements ManagementService
                                                      final Configuration configuration,                                     
                                                      final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                                                      final ResourceManager resourceManager,
+                                                     final RemotingService remotingService,
                                                      final MessagingServer messagingServer) throws Exception
    {
       this.postOffice = postOffice;
@@ -167,6 +168,7 @@ public class ManagementServiceImpl implements ManagementService
                                                  configuration,                                                
                                                  queueSettingsRepository,
                                                  resourceManager,
+                                                 remotingService,
                                                  messagingServer,
                                                  messageCounterManager,
                                                  broadcaster);

@@ -131,4 +131,9 @@ public class InVMConnection implements Connection
          }
       });
    }
+
+   public String getRemoteAddress()
+   {
+      return "invm";
+   }
 }

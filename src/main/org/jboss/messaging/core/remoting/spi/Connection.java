@@ -40,4 +40,6 @@ public interface Connection
    void write(MessagingBuffer buffer);
 
    void close();
+
+   String getRemoteAddress();
 }

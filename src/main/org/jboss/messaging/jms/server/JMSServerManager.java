@@ -158,4 +158,9 @@ public interface JMSServerManager
     */
    boolean destroyConnectionFactory(String name) throws Exception;
 
+   String[] listRemoteAddresses();
+
+   String[] listRemoteAddresses(String ipAddress);
+
+   boolean closeConnectionsForAddress(String ipAddress);
 }

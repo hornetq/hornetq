@@ -303,6 +303,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       return transportConnection.getID();
    }
 
+   public String getRemoteAddress()
+   {
+      return transportConnection.getRemoteAddress();
+   }
+
    public synchronized Channel getChannel(final long channelID, final int windowSize, final boolean block)
    {
       ChannelImpl channel = channels.get(channelID);

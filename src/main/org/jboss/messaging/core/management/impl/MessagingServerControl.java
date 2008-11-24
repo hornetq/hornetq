@@ -53,6 +53,8 @@ import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
@@ -89,6 +91,8 @@ public class MessagingServerControl extends StandardMBean implements MessagingSe
 
    private final ResourceManager resourceManager;
 
+   private final RemotingService remotingService;
+
    private final MessagingServer server;
 
    private final MessageCounterManager messageCounterManager;
@@ -124,6 +128,7 @@ public class MessagingServerControl extends StandardMBean implements MessagingSe
                                  final Configuration configuration,
                                  final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                                  final ResourceManager resourceManager,
+                                 final RemotingService remotingService,
                                  final MessagingServer messagingServer,
                                  final MessageCounterManager messageCounterManager,
                                  final NotificationBroadcasterSupport broadcaster) throws Exception
@@ -134,6 +139,7 @@ public class MessagingServerControl extends StandardMBean implements MessagingSe
       this.configuration = configuration;
       this.queueSettingsRepository = queueSettingsRepository;
       this.resourceManager = resourceManager;
+      this.remotingService = remotingService;
       server = messagingServer;
       this.messageCounterManager = messageCounterManager;
       this.broadcaster = broadcaster;
@@ -555,6 +561,50 @@ public class MessagingServerControl extends StandardMBean implements MessagingSe
          }
       }
       return false;
+   }
+   
+   public String[] listRemoteAddresses()
+   {
+      Set<RemotingConnection> connections = remotingService.getConnections();
+      String[] remoteAddresses = new String[connections.size()];
+      int i = 0;
+      for (RemotingConnection connection : connections)
+      {
+         remoteAddresses[i++] = connection.getRemoteAddress();
+      }
+      return remoteAddresses;
+   }
+
+   public String[] listRemoteAddresses(final String ipAddress)
+   {
+      Set<RemotingConnection> connections = remotingService.getConnections();
+      List<String> remoteConnections = new ArrayList<String>();
+      for (RemotingConnection connection : connections)
+      {
+         String remoteAddress = connection.getRemoteAddress();
+         if (remoteAddress.contains(ipAddress))
+         {
+            remoteConnections.add(connection.getRemoteAddress());
+         }
+      }
+      return (String[])remoteConnections.toArray(new String[remoteConnections.size()]);
+   }
+
+   public boolean closeConnectionsForAddress(final String ipAddress)
+   {
+      boolean closed = false;
+      Set<RemotingConnection> connections = remotingService.getConnections();
+      for (RemotingConnection connection : connections)
+      {
+         String remoteAddress = connection.getRemoteAddress();
+         if (remoteAddress.contains(ipAddress))
+         {
+            connection.destroy();
+            closed = true;
+         }
+      }
+
+      return closed;
    }
 
    // NotificationEmitter implementation ----------------------------

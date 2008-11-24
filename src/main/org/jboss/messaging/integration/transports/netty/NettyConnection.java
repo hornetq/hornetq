@@ -112,6 +112,11 @@ public class NettyConnection implements Connection
       channel.write(buffer.getUnderlyingBuffer());
    }
 
+   public String getRemoteAddress()
+   {
+      return channel.getRemoteAddress().toString();
+   }
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

@@ -239,6 +239,7 @@ public class MessagingServerImpl implements MessagingServer
                                                           configuration,
                                                           queueSettingsRepository,
                                                           resourceManager,
+                                                          remotingService,
                                                           this);
 
       postOffice.start();

@@ -121,6 +121,11 @@ public class MinaConnection implements Connection
       session.write(buffer.getUnderlyingBuffer());
    }
 
+   public String getRemoteAddress()
+   {
+      return session.getRemoteAddress().toString();
+   }
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

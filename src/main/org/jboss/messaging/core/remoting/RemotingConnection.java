@@ -26,6 +26,8 @@ public interface RemotingConnection extends BufferHandler
 {
    Object getID();
 
+   String getRemoteAddress();
+
    Channel getChannel(long channelID, int windowSize, boolean block);
 
    long generateChannelID();

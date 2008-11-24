@@ -87,7 +87,8 @@ public class JMSServerManagerImpl implements JMSServerManager
    public static JMSServerManagerImpl newJMSServerManagerImpl(MessagingServer server) throws Exception
    {
       MessagingServerControlMBean control = new MessagingServerControl(server.getPostOffice(), server.getStorageManager(), server.getConfiguration(),
-                                                                       server.getQueueSettingsRepository(), server.getResourceManager(), server, new MessageCounterManagerImpl(1000), new NotificationBroadcasterSupport());
+                                                                       server.getQueueSettingsRepository(), server.getResourceManager(), 
+                                                                       server.getRemotingService(), server, new MessageCounterManagerImpl(1000), new NotificationBroadcasterSupport());
       JMSManagementService jmsManagementService = new JMSManagementServiceImpl(server.getManagementService());
       return new JMSServerManagerImpl(control, server.getPostOffice(), server.getStorageManager(),
                                       server.getQueueSettingsRepository(), jmsManagementService);
@@ -323,6 +324,21 @@ public class JMSServerManagerImpl implements JMSServerManager
       managementService.unregisterConnectionFactory(name);
 
       return true;
+   }
+
+   public String[] listRemoteAddresses()
+   {
+      return messagingServer.listRemoteAddresses();
+   }
+
+   public String[] listRemoteAddresses(final String ipAddress)
+   {
+      return messagingServer.listRemoteAddresses(ipAddress);
+   }
+
+   public boolean closeConnectionsForAddress(final String ipAddress)
+   {
+      return messagingServer.closeConnectionsForAddress(ipAddress);
    }
 
    // Public --------------------------------------------------------

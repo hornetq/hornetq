@@ -23,6 +23,7 @@
 package org.jboss.messaging.jms.server.management;
 
 import static javax.management.MBeanOperationInfo.ACTION;
+import static javax.management.MBeanOperationInfo.INFO;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.Operation;
@@ -107,4 +108,12 @@ public interface JMSServerControlMBean
    @Operation(desc = "Create a JMS ConnectionFactory", impact = ACTION)
    void destroyConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create")
    String name) throws Exception;
+   
+   @Operation(desc = "List the client addresses", impact = INFO)
+   String[] listRemoteAddresses();
+   
+   @Operation(desc = "List the client addresses which match the given IP Address", impact = INFO)
+   String[] listRemoteAddresses(String ipAddress);
+
+   boolean closeConnectionsForAddress(String ipAddress);
 }
