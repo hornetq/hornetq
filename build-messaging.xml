@@ -628,8 +628,13 @@
 
       <copy todir="${build.distro.lib.dir}">
          <fileset dir="${build.jars.dir}">
-            <include name="jboss-${module.name}-client.jar"/>
-            <include name="jboss-${module.name}.jar"/>
+            <include name="${core.jar.name}"/>
+            <include name="${jms.jar.name}"/>
+            <include name="${transports.jar.name}"/>
+            <include name="${security.jar.name}"/>
+            <include name="${bootstrap.jar.name}"/>
+            <include name="${logging.jar.name}"/>
+            <include name="${core.client..jar.name}"/>
          </fileset>
          <fileset dir="${jboss.microcontainer.lib}">
             <include name="jboss-container.jar"/>
@@ -693,8 +698,8 @@
          <fileset dir="${apache.mina.lib}">
             <include name="mina-core-2.0.0-M3-20080730.120633-1.jar"/>
          </fileset>
-         <fileset dir="${netty.lib}">
-            <include name="netty-3.0.0.CR3.jar"/>
+         <fileset dir="${netty.netty.lib}">
+            <include name="netty-3.0.1.GA.jar"/>
          </fileset>
          <fileset dir="${slf4j.api.lib}">
             <include name="slf4j-api-1.4.3.jar"/>
@@ -708,6 +713,7 @@
          <fileset dir="${src.config.dir}">
             <include name="*.xml"/>
             <include name="jndi.properties"/>
+            <include name="logging.properties"/>
          </fileset>
          <fileset dir="${test.dir}/config">
             <include name="messaging.keystore"/>
