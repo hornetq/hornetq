@@ -107,7 +107,7 @@ public class JMSFailoverTest extends TestCase
                                                                ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
                                                                ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                                                                ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                                                               ClientSessionFactoryImpl.DEFAULT_PRE_COMMIT_ACKS);
+                                                               ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
 
       Connection conn = jbcf.createConnection();
 
@@ -187,7 +187,7 @@ public class JMSFailoverTest extends TestCase
                                                                    true,
                                                                    ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                                                                    ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                                                                   ClientSessionFactoryImpl.DEFAULT_PRE_COMMIT_ACKS);
+                                                                   ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
 
       JBossConnectionFactory jbcfBackup = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams),
@@ -207,7 +207,7 @@ public class JMSFailoverTest extends TestCase
                                                                      ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
                                                                      ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                                                                      ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                                                                     ClientSessionFactoryImpl.DEFAULT_PRE_COMMIT_ACKS);
+                                                                     ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
 
       Connection connLive = jbcfLive.createConnection();
 
@@ -302,8 +302,12 @@ public class JMSFailoverTest extends TestCase
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      liveConf.setBackupConnectorConfiguration(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                          backupParams));
+      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
+      TransportConfiguration backupTC = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                   backupParams, "backup-connector");
+      connectors.put(backupTC.getName(), backupTC);
+      liveConf.setConnectorConfigurations(connectors);
+      liveConf.setBackupConnectorName(backupTC.getName());
       liveService = MessagingServiceImpl.newNullStorageMessagingServer(liveConf);
       liveService.start();
    }

@@ -13,17 +13,15 @@
 package org.jboss.messaging.jms.server.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.server.JMSServerManager;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -34,6 +32,8 @@ import org.w3c.dom.NodeList;
 public class JMSServerDeployer extends XmlDeployer
 {
    Logger log = Logger.getLogger(JMSServerDeployer.class);
+   
+   private final Configuration configuration;
 
    private JMSServerManager jmsServerManager;
 
@@ -67,17 +67,11 @@ public class JMSServerDeployer extends XmlDeployer
    
    private static final String MAX_CONNECTIONS_ELEMENT = "max-connections";
 
-   private static final String PRE_COMMIT_ACKS_ELEMENT = "pre-commit-acks";
+   private static final String PRE_ACKNOWLEDGE_ELEMENT = "pre-acknowledge";
 
-   private static final String CONNECTOR_ELEMENT = "connector";
+   private static final String CONNECTOR_LINK_ELEMENT = "connector-link";
 
    private static final String BACKUP_CONNECTOR_ELEMENT = "backup-connector";
-
-   private static final String FACTORY_CLASS_ELEMENT = "factory-class";
-
-   private static final String PARAMS_ELEMENT = "params";
-
-   private static final String PARAM_ELEMENT = "param";
 
    private static final String ENTRY_NODE_NAME = "entry";
 
@@ -87,9 +81,11 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String TOPIC_NODE_NAME = "topic";
 
-   public JMSServerDeployer(final DeploymentManager deploymentManager)
+   public JMSServerDeployer(final DeploymentManager deploymentManager, final Configuration config)
    {
       super(deploymentManager);
+      
+      this.configuration = config;
    }
 
    public void setJmsServerManager(final JMSServerManager jmsServerManager)
@@ -147,271 +143,129 @@ public class JMSServerDeployer extends XmlDeployer
          boolean blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
          boolean autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
          int maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-         boolean preCommitAcks = ClientSessionFactoryImpl.DEFAULT_PRE_COMMIT_ACKS;
+         boolean preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
          List<String> jndiBindings = new ArrayList<String>();
-         String connectorFactoryClassName = null;
-         Map<String, Object> params = new HashMap<String, Object>();
-         String backupConnectorFactoryClassName = null;
-         Map<String, Object> backupParams = new HashMap<String, Object>();
+         String connectorName = null;
+         String backupConnectorName = null;
 
          for (int j = 0; j < children.getLength(); j++)
          {
-            if (PING_PERIOD_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            Node child = children.item(j);
+            
+            String childText = child.getTextContent().trim();
+            
+            if (PING_PERIOD_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               pingPeriod = Long.parseLong(children.item(j).getTextContent().trim());
+               pingPeriod = Long.parseLong(childText);
             }
-            else if (CALL_TIMEOUT_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if (CALL_TIMEOUT_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               callTimeout = Long.parseLong(children.item(j).getTextContent().trim());
+               callTimeout = Long.parseLong(childText);
             }
-            else if (CONSUMER_WINDOW_SIZE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if (CONSUMER_WINDOW_SIZE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               consumerWindowSize = Integer.parseInt(children.item(j).getTextContent().trim());
+               consumerWindowSize = Integer.parseInt(childText);
             }
-            else if (CONSUMER_MAX_RATE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if (CONSUMER_MAX_RATE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               consumerMaxRate = Integer.parseInt(children.item(j).getTextContent().trim());
+               consumerMaxRate = Integer.parseInt(childText);
             }
-            else if (SEND_WINDOW_SIZE.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if (SEND_WINDOW_SIZE.equalsIgnoreCase(child.getNodeName()))
             {
-               sendWindowSize = Integer.parseInt(children.item(j).getTextContent().trim());
+               sendWindowSize = Integer.parseInt(childText);
             }
-            else if (PRODUCER_MAX_RATE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if (PRODUCER_MAX_RATE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               producerMaxRate = Integer.parseInt(children.item(j).getTextContent().trim());
+               producerMaxRate = Integer.parseInt(childText);
             }
-            else if (BIG_MESSAGE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if (BIG_MESSAGE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               minLargeMessageSize  = Integer.parseInt(children.item(j).getTextContent().trim());
+               minLargeMessageSize  = Integer.parseInt(childText);
             }
-            else if (CLIENTID_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if (CLIENTID_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               clientID = children.item(j).getTextContent().trim();
+               clientID = childText;
             }
-            else if (DUPS_OK_BATCH_SIZE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if (DUPS_OK_BATCH_SIZE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               dupsOKBatchSize = Integer.parseInt(children.item(j).getTextContent().trim());
+               dupsOKBatchSize = Integer.parseInt(childText);
             }
-            else if (TRANSACTION_BATCH_SIZE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if (TRANSACTION_BATCH_SIZE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               transactionBatchSize = Integer.parseInt(children.item(j).getTextContent().trim());
+               transactionBatchSize = Integer.parseInt(childText);
             }
-            else if (BLOCK_ON_ACKNOWLEDGE_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if (BLOCK_ON_ACKNOWLEDGE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               blockOnAcknowledge = Boolean.parseBoolean(children.item(j).getTextContent().trim());
+               blockOnAcknowledge = Boolean.parseBoolean(childText);
             }
-            else if (SEND_NP_MESSAGES_SYNCHRONOUSLY_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if (SEND_NP_MESSAGES_SYNCHRONOUSLY_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               blockOnNonPersistentSend = Boolean.parseBoolean(children.item(j).getTextContent().trim());
+               blockOnNonPersistentSend = Boolean.parseBoolean(childText);
             }
-            else if (SEND_P_MESSAGES_SYNCHRONOUSLY_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if (SEND_P_MESSAGES_SYNCHRONOUSLY_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               blockOnPersistentSend = Boolean.parseBoolean(children.item(j).getTextContent().trim());
+               blockOnPersistentSend = Boolean.parseBoolean(childText);
             }
-            else if(AUTO_GROUP_ID_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if(AUTO_GROUP_ID_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               autoGroup = Boolean.parseBoolean(children.item(j).getTextContent().trim());
+               autoGroup = Boolean.parseBoolean(childText);
             }
-            else if(MAX_CONNECTIONS_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if(MAX_CONNECTIONS_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               maxConnections = Integer.parseInt(children.item(j).getTextContent().trim());
+               maxConnections = Integer.parseInt(childText);
             }
-            else if(PRE_COMMIT_ACKS_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if(PRE_ACKNOWLEDGE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               preCommitAcks = Boolean.parseBoolean(children.item(j).getTextContent().trim());;
+               preAcknowledge = Boolean.parseBoolean(childText);;
             }
-            else if (ENTRY_NODE_NAME.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if (ENTRY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
             {
-               String jndiName = children.item(j).getAttributes().getNamedItem("name").getNodeValue();
+               String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
                jndiBindings.add(jndiName);
             }
-            else if (CONNECTOR_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if (CONNECTOR_LINK_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               NodeList children2 = children.item(j).getChildNodes();
-
-               for (int l = 0; l < children2.getLength(); l++)
-               {
-                  String nodeName = children2.item(l).getNodeName();
-
-                  if (FACTORY_CLASS_ELEMENT.equalsIgnoreCase(nodeName))
-                  {
-                     connectorFactoryClassName = children2.item(l).getTextContent();
-                  }
-                  else if (PARAMS_ELEMENT.equalsIgnoreCase(nodeName))
-                  {
-                     NodeList nlParams = children2.item(l).getChildNodes();
-
-                     for (int m = 0; m < nlParams.getLength(); m++)
-                     {
-                        if (PARAM_ELEMENT.equalsIgnoreCase(nlParams.item(m).getNodeName()))
-                        {
-                           Node paramNode = nlParams.item(m);
-
-                           NamedNodeMap attributes = paramNode.getAttributes();
-
-                           Node nkey = attributes.getNamedItem("key");
-
-                           String key = nkey.getTextContent();
-
-                           Node nValue = attributes.getNamedItem("value");
-
-                           String value = nValue.getTextContent();
-
-                           Node nType = attributes.getNamedItem("type");
-
-                           String type = nType.getTextContent();
-
-                           if (type.equalsIgnoreCase("Integer"))
-                           {
-                              try
-                              {
-                                 Integer iVal = Integer.parseInt(value);
-
-                                 params.put(key, iVal);
-                              }
-                              catch (NumberFormatException e2)
-                              {
-                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value +
-                                                                    " is not a valid Integer");
-                              }
-                           }
-                           else if (type.equalsIgnoreCase("Long"))
-                           {
-                              try
-                              {
-                                 Long lVal = Long.parseLong(value);
-
-                                 params.put(key, lVal);
-                              }
-                              catch (NumberFormatException e2)
-                              {
-                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value +
-                                                                    " is not a valid Long");
-                              }
-                           }
-                           else if (type.equalsIgnoreCase("String"))
-                           {
-                              params.put(key, value);
-                           }
-                           else if (type.equalsIgnoreCase("Boolean"))
-                           {
-                              Boolean lVal = Boolean.parseBoolean(value);
-
-                              params.put(key, lVal);
-                           }
-                           else
-                           {
-                              throw new IllegalArgumentException("Invalid parameter type " + type);
-                           }
-                        }
-                     }
-                  }
-               }
+               connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
             }
-            else if (BACKUP_CONNECTOR_ELEMENT.equalsIgnoreCase(children.item(j).getNodeName()))
+            else if (BACKUP_CONNECTOR_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               NodeList children2 = children.item(j).getChildNodes();
-
-               for (int l = 0; l < children2.getLength(); l++)
-               {
-                  String nodeName = children2.item(l).getNodeName();
-
-                  if (FACTORY_CLASS_ELEMENT.equalsIgnoreCase(nodeName))
-                  {
-                     backupConnectorFactoryClassName = children2.item(l).getTextContent();
-                  }
-                  else if (PARAMS_ELEMENT.equalsIgnoreCase(nodeName))
-                  {
-                     NodeList nlParams = children2.item(l).getChildNodes();
-
-                     for (int m = 0; m < nlParams.getLength(); m++)
-                     {
-                        if (PARAM_ELEMENT.equalsIgnoreCase(nlParams.item(m).getNodeName()))
-                        {
-                           Node paramNode = nlParams.item(m);
-
-                           NamedNodeMap attributes = paramNode.getAttributes();
-
-                           Node nkey = attributes.getNamedItem("key");
-
-                           String key = nkey.getTextContent();
-
-                           Node nValue = attributes.getNamedItem("value");
-
-                           String value = nValue.getTextContent();
-
-                           Node nType = attributes.getNamedItem("type");
-
-                           String type = nType.getTextContent();
-
-                           if (type.equalsIgnoreCase("Integer"))
-                           {
-                              try
-                              {
-                                 Integer iVal = Integer.parseInt(value);
-
-                                 backupParams.put(key, iVal);
-                              }
-                              catch (NumberFormatException e2)
-                              {
-                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value +
-                                                                    " is not a valid Integer");
-                              }
-                           }
-                           else if (type.equalsIgnoreCase("Long"))
-                           {
-                              try
-                              {
-                                 Long lVal = Long.parseLong(value);
-
-                                 backupParams.put(key, lVal);
-                              }
-                              catch (NumberFormatException e2)
-                              {
-                                 throw new IllegalArgumentException("Remoting acceptor parameter " + value +
-                                                                    " is not a valid Long");
-                              }
-                           }
-                           else if (type.equalsIgnoreCase("String"))
-                           {
-                              backupParams.put(key, value);
-                           }
-                           else if (type.equalsIgnoreCase("Boolean"))
-                           {
-                              Boolean lVal = Boolean.parseBoolean(value);
-
-                              backupParams.put(key, lVal);
-                           }
-                           else
-                           {
-                              throw new IllegalArgumentException("Invalid parameter type " + type);
-                           }
-                        }
-                     }
-                  }
-               }
+               backupConnectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
             }
          }
 
-         if (connectorFactoryClassName == null)
+         if (connectorName == null)
          {
-            throw new IllegalArgumentException("connector-factory-class-name must be specified in configuration");
+            throw new IllegalArgumentException("connector must be specified in configuration");
          }
-
-         TransportConfiguration connectorConfig = new TransportConfiguration(connectorFactoryClassName, params);
-
-         TransportConfiguration backupConnectorConfig = null;
-
-         if (backupConnectorFactoryClassName != null)
+         
+         TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorName);
+         
+         if (connector == null)
          {
-            backupConnectorConfig = new TransportConfiguration(backupConnectorFactoryClassName, backupParams);
+            log.warn("There is no connector with name '" + connectorName + "' deployed.");
+            
+            return;
          }
-
+         
+         TransportConfiguration backupConnector = null;
+         
+         if (backupConnectorName != null)
+         {
+            backupConnector = configuration.getConnectorConfigurations().get(backupConnectorName);
+            
+            if (backupConnector == null)
+            {
+               log.warn("There is no connector with name '" + connectorName + "' deployed.");
+               
+               return;
+            }
+         }
+         
          String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
 
          jmsServerManager.createConnectionFactory(name,
-                                                  connectorConfig,
-                                                  backupConnectorConfig,
+                                                  connector,
+                                                  backupConnector,
                                                   pingPeriod,                                      
                                                   callTimeout,
                                                   clientID,
@@ -427,7 +281,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                   blockOnPersistentSend,
                                                   autoGroup,
                                                   maxConnections,
-                                                  preCommitAcks,
+                                                  preAcknowledge,
                                                   jndiBindings);
       }
       else if (node.getNodeName().equals(QUEUE_NODE_NAME))

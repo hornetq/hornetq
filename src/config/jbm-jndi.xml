@@ -1,16 +1,12 @@
 <deployment>
 
    <connection-factory name="testConnectionFactory">
-      <connector>
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
-      </connector>
+      <connector-link connector-name="netty"/>
       <entry name="testConnectionFactory"/>
    </connection-factory>
 
    <connection-factory name="ConnectionFactory">
-      <connector>
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
-      </connector>
+      <connector-link connector-name="netty"/>
       <entry name="ConnectionFactory"/>
       <entry name="/ConnectionFactory"/>
       <entry name="/XAConnectionFactory"/>
@@ -19,9 +15,7 @@
    </connection-factory>
 
    <connection-factory name="ServerAckConnectionFactory">
-      <connector>
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
-      </connector>
+      <connector-link connector-name="netty"/>
       <pre-commit-acks>true</pre-commit-acks>
       <entry name="ServerAckConnectionFactory"/>
       <entry name="/ServerAckConnectionFactory"/>
@@ -32,15 +26,8 @@
 
 
    <connection-factory name="ClusteredConnectionFactory">
-      <connector>
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
-      </connector>
-      <backup-connector>
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
-         <params>
-            <param key="jbm.remoting.netty.host" value="somehost" type="String"/>
-         </params>
-      </backup-connector>
+      <connector-link connector-name="netty"/>
+      <backup-connector connector-name="netty-backup"/>
       <entry name="/ClusteredConnectionFactory"/>
       <entry name="/ClusteredXAConnectionFactory"/>
       <entry name="java:/ClusteredConnectionFactory"/>
@@ -48,12 +35,7 @@
    </connection-factory>
 
    <connection-factory name="MyExampleConnectionFactory">
-      <connector>
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
-         <params>
-            <param key="jbm.remoting.netty.tcpnodelay" value="true" type="Boolean"/>
-         </params>
-      </connector>
+      <connector-link connector-name="netty"/>
       <ping-period>5000</ping-period>
       <call-timeout>30000</call-timeout>
       <entry name="/MyExampleConnectionFactory"/>
@@ -87,26 +69,12 @@
    </connection-factory>
 
    <connection-factory name="TestInVMConnectionFactory">
-      <connector>
-         <factory-class>org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory</factory-class>
-         <params>
-            <param key="jbm.remoting.invm.serverid" value="0" type="Integer"/>
-         </params>
-      </connector>
+      <connector-link connector-name="in-vm"/>
       <entry name="/TestInVMConnectionFactory"/>
    </connection-factory>
 
    <connection-factory name="TestSSLConnectionFactory">
-      <connector>
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
-         <params>
-            <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
-            <param key="jbm.remoting.netty.port" value="5500" type="Integer"/>
-            <param key="jbm.remoting.netty.sslenabled" value="true" type="Boolean"/>
-            <param key="jbm.remoting.netty.keystorepath" value="messaging.keystore" type="String"/>
-            <param key="jbm.remoting.netty.keystorepassword" value="secureexample" type="String"/>
-         </params>
-      </connector>
+      <connector-link connector-name="netty-ssl"/>
       <entry name="/TestSSLConnectionFactory"/>
    </connection-factory>
 

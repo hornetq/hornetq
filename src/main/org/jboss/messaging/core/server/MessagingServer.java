@@ -73,7 +73,7 @@ public interface MessagingServer extends MessagingComponent
                                               RemotingConnection remotingConnection,
                                               boolean autoCommitSends,
                                               boolean autoCommitAcks,
-                                              boolean preCommitAcks,
+                                              boolean preAcknowledge,
                                               boolean xa,
                                               int sendWindowSize) throws Exception;
 
@@ -86,7 +86,7 @@ public interface MessagingServer extends MessagingComponent
                                                        RemotingConnection remotingConnection,
                                                        boolean autoCommitSends,
                                                        boolean autoCommitAcks,
-                                                       boolean preCommitAcks,
+                                                       boolean preAcknowledge,
                                                        boolean xa,
                                                        int sendWindowSize) throws Exception;
 

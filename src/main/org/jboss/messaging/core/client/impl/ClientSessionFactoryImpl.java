@@ -83,7 +83,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    
    public static final int DEFAULT_ACK_BATCH_SIZE = 1024 * 1024;
 
-   public static final boolean DEFAULT_PRE_COMMIT_ACKS = false;
+   public static final boolean DEFAULT_PRE_ACKNOWLEDGE = false;
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -129,8 +129,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    
    private volatile int ackBatchSize;
 
-   private volatile boolean preCommitAcks;
-
    private final Set<ClientSessionInternal> sessions = new HashSet<ClientSessionInternal>();
    
    private final Object exitLock = new Object();
@@ -165,7 +163,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                    final boolean blockOnPersistentSend,
                                    final boolean autoGroup,
                                    final int maxConnections,
-                                   final boolean preCommitAcks,
+                                   final boolean preAcknowledge,
                                    final int ackBatchSize)
    {
       connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
@@ -209,7 +207,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       this.minLargeMessageSize = minLargeMessageSize;
       this.autoGroup = autoGroup;
       this.maxConnections = maxConnections;
-      this.preCommitAcks = preCommitAcks;
       this.ackBatchSize = ackBatchSize;
    }
 
@@ -230,7 +227,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
            DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
            DEFAULT_AUTO_GROUP,
            DEFAULT_MAX_CONNECTIONS,
-           DEFAULT_PRE_COMMIT_ACKS,
+           DEFAULT_PRE_ACKNOWLEDGE,
            DEFAULT_ACK_BATCH_SIZE);
    }
 
@@ -250,10 +247,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                       final boolean xa,
                                       final boolean autoCommitSends,
                                       final boolean autoCommitAcks,
-                                      final boolean preCommitAcks,
+                                      final boolean preAcknowledge,
                                       final int ackBatchSize) throws MessagingException
    {
-      return createSessionInternal(username, password, xa, autoCommitSends, autoCommitAcks, preCommitAcks, ackBatchSize);
+      return createSessionInternal(username, password, xa, autoCommitSends, autoCommitAcks, preAcknowledge, ackBatchSize);
    }
 
    public ClientSession createSession(final boolean xa,
@@ -266,9 +263,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    public ClientSession createSession(final boolean xa,
                                       final boolean autoCommitSends,
                                       final boolean autoCommitAcks,
-                                      final boolean preCommitAcks) throws MessagingException
+                                      final boolean preAcknowledge) throws MessagingException
    {
-      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preCommitAcks, ackBatchSize);
+      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, ackBatchSize);
    }
 
    public int getConsumerWindowSize()
@@ -570,7 +567,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                final boolean xa,
                                                final boolean autoCommitSends,
                                                final boolean autoCommitAcks,
-                                               final boolean preCommitAcks,
+                                               final boolean preAcknowledge,
                                                final int ackBatchSize) throws MessagingException
    {
       synchronized (createSessionLock)
@@ -625,7 +622,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                          xa,
                                                          autoCommitSends,
                                                          autoCommitAcks,
-                                                         preCommitAcks,
+                                                         preAcknowledge,
                                                          sendWindowSize);
       
                Packet pResponse = channel1.sendBlocking(request);
@@ -656,7 +653,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                                                         xa,                                                                      
                                                                         autoCommitSends,
                                                                         autoCommitAcks,
-                                                                        preCommitAcks,
+                                                                        preAcknowledge,
                                                                         blockOnAcknowledge,
                                                                         autoGroup,
                                                                         ackBatchSize,

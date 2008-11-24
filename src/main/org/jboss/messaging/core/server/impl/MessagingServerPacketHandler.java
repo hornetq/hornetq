@@ -72,7 +72,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
                                                                msg.isXA(),
                                                                msg.isAutoCommitSends(),
                                                                msg.isAutoCommitAcks(),
-                                                               msg.isPreCommitAcks(),
+                                                               msg.isPreAcknowledge(),
                                                                msg.getWindowSize());
          
          result = channel1.replicatePacket(replPacket);
@@ -101,7 +101,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
                                                connection,
                                                request.isAutoCommitSends(),
                                                request.isAutoCommitAcks(),
-                                               request.isPreCommitAcks(),
+                                               request.isPreAcknowledge(),
                                                request.isXA(),
                                                request.getWindowSize());
                break;
@@ -119,7 +119,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
                                                         connection,
                                                         request.isAutoCommitSends(),
                                                         request.isAutoCommitAcks(),
-                                                        request.isPreCommitAcks(),
+                                                        request.isPreAcknowledge(),
                                                         request.isXA(),
                                                         request.getWindowSize());
                break;

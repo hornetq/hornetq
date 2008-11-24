@@ -18,10 +18,9 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.unit.core.deployers.impl;
-
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -38,42 +37,38 @@ import org.w3c.dom.Node;
  * tests the abstract xml deployer class
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class XMLDeployerTest  extends TestCase
+public class XMLDeployerTest extends TestCase
 {
-   private static final String conf1 = "<deployment>\n" +
-           "   <test name=\"test1\">content1</test>\n" +
-           "   <test name=\"test2\">content2</test>\n" +
-           "   <test name=\"test3\">content3</test>\n" +
-           "   <test name=\"test4\">content4</test>\n" +
-           "</deployment>";
+   private static final String conf1 = "<deployment>\n" + "   <test name=\"test1\">content1</test>\n"
+                                       + "   <test name=\"test2\">content2</test>\n"
+                                       + "   <test name=\"test3\">content3</test>\n"
+                                       + "   <test name=\"test4\">content4</test>\n"
+                                       + "</deployment>";
 
-   private static final String conf2 = "<deployment>\n" +
-           "   <test name=\"test1\">content1</test>\n" +
-           "   <test name=\"test2\">contenthaschanged2</test>\n" +
-           "   <test name=\"test3\">contenthaschanged3</test>\n" +
-           "   <test name=\"test4\">content4</test>\n" +
-           "</deployment>";
+   private static final String conf2 = "<deployment>\n" + "   <test name=\"test1\">content1</test>\n"
+                                       + "   <test name=\"test2\">contenthaschanged2</test>\n"
+                                       + "   <test name=\"test3\">contenthaschanged3</test>\n"
+                                       + "   <test name=\"test4\">content4</test>\n"
+                                       + "</deployment>";
 
-   private static final String conf3 = "<deployment>\n" +
-           "   <test name=\"test1\">content1</test>\n" +
-           "   <test name=\"test2\">contenthaschanged2</test>\n" +
-           "</deployment>";
+   private static final String conf3 = "<deployment>\n" + "   <test name=\"test1\">content1</test>\n"
+                                       + "   <test name=\"test2\">contenthaschanged2</test>\n"
+                                       + "</deployment>";
 
-   private static final String conf4 = "<deployment>\n" +
-           "   <test name=\"test1\">content1</test>\n" +
-           "   <test name=\"test2\">content2</test>\n" +
-           "   <test name=\"test3\">content3</test>\n" +
-           "   <test name=\"test4\">content4</test>\n" +
-           "   <test name=\"test5\">content5</test>\n" +
-           "   <test name=\"test6\">content6</test>\n" +
-           "</deployment>";
+   private static final String conf4 = "<deployment>\n" + "   <test name=\"test1\">content1</test>\n"
+                                       + "   <test name=\"test2\">content2</test>\n"
+                                       + "   <test name=\"test3\">content3</test>\n"
+                                       + "   <test name=\"test4\">content4</test>\n"
+                                       + "   <test name=\"test5\">content5</test>\n"
+                                       + "   <test name=\"test6\">content6</test>\n"
+                                       + "</deployment>";
 
    private URL url;
 
    protected void setUp() throws Exception
    {
       super.setUp();
-      url = new URL("http://thisdoesntmatter");
+      url = new URL("http://localhost");
    }
 
    public void testDeploy() throws Exception
@@ -150,7 +145,7 @@ public class XMLDeployerTest  extends TestCase
       assertEquals(testDeployer.getNodes().get("test1").getTextContent(), "content1");
       assertEquals(testDeployer.getNodes().get("test2").getTextContent(), "content2");
       assertEquals(testDeployer.getNodes().get("test3").getTextContent(), "content3");
-      assertEquals(testDeployer.getNodes().get("test4").getTextContent(), "content4");      
+      assertEquals(testDeployer.getNodes().get("test4").getTextContent(), "content4");
       assertEquals(testDeployer.getNodes().get("test5").getTextContent(), "content5");
       assertEquals(testDeployer.getNodes().get("test6").getTextContent(), "content6");
    }
@@ -168,13 +163,17 @@ public class XMLDeployerTest  extends TestCase
       assertNull(testDeployer.getNodes().get("test3"));
       assertNull(testDeployer.getNodes().get("test4"));
    }
-         
+
    class TestDeployer extends XmlDeployer
    {
       private String elementname = "test";
+
       Element element = null;
+
       private int deployments = 0;
+
       ArrayList<String> contents = new ArrayList<String>();
+
       HashMap<String, Node> nodes = new HashMap<String, Node>();
 
       public TestDeployer()
@@ -219,9 +218,8 @@ public class XMLDeployerTest  extends TestCase
 
       public String[] getElementTagName()
       {
-         return new String[]{elementname};
+         return new String[] { elementname };
       }
-
 
       public String getConfigFileName()
       {

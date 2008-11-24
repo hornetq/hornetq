@@ -207,6 +207,8 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
          return;
       }
       
+      log.info("******** starting xml deployer server");
+      
       deploymentManager.registerDeployer(this);
       
       started = true;

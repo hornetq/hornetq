@@ -68,6 +68,8 @@ public class FileConfiguration extends ConfigurationImpl
 
    public void start() throws Exception
    {
+      log.info("********* starting file configuration");
+      
       URL url = getClass().getClassLoader().getResource(configurationUrl);
       Reader reader = new InputStreamReader(url.openStream());
       String xml = XMLUtil.readerToString(reader);
@@ -131,7 +133,37 @@ public class FileConfiguration extends ConfigurationImpl
       {
          Node backupNode = backups.item(0);
 
-         backupConnectorConfig = parseTransportConfiguration(backupNode);
+         backupConnectorName = backupNode.getAttributes().getNamedItem("connector-name").getNodeValue();
+      }
+      
+      NodeList connectorNodes = e.getElementsByTagName("connector");
+      
+      log.info("There are " + connectorNodes + " connectorNodes");
+      
+      for (int i = 0; i < connectorNodes.getLength(); i++)
+      {
+         Node connectorNode = connectorNodes.item(i);
+
+         TransportConfiguration connectorConfig = parseTransportConfiguration(connectorNode);
+         
+         if (connectorConfig.getName() == null)
+         {
+            log.warn("Cannot deploy a connector with no name specified.");
+
+            continue;
+         }
+
+         if (connectorConfigs.containsKey(connectorConfig.getName()))
+         {
+            log.warn("There is already a connector with name " + connectorConfig.getName() +
+                     " deployed. This one will not be deployed.");
+
+            continue;
+         }
+         
+         log.info("loaded connector " + connectorConfig.getName());
+
+         connectorConfigs.put(connectorConfig.getName(), connectorConfig);
       }
 
       NodeList acceptorNodes = e.getElementsByTagName("acceptor");
@@ -221,6 +253,8 @@ public class FileConfiguration extends ConfigurationImpl
       wildcardRoutingEnabled = getBoolean(e, "wild-card-routing-enabled", wildcardRoutingEnabled);
 
       messageCounterEnabled = getBoolean(e, "message-counter-enabled", messageCounterEnabled);
+      
+      log.info("Done starting file configuration");
    }
 
    public String getConfigurationUrl()
@@ -277,6 +311,10 @@ public class FileConfiguration extends ConfigurationImpl
 
    private TransportConfiguration parseTransportConfiguration(final Node node)
    {
+      Node nameNode = node.getAttributes().getNamedItem("name");
+                 
+      String name = nameNode != null ? nameNode.getNodeValue() : null;
+      
       NodeList children = node.getChildNodes();
 
       String clazz = null;
@@ -291,60 +329,50 @@ public class FileConfiguration extends ConfigurationImpl
          {
             clazz = children.item(i).getTextContent();
          }
-         else if ("params".equalsIgnoreCase(nodeName))
+         else if ("param".equalsIgnoreCase(nodeName))
          {
-            NodeList nlParams = children.item(i).getChildNodes();
+            NamedNodeMap attributes = children.item(i).getAttributes();
 
-            for (int j = 0; j < nlParams.getLength(); j++)
+            Node nkey = attributes.getNamedItem("key");
+
+            String key = nkey.getTextContent();
+
+            Node nValue = attributes.getNamedItem("value");
+
+            Node nType = attributes.getNamedItem("type");
+
+            String type = nType.getTextContent();
+
+            if (type.equalsIgnoreCase("Integer"))
             {
-               if ("param".equalsIgnoreCase(nlParams.item(j).getNodeName()))
-               {
-                  Node paramNode = nlParams.item(j);
+               int iVal = parseInt(nValue);
 
-                  NamedNodeMap attributes = paramNode.getAttributes();
+               params.put(key, iVal);
+            }
+            else if (type.equalsIgnoreCase("Long"))
+            {
+               long lVal = parseLong(nValue);
 
-                  Node nkey = attributes.getNamedItem("key");
+               params.put(key, lVal);
+            }
+            else if (type.equalsIgnoreCase("String"))
+            {
+               params.put(key, nValue.getTextContent().trim());
+            }
+            else if (type.equalsIgnoreCase("Boolean"))
+            {
+               boolean bVal = parseBoolean(nValue);
 
-                  String key = nkey.getTextContent();
-
-                  Node nValue = attributes.getNamedItem("value");
-
-                  Node nType = attributes.getNamedItem("type");
-
-                  String type = nType.getTextContent();
-
-                  if (type.equalsIgnoreCase("Integer"))
-                  {
-                     int iVal = parseInt(nValue);
-
-                     params.put(key, iVal);
-                  }
-                  else if (type.equalsIgnoreCase("Long"))
-                  {
-                     long lVal = parseLong(nValue);
-
-                     params.put(key, lVal);
-                  }
-                  else if (type.equalsIgnoreCase("String"))
-                  {
-                     params.put(key, nValue.getTextContent().trim());
-                  }
-                  else if (type.equalsIgnoreCase("Boolean"))
-                  {
-                     boolean bVal = parseBoolean(nValue);
-
-                     params.put(key, bVal);
-                  }
-                  else
-                  {
-                     throw new IllegalArgumentException("Invalid parameter type " + type);
-                  }
-               }
+               params.put(key, bVal);
+            }
+            else
+            {
+               throw new IllegalArgumentException("Invalid parameter type " + type);
             }
          }
-      }
+      }               
 
-      return new TransportConfiguration(clazz, params);
+      return new TransportConfiguration(clazz, params, name);
    }
    
    private void parseBroadcastGroupConfiguration(final Element bgNode)
@@ -362,6 +390,8 @@ public class FileConfiguration extends ConfigurationImpl
       long broadcastPeriod = ConfigurationImpl.DEFAULT_BROADCAST_PERIOD;
 
       NodeList children = bgNode.getChildNodes();
+      
+      List<String> connectorNames = new ArrayList<String>();
 
       for (int j = 0; j < children.getLength(); j++)
       {
@@ -387,6 +417,12 @@ public class FileConfiguration extends ConfigurationImpl
          {
             broadcastPeriod = parseLong(child);
          }
+         else if (child.getNodeName().equals("connector-link"))
+         {
+            String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
+            
+            connectorNames.add(connectorName);
+         }
       }
 
       BroadcastGroupConfiguration config = new BroadcastGroupConfiguration(name,
@@ -394,7 +430,8 @@ public class FileConfiguration extends ConfigurationImpl
                                                                            localBindPort,
                                                                            groupAddress,
                                                                            groupPort,
-                                                                           broadcastPeriod);
+                                                                           broadcastPeriod,
+                                                                           connectorNames);
       
       broadcastGroupConfigurations.add(config);
    }
@@ -451,7 +488,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       long maxBatchTime = DEFAULT_MAX_FORWARD_BATCH_TIME;
 
-      List<TransportConfiguration> staticConnectors = new ArrayList<TransportConfiguration>();
+      List<String> staticConnectorNames = new ArrayList<String>();
 
       String discoveryGroupName = null;
 
@@ -491,25 +528,20 @@ public class FileConfiguration extends ConfigurationImpl
          {
             transformerClassName = child.getTextContent().trim();
          }
-         else if (child.getNodeName().equals("connectors"))
+         else if (child.getNodeName().equals("connector"))
          {
-            NodeList connectorNodes = ((Element)child).getElementsByTagName("connector");
+            String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
             
-            for (int k = 0; k < connectorNodes.getLength(); k++)
-            {
-               TransportConfiguration connector = parseTransportConfiguration(connectorNodes.item(k));
-               
-               staticConnectors.add(connector);
-            }
+            staticConnectorNames.add(connectorName);
          }
       }
 
       MessageFlowConfiguration config;
       
-      if (!staticConnectors.isEmpty())
+      if (!staticConnectorNames.isEmpty())
       {
          config = new MessageFlowConfiguration(name, address, filterString, fanout, maxBatchSize, maxBatchTime,
-                                               transformerClassName, staticConnectors);
+                                               transformerClassName, staticConnectorNames);
       }
       else
       {

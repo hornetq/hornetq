@@ -52,7 +52,7 @@ public class MessageFlowConfiguration implements Serializable
 
    private final long maxBatchTime;
 
-   private final List<TransportConfiguration> staticConnectors;
+   private final List<String> staticConnectorNames;
 
    private final String discoveryGroupName;
 
@@ -65,7 +65,7 @@ public class MessageFlowConfiguration implements Serializable
                                    final int maxBatchSize,
                                    final long maxBatchTime,
                                    final String transformerClassName,
-                                   final List<TransportConfiguration> connectors)
+                                   final List<String> staticConnectorNames)
    {
       this.name = name;
       this.address = address;
@@ -74,7 +74,7 @@ public class MessageFlowConfiguration implements Serializable
       this.maxBatchSize = maxBatchSize;
       this.maxBatchTime = maxBatchTime;
       this.transformerClassName = transformerClassName;
-      this.staticConnectors = connectors;
+      this.staticConnectorNames = staticConnectorNames;
       this.discoveryGroupName = null;
    }
 
@@ -94,7 +94,7 @@ public class MessageFlowConfiguration implements Serializable
       this.maxBatchSize = maxBatchSize;
       this.maxBatchTime = maxBatchTime;
       this.transformerClassName = transformerClassName;
-      this.staticConnectors = null;
+      this.staticConnectorNames = null;
       this.discoveryGroupName = discoveryGroupName;
    }
 
@@ -133,9 +133,9 @@ public class MessageFlowConfiguration implements Serializable
       return transformerClassName;
    }
 
-   public List<TransportConfiguration> getConnectors()
+   public List<String> getConnectorNames()
    {
-      return staticConnectors;
+      return staticConnectorNames;
    }
 
    public String getDiscoveryGroupName()

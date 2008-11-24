@@ -63,17 +63,17 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
                             final long expiration,
                             final long timestamp,
                             final byte priority,
-                            MessagingBuffer body)
+                            final MessagingBuffer body)
    {
       super(type, durable, expiration, timestamp, priority, body);
    }
 
-   public ClientMessageImpl(final byte type, final boolean durable, MessagingBuffer body)
+   public ClientMessageImpl(final byte type, final boolean durable, final MessagingBuffer body)
    {
       super(type, durable, 0, System.currentTimeMillis(), (byte)4, body);
    }
 
-   public ClientMessageImpl(final boolean durable, MessagingBuffer body)
+   public ClientMessageImpl(final boolean durable, final MessagingBuffer body)
    {
       super((byte)0, durable, 0, System.currentTimeMillis(), (byte)4, body);
    }

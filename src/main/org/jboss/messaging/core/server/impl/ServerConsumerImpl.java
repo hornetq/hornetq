@@ -115,7 +115,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private volatile boolean closed;
 
-   private final boolean preCommitAcks;
+   private final boolean preAcknowledge;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -130,7 +130,7 @@ public class ServerConsumerImpl implements ServerConsumer
                              final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                              final PostOffice postOffice,
                              final Channel channel,
-                             final boolean preCommitAcks)
+                             final boolean preAcknowledge)
    {
       this.id = id;
 
@@ -152,7 +152,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       this.channel = channel;
 
-      this.preCommitAcks = preCommitAcks;
+      this.preAcknowledge = preAcknowledge;
 
       messageQueue.addConsumer(this);
 
@@ -533,11 +533,12 @@ public class ServerConsumerImpl implements ServerConsumer
             return HandleStatus.NO_MATCH;
          }
 
-         if (!browseOnly && !preCommitAcks)
+         if (!browseOnly && !preAcknowledge)
          {
             deliveringRefs.add(ref);
          }
 
+         
          if (message instanceof ServerLargeMessage)
          {
             // TODO: How to inform the backup node about the LargeMessage being sent?
@@ -550,7 +551,7 @@ public class ServerConsumerImpl implements ServerConsumer
             sendStandardMessage(ref, message);
          }
 
-         if (preCommitAcks)
+         if (preAcknowledge)
          {
             doAck(ref);
          }

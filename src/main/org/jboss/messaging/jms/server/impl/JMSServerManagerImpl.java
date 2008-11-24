@@ -220,7 +220,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                           boolean blockOnPersistentSend,
                                           boolean autoGroup,
                                           int maxConnections,
-                                          boolean preCommitAcks,
+                                          boolean preAcknowledge,
                                           String jndiBinding) throws Exception
    {
       ArrayList<String> bindings = new ArrayList<String>(1);
@@ -244,7 +244,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                      blockOnPersistentSend,
                                      autoGroup,
                                      maxConnections,
-                                     preCommitAcks,
+                                     preAcknowledge,
                                      bindings);
    }
 
@@ -266,7 +266,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                           boolean blockOnPersistentSend,
                                           boolean autoGroup,
                                           int maxConnections,
-                                          boolean preCommitAcks,
+                                          boolean preAcknowledge,
                                           List<String> jndiBindings) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
@@ -290,7 +290,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                          blockOnPersistentSend,
                                          autoGroup,
                                          maxConnections,
-                                         preCommitAcks);
+                                         preAcknowledge);
       }
       for (String jndiBinding : jndiBindings)
       {

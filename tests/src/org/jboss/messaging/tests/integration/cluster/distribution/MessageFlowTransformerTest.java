@@ -75,13 +75,18 @@ public class MessageFlowTransformerTest extends MessageFlowTestBase
       MessagingService service1 = createMessagingService(1, service1Params);
       service1.start();
 
-      List<TransportConfiguration> connectors = new ArrayList<TransportConfiguration>();
+      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
       TransportConfiguration server1tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service1Params);
-      connectors.add(server1tc);
+                                                                    service1Params,
+                                                                    "connector1");
+      connectors.put(server1tc.getName(), server1tc);
+      service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
 
       final SimpleString address1 = new SimpleString("address1");
-      
+
+      List<String> connectorNames = new ArrayList<String>();
+      connectorNames.add(server1tc.getName());
+
       MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1",
                                                                        "address1",
                                                                        null,
@@ -89,7 +94,7 @@ public class MessageFlowTransformerTest extends MessageFlowTestBase
                                                                        1,
                                                                        -1,
                                                                        "org.jboss.messaging.tests.integration.cluster.distribution.SimpleTransformer",
-                                                                       connectors);
+                                                                       connectorNames);
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
       ofconfigs.add(ofconfig);
       service0.getServer().getConfiguration().setMessageFlowConfigurations(ofconfigs);
@@ -106,17 +111,15 @@ public class MessageFlowTransformerTest extends MessageFlowTestBase
       ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
 
       ClientSession session1 = csf1.createSession(false, true, true);
-      
-      
 
       session0.createQueue(address1, address1, null, false, false, true);
-    
+
       session1.createQueue(address1, address1, null, false, false, true);
 
       ClientProducer prod0 = session0.createProducer(address1);
 
       ClientConsumer cons1 = session1.createConsumer(address1);
-     
+
       session1.start();
 
       final int numMessages = 100;
@@ -132,16 +135,16 @@ public class MessageFlowTransformerTest extends MessageFlowTestBase
 
          prod0.send(message);
       }
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage rmessage = cons1.receive(1000);
 
          assertNotNull(rmessage);
-         
+
          SimpleString val = (SimpleString)rmessage.getProperty(propKey);
          assertEquals(new SimpleString("bong"), val);
-         
+
          String sval = rmessage.getBody().getString();
          assertEquals("dee be dee be dee be dee", sval);
       }

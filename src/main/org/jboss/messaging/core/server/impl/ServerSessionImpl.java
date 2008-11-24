@@ -162,7 +162,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private final boolean autoCommitAcks;
 
-   private final boolean preCommitAcks;
+   private final boolean preAcknowledge;
 
    private volatile RemotingConnection remotingConnection;
 
@@ -211,7 +211,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                             final int minLargeMessageSize,
                             final boolean autoCommitSends,
                             final boolean autoCommitAcks,
-                            final boolean preCommitAcks,
+                            final boolean preAcknowledge,
                             final boolean xa,
                             final RemotingConnection remotingConnection,
                             final StorageManager storageManager,
@@ -237,7 +237,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       this.autoCommitAcks = autoCommitAcks;
 
-      this.preCommitAcks = preCommitAcks;
+      this.preAcknowledge = preAcknowledge;
 
       this.remotingConnection = remotingConnection;
 
@@ -394,7 +394,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                                                           queueSettingsRepository,
                                                           postOffice,
                                                           channel,                                                         
-                                                          preCommitAcks);
+                                                          preAcknowledge);
 
          consumers.put(consumer.getID(), consumer);
 

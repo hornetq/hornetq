@@ -98,7 +98,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    private final int maxConnections;
 
-   private final boolean preCommitAcks;
+   private final boolean preAcknowledge;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -119,7 +119,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  final boolean blockOnPersistentSend,
                                  final boolean autoGroup,
                                  final int maxConnections,
-                                 final boolean preCommitAcks)
+                                 final boolean preAcknowledge)
    {
       this.connectorConfig = connectorConfig;
       this.backupConnectorConfig = backupConnectorConfig;
@@ -138,7 +138,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.blockOnPersistentSend = blockOnPersistentSend;
       this.autoGroup = autoGroup;
       this.maxConnections = maxConnections;
-      this.preCommitAcks = preCommitAcks;
+      this.preAcknowledge = preAcknowledge;
    }
 
    // ConnectionFactory implementation -------------------------------------------------------------
@@ -315,7 +315,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                        blockOnPersistentSend,
                                                        autoGroup,
                                                        maxConnections,
-                                                       preCommitAcks,
+                                                       preAcknowledge,
                                                        DEFAULT_ACK_BATCH_SIZE);
 
       }

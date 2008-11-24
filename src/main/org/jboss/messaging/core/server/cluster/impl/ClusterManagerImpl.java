@@ -25,11 +25,15 @@ package org.jboss.messaging.core.server.cluster.impl;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
+import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
@@ -75,13 +79,16 @@ public class ClusterManagerImpl implements ClusterManager
 
    private final ScheduledExecutorService scheduledExecutor;
 
+   private final Configuration configuration;
+
    private volatile boolean started;
 
    public ClusterManagerImpl(final ExecutorFactory executorFactory,
                              final StorageManager storageManager,
                              final PostOffice postOffice,
                              final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-                             final ScheduledExecutorService scheduledExecutor)
+                             final ScheduledExecutorService scheduledExecutor,
+                             final Configuration configuration)
    {
       this.executorFactory = executorFactory;
 
@@ -92,6 +99,8 @@ public class ClusterManagerImpl implements ClusterManager
       this.queueSettingsRepository = queueSettingsRepository;
 
       this.scheduledExecutor = scheduledExecutor;
+
+      this.configuration = configuration;
    }
 
    public synchronized void start() throws Exception
@@ -101,19 +110,19 @@ public class ClusterManagerImpl implements ClusterManager
          return;
       }
 
-      for (BroadcastGroup group : broadcastGroups.values())
+      for (BroadcastGroupConfiguration config : configuration.getBroadcastGroupConfigurations())
       {
-         group.start();
+         deployBroadcastGroup(config);
       }
 
-      for (DiscoveryGroup group : discoveryGroups.values())
+      for (DiscoveryGroupConfiguration config : configuration.getDiscoveryGroupConfigurations())
       {
-         group.start();
+         deployDiscoveryGroup(config);
       }
 
-      for (MessageFlow flow : this.messageFlows.values())
+      for (MessageFlowConfiguration config : configuration.getMessageFlowConfigurations())
       {
-         flow.start();
+         deployMessageFlow(config);
       }
 
       started = true;
@@ -141,6 +150,12 @@ public class ClusterManagerImpl implements ClusterManager
          flow.stop();
       }
 
+      broadcastGroups.clear();
+
+      discoveryGroups.clear();
+
+      messageFlows.clear();
+
       started = false;
    }
 
@@ -149,13 +164,13 @@ public class ClusterManagerImpl implements ClusterManager
       return started;
    }
 
-   public synchronized void deployBroadcastGroup(final BroadcastGroupConfiguration config) throws Exception
+   private synchronized void deployBroadcastGroup(final BroadcastGroupConfiguration config) throws Exception
    {
       if (broadcastGroups.containsKey(config.getName()))
       {
          log.warn("There is already a broadcast-group with name " + config.getName() +
                   " deployed. This one will not be deployed.");
-         
+
          return;
       }
 
@@ -167,6 +182,21 @@ public class ClusterManagerImpl implements ClusterManager
                                                         config.getLocalBindPort(),
                                                         groupAddress,
                                                         config.getGroupPort());
+      
+      for (String connectorName: config.getConnectorNames())
+      {
+         TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorName);
+         
+         if (connector == null)
+         {
+            log.warn("There is no connector deployed with name '" + connectorName + "'. The broadcast group with name '" +
+                     config.getName() + "' will not be deployed.");
+            
+            return;
+         }
+         
+         group.addConnector(connector);
+      }
 
       ScheduledFuture<?> future = scheduledExecutor.scheduleWithFixedDelay(group,
                                                                            0L,
@@ -180,7 +210,7 @@ public class ClusterManagerImpl implements ClusterManager
       group.start();
    }
 
-   public synchronized void deployDiscoveryGroup(final DiscoveryGroupConfiguration config) throws Exception
+   private synchronized void deployDiscoveryGroup(final DiscoveryGroupConfiguration config) throws Exception
    {
       if (discoveryGroups.containsKey(config.getName()))
       {
@@ -199,7 +229,7 @@ public class ClusterManagerImpl implements ClusterManager
       group.start();
    }
 
-   public synchronized void deployMessageFlow(final MessageFlowConfiguration config) throws Exception
+   private synchronized void deployMessageFlow(final MessageFlowConfiguration config) throws Exception
    {
       if (config.getName() == null)
       {
@@ -207,14 +237,14 @@ public class ClusterManagerImpl implements ClusterManager
 
          return;
       }
-      
+
       if (config.getAddress() == null)
       {
          log.warn("Must specify an address each message flow. This one will not be deployed.");
 
          return;
       }
-      
+
       if (messageFlows.containsKey(config.getName()))
       {
          log.warn("There is already a message-flow with name " + config.getName() +
@@ -222,18 +252,18 @@ public class ClusterManagerImpl implements ClusterManager
 
          return;
       }
-      
+
       if (config.getMaxBatchTime() == 0 || config.getMaxBatchTime() < -1)
       {
          log.warn("Invalid value for max-batch-time. Valid values are -1 or > 0");
-         
+
          return;
       }
-      
+
       if (config.getMaxBatchSize() < 1)
       {
          log.warn("Invalid value for max-batch-size. Valid values are > 0");
-         
+
          return;
       }
 
@@ -261,6 +291,23 @@ public class ClusterManagerImpl implements ClusterManager
       {
          // Create message flow with list of static connectors
 
+         List<TransportConfiguration> conns = new ArrayList<TransportConfiguration>();
+
+         for (String connectorName : config.getConnectorNames())
+         {
+            TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorName);
+
+            if (connector == null)
+            {
+               log.warn("No connector defined with name '" + connectorName +
+                        "'. The message flow will not be deployed.");
+
+               return;
+            }
+
+            conns.add(connector);
+         }
+
          flow = new MessageFlowImpl(new SimpleString(config.getName()),
                                     new SimpleString(config.getAddress()),
                                     config.getMaxBatchSize(),
@@ -274,7 +321,7 @@ public class ClusterManagerImpl implements ClusterManager
                                     queueSettingsRepository,
                                     scheduledExecutor,
                                     transformer,
-                                    config.getConnectors());
+                                    conns);
       }
       else
       {
@@ -310,35 +357,4 @@ public class ClusterManagerImpl implements ClusterManager
 
       flow.start();
    }
-
-   public synchronized void undeployBroadcastGroup(final String name) throws Exception
-   {
-      BroadcastGroup group = broadcastGroups.get(name);
-
-      if (group != null)
-      {
-         group.stop();
-      }
-   }
-
-   public synchronized void undeployDiscoveryGroup(final String name) throws Exception
-   {
-      DiscoveryGroup group = discoveryGroups.get(name);
-
-      if (group != null)
-      {
-         group.stop();
-      }
-   }
-
-   public synchronized void undeployMessageFlow(final String name) throws Exception
-   {
-      MessageFlow flow = messageFlows.get(name);
-
-      if (flow != null)
-      {
-         flow.stop();
-      }
-   }
-
 }

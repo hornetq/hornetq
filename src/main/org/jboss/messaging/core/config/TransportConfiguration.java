@@ -34,22 +34,34 @@ public class TransportConfiguration implements Serializable
 {
    private static final long serialVersionUID = -3994528421527392679L;
 
+   private final String name;
+   
    private final String factoryClassName;
    
    private final Map<String, Object> params;
    
-   public TransportConfiguration(final String className, final Map<String, Object> params)
+   public TransportConfiguration(final String className, final Map<String, Object> params, final String name)
    {
       this.factoryClassName = className;
       
       this.params = params;
+      
+      this.name = name;
+   }
+   
+   public TransportConfiguration(final String className, final Map<String, Object> params)
+   {
+      this(className, params, null);
    }
    
    public TransportConfiguration(final String className)
    {
-      this.factoryClassName = className;
-      
-      this.params = null;
+      this(className, null, null);
+   }
+   
+   public String getName()
+   {
+      return name;
    }
    
    public String getFactoryClassName()

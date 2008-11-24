@@ -41,13 +41,13 @@ public interface ClientSessionFactory
                                boolean xa,
                                boolean autoCommitSends,
                                boolean autoCommitAcks,
-                               final boolean preCommitAcks,
+                               final boolean preAcknowledge,
                                int ackBatchSize) throws MessagingException;
 
    ClientSession createSession(final boolean xa,
                                final boolean autoCommitSends,
                                final boolean autoCommitAcks,
-                               final boolean preCommitAcks) throws MessagingException;
+                               final boolean preAcknowledge) throws MessagingException;
 
    void setConsumerWindowSize(int size);
 

@@ -68,198 +68,209 @@ public class MessageFlowWildcardTest extends MessageFlowTestBase
 
    public void testWithWildcard() throws Exception
    {
-      Map<String, Object> service0Params = new HashMap<String, Object>();      
+      Map<String, Object> service0Params = new HashMap<String, Object>();
       MessagingService service0 = createMessagingService(0, service0Params);
-      
-      Map<String, Object> service1Params = new HashMap<String, Object>();      
-      MessagingService service1 = createMessagingService(1, service1Params);      
+
+      Map<String, Object> service1Params = new HashMap<String, Object>();
+      MessagingService service1 = createMessagingService(1, service1Params);
       service1.start();
 
-      List<TransportConfiguration> connectors = new ArrayList<TransportConfiguration>();
+      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
       TransportConfiguration server1tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service1Params);
-      connectors.add(server1tc);
-      
+                                                                    service1Params,
+                                                                    "connector1");
+      connectors.put(server1tc.getName(), server1tc);
+      service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
+
       final SimpleString address1 = new SimpleString("cheese.stilton");
-      
+
       final SimpleString address2 = new SimpleString("cheese.wensleydale");
-      
+
       final SimpleString address3 = new SimpleString("wine.shiraz");
-      
+
       final SimpleString address4 = new SimpleString("wine.cabernet");
-      
+
       final SimpleString match1 = new SimpleString("cheese.#");
-      
-            
-      MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1", match1.toString(), null, true, 1, -1, null, connectors);
+
+      List<String> connectorNames = new ArrayList<String>();
+      connectorNames.add(server1tc.getName());
+
+      MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1",
+                                                                       match1.toString(),
+                                                                       null,
+                                                                       true,
+                                                                       1,
+                                                                       -1,
+                                                                       null,
+                                                                       connectorNames);
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
       ofconfigs.add(ofconfig);
       service0.getServer().getConfiguration().setMessageFlowConfigurations(ofconfigs);
-     
+
       service0.start();
-      
+
       TransportConfiguration server0tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                     service0Params);
-      
+
       ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
-      
+
       ClientSession session0 = csf0.createSession(false, true, true);
-      
+
       ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
-      
+
       ClientSession session1 = csf1.createSession(false, true, true);
-      
+
       session0.createQueue(address1, address1, null, false, false, true);
       session0.createQueue(address2, address2, null, false, false, true);
       session0.createQueue(address3, address3, null, false, false, true);
-      session0.createQueue(address4, address4, null, false, false, true);     
-      
+      session0.createQueue(address4, address4, null, false, false, true);
+
       session1.createQueue(address1, address1, null, false, false, true);
       session1.createQueue(address2, address2, null, false, false, true);
       session1.createQueue(address3, address3, null, false, false, true);
-      session1.createQueue(address4, address4, null, false, false, true);     
-      
+      session1.createQueue(address4, address4, null, false, false, true);
+
       ClientProducer prod0_1 = session0.createProducer(address1);
       ClientProducer prod0_2 = session0.createProducer(address2);
       ClientProducer prod0_3 = session0.createProducer(address3);
-      ClientProducer prod0_4 = session0.createProducer(address4);      
-      
+      ClientProducer prod0_4 = session0.createProducer(address4);
+
       ClientConsumer cons0_1 = session0.createConsumer(address1);
       ClientConsumer cons0_2 = session0.createConsumer(address2);
       ClientConsumer cons0_3 = session0.createConsumer(address3);
       ClientConsumer cons0_4 = session0.createConsumer(address4);
-      
+
       ClientConsumer cons1_1 = session1.createConsumer(address1);
       ClientConsumer cons1_2 = session1.createConsumer(address2);
       ClientConsumer cons1_3 = session1.createConsumer(address3);
       ClientConsumer cons1_4 = session1.createConsumer(address4);
-      
+
       session0.start();
-      
+
       session1.start();
-      
+
       final int numMessages = 100;
-      
+
       final SimpleString propKey = new SimpleString("testkey");
-      
+
       for (int i = 0; i < numMessages; i++)
-      {      
+      {
          ClientMessage message = session0.createClientMessage(false);
          message.putIntProperty(propKey, i);
          message.getBody().flip();
-              
+
          prod0_1.send(message);
       }
       for (int i = 0; i < numMessages; i++)
-      {      
+      {
          ClientMessage message = session0.createClientMessage(false);
          message.putIntProperty(propKey, i);
          message.getBody().flip();
-              
+
          prod0_2.send(message);
       }
       for (int i = 0; i < numMessages; i++)
-      {      
+      {
          ClientMessage message = session0.createClientMessage(false);
          message.putIntProperty(propKey, i);
          message.getBody().flip();
-              
+
          prod0_3.send(message);
       }
       for (int i = 0; i < numMessages; i++)
-      {      
+      {
          ClientMessage message = session0.createClientMessage(false);
          message.putIntProperty(propKey, i);
          message.getBody().flip();
-              
+
          prod0_4.send(message);
       }
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage rmessage1 = cons0_1.receive(1000);
-         
+
          assertNotNull(rmessage1);
-         
+
          assertEquals(i, rmessage1.getProperty(propKey));
-         
+
          ClientMessage rmessage2 = cons0_2.receive(1000);
-         
+
          assertNotNull(rmessage2);
-         
+
          assertEquals(i, rmessage2.getProperty(propKey));
-         
+
          ClientMessage rmessage3 = cons0_3.receive(1000);
-         
+
          assertNotNull(rmessage3);
-         
-         assertEquals(i, rmessage3.getProperty(propKey));  
-         
+
+         assertEquals(i, rmessage3.getProperty(propKey));
+
          ClientMessage rmessage4 = cons0_4.receive(1000);
-         
+
          assertNotNull(rmessage4);
-         
-         assertEquals(i, rmessage4.getProperty(propKey));  
+
+         assertEquals(i, rmessage4.getProperty(propKey));
       }
-      
+
       ClientMessage rmessage1 = cons0_1.receiveImmediate();
-      
+
       assertNull(rmessage1);
-      
+
       ClientMessage rmessage2 = cons0_2.receiveImmediate();
-      
+
       assertNull(rmessage2);
-            
+
       ClientMessage rmessage3 = cons0_3.receiveImmediate();
-      
+
       assertNull(rmessage3);
-      
+
       ClientMessage rmessage4 = cons0_4.receiveImmediate();
-      
+
       assertNull(rmessage4);
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          rmessage1 = cons1_1.receive(1000);
-         
+
          assertNotNull(rmessage1);
-         
+
          assertEquals(i, rmessage1.getProperty(propKey));
-         
+
          rmessage2 = cons1_2.receive(1000);
-         
+
          assertNotNull(rmessage2);
-         
-         assertEquals(i, rmessage2.getProperty(propKey));         
+
+         assertEquals(i, rmessage2.getProperty(propKey));
       }
-      
+
       rmessage1 = cons1_1.receiveImmediate();
-      
+
       assertNull(rmessage1);
-      
+
       rmessage2 = cons1_2.receiveImmediate();
-      
+
       assertNull(rmessage2);
-            
+
       rmessage3 = cons1_3.receiveImmediate();
-      
+
       assertNull(rmessage3);
-      
+
       rmessage4 = cons1_4.receiveImmediate();
-      
+
       assertNull(rmessage4);
-      
+
       session0.close();
-      
+
       session1.close();
-      
-      service0.stop();      
+
+      service0.stop();
       service1.stop();
-      
+
       assertEquals(0, service0.getServer().getRemotingService().getConnections().size());
       assertEquals(0, service1.getServer().getRemotingService().getConnections().size());
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -271,7 +282,7 @@ public class MessageFlowWildcardTest extends MessageFlowTestBase
 
    @Override
    protected void tearDown() throws Exception
-   {      
+   {
       assertEquals(0, InVMRegistry.instance.size());
    }
 
@@ -279,4 +290,3 @@ public class MessageFlowWildcardTest extends MessageFlowTestBase
 
    // Inner classes -------------------------------------------------
 }
-

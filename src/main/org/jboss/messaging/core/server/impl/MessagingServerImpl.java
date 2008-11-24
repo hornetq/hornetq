@@ -156,6 +156,8 @@ public class MessagingServerImpl implements MessagingServer
          return;
       }
 
+      log.info("******** starting messaging server");
+      
       /*
        * The following components are pluggable on the messaging server: Configuration, StorageManager, RemotingService,
        * SecurityManager and ManagementRegistration They must already be injected by the time the messaging server
@@ -245,39 +247,48 @@ public class MessagingServerImpl implements MessagingServer
       postOffice.start();
       resourceManager.start();
 
-      // FIXME the destination corresponding to the notification address is always created 
+      // FIXME the destination corresponding to the notification address is always created
       // so that queues can be created wether the address is allowable or not (to revisit later)
       if (!postOffice.containsDestination(configuration.getManagementNotificationAddress()))
       {
          postOffice.addDestination(configuration.getManagementNotificationAddress(), true);
       }
 
-      TransportConfiguration backupConnector = configuration.getBackupConnectorConfiguration();
-
-      if (backupConnector != null)
+      String backupConnectorName = configuration.getBackupConnectorName();
+      
+      if (backupConnectorName != null)
       {
-         ConnectorFactory backupConnectorFactory;
-         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-         try
+         TransportConfiguration backupConnector = configuration.getConnectorConfigurations().get(backupConnectorName);
+         
+         if (backupConnector == null)
          {
-            Class<?> clz = loader.loadClass(backupConnector.getFactoryClassName());
-            backupConnectorFactory = (ConnectorFactory)clz.newInstance();
+            log.warn("connector with name '" + backupConnectorName + "' is not defined in the configuration.");
          }
-         catch (Exception e)
+         else
          {
-            throw new IllegalArgumentException("Error instantiating interceptor \"" + backupConnector.getFactoryClassName() +
-                                                        "\"",
-                                               e);
+            ConnectorFactory backupConnectorFactory;
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            try
+            {
+               Class<?> clz = loader.loadClass(backupConnector.getFactoryClassName());
+               backupConnectorFactory = (ConnectorFactory)clz.newInstance();
+            }
+            catch (Exception e)
+            {
+               throw new IllegalArgumentException("Error instantiating interceptor \"" + backupConnector.getFactoryClassName() +
+                                                           "\"",
+                                                  e);
+            }
+   
+            Map<String, Object> backupConnectorParams = backupConnector.getParams();
+   
+            // TODO don't hardcode ping interval and code timeout
+            replicatingConnectionManager = new ConnectionManagerImpl(backupConnectorFactory,
+                                                                     backupConnectorParams,
+                                                                     5000,
+                                                                     30000,
+                                                                     ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
          }
-
-         Map<String, Object> backupConnectorParams = backupConnector.getParams();
-
-         // TODO don't hardcode ping interval and code timeout
-         replicatingConnectionManager = new ConnectionManagerImpl(backupConnectorFactory,
-                                                                  backupConnectorParams,
-                                                                  5000,
-                                                                  30000,
-                                                                  ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
       }
       remotingService.setMessagingServer(this);
 
@@ -287,27 +298,15 @@ public class MessagingServerImpl implements MessagingServer
                                                  storageManager,
                                                  postOffice,
                                                  queueSettingsRepository,
-                                                 scheduledExecutor);
+                                                 scheduledExecutor,
+                                                 configuration);
 
          clusterManager.start();
-
-         //Deploy the cluster artifacts
-
-         for (BroadcastGroupConfiguration config: configuration.getBroadcastGroupConfigurations())
-         {
-            clusterManager.deployBroadcastGroup(config);
-         }
-
-         for (DiscoveryGroupConfiguration config: configuration.getDiscoveryGroupConfigurations())
-         {
-            clusterManager.deployDiscoveryGroup(config);
-         }
-
-         for (MessageFlowConfiguration config: configuration.getMessageFlowConfigurations())
-         {
-            clusterManager.deployMessageFlow(config);
-         }
       }
+      
+      log.info("connectors " + this.configuration.getConnectorConfigurations().size());
+      
+      log.info("Started messaging server");
 
       started = true;
    }
@@ -538,7 +537,7 @@ public class MessagingServerImpl implements MessagingServer
                                                               final RemotingConnection connection,
                                                               final boolean autoCommitSends,
                                                               final boolean autoCommitAcks,
-                                                              final boolean preCommitAcks,
+                                                              final boolean preAcknowledge,
                                                               final boolean xa,
                                                               final int sendWindowSize) throws Exception
    {
@@ -551,7 +550,7 @@ public class MessagingServerImpl implements MessagingServer
                              connection,
                              autoCommitSends,
                              autoCommitAcks,
-                             preCommitAcks,
+                             preAcknowledge,
                              xa,
                              sendWindowSize);
    }
@@ -565,7 +564,7 @@ public class MessagingServerImpl implements MessagingServer
                                                      final RemotingConnection connection,
                                                      final boolean autoCommitSends,
                                                      final boolean autoCommitAcks,
-                                                     final boolean preCommitAcks,
+                                                     final boolean preAcknowledge,
                                                      final boolean xa,
                                                      final int sendWindowSize) throws Exception
    {
@@ -580,7 +579,7 @@ public class MessagingServerImpl implements MessagingServer
                              connection,
                              autoCommitSends,
                              autoCommitAcks,
-                             preCommitAcks,
+                             preAcknowledge,
                              xa,
                              sendWindowSize);
    }
@@ -646,7 +645,7 @@ public class MessagingServerImpl implements MessagingServer
                                                         final RemotingConnection connection,
                                                         final boolean autoCommitSends,
                                                         final boolean autoCommitAcks,
-                                                        final boolean preCommitAcks,
+                                                        final boolean preAcknowledge,
                                                         final boolean xa,
                                                         final int sendWindowSize) throws Exception
    {
@@ -687,7 +686,7 @@ public class MessagingServerImpl implements MessagingServer
                                                               minLargeMessageSize,
                                                               autoCommitSends,
                                                               autoCommitAcks,
-                                                              preCommitAcks,
+                                                              preAcknowledge,
                                                               xa,
                                                               connection,
                                                               storageManager,

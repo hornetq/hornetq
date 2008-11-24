@@ -74,7 +74,6 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class MessagingServerControl extends StandardMBean implements MessagingServerControlMBean, NotificationEmitter
 {
-
    // Constants -----------------------------------------------------
 
    private static DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
@@ -251,19 +250,23 @@ public class MessagingServerControl extends StandardMBean implements MessagingSe
 
    // MessagingServerControlMBean implementation --------------------
 
+   //FIXME
+   
    public Map<String, Object> getBackupConnectorConfiguration()
    {
-      TransportConfiguration backupConf = configuration.getBackupConnectorConfiguration();
-      if (backupConf != null)
-      {
-         return backupConf.getParams();
-      }
-      else
-      {
-         return Collections.emptyMap();
-      }
+//      TransportConfiguration backupConf = configuration.getBackupConnectorConfiguration();
+//      if (backupConf != null)
+//      {
+//         return backupConf.getParams();
+//      }
+//      else
+//      {
+//         return Collections.emptyMap();
+//      }
+      return Collections.emptyMap();
    }
 
+   //FIXME
    public Map<String, Map<String, Object>> getAcceptorConfigurations()
    {
       Map<String, Map<String, Object>> result = new HashMap<String, Map<String, Object>>();

@@ -94,11 +94,16 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       started = true;
    }
    
-   public synchronized void stop()
+   public void stop()
    {
-      if (!started)
+      synchronized (this)
       {
-         return;
+         if (!started)
+         {
+            return;
+         }
+         
+         started = false;
       }
       
       try
@@ -109,9 +114,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       {        
       }
       
-      socket.close();
-      
-      started = false;
+      socket.close();           
    }
    
    public boolean isStarted()
@@ -188,9 +191,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                   continue;
                }
             }
-            
-            log.info("Listener received packet");
-            
+             
             ByteArrayInputStream bis = new ByteArrayInputStream(data);
             
             ObjectInputStream ois = new ObjectInputStream(bis);

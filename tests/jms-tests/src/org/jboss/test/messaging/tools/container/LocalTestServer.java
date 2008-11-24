@@ -535,14 +535,14 @@ public class LocalTestServer implements Server, Runnable
                                        boolean blockOnAcknowledge) throws Exception
    {
       log.info("deploying connection factory with name: " + objectName + " and dupsok: " + dupsOkBatchSize);
-                  
+
       getJMSServerManager().createConnectionFactory(objectName,
                                                     new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
                                                     null,
-                                                    ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,                                                       
+                                                    ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                                                     ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                                     clientId,
-                                                    dupsOkBatchSize,                                               
+                                                    dupsOkBatchSize,
                                                     ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
                                                     prefetchSize,
                                                     -1,

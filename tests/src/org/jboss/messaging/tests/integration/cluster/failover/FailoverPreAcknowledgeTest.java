@@ -48,9 +48,9 @@ import java.util.HashMap;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class FailoverPreCommitMessageTest extends TestCase
+public class FailoverPreAcknowledgeTest extends TestCase
 {
-   private static final Logger log = Logger.getLogger(FailoverPreCommitMessageTest.class);
+   private static final Logger log = Logger.getLogger(FailoverPreAcknowledgeTest.class);
 
    // Constants -----------------------------------------------------
 
@@ -70,7 +70,7 @@ public class FailoverPreCommitMessageTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   public void testPreCommitFailoverTest() throws Exception
+   public void testPreAcknowledgeFailoverTest() throws Exception
    {
       ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                       new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
@@ -180,8 +180,12 @@ public class FailoverPreCommitMessageTest extends TestCase
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      liveConf.setBackupConnectorConfiguration(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                          backupParams));
+      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
+      TransportConfiguration backupTC = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                   backupParams, "backup-connector");
+      connectors.put(backupTC.getName(), backupTC);
+      liveConf.setConnectorConfigurations(connectors);
+      liveConf.setBackupConnectorName(backupTC.getName());
       liveService = MessagingServiceImpl.newNullStorageMessagingServer(liveConf);
       liveService.start();
    }

@@ -123,7 +123,7 @@ public interface JMSServerManager
                                    boolean blockOnPersistentSend,
                                    boolean autoGroup,
                                    int maxConnections,
-                                   boolean preCommitAcks,
+                                   boolean preAcknowledge,
                                    String jndiBinding) throws Exception;
 
    boolean createConnectionFactory(String name,
@@ -144,7 +144,7 @@ public interface JMSServerManager
                                    boolean blockOnPersistentSend,
                                    boolean autoGroupId,
                                    int maxConnections,
-                                   boolean preCommitAcks,
+                                   boolean preAcknowledge,
                                    List<String> jndiBinding) throws Exception;
 
    /**

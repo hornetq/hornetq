@@ -13,8 +13,10 @@
 package org.jboss.messaging.core.config.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.messaging.core.config.Configuration;
@@ -122,10 +124,12 @@ public class ConfigurationImpl implements Configuration
    protected long connectionScanPeriod = DEFAULT_CONNECTION_SCAN_PERIOD;
 
    protected List<String> interceptorClassNames = new ArrayList<String>();
+   
+   protected Map<String, TransportConfiguration> connectorConfigs = new HashMap<String, TransportConfiguration>();
 
    protected Set<TransportConfiguration> acceptorConfigs = new HashSet<TransportConfiguration>();
 
-   protected TransportConfiguration backupConnectorConfig;
+   protected String backupConnectorName;
    
    protected Set<MessageFlowConfiguration> messageFlowConfigurations = new HashSet<MessageFlowConfiguration>();
    
@@ -269,15 +273,25 @@ public class ConfigurationImpl implements Configuration
    {
       acceptorConfigs = infos;
    }
-
-   public TransportConfiguration getBackupConnectorConfiguration()
+   
+   public Map<String, TransportConfiguration> getConnectorConfigurations()
    {
-      return backupConnectorConfig;
+      return connectorConfigs;
    }
 
-   public void setBackupConnectorConfiguration(final TransportConfiguration config)
+   public void setConnectorConfigurations(final Map<String, TransportConfiguration> infos)
    {
-      backupConnectorConfig = config;
+      this.connectorConfigs = infos;
+   }
+
+   public String getBackupConnectorName()
+   {
+      return backupConnectorName;
+   }
+
+   public void setBackupConnectorName(final String backupConnectorName)
+   {
+      this.backupConnectorName = backupConnectorName;
    }
    
    public Set<MessageFlowConfiguration> getMessageFlowConfigurations()
@@ -579,10 +593,4 @@ public class ConfigurationImpl implements Configuration
              cother.getManagementAddress().equals(getManagementAddress()) &&
              cother.getPagingDefaultSize() == getPagingDefaultSize();
    }
-   
-   
-
-   
-   
-
 }

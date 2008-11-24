@@ -173,7 +173,7 @@ public class JMSQueueControlTest extends TestCase
                                                              true,
                                                              ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                                                              ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                                                             ClientSessionFactoryImpl.DEFAULT_PRE_COMMIT_ACKS);
+                                                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
 
       Connection conn = cf.createConnection();
 

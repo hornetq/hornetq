@@ -80,11 +80,9 @@ public interface Message
    void encodeProperties(MessagingBuffer buffer);
    
    void decodeProperties(MessagingBuffer buffer);
-   
-   
+      
    int getBodySize();
-   
-   
+         
    // Used on Message chunk
    void encodeBody(MessagingBuffer buffer, long start, int size);
    

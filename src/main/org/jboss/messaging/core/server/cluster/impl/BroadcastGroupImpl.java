@@ -151,7 +151,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
       DatagramPacket packet = new DatagramPacket(data, data.length, groupAddress, groupPort);
 
-      log.info("broadcasting packet");
+     // log.info("broadcasting packet");
 
       socket.send(packet);
    }

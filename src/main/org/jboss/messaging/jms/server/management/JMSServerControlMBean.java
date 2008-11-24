@@ -100,8 +100,8 @@ public interface JMSServerControlMBean
                                 boolean autoGroup,
                                 @Parameter(name = "maxConnections", desc = "The maximum number of physical connections created per client using this connection factory. Sessions created will be assigned a connection in a round-robin fashion")
                                 int maxConnections,
-                                @Parameter(name = "preCommitAcks", desc = "If the server will acknowledge delivery of a message before it is sent")
-                                boolean preCommitAcks,
+                                @Parameter(name = "preAcknowledge", desc = "If the server will acknowledge delivery of a message before it is delivered")
+                                boolean preAcknowledge,
                                 @Parameter(name = "jndiBinding", desc = "JNDI Binding")
                                 String jndiBinding) throws Exception;
 

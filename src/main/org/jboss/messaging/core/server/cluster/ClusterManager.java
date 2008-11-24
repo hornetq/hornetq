@@ -39,15 +39,4 @@ import org.jboss.messaging.core.server.MessagingComponent;
  */
 public interface ClusterManager extends MessagingComponent
 {
-   void deployBroadcastGroup(BroadcastGroupConfiguration broadcastGroupConfig) throws Exception;
-   
-   void deployDiscoveryGroup(DiscoveryGroupConfiguration discoveryGroupConfig) throws Exception;
-   
-   void deployMessageFlow(MessageFlowConfiguration messageFlowConfig) throws Exception;
-   
-   void undeployBroadcastGroup(String name) throws Exception;
-   
-   void undeployDiscoveryGroup(String name) throws Exception;
-   
-   void undeployMessageFlow(String name) throws Exception;
 }

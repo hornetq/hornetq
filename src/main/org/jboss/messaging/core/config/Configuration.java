@@ -24,6 +24,7 @@ package org.jboss.messaging.core.config;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
@@ -86,10 +87,14 @@ public interface Configuration extends Serializable
    Set<TransportConfiguration> getAcceptorConfigurations();
 
    void setAcceptorConfigurations(Set<TransportConfiguration> infos);
+   
+   Map<String, TransportConfiguration> getConnectorConfigurations();
 
-   TransportConfiguration getBackupConnectorConfiguration();
+   void setConnectorConfigurations(Map<String, TransportConfiguration> infos);   
 
-   void setBackupConnectorConfiguration(TransportConfiguration config);
+   String getBackupConnectorName();
+
+   void setBackupConnectorName(String name);
    
    Set<BroadcastGroupConfiguration> getBroadcastGroupConfigurations();
    
