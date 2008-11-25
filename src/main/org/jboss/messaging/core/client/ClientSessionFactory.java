@@ -89,6 +89,10 @@ public interface ClientSessionFactory
 
    void setAckBatchSize(int ackBatchSize);
 
+   boolean isPreAcknowledge();
+
+   void setPreAcknowledge(boolean preAcknowledge);
+   
    ConnectorFactory getConnectorFactory();
 
    Map<String, Object> getTransportParams();

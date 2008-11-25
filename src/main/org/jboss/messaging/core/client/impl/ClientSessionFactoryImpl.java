@@ -126,6 +126,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    private volatile boolean blockOnNonPersistentSend;
 
    private volatile boolean autoGroup;
+
+   private boolean preAcknowledge;
    
    private volatile int ackBatchSize;
 
@@ -208,6 +210,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
       this.autoGroup = autoGroup;
       this.maxConnections = maxConnections;
       this.ackBatchSize = ackBatchSize;
+      this.preAcknowledge = preAcknowledge;
    }
 
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
@@ -257,7 +260,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
                                       final boolean autoCommitSends,
                                       final boolean autoCommitAcks) throws MessagingException
    {
-      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, false, ackBatchSize);
+      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, ackBatchSize);
    }
 
    public ClientSession createSession(final boolean xa,
@@ -356,6 +359,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, F
    public void setAckBatchSize(int ackBatchSize)
    {
       this.ackBatchSize = ackBatchSize;
+   }
+
+   public boolean isPreAcknowledge()
+   {
+      return preAcknowledge;
+   }
+
+   public void setPreAcknowledge(boolean preAcknowledge)
+   {
+      this.preAcknowledge = preAcknowledge;
    }
 
    public ConnectorFactory getConnectorFactory()
