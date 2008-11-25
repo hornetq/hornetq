@@ -16,7 +16,7 @@
 
    <connection-factory name="ServerAckConnectionFactory">
       <connector-ref connector-name="netty"/>
-      <pre-commit-acks>true</pre-commit-acks>
+      <pre-acknowledge>true</pre-acknowledge>
       <entry name="ServerAckConnectionFactory"/>
       <entry name="/ServerAckConnectionFactory"/>
       <entry name="/ServerAckXAConnectionFactory"/>
@@ -64,7 +64,7 @@
       <!--If true, any connections will automatically set a unique group id (per producer) on every message sent-->
       <auto-group-id>true</auto-group-id>
       <!--if true then the server will pre ack any message before delivery to a consumer-->
-      <pre-commit-acks>false</pre-commit-acks>
+      <pre-acknowledge>false</pre-acknowledge>
    </connection-factory>
 
    <connection-factory name="TestInVMConnectionFactory">
