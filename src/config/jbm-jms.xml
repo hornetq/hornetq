@@ -1,12 +1,12 @@
 <deployment>
 
    <connection-factory name="testConnectionFactory">
-      <connector-link connector-name="netty"/>
+      <connector-ref connector-name="netty"/>
       <entry name="testConnectionFactory"/>
    </connection-factory>
 
    <connection-factory name="ConnectionFactory">
-      <connector-link connector-name="netty"/>
+      <connector-ref connector-name="netty"/>
       <entry name="ConnectionFactory"/>
       <entry name="/ConnectionFactory"/>
       <entry name="/XAConnectionFactory"/>
@@ -15,7 +15,7 @@
    </connection-factory>
 
    <connection-factory name="ServerAckConnectionFactory">
-      <connector-link connector-name="netty"/>
+      <connector-ref connector-name="netty"/>
       <pre-commit-acks>true</pre-commit-acks>
       <entry name="ServerAckConnectionFactory"/>
       <entry name="/ServerAckConnectionFactory"/>
@@ -24,9 +24,8 @@
       <entry name="java:/ServerAckXAConnectionFactory"/>
    </connection-factory>
 
-
    <connection-factory name="ClusteredConnectionFactory">
-      <connector-link connector-name="netty"/>
+      <connector-ref connector-name="netty"/>
       <backup-connector connector-name="netty-backup"/>
       <entry name="/ClusteredConnectionFactory"/>
       <entry name="/ClusteredXAConnectionFactory"/>
@@ -35,7 +34,7 @@
    </connection-factory>
 
    <connection-factory name="MyExampleConnectionFactory">
-      <connector-link connector-name="netty"/>
+      <connector-ref connector-name="netty"/>
       <ping-period>5000</ping-period>
       <call-timeout>30000</call-timeout>
       <entry name="/MyExampleConnectionFactory"/>
@@ -69,12 +68,12 @@
    </connection-factory>
 
    <connection-factory name="TestInVMConnectionFactory">
-      <connector-link connector-name="in-vm"/>
+      <connector-ref connector-name="in-vm"/>
       <entry name="/TestInVMConnectionFactory"/>
    </connection-factory>
 
    <connection-factory name="TestSSLConnectionFactory">
-      <connector-link connector-name="netty-ssl"/>
+      <connector-ref connector-name="netty-ssl"/>
       <entry name="/TestSSLConnectionFactory"/>
    </connection-factory>
 

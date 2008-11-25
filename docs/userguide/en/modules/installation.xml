@@ -114,7 +114,7 @@
          10:26:02,831 INFO @main [XmlDeployer] deploying guest
          10:26:02,991 INFO @main [FileDeploymentManager] Deploying org.jboss.messagin
          g.jms.server.impl.JMSServerDeployer@d6c07 with urlfile:/home/andy/projects/jB
-         ossMessaging/build/messaging-2.0.0.alpha1/config/jbm-jndi.xml
+         ossMessaging/build/messaging-2.0.0.alpha1/config/jbm-jms.xml
          10:26:03,005 INFO @main [XmlDeployer] deploying DLQ
          10:26:03,035 INFO @main [XmlDeployer] deploying ExpiryQueue
          10:26:03,038 INFO @main [XmlDeployer] deploying testQueue

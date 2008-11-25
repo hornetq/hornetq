@@ -69,7 +69,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String PRE_ACKNOWLEDGE_ELEMENT = "pre-acknowledge";
 
-   private static final String CONNECTOR_LINK_ELEMENT = "connector-link";
+   private static final String CONNECTOR_LINK_ELEMENT = "connector-ref";
 
    private static final String BACKUP_CONNECTOR_ELEMENT = "backup-connector";
 
@@ -350,7 +350,7 @@ public class JMSServerDeployer extends XmlDeployer
     */
    public String getConfigFileName()
    {
-      return "jbm-jndi.xml";
+      return "jbm-jms.xml";
    }
 
 }

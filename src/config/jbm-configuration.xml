@@ -11,6 +11,7 @@
       	<group-address>231.7.7.7</group-address>
       	<group-port>9876</group-port>
       	<broadcast-period>5000</broadcast-period>
+      	<connector-ref connector-name="netty"/>
       </broadcast-group>
       
       <discovery-group name="dg-group1">
@@ -32,9 +33,9 @@
       
       <message-flow name="example-static-connectors">
          <address>jmstopics.#</address>
-         <connector-link connector-name="connector1"/>
-         <connector-link connector-name="connector2"/>
-         <connector-link connector-name="connector3"/>
+         <connector-ref connector-name="connector1"/>
+         <connector-ref connector-name="connector2"/>
+         <connector-ref connector-name="connector3"/>
          <fanout>true</fanout>      
       </message-flow>
       

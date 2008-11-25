@@ -14,7 +14,7 @@
             <filename>queues.xml</filename>
          </listitem>
          <listitem>
-            <filename>jbm-jndi.xml</filename>
+            <filename>jbm-jms.xml</filename>
          </listitem>
          <listitem>
             <filename>jbm-standalone-beans.xml</filename>
@@ -471,13 +471,13 @@
       </itemizedlist>
    </section>
    <section id="configuration.jms">
-      <title>jbm-jndi.xml</title>
+      <title>jbm-jms.xml</title>
       <para>This configuration file is used to create destinations and Connection Factories and make them available in
          JNDI. Note that this is the only configuration file that exposes JMS functionality, the rest of the
          configuration is 100% JMS agnostic.
       </para>
       <para>
-         A typical jbm-jndi.xml config looks like:
+         A typical jbm-jms.xml config looks like:
       </para>
       <programlisting>
          <![CDATA[
@@ -883,7 +883,7 @@
             <para>The JMS Server Deployer</para>
             <para>The JMS Server Deployer takes care of deploying Destinations and Connection Factories into JNDi via
                the
-               file<literal>jbm-jndi.xml</literal>. This can be removed if no objects are needed in JNDI or if only core
+               file<literal>jbm-jms.xml</literal>. This can be removed if no objects are needed in JNDI or if only core
                messaging is being used.
             </para>
             <programlisting>

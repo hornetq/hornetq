@@ -155,9 +155,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          return;
       }
-
-      log.info("******** starting messaging server");
-      
+    
       /*
        * The following components are pluggable on the messaging server: Configuration, StorageManager, RemotingService,
        * SecurityManager and ManagementRegistration They must already be injected by the time the messaging server
@@ -303,8 +301,6 @@ public class MessagingServerImpl implements MessagingServer
 
          clusterManager.start();
       }
-      
-      log.info("connectors " + this.configuration.getConnectorConfigurations().size());
       
       log.info("Started messaging server");
 

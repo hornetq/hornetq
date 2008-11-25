@@ -68,8 +68,6 @@ public class FileConfiguration extends ConfigurationImpl
 
    public void start() throws Exception
    {
-      log.info("********* starting file configuration");
-      
       URL url = getClass().getClassLoader().getResource(configurationUrl);
       Reader reader = new InputStreamReader(url.openStream());
       String xml = XMLUtil.readerToString(reader);
@@ -138,8 +136,6 @@ public class FileConfiguration extends ConfigurationImpl
       
       NodeList connectorNodes = e.getElementsByTagName("connector");
       
-      log.info("There are " + connectorNodes + " connectorNodes");
-      
       for (int i = 0; i < connectorNodes.getLength(); i++)
       {
          Node connectorNode = connectorNodes.item(i);
@@ -161,8 +157,6 @@ public class FileConfiguration extends ConfigurationImpl
             continue;
          }
          
-         log.info("loaded connector " + connectorConfig.getName());
-
          connectorConfigs.put(connectorConfig.getName(), connectorConfig);
       }
 
@@ -253,8 +247,6 @@ public class FileConfiguration extends ConfigurationImpl
       wildcardRoutingEnabled = getBoolean(e, "wild-card-routing-enabled", wildcardRoutingEnabled);
 
       messageCounterEnabled = getBoolean(e, "message-counter-enabled", messageCounterEnabled);
-      
-      log.info("Done starting file configuration");
    }
 
    public String getConfigurationUrl()
@@ -417,7 +409,7 @@ public class FileConfiguration extends ConfigurationImpl
          {
             broadcastPeriod = parseLong(child);
          }
-         else if (child.getNodeName().equals("connector-link"))
+         else if (child.getNodeName().equals("connector-ref"))
          {
             String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
             
