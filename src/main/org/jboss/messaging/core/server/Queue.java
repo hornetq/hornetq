@@ -118,6 +118,10 @@ public interface Queue
          HierarchicalRepository<QueueSettings> queueSettingsRepository)
          throws Exception;
 
+   void expireMessages(final StorageManager storageManager,
+                                final PostOffice postOffice,
+                                final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+
    boolean sendMessageToDeadLetterAddress(long messageID, StorageManager storageManager,
          PostOffice postOffice,
          HierarchicalRepository<QueueSettings> queueSettingsRepository)

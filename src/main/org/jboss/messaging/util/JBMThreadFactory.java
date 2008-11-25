@@ -37,9 +37,16 @@ public class JBMThreadFactory implements ThreadFactory
 
    private final AtomicInteger threadCount = new AtomicInteger(0);
 
+   private final int threadPriority;
    public JBMThreadFactory(final String groupName)
    {
+      this(groupName, Thread.NORM_PRIORITY);
+   }
+
+   public JBMThreadFactory(String groupName, int priority)
+   {
       group = new ThreadGroup(groupName + "-" + System.identityHashCode(this));
+      threadPriority = priority;
    }
 
    public Thread newThread(final Runnable command)
@@ -51,7 +58,7 @@ public class JBMThreadFactory implements ThreadFactory
 
       // Don't want to prevent VM from exiting
       t.setDaemon(true);
-
+      t.setPriority(threadPriority);
       return t;
    }
 }

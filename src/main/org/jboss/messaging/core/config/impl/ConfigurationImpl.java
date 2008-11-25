@@ -103,6 +103,10 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_MAX_FORWARD_BATCH_TIME = -1;
 
+   public static final long DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD = 30000;
+
+   public static final int DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY = 3;
+
    // Attributes -----------------------------------------------------------------------------
 
    protected boolean clustered = DEFAULT_CLUSTERED;
@@ -122,6 +126,10 @@ public class ConfigurationImpl implements Configuration
    protected boolean jmxManagementEnabled = DEFAULT_JMX_MANAGEMENT_ENABLED;
 
    protected long connectionScanPeriod = DEFAULT_CONNECTION_SCAN_PERIOD;
+
+   protected long messageExpiryScanPeriod = DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD;
+
+   protected int messageExpiryThreadPriority = DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY;
 
    protected List<String> interceptorClassNames = new ArrayList<String>();
    
@@ -463,6 +471,26 @@ public class ConfigurationImpl implements Configuration
    public void setTransactionTimeoutScanPeriod(long period)
    {
       transactionTimeoutScanPeriod = period;
+   }
+
+   public long getMessageExpiryScanPeriod()
+   {
+      return messageExpiryScanPeriod;
+   }
+
+   public void setMessageExpiryScanPeriod(long messageExpiryScanPeriod)
+   {
+      this.messageExpiryScanPeriod = messageExpiryScanPeriod;
+   }
+
+   public int getMessageExpiryThreadPriority()
+   {
+      return messageExpiryThreadPriority;
+   }
+
+   public void setMessageExpiryThreadPriority(int messageExpiryThreadPriority)
+   {
+      this.messageExpiryThreadPriority = messageExpiryThreadPriority;
    }
 
    public boolean isSecurityEnabled()

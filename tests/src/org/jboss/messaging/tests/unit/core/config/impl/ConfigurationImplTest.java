@@ -72,6 +72,8 @@ public class ConfigurationImplTest extends TestCase
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MAX_AIO, conf.getJournalMaxAIO());
       assertEquals(ConfigurationImpl.DEFAULT_WILDCARD_ROUTING_ENABLED, conf.isWildcardRoutingEnabled());
       assertEquals(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT, conf.getTransactionTimeout());
+      assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD, conf.getMessageExpiryScanPeriod());
+      assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY, conf.getMessageExpiryThreadPriority());
       assertEquals(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD, conf.getTransactionTimeoutScanPeriod());
       assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS, conf.getManagementAddress());
    }
@@ -156,6 +158,15 @@ public class ConfigurationImplTest extends TestCase
          s = randomString();
          conf.setManagementAddress(new SimpleString(s));
          assertEquals(s, conf.getManagementAddress().toString());
+
+         i = randomInt();
+
+         conf.setMessageExpiryThreadPriority(i);
+         assertEquals(i, conf.getMessageExpiryThreadPriority());
+
+         l = randomLong();
+         conf.setMessageExpiryScanPeriod(l);
+         assertEquals(l, conf.getMessageExpiryScanPeriod());
       }
    }
    

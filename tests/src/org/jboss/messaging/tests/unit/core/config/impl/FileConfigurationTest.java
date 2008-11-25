@@ -59,6 +59,8 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(true, conf.isWildcardRoutingEnabled());
       assertEquals(98765, conf.getTransactionTimeout());
       assertEquals(56789, conf.getTransactionTimeoutScanPeriod());
+      assertEquals(10111213, conf.getMessageExpiryScanPeriod());
+      assertEquals(8, conf.getMessageExpiryThreadPriority());
       assertEquals(new SimpleString("Giraffe"), conf.getManagementAddress());
       assertEquals(2, conf.getInterceptorClassNames().size());
       assertTrue(conf.getInterceptorClassNames().contains("org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1"));

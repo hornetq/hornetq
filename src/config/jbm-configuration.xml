@@ -65,6 +65,11 @@
       <transaction-timeout>60000</transaction-timeout>
       <!--how often to scan for timedout transactions-->
       <transaction-timeout-scan-period>1000</transaction-timeout-scan-period>
+
+      <!-- how often do we scan the queues for expired messages-->
+      <message-expiry-scan-period>30000</message-expiry-scan-period>
+      <!-- the priority of the thread that expires th emessages (between 1 - 10 inclusive)-->
+      <message-expiry-thread-priority>3</message-expiry-thread-priority>
       
       <!-- Example interceptors 
       <remoting-interceptors>

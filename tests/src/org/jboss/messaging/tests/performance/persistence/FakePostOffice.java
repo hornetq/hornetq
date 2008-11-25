@@ -89,6 +89,12 @@ public class FakePostOffice implements PostOffice
       return null;
    }
 
+
+   public List<Queue> getQueues()
+   {
+      return null;
+   }
+
    public Map<SimpleString, List<Binding>> getMappings()
    {
       return null;

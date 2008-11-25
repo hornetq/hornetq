@@ -197,4 +197,12 @@ public interface Configuration extends Serializable
    long getTransactionTimeoutScanPeriod();
 
    void setTransactionTimeoutScanPeriod(long period);
+
+   long getMessageExpiryScanPeriod();
+
+   void setMessageExpiryScanPeriod(long messageExpiryScanPeriod);
+
+   int getMessageExpiryThreadPriority();
+
+   void setMessageExpiryThreadPriority(int messageExpiryThreadPriority);
 }

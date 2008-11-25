@@ -375,6 +375,21 @@ public class PostOfficeImpl implements PostOffice
       return queues;
    }
 
+   public List<Queue> getQueues()
+   {
+      Map<SimpleString, Binding> nameMap = addressManager.getBindings();
+
+      List<Queue> queues = new ArrayList<Queue>();
+
+      for (Binding binding : nameMap.values())
+      {
+         Queue queue = binding.getQueue();
+         queues.add(queue);
+      }
+
+      return queues;
+   }
+
    public synchronized SendLock getAddressLock(final SimpleString address)
    {
       SendLock lock = addressLocks.get(address);

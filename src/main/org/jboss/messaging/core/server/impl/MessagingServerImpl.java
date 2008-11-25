@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,6 +40,7 @@ import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
 import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
@@ -57,6 +59,7 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerSession;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.cluster.ClusterManager;
 import org.jboss.messaging.core.server.cluster.impl.ClusterManagerImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -135,6 +138,8 @@ public class MessagingServerImpl implements MessagingServer
    private ManagementService managementService;
 
    private ConnectionManager replicatingConnectionManager;
+
+   private ScheduledThreadPoolExecutor messageExpiryExecutor;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -243,6 +248,10 @@ public class MessagingServerImpl implements MessagingServer
                                                           this);
 
       postOffice.start();
+      MessageExpiryRunner messageExpiryRunner = new MessageExpiryRunner(postOffice);
+      messageExpiryRunner.setPriority(3);
+      messageExpiryExecutor = new ScheduledThreadPoolExecutor(1, new JBMThreadFactory("JBM-scheduled-threads", configuration.getMessageExpiryThreadPriority()) );
+      messageExpiryExecutor.scheduleAtFixedRate(messageExpiryRunner, configuration.getMessageExpiryScanPeriod(), configuration.getMessageExpiryScanPeriod(), TimeUnit.MILLISECONDS);
       resourceManager.start();
 
       // FIXME the destination corresponding to the notification address is always created
@@ -336,6 +345,7 @@ public class MessagingServerImpl implements MessagingServer
       securityStore = null;
       resourceManager.stop();
       resourceManager = null;
+      messageExpiryExecutor.shutdown();
       postOffice.stop();
       postOffice = null;
       securityRepository = null;
@@ -722,6 +732,32 @@ public class MessagingServerImpl implements MessagingServer
       public void run()
       {
          queue.activateNow(asyncDeliveryPool);
+      }
+   }
+
+   private class MessageExpiryRunner extends Thread
+   {
+      private final PostOffice postOffice;
+
+      public MessageExpiryRunner(PostOffice postOffice)
+      {
+         this.postOffice = postOffice;
+      }
+
+      public void run()
+      {
+         List<Queue> queues = postOffice.getQueues();
+         for (Queue queue : queues)
+         {
+            try
+            {
+               queue.expireMessages(storageManager, postOffice, queueSettingsRepository);
+            }
+            catch (Exception e)
+            {
+               log.error("failed to expire messages for queue " + queue.getName(), e);
+            }
+         }
       }
    }
 }

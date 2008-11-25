@@ -98,6 +98,10 @@ public class FileConfiguration extends ConfigurationImpl
 
       transactionTimeoutScanPeriod = getLong(e, "transaction-timeout-scan-period", transactionTimeoutScanPeriod);
 
+      messageExpiryScanPeriod = getLong(e, "message-expiry-scan-period", messageExpiryScanPeriod);
+
+      messageExpiryThreadPriority = getInteger(e, "message-expiry-thread-priority", messageExpiryThreadPriority);
+
       managementAddress = new SimpleString(getString(e, "management-address", managementAddress.toString()));
 
       managementNotificationAddress = new SimpleString(getString(e, "management-notification-address", managementNotificationAddress.toString()));

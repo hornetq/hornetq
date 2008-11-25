@@ -78,6 +78,8 @@ public interface PostOffice extends MessagingComponent
    Set<SimpleString> listAllDestinations();
    
    List<Queue> activate();
+
+   List<Queue> getQueues();
    
    PagingManager getPagingManager();
    

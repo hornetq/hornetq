@@ -450,7 +450,7 @@ public class QueueImpl implements Queue
       return deleted;
    }
 
-   public boolean expireMessage(final long messageID,
+   public synchronized boolean expireMessage(final long messageID,
                                 final StorageManager storageManager,
                                 final PostOffice postOffice,
                                 final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
@@ -469,6 +469,27 @@ public class QueueImpl implements Queue
          }
       }
       return false;
+   }
+
+   /**
+    * todo- at present we need the whole method syncronized until the iterator is fail safe.
+    */
+   public synchronized void expireMessages(final StorageManager storageManager,
+                                final PostOffice postOffice,
+                                final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   {
+      Iterator<MessageReference> iter = messageReferences.iterator();
+
+      while (iter.hasNext())
+      {
+         MessageReference ref = iter.next();
+         if (ref.getMessage().isExpired())
+         {
+            deliveringCount.incrementAndGet();
+            ref.expire(storageManager, postOffice, queueSettingsRepository);
+            iter.remove();
+         }
+      }
    }
 
    public boolean sendMessageToDeadLetterAddress(final long messageID,
