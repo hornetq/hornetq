@@ -12,11 +12,12 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Collection;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,20 +28,15 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
-import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
-import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.paging.PagingManager;
-import org.jboss.messaging.core.paging.PagingStoreFactory;
-import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
 import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
+import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
@@ -59,7 +55,6 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerSession;
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.cluster.ClusterManager;
 import org.jboss.messaging.core.server.cluster.impl.ClusterManagerImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -593,6 +588,21 @@ public class MessagingServerImpl implements MessagingServer
    public void removeSession(final String name) throws Exception
    {
       sessions.remove(name);
+   }
+   
+   public List<ServerSession> getSessions(final String connectionID)
+   {
+      Set<Entry<String, ServerSession>> sessionEntries = sessions.entrySet();
+      List<ServerSession> matchingSessions = new ArrayList<ServerSession>();
+      for (Entry<String, ServerSession> sessionEntry : sessionEntries)
+      {
+         ServerSession serverSession = sessionEntry.getValue();
+         if (serverSession.getConnectionID().toString().equals(connectionID))
+         {
+            matchingSessions.add(serverSession);
+         }
+      }
+      return matchingSessions;
    }
 
    public RemotingConnection getReplicatingConnection()

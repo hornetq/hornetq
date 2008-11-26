@@ -234,6 +234,16 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
       return server.closeConnectionsForAddress(ipAddress);
    }
 
+   public String[] listConnectionIDs()
+   {
+      return server.listConnectionIDs();
+   }
+
+   public String[] listSessions(final String connectionID)
+   {
+      return server.listSessions(connectionID);
+   }
+
    // StandardMBean overrides
    // ---------------------------------------------------
 

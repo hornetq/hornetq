@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.management;
 
 import static javax.management.MBeanOperationInfo.ACTION;
+import static javax.management.MBeanOperationInfo.INFO;
 
 import java.util.List;
 import java.util.Map;
@@ -150,9 +151,19 @@ public interface MessagingServerControlMBean
    @Operation(desc = "Rollback a prepared transaction")
    boolean rollbackPreparedTransaction(@Parameter(desc = "the Base64 representation of a transaction", name = "transactionAsBase64") String transactionAsBase64) throws Exception;
 
+   @Operation(desc = "List the client addresses", impact = INFO)
    String[] listRemoteAddresses();
 
-   String[] listRemoteAddresses(String ipAddress);
+   @Operation(desc = "List the client addresses which match the given IP Address", impact = INFO)
+   String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress);
 
-   boolean closeConnectionsForAddress(String ipAddress);
+   @Operation(desc = "Closes all the connections for the given IP Address", impact = INFO)
+   boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress);
+
+   @Operation(desc = "List all the connection IDs", impact = INFO)
+   String[] listConnectionIDs();
+
+   @Operation(desc = "List the sessions for the given connectionID", impact = INFO)
+   String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID);
+   
 }

@@ -59,6 +59,8 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
  */
 public interface ServerSession
 {
+   String getName();
+
    long getID();
 
    String getUsername();
@@ -66,6 +68,8 @@ public interface ServerSession
    String getPassword();
    
    int getMinLargeMessageSize();
+
+   Object getConnectionID();
 
    void removeConsumer(ServerConsumer consumer) throws Exception;
 
@@ -140,4 +144,5 @@ public interface ServerSession
    int transferConnection(RemotingConnection newConnection, int lastReceivedCommandID);
    
    Channel getChannel();
+
 }

@@ -45,6 +45,7 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
@@ -58,6 +59,7 @@ import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.server.impl.ServerSessionImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -602,12 +604,36 @@ public class MessagingServerControl extends StandardMBean implements MessagingSe
          String remoteAddress = connection.getRemoteAddress();
          if (remoteAddress.contains(ipAddress))
          {
-            connection.destroy();
+            connection.fail(new MessagingException(MessagingException.INTERNAL_ERROR, "connections for " + ipAddress + " closed by management"));
             closed = true;
          }
       }
 
       return closed;
+   }
+   
+   public String[] listConnectionIDs()
+   {
+      Set<RemotingConnection> connections = remotingService.getConnections();
+      String[] connectionIDs = new String[connections.size()];
+      int i = 0;
+      for (RemotingConnection connection : connections)
+      {
+         connectionIDs[i++] = connection.getID().toString();
+      }
+      return connectionIDs;
+   }
+   
+   public String[] listSessions(final String connectionID)
+   {
+      List<ServerSession> sessions = server.getSessions(connectionID);
+      String[] sessionIDs = new String[sessions.size()];
+      int i = 0;
+      for (ServerSession serverSession : sessions)
+      {
+         sessionIDs[i++] = serverSession.getName();
+      }
+      return sessionIDs;
    }
 
    // NotificationEmitter implementation ----------------------------

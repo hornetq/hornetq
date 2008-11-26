@@ -142,12 +142,123 @@ public class JMSServerControlTest extends TestCase
       doCloseConnectionsForUnknownAddress(MinaAcceptorFactory.class.getName(), MinaConnectorFactory.class.getName());
    }
    
+   public void testListSessionsForInVM() throws Exception
+   {
+      doListSessions(InVMAcceptorFactory.class.getName(), InVMConnectorFactory.class.getName());
+   }
+
+   public void testListSessionsForNetty() throws Exception
+   {
+      doListSessions(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
+   }
+
+   public void testListSessionsForMina() throws Exception
+   {
+      doListSessions(MinaAcceptorFactory.class.getName(), MinaConnectorFactory.class.getName());
+   }
+
+   public void testListConnectionIDsForInVM() throws Exception
+   {
+      doListConnectionIDs(InVMAcceptorFactory.class.getName(), InVMConnectorFactory.class.getName());
+   }
+
+   public void testListConnectionIDsForNetty() throws Exception
+   {
+      doListConnectionIDs(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
+   }
+
+   public void testListConnectionIDsForMina() throws Exception
+   {
+      doListConnectionIDs(MinaAcceptorFactory.class.getName(), MinaConnectorFactory.class.getName());
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
 
+   private void doListConnectionIDs(String acceptorFactory, String connectorFactory) throws Exception
+   {
+      MessagingService service = null;
+      try
+      {
+         service = startMessagingService(acceptorFactory);
+
+         JMSServerControlMBean control = createJMSServerControl();
+         
+         assertEquals(0, control.listConnectionIDs().length);
+
+         Connection connection = JMSUtil.createConnection(connectorFactory);
+         connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         String[] connectionIDs = control.listConnectionIDs();         
+         assertEquals(1, connectionIDs.length);
+
+         Connection connection2 = JMSUtil.createConnection(connectorFactory);
+         connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         assertEquals(2, control.listConnectionIDs().length);
+
+         connection.close();
+         Thread.sleep(500);
+         
+         assertEquals(1, control.listConnectionIDs().length);
+
+         connection2.close();
+         Thread.sleep(500);
+         
+         assertEquals(0, control.listConnectionIDs().length);
+      }
+      finally
+      {
+         if (service != null)
+         {
+            service.stop();
+         }
+      }
+   }
+   
+   private void doListSessions(String acceptorFactory, String connectorFactory) throws Exception
+   {
+      MessagingService service = null;
+      try
+      {
+         service = startMessagingService(acceptorFactory);
+
+         JMSServerControlMBean control = createJMSServerControl();
+         
+         assertEquals(0, control.listConnectionIDs().length);
+
+         Connection connection = JMSUtil.createConnection(connectorFactory);
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         String[] connectionIDs = control.listConnectionIDs();         
+         assertEquals(1, connectionIDs.length);
+         String connectionID = connectionIDs[0];
+
+         String[] sessions = control.listSessions(connectionID);
+         assertEquals(1, sessions.length);
+
+         session.close();
+
+         sessions = control.listSessions(connectionID);
+         assertEquals(0, sessions.length);
+
+         connection.close();
+         
+         Thread.sleep(500);
+         
+         assertEquals(0, control.listConnectionIDs().length);
+      }
+      finally
+      {
+         if (service != null)
+         {
+            service.stop();
+         }
+      }
+   }
+   
    private void doListClientConnections(String acceptorFactory, String connectorFactory) throws Exception
    {
       MessagingService service = null;
@@ -196,11 +307,14 @@ public class JMSServerControlTest extends TestCase
 
          JMSServerControlMBean control = createJMSServerControl();
 
+         assertEquals(0, service.getServer().getConnectionCount());
          assertEquals(0, control.listRemoteAddresses().length);
 
          Connection connection = JMSUtil.createConnection(connectorFactory);
          // the connection won't connect to the server until a session is created
          connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         assertEquals(1, service.getServer().getConnectionCount());
 
          String[] remoteAddresses = control.listRemoteAddresses();
          assertEquals(1, remoteAddresses.length);
@@ -217,9 +331,10 @@ public class JMSServerControlTest extends TestCase
 
          assertTrue(control.closeConnectionsForAddress(remoteAddress));
 
-         boolean gotException = exceptionLatch.await(500, TimeUnit.MILLISECONDS);
+         boolean gotException = exceptionLatch.await(1, TimeUnit.SECONDS);
          assertTrue("did not received the expected JMSException", gotException);
          assertEquals(0, control.listRemoteAddresses().length);
+         assertEquals(0, service.getServer().getConnectionCount());
       }
       finally
       {
@@ -242,12 +357,14 @@ public class JMSServerControlTest extends TestCase
 
          JMSServerControlMBean control = createJMSServerControl();
 
+         assertEquals(0, service.getServer().getConnectionCount());
          assertEquals(0, control.listRemoteAddresses().length);
 
          Connection connection = JMSUtil.createConnection(connectorFactory);
          // the connection won't connect to the server until a session is created
          connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
+         assertEquals(1, service.getServer().getConnectionCount());
          String[] remoteAddresses = control.listRemoteAddresses();
          assertEquals(1, remoteAddresses.length);
 
@@ -262,7 +379,12 @@ public class JMSServerControlTest extends TestCase
 
          assertFalse(control.closeConnectionsForAddress(unknownAddress));
 
+         boolean gotException = exceptionLatch.await(500, TimeUnit.MILLISECONDS);
+         assertFalse(gotException);
+
          assertEquals(1, control.listRemoteAddresses().length);
+         assertEquals(1, service.getServer().getConnectionCount());
+
       }
       finally
       {

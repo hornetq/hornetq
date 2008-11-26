@@ -340,6 +340,16 @@ public class JMSServerManagerImpl implements JMSServerManager
    {
       return messagingServer.closeConnectionsForAddress(ipAddress);
    }
+   
+   public String[] listConnectionIDs()
+   {
+      return messagingServer.listConnectionIDs();
+   }
+   
+   public String[] listSessions(final String connectionID)
+   {
+      return messagingServer.listSessions(connectionID);
+   }
 
    // Public --------------------------------------------------------
 

@@ -12,6 +12,7 @@
 
 package org.jboss.messaging.core.server;
 
+import java.util.List;
 import java.util.Set;
 
 import org.jboss.messaging.core.config.Configuration;
@@ -107,4 +108,6 @@ public interface MessagingServer extends MessagingComponent
    RemotingConnection getReplicatingConnection();
 
    ResourceManager getResourceManager();
+
+   List<ServerSession> getSessions(String connectionID);
 }

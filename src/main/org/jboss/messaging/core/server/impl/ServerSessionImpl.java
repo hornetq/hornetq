@@ -293,6 +293,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       return id;
    }
 
+   public String getName()
+   {
+      return name;
+   }
+
+   public Object getConnectionID()
+   {
+      return remotingConnection.getID();
+   }
+
    public void removeConsumer(final ServerConsumer consumer) throws Exception
    {
       if (consumers.remove(consumer.getID()) == null)

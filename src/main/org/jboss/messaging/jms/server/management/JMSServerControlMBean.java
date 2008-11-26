@@ -113,7 +113,15 @@ public interface JMSServerControlMBean
    String[] listRemoteAddresses();
    
    @Operation(desc = "List the client addresses which match the given IP Address", impact = INFO)
-   String[] listRemoteAddresses(String ipAddress);
+   String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress);
 
-   boolean closeConnectionsForAddress(String ipAddress);
+   @Operation(desc = "Closes all the connections for the given IP Address", impact = INFO)
+   boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress);
+   
+   @Operation(desc = "List all the connection IDs", impact = INFO)
+   String[] listConnectionIDs();
+
+   @Operation(desc = "List the sessions for the given connectionID", impact = INFO)
+   String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID);
+
 }

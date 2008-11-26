@@ -163,4 +163,9 @@ public interface JMSServerManager
    String[] listRemoteAddresses(String ipAddress);
 
    boolean closeConnectionsForAddress(String ipAddress);
+
+   String[] listConnectionIDs();
+
+   String[] listSessions(String connectionID);
+
 }
