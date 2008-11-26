@@ -103,6 +103,9 @@
          <parameter>
             <inject bean="DeploymentManager"/>
          </parameter>
+          <parameter>
+            <inject bean="Configuration"/>
+         </parameter>
       </constructor>
       <property name="jmsServerManager">
          <inject bean="JMSServerManager"/>
