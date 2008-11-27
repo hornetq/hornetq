@@ -31,6 +31,7 @@ import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomXid;
 
@@ -470,7 +471,7 @@ public class MessagingServerControlTest extends TestCase
       expect(queue.getName()).andReturn(new SimpleString(name));
       expect(binding.getQueue()).andReturn(queue);
       expect(postOffice.getBinding(new SimpleString(name))).andReturn(binding);
-      queue.deleteAllReferences(storageManager);
+      expect(queue.deleteAllReferences(storageManager)).andReturn(randomPositiveInt());
       expect(postOffice.removeBinding(new SimpleString(name))).andReturn(
             binding);
       replayMockedAttributes();

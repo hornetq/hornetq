@@ -22,6 +22,10 @@
 
 package org.jboss.messaging.jms.server.management;
 
+import static javax.management.MBeanOperationInfo.ACTION;
+
+import org.jboss.messaging.core.management.Operation;
+
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
@@ -44,6 +48,7 @@ public interface DestinationControlMBean
 
    // Operations ----------------------------------------------------
 
-   public void removeAllMessages() throws Exception;
+   @Operation(desc = "Remove all the messages from the destination", impact = ACTION)
+   int removeAllMessages() throws Exception;
 
 }

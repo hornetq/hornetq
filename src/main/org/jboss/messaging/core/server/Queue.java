@@ -28,7 +28,6 @@ import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -108,15 +107,26 @@ public interface Queue
    
    MessageReference getReference(long id);
    
-   void deleteAllReferences(StorageManager storageManager) throws Exception;
+   int deleteAllReferences(StorageManager storageManager) throws Exception;
 
    boolean deleteReference(long messageID, StorageManager storageManager)
+         throws Exception;
+
+   int deleteMatchingReferences(Filter filter, StorageManager storageManager)
          throws Exception;
 
    boolean expireMessage(long messageID, StorageManager storageManager,
          PostOffice postOffice,
          HierarchicalRepository<QueueSettings> queueSettingsRepository)
          throws Exception;
+
+   /**
+    * Flagged all the messages in the queue which matches the filter as <em>expired</em>
+    */
+   int expireMessages(Filter filter,
+                      StorageManager storageManager,
+                      PostOffice postOffice,
+                      HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
 
    void expireMessages(final StorageManager storageManager,
                                 final PostOffice postOffice,
@@ -132,8 +142,10 @@ public interface Queue
          HierarchicalRepository<QueueSettings> queueSettingsRepository)
          throws Exception;
 
-   boolean moveMessage(long messageID, Binding toBinding,
+   boolean moveMessage(long messageID, SimpleString toAddress,
          StorageManager storageManager, PostOffice postOffice) throws Exception;
+
+   int moveMessages(Filter filter, SimpleString toAddress, StorageManager storageManager, PostOffice postOffice) throws Exception;
 
    void setBackup();
    

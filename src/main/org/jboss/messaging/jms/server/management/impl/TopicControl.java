@@ -207,16 +207,19 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
       return JMSMessageInfo.toTabularData(infos);
    }
 
-   public void removeAllMessages() throws Exception
+   public int removeAllMessages() throws Exception
    {
+      int count = 0;
       List<Binding> bindings = postOffice.getBindingsForAddress(managedTopic
             .getSimpleAddress());
 
       for (Binding binding : bindings)
       {
          Queue queue = binding.getQueue();
-         queue.deleteAllReferences(storageManager);
+         count += queue.deleteAllReferences(storageManager);
       }
+      
+      return count;
    }
    
    public void dropDurableSubscription(String clientID, String subscriptionName) throws Exception

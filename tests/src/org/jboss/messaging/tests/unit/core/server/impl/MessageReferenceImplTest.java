@@ -337,7 +337,7 @@ public class MessageReferenceImplTest extends UnitTestCase
 
       EasyMock.replay(queue, toBinding, toQueue, postOffice, persistenceManager, serverMessage, copyMessage, pm);
       
-      messageReference.move(toBinding, persistenceManager, postOffice);
+      messageReference.move(toAddress, persistenceManager, postOffice);
       
       EasyMock.verify(queue, toBinding, toQueue, postOffice, persistenceManager, serverMessage, copyMessage, pm);
    }

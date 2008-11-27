@@ -23,6 +23,7 @@
 package org.jboss.messaging.tests.unit.core.management.impl;
 
 import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.isA;
@@ -32,6 +33,7 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
 import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
@@ -318,12 +320,13 @@ public class QueueControlTest extends TestCase
 
    public void testRemoveAllMessages() throws Exception
    {
-      queue.deleteAllReferences(storageManager);
+      int messageRemoved = randomPositiveInt();
+      expect(queue.deleteAllReferences(storageManager)).andReturn(messageRemoved);
 
       replayMockedAttributes();
 
       QueueControlMBean control = createControl();
-      control.removeAllMessages();
+      assertEquals(messageRemoved,control.removeAllMessages());
 
       verifyMockedAttributes();
    }
@@ -458,46 +461,27 @@ public class QueueControlTest extends TestCase
 
    public void testExpireMessagesWithFilter() throws Exception
    {
-      long messageID_1 = randomLong();
-      long messageID_2 = randomLong();
+      int expiredMessagesCount = randomPositiveInt();
 
-      List<MessageReference> refs = new ArrayList<MessageReference>();
-      MessageReference ref_1 = createMock(MessageReference.class);
-      ServerMessage message_1 = createMock(ServerMessage.class);
-      expect(message_1.getMessageID()).andStubReturn(messageID_1);
-      expect(ref_1.getMessage()).andReturn(message_1);
-      MessageReference ref_2 = createMock(MessageReference.class);
-      ServerMessage message_2 = createMock(ServerMessage.class);
-      expect(message_2.getMessageID()).andStubReturn(messageID_2);
-      expect(ref_2.getMessage()).andReturn(message_2);
-      refs.add(ref_1);
-      refs.add(ref_2);
-      expect(queue.list(isA(Filter.class))).andReturn(refs);
-      expect(
-            queue.expireMessage(messageID_1, storageManager, postOffice,
-                  repository)).andReturn(true);
-      expect(
-            queue.expireMessage(messageID_2, storageManager, postOffice,
-                  repository)).andReturn(true);
-
+      expect(queue.expireMessages(isA(Filter.class), eq(storageManager), eq(postOffice), eq(repository))).andReturn(expiredMessagesCount);
       replayMockedAttributes();
-      replay(ref_1, ref_2, message_1, message_2);
 
       QueueControlMBean control = createControl();
-      assertEquals(2, control.expireMessages("foo = true"));
+      assertEquals(expiredMessagesCount, control.expireMessages("foo = true"));
 
       verifyMockedAttributes();
-      verify(ref_1, ref_2, message_1, message_2);
    }
 
    public void testMoveMessage() throws Exception
    {
       long messageID = randomLong();
       SimpleString otherQueueName = randomSimpleString();
+      SimpleString otherAddress = randomSimpleString();
       Binding otherBinding = createMock(Binding.class);
+      expect(otherBinding.getAddress()).andReturn(otherAddress);
       expect(postOffice.getBinding(otherQueueName)).andReturn(otherBinding);
       expect(
-            queue.moveMessage(messageID, otherBinding, storageManager,
+            queue.moveMessage(messageID, otherAddress, storageManager,
                   postOffice)).andReturn(true);
 
       replayMockedAttributes();
@@ -534,10 +518,12 @@ public class QueueControlTest extends TestCase
    {
       long messageID = randomLong();
       SimpleString otherQueueName = randomSimpleString();
+      SimpleString otherAddress = randomSimpleString();
       Binding otherBinding = createMock(Binding.class);
+      expect(otherBinding.getAddress()).andReturn(otherAddress);
       expect(postOffice.getBinding(otherQueueName)).andReturn(otherBinding);
       expect(
-            queue.moveMessage(messageID, otherBinding, storageManager,
+            queue.moveMessage(messageID, otherAddress, storageManager,
                   postOffice)).andReturn(false);
 
       replayMockedAttributes();

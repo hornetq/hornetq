@@ -74,8 +74,7 @@ public class RandomUtil
    
    public static int randomPositiveInt()
    {
-      final int value = randomInt();
-      return value >= 0 ? value : value * -1;
+      return Math.abs(randomInt());
    }
    
    public static short randomShort()

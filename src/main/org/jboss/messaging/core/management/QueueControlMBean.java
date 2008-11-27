@@ -82,7 +82,7 @@ public interface QueueControlMBean
          throws Exception;
 
    @Operation(desc = "Remove all the messages from the queue", impact = ACTION)
-   void removeAllMessages() throws Exception;
+   int removeAllMessages() throws Exception;
 
    @Operation(desc = "Remove the message corresponding to the given messageID", impact = ACTION)
    boolean removeMessage(

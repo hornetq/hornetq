@@ -36,6 +36,7 @@ import javax.management.openmbean.TabularData;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.DayCounterInfo;
 import org.jboss.messaging.core.management.MessageCounterInfo;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
@@ -50,7 +51,6 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
-import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossMessage;
@@ -84,6 +84,12 @@ public class JMSQueueControl extends StandardMBean implements
 
    // Static --------------------------------------------------------
 
+   public static Filter createFilterFromJMSSelector(final String selectorStr) throws MessagingException
+   {
+      String filterStr = (selectorStr == null) ? null : SelectorTranslator.convertToJBMFilterString(selectorStr);
+      return FilterImpl.createFilter(filterStr);
+   }
+   
    private static Filter createFilterForJMSMessageID(String jmsMessageID)
          throws Exception
    {
@@ -227,25 +233,17 @@ public class JMSQueueControl extends StandardMBean implements
    {
       try
       {
-         Filter filter = filterStr == null ? null : new FilterImpl(
-               new SimpleString(SelectorTranslator
-                     .convertToJBMFilterString(filterStr)));
-
-         List<MessageReference> refs = coreQueue.list(filter);
-         for (MessageReference ref : refs)
-         {
-            coreQueue.deleteReference(ref.getMessage().getMessageID(), storageManager);
-         }
-         return refs.size();
+         Filter filter = createFilterFromJMSSelector(filterStr);
+         return coreQueue.deleteMatchingReferences(filter, storageManager);
       } catch (MessagingException e)
       {
          throw new IllegalStateException(e.getMessage());
       }
    }
    
-   public void removeAllMessages() throws Exception
+   public int removeAllMessages() throws Exception
    {
-      coreQueue.deleteAllReferences(storageManager);
+      return coreQueue.deleteAllReferences(storageManager);
    }
 
    public TabularData listAllMessages() throws Exception
@@ -257,9 +255,7 @@ public class JMSQueueControl extends StandardMBean implements
    {
       try
       {
-         Filter filter = filterStr == null ? null : new FilterImpl(
-               new SimpleString(SelectorTranslator
-                     .convertToJBMFilterString(filterStr)));
+         Filter filter = createFilterFromJMSSelector(filterStr);
 
          List<MessageReference> messageRefs = coreQueue.list(filter);
          List<JMSMessageInfo> infos = new ArrayList<JMSMessageInfo>(messageRefs
@@ -294,9 +290,7 @@ public class JMSQueueControl extends StandardMBean implements
    {
       try
       {
-         Filter filter = filterStr == null ? null : new FilterImpl(
-               new SimpleString(SelectorTranslator
-                     .convertToJBMFilterString(filterStr)));
+         Filter filter = createFilterFromJMSSelector(filterStr);
 
          List<MessageReference> refs = coreQueue.list(filter);
          for (MessageReference ref : refs)
@@ -354,21 +348,20 @@ public class JMSQueueControl extends StandardMBean implements
                + otherQueueName);
       }
 
-      return coreQueue.moveMessage(messageID, binding, storageManager, postOffice);
+      return coreQueue.moveMessage(messageID, binding.getAddress(), storageManager, postOffice);
    }
    
    public int moveMatchingMessages(String filterStr, String otherQueueName) throws Exception
    {
-      Filter filter = filterStr == null ? null : new FilterImpl(new SimpleString(filterStr));
-      List<MessageReference> refs = coreQueue.list(filter);
-      synchronized (coreQueue)
+      Binding otherBinding = postOffice.getBinding(new SimpleString(otherQueueName));
+      if (otherBinding == null)
       {
-         for (MessageReference ref : refs)
-         {
-            moveMessage(ref.getMessage().getMessageID(), otherQueueName);
-         }
-         return refs.size();
+         throw new IllegalArgumentException("No queue found for "
+               + otherQueueName);
       }
+
+      Filter filter = createFilterFromJMSSelector(filterStr);
+      return coreQueue.moveMessages(filter, otherBinding.getAddress(), storageManager, postOffice);
    }
    
    public int moveAllMessages(String otherQueueName) throws Exception

@@ -31,6 +31,7 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
 import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
@@ -56,6 +57,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.server.management.impl.JMSQueueControl;
+import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -301,12 +303,13 @@ public class JMSQueueControlTest extends TestCase
 
    public void testRemoveAllMessages() throws Exception
    {
-      coreQueue.deleteAllReferences(storageManager);
+      int removedMessagesCount = randomPositiveInt();
+     expect(coreQueue.deleteAllReferences(storageManager)).andReturn(removedMessagesCount);
 
       replayMockedAttributes();
 
       JMSQueueControl control = createControl();
-      control.removeAllMessages();
+      assertEquals(removedMessagesCount, control.removeAllMessages());
 
       verifyMockedAttributes();
    }

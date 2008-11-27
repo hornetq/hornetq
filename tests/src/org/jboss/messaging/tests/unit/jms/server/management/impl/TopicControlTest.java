@@ -27,6 +27,7 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
+import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.impl.TopicControl;
+import org.jboss.messaging.tests.util.RandomUtil;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -244,6 +246,8 @@ public class TopicControlTest extends TestCase
    {
       String jndiBinding = randomString();
       String name = randomString();
+      int removedMessagesFromQueue1 = randomPositiveInt();
+      int removedMessagesFromQueue2 = randomPositiveInt();
 
       JBossTopic topic = new JBossTopic(name);
       PostOffice postOffice = createMock(PostOffice.class);
@@ -262,15 +266,15 @@ public class TopicControlTest extends TestCase
       bindings.add(bindingForQueue_2);
       expect(postOffice.getBindingsForAddress(topic.getSimpleAddress()))
             .andStubReturn(bindings);
-      queue_1.deleteAllReferences(storageManager);
-      queue_2.deleteAllReferences(storageManager);
+      expect(queue_1.deleteAllReferences(storageManager)).andReturn(removedMessagesFromQueue1);
+      expect(queue_2.deleteAllReferences(storageManager)).andReturn(removedMessagesFromQueue2);
 
       replay(postOffice, storageManager, bindingforQueue_1, queue_1,
             bindingForQueue_2, queue_2);
 
       TopicControl control = new TopicControl(topic, jndiBinding, postOffice,
             storageManager);
-      control.removeAllMessages();
+      assertEquals(removedMessagesFromQueue1 + removedMessagesFromQueue2, control.removeAllMessages());
 
       verify(postOffice, storageManager, bindingforQueue_1, queue_1,
             bindingForQueue_2, queue_2);

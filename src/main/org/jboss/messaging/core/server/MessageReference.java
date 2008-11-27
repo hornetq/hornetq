@@ -23,10 +23,11 @@
 package org.jboss.messaging.core.server;
 
 import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A reference to a message.
@@ -71,9 +72,15 @@ public interface MessageReference
    
    void expire(StorageManager storageManager, PostOffice postOffice,
          HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
-   
-   void move(Binding otherBinding, StorageManager persistenceManager, PostOffice postOffice) throws Exception;
 
+   void expire(Transaction tx,
+               StorageManager storageManager,
+               PostOffice postOffice,
+               HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+
+   void move(SimpleString toAddress, StorageManager persistenceManager, PostOffice postOffice) throws Exception;
+
+   void move(SimpleString toAddress, Transaction tx, StorageManager persistenceManager, boolean expiry) throws Exception;
 
 }
 

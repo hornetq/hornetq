@@ -220,10 +220,49 @@ public class MessageReferenceImpl implements MessageReference
       }
 
    }
-
-   public void move(final Binding otherBinding, final StorageManager persistenceManager, final PostOffice postOffice) throws Exception
+   
+   public void expire(final Transaction tx,
+                      final StorageManager storageManager,
+                      final PostOffice postOffice,
+                      final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
-      move(otherBinding, persistenceManager, postOffice, false);
+      SimpleString expiryAddress = queueSettingsRepository.getMatch(queue.getName().toString()).getExpiryAddress();
+
+      if (expiryAddress != null)
+      {
+         List<Binding> bindingList = postOffice.getBindingsForAddress(expiryAddress);
+         
+         if (bindingList.isEmpty())
+         {
+            log.warn("Message has expired. No bindings for Expiry Address " + expiryAddress + " so dropping it");
+         }
+         else
+         {
+            move(expiryAddress, tx, storageManager, true);
+         }
+      }
+      else
+      {
+         log.warn("Message has expired. No expiry queue configured for queue " + queue.getName() + " so dropping it");
+
+         tx.addAcknowledgement(this);
+      }
+   }
+
+   public void move(final SimpleString toAddress, final StorageManager persistenceManager, final PostOffice postOffice) throws Exception
+   {
+      move(toAddress, persistenceManager, postOffice, false);
+   }
+   
+   public void move(final SimpleString toAddress, final Transaction tx, final StorageManager persistenceManager, final boolean expiry) throws Exception
+   {
+      ServerMessage copyMessage = makeCopy(expiry, persistenceManager);
+
+      copyMessage.setDestination(toAddress);
+
+      tx.addMessage(copyMessage);
+
+      tx.addAcknowledgement(this);
    }
 
    // Public --------------------------------------------------------
@@ -240,24 +279,6 @@ public class MessageReferenceImpl implements MessageReference
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   private void move(final Binding otherBinding,
-                     final StorageManager persistenceManager,
-                     final PostOffice postOffice,
-                     final boolean expiry) throws Exception
-   {
-      Transaction tx = new TransactionImpl(persistenceManager, postOffice);
-
-      ServerMessage copyMessage = makeCopy(expiry, persistenceManager);
-
-      copyMessage.setDestination(otherBinding.getAddress());
-
-      tx.addMessage(copyMessage);
-
-      tx.addAcknowledgement(this);
-
-      tx.commit();
-   }
 
    private void move(final SimpleString address,
                      final StorageManager persistenceManager,

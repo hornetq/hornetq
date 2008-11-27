@@ -97,6 +97,18 @@ public class FilterImpl implements Filter
   
   private final FilterParser parser = new FilterParser();
   
+  // Static ---------------------------------------------------------
+
+  /**
+   * @return null if <code>filterStr</code> is null or a valid filter else
+   * @throws MessagingException if the string does not correspond to a valid filter
+   */
+  public static Filter createFilter(final String filterStr) throws MessagingException
+  {
+     Filter filter = (filterStr == null) ? null : new FilterImpl(new SimpleString(filterStr));
+     return filter;
+  }
+
   // Constructors ---------------------------------------------------
   
   public FilterImpl(final SimpleString str) throws MessagingException

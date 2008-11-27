@@ -202,8 +202,7 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
    {
       try
       {
-         Filter filter = filterStr == null ? null : new FilterImpl(
-               new SimpleString(filterStr));
+         Filter filter = FilterImpl.createFilter(filterStr);
          List<MessageReference> refs = queue.list(filter);
          MessageInfo[] infos = new MessageInfo[refs.size()];
          for (int i = 0; i < refs.size(); i++)
@@ -230,11 +229,11 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
       }
    }
 
-   public void removeAllMessages() throws Exception
+   public int removeAllMessages() throws Exception
    {
       try
       {
-         queue.deleteAllReferences(storageManager);
+         return queue.deleteAllReferences(storageManager);
       } catch (MessagingException e)
       {
          throw new IllegalStateException(e.getMessage());
@@ -254,13 +253,8 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
    
    public int removeMatchingMessages(String filterStr) throws Exception
    {
-      Filter filter = filterStr == null ? null : new FilterImpl(new SimpleString(filterStr));
-      List<MessageReference> refs = queue.list(filter);
-      for (MessageReference ref : refs)
-      {
-         removeMessage(ref.getMessage().getMessageID());
-      }
-      return refs.size();
+      Filter filter = FilterImpl.createFilter(filterStr);
+      return queue.deleteMatchingReferences(filter, storageManager);
    }
 
    public boolean expireMessage(final long messageID) throws Exception
@@ -273,18 +267,8 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
    {
       try
       {
-         Filter filter = null;
-         if (filterStr != null)
-         {
-            filter = new FilterImpl(new SimpleString(filterStr));
-         }
-         List<MessageReference> refs = queue.list(filter);
-         for (MessageReference ref : refs)
-         {
-            queue.expireMessage(ref.getMessage().getMessageID(),
-                  storageManager, postOffice, queueSettingsRepository);
-         }
-         return refs.size();
+         Filter filter = FilterImpl.createFilter(filterStr);
+         return queue.expireMessages(filter, storageManager, postOffice, queueSettingsRepository);
       } catch (MessagingException e)
       {
          throw new IllegalStateException(e.getMessage());
@@ -301,21 +285,20 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
                + otherQueueName);
       }
 
-      return queue.moveMessage(messageID, binding, storageManager, postOffice);
+      return queue.moveMessage(messageID, binding.getAddress(), storageManager, postOffice);
    }
    
    public int moveMatchingMessages(String filterStr, String otherQueueName) throws Exception
    {
-      Filter filter = filterStr == null ? null : new FilterImpl(new SimpleString(filterStr));
-      List<MessageReference> refs = queue.list(filter);
-      synchronized (queue)
+      Filter filter = FilterImpl.createFilter(filterStr);
+      Binding binding = postOffice.getBinding(new SimpleString(otherQueueName));
+      if (binding == null)
       {
-         for (MessageReference ref : refs)
-         {
-            moveMessage(ref.getMessage().getMessageID(), otherQueueName);
-         }
-         return refs.size();
+         throw new IllegalArgumentException("No queue found for "
+               + otherQueueName);
       }
+
+      return queue.moveMessages(filter, binding.getAddress(), storageManager, postOffice);
    }
    
    public int moveAllMessages(String otherQueueName) throws Exception

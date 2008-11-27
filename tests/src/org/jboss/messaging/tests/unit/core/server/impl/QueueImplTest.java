@@ -1410,7 +1410,7 @@ public class QueueImplTest extends UnitTestCase
       assertEquals(0, queue.getDeliveringCount());
       assertTrue(queue.getSizeBytes() > 0);
       
-      queue.moveMessage(messageID, toBinding, storageManager, postOffice);
+      queue.moveMessage(messageID, toQueueName, storageManager, postOffice);
       
       assertEquals(0, queue.getMessageCount());
       assertEquals(0, queue.getDeliveringCount());

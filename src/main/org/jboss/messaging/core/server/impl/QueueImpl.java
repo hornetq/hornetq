@@ -28,7 +28,6 @@ import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.DistributionPolicy;
@@ -41,8 +40,8 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
-import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.ConcurrentHashSet;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * Implementation of a Queue TODO use Java 5 concurrent queue
@@ -403,8 +402,15 @@ public class QueueImpl implements Queue
       return messagesAdded.get();
    }
 
-   public synchronized void deleteAllReferences(final StorageManager storageManager) throws Exception
+   public synchronized int deleteAllReferences(final StorageManager storageManager) throws Exception
    {
+      return deleteMatchingReferences(null, storageManager);
+   }
+   
+   public synchronized int deleteMatchingReferences(final Filter filter, final StorageManager storageManager) throws Exception
+   {
+      int count = 0;
+
       Transaction tx = new TransactionImpl(storageManager, postOffice);
 
       Iterator<MessageReference> iter = messageReferences.iterator();
@@ -413,22 +419,29 @@ public class QueueImpl implements Queue
       {
          MessageReference ref = iter.next();
 
-         deliveringCount.incrementAndGet();
-
-         tx.addAcknowledgement(ref);
-
-         iter.remove();
+         if (filter == null || filter.match(ref.getMessage()))
+         {
+            deliveringCount.incrementAndGet();
+            tx.addAcknowledgement(ref);
+            iter.remove();
+            count++;
+         }
       }
-
+      
       List<MessageReference> cancelled = scheduledDeliveryHandler.cancel();
       for (MessageReference messageReference : cancelled)
       {
-         deliveringCount.incrementAndGet();
-
-         tx.addAcknowledgement(messageReference);
+         if (filter == null || filter.match(messageReference.getMessage()))
+         {
+            deliveringCount.incrementAndGet();
+            tx.addAcknowledgement(messageReference);
+            count++;
+         }
       }
 
       tx.commit();
+      
+      return count;
    }
 
    public synchronized boolean deleteReference(final long messageID, final StorageManager storageManager) throws Exception
@@ -478,6 +491,32 @@ public class QueueImpl implements Queue
       return false;
    }
 
+   public int expireMessages(final Filter filter,
+                             final StorageManager storageManager,
+                             final PostOffice postOffice,
+                             final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   {
+      Transaction tx = new TransactionImpl(storageManager, postOffice);
+
+      int count = 0;
+      Iterator<MessageReference> iter = messageReferences.iterator();
+
+      while (iter.hasNext())
+      {
+         MessageReference ref = iter.next();
+         if (filter == null || filter.match(ref.getMessage()))
+         {
+            deliveringCount.incrementAndGet();
+            ref.expire(tx, storageManager, postOffice, queueSettingsRepository);
+            iter.remove();
+            count++;
+         }
+      }
+      
+      tx.commit();
+
+      return count;
+   }
    
    public void expireMessages(final StorageManager storageManager,
                                 final PostOffice postOffice,
@@ -522,7 +561,7 @@ public class QueueImpl implements Queue
    }
 
    public boolean moveMessage(final long messageID,
-                              final Binding toBinding,
+                              final SimpleString toAddress,
                               final StorageManager storageManager,
                               final PostOffice postOffice) throws Exception
    {
@@ -534,12 +573,48 @@ public class QueueImpl implements Queue
          if (ref.getMessage().getMessageID() == messageID)
          {
             deliveringCount.incrementAndGet();
-            ref.move(toBinding, storageManager, postOffice);
+            ref.move(toAddress, storageManager, postOffice);
             iter.remove();
             return true;
          }
       }
       return false;
+   }
+   
+   public synchronized int moveMessages(final Filter filter, final SimpleString toAddress, final StorageManager storageManager, final PostOffice postOffice) throws Exception
+   {
+      Transaction tx = new TransactionImpl(storageManager, postOffice);
+
+      int count = 0;
+      Iterator<MessageReference> iter = messageReferences.iterator();
+
+      while (iter.hasNext())
+      {
+         MessageReference ref = iter.next();
+         if (filter == null || filter.match(ref.getMessage()))
+         {
+            deliveringCount.incrementAndGet();
+            ref.move(toAddress, tx, storageManager, false);
+            iter.remove();
+            count++;
+         }
+      }
+      
+      List<MessageReference> cancelled = scheduledDeliveryHandler.cancel();
+      for (MessageReference ref : cancelled)
+      {
+         if (filter == null || filter.match(ref.getMessage()))
+         {
+            deliveringCount.incrementAndGet();
+            ref.move(toAddress, tx, storageManager, false);
+            tx.addAcknowledgement(ref);
+            count++;
+         }
+      }
+
+      tx.commit();
+      
+      return count;
    }
 
    public boolean changeMessagePriority(final long messageID,
