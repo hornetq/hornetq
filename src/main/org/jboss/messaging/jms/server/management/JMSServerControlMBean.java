@@ -25,9 +25,13 @@ package org.jboss.messaging.jms.server.management;
 import static javax.management.MBeanOperationInfo.ACTION;
 import static javax.management.MBeanOperationInfo.INFO;
 
+import java.util.List;
+
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.management.Operation;
 import org.jboss.messaging.core.management.Parameter;
+import org.jboss.messaging.util.Pair;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -63,13 +67,58 @@ public interface JMSServerControlMBean
    boolean destroyTopic(@Parameter(name = "name", desc = "Name of the topic to destroy")
    String name) throws Exception;
 
-   @Operation(desc = "Create a JMS ConnectionFactory", impact = ACTION)
+   
+   @Operation(desc = "Create a JMS ConnectionFactory with a static list of servers", impact = ACTION)
    void createConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create")
                                 String name,
-                                @Parameter(name = "transportConfiguration", desc = "The remoting connector configuration")
-                                TransportConfiguration connectorConfig,
-                                @Parameter(name = "backupTransportConfiguration", desc = "The backup remoting connector configuration")
-                                TransportConfiguration backupConnectorConfig,
+                                @Parameter(name = "connectorConfigs", desc = "List of pairs of live configuration, backup configuration")
+                                List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                @Parameter(name = "connectionLoadBalancingPolicyClassName", desc = "The name of the class to use for client side connection load-balancing")
+                                String connectionLoadBalancingPolicyClassName,
+                                @Parameter(name = "pingPeriod", desc = "The ping period in m")
+                                long pingPeriod,
+                                @Parameter(name = "callTimeout", desc = "The call timeout in m")
+                                long callTimeout,
+                                @Parameter(name = "clientID", desc = "ClientID for created connections")
+                                String clientID,
+                                @Parameter(name = "dupsOKBatchSize", desc = "Size of the batch in bytes when using DUPS_OK")
+                                int dupsOKBatchSize,
+                                @Parameter(name = "transactionBatchSize", desc = "Size of the batch in bytes when using transacted session")
+                                int transactionBatchSize,
+                                @Parameter(name = "consumerWindowSize", desc = "Consumer's window size")
+                                int consumerWindowSize,
+                                @Parameter(name = "consumerMaxRate", desc = "Consumer's max rate")
+                                int consumerMaxRate,
+                                @Parameter(name = "producerWindowSize", desc = "Producer's window size")
+                                int producerWindowSize,
+                                @Parameter(name = "producerMaxRate", desc = "Producer's max rate")
+                                int producerMaxRate,
+                                @Parameter(name = "minLargeMessageSize", desc = "Size of what is considered a big message requiring sending in chunks") 
+                                int minLargeMessageSize, 
+                                @Parameter(name = "blockOnAcknowledge", desc = "Does acknowlegment block?")
+                                boolean blockOnAcknowledge,
+                                @Parameter(name = "blockOnNonPersistentSend", desc = "Does sending non persistent messages block?")
+                                boolean blockOnNonPersistentSend,
+                                @Parameter(name = "blockOnPersistentSend", desc = "Does sending persistent messages block?")
+                                boolean blockOnPersistentSend,
+                                @Parameter(name = "autoGroup", desc = "Any Messages sent via this factories connections will automatically set the property 'JBM_GroupID'")
+                                boolean autoGroup,
+                                @Parameter(name = "maxConnections", desc = "The maximum number of physical connections created per client using this connection factory. Sessions created will be assigned a connection in a round-robin fashion")
+                                int maxConnections,
+                                @Parameter(name = "preAcknowledge", desc = "If the server will acknowledge delivery of a message before it is delivered")
+                                boolean preAcknowledge,
+                                @Parameter(name = "jndiBinding", desc = "JNDI Binding")
+                                String jndiBinding) throws Exception;
+   
+   @Operation(desc = "Create a JMS ConnectionFactory specifying a discovery group to obtain list of servers from", impact = ACTION)
+   void createConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create")
+                                String name,
+                                @Parameter(name = "discoveryGroupConfig", desc = "Discovery group configuration")
+                                DiscoveryGroupConfiguration discoveryGroupConfig,
+                                @Parameter(name = "discoveryInitialWait", desc = "The amount of time in ms to wait for initial discovery information to arrive at first using connection factory")
+                                long discoveryInitialWait,
+                                @Parameter(name = "connectionLoadBalancingPolicyClassName", desc = "The name of the class to use for client side connection load-balancing")
+                                String connectionLoadBalancingPolicyClassName,
                                 @Parameter(name = "pingPeriod", desc = "The ping period in m")
                                 long pingPeriod,
                                 @Parameter(name = "callTimeout", desc = "The call timeout in m")

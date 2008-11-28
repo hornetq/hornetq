@@ -38,6 +38,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.server.cluster.DiscoveryListener;
+import org.jboss.messaging.util.Pair;
 
 /**
  * A DiscoveryGroupImpl
@@ -63,7 +64,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
    
    private final Object waitLock = new Object();
    
-   private final Map<TransportConfiguration, Long> connectors = new HashMap<TransportConfiguration, Long>();
+   private final Map<Pair<TransportConfiguration, TransportConfiguration>, Long> connectors = new HashMap<Pair<TransportConfiguration, TransportConfiguration>, Long>();
    
    private final long timeout;
    
@@ -80,6 +81,8 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       this.timeout = timeout;
       
       thread = new Thread(this);
+      
+      thread.setDaemon(true);
    }
    
    public synchronized void start() throws Exception
@@ -122,9 +125,9 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       return started;
    }
         
-   public synchronized List<TransportConfiguration> getConnectors()
+   public synchronized List<Pair<TransportConfiguration, TransportConfiguration>> getConnectors()
    {
-      return new ArrayList<TransportConfiguration>(connectors.keySet());
+      return new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>(connectors.keySet());
    }
    
    public boolean waitForBroadcast(final long timeout)
@@ -198,13 +201,50 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
             
             int size = ois.readInt();
             
+            boolean changed = false;
+            
             synchronized (this)
             {            
                for (int i = 0; i < size; i++)
                {
                   TransportConfiguration connector = (TransportConfiguration)ois.readObject();
                   
-                  connectors.put(connector, System.currentTimeMillis());
+                  boolean existsBackup = ois.readBoolean();
+                  
+                  TransportConfiguration backupConnector = null;
+                  
+                  if (existsBackup)
+                  {
+                     backupConnector = (TransportConfiguration)ois.readObject();
+                  }
+                  
+                  Pair<TransportConfiguration, TransportConfiguration> connectorPair =
+                     new Pair<TransportConfiguration, TransportConfiguration>(connector, backupConnector);
+                  
+                  Long oldVal = connectors.put(connectorPair, System.currentTimeMillis());
+                  
+                  if (oldVal == null)
+                  {
+                     changed = true;
+                  }
+               }
+               
+               long now = System.currentTimeMillis();
+               
+               Iterator<Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, Long>> iter = connectors.entrySet().iterator();
+               
+               //Weed out any expired connectors
+               
+               while (iter.hasNext())
+               {
+                  Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, Long> entry = iter.next();
+                  
+                  if (entry.getValue() + timeout <= now)
+                  {
+                     iter.remove();
+                     
+                     changed = true;
+                  }
                }
             }
             
@@ -217,7 +257,10 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                waitLock.notify();
             }
             
-            callListeners();
+            if (changed)
+            {
+               callListeners();
+            }
          }
       }
       catch (Exception e)
@@ -236,24 +279,8 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       this.listeners.remove(listener);
    }
    
-   private synchronized void callListeners()
-   {
-      long now = System.currentTimeMillis();
-      
-      Iterator<Map.Entry<TransportConfiguration, Long>> iter = connectors.entrySet().iterator();
-      
-      //Weed out any expired connectors
-      
-      while (iter.hasNext())
-      {
-         Map.Entry<TransportConfiguration, Long> entry = iter.next();
-         
-         if (entry.getValue() + timeout <= now)
-         {
-            iter.remove();
-         }
-      }
-      
+   private void callListeners()
+   {      
       for (DiscoveryListener listener: listeners)
       {
          try

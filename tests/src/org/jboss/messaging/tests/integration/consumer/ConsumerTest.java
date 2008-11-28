@@ -410,7 +410,6 @@ public class ConsumerTest extends UnitTestCase
 
    public void testConsumerAckImmediateAutoCommitTrue() throws Exception
    {
-
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
       ClientSession session = sf.createSession(false, true, true, true);
@@ -436,8 +435,8 @@ public class ConsumerTest extends UnitTestCase
          assertEquals("m" + i, message2.getBody().getString());
       }
       // assert that all the messages are there and none have been acked
-      assertEquals(messagingService.getServer().getPostOffice().getBinding(QUEUE).getQueue().getDeliveringCount(), 0);
-      assertEquals(messagingService.getServer().getPostOffice().getBinding(QUEUE).getQueue().getMessageCount(), 0);
+      assertEquals(0, messagingService.getServer().getPostOffice().getBinding(QUEUE).getQueue().getDeliveringCount());
+      assertEquals(0, messagingService.getServer().getPostOffice().getBinding(QUEUE).getQueue().getMessageCount());
 
       session.close();
    }

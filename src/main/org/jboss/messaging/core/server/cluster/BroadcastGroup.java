@@ -25,6 +25,7 @@ package org.jboss.messaging.core.server.cluster;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.server.MessagingComponent;
+import org.jboss.messaging.util.Pair;
 
 /**
  * A BroadcastGroup
@@ -37,9 +38,7 @@ import org.jboss.messaging.core.server.MessagingComponent;
  */
 public interface BroadcastGroup extends MessagingComponent
 {
-   void addConnector(final TransportConfiguration connector);
-
-   void removeConnector(final TransportConfiguration connector);
+   void addConnectorPair(final Pair<TransportConfiguration, TransportConfiguration> connectorPair);
 
    int size();
 

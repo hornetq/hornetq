@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.util;
 
+import java.io.Serializable;
+
 /**
  * 
  * A Pair
@@ -29,8 +31,10 @@ package org.jboss.messaging.util;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class Pair<A, B>
+public class Pair<A, B> implements Serializable
 {
+   private static final long serialVersionUID = -2496357457812368127L;
+
    public Pair(A a, B b)
    {
       this.a = a;
@@ -41,4 +45,42 @@ public class Pair<A, B>
    public A a;
    
    public B b;
+   
+   private int hash = -1;
+   
+   public int hashCode()
+   {
+      if (hash == -1)
+      {
+         if (a == null && b == null)
+         {
+            return super.hashCode();
+         }
+         else
+         {
+            hash = (a == null ? 0 : a.hashCode()) + 37 * (b == null ? 0 : b.hashCode());
+         }
+      }
+      
+      return hash;
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other == this)
+      {
+         return true;
+      }
+      
+      if (other instanceof Pair == false)
+      {
+         return false;
+      }
+      
+      Pair<A, B> pother = (Pair<A, B>)other;
+      
+      return (pother.a == null ? a == null : pother.a.equals(a)) &&
+             (pother.b == null ? b == null : pother.b.equals(b));                 
+      
+   }
 }

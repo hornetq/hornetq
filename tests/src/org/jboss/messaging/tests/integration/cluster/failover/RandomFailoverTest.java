@@ -249,8 +249,6 @@ public class RandomFailoverTest extends TestCase
          
          assertEquals(0, sf.numConnections());
          
-         assertEquals(0, sf.numBackupConnections());
-
          stop();
       }
    }
@@ -358,13 +356,11 @@ public class RandomFailoverTest extends TestCase
          assertTrue("Didn't receive all messages", ok);
       }
 
-      log.info("*** closing sessions");
       sessSend.close();
       for (ClientSession session : sessions)
       {
          session.close();
       }
-      log.info("*** closed sessions");
 
       for (int i = 0; i < numSessions; i++)
       {

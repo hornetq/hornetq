@@ -36,6 +36,7 @@ import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.JournalType;
+import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
@@ -104,7 +105,9 @@ public class FileConfiguration extends ConfigurationImpl
 
       managementAddress = new SimpleString(getString(e, "management-address", managementAddress.toString()));
 
-      managementNotificationAddress = new SimpleString(getString(e, "management-notification-address", managementNotificationAddress.toString()));
+      managementNotificationAddress = new SimpleString(getString(e,
+                                                                 "management-notification-address",
+                                                                 managementNotificationAddress.toString()));
 
       NodeList interceptorNodes = e.getElementsByTagName("remoting-interceptors");
 
@@ -124,7 +127,7 @@ public class FileConfiguration extends ConfigurationImpl
             }
          }
       }
-      
+
       interceptorClassNames = interceptorList;
 
       NodeList backups = e.getElementsByTagName("backup-connector");
@@ -137,15 +140,15 @@ public class FileConfiguration extends ConfigurationImpl
 
          backupConnectorName = backupNode.getAttributes().getNamedItem("connector-name").getNodeValue();
       }
-      
+
       NodeList connectorNodes = e.getElementsByTagName("connector");
-      
+
       for (int i = 0; i < connectorNodes.getLength(); i++)
       {
          Node connectorNode = connectorNodes.item(i);
 
          TransportConfiguration connectorConfig = parseTransportConfiguration(connectorNode);
-         
+
          if (connectorConfig.getName() == null)
          {
             log.warn("Cannot deploy a connector with no name specified.");
@@ -160,7 +163,7 @@ public class FileConfiguration extends ConfigurationImpl
 
             continue;
          }
-         
+
          connectorConfigs.put(connectorConfig.getName(), connectorConfig);
       }
 
@@ -183,7 +186,7 @@ public class FileConfiguration extends ConfigurationImpl
 
          parseBroadcastGroupConfiguration(bgNode);
       }
-      
+
       NodeList dgNodes = e.getElementsByTagName("discovery-group");
 
       for (int i = 0; i < dgNodes.getLength(); i++)
@@ -192,7 +195,7 @@ public class FileConfiguration extends ConfigurationImpl
 
          parseDiscoveryGroupConfiguration(dgNode);
       }
-      
+
       NodeList mfNodes = e.getElementsByTagName("message-flow");
 
       for (int i = 0; i < mfNodes.getLength(); i++)
@@ -205,7 +208,7 @@ public class FileConfiguration extends ConfigurationImpl
       // Persistence config
 
       largeMessagesDirectory = getString(e, "large-messages-directory", largeMessagesDirectory);
-      
+
       bindingsDirectory = getString(e, "bindings-directory", bindingsDirectory);
 
       createBindingsDir = getBoolean(e, "create-bindings-dir", createBindingsDir);
@@ -215,7 +218,7 @@ public class FileConfiguration extends ConfigurationImpl
       pagingDirectory = getString(e, "paging-directory", pagingDirectory);
 
       pagingMaxGlobalSize = getLong(e, "paging-max-global-size-bytes", pagingMaxGlobalSize);
-      
+
       pagingDefaultSize = getLong(e, "paging-default-size", pagingDefaultSize);
 
       createJournalDir = getBoolean(e, "create-journal-dir", createJournalDir);
@@ -308,9 +311,9 @@ public class FileConfiguration extends ConfigurationImpl
    private TransportConfiguration parseTransportConfiguration(final Node node)
    {
       Node nameNode = node.getAttributes().getNamedItem("name");
-                 
+
       String name = nameNode != null ? nameNode.getNodeValue() : null;
-      
+
       NodeList children = node.getChildNodes();
 
       String clazz = null;
@@ -366,11 +369,11 @@ public class FileConfiguration extends ConfigurationImpl
                throw new IllegalArgumentException("Invalid parameter type " + type);
             }
          }
-      }               
+      }
 
       return new TransportConfiguration(clazz, params, name);
    }
-   
+
    private void parseBroadcastGroupConfiguration(final Element bgNode)
    {
       String name = bgNode.getAttribute("name");
@@ -386,8 +389,8 @@ public class FileConfiguration extends ConfigurationImpl
       long broadcastPeriod = ConfigurationImpl.DEFAULT_BROADCAST_PERIOD;
 
       NodeList children = bgNode.getChildNodes();
-      
-      List<String> connectorNames = new ArrayList<String>();
+
+      List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();
 
       for (int j = 0; j < children.getLength(); j++)
       {
@@ -416,8 +419,19 @@ public class FileConfiguration extends ConfigurationImpl
          else if (child.getNodeName().equals("connector-ref"))
          {
             String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
-            
-            connectorNames.add(connectorName);
+
+            Node backupConnectorNode = child.getAttributes().getNamedItem("backup-connector-name");
+
+            String backupConnectorName = null;
+
+            if (backupConnectorNode != null)
+            {
+               backupConnectorName = backupConnectorNode.getNodeValue();
+            }
+
+            Pair<String, String> connectorInfo = new Pair<String, String>(connectorName, backupConnectorName);
+
+            connectorNames.add(connectorInfo);
          }
       }
 
@@ -428,10 +442,10 @@ public class FileConfiguration extends ConfigurationImpl
                                                                            groupPort,
                                                                            broadcastPeriod,
                                                                            connectorNames);
-      
+
       broadcastGroupConfigurations.add(config);
    }
-   
+
    private void parseDiscoveryGroupConfiguration(final Element bgNode)
    {
       String name = bgNode.getAttribute("name");
@@ -464,12 +478,21 @@ public class FileConfiguration extends ConfigurationImpl
 
       DiscoveryGroupConfiguration config = new DiscoveryGroupConfiguration(name,
                                                                            groupAddress,
-                                                                           groupPort,                                                              
+                                                                           groupPort,
                                                                            refreshTimeout);
-      
-      discoveryGroupConfigurations.add(config);
+
+      if (discoveryGroupConfigurations.containsKey(name))
+      {
+         log.warn("There is already a discovery group with name " + name + " deployed. This one will not be deployed.");
+
+         return;
+      }
+      else
+      {
+         discoveryGroupConfigurations.put(name, config);
+      }
    }
-   
+
    private void parseMessageFlowConfiguration(final Element bgNode)
    {
       String name = bgNode.getAttribute("name");
@@ -484,7 +507,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       long maxBatchTime = DEFAULT_MAX_FORWARD_BATCH_TIME;
 
-      List<String> staticConnectorNames = new ArrayList<String>();
+      List<Pair<String, String>> staticConnectorNames = new ArrayList<Pair<String, String>>();
 
       String discoveryGroupName = null;
 
@@ -516,9 +539,9 @@ public class FileConfiguration extends ConfigurationImpl
          {
             maxBatchTime = parseLong(child);
          }
-         else if (child.getNodeName().equals("discovery-group-name"))
+         else if (child.getNodeName().equals("discovery-group-ref"))
          {
-            discoveryGroupName = child.getTextContent().trim();
+            discoveryGroupName = child.getAttributes().getNamedItem("discovery-group-name").getNodeValue();
          }
          else if (child.getNodeName().equals("transformer-class-name"))
          {
@@ -527,24 +550,45 @@ public class FileConfiguration extends ConfigurationImpl
          else if (child.getNodeName().equals("connector"))
          {
             String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
-            
-            staticConnectorNames.add(connectorName);
+
+            Node backupNode = child.getAttributes().getNamedItem("backup-connector-name");
+
+            String backupConnectorName = null;
+
+            if (backupNode != null)
+            {
+               backupConnectorName = backupNode.getNodeValue();
+            }
+
+            staticConnectorNames.add(new Pair<String, String>(connectorName, backupConnectorName));
          }
       }
 
       MessageFlowConfiguration config;
-      
+
       if (!staticConnectorNames.isEmpty())
       {
-         config = new MessageFlowConfiguration(name, address, filterString, fanout, maxBatchSize, maxBatchTime,
-                                               transformerClassName, staticConnectorNames);
+         config = new MessageFlowConfiguration(name,
+                                               address,
+                                               filterString,
+                                               fanout,
+                                               maxBatchSize,
+                                               maxBatchTime,
+                                               transformerClassName,
+                                               staticConnectorNames);
       }
       else
       {
-         config = new MessageFlowConfiguration(name, address, filterString, fanout, maxBatchSize, maxBatchTime,
-                                               transformerClassName, discoveryGroupName);
+         config = new MessageFlowConfiguration(name,
+                                               address,
+                                               filterString,
+                                               fanout,
+                                               maxBatchSize,
+                                               maxBatchTime,
+                                               transformerClassName,
+                                               discoveryGroupName);
       }
-      
+
       messageFlowConfigurations.add(config);
    }
 

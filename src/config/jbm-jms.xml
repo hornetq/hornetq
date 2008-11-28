@@ -25,8 +25,15 @@
    </connection-factory>
 
    <connection-factory name="ClusteredConnectionFactory">
-      <connector-ref connector-name="netty"/>
-      <backup-connector connector-name="netty-backup"/>
+      <connector-ref connector-name="netty" backup-connector-name="netty-backup"/>
+      <entry name="/ClusteredConnectionFactory"/>
+      <entry name="/ClusteredXAConnectionFactory"/>
+      <entry name="java:/ClusteredConnectionFactory"/>
+      <entry name="java:/ClusteredXAConnectionFactory"/>
+   </connection-factory>
+   
+   <connection-factory name="ClusteredConnectionFactoryWithDiscovery">
+      <discovery-group-ref discovery-group-name="dg-group1"/> 
       <entry name="/ClusteredConnectionFactory"/>
       <entry name="/ClusteredXAConnectionFactory"/>
       <entry name="java:/ClusteredConnectionFactory"/>

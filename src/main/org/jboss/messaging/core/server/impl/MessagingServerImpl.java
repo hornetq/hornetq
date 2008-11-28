@@ -25,7 +25,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -40,12 +39,13 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
-import org.jboss.messaging.core.remoting.ConnectionManager;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.remoting.impl.ConnectionManagerImpl;
+import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
+import org.jboss.messaging.core.remoting.spi.Connection;
+import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
@@ -120,6 +120,10 @@ public class MessagingServerImpl implements MessagingServer
 
    private ClusterManager clusterManager;
 
+   private ConnectorFactory backupConnectorFactory;
+
+   private Map<String, Object> backupConnectorParams;
+
    // plugins
 
    private StorageManager storageManager;
@@ -131,8 +135,6 @@ public class MessagingServerImpl implements MessagingServer
    private Configuration configuration;
 
    private ManagementService managementService;
-
-   private ConnectionManager replicatingConnectionManager;
 
    private ScheduledThreadPoolExecutor messageExpiryExecutor;
 
@@ -155,7 +157,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          return;
       }
-    
+
       /*
        * The following components are pluggable on the messaging server: Configuration, StorageManager, RemotingService,
        * SecurityManager and ManagementRegistration They must already be injected by the time the messaging server
@@ -245,8 +247,13 @@ public class MessagingServerImpl implements MessagingServer
       postOffice.start();
       MessageExpiryRunner messageExpiryRunner = new MessageExpiryRunner(postOffice);
       messageExpiryRunner.setPriority(3);
-      messageExpiryExecutor = new ScheduledThreadPoolExecutor(1, new JBMThreadFactory("JBM-scheduled-threads", configuration.getMessageExpiryThreadPriority()) );
-      messageExpiryExecutor.scheduleAtFixedRate(messageExpiryRunner, configuration.getMessageExpiryScanPeriod(), configuration.getMessageExpiryScanPeriod(), TimeUnit.MILLISECONDS);
+      messageExpiryExecutor = new ScheduledThreadPoolExecutor(1,
+                                                              new JBMThreadFactory("JBM-scheduled-threads",
+                                                                                   configuration.getMessageExpiryThreadPriority()));
+      messageExpiryExecutor.scheduleAtFixedRate(messageExpiryRunner,
+                                                configuration.getMessageExpiryScanPeriod(),
+                                                configuration.getMessageExpiryScanPeriod(),
+                                                TimeUnit.MILLISECONDS);
       resourceManager.start();
 
       // FIXME the destination corresponding to the notification address is always created
@@ -257,18 +264,18 @@ public class MessagingServerImpl implements MessagingServer
       }
 
       String backupConnectorName = configuration.getBackupConnectorName();
-      
+
       if (backupConnectorName != null)
       {
          TransportConfiguration backupConnector = configuration.getConnectorConfigurations().get(backupConnectorName);
-         
+
          if (backupConnector == null)
          {
             log.warn("connector with name '" + backupConnectorName + "' is not defined in the configuration.");
          }
          else
          {
-            ConnectorFactory backupConnectorFactory;
+
             ClassLoader loader = Thread.currentThread().getContextClassLoader();
             try
             {
@@ -281,15 +288,8 @@ public class MessagingServerImpl implements MessagingServer
                                                            "\"",
                                                   e);
             }
-   
-            Map<String, Object> backupConnectorParams = backupConnector.getParams();
-   
-            // TODO don't hardcode ping interval and code timeout
-            replicatingConnectionManager = new ConnectionManagerImpl(backupConnectorFactory,
-                                                                     backupConnectorParams,
-                                                                     5000,
-                                                                     30000,
-                                                                     ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
+
+            backupConnectorParams = backupConnector.getParams();
          }
       }
       remotingService.setMessagingServer(this);
@@ -305,7 +305,7 @@ public class MessagingServerImpl implements MessagingServer
 
          clusterManager.start();
       }
-      
+
       log.info("Started messaging server");
 
       started = true;
@@ -589,7 +589,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       sessions.remove(name);
    }
-   
+
    public List<ServerSession> getSessions(final String connectionID)
    {
       Set<Entry<String, ServerSession>> sessionEntries = sessions.entrySet();
@@ -613,9 +613,19 @@ public class MessagingServerImpl implements MessagingServer
       // need to preserve channel ids
       // before and after failover
 
-      if (this.replicatingConnectionManager != null)
+      if (backupConnectorFactory != null)
       {
-         RemotingConnection replicatingConnection = replicatingConnectionManager.createConnection();
+         NoCacheConnectionLifeCycleListener listener = new NoCacheConnectionLifeCycleListener();
+         RemotingConnectionImpl replicatingConnection = (RemotingConnectionImpl)RemotingConnectionImpl.createConnection(backupConnectorFactory,
+                                                                                                                        backupConnectorParams,
+                                                                                                                        30000,
+                                                                                                                        5000,
+                                                                                                                        this.scheduledExecutor,
+                                                                                                                        listener);
+
+         listener.conn = replicatingConnection;
+
+         replicatingConnection.startPinger();
 
          return replicatingConnection;
       }
@@ -623,6 +633,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          return null;
       }
+
    }
 
    public MessagingServerControlMBean getServerManagement()
@@ -770,4 +781,30 @@ public class MessagingServerImpl implements MessagingServer
          }
       }
    }
+
+   private static class NoCacheConnectionLifeCycleListener implements ConnectionLifeCycleListener
+   {
+      private RemotingConnection conn;
+
+      public void connectionCreated(final Connection connection)
+      {
+      }
+
+      public void connectionDestroyed(final Object connectionID)
+      {
+         if (conn != null)
+         {
+            conn.destroy();
+         }
+      }
+
+      public void connectionException(final Object connectionID, final MessagingException me)
+      {
+         if (conn != null)
+         {
+            conn.fail(me);
+         }
+      }
+   }
+
 }

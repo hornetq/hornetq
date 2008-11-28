@@ -36,12 +36,11 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
-import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -87,8 +86,8 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
       connectors.put(server1tc.getName(), server1tc);
       service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
 
-      List<String> connectorNames = new ArrayList<String>();
-      connectorNames.add(server1tc.getName());
+      List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();
+      connectorNames.add(new Pair<String, String>(server1tc.getName(), null));
 
       final SimpleString address1 = new SimpleString("testaddress");
 
@@ -182,8 +181,8 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
       connectors.put(server1tc.getName(), server1tc);
       service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
 
-      List<String> connectorNames = new ArrayList<String>();
-      connectorNames.add(server1tc.getName());
+      List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();
+      connectorNames.add(new Pair<String, String>(server1tc.getName(), null));
 
       final SimpleString address1 = new SimpleString("testaddress");
 
@@ -256,8 +255,8 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
       connectors.put(server1tc.getName(), server1tc);
       service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
 
-      List<String> connectorNames = new ArrayList<String>();
-      connectorNames.add(server1tc.getName());
+      List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();
+      connectorNames.add(new Pair<String, String>(server1tc.getName(), null));
 
       final SimpleString address1 = new SimpleString("testaddress");
 

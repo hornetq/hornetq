@@ -21,28 +21,34 @@
  */
 
 
-package org.jboss.messaging.core.remoting;
+package org.jboss.messaging.util;
 
-import java.util.Set;
 
 /**
- * A ConnectionManager
+ * A Random
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 24 Oct 2008 09:07:05
+ * Created 28 Nov 2008 10:28:28
  *
  *
  */
-public interface ConnectionManager
+public class Random
 {
-   RemotingConnection getConnection();
+   private static int extraSeed;
    
-   RemotingConnection createConnection();
+   private static long getSeed()
+   {
+      long seed = System.currentTimeMillis() + extraSeed++;
+      
+      return seed;
+   }
    
-   void returnConnection(Object connectionID);
+   private java.util.Random random = new java.util.Random(getSeed());
    
-   int numConnections();
-   
-   Set<RemotingConnection> getConnections();
+   public java.util.Random getRandom()
+   {
+      return random;
+   }
+
 }

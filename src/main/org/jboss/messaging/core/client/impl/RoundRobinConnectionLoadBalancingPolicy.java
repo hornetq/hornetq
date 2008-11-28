@@ -21,30 +21,47 @@
  */
 
 
-package org.jboss.messaging.core.server.cluster;
+package org.jboss.messaging.core.client.impl;
 
-import java.util.List;
-
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.core.client.ConnectionLoadBalancingPolicy;
+import org.jboss.messaging.util.Random;
 
 /**
- * A DiscoveryGroup
+ * A RoundRobinConnectionLoadBalancingPolicy
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 18 Nov 2008 09:26:54
+ * Created 28 Nov 2008 10:21:08
  *
  *
  */
-public interface DiscoveryGroup extends MessagingComponent
+public class RoundRobinConnectionLoadBalancingPolicy implements ConnectionLoadBalancingPolicy
 {
-   List<Pair<TransportConfiguration, TransportConfiguration>> getConnectors();
+   private Random random = new Random();
    
-   boolean waitForBroadcast(long timeout);
+   private boolean first = true;
    
-   void registerListener(final DiscoveryListener listener);
-   
-   void unregisterListener(final DiscoveryListener listener);
+   private int pos;
+
+   public int select(final int max)
+   {
+      if (first)
+      {
+         //We start on a random one
+         pos = random.getRandom().nextInt(max);
+         
+         first = false;
+      }
+      else
+      {
+         pos++;
+         
+         if (pos >= max)
+         {
+            pos = 0;
+         }
+      }
+     
+      return pos;
+   }  
 }

@@ -47,6 +47,7 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.Future;
+import org.jboss.messaging.util.Pair;
 
 /**
  * A ForwarderImpl
@@ -108,7 +109,7 @@ public class ForwarderImpl implements Forwarder
    // Public --------------------------------------------------------
 
    public ForwarderImpl(final Queue queue,
-                        final TransportConfiguration connectorConfig,
+                        final Pair<TransportConfiguration,TransportConfiguration> connectorPair,
                         final Executor executor,
                         final int maxBatchSize,
                         final long maxBatchTime,
@@ -134,7 +135,7 @@ public class ForwarderImpl implements Forwarder
       
       this.transformer = transformer;
       
-      this.csf = new ClientSessionFactoryImpl(connectorConfig);  
+      this.csf = new ClientSessionFactoryImpl(connectorPair.a, connectorPair.b);  
       
       if (maxBatchTime != -1)
       {

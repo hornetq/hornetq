@@ -11,7 +11,7 @@
       	<group-address>231.7.7.7</group-address>
       	<group-port>9876</group-port>
       	<broadcast-period>5000</broadcast-period>
-      	<connector-ref connector-name="netty"/>
+      	<connector-ref connector-name="netty" backup-connector-name="netty-backup"/>
       </broadcast-group>
       
       <discovery-group name="dg-group1">
@@ -22,18 +22,18 @@
       
       <message-flow name="jms-distributed-queues">
          <address>jmsqueues.#</address>
-         <discovery-group-name>dg-group1</discovery-group-name>       
+         <discovery-group-ref discovery-group-name="dg-group1"/>       
       </message-flow>
       
       <message-flow name="jms-distributed-topics">
          <address>jmstopics.#</address>
-         <discovery-group-name>dg-group1</discovery-group-name> 
+         <discovery-group-ref discovery-group-name="dg-group1"/>
          <fanout>true</fanout>      
       </message-flow>
       
       <message-flow name="example-static-connectors">
          <address>jmstopics.#</address>
-         <connector-ref connector-name="connector1"/>
+         <connector-ref connector-name="connector1" backup-connector-name="backup-connector1"/>
          <connector-ref connector-name="connector2"/>
          <connector-ref connector-name="connector3"/>
          <fanout>true</fanout>      

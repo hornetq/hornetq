@@ -45,6 +45,7 @@ import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.ExecutorFactory;
+import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.UUIDGenerator;
 
@@ -83,10 +84,10 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
 
    private final Transformer transformer;
 
-   private Map<TransportConfiguration, Forwarder> forwarders = new HashMap<TransportConfiguration, Forwarder>();
+   private Map<Pair<TransportConfiguration, TransportConfiguration>, Forwarder> forwarders = new HashMap<Pair<TransportConfiguration, TransportConfiguration>, Forwarder>();
 
    private final DiscoveryGroup discoveryGroup;
-   
+
    private final ScheduledExecutorService scheduledExecutor;
 
    private volatile boolean started;
@@ -106,7 +107,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
                           final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                           final ScheduledExecutorService scheduledExecutor,
                           final Transformer transformer,
-                          final List<TransportConfiguration> connectors) throws Exception
+                          final List<Pair<TransportConfiguration,TransportConfiguration>> connectors) throws Exception
    {
       this.name = name;
 
@@ -131,7 +132,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
       this.transformer = transformer;
 
       this.discoveryGroup = null;
-      
+
       this.scheduledExecutor = scheduledExecutor;
 
       this.updateConnectors(connectors);
@@ -173,7 +174,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
       this.postOffice = postOffice;
 
       this.queueSettingsRepository = queueSettingsRepository;
-      
+
       this.scheduledExecutor = scheduledExecutor;
 
       this.transformer = transformer;
@@ -187,6 +188,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
       {
          return;
       }
+
       if (discoveryGroup != null)
       {
          updateConnectors(discoveryGroup.getConnectors());
@@ -228,7 +230,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
    {
       try
       {
-         List<TransportConfiguration> connectors = discoveryGroup.getConnectors();
+         List<Pair<TransportConfiguration, TransportConfiguration>> connectors = discoveryGroup.getConnectors();
 
          updateConnectors(connectors);
       }
@@ -238,17 +240,17 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
       }
    }
 
-   private void updateConnectors(final List<TransportConfiguration> connectors) throws Exception
+   private void updateConnectors(final List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception
    {
-      Set<TransportConfiguration> connectorSet = new HashSet<TransportConfiguration>();
+      Set<Pair<TransportConfiguration, TransportConfiguration>> connectorSet = new HashSet<Pair<TransportConfiguration, TransportConfiguration>>();
 
       connectorSet.addAll(connectors);
 
-      Iterator<Map.Entry<TransportConfiguration, Forwarder>> iter = forwarders.entrySet().iterator();
+      Iterator<Map.Entry<Pair<TransportConfiguration,TransportConfiguration>, Forwarder>> iter = forwarders.entrySet().iterator();
 
       while (iter.hasNext())
       {
-         Map.Entry<TransportConfiguration, Forwarder> entry = iter.next();
+         Map.Entry<Pair<TransportConfiguration,TransportConfiguration>, Forwarder> entry = iter.next();
 
          if (!connectorSet.contains(entry.getKey()))
          {
@@ -260,9 +262,9 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
          }
       }
 
-      for (TransportConfiguration connector : connectors)
+      for (Pair<TransportConfiguration,TransportConfiguration> connectorPair : connectors)
       {
-         if (!forwarders.containsKey(connector))
+         if (!forwarders.containsKey(connectorPair))
          {
             SimpleString queueName = new SimpleString("outflow." + name +
                                                       "." +
@@ -280,7 +282,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
             }
 
             Forwarder forwarder = new ForwarderImpl(binding.getQueue(),
-                                                    connector,
+                                                    connectorPair,
                                                     executorFactory.getExecutor(),
                                                     maxBatchSize,
                                                     maxBatchTime,
@@ -290,7 +292,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
                                                     scheduledExecutor,
                                                     transformer);
 
-            forwarders.put(connector, forwarder);
+            forwarders.put(connectorPair, forwarder);
 
             binding.getQueue().addConsumer(forwarder);
 

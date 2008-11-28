@@ -158,6 +158,7 @@ public class JMSQueueControlTest extends TestCase
 
       JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                              null,
+                                                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                              ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                                                              ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                                              null,
@@ -167,7 +168,7 @@ public class JMSQueueControlTest extends TestCase
                                                              ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
                                                              ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
                                                              ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                                                             ClientSessionFactoryImpl.DEFAULT_BIG_MESSAGE_SIZE,
+                                                             ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                                                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
                                                              true,

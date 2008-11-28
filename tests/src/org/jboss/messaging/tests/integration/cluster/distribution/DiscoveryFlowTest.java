@@ -42,6 +42,7 @@ import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -91,8 +92,8 @@ public class DiscoveryFlowTest extends MessageFlowTestBase
       Map<String, TransportConfiguration> server1Connectors = new HashMap<String, TransportConfiguration>();
       server1Connectors.put(server1tc.getName(), server1tc);
       service1.getServer().getConfiguration().setConnectorConfigurations(server1Connectors);
-      List<String> connectorNames1 = new ArrayList<String>();
-      connectorNames1.add(server1tc.getName());
+      List<Pair<String, String>> connectorNames1 = new ArrayList<Pair<String, String>>();
+      connectorNames1.add(new Pair<String, String>(server1tc.getName(), null));
       BroadcastGroupConfiguration bcConfig1 = new BroadcastGroupConfiguration(bcGroupName,
                                                                               localBindAddress,
                                                                               localBindPort,
@@ -112,8 +113,8 @@ public class DiscoveryFlowTest extends MessageFlowTestBase
       Map<String, TransportConfiguration> server2Connectors = new HashMap<String, TransportConfiguration>();
       server2Connectors.put(server2tc.getName(), server2tc);
       service2.getServer().getConfiguration().setConnectorConfigurations(server2Connectors);
-      List<String> connectorNames2 = new ArrayList<String>();
-      connectorNames2.add(server2tc.getName());
+      List<Pair<String, String>> connectorNames2 = new ArrayList<Pair<String, String>>();
+      connectorNames2.add(new Pair<String, String>(server2tc.getName(), null));
       BroadcastGroupConfiguration bcConfig2 = new BroadcastGroupConfiguration(bcGroupName,
                                                                               localBindAddress,
                                                                               localBindPort,
@@ -133,8 +134,8 @@ public class DiscoveryFlowTest extends MessageFlowTestBase
       Map<String, TransportConfiguration> server3Connectors = new HashMap<String, TransportConfiguration>();
       server3Connectors.put(server3tc.getName(), server3tc);
       service3.getServer().getConfiguration().setConnectorConfigurations(server3Connectors);
-      List<String> connectorNames3 = new ArrayList<String>();
-      connectorNames3.add(server3tc.getName());
+      List<Pair<String, String>> connectorNames3 = new ArrayList<Pair<String, String>>();
+      connectorNames3.add(new Pair<String, String>(server3tc.getName(), null));
       BroadcastGroupConfiguration bcConfig3 = new BroadcastGroupConfiguration(bcGroupName,
                                                                               localBindAddress,
                                                                               localBindPort,
@@ -154,8 +155,8 @@ public class DiscoveryFlowTest extends MessageFlowTestBase
       Map<String, TransportConfiguration> server4Connectors = new HashMap<String, TransportConfiguration>();
       server4Connectors.put(server4tc.getName(), server4tc);
       service4.getServer().getConfiguration().setConnectorConfigurations(server4Connectors);
-      List<String> connectorNames4 = new ArrayList<String>();
-      connectorNames4.add(server4tc.getName());
+      List<Pair<String, String>> connectorNames4 = new ArrayList<Pair<String, String>>();
+      connectorNames4.add(new Pair<String, String>(server4tc.getName(), null));
       BroadcastGroupConfiguration bcConfig4 = new BroadcastGroupConfiguration(bcGroupName,
                                                                               localBindAddress,
                                                                               localBindPort,
@@ -180,8 +181,8 @@ public class DiscoveryFlowTest extends MessageFlowTestBase
                                                                              discoveryTimeout);
       
       
-      Set<DiscoveryGroupConfiguration> dcConfigs = new HashSet<DiscoveryGroupConfiguration>();
-      dcConfigs.add(dcConfig);
+      Map<String, DiscoveryGroupConfiguration> dcConfigs = new HashMap<String, DiscoveryGroupConfiguration>();
+      dcConfigs.put(dcConfig.getName(), dcConfig);
       service0.getServer().getConfiguration().setDiscoveryGroupConfigurations(dcConfigs);
 
       MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1",

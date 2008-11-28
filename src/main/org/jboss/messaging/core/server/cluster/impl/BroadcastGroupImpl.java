@@ -34,6 +34,7 @@ import java.util.concurrent.ScheduledFuture;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
+import org.jboss.messaging.util.Pair;
 
 /**
  * A BroadcastGroupImpl
@@ -57,7 +58,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
    private DatagramSocket socket;
    
-   private final List<TransportConfiguration> connectors = new ArrayList<TransportConfiguration>();
+   private final List<Pair<TransportConfiguration, TransportConfiguration>> connectorPairs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
    
    private volatile boolean started;
    
@@ -115,19 +116,14 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       return started;
    }
    
-   public void addConnector(final TransportConfiguration connector)
+   public void addConnectorPair(final Pair<TransportConfiguration, TransportConfiguration> connectorPair)
    {
-      connectors.add(connector);
-   }
-
-   public void removeConnector(final TransportConfiguration connector)
-   {
-      connectors.remove(connector);
+      connectorPairs.add(connectorPair);
    }
 
    public int size()
    {
-      return connectors.size();
+      return connectorPairs.size();
    }
    
    public void broadcastConnectors() throws Exception
@@ -138,11 +134,22 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
       ObjectOutputStream oos = new ObjectOutputStream(bos);
 
-      oos.writeInt(connectors.size());
+      oos.writeInt(connectorPairs.size());
 
-      for (TransportConfiguration connector : connectors)
+      for (Pair<TransportConfiguration, TransportConfiguration> connectorPair : connectorPairs)
       {
-         oos.writeObject(connector);
+         oos.writeObject(connectorPair.a);
+         
+         if (connectorPair.b != null)
+         {
+            oos.writeBoolean(true);
+            
+            oos.writeObject(connectorPair.b);
+         }
+         else
+         {
+            oos.writeBoolean(false);
+         }
       }
 
       oos.flush();

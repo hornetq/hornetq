@@ -25,7 +25,7 @@ package org.jboss.messaging.core.config.cluster;
 import java.io.Serializable;
 import java.util.List;
 
-import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.util.Pair;
 
 /**
  * A MessageFlowConfiguration
@@ -52,7 +52,7 @@ public class MessageFlowConfiguration implements Serializable
 
    private final long maxBatchTime;
 
-   private final List<String> staticConnectorNames;
+   private final List<Pair<String, String>> staticConnectorNamePairs;
 
    private final String discoveryGroupName;
 
@@ -65,7 +65,7 @@ public class MessageFlowConfiguration implements Serializable
                                    final int maxBatchSize,
                                    final long maxBatchTime,
                                    final String transformerClassName,
-                                   final List<String> staticConnectorNames)
+                                   final List<Pair<String, String>> staticConnectorNamePairs)
    {
       this.name = name;
       this.address = address;
@@ -74,7 +74,7 @@ public class MessageFlowConfiguration implements Serializable
       this.maxBatchSize = maxBatchSize;
       this.maxBatchTime = maxBatchTime;
       this.transformerClassName = transformerClassName;
-      this.staticConnectorNames = staticConnectorNames;
+      this.staticConnectorNamePairs = staticConnectorNamePairs;
       this.discoveryGroupName = null;
    }
 
@@ -94,7 +94,7 @@ public class MessageFlowConfiguration implements Serializable
       this.maxBatchSize = maxBatchSize;
       this.maxBatchTime = maxBatchTime;
       this.transformerClassName = transformerClassName;
-      this.staticConnectorNames = null;
+      this.staticConnectorNamePairs = null;
       this.discoveryGroupName = discoveryGroupName;
    }
 
@@ -133,9 +133,9 @@ public class MessageFlowConfiguration implements Serializable
       return transformerClassName;
    }
 
-   public List<String> getConnectorNames()
+   public List<Pair<String, String>> getConnectorNamePairs()
    {
-      return staticConnectorNames;
+      return staticConnectorNamePairs;
    }
 
    public String getDiscoveryGroupName()

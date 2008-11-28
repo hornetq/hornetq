@@ -42,6 +42,7 @@ import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -113,11 +114,11 @@ public class StaticFlowTest extends MessageFlowTestBase
 
       service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
 
-      List<String> connectorNames = new ArrayList<String>();
-      connectorNames.add(server1tc.getName());
-      connectorNames.add(server2tc.getName());
-      connectorNames.add(server3tc.getName());
-      connectorNames.add(server4tc.getName());
+      List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();
+      connectorNames.add(new Pair<String, String>(server1tc.getName(), null));
+      connectorNames.add(new Pair<String, String>(server2tc.getName(), null));
+      connectorNames.add(new Pair<String, String>(server3tc.getName(), null));
+      connectorNames.add(new Pair<String, String>(server4tc.getName(), null));
 
       final SimpleString testAddress = new SimpleString("testaddress");
 
@@ -274,11 +275,11 @@ public class StaticFlowTest extends MessageFlowTestBase
 
       service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
 
-      List<String> connectorNames = new ArrayList<String>();
-      connectorNames.add(server1tc.getName());
-      connectorNames.add(server2tc.getName());
-      connectorNames.add(server3tc.getName());
-      connectorNames.add(server4tc.getName());
+      List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();
+      connectorNames.add(new Pair<String, String>(server1tc.getName(), null));
+      connectorNames.add(new Pair<String, String>(server2tc.getName(), null));
+      connectorNames.add(new Pair<String, String>(server3tc.getName(), null));
+      connectorNames.add(new Pair<String, String>(server4tc.getName(), null));
 
       final SimpleString testAddress = new SimpleString("testaddress");
 
@@ -444,15 +445,18 @@ public class StaticFlowTest extends MessageFlowTestBase
 
       service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
 
-      List<String> connectorNames1 = new ArrayList<String>();
-      connectorNames1.add(server1tc.getName());
-      List<String> connectorNames2 = new ArrayList<String>();
-      connectorNames2.add(server2tc.getName());
-      List<String> connectorNames3 = new ArrayList<String>();
-      connectorNames3.add(server3tc.getName());
-      List<String> connectorNames4 = new ArrayList<String>();
-      connectorNames4.add(server4tc.getName());
-
+      List<Pair<String, String>> connectorNames1 = new ArrayList<Pair<String, String>>();
+      connectorNames1.add(new Pair<String, String>(server1tc.getName(), null));
+      
+      List<Pair<String, String>> connectorNames2 = new ArrayList<Pair<String, String>>();
+      connectorNames2.add(new Pair<String, String>(server2tc.getName(), null));
+      
+      List<Pair<String, String>> connectorNames3 = new ArrayList<Pair<String, String>>();
+      connectorNames3.add(new Pair<String, String>(server3tc.getName(), null));
+      
+      List<Pair<String, String>> connectorNames4 = new ArrayList<Pair<String, String>>();
+      connectorNames4.add(new Pair<String, String>(server4tc.getName(), null));
+      
       final SimpleString testAddress = new SimpleString("testaddress");
 
       MessageFlowConfiguration ofconfig1 = new MessageFlowConfiguration("flow1",

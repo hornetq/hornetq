@@ -35,9 +35,10 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientFileMessage;
+import org.jboss.messaging.core.client.ConnectionManager;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
@@ -115,7 +116,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // Attributes ----------------------------------------------------------------------------
 
-   private final ClientSessionFactoryInternal sessionFactory;
+   private final ConnectionManager connectionManager;
 
    private final String name;
 
@@ -124,8 +125,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final Executor executor;
 
    private volatile RemotingConnection remotingConnection;
-
-   private volatile RemotingConnection backupConnection;
 
    private final Set<ClientProducerInternal> producers = new ConcurrentHashSet<ClientProducerInternal>();
 
@@ -144,6 +143,18 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final boolean autoGroup;
 
    private final int ackBatchSize;
+   
+   private final int consumerWindowSize;
+   
+   private final int consumerMaxRate;
+   
+   private final int producerMaxRate;
+   
+   private final boolean blockOnNonPersistentSend;
+   
+   private final boolean blockOnPersistentSend;
+   
+   private final int minLargeMessageSize;
 
    private final Channel channel;
 
@@ -158,7 +169,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // Constructors ----------------------------------------------------------------------------
 
-   public ClientSessionImpl(final ClientSessionFactoryInternal sessionFactory,
+   public ClientSessionImpl(final ConnectionManager connectionManager,
                             final String name,
                             final boolean xa,
                             final boolean autoCommitSends,
@@ -167,18 +178,21 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final boolean blockOnAcknowledge,
                             final boolean autoGroup,
                             final int ackBatchSize,
+                            final int consumerWindowSize,                            
+                            final int consumerMaxRate,                            
+                            final int producerMaxRate,                            
+                            final boolean blockOnNonPersistentSend,                            
+                            final boolean blockOnPersistentSend,                            
+                            final int minLargeMessageSize,
                             final RemotingConnection remotingConnection,
-                            final RemotingConnection backupConnection,
                             final int version,
                             final Channel channel) throws MessagingException
    {
-      this.sessionFactory = sessionFactory;
+      this.connectionManager = connectionManager;
 
       this.name = name;
 
       this.remotingConnection = remotingConnection;
-
-      this.backupConnection = backupConnection;
 
       executor = executorFactory.getExecutor();
 
@@ -199,6 +213,18 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       this.version = version;
 
       this.ackBatchSize = ackBatchSize;
+      
+      this.consumerWindowSize = consumerWindowSize;
+      
+      this.consumerMaxRate = consumerMaxRate;
+      
+      this.producerMaxRate = producerMaxRate;
+      
+      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
+      
+      this.blockOnPersistentSend = blockOnPersistentSend;
+      
+      this.minLargeMessageSize = minLargeMessageSize;
    }
 
    // ClientSession implementation
@@ -283,8 +309,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       return createConsumer(queueName,
                             filterString,
-                            sessionFactory.getConsumerWindowSize(),
-                            sessionFactory.getConsumerMaxRate(),
+                            consumerWindowSize,
+                            consumerMaxRate,
                             false);
    }
 
@@ -294,8 +320,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return createConsumer(queueName,
                             filterString,
-                            sessionFactory.getConsumerWindowSize(),
-                            sessionFactory.getConsumerMaxRate(),
+                            consumerWindowSize,
+                            consumerMaxRate,
                             browseOnly);
    }
 
@@ -332,8 +358,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return createFileConsumer(directory,
                                 queueName,
                                 filterString,
-                                sessionFactory.getConsumerWindowSize(),
-                                sessionFactory.getConsumerMaxRate(),
+                                consumerWindowSize,
+                                consumerMaxRate,
                                 false);
    }
 
@@ -345,8 +371,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return createFileConsumer(directory,
                                 queueName,
                                 filterString,
-                                sessionFactory.getConsumerWindowSize(),
-                                sessionFactory.getConsumerMaxRate(),
+                                consumerWindowSize,
+                                consumerMaxRate,
                                 browseOnly);
    }
 
@@ -372,15 +398,15 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkClosed();
 
-      return createProducer(address, sessionFactory.getProducerMaxRate());
+      return createProducer(address, producerMaxRate);
    }
 
    public ClientProducer createProducer(final SimpleString address, final int maxRate) throws MessagingException
    {
       return createProducer(address,
                             maxRate,
-                            sessionFactory.isBlockOnNonPersistentSend(),
-                            sessionFactory.isBlockOnPersistentSend());
+                            blockOnNonPersistentSend,
+                            blockOnPersistentSend);
    }
 
    public ClientProducer createProducer(final SimpleString address,
@@ -397,7 +423,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                autoCommitSends && blockOnNonPersistentSend,
                                                                autoCommitSends && blockOnPersistentSend,
                                                                autoGroup,
-                                                               sessionFactory.getMinLargeMessageSize(),
+                                                               minLargeMessageSize,
                                                                channel);
 
       addProducer(producer);
@@ -630,6 +656,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          return;
       }
+      
+     // log.info("closing client session " + System.identityHashCode(this));
 
       try
       {
@@ -658,7 +686,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    }
 
    // Needs to be synchronized to prevent issues with occurring concurrently with close()
-   public synchronized void handleFailover()
+   public synchronized void handleFailover(final RemotingConnection backupConnection)
    {
       if (closed)
       {
@@ -694,7 +722,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             channel.returnBlocking();
          }
 
-         backupConnection = null;
+         //backupConnection = null;
       }
       catch (Throwable t)
       {
@@ -1006,15 +1034,15 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return remotingConnection;
    }
 
-   public RemotingConnection getBackupConnection()
-   {
-      return backupConnection;
-   }
-
-   public void setBackupConnection(RemotingConnection connection)
-   {
-      this.backupConnection = connection;
-   }
+//   public RemotingConnection getBackupConnection()
+//   {
+//      return backupConnection;
+//   }
+//
+//   public void setBackupConnection(RemotingConnection connection)
+//   {
+//      this.backupConnection = connection;
+//   }
 
    // Protected
    // ----------------------------------------------------------------------------
@@ -1120,7 +1148,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          channel.close();
       }
 
-      sessionFactory.removeSession(this);
+      connectionManager.removeSession(this);
    }
 
    private void cleanUpChildren() throws Exception

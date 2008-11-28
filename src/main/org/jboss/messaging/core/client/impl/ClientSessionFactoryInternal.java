@@ -30,14 +30,10 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
  *
  */
 public interface ClientSessionFactoryInternal extends ClientSessionFactory
-{
-   void removeSession(ClientSessionInternal session);
-   
+{ 
    //for testing
    
    int numConnections();
-   
-   int numBackupConnections();
    
    int numSessions();
 }

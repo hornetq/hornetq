@@ -100,9 +100,9 @@ public interface Configuration extends Serializable
    
    void setBroadcastGroupConfigurations(Set<BroadcastGroupConfiguration> configs);
    
-   Set<DiscoveryGroupConfiguration> getDiscoveryGroupConfigurations();
+   Map<String, DiscoveryGroupConfiguration> getDiscoveryGroupConfigurations();
    
-   void setDiscoveryGroupConfigurations(Set<DiscoveryGroupConfiguration> configs);
+   void setDiscoveryGroupConfigurations(Map<String, DiscoveryGroupConfiguration> configs);
    
    Set<MessageFlowConfiguration> getMessageFlowConfigurations();
 

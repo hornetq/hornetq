@@ -112,10 +112,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    // Static -------------------------------------------------------------------------------
 
-   public static void moveReferencesBackToHeadOfQueues(List<MessageReference> references,
-                                                       PostOffice postOffice,
-                                                       StorageManager storageManager,
-                                                       HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   public static void moveReferencesBackToHeadOfQueues(final List<MessageReference> references,
+                                                       final PostOffice postOffice,
+                                                       final StorageManager storageManager,
+                                                       final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
 
@@ -245,7 +245,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       this.postOffice = postOffice;
 
-      this.pager = postOffice.getPagingManager();
+      pager = postOffice.getPagingManager();
 
       this.queueSettingsRepository = queueSettingsRepository;
 
@@ -403,7 +403,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                                                           storageManager,
                                                           queueSettingsRepository,
                                                           postOffice,
-                                                          channel,                                                         
+                                                          channel,
                                                           preAcknowledge);
 
          consumers.put(consumer.getID(), consumer);
@@ -1939,7 +1939,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void handleStart(final Packet packet)
    {
-      boolean lock = this.channel.getReplicatingChannel() != null;
+      boolean lock = channel.getReplicatingChannel() != null;
 
       if (lock)
       {
@@ -2180,11 +2180,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          if (!packet.isContinues())
          {
             final ServerLargeMessage message = largeMessage;
-            
+
             largeMessage = null;
 
             message.complete();
-            
+
             send(message);
          }
 
@@ -2418,7 +2418,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    // Private
    // ----------------------------------------------------------------------------
 
-   private ServerLargeMessage createLargeMessageStorage(long messageID, byte[] header) throws Exception
+   private ServerLargeMessage createLargeMessageStorage(final long messageID, final byte[] header) throws Exception
    {
       ServerLargeMessage largeMessage = storageManager.createLargeMessage();
 
@@ -2498,9 +2498,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                storageManager.storeMessage(msg);
             }
 
-            //TODO - this code is also duplicated in transactionimpl and in depaging
-            //it should all be centralised
-            
+            // TODO - this code is also duplicated in transactionimpl and in depaging
+            // it should all be centralised
+
             for (MessageReference ref : refs)
             {
                if (scheduledDeliveryTime != null)
@@ -2538,5 +2538,4 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          throw e;
       }
    }
-
 }

@@ -133,6 +133,9 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMess
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.remoting.spi.Connection;
+import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
+import org.jboss.messaging.core.remoting.spi.Connector;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.SimpleIDGenerator;
 
@@ -152,6 +155,43 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    // Static
    // ---------------------------------------------------------------------------------------
+
+   public static RemotingConnection createConnection(final ConnectorFactory connectorFactory,
+                                                     final Map<String, Object> params,
+                                                     final long callTimeout,
+                                                     final long pingInterval,
+                                                     final ScheduledExecutorService pingExecutor,
+                                                     final ConnectionLifeCycleListener listener)
+   {
+      DelegatingBufferHandler handler = new DelegatingBufferHandler();
+
+      Connector connector = connectorFactory.createConnector(params, handler, listener);
+
+      connector.start();
+
+      Connection tc = connector.createConnection();
+
+      if (tc == null)
+      {
+         throw new IllegalStateException("Failed to connect");
+      }
+
+      RemotingConnection connection = new RemotingConnectionImpl(tc, callTimeout, pingInterval, pingExecutor, null);
+
+      handler.conn = connection;
+
+      return connection;
+   }
+
+   private static class DelegatingBufferHandler extends AbstractBufferHandler
+   {
+      RemotingConnection conn;
+
+      public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
+      {
+         conn.bufferReceived(connectionID, buffer);
+      }
+   }
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -817,9 +857,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       private final Condition failoverCondition = lock.newCondition();
 
       private final Object sendLock = new Object();
-      
+
       private final Object sendBlockingLock = new Object();
-      
+
       private final Object replicationLock = new Object();
 
       private boolean failingOver;
@@ -963,11 +1003,15 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             }
          }
       }
-      
+
       public Packet sendBlocking(final Packet packet) throws MessagingException
       {
+         // log.info("sending blocking channel id" + id + " packet id " + packet.getType() + " on connection " +
+         // System.identityHashCode(this.connection) + " " + packet.getType());
+
          if (closed)
          {
+            // log.info("channel is closed");
             throw new MessagingException(MessagingException.NOT_CONNECTED, "Connection is destroyed");
          }
 
@@ -975,17 +1019,17 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          {
             throw new IllegalStateException("Cannot do a blocking call timeout on a server side connection");
          }
-         
-         //Synchronized since can't be called concurrently by more than one thread and this can occur
-         //E.g. blocking acknowledge() from inside a message handler at some time as other operation on main thread
+
+         // Synchronized since can't be called concurrently by more than one thread and this can occur
+         // E.g. blocking acknowledge() from inside a message handler at some time as other operation on main thread
          synchronized (sendBlockingLock)
-         {   
+         {
             packet.setChannelID(id);
-   
+
             final MessagingBuffer buffer = connection.transportConnection.createBuffer(packet.getRequiredBufferSize());
-   
+
             int size = packet.encode(buffer);
-   
+
             // Must block on semaphore outside the main lock or this can prevent failover from occurring
             if (sendSemaphore != null)
             {
@@ -998,9 +1042,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                   throw new IllegalStateException("Semaphore interrupted");
                }
             }
-   
+
             lock.lock();
-   
+
             try
             {
                while (failingOver)
@@ -1014,20 +1058,20 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                   {
                   }
                }
-   
+
                response = null;
-   
+
                if (resendCache != null && packet.isRequiresConfirmations())
                {
                   resendCache.add(packet);
                }
-   
+
                connection.transportConnection.write(buffer);
-   
+
                long toWait = connection.blockingCallTimeout;
-   
+
                long start = System.currentTimeMillis();
-   
+
                while (response == null && toWait > 0)
                {
                   try
@@ -1037,24 +1081,24 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                   catch (InterruptedException e)
                   {
                   }
-   
+
                   final long now = System.currentTimeMillis();
-   
+
                   toWait -= now - start;
-   
+
                   start = now;
                }
-   
+
                if (response == null)
                {
                   throw new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
                                                "Timed out waiting for response when sending packet " + packet.getType());
                }
-   
+
                if (response.getType() == PacketImpl.EXCEPTION)
                {
                   final MessagingExceptionMessage mem = (MessagingExceptionMessage)response;
-   
+
                   throw mem.getException();
                }
                else
@@ -1078,11 +1122,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             if (replicatingChannel != null)
             {
                DelayedResult result = new DelayedResult();
-   
+
                responseActions.add(result);
-   
+
                replicatingChannel.send(packet);
-   
+
                return result;
             }
             else
@@ -1098,13 +1142,13 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          synchronized (replicationLock)
          {
             replicatingChannel = null;
-   
+
             // Execute all the response actions now
-   
+
             while (true)
             {
                DelayedResult result = responseActions.poll();
-   
+
                if (result != null)
                {
                   result.replicated();
@@ -1152,7 +1196,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             }
          }
 
-         //Must execute outside of lock
+         // Must execute outside of lock
          if (result != null)
          {
             result.replicated();
@@ -1166,6 +1210,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       public void close()
       {
+         // log.info("channel " + id + " is being closed on connection " + System.identityHashCode(connection));
          if (closed)
          {
             return;
@@ -1338,15 +1383,15 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             receivedBytes += packet.getPacketSize();
 
             if (receivedBytes >= confWindowSize)
-            {               
+            {
                receivedBytes = 0;
 
                if (connection.active)
                {
                   final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
-   
+
                   confirmed.setChannelID(id);
-                  
+
                   doWrite(confirmed);
                }
             }

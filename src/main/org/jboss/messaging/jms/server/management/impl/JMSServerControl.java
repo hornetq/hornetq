@@ -38,9 +38,11 @@ import javax.management.NotificationListener;
 import javax.management.StandardMBean;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
+import org.jboss.messaging.util.Pair;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -77,8 +79,8 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
    // JMSServerControlMBean implementation --------------------------
 
    public void createConnectionFactory(String name,
-                                       TransportConfiguration connectorConfig,
-                                       TransportConfiguration backupConnectorConfig,
+                                       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                       String connectionLoadBalancingPolicyClassName,
                                        long pingPeriod,                                  
                                        long callTimeout,
                                        String clientID,
@@ -101,8 +103,8 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
       bindings.add(jndiBinding);
 
       boolean created = server.createConnectionFactory(name,
-                                                       connectorConfig,
-                                                       backupConnectorConfig,
+                                                       connectorConfigs,
+                                                       connectionLoadBalancingPolicyClassName,
                                                        pingPeriod,                                                    
                                                        callTimeout,
                                                        clientID,
@@ -119,7 +121,59 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                                        autoGroup,
                                                        maxConnections,
                                                        preAcknowledge,
-                                                       jndiBinding);
+                                                       bindings);
+      if (created)
+      {
+         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+      }
+   }
+   
+   public void createConnectionFactory(String name,
+                                       DiscoveryGroupConfiguration discoveryGroupConfig,
+                                       long discoveryInitialWait,
+                                       String connectionLoadBalancingPolicyClassName,
+                                       long pingPeriod,                                  
+                                       long callTimeout,
+                                       String clientID,
+                                       int dupsOKBatchSize,
+                                       int transactionBatchSize,
+                                       int consumerWindowSize,
+                                       int consumerMaxRate,
+                                       int producerWindowSize,
+                                       int producerMaxRate,
+                                       int minLargeMessageSize, 
+                                       boolean blockOnAcknowledge,
+                                       boolean blockOnNonPersistentSend,
+                                       boolean blockOnPersistentSend,
+                                       boolean autoGroup,
+                                       int maxConnections,
+                                       boolean preAcknowledge,
+                                       String jndiBinding) throws Exception
+   {
+      List<String> bindings = new ArrayList<String>();
+      bindings.add(jndiBinding);
+
+      boolean created = server.createConnectionFactory(name,
+                                                       discoveryGroupConfig,
+                                                       discoveryInitialWait,
+                                                       connectionLoadBalancingPolicyClassName,
+                                                       pingPeriod,                                                    
+                                                       callTimeout,
+                                                       clientID,
+                                                       dupsOKBatchSize,
+                                                       transactionBatchSize,
+                                                       consumerWindowSize,
+                                                       consumerMaxRate,
+                                                       producerWindowSize,
+                                                       producerMaxRate,
+                                                       minLargeMessageSize,
+                                                       blockOnAcknowledge,
+                                                       blockOnNonPersistentSend,
+                                                       blockOnPersistentSend,
+                                                       autoGroup,
+                                                       maxConnections,
+                                                       preAcknowledge,
+                                                       bindings);
       if (created)
       {
          sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);

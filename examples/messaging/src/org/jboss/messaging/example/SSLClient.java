@@ -45,9 +45,9 @@ public class SSLClient
       ClientSession clientSession = null;
       try
       {         
-         ClientSessionFactory sessionFactory =
-            new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));
-         sessionFactory.getTransportParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+         TransportConfiguration tc = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory");
+         tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+         ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(tc);         
          clientSession = sessionFactory.createSession(false, true, true);
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);

@@ -1304,8 +1304,6 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
          assertEquals(0, sf.numConnections());
 
-         assertEquals(0, sf.numBackupConnections());
-
          stop();
       }
    }

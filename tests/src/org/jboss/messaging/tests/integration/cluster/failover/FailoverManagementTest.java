@@ -27,8 +27,6 @@ import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MAN
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.management.Notification;
-
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.ClientConsumer;

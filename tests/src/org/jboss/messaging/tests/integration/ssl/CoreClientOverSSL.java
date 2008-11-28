@@ -68,8 +68,9 @@ public class CoreClientOverSSL
          
          System.out.println("ssl enabled is " + sslEnabled);
         
-         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));        
-         sf.getTransportParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, sslEnabled);
+         TransportConfiguration tc = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory");
+         tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, sslEnabled);
+         ClientSessionFactory sf = new ClientSessionFactoryImpl(tc);                 
          ClientSession session = sf.createSession(false, true, true);
          ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);
 

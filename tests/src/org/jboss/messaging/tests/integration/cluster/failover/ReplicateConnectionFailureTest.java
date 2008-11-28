@@ -77,24 +77,24 @@ public class ReplicateConnectionFailureTest extends TestCase
    {
       final long pingPeriod = 500;
 
-      // TODO - use the defaults!!
       ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                       new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                  backupParams),
-                                                                      pingPeriod,
-                                                                      ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                                                                      ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                                      ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                                                                      ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
-                                                                      ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                                                                      ClientSessionFactoryImpl.DEFAULT_BIG_MESSAGE_SIZE,
-                                                                      ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                                      ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                                      ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                                                      ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                                                                      ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                                                                      ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
-                                                                      ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
+                                                                                                 ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                                                                                 pingPeriod,
+                                                                                                 ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                                                                                 ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                                                                 ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                                                                                 ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                                                                                                 ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                                                                                 ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                                                                 ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                                                                                 ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                                                                                 ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                                                                                 ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                                                                                                 ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
+                                                                                                 ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
+                                                                                                 ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
       
 
       sf1.setSendWindowSize(32 * 1024);
@@ -108,8 +108,8 @@ public class ReplicateConnectionFailureTest extends TestCase
       // One connection
       assertEquals(1, liveService.getServer().getRemotingService().getConnections().size());
 
-      // One replicating connection per session + one backup connection per session
-      assertEquals(2, backupService.getServer().getRemotingService().getConnections().size());
+      // One replicating connection per session
+      assertEquals(1, backupService.getServer().getRemotingService().getConnections().size());
 
       session1.close();
 
@@ -123,7 +123,7 @@ public class ReplicateConnectionFailureTest extends TestCase
 
       assertEquals(1, liveService.getServer().getRemotingService().getConnections().size());
 
-      assertEquals(2, backupService.getServer().getRemotingService().getConnections().size());
+      assertEquals(1, backupService.getServer().getRemotingService().getConnections().size());
 
       final RemotingConnectionImpl conn1 = (RemotingConnectionImpl)((ClientSessionImpl)session1).getConnection();
 
@@ -133,9 +133,7 @@ public class ReplicateConnectionFailureTest extends TestCase
 
       assertEquals(0, liveService.getServer().getRemotingService().getConnections().size());
 
-      // Should be one connection left to the backup - the other one (replicating connection) should be automatically
-      // closed
-      assertEquals(1, backupService.getServer().getRemotingService().getConnections().size());
+      assertEquals(0, backupService.getServer().getRemotingService().getConnections().size());
 
       session1.close();
 

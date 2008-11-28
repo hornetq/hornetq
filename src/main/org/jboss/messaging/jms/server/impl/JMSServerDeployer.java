@@ -18,10 +18,12 @@ import java.util.List;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.server.JMSServerManager;
+import org.jboss.messaging.util.Pair;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -32,7 +34,7 @@ import org.w3c.dom.NodeList;
 public class JMSServerDeployer extends XmlDeployer
 {
    Logger log = Logger.getLogger(JMSServerDeployer.class);
-   
+
    private final Configuration configuration;
 
    private JMSServerManager jmsServerManager;
@@ -44,7 +46,7 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String CALL_TIMEOUT_ELEMENT = "call-timeout";
 
    private static final String DUPS_OK_BATCH_SIZE_ELEMENT = "dups-ok-batch-size";
-   
+
    private static final String TRANSACTION_BATCH_SIZE_ELEMENT = "transaction-batch-size";
 
    private static final String CONSUMER_WINDOW_SIZE_ELEMENT = "consumer-window-size";
@@ -54,9 +56,9 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String SEND_WINDOW_SIZE = "send-window-size";
 
    private static final String PRODUCER_MAX_RATE_ELEMENT = "producer-max-rate";
-   
+
    private static final String BIG_MESSAGE_ELEMENT = "big-message-size";
-   
+
    private static final String BLOCK_ON_ACKNOWLEDGE_ELEMENT = "block-on-acknowledge";
 
    private static final String SEND_NP_MESSAGES_SYNCHRONOUSLY_ELEMENT = "send-np-messages-synchronously";
@@ -64,14 +66,14 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String SEND_P_MESSAGES_SYNCHRONOUSLY_ELEMENT = "send-p-messages-synchronously";
 
    private static final String AUTO_GROUP_ID_ELEMENT = "auto-group-id";
-   
+
    private static final String MAX_CONNECTIONS_ELEMENT = "max-connections";
 
    private static final String PRE_ACKNOWLEDGE_ELEMENT = "pre-acknowledge";
 
    private static final String CONNECTOR_LINK_ELEMENT = "connector-ref";
 
-   private static final String BACKUP_CONNECTOR_ELEMENT = "backup-connector";
+   private static final String DISCOVERY_GROUP_ELEMENT = "discovery-group-ref";
 
    private static final String ENTRY_NODE_NAME = "entry";
 
@@ -80,11 +82,15 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String QUEUE_NODE_NAME = "queue";
 
    private static final String TOPIC_NODE_NAME = "topic";
+   
+   private static final String CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME_ELEMENT = "connection-load-balancing-policy-class-name";
+   
+   private static final String DISCOVERY_INITIAL_WAIT_ELEMENT = "discovery-initial-wait";
 
    public JMSServerDeployer(final DeploymentManager deploymentManager, final Configuration config)
    {
       super(deploymentManager);
-      
+
       this.configuration = config;
    }
 
@@ -128,7 +134,7 @@ public class JMSServerDeployer extends XmlDeployer
       {
          NodeList children = node.getChildNodes();
 
-         long pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;     
+         long pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
          long callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
          String clientID = null;
          int dupsOKBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
@@ -137,7 +143,7 @@ public class JMSServerDeployer extends XmlDeployer
          int consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
          int sendWindowSize = ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
          int producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-         int minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_BIG_MESSAGE_SIZE;
+         int minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
          boolean blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
          boolean blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
          boolean blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
@@ -145,15 +151,17 @@ public class JMSServerDeployer extends XmlDeployer
          int maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
          boolean preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
          List<String> jndiBindings = new ArrayList<String>();
-         String connectorName = null;
-         String backupConnectorName = null;
-
+         List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+         DiscoveryGroupConfiguration discoveryGroupConfiguration = null;
+         String connectionLoadBalancingPolicyClassName = ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+         long discoveryInitialWait = ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT;
+         
          for (int j = 0; j < children.getLength(); j++)
          {
             Node child = children.item(j);
-            
+
             String childText = child.getTextContent().trim();
-            
+
             if (PING_PERIOD_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
                pingPeriod = Long.parseLong(childText);
@@ -180,7 +188,7 @@ public class JMSServerDeployer extends XmlDeployer
             }
             else if (BIG_MESSAGE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               minLargeMessageSize  = Integer.parseInt(childText);
+               minLargeMessageSize = Integer.parseInt(childText);
             }
             else if (CLIENTID_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
@@ -206,15 +214,15 @@ public class JMSServerDeployer extends XmlDeployer
             {
                blockOnPersistentSend = Boolean.parseBoolean(childText);
             }
-            else if(AUTO_GROUP_ID_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (AUTO_GROUP_ID_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
                autoGroup = Boolean.parseBoolean(childText);
             }
-            else if(MAX_CONNECTIONS_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (MAX_CONNECTIONS_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
                maxConnections = Integer.parseInt(childText);
             }
-            else if(PRE_ACKNOWLEDGE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (PRE_ACKNOWLEDGE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
                preAcknowledge = Boolean.parseBoolean(childText);;
             }
@@ -225,64 +233,109 @@ public class JMSServerDeployer extends XmlDeployer
             }
             else if (CONNECTOR_LINK_ELEMENT.equalsIgnoreCase(child.getNodeName()))
             {
-               connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
-            }
-            else if (BACKUP_CONNECTOR_ELEMENT.equalsIgnoreCase(child.getNodeName()))
-            {
-               backupConnectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
-            }
-         }
+               String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
 
-         if (connectorName == null)
-         {
-            throw new IllegalArgumentException("connector must be specified in configuration");
-         }
-         
-         TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorName);
-         
-         if (connector == null)
-         {
-            log.warn("There is no connector with name '" + connectorName + "' deployed.");
-            
-            return;
-         }
-         
-         TransportConfiguration backupConnector = null;
-         
-         if (backupConnectorName != null)
-         {
-            backupConnector = configuration.getConnectorConfigurations().get(backupConnectorName);
-            
-            if (backupConnector == null)
-            {
-               log.warn("There is no connector with name '" + connectorName + "' deployed.");
+               TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorName);
                
-               return;
+               if (connector == null)
+               {
+                  log.warn("There is no connector with name '" + connectorName + "' deployed.");
+
+                  return;
+               }
+               
+               TransportConfiguration backupConnector = null;
+
+               Node backupNode = child.getAttributes().getNamedItem("backup-connector-name");
+
+               if (backupNode != null)
+               {
+                  String backupConnectorName = node.getNodeValue();
+                  
+                  backupConnector = configuration.getConnectorConfigurations().get(backupConnectorName);
+                  
+                  if (backupConnector == null)
+                  {
+                     log.warn("There is no backup connector with name '" + connectorName + "' deployed.");
+
+                     return;
+                  }                  
+               }
+               
+               connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(connector, backupConnector));
+            }
+            else if (DISCOVERY_GROUP_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            {
+               String discoveryGroupName = child.getAttributes().getNamedItem("discovery-group-name").getNodeValue();
+               
+               discoveryGroupConfiguration = configuration.getDiscoveryGroupConfigurations().get(discoveryGroupName);
+               
+               if (discoveryGroupConfiguration == null)
+               {
+                  log.warn("There is no discovery group with name '" + discoveryGroupName + "' deployed.");
+
+                  return;
+               } 
+            }
+            else if (CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            {
+               connectionLoadBalancingPolicyClassName = child.getTextContent().trim();
+            }
+            else if (DISCOVERY_INITIAL_WAIT_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            {
+               discoveryInitialWait = Integer.parseInt(child.getTextContent().trim());
             }
          }
          
          String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
 
-         jmsServerManager.createConnectionFactory(name,
-                                                  connector,
-                                                  backupConnector,
-                                                  pingPeriod,                                      
-                                                  callTimeout,
-                                                  clientID,
-                                                  dupsOKBatchSize,
-                                                  transactionBatchSize,
-                                                  consumerWindowSize,
-                                                  consumerMaxRate,
-                                                  sendWindowSize,
-                                                  producerMaxRate,
-                                                  minLargeMessageSize,
-                                                  blockOnAcknowledge,
-                                                  blockOnNonPersistentSend,
-                                                  blockOnPersistentSend,
-                                                  autoGroup,
-                                                  maxConnections,
-                                                  preAcknowledge,
-                                                  jndiBindings);
+         if (discoveryGroupConfiguration != null)
+         {
+            jmsServerManager.createConnectionFactory(name,
+                                                     discoveryGroupConfiguration,
+                                                     discoveryInitialWait,
+                                                     connectionLoadBalancingPolicyClassName,
+                                                     pingPeriod,
+                                                     callTimeout,
+                                                     clientID,
+                                                     dupsOKBatchSize,
+                                                     transactionBatchSize,
+                                                     consumerWindowSize,
+                                                     consumerMaxRate,
+                                                     sendWindowSize,
+                                                     producerMaxRate,
+                                                     minLargeMessageSize,
+                                                     blockOnAcknowledge,
+                                                     blockOnNonPersistentSend,
+                                                     blockOnPersistentSend,
+                                                     autoGroup,
+                                                     maxConnections,
+                                                     preAcknowledge,
+                                                     jndiBindings);
+         }
+         else
+         {
+            jmsServerManager.createConnectionFactory(name,
+                                                     connectorConfigs,
+                                                     connectionLoadBalancingPolicyClassName,
+                                                     pingPeriod,
+                                                     callTimeout,
+                                                     clientID,
+                                                     dupsOKBatchSize,
+                                                     transactionBatchSize,
+                                                     consumerWindowSize,
+                                                     consumerMaxRate,
+                                                     sendWindowSize,
+                                                     producerMaxRate,
+                                                     minLargeMessageSize,
+                                                     blockOnAcknowledge,
+                                                     blockOnNonPersistentSend,
+                                                     blockOnPersistentSend,
+                                                     autoGroup,
+                                                     maxConnections,
+                                                     preAcknowledge,
+                                                     jndiBindings);
+         }
       }
       else if (node.getNodeName().equals(QUEUE_NODE_NAME))
       {
@@ -297,7 +350,6 @@ public class JMSServerDeployer extends XmlDeployer
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
                jmsServerManager.createQueue(queueName, jndiName);
             }
-
          }
       }
       else if (node.getNodeName().equals(TOPIC_NODE_NAME))

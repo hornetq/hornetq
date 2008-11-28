@@ -119,7 +119,7 @@ public class QueueImpl implements Queue
       this.clustered = clustered;
 
       this.durable = durable;
-                                                                                    
+
       this.temporary = temporary;
 
       this.postOffice = postOffice;
@@ -140,7 +140,7 @@ public class QueueImpl implements Queue
 
    // Queue implementation
    // -------------------------------------------------------------------
-  
+
    public boolean isClustered()
    {
       return clustered;
@@ -187,7 +187,7 @@ public class QueueImpl implements Queue
          {
             messageReferences.addFirst(ref, msg.getPriority());
          }
-         if(ref.getMessage().getExpiration() != 0)
+         if (ref.getMessage().getExpiration() != 0)
          {
             expiringMessageReferences.addIfAbsent(ref);
          }
@@ -284,10 +284,10 @@ public class QueueImpl implements Queue
             break;
          }
       }
-      
+
       if (removed == null)
       {
-         //Look in scheduled deliveries
+         // Look in scheduled deliveries
          removed = scheduledDeliveryHandler.removeReferenceWithID(id);
       }
 
@@ -370,11 +370,9 @@ public class QueueImpl implements Queue
       return deliveringCount.get();
    }
 
-   public void referenceAcknowledged(MessageReference ref) throws Exception
+   public void referenceAcknowledged(final MessageReference ref) throws Exception
    {
-
       referenceRemoved(ref);
-
    }
 
    public void referenceCancelled()
@@ -471,9 +469,9 @@ public class QueueImpl implements Queue
    }
 
    public synchronized boolean expireMessage(final long messageID,
-                                final StorageManager storageManager,
-                                final PostOffice postOffice,
-                                final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+                                             final StorageManager storageManager,
+                                             final PostOffice postOffice,
+                                             final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -519,10 +517,11 @@ public class QueueImpl implements Queue
    }
    
    public void expireMessages(final StorageManager storageManager,
-                                final PostOffice postOffice,
-                                final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+                              final PostOffice postOffice,
+                              final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       List<MessageReference> refs = new ArrayList<MessageReference>();
+
       for (MessageReference expiringMessageReference : expiringMessageReferences)
       {
          if (expiringMessageReference.getMessage().isExpired())
@@ -532,7 +531,7 @@ public class QueueImpl implements Queue
       }
       for (MessageReference ref : refs)
       {
-         if(expiringMessageReferences.remove(ref))
+         if (expiringMessageReferences.remove(ref))
          {
             expireMessage(ref.getMessage().getMessageID(), storageManager, postOffice, queueSettingsRepository);
          }
@@ -540,9 +539,9 @@ public class QueueImpl implements Queue
    }
 
    public boolean sendMessageToDeadLetterAddress(final long messageID,
-                                   final StorageManager storageManager,
-                                   final PostOffice postOffice,
-                                   final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+                                                 final StorageManager storageManager,
+                                                 final PostOffice postOffice,
+                                                 final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -681,7 +680,7 @@ public class QueueImpl implements Queue
                   " so queue will be activated now");
 
          backup = false;
-         
+
          scheduledDeliveryHandler.reSchedule();
 
          deliverAsync(executor);
@@ -855,7 +854,7 @@ public class QueueImpl implements Queue
 
       if (add)
       {
-         if(ref.getMessage().getExpiration() != 0)
+         if (ref.getMessage().getExpiration() != 0)
          {
             expiringMessageReferences.addIfAbsent(ref);
          }
@@ -905,9 +904,9 @@ public class QueueImpl implements Queue
     * @param ref
     * @throws Exception
     */
-   private void referenceRemoved(MessageReference ref) throws Exception
+   private void referenceRemoved(final MessageReference ref) throws Exception
    {
-      if(ref.getMessage().getExpiration() > 0)
+      if (ref.getMessage().getExpiration() > 0)
       {
          expiringMessageReferences.remove(ref);
       }

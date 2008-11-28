@@ -92,6 +92,7 @@ public class JMSFailoverTest extends TestCase
       JBossConnectionFactory jbcf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                           backupParams),
+                                                               ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                                ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                                                                ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                                                null,
@@ -101,10 +102,10 @@ public class JMSFailoverTest extends TestCase
                                                                ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
                                                                ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
                                                                ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                                                               ClientSessionFactoryImpl.DEFAULT_BIG_MESSAGE_SIZE,
+                                                               ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                                ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                                                                ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                               ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                                               true,
                                                                ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                                                                ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
                                                                ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
@@ -172,18 +173,19 @@ public class JMSFailoverTest extends TestCase
    {
       JBossConnectionFactory jbcfLive = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                    null,
+                                                                   ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                                    ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                                                                    ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                                                                   null,                                                                   
+                                                                   null,
                                                                    ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
                                                                    ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
                                                                    ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                                                                    ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
                                                                    ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
                                                                    ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                                                                   ClientSessionFactoryImpl.DEFAULT_BIG_MESSAGE_SIZE,
+                                                                   ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                                    ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                                   ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                                                   true,
                                                                    true,
                                                                    ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                                                                    ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
@@ -192,6 +194,7 @@ public class JMSFailoverTest extends TestCase
       JBossConnectionFactory jbcfBackup = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams),
                                                                      null,
+                                                                     ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                                      ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                                                                      ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                                                      null,
@@ -201,10 +204,10 @@ public class JMSFailoverTest extends TestCase
                                                                      ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
                                                                      ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
                                                                      ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                                                                     ClientSessionFactoryImpl.DEFAULT_BIG_MESSAGE_SIZE,
+                                                                     ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                                      ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                                     ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                                     ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                                                     true,
+                                                                     true,
                                                                      ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                                                                      ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
                                                                      ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
@@ -237,8 +240,8 @@ public class JMSFailoverTest extends TestCase
 
          producerLive.send(tm);
       }
-      
-      // Note we block on NP send to make sure all messages get to server before failover
+
+      // Note we block on P send to make sure all messages get to server before failover
 
       MessagingException me = new MessagingException(MessagingException.NOT_CONNECTED);
 
@@ -304,7 +307,8 @@ public class JMSFailoverTest extends TestCase
               .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
       TransportConfiguration backupTC = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                   backupParams, "backup-connector");
+                                                                   backupParams,
+                                                                   "backup-connector");
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());

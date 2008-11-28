@@ -63,7 +63,7 @@ public class ConsumerTest extends TestCase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations()
-            .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
+          .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
       service = MessagingServiceImpl.newNullStorageMessagingServer(conf);
       service.start();
       serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service.getServer());
@@ -71,23 +71,24 @@ public class ConsumerTest extends TestCase
       serverManager.setInitialContext(new NullInitialContext());
       serverManager.createQueue(Q_NAME, Q_NAME);
       cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             null,
-                                                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
-                                                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                                                             null,
-                                                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                                                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                                                             ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
-                                                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                                                             ClientSessionFactoryImpl.DEFAULT_BIG_MESSAGE_SIZE,
-                                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                             true,
-                                                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                                                             ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                                                             true);
+                                      null,
+                                      ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                      ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                                      ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                      null,
+                                      ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                      ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                      ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                      ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                      ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                                      ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                      ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                      ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                      ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                      true,
+                                      ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                                      ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
+                                      true);
    }
 
    @Override
@@ -117,18 +118,18 @@ public class ConsumerTest extends TestCase
       MessageProducer producer = session.createProducer(jBossQueue);
       MessageConsumer consumer = session.createConsumer(jBossQueue);
       int noOfMessages = 100;
-      for(int i = 0; i < noOfMessages; i++)
+      for (int i = 0; i < noOfMessages; i++)
       {
          producer.send(session.createTextMessage("m" + i));
       }
 
       conn.start();
-      for(int i = 0; i < noOfMessages; i++)
+      for (int i = 0; i < noOfMessages; i++)
       {
          Message m = consumer.receive(500);
          assertNotNull(m);
       }
-       // assert that all the messages are there and none have been acked
+      // assert that all the messages are there and none have been acked
       SimpleString queueName = new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
       assertEquals(service.getServer().getPostOffice().getBinding(queueName).getQueue().getDeliveringCount(), 0);
       assertEquals(service.getServer().getPostOffice().getBinding(queueName).getQueue().getMessageCount(), 0);

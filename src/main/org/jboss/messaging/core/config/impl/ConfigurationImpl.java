@@ -143,7 +143,7 @@ public class ConfigurationImpl implements Configuration
    
    protected Set<BroadcastGroupConfiguration> broadcastGroupConfigurations = new HashSet<BroadcastGroupConfiguration>();
    
-   protected Set<DiscoveryGroupConfiguration> discoveryGroupConfigurations = new HashSet<DiscoveryGroupConfiguration>();
+   protected Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations = new HashMap<String, DiscoveryGroupConfiguration>();
 
    // Paging related attributes ------------------------------------------------------------
 
@@ -322,12 +322,12 @@ public class ConfigurationImpl implements Configuration
       this.broadcastGroupConfigurations = broadcastGroupConfigurations;
    }
 
-   public Set<DiscoveryGroupConfiguration> getDiscoveryGroupConfigurations()
+   public Map<String, DiscoveryGroupConfiguration> getDiscoveryGroupConfigurations()
    {
       return discoveryGroupConfigurations;
    }
 
-   public void setDiscoveryGroupConfigurations(Set<DiscoveryGroupConfiguration> discoveryGroupConfigurations)
+   public void setDiscoveryGroupConfigurations(Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations)
    {
       this.discoveryGroupConfigurations = discoveryGroupConfigurations;
    }

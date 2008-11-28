@@ -43,6 +43,7 @@ import javax.jms.TopicSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import org.jboss.messaging.util.Pair;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.jms.message.SimpleJMSBytesMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
@@ -86,10 +87,18 @@ public class CTSMiscellaneousTest extends JBMServerTestCase
          // Deploy a connection factory with load balancing but no failover on node0
          List<String> bindings = new ArrayList<String>();
          bindings.add("StrictTCKConnectionFactory");
-
+         
+         List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = 
+            new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+         
+         connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"), null));
+         
+         List<String> jndiBindings = new ArrayList<String>();
+         jndiBindings.add("/StrictTCKConnectionFactory");
+         
          getJmsServerManager().createConnectionFactory("StrictTCKConnectionFactory",
-                                                       new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
-                                                       null,
+                                                       connectorConfigs,
+                                                       ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                        ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,                                                       
                                                        ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                                        null,
@@ -99,14 +108,14 @@ public class CTSMiscellaneousTest extends JBMServerTestCase
                                                        ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
                                                        ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
                                                        ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                                                       -1,
+                                                       ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                        true,
                                                        true,
                                                        true,
                                                        ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                                                        ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
                                                        ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
-                                                       "/StrictTCKConnectionFactory");
+                                                       jndiBindings);
 
          cf = (JBossConnectionFactory)getInitialContext().lookup("/StrictTCKConnectionFactory");
       }

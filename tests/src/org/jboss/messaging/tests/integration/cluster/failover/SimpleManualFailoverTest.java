@@ -169,8 +169,6 @@ public class SimpleManualFailoverTest extends TestCase
       assertEquals(0, sf.numSessions());
       
       assertEquals(0, sf.numConnections());
-      
-      assertEquals(0, sf.numBackupConnections());
    }
 
    // Package protected ---------------------------------------------

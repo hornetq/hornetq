@@ -26,6 +26,7 @@ import java.lang.management.ManagementFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -56,6 +57,7 @@ import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.integration.bootstrap.JBMBootstrapServer;
+import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.test.messaging.tools.ConfigurationHelper;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -536,19 +538,24 @@ public class LocalTestServer implements Server, Runnable
    {
       log.info("deploying connection factory with name: " + objectName + " and dupsok: " + dupsOkBatchSize);
 
+      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = 
+         new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+      
+      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"), null));
+           
       getJMSServerManager().createConnectionFactory(objectName,
-                                                    new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
-                                                    null,
-                                                    ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                                                    connectorConfigs,
+                                                    ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                                    ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,                                                       
                                                     ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                                     clientId,
                                                     dupsOkBatchSize,
                                                     ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
                                                     prefetchSize,
                                                     -1,
-                                                    ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
                                                     -1,
-                                                    -1,
+                                                    ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                                    ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,                                                    
                                                     blockOnAcknowledge,
                                                     true,
                                                     true,

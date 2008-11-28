@@ -24,8 +24,9 @@
 package org.jboss.messaging.core.config.cluster;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
+
+import org.jboss.messaging.util.Pair;
 
 /**
  * A BroadcastGroupConfiguration
@@ -52,7 +53,7 @@ public class BroadcastGroupConfiguration implements Serializable
    
    private final long broadcastPeriod;
    
-   private final List<String> connectorNames;
+   private final List<Pair<String, String>> connectorInfos;
 
    public BroadcastGroupConfiguration(final String name,
                                       final String localBindAddress,
@@ -60,7 +61,7 @@ public class BroadcastGroupConfiguration implements Serializable
                                       final String groupAddress,
                                       final int groupPort,
                                       final long broadcastPeriod,
-                                      final List<String> connectorNames)
+                                      final List<Pair<String, String>> connectorInfos)
    {
       super();
       this.name = name;
@@ -69,7 +70,7 @@ public class BroadcastGroupConfiguration implements Serializable
       this.groupAddress = groupAddress;
       this.groupPort = groupPort;
       this.broadcastPeriod = broadcastPeriod;
-      this.connectorNames = connectorNames;
+      this.connectorInfos = connectorInfos;
    }
 
    public String getName()
@@ -102,9 +103,9 @@ public class BroadcastGroupConfiguration implements Serializable
       return broadcastPeriod;
    }
    
-   public List<String> getConnectorNames()
+   public List<Pair<String, String>> getConnectorInfos()
    {
-      return connectorNames;
+      return connectorInfos;
    }
 
 }

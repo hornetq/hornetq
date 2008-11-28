@@ -40,6 +40,7 @@ import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -86,8 +87,8 @@ public class MessageFlowWithFilterTest extends MessageFlowTestBase
 
       final String filter = "selectorkey='ORANGES'";
 
-      List<String> connectorNames = new ArrayList<String>();
-      connectorNames.add(server1tc.getName());
+      List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();
+      connectorNames.add(new Pair<String, String>(server1tc.getName(), null));
 
       MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1",
                                                                        address1.toString(),

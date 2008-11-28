@@ -25,6 +25,8 @@ package org.jboss.messaging.jms.server;
 import java.util.List;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
+import org.jboss.messaging.util.Pair;
 
 /**
  * The JMS Management interface.
@@ -106,9 +108,9 @@ public interface JMSServerManager
    boolean destroyTopic(String name) throws Exception;
 
    boolean createConnectionFactory(String name,
-                                   TransportConfiguration connectorConfig,
-                                   TransportConfiguration backupConnectorConfig,
-                                   long pingPeriod,                                
+                                   List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                   String connectionLoadBalancingPolicyClassName,
+                                   long pingPeriod,
                                    long callTimeout,
                                    String clientID,
                                    int dupsOKBatchSize,
@@ -117,19 +119,20 @@ public interface JMSServerManager
                                    int consumerMaxRate,
                                    int sendWindowSize,
                                    int producerMaxRate,
-                                   int minLargeMessageSize, 
+                                   int minLargeMessageSize,
                                    boolean blockOnAcknowledge,
                                    boolean blockOnNonPersistentSend,
                                    boolean blockOnPersistentSend,
                                    boolean autoGroup,
                                    int maxConnections,
                                    boolean preAcknowledge,
-                                   String jndiBinding) throws Exception;
-
+                                   List<String> jndiBindings) throws Exception;
+   
    boolean createConnectionFactory(String name,
-                                   TransportConfiguration connectorConfig,
-                                   TransportConfiguration backupConnectorConfig,
-                                   long pingPeriod,                              
+                                   DiscoveryGroupConfiguration discoveryGroupConfig,
+                                   long discoveryInitialWait,
+                                   String connectionLoadBalancingPolicyClassName,
+                                   long pingPeriod,
                                    long callTimeout,
                                    String clientID,
                                    int dupsOKBatchSize,
@@ -138,14 +141,14 @@ public interface JMSServerManager
                                    int consumerMaxRate,
                                    int sendWindowSize,
                                    int producerMaxRate,
-                                   int minLargeMessageSize, 
+                                   int minLargeMessageSize,
                                    boolean blockOnAcknowledge,
                                    boolean blockOnNonPersistentSend,
                                    boolean blockOnPersistentSend,
-                                   boolean autoGroupId,
+                                   boolean autoGroup,
                                    int maxConnections,
                                    boolean preAcknowledge,
-                                   List<String> jndiBinding) throws Exception;
+                                   List<String> jndiBindings) throws Exception;
 
    /**
     * destroys a connection factory.

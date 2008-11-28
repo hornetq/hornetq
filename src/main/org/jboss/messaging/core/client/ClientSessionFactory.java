@@ -22,10 +22,7 @@
 
 package org.jboss.messaging.core.client;
 
-import java.util.Map;
-
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 
 /**
  * A ClientSessionFactory
@@ -66,7 +63,7 @@ public interface ClientSessionFactory
    int getProducerMaxRate();
 
    int getMinLargeMessageSize();
-   
+
    void setMinLargeMessageSize(final int minLargeMessageSize);
 
    boolean isBlockOnPersistentSend();
@@ -92,18 +89,16 @@ public interface ClientSessionFactory
    boolean isPreAcknowledge();
 
    void setPreAcknowledge(boolean preAcknowledge);
-   
-   ConnectorFactory getConnectorFactory();
-
-   Map<String, Object> getTransportParams();
-
-   ConnectorFactory getBackupConnectorFactory();
-
-   Map<String, Object> getBackupTransportParams();
 
    long getPingPeriod();
 
    long getCallTimeout();
 
    int getMaxConnections();
+   
+//   TransportConfiguration getTransportConfiguration();
+//   
+//   TransportConfiguration getBackupTransportConfiguration();
+   
+   void close();
 }

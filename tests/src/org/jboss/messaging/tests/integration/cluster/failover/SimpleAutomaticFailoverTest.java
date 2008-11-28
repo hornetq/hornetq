@@ -213,8 +213,6 @@ public class SimpleAutomaticFailoverTest extends TestCase
       assertEquals(0, sf.numSessions());
 
       assertEquals(0, sf.numConnections());
-      
-      assertEquals(0, sf.numBackupConnections());
    }
 
    public void testFailoverChangeConnectionFactory() throws Exception
@@ -297,8 +295,6 @@ public class SimpleAutomaticFailoverTest extends TestCase
       assertEquals(0, sf.numSessions());
 
       assertEquals(0, sf.numConnections());
-      
-      assertEquals(0, sf.numBackupConnections());
    }
 
    public void testNoMessagesLeftAfterFailoverNewSession() throws Exception
@@ -368,8 +364,6 @@ public class SimpleAutomaticFailoverTest extends TestCase
       assertEquals(0, sf.numSessions());
 
       assertEquals(0, sf.numConnections());
-      
-      assertEquals(0, sf.numBackupConnections());
    }
 
    public void testCreateMoreSessionsAfterFailover() throws Exception
@@ -441,8 +435,6 @@ public class SimpleAutomaticFailoverTest extends TestCase
       assertEquals(0, sf.numSessions());
 
       assertEquals(0, sf.numConnections());
-      
-      assertEquals(0, sf.numBackupConnections());
    }
 
    public void testFailureListenerCalledOnFailure() throws Exception
@@ -528,8 +520,6 @@ public class SimpleAutomaticFailoverTest extends TestCase
       assertEquals(0, sf.numSessions());
 
       assertEquals(0, sf.numConnections());
-      
-      assertEquals(0, sf.numBackupConnections());
    }
 
    public void testFailoverMultipleSessions() throws Exception
@@ -619,8 +609,6 @@ public class SimpleAutomaticFailoverTest extends TestCase
       assertEquals(0, sf.numSessions());
 
       assertEquals(0, sf.numConnections());
-      
-      assertEquals(0, sf.numBackupConnections());
    }
 
    public void testAllConnectionsReturned() throws Exception
@@ -652,8 +640,6 @@ public class SimpleAutomaticFailoverTest extends TestCase
       assertEquals(0, sf.numSessions());
 
       assertEquals(0, sf.numConnections());
-      
-      assertEquals(0, sf.numBackupConnections());
    }
 
    public void testAllConnectionsReturnedAfterFailover() throws Exception
@@ -690,8 +676,6 @@ public class SimpleAutomaticFailoverTest extends TestCase
       assertEquals(0, sf.numSessions());
 
       assertEquals(0, sf.numConnections());
-      
-      assertEquals(0, sf.numBackupConnections());
    }
 
    public void testFailureAfterFailover() throws Exception
@@ -783,8 +767,6 @@ public class SimpleAutomaticFailoverTest extends TestCase
       assertEquals(0, sf.numSessions());
 
       assertEquals(0, sf.numConnections());
-      
-      assertEquals(0, sf.numBackupConnections());
    }
 
    // Package protected ---------------------------------------------

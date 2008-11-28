@@ -43,11 +43,11 @@ public interface ClientSessionInternal extends ClientSession
    
    void handleReceiveChunk(long consumerID, SessionSendChunkMessage chunk) throws Exception;
 
-   void handleFailover();
+   void handleFailover(RemotingConnection backupConnection);
    
    RemotingConnection getConnection();
    
-   RemotingConnection getBackupConnection();
+//   RemotingConnection getBackupConnection();
    
-   void setBackupConnection(RemotingConnection connection);
+ //  void setBackupConnection(RemotingConnection connection);
 }

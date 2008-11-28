@@ -32,8 +32,8 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.impl.MessagingServerControl;
@@ -51,6 +51,7 @@ import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSManagementService;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.util.JNDIUtil;
+import org.jboss.messaging.util.Pair;
 
 /**
  * A Deployer used to create and add to JNDI queues, topics and connection
@@ -84,14 +85,23 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    private final JMSManagementService managementService;
 
-   public static JMSServerManagerImpl newJMSServerManagerImpl(MessagingServer server) throws Exception
+   public static JMSServerManagerImpl newJMSServerManagerImpl(final MessagingServer server) throws Exception
    {
-      MessagingServerControlMBean control = new MessagingServerControl(server.getPostOffice(), server.getStorageManager(), server.getConfiguration(),
-                                                                       server.getQueueSettingsRepository(), server.getResourceManager(), 
-                                                                       server.getRemotingService(), server, new MessageCounterManagerImpl(1000), new NotificationBroadcasterSupport());
+      MessagingServerControlMBean control = new MessagingServerControl(server.getPostOffice(),
+                                                                       server.getStorageManager(),
+                                                                       server.getConfiguration(),
+                                                                       server.getQueueSettingsRepository(),
+                                                                       server.getResourceManager(),
+                                                                       server.getRemotingService(),
+                                                                       server,
+                                                                       new MessageCounterManagerImpl(1000),
+                                                                       new NotificationBroadcasterSupport());
       JMSManagementService jmsManagementService = new JMSManagementServiceImpl(server.getManagementService());
-      return new JMSServerManagerImpl(control, server.getPostOffice(), server.getStorageManager(),
-                                      server.getQueueSettingsRepository(), jmsManagementService);
+      return new JMSServerManagerImpl(control,
+                                      server.getPostOffice(),
+                                      server.getStorageManager(),
+                                      server.getQueueSettingsRepository(),
+                                      jmsManagementService);
    }
 
    public JMSServerManagerImpl(final MessagingServerControlMBean server,
@@ -100,7 +110,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                                final JMSManagementService managementService)
    {
-      this.messagingServer = server;
+      messagingServer = server;
       this.postOffice = postOffice;
       this.storageManager = storageManager;
       this.queueSettingsRepository = queueSettingsRepository;
@@ -165,7 +175,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       return added;
    }
 
-   public boolean undeployDestination(String name) throws Exception
+   public boolean undeployDestination(final String name) throws Exception
    {
       List<String> jndiBindings = destinations.get(name);
       if (jndiBindings == null || jndiBindings.size() == 0)
@@ -202,78 +212,32 @@ public class JMSServerManagerImpl implements JMSServerManager
       return true;
    }
 
-   public boolean createConnectionFactory(String name,
-                                          TransportConfiguration connectorConfig,
-                                          TransportConfiguration backupConnectorConfig,
-                                          long pingPeriod,
-                                          long callTimeout,
-                                          String clientID,
-                                          int dupsOKBatchSize,
-                                          int transactionBatchSize,
-                                          int consumerWindowSize,
-                                          int consumerMaxRate,
-                                          int sendWindowSize,
-                                          int producerMaxRate,
-                                          int minLargeMessageSize,
-                                          boolean blockOnAcknowledge,
-                                          boolean blockOnNonPersistentSend,
-                                          boolean blockOnPersistentSend,
-                                          boolean autoGroup,
-                                          int maxConnections,
-                                          boolean preAcknowledge,
-                                          String jndiBinding) throws Exception
-   {
-      ArrayList<String> bindings = new ArrayList<String>(1);
-      bindings.add(jndiBinding);
-
-      return createConnectionFactory(name,
-                                     connectorConfig,
-                                     backupConnectorConfig,
-                                     pingPeriod,
-                                     callTimeout,
-                                     clientID,
-                                     dupsOKBatchSize,
-                                     transactionBatchSize,
-                                     consumerWindowSize,
-                                     consumerMaxRate,
-                                     sendWindowSize,
-                                     producerMaxRate,
-                                     minLargeMessageSize,
-                                     blockOnAcknowledge,
-                                     blockOnNonPersistentSend,
-                                     blockOnPersistentSend,
-                                     autoGroup,
-                                     maxConnections,
-                                     preAcknowledge,
-                                     bindings);
-   }
-
-   public boolean createConnectionFactory(String name,
-                                          TransportConfiguration connectorConfig,
-                                          TransportConfiguration backupConnectorConfig,
-                                          long pingPeriod,
-                                          long callTimeout,
-                                          String clientID,
-                                          int dupsOKBatchSize,
-                                          int transactionBatchSize,
-                                          int consumerWindowSize,
-                                          int consumerMaxRate,
-                                          int sendWindowSize,
-                                          int producerMaxRate,
-                                          int minLargeMessageSize,
-                                          boolean blockOnAcknowledge,
-                                          boolean blockOnNonPersistentSend,
-                                          boolean blockOnPersistentSend,
-                                          boolean autoGroup,
-                                          int maxConnections,
-                                          boolean preAcknowledge,
-                                          List<String> jndiBindings) throws Exception
+   public boolean createConnectionFactory(final String name,
+                                          final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                          final String connectionLoadBalancingPolicyClassName,
+                                          final long pingPeriod,
+                                          final long callTimeout,
+                                          final String clientID,
+                                          final int dupsOKBatchSize,
+                                          final int transactionBatchSize,
+                                          final int consumerWindowSize,
+                                          final int consumerMaxRate,
+                                          final int sendWindowSize,
+                                          final int producerMaxRate,
+                                          final int minLargeMessageSize,
+                                          final boolean blockOnAcknowledge,
+                                          final boolean blockOnNonPersistentSend,
+                                          final boolean blockOnPersistentSend,
+                                          final boolean autoGroup,
+                                          final int maxConnections,
+                                          final boolean preAcknowledge,
+                                          final List<String> jndiBindings) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(connectorConfig,
-                                         backupConnectorConfig,
+         cf = new JBossConnectionFactory(connectorConfigs,
+                                         connectionLoadBalancingPolicyClassName,
                                          pingPeriod,
                                          callTimeout,
                                          clientID,
@@ -283,8 +247,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                          consumerMaxRate,
                                          sendWindowSize,
                                          producerMaxRate,
-                                         minLargeMessageSize == -1 ? ClientSessionFactoryImpl.DEFAULT_BIG_MESSAGE_SIZE
-                                                                  : minLargeMessageSize,
+                                         minLargeMessageSize,
                                          blockOnAcknowledge,
                                          blockOnNonPersistentSend,
                                          blockOnPersistentSend,
@@ -292,17 +255,61 @@ public class JMSServerManagerImpl implements JMSServerManager
                                          maxConnections,
                                          preAcknowledge);
       }
-      for (String jndiBinding : jndiBindings)
+
+      bindConnectionFactory(cf, name, jndiBindings);
+
+      return true;
+   }
+
+   public boolean createConnectionFactory(final String name,
+                                          final DiscoveryGroupConfiguration discoveryGroupConfig,
+                                          final long discoveryInitialWait,
+                                          final String connectionLoadBalancingPolicyClassName,
+                                          final long pingPeriod,
+                                          final long callTimeout,
+                                          final String clientID,
+                                          final int dupsOKBatchSize,
+                                          final int transactionBatchSize,
+                                          final int consumerWindowSize,
+                                          final int consumerMaxRate,
+                                          final int sendWindowSize,
+                                          final int producerMaxRate,
+                                          final int minLargeMessageSize,
+                                          final boolean blockOnAcknowledge,
+                                          final boolean blockOnNonPersistentSend,
+                                          final boolean blockOnPersistentSend,
+                                          final boolean autoGroup,
+                                          final int maxConnections,
+                                          final boolean preAcknowledge,
+                                          final List<String> jndiBindings) throws Exception
+   {
+      JBossConnectionFactory cf = connectionFactories.get(name);
+      if (cf == null)
       {
-         bindToJndi(jndiBinding, cf);
-         if (connectionFactoryBindings.get(name) == null)
-         {
-            connectionFactoryBindings.put(name, new ArrayList<String>());
-         }
-         connectionFactoryBindings.get(name).add(jndiBinding);
+         cf = new JBossConnectionFactory(discoveryGroupConfig.getGroupAddress(),
+                                         discoveryGroupConfig.getGroupPort(),
+                                         discoveryGroupConfig.getRefreshTimeout(),
+                                         discoveryInitialWait,
+                                         connectionLoadBalancingPolicyClassName,
+                                         pingPeriod,
+                                         callTimeout,
+                                         clientID,
+                                         dupsOKBatchSize,
+                                         transactionBatchSize,
+                                         consumerWindowSize,
+                                         consumerMaxRate,
+                                         sendWindowSize,
+                                         producerMaxRate,
+                                         minLargeMessageSize,
+                                         blockOnAcknowledge,
+                                         blockOnNonPersistentSend,
+                                         blockOnPersistentSend,
+                                         autoGroup,
+                                         maxConnections,
+                                         preAcknowledge);
       }
 
-      managementService.registerConnectionFactory(name, cf, jndiBindings);
+      bindConnectionFactory(cf, name, jndiBindings);
 
       return true;
    }
@@ -340,12 +347,12 @@ public class JMSServerManagerImpl implements JMSServerManager
    {
       return messagingServer.closeConnectionsForAddress(ipAddress);
    }
-   
+
    public String[] listConnectionIDs()
    {
       return messagingServer.listConnectionIDs();
    }
-   
+
    public String[] listSessions(final String connectionID)
    {
       return messagingServer.listSessions(connectionID);
@@ -359,6 +366,24 @@ public class JMSServerManagerImpl implements JMSServerManager
    }
 
    // Private -------------------------------------------------------
+
+   private void bindConnectionFactory(final JBossConnectionFactory cf,
+                                      final String name,
+                                      final List<String> jndiBindings) throws Exception
+   {
+      for (String jndiBinding : jndiBindings)
+      {
+         bindToJndi(jndiBinding, cf);
+
+         if (connectionFactoryBindings.get(name) == null)
+         {
+            connectionFactoryBindings.put(name, new ArrayList<String>());
+         }
+         connectionFactoryBindings.get(name).add(jndiBinding);
+      }
+
+      managementService.registerConnectionFactory(name, cf, jndiBindings);
+   }
 
    private boolean bindToJndi(final String jndiName, final Object objectToBind) throws NamingException
    {

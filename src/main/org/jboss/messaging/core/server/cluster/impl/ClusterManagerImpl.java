@@ -48,6 +48,7 @@ import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.ExecutorFactory;
+import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -115,7 +116,7 @@ public class ClusterManagerImpl implements ClusterManager
          deployBroadcastGroup(config);
       }
 
-      for (DiscoveryGroupConfiguration config : configuration.getDiscoveryGroupConfigurations())
+      for (DiscoveryGroupConfiguration config : configuration.getDiscoveryGroupConfigurations().values())
       {
          deployDiscoveryGroup(config);
       }
@@ -182,20 +183,33 @@ public class ClusterManagerImpl implements ClusterManager
                                                         config.getLocalBindPort(),
                                                         groupAddress,
                                                         config.getGroupPort());
-      
-      for (String connectorName: config.getConnectorNames())
+
+      for (Pair<String, String> connectorInfo : config.getConnectorInfos())
       {
-         TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorName);
-         
+         TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorInfo.a);
+
          if (connector == null)
          {
-            log.warn("There is no connector deployed with name '" + connectorName + "'. The broadcast group with name '" +
-                     config.getName() + "' will not be deployed.");
-            
+            logWarnNoConnector(config.getName(), connectorInfo.a);
+
             return;
          }
-         
-         group.addConnector(connector);
+
+         TransportConfiguration backupConnector = null;
+
+         if (connectorInfo.b != null)
+         {
+            backupConnector = configuration.getConnectorConfigurations().get(connectorInfo.b);
+
+            if (connector == null)
+            {
+               logWarnNoConnector(config.getName(), connectorInfo.b);
+
+               return;
+            }
+         }
+
+         group.addConnectorPair(new Pair<TransportConfiguration, TransportConfiguration>(connector, backupConnector));
       }
 
       ScheduledFuture<?> future = scheduledExecutor.scheduleWithFixedDelay(group,
@@ -208,6 +222,14 @@ public class ClusterManagerImpl implements ClusterManager
       broadcastGroups.put(config.getName(), group);
 
       group.start();
+   }
+
+   private void logWarnNoConnector(final String connectorName, final String bgName)
+   {
+      log.warn("There is no connector deployed with name '" + connectorName +
+               "'. The broadcast group with name '" +
+               bgName +
+               "' will not be deployed.");
    }
 
    private synchronized void deployDiscoveryGroup(final DiscoveryGroupConfiguration config) throws Exception
@@ -291,21 +313,36 @@ public class ClusterManagerImpl implements ClusterManager
       {
          // Create message flow with list of static connectors
 
-         List<TransportConfiguration> conns = new ArrayList<TransportConfiguration>();
+         List<Pair<TransportConfiguration, TransportConfiguration>> conns = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
 
-         for (String connectorName : config.getConnectorNames())
+         for (Pair<String, String> connectorNamePair : config.getConnectorNamePairs())
          {
-            TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorName);
+            TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorNamePair.a);
 
             if (connector == null)
             {
-               log.warn("No connector defined with name '" + connectorName +
+               log.warn("No connector defined with name '" + connectorNamePair.a +
                         "'. The message flow will not be deployed.");
 
                return;
             }
 
-            conns.add(connector);
+            TransportConfiguration backupConnector = null;
+
+            if (connectorNamePair.b != null)
+            {
+               backupConnector = configuration.getConnectorConfigurations().get(connectorNamePair.b);
+
+               if (backupConnector == null)
+               {
+                  log.warn("No connector defined with name '" + connectorNamePair.b +
+                           "'. The message flow will not be deployed.");
+
+                  return;
+               }
+            }
+
+            conns.add(new Pair<TransportConfiguration, TransportConfiguration>(connector, backupConnector));
          }
 
          flow = new MessageFlowImpl(new SimpleString(config.getName()),
