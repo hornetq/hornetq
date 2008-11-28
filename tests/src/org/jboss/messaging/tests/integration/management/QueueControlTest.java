@@ -312,6 +312,56 @@ public class QueueControlTest extends TestCase
       session.close();
    }
    
+   public void testExpireMessagesWithFilter() throws Exception
+   {
+      SimpleString key = new SimpleString("key");
+      long matchingValue = randomLong();
+      long unmatchingValue = matchingValue + 1;
+
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSession session = sf.createSession(false, true, true);
+
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, true, true);
+      ClientProducer producer = session.createProducer(address);
+      session.start();
+
+      // send on queue
+      ClientMessage matchingMessage = session.createClientMessage(false);
+      matchingMessage.putLongProperty(key, matchingValue);
+      producer.send(matchingMessage);
+      ClientMessage unmatchingMessage = session.createClientMessage(false);
+      unmatchingMessage.putLongProperty(key, unmatchingValue);
+      producer.send(unmatchingMessage);
+
+      // wait a little bit to ensure the message is handled by the server
+      Thread.sleep(100);
+      QueueControlMBean queueControl = createQueueControl(address, queue);
+      assertEquals(2, queueControl.getMessageCount());
+
+      int expiredMessagesCount = queueControl.expireMessages(key + " =" + matchingValue);
+      assertEquals(1, expiredMessagesCount);
+      assertEquals(1, queueControl.getMessageCount());
+
+      // consume the unmatched message from queue
+      ClientConsumer consumer = session.createConsumer(queue);
+      ClientMessage m = consumer.receive(500);
+      assertNotNull(m);
+      assertEquals(unmatchingValue, m.getProperty(key));
+
+      m.acknowledge();
+
+      // check there is no other message to consume:
+      m = consumer.receive(500);
+      assertNull(m);
+
+      consumer.close();
+      session.deleteQueue(queue);
+      session.close();
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
