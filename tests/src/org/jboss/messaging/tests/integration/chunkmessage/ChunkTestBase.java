@@ -40,6 +40,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.util.DataConstants;
 import org.jboss.messaging.util.SimpleString;
@@ -60,6 +61,9 @@ public class ChunkTestBase extends ServiceTestBase
    private static final Logger log = Logger.getLogger(ChunkTestBase.class);
 
    protected final SimpleString ADDRESS = new SimpleString("SimpleAddress");
+   
+   protected MessagingService messagingService;
+
 
    // Attributes ----------------------------------------------------
 

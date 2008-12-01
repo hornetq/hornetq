@@ -81,8 +81,6 @@ public class ServiceTestBase extends UnitTestCase
 
    protected String temporaryDir = baseDir + "/temporary";
 
-   protected MessagingService messagingService;
-
    // Static --------------------------------------------------------
    private final Logger log = Logger.getLogger(this.getClass());
 

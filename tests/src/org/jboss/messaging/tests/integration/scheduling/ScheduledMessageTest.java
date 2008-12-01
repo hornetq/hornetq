@@ -34,6 +34,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -53,6 +54,8 @@ public class ScheduledMessageTest extends ServiceTestBase
    private SimpleString atestq2 = new SimpleString("ascheduledtestq2");
 
    private Configuration configuration;
+   
+   private MessagingService messagingService;
 
    protected void setUp() throws Exception
    {

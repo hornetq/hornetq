@@ -63,6 +63,7 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
+import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 
@@ -82,6 +83,8 @@ public class PingTest extends ServiceTestBase
    private static final long PING_INTERVAL = 500;
 
    // Attributes ----------------------------------------------------
+   
+   private MessagingService messagingService;
 
    // Static --------------------------------------------------------
 

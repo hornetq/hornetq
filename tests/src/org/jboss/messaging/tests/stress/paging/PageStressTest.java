@@ -37,8 +37,8 @@ public class PageStressTest extends ServiceTestBase
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   MessagingService service;
+   
+   private MessagingService messagingService;
 
    // Static --------------------------------------------------------
 
@@ -78,8 +78,8 @@ public class PageStressTest extends ServiceTestBase
          settings.put("page-adr", setting);
       }
 
-      service = createService(true, config, settings);
-      service.start();
+      messagingService = createService(true, config, settings);
+      messagingService.start();
 
       ClientSessionFactory factory = createInVMFactory();
       factory.setBlockOnAcknowledge(true);
@@ -133,12 +133,12 @@ public class PageStressTest extends ServiceTestBase
          
          session.close();
          
-         service.stop();
+         messagingService.stop();
          
          System.out.println("server stopped, nr msgs: " + msgs);
 
-         service = createService(true, config, settings);
-         service.start();
+         messagingService = createService(true, config, settings);
+         messagingService.start();
          
          
          factory = createInVMFactory();
@@ -171,7 +171,7 @@ public class PageStressTest extends ServiceTestBase
       finally
       {
          session.close();
-         service.stop();
+         messagingService.stop();
       }
 
    }
@@ -207,8 +207,8 @@ public class PageStressTest extends ServiceTestBase
          settings.put("page-adr", setting);
       }
 
-      service = createService(true, config, settings);
-      service.start();
+      messagingService = createService(true, config, settings);
+      messagingService.start();
 
       ClientSessionFactory factory = createInVMFactory();
       ClientSession session = null;
@@ -275,7 +275,7 @@ public class PageStressTest extends ServiceTestBase
       finally
       {
          session.close();
-         service.stop();
+         messagingService.stop();
       }
 
    }

@@ -25,11 +25,11 @@ package org.jboss.messaging.core.paging.impl;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.messaging.core.journal.SequentialFile;
@@ -90,11 +90,12 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private volatile Page currentPage;
 
-   // positioningGlobalLock protects opening/closing and messing up with
-   // positions (currentPage and IDs)
-   private final Semaphore positioningGlobalLock = new Semaphore(1);
+   private final ReentrantLock writeLock = new ReentrantLock();
 
-   private final ReadWriteLock lock = new ReentrantReadWriteLock();
+   /** 
+    * We need to perform checks on currentPage with minimal locking
+    * */
+   private final ReadWriteLock currentPageLock = new ReentrantReadWriteLock();
 
    private volatile boolean running = false;
 
@@ -181,14 +182,14 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public boolean isPaging()
    {
-      lock.readLock().lock();
+      currentPageLock.readLock().lock();
       try
       {
          return currentPage != null;
       }
       finally
       {
-         lock.readLock().unlock();
+         currentPageLock.readLock().unlock();
       }
    }
 
@@ -243,10 +244,8 @@ public class PagingStoreImpl implements TestSupportPageStore
    //FIXME - why is this public?
    public Page depage() throws Exception
    {
-      positioningGlobalLock.acquire(); // Can't change currentPage or any of ids
-      // without a global lock
-      lock.writeLock().lock(); // Wait pending writes to finish before
-      // entering the block
+      writeLock.lock();
+      currentPageLock.writeLock().lock();  // Make sure no checks are done on currentPage while we are depaging
 
       try
       {
@@ -298,8 +297,8 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
       finally
       {
-         lock.writeLock().unlock();
-         positioningGlobalLock.release();
+         currentPageLock.writeLock().unlock();
+         writeLock.unlock();
       }
 
    }
@@ -313,11 +312,11 @@ public class PagingStoreImpl implements TestSupportPageStore
          return false;
       }
       
-      lock.readLock().lock();
+      currentPageLock.readLock().lock();
       
       try
       {
-         // First done without a global lock, to avoid synchronization and increase throuput
+         // First check done concurrently, to avoid synchronization and increase throughput
          if (currentPage == null)
          {
             return false;
@@ -325,87 +324,65 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
       finally
       {
-         lock.readLock().unlock();
+         currentPageLock.readLock().unlock();
       }
 
 
-      // The only thing single-threaded done on paging is positioning and
-      // check-files (verifying if we need to open a new page file)
-      positioningGlobalLock.acquire();
-      
-      boolean gotReadLock = false;
+      writeLock.lock();
 
-      // After we have it locked we keep all the threads working until we need
-      // to move to a new file (in which case we demand a writeLock, to wait for
-      // the writes to finish)
       try
       {
-         try
-         {
-            if (currentPage == null)
-            {
-               return false;
-            }
-
-            int bytesToWrite = fileFactory.calculateBlockSize(message.getEncodeSize() + PageImpl.SIZE_RECORD);
-   
-            if (pageUsedSize.addAndGet(bytesToWrite) > pageSize && currentPage.getNumberOfMessages() > 0)
-            {
-               // Wait any pending write on the current page to finish before we
-               // can open another page.
-               lock.writeLock().lock();
-               try
-               {
-                  openNewPage();
-                  // openNewPage will zero pageUsedSize, that's why this is done again
-                  pageUsedSize.addAndGet(bytesToWrite);
-               }
-               finally
-               {
-                  lock.writeLock().unlock();
-               }
-            }
-            // we must get the readLock before we release the synchronizedBlockLock
-            // or else we could end up with files records being added to the
-            // currentPage even if the max size was already achieved.
-            // (Condition tested by PagingStoreTestPage::testConcurrentPaging, The
-            // test would eventually fail, 1 in 100)
-            // This is because the checkSize and positioning has to be done
-            // protected. We only allow writing the file in multi-thread.
-            lock.readLock().lock();
-            
-            gotReadLock = true;
-   
-         }
-         finally
-         {
-            positioningGlobalLock.release();
-         }
-
-         // End of a synchronized block..
-
-         if (currentPage != null)
-         {
-            currentPage.write(message);
-            return true;
-         }
-         else
+         if (currentPage == null)
          {
             return false;
          }
+
+         int bytesToWrite = fileFactory.calculateBlockSize(message.getEncodeSize() + PageImpl.SIZE_RECORD);
+
+         if (pageUsedSize.addAndGet(bytesToWrite) > pageSize && currentPage.getNumberOfMessages() > 0)
+         {
+            // Make sure nothing is currently validating currentPaging
+            currentPageLock.writeLock().lock();
+            try
+            {
+               openNewPage();
+               pageUsedSize.addAndGet(bytesToWrite);
+            }
+            finally
+            {
+               currentPageLock.writeLock().unlock();
+            }
+         }
+ 
+         currentPageLock.readLock().lock();
+
+         try
+         {
+            if (currentPage != null)
+            {
+               currentPage.write(message);
+               return true;
+            }
+            else
+            {
+               return false;
+            }
+         }
+         finally
+         {
+            currentPageLock.readLock().unlock();
+         }
+
       }
       finally
       {
-         if (gotReadLock)
-         {
-            lock.readLock().unlock();
-         }
+         writeLock.unlock();
       }
    }
 
    public void sync() throws Exception
    {
-      lock.readLock().lock();
+      currentPageLock.readLock().lock();
 
       try
       {
@@ -416,13 +393,13 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
       finally
       {
-         lock.readLock().unlock();
+         currentPageLock.readLock().unlock();
       }
    }
 
    public boolean startDepaging()
    {
-      lock.readLock().lock();
+      currentPageLock.readLock().lock();
       try
       {
          if (currentPage == null)
@@ -448,7 +425,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
       finally
       {
-         lock.readLock().unlock();
+         currentPageLock.readLock().unlock();
       }
    }
 
@@ -473,7 +450,8 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       if (running)
       {
-         lock.writeLock().lock();
+         writeLock.lock();
+         currentPageLock.writeLock().lock();
 
          try
          {
@@ -489,7 +467,8 @@ public class PagingStoreImpl implements TestSupportPageStore
          }
          finally
          {
-            lock.writeLock().unlock();
+            writeLock.unlock();
+            currentPageLock.writeLock().unlock();
          }
       }
    }
@@ -506,7 +485,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          return;
       }
 
-      lock.writeLock().lock();
+      currentPageLock.writeLock().lock();
 
       firstPageId = Integer.MAX_VALUE;
       currentPageId = 0;
@@ -542,7 +521,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
       finally
       {
-         lock.writeLock().unlock();
+         currentPageLock.writeLock().unlock();
       }
    }
 
@@ -550,7 +529,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       // First check without any global locks.
       // (Faster)
-      lock.readLock().lock();
+      currentPageLock.readLock().lock();
       try
       {
          if (currentPage != null)
@@ -560,12 +539,12 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
       finally
       {
-         lock.readLock().unlock();
+         currentPageLock.readLock().unlock();
       }
 
-      // if the first check failed, we do it again under a global lock
-      // (positioningGlobalLock) this time
-      positioningGlobalLock.acquire();
+      // if the first check failed, we do it again under a global currentPageLock
+      // (writeLock) this time
+      writeLock.lock();
 
       try
       {
@@ -582,7 +561,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
       finally
       {
-         positioningGlobalLock.release();
+         writeLock.unlock();
       }
    }
 
@@ -606,7 +585,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private void openNewPage() throws Exception
    {
-      lock.writeLock().lock();
+      currentPageLock.writeLock().lock();
 
       try
       {
@@ -632,7 +611,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
       finally
       {
-         lock.writeLock().unlock();
+         currentPageLock.writeLock().unlock();
       }
    }
 

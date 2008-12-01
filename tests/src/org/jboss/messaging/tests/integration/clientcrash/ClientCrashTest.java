@@ -46,12 +46,12 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.ConnectionLoadBalancingPolicy;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
@@ -82,6 +82,8 @@ public class ClientCrashTest extends ServiceTestBase
    // Attributes ----------------------------------------------------
 
    private ClientSessionFactory sf;
+   
+   private MessagingService messagingService;
 
    // Constructors --------------------------------------------------
 
