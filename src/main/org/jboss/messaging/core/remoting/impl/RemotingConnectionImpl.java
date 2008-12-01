@@ -1005,13 +1005,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       }
 
       public Packet sendBlocking(final Packet packet) throws MessagingException
-      {
-         // log.info("sending blocking channel id" + id + " packet id " + packet.getType() + " on connection " +
+      {         
          // System.identityHashCode(this.connection) + " " + packet.getType());
 
          if (closed)
-         {
-            // log.info("channel is closed");
+         {            
             throw new MessagingException(MessagingException.NOT_CONNECTED, "Connection is destroyed");
          }
 
@@ -1044,7 +1042,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             }
 
             lock.lock();
-
+            
             try
             {
                while (failingOver)
@@ -1209,8 +1207,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       }
 
       public void close()
-      {
-         // log.info("channel " + id + " is being closed on connection " + System.identityHashCode(connection));
+      {         
          if (closed)
          {
             return;

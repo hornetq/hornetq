@@ -24,6 +24,7 @@ import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -71,6 +72,14 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String PRE_ACKNOWLEDGE_ELEMENT = "pre-acknowledge";
 
+   private static final String RETRY_ON_FAILURE_ELEMENT = "retry-on-failure";
+
+   private static final String RETRY_INTERVAL = "retry-interval";
+
+   private static final String RETRY_INTERVAL_MULTIPLIER = "retry-interval-multiplier";
+
+   private static final String MAX_RETRIES = "max-retries";
+
    private static final String CONNECTOR_LINK_ELEMENT = "connector-ref";
 
    private static final String DISCOVERY_GROUP_ELEMENT = "discovery-group-ref";
@@ -82,9 +91,9 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String QUEUE_NODE_NAME = "queue";
 
    private static final String TOPIC_NODE_NAME = "topic";
-   
+
    private static final String CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME_ELEMENT = "connection-load-balancing-policy-class-name";
-   
+
    private static final String DISCOVERY_INITIAL_WAIT_ELEMENT = "discovery-initial-wait";
 
    public JMSServerDeployer(final DeploymentManager deploymentManager, final Configuration config)
@@ -150,100 +159,120 @@ public class JMSServerDeployer extends XmlDeployer
          boolean autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
          int maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
          boolean preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
+         boolean retryOnFailure = ClientSessionFactoryImpl.DEFAULT_RETRY_ON_FAILURE;
+         long retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
+         double retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+         int maxRetries = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES;
+
          List<String> jndiBindings = new ArrayList<String>();
          List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
          DiscoveryGroupConfiguration discoveryGroupConfiguration = null;
          String connectionLoadBalancingPolicyClassName = ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
          long discoveryInitialWait = ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT;
-         
+
          for (int j = 0; j < children.getLength(); j++)
          {
             Node child = children.item(j);
 
-            String childText = child.getTextContent().trim();
-
-            if (PING_PERIOD_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            if (PING_PERIOD_ELEMENT.equals(child.getNodeName()))
             {
-               pingPeriod = Long.parseLong(childText);
+               pingPeriod = XMLUtil.parseLong(child);
             }
-            else if (CALL_TIMEOUT_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (CALL_TIMEOUT_ELEMENT.equals(child.getNodeName()))
             {
-               callTimeout = Long.parseLong(childText);
+               callTimeout = XMLUtil.parseLong(child);
             }
-            else if (CONSUMER_WINDOW_SIZE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (CONSUMER_WINDOW_SIZE_ELEMENT.equals(child.getNodeName()))
             {
-               consumerWindowSize = Integer.parseInt(childText);
+               consumerWindowSize = XMLUtil.parseInt(child);
             }
-            else if (CONSUMER_MAX_RATE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (CONSUMER_MAX_RATE_ELEMENT.equals(child.getNodeName()))
             {
-               consumerMaxRate = Integer.parseInt(childText);
+               consumerMaxRate = XMLUtil.parseInt(child);
             }
-            else if (SEND_WINDOW_SIZE.equalsIgnoreCase(child.getNodeName()))
+            else if (SEND_WINDOW_SIZE.equals(child.getNodeName()))
             {
-               sendWindowSize = Integer.parseInt(childText);
+               sendWindowSize = XMLUtil.parseInt(child);
             }
-            else if (PRODUCER_MAX_RATE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (PRODUCER_MAX_RATE_ELEMENT.equals(child.getNodeName()))
             {
-               producerMaxRate = Integer.parseInt(childText);
+               producerMaxRate = XMLUtil.parseInt(child);
             }
-            else if (BIG_MESSAGE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (BIG_MESSAGE_ELEMENT.equals(child.getNodeName()))
             {
-               minLargeMessageSize = Integer.parseInt(childText);
+               minLargeMessageSize = XMLUtil.parseInt(child);
             }
-            else if (CLIENTID_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (CLIENTID_ELEMENT.equals(child.getNodeName()))
             {
-               clientID = childText;
+               clientID = child.getTextContent().trim();
             }
-            else if (DUPS_OK_BATCH_SIZE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (DUPS_OK_BATCH_SIZE_ELEMENT.equals(child.getNodeName()))
             {
-               dupsOKBatchSize = Integer.parseInt(childText);
+               dupsOKBatchSize = XMLUtil.parseInt(child);
             }
-            else if (TRANSACTION_BATCH_SIZE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (TRANSACTION_BATCH_SIZE_ELEMENT.equals(child.getNodeName()))
             {
-               transactionBatchSize = Integer.parseInt(childText);
+               transactionBatchSize = XMLUtil.parseInt(child);
             }
-            else if (BLOCK_ON_ACKNOWLEDGE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (BLOCK_ON_ACKNOWLEDGE_ELEMENT.equals(child.getNodeName()))
             {
-               blockOnAcknowledge = Boolean.parseBoolean(childText);
+               blockOnAcknowledge = XMLUtil.parseBoolean(child);
             }
-            else if (SEND_NP_MESSAGES_SYNCHRONOUSLY_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (SEND_NP_MESSAGES_SYNCHRONOUSLY_ELEMENT.equals(child.getNodeName()))
             {
-               blockOnNonPersistentSend = Boolean.parseBoolean(childText);
+               blockOnNonPersistentSend = XMLUtil.parseBoolean(child);
             }
-            else if (SEND_P_MESSAGES_SYNCHRONOUSLY_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (SEND_P_MESSAGES_SYNCHRONOUSLY_ELEMENT.equals(child.getNodeName()))
             {
-               blockOnPersistentSend = Boolean.parseBoolean(childText);
+               blockOnPersistentSend = XMLUtil.parseBoolean(child);
             }
-            else if (AUTO_GROUP_ID_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (AUTO_GROUP_ID_ELEMENT.equals(child.getNodeName()))
             {
-               autoGroup = Boolean.parseBoolean(childText);
+               autoGroup = XMLUtil.parseBoolean(child);
             }
-            else if (MAX_CONNECTIONS_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (MAX_CONNECTIONS_ELEMENT.equals(child.getNodeName()))
             {
-               maxConnections = Integer.parseInt(childText);
+               maxConnections = XMLUtil.parseInt(child);
             }
-            else if (PRE_ACKNOWLEDGE_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (PRE_ACKNOWLEDGE_ELEMENT.equals(child.getNodeName()))
             {
-               preAcknowledge = Boolean.parseBoolean(childText);;
+               preAcknowledge = XMLUtil.parseBoolean(child);;
             }
-            else if (ENTRY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+            else if (RETRY_ON_FAILURE_ELEMENT.equals(child.getNodeName()))
+            {
+               preAcknowledge = XMLUtil.parseBoolean(child);;
+            }
+            else if (RETRY_INTERVAL.equals(child.getNodeName()))
+            {
+               retryInterval = XMLUtil.parseInt(child);;
+            }
+            else if (RETRY_INTERVAL_MULTIPLIER.equals(child.getNodeName()))
+            {
+               retryIntervalMultiplier = XMLUtil.parseDouble(child);
+            }
+            else if (MAX_RETRIES.equals(child.getNodeName()))
+            {
+               maxRetries = XMLUtil.parseInt(child);;
+            }
+            else if (ENTRY_NODE_NAME.equals(child.getNodeName()))
             {
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
+               
                jndiBindings.add(jndiName);
             }
-            else if (CONNECTOR_LINK_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (CONNECTOR_LINK_ELEMENT.equals(child.getNodeName()))
             {
                String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
 
                TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorName);
-               
+
                if (connector == null)
                {
                   log.warn("There is no connector with name '" + connectorName + "' deployed.");
 
                   return;
                }
-               
+
                TransportConfiguration backupConnector = null;
 
                Node backupNode = child.getAttributes().getNamedItem("backup-connector-name");
@@ -251,42 +280,42 @@ public class JMSServerDeployer extends XmlDeployer
                if (backupNode != null)
                {
                   String backupConnectorName = node.getNodeValue();
-                  
+
                   backupConnector = configuration.getConnectorConfigurations().get(backupConnectorName);
-                  
+
                   if (backupConnector == null)
                   {
                      log.warn("There is no backup connector with name '" + connectorName + "' deployed.");
 
                      return;
-                  }                  
+                  }
                }
-               
+
                connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(connector, backupConnector));
             }
-            else if (DISCOVERY_GROUP_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (DISCOVERY_GROUP_ELEMENT.equals(child.getNodeName()))
             {
                String discoveryGroupName = child.getAttributes().getNamedItem("discovery-group-name").getNodeValue();
-               
+
                discoveryGroupConfiguration = configuration.getDiscoveryGroupConfigurations().get(discoveryGroupName);
-               
+
                if (discoveryGroupConfiguration == null)
                {
                   log.warn("There is no discovery group with name '" + discoveryGroupName + "' deployed.");
 
                   return;
-               } 
+               }
             }
-            else if (CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME_ELEMENT.equals(child.getNodeName()))
             {
                connectionLoadBalancingPolicyClassName = child.getTextContent().trim();
             }
-            else if (DISCOVERY_INITIAL_WAIT_ELEMENT.equalsIgnoreCase(child.getNodeName()))
+            else if (DISCOVERY_INITIAL_WAIT_ELEMENT.equals(child.getNodeName()))
             {
-               discoveryInitialWait = Integer.parseInt(child.getTextContent().trim());
+               discoveryInitialWait = XMLUtil.parseInt(child);
             }
          }
-         
+
          String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
 
          if (discoveryGroupConfiguration != null)
@@ -311,6 +340,10 @@ public class JMSServerDeployer extends XmlDeployer
                                                      autoGroup,
                                                      maxConnections,
                                                      preAcknowledge,
+                                                     retryOnFailure,
+                                                     retryInterval,
+                                                     retryIntervalMultiplier,
+                                                     maxRetries,
                                                      jndiBindings);
          }
          else
@@ -334,6 +367,10 @@ public class JMSServerDeployer extends XmlDeployer
                                                      autoGroup,
                                                      maxConnections,
                                                      preAcknowledge,
+                                                     retryOnFailure,
+                                                     retryInterval,
+                                                     retryIntervalMultiplier,
+                                                     maxRetries,
                                                      jndiBindings);
          }
       }
@@ -345,7 +382,7 @@ public class JMSServerDeployer extends XmlDeployer
          {
             Node child = children.item(i);
 
-            if (ENTRY_NODE_NAME.equalsIgnoreCase(children.item(i).getNodeName()))
+            if (ENTRY_NODE_NAME.equals(children.item(i).getNodeName()))
             {
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
                jmsServerManager.createQueue(queueName, jndiName);
@@ -360,7 +397,7 @@ public class JMSServerDeployer extends XmlDeployer
          {
             Node child = children.item(i);
 
-            if (ENTRY_NODE_NAME.equalsIgnoreCase(children.item(i).getNodeName()))
+            if (ENTRY_NODE_NAME.equals(children.item(i).getNodeName()))
             {
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
                jmsServerManager.createTopic(topicName, jndiName);

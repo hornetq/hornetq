@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.filter.impl;
 
@@ -37,38 +37,41 @@ import org.jboss.messaging.util.SimpleString;
 public class Identifier
 {
    private final SimpleString name;
-   
+
    private Object value;
-   
+
    private final int hash;
-   
+
    public Identifier(final SimpleString name)
    {
       this.name = name;
-      
+
       hash = name.hashCode();
-      
+
       value = null;
    }
-   
+
+   @Override
    public String toString()
    {
       return "Identifier@" + name;
    }
-   
-   public boolean equals(Object obj)
+
+   @Override
+   public boolean equals(final Object obj)
    {
-      if ( obj.getClass() != Identifier.class )
+      if (obj.getClass() != Identifier.class)
       {
          return false;
       }
-      if ( obj.hashCode() != hash )
+      if (obj.hashCode() != hash)
       {
          return false;
       }
-      return ( ( Identifier )obj ).name.equals( name );
+      return ((Identifier)obj).name.equals(name);
    }
-   
+
+   @Override
    public int hashCode()
    {
       return hash;
@@ -78,12 +81,12 @@ public class Identifier
    {
       return name;
    }
-   
+
    public Object getValue()
    {
       return value;
    }
-   
+
    public void setValue(final Object value)
    {
       this.value = value;

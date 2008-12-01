@@ -126,6 +126,10 @@ public interface JMSServerManager
                                    boolean autoGroup,
                                    int maxConnections,
                                    boolean preAcknowledge,
+                                   final boolean retryOnFailure,
+                                   final long retryInterval,
+                                   final double retryIntervalMultiplier,
+                                   final int maxRetries,
                                    List<String> jndiBindings) throws Exception;
    
    boolean createConnectionFactory(String name,
@@ -148,6 +152,10 @@ public interface JMSServerManager
                                    boolean autoGroup,
                                    int maxConnections,
                                    boolean preAcknowledge,
+                                   final boolean retryOnFailure,
+                                   final long retryInterval,
+                                   final double retryIntervalMultiplier,
+                                   final int maxRetries,
                                    List<String> jndiBindings) throws Exception;
 
    /**

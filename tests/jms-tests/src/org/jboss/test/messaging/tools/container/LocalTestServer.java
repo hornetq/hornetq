@@ -21,6 +21,11 @@
 */
 package org.jboss.test.messaging.tools.container;
 
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_ON_FAILURE;
+
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.sql.Connection;
@@ -562,6 +567,10 @@ public class LocalTestServer implements Server, Runnable
                                                     false,
                                                     8,
                                                     false,
+                                                    DEFAULT_RETRY_ON_FAILURE,
+                                                    DEFAULT_RETRY_INTERVAL,
+                                                    DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                    DEFAULT_MAX_RETRIES,
                                                     jndiBindings);
    }
 

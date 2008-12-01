@@ -97,6 +97,10 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        boolean autoGroup,
                                        int maxConnections,
                                        boolean preAcknowledge,
+                                       boolean retryOnFailure,
+                                       long retryInterval,
+                                       double retryIntervalMultiplier,
+                                       int maxRetries,
                                        String jndiBinding) throws Exception
    {
       List<String> bindings = new ArrayList<String>();
@@ -121,6 +125,10 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                                        autoGroup,
                                                        maxConnections,
                                                        preAcknowledge,
+                                                       retryOnFailure,
+                                                       retryInterval,
+                                                       retryIntervalMultiplier,
+                                                       maxRetries,
                                                        bindings);
       if (created)
       {
@@ -148,6 +156,10 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        boolean autoGroup,
                                        int maxConnections,
                                        boolean preAcknowledge,
+                                       final boolean retryOnFailure,
+                                       final long retryInterval,
+                                       final double retryIntervalMultiplier,
+                                       final int maxRetries,
                                        String jndiBinding) throws Exception
    {
       List<String> bindings = new ArrayList<String>();
@@ -173,6 +185,10 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                                        autoGroup,
                                                        maxConnections,
                                                        preAcknowledge,
+                                                       retryOnFailure,
+                                                       retryInterval,
+                                                       retryIntervalMultiplier,
+                                                       maxRetries,
                                                        bindings);
       if (created)
       {

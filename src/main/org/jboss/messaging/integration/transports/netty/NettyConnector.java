@@ -67,30 +67,33 @@ public class NettyConnector implements Connector
    // Attributes ----------------------------------------------------
 
    private ExecutorService bossExecutor;
+
    private ExecutorService workerExecutor;
-   private ChannelFactory  channelFactory;
+
+   private ChannelFactory channelFactory;
+
    private ClientBootstrap bootstrap;
 
    private final BufferHandler handler;
 
    private final ConnectionLifeCycleListener listener;
-   
+
    private final boolean sslEnabled;
-   
-   private final boolean useNio;   
-   
+
+   private final boolean useNio;
+
    private final String host;
 
    private final int port;
-         
+
    private final String keyStorePath;
- 
+
    private final String keyStorePassword;
-   
+
    private final boolean tcpNoDelay;
-   
+
    private final int tcpSendBufferSize;
-   
+
    private final int tcpReceiveBufferSize;
 
    // Static --------------------------------------------------------
@@ -99,7 +102,7 @@ public class NettyConnector implements Connector
 
    // Public --------------------------------------------------------
 
-   public NettyConnector(final Map<String, Object> configuration,             
+   public NettyConnector(final Map<String, Object> configuration,
                          final BufferHandler handler,
                          final ConnectionLifeCycleListener listener)
    {
@@ -107,43 +110,52 @@ public class NettyConnector implements Connector
       {
          throw new IllegalArgumentException("Invalid argument null listener");
       }
-      
+
       if (handler == null)
       {
          throw new IllegalArgumentException("Invalid argument null handler");
       }
 
       this.listener = listener;
-      
+
       this.handler = handler;
-      
-      this.sslEnabled =
-         ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME, TransportConstants.DEFAULT_SSL_ENABLED, configuration);
-      this.useNio = 
-         ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME, TransportConstants.DEFAULT_USE_NIO, configuration);
-      this.host =
-         ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME, TransportConstants.DEFAULT_HOST, configuration);
-      this.port =
-         ConfigurationHelper.getIntProperty(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_PORT, configuration);
+
+      this.sslEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME,
+                                                               TransportConstants.DEFAULT_SSL_ENABLED,
+                                                               configuration);
+      this.useNio = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME,
+                                                           TransportConstants.DEFAULT_USE_NIO,
+                                                           configuration);
+      this.host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
+                                                        TransportConstants.DEFAULT_HOST,
+                                                        configuration);
+      this.port = ConfigurationHelper.getIntProperty(TransportConstants.PORT_PROP_NAME,
+                                                     TransportConstants.DEFAULT_PORT,
+                                                     configuration);
       if (sslEnabled)
       {
-         this.keyStorePath =
-            ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PATH_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PATH, configuration);
-         this.keyStorePassword =
-            ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PASSWORD, configuration);
-      }   
+         this.keyStorePath = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PATH_PROP_NAME,
+                                                                   TransportConstants.DEFAULT_KEYSTORE_PATH,
+                                                                   configuration);
+         this.keyStorePassword = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
+                                                                       TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
+                                                                       configuration);
+      }
       else
       {
          this.keyStorePath = null;
          this.keyStorePassword = null;
       }
-      
-      this.tcpNoDelay =
-         ConfigurationHelper.getBooleanProperty(TransportConstants.TCP_NODELAY_PROPNAME, TransportConstants.DEFAULT_TCP_NODELAY, configuration);
-      this.tcpSendBufferSize =
-         ConfigurationHelper.getIntProperty(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME, TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE, configuration);
-      this.tcpReceiveBufferSize =
-         ConfigurationHelper.getIntProperty(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME, TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE, configuration);
+
+      this.tcpNoDelay = ConfigurationHelper.getBooleanProperty(TransportConstants.TCP_NODELAY_PROPNAME,
+                                                               TransportConstants.DEFAULT_TCP_NODELAY,
+                                                               configuration);
+      this.tcpSendBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME,
+                                                                  TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE,
+                                                                  configuration);
+      this.tcpReceiveBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME,
+                                                                     TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
+                                                                     configuration);
 
    }
 
@@ -157,7 +169,7 @@ public class NettyConnector implements Connector
       workerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-worker-threads"));
       if (useNio)
       {
-         bossExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-boss-threads"));      
+         bossExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-boss-threads"));
          channelFactory = new NioClientSocketChannelFactory(bossExecutor, workerExecutor);
       }
       else
@@ -188,8 +200,7 @@ public class NettyConnector implements Connector
          catch (Exception e)
          {
             close();
-            IllegalStateException ise = new IllegalStateException(
-                  "Unable to create NettyConnector for " + host);
+            IllegalStateException ise = new IllegalStateException("Unable to create NettyConnector for " + host);
             ise.initCause(e);
             throw ise;
          }
@@ -199,7 +210,8 @@ public class NettyConnector implements Connector
          context = null; // Unused
       }
 
-      bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+      bootstrap.setPipelineFactory(new ChannelPipelineFactory()
+      {
          public ChannelPipeline getPipeline() throws Exception
          {
             ChannelPipeline pipeline = pipeline();
@@ -213,7 +225,7 @@ public class NettyConnector implements Connector
          }
       });
    }
-   
+
    public synchronized void close()
    {
       if (channelFactory == null)
@@ -225,7 +237,7 @@ public class NettyConnector implements Connector
       channelFactory = null;
       if (bossExecutor != null)
       {
-         bossExecutor.shutdown();        
+         bossExecutor.shutdown();
       }
       workerExecutor.shutdown();
       if (bossExecutor != null)
@@ -244,12 +256,13 @@ public class NettyConnector implements Connector
                // Ignore
             }
          }
-      }     
+      }
    }
 
    public Connection createConnection()
    {
-      if (channelFactory == null) {
+      if (channelFactory == null)
+      {
          return null;
       }
 
@@ -267,9 +280,12 @@ public class NettyConnector implements Connector
             {
                ChannelFuture handshakeFuture = sslHandler.handshake(ch);
                handshakeFuture.awaitUninterruptibly();
-               if (handshakeFuture.isSuccess()) {
+               if (handshakeFuture.isSuccess())
+               {
                   ch.getPipeline().get(MessagingChannelHandler.class).active = true;
-               } else {
+               }
+               else
+               {
                   ch.close().awaitUninterruptibly();
                   return null;
                }

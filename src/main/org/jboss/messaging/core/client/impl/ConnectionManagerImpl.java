@@ -75,7 +75,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
    private static final long serialVersionUID = 2512460695662741413L;
 
-   private static final Logger log = Logger.getLogger(ClientSessionFactoryImpl.class);
+   private static final Logger log = Logger.getLogger(ConnectionManagerImpl.class);
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -115,6 +115,14 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
    private Iterator<ConnectionEntry> mapIterator;
 
    private Object failConnectionLock = new Object();
+   
+   private final boolean retryOnFailure;
+
+   private final long retryInterval;
+
+   private final double retryIntervalMultiplier; // For exponential backoff
+
+   private final int maxRetries;
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -126,7 +134,11 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
                                 final TransportConfiguration backupConfig,
                                 final int maxConnections,
                                 final long callTimeout,
-                                final long pingPeriod)
+                                final long pingPeriod,
+                                final boolean retryOnFailure,
+                                final long retryInterval,
+                                final double retryIntervalMultiplier,
+                                final int maxRetries)
    {
       connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
 
@@ -137,7 +149,6 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
          backupConnectorFactory = instantiateConnectorFactory(backupConfig.getFactoryClassName());
 
          backupTransportParams = backupConfig.getParams();
-
       }
       else
       {
@@ -145,11 +156,20 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
          backupTransportParams = null;
       }
+      
       this.maxConnections = maxConnections;
       
       this.callTimeout = callTimeout;
       
       this.pingPeriod = pingPeriod;
+      
+      this.retryOnFailure = retryOnFailure;
+      
+      this.retryInterval = retryInterval;
+      
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+      
+      this.maxRetries = maxRetries;
    }
 
    // ConnectionLifeCycleListener implementation --------------------
@@ -408,9 +428,17 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
          // It can then release the channel 1 lock, and retry (which will cause locking on failoverLock
          // until failover is complete
 
-         if (this.backupConnectorFactory != null)
+         if (backupConnectorFactory != null || retryOnFailure)
          {
-            log.info("Commencing automatic failover");
+            if (backupConnectorFactory != null)
+            {
+               log.info("Commencing automatic failover");
+            }
+            else
+            {
+               log.info("Will attempt reconnection");
+            }
+            
             lockAllChannel1s();
 
             final boolean needToInterrupt;
@@ -449,7 +477,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
             // Now we absolutely know that no threads are executing in or blocked in createSession, and no
             // more will execute it until failover is complete
 
-            // So.. do failover
+            // So.. do failover / reconnection
 
             Set<RemotingConnection> oldConnections = new HashSet<RemotingConnection>();
 
@@ -464,9 +492,12 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
             mapIterator = null;
 
-            connectorFactory = backupConnectorFactory;
-
-            transportParams = backupTransportParams;
+            if (backupConnectorFactory != null)
+            {
+               connectorFactory = backupConnectorFactory;
+   
+               transportParams = backupTransportParams;
+            }
 
             backupConnectorFactory = null;
 
@@ -495,17 +526,28 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
                sessions.add(session);
             }
 
+            boolean ok = true;
+            
             for (Map.Entry<RemotingConnection, List<ClientSessionInternal>> entry : sessionsPerConnection.entrySet())
             {
-               List<ClientSessionInternal> sessions = entry.getValue();
+               List<ClientSessionInternal> theSessions = entry.getValue();
+               
+               RemotingConnection backupConnection = getConnectionWithRetry(theSessions);
 
-               RemotingConnection backupConnection = getConnection(sessions.size());
-
-               for (ClientSessionInternal session : sessions)
+               if (backupConnection == null)
+               {
+                  log.warn("Failed to reconnect to server.");
+                  
+                  ok = false;
+                  
+                  break;
+               }
+               
+               for (ClientSessionInternal session : theSessions)
                {
                   session.handleFailover(backupConnection);
 
-                  this.sessions.put(session, backupConnection);
+                  sessions.put(session, backupConnection);
                }
             }
 
@@ -514,11 +556,68 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
                connection.destroy();
             }
 
-            log.info("Failover complete");
+            if (ok)
+            {
+               log.info("Failover complete");
+            }
          }
       }
    }
 
+   private RemotingConnection getConnectionWithRetry(final List<ClientSessionInternal> sessions)
+   {
+      long interval = retryInterval;
+      
+      int count = 0;
+      
+      log.info("Getting connection with retry");
+      
+      while (true)
+      {                        
+         RemotingConnection connection = getConnection(sessions.size());
+         
+         log.info("Got connection " + connection);
+         
+         if (connection == null)
+         {
+            //Failed to get backup connection
+            
+            if (retryOnFailure)
+            {
+               if (maxRetries != -1 && count == maxRetries)
+               {
+                  log.warn("Retried " + maxRetries + " times to reconnect. Now giving up.");
+                  
+                  return null;                  
+               }
+               
+               count++;
+               
+               log.warn("Now waiting " + interval + " ms before attempting reconnection.");
+               
+               try
+               {
+                  Thread.sleep(interval);
+               }
+               catch (InterruptedException ignore)
+               {                  
+               }
+               
+               //Exponential back-off
+               interval *= retryIntervalMultiplier;
+            }
+            else
+            {
+               return null;
+            }
+         }
+         else
+         {
+            return connection;
+         }
+      }
+   }
+      
    // Public
    // ---------------------------------------------------------------------------------------
 
@@ -556,7 +655,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
       }
    }
 
-   private RemotingConnection getConnection(int count)
+   private RemotingConnection getConnection(final int count)
    {
       RemotingConnection conn;
 
@@ -574,7 +673,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
          if (tc == null)
          {
-            throw new IllegalStateException("Failed to connect");
+            return null;
          }
 
          conn = new RemotingConnectionImpl(tc, callTimeout, pingPeriod, pingExecutor, null);

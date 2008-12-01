@@ -657,8 +657,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          return;
       }
       
-     // log.info("closing client session " + System.identityHashCode(this));
-
       try
       {
          closeChildren();

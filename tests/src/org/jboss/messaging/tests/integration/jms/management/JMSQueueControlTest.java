@@ -22,6 +22,24 @@
 
 package org.jboss.messaging.tests.integration.jms.management;
 
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_ON_FAILURE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.lang.management.ManagementFactory;
@@ -158,23 +176,27 @@ public class JMSQueueControlTest extends TestCase
 
       JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                              null,
-                                                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
-                                                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                                             DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                                             DEFAULT_PING_PERIOD,
+                                                             DEFAULT_CALL_TIMEOUT,
                                                              null,
-                                                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                                                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                                                             ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
-                                                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                                                             ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                                             DEFAULT_ACK_BATCH_SIZE,
+                                                             DEFAULT_ACK_BATCH_SIZE,
+                                                             DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                             DEFAULT_CONSUMER_MAX_RATE,
+                                                             DEFAULT_SEND_WINDOW_SIZE,
+                                                             DEFAULT_PRODUCER_MAX_RATE,
+                                                             DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                             DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                                             DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
                                                              true,
-                                                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                                                             ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                                                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
+                                                             DEFAULT_AUTO_GROUP,
+                                                             DEFAULT_MAX_CONNECTIONS,
+                                                             DEFAULT_PRE_ACKNOWLEDGE,
+                                                             DEFAULT_RETRY_ON_FAILURE,
+                                                             DEFAULT_RETRY_INTERVAL,
+                                                             DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                             DEFAULT_MAX_RETRIES);
 
       Connection conn = cf.createConnection();
 

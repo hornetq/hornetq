@@ -112,6 +112,15 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    private final int maxConnections;
 
    private final boolean preAcknowledge;
+   
+
+   private final boolean retryOnFailure;
+
+   private final long retryInterval;
+
+   private final double retryIntervalMultiplier; // For exponential backoff
+
+   private final int maxRetries;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -135,7 +144,11 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  final boolean blockOnPersistentSend,
                                  final boolean autoGroup,
                                  final int maxConnections,
-                                 final boolean preAcknowledge)
+                                 final boolean preAcknowledge,
+                                 final boolean retryOnFailure,
+                                 final long retryInterval,
+                                 final double retryIntervalMultiplier,
+                                 final int maxRetries)
    {
       this.connectorConfigs = null;
       this.discoveryGroupAddress = discoveryGroupAddress;
@@ -159,6 +172,10 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.autoGroup = autoGroup;
       this.maxConnections = maxConnections;
       this.preAcknowledge = preAcknowledge;
+      this.retryOnFailure = retryOnFailure;
+      this.retryInterval = retryInterval;
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+      this.maxRetries = maxRetries;
    }
 
    public JBossConnectionFactory(final String discoveryGroupAddress,
@@ -188,6 +205,10 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
       this.maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
       this.preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
+      this.retryOnFailure = ClientSessionFactoryImpl.DEFAULT_RETRY_ON_FAILURE;
+      this.retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
+      this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+      this.maxRetries = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES;
    }
 
    public JBossConnectionFactory(final String discoveryGroupName, final int discoveryGroupPort)
@@ -215,7 +236,11 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  final boolean blockOnPersistentSend,
                                  final boolean autoGroup,
                                  final int maxConnections,
-                                 final boolean preAcknowledge)
+                                 final boolean preAcknowledge,
+                                 final boolean retryOnFailure,
+                                 final long retryInterval,
+                                 final double retryIntervalMultiplier,
+                                 final int maxRetries)
    {
       this.discoveryGroupAddress = null;
       this.discoveryGroupPort = -1;
@@ -239,6 +264,10 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.autoGroup = autoGroup;
       this.maxConnections = maxConnections;
       this.preAcknowledge = preAcknowledge;
+      this.retryOnFailure = retryOnFailure;
+      this.retryInterval = retryInterval;
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+      this.maxRetries = maxRetries;
    }
    
    public JBossConnectionFactory(final TransportConfiguration transportConfig,
@@ -259,7 +288,11 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  final boolean blockOnPersistentSend,
                                  final boolean autoGroup,
                                  final int maxConnections,
-                                 final boolean preAcknowledge)
+                                 final boolean preAcknowledge,
+                                 final boolean retryOnFailure,
+                                 final long retryInterval,
+                                 final double retryIntervalMultiplier,
+                                 final int maxRetries)
    {
       this.discoveryGroupAddress = null;
       this.discoveryGroupPort = -1;
@@ -285,6 +318,10 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.autoGroup = autoGroup;
       this.maxConnections = maxConnections;
       this.preAcknowledge = preAcknowledge;
+      this.retryOnFailure = retryOnFailure;
+      this.retryInterval = retryInterval;
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+      this.maxRetries = maxRetries;
    }
 
 
@@ -312,6 +349,10 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
       this.maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
       this.preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
+      this.retryOnFailure = ClientSessionFactoryImpl.DEFAULT_RETRY_ON_FAILURE;
+      this.retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
+      this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+      this.maxRetries = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES;
    }
    
    public JBossConnectionFactory(final TransportConfiguration connectorConfig)
@@ -342,6 +383,10 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
       this.maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
       this.preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
+      this.retryOnFailure = ClientSessionFactoryImpl.DEFAULT_RETRY_ON_FAILURE;
+      this.retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
+      this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+      this.maxRetries = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES;
    }
 
    // ConnectionFactory implementation -------------------------------------------------------------
@@ -518,7 +563,11 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                              autoGroup,
                                                              maxConnections,
                                                              preAcknowledge,
-                                                             DEFAULT_ACK_BATCH_SIZE);
+                                                             dupsOKBatchSize,
+                                                             retryOnFailure,
+                                                             retryInterval,
+                                                             retryIntervalMultiplier,
+                                                             maxRetries);
             }
             else
             {
@@ -540,7 +589,11 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                              autoGroup,
                                                              maxConnections,
                                                              preAcknowledge,
-                                                             DEFAULT_ACK_BATCH_SIZE);
+                                                             dupsOKBatchSize,
+                                                             retryOnFailure,
+                                                             retryInterval,
+                                                             retryIntervalMultiplier,
+                                                             maxRetries);
             }
    
          }

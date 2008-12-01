@@ -34,5 +34,13 @@ public interface Connector
    
    void close();
    
+   /**
+    * Create and return a connection from this connector.
+    * 
+    * This method must NOT throw an exception if it fails to create the connection
+    * (e.g. network is not available), in this case it MUST return null
+    * 
+    * @return The connection, or null if unable to create a connection (e.g. network is unavailable)
+    */
    Connection createConnection();   
 }

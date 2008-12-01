@@ -38,8 +38,6 @@ import org.jboss.messaging.util.Pair;
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision: 3602 $</tt>
  * 
- * Note! There should never be more than one clientsessionfactory with the same connection params
- * Otherwise failover won't work properly since channel ids won't match on live and backup
  */
 public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, DiscoveryListener
 {
@@ -80,14 +78,21 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public static final int DEFAULT_ACK_BATCH_SIZE = 1024 * 1024;
 
    public static final boolean DEFAULT_PRE_ACKNOWLEDGE = false;
-   
+
    public static final long DEFAULT_DISCOVERY_INITIAL_WAIT = 10000;
-   
+
+   public static final boolean DEFAULT_RETRY_ON_FAILURE = true;
+
+   public static final long DEFAULT_RETRY_INTERVAL = 5000;
+
+   public static final double DEFAULT_RETRY_INTERVAL_MULTIPLIER = 1d;
+
+   public static final int DEFAULT_MAX_RETRIES = -1;
+
    // Attributes
    // -----------------------------------------------------------------------------------
 
-   private final Map<Pair<TransportConfiguration, TransportConfiguration>, ConnectionManager> connectionManagerMap =
-      new LinkedHashMap<Pair<TransportConfiguration, TransportConfiguration>, ConnectionManager>();
+   private final Map<Pair<TransportConfiguration, TransportConfiguration>, ConnectionManager> connectionManagerMap = new LinkedHashMap<Pair<TransportConfiguration, TransportConfiguration>, ConnectionManager>();
 
    private ConnectionManager[] connectionManagerArray;
 
@@ -130,6 +135,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    private final long initialWaitTimeout;
 
+   //Reconnect params
+   
+   private final boolean retryOnFailure;
+
+   private final long retryInterval;
+
+   private final double retryIntervalMultiplier; // For exponential backoff
+
+   private final int maxRetries;
+   
    // Static
    // ---------------------------------------------------------------------------------------
 
@@ -173,6 +188,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.maxConnections = DEFAULT_MAX_CONNECTIONS;
       this.ackBatchSize = DEFAULT_ACK_BATCH_SIZE;
       this.preAcknowledge = DEFAULT_PRE_ACKNOWLEDGE;
+      this.retryOnFailure = DEFAULT_RETRY_ON_FAILURE;
+      this.retryInterval = DEFAULT_RETRY_INTERVAL;
+      this.retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+      this.maxRetries = DEFAULT_MAX_RETRIES;
    }
 
    public ClientSessionFactoryImpl(final String discoveryGroupName,
@@ -193,21 +212,25 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    final boolean autoGroup,
                                    final int maxConnections,
                                    final boolean preAcknowledge,
-                                   final int ackBatchSize) throws MessagingException
+                                   final int ackBatchSize,
+                                   final boolean retryOnFailure,
+                                   final long retryInterval,
+                                   final double retryIntervalMultiplier,
+                                   final int maxRetries) throws MessagingException
    {
       try
       {
          InetAddress groupAddress = InetAddress.getByName(discoveryGroupName);
-   
+
          discoveryGroup = new DiscoveryGroupImpl(groupAddress, discoveryGroupPort, discoveryRefreshTimeout);
-   
+
          discoveryGroup.registerListener(this);
-   
+
          discoveryGroup.start();
       }
       catch (Exception e)
       {
-         //TODO - better execption
+         // TODO - better execption
          throw new MessagingException(MessagingException.INTERNAL_ERROR, "Failed to connect discovery group");
       }
 
@@ -227,6 +250,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.maxConnections = maxConnections;
       this.ackBatchSize = ackBatchSize;
       this.preAcknowledge = preAcknowledge;
+      this.retryOnFailure = retryOnFailure;
+      this.retryInterval = retryInterval;
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+      this.maxRetries = maxRetries;
    }
 
    public ClientSessionFactoryImpl(final List<Pair<TransportConfiguration, TransportConfiguration>> connectors,
@@ -244,7 +271,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    final boolean autoGroup,
                                    final int maxConnections,
                                    final boolean preAcknowledge,
-                                   final int ackBatchSize)
+                                   final int ackBatchSize,
+                                   final boolean retryOnFailure,
+                                   final long retryInterval,
+                                   final double retryIntervalMultiplier,
+                                   final int maxRetries)
    {
       this.loadBalancingPolicy = instantiateLoadBalancingPolicy(connectionloadBalancingPolicyClassName);
       this.pingPeriod = pingPeriod;
@@ -261,23 +292,38 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.maxConnections = maxConnections;
       this.ackBatchSize = ackBatchSize;
       this.preAcknowledge = preAcknowledge;
+      this.retryOnFailure = retryOnFailure;
+      this.retryInterval = retryInterval;
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+      this.maxRetries = maxRetries;
+
       this.initialWaitTimeout = -1;
 
       for (Pair<TransportConfiguration, TransportConfiguration> pair : connectors)
       {
-         ConnectionManager cm = new ConnectionManagerImpl(pair.a, pair.b, maxConnections, callTimeout, pingPeriod);
-         
+         ConnectionManager cm = new ConnectionManagerImpl(pair.a,
+                                                          pair.b,
+                                                          maxConnections,
+                                                          callTimeout,
+                                                          pingPeriod,
+                                                          retryOnFailure,
+                                                          retryInterval,
+                                                          retryIntervalMultiplier,
+                                                          maxRetries);
+
          connectionManagerMap.put(pair, cm);
       }
-      
+
       updateConnectionManagerArray();
 
       this.discoveryGroup = null;
    }
-
-   public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
-                                   final TransportConfiguration backupConfig)
-   {      
+   
+   public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,                                                                  
+                                   final long retryInterval,
+                                   final double retryIntervalMultiplier,
+                                   final int maxRetries)
+   {
       this.loadBalancingPolicy = new FirstElementConnectionLoadBalancingPolicy();
       this.pingPeriod = DEFAULT_PING_PERIOD;
       this.callTimeout = DEFAULT_CALL_TIMEOUT;
@@ -293,20 +339,78 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.maxConnections = DEFAULT_MAX_CONNECTIONS;
       this.ackBatchSize = DEFAULT_ACK_BATCH_SIZE;
       this.preAcknowledge = DEFAULT_PRE_ACKNOWLEDGE;
+      this.retryOnFailure = true;
+      this.retryInterval = retryInterval;
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+      this.maxRetries = maxRetries;
+
       this.initialWaitTimeout = -1;
 
       Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connectorConfig,
-               backupConfig);
-      
-      ConnectionManager cm =  new ConnectionManagerImpl(pair.a, pair.b, maxConnections, callTimeout, pingPeriod);
-      
+                                                                                                                           null);
+
+      ConnectionManager cm = new ConnectionManagerImpl(pair.a,
+                                                       pair.b,
+                                                       maxConnections,
+                                                       callTimeout,
+                                                       pingPeriod,
+                                                       retryOnFailure,
+                                                       retryInterval,
+                                                       retryIntervalMultiplier,
+                                                       maxRetries);
+
       connectionManagerMap.put(pair, cm);
-      
+
       updateConnectionManagerArray();
 
       discoveryGroup = null;
    }
-   
+
+   public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
+                                   final TransportConfiguration backupConfig)
+   {
+      this.loadBalancingPolicy = new FirstElementConnectionLoadBalancingPolicy();
+      this.pingPeriod = DEFAULT_PING_PERIOD;
+      this.callTimeout = DEFAULT_CALL_TIMEOUT;
+      this.consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
+      this.consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
+      this.sendWindowSize = DEFAULT_SEND_WINDOW_SIZE;
+      this.producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
+      this.blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
+      this.blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+      this.blockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+      this.minLargeMessageSize = DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+      this.autoGroup = DEFAULT_AUTO_GROUP;
+      this.maxConnections = DEFAULT_MAX_CONNECTIONS;
+      this.ackBatchSize = DEFAULT_ACK_BATCH_SIZE;
+      this.preAcknowledge = DEFAULT_PRE_ACKNOWLEDGE;
+      this.retryOnFailure = DEFAULT_RETRY_ON_FAILURE;
+      this.retryInterval = DEFAULT_RETRY_INTERVAL;
+      this.retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+      this.maxRetries = DEFAULT_MAX_RETRIES;
+
+      this.initialWaitTimeout = -1;
+
+      Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connectorConfig,
+                                                                                                                           backupConfig);
+
+      ConnectionManager cm = new ConnectionManagerImpl(pair.a,
+                                                       pair.b,
+                                                       maxConnections,
+                                                       callTimeout,
+                                                       pingPeriod,
+                                                       retryOnFailure,
+                                                       retryInterval,
+                                                       retryIntervalMultiplier,
+                                                       maxRetries);
+
+      connectionManagerMap.put(pair, cm);
+
+      updateConnectionManagerArray();
+
+      discoveryGroup = null;
+   }
+
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
                                    final TransportConfiguration backupConfig,
                                    final String connectionloadBalancingPolicyClassName,
@@ -323,7 +427,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    final boolean autoGroup,
                                    final int maxConnections,
                                    final boolean preAcknowledge,
-                                   final int ackBatchSize)
+                                   final int ackBatchSize,
+                                   final boolean retryOnFailure,
+                                   final long retryInterval,
+                                   final double retryIntervalMultiplier,
+                                   final int maxRetries)
    {
       this.loadBalancingPolicy = instantiateLoadBalancingPolicy(connectionloadBalancingPolicyClassName);
       this.pingPeriod = pingPeriod;
@@ -340,20 +448,33 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.maxConnections = maxConnections;
       this.ackBatchSize = ackBatchSize;
       this.preAcknowledge = preAcknowledge;
+      this.retryOnFailure = retryOnFailure;
+      this.retryInterval = retryInterval;
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+      this.maxRetries = maxRetries;
+
       this.initialWaitTimeout = -1;
 
       Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connectorConfig,
-               backupConfig);
-      
-      ConnectionManager cm =  new ConnectionManagerImpl(pair.a, pair.b, maxConnections, callTimeout, pingPeriod);
-      
+                                                                                                                           backupConfig);
+
+      ConnectionManager cm = new ConnectionManagerImpl(pair.a,
+                                                       pair.b,
+                                                       maxConnections,
+                                                       callTimeout,
+                                                       pingPeriod,
+                                                       retryOnFailure,
+                                                       retryInterval,
+                                                       retryIntervalMultiplier,
+                                                       maxRetries);
+
       connectionManagerMap.put(pair, cm);
-      
+
       updateConnectionManagerArray();
 
       discoveryGroup = null;
    }
-   
+
    /**
    * Create a ClientSessionFactoryImpl specify transport type and using defaults
    */
@@ -362,7 +483,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this(connectorConfig, null);
    }
 
-   // ClientSessionFactory implementation------------------------------------------------------------   
+   // ClientSessionFactory implementation------------------------------------------------------------
 
    public ClientSession createSession(final String username,
                                       final String password,
@@ -383,7 +504,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public ClientSession createSession(final boolean xa, final boolean autoCommitSends, final boolean autoCommitAcks) throws MessagingException
    {
-      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, ackBatchSize);
+      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, this.ackBatchSize);
    }
 
    public ClientSession createSession(final boolean xa,
@@ -391,10 +512,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                       final boolean autoCommitAcks,
                                       final boolean preAcknowledge) throws MessagingException
    {
-      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, ackBatchSize);
+      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, this.ackBatchSize);
    }
 
-   
    public int getConsumerWindowSize()
    {
       return consumerWindowSize;
@@ -530,7 +650,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       int num = 0;
 
-      for (ConnectionManager connectionManager: connectionManagerMap.values())
+      for (ConnectionManager connectionManager : connectionManagerMap.values())
       {
          num += connectionManager.numSessions();
       }
@@ -542,7 +662,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       int num = 0;
 
-      for (ConnectionManager connectionManager: connectionManagerMap.values())
+      for (ConnectionManager connectionManager : connectionManagerMap.values())
       {
          num += connectionManager.numConnections();
       }
@@ -572,16 +692,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       receivedBroadcast = true;
 
       List<Pair<TransportConfiguration, TransportConfiguration>> newConnectors = discoveryGroup.getConnectors();
-      
+
       Set<Pair<TransportConfiguration, TransportConfiguration>> connectorSet = new HashSet<Pair<TransportConfiguration, TransportConfiguration>>();
 
       connectorSet.addAll(newConnectors);
 
-      Iterator<Map.Entry<Pair<TransportConfiguration,TransportConfiguration>, ConnectionManager>> iter = connectionManagerMap.entrySet().iterator();
+      Iterator<Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, ConnectionManager>> iter = connectionManagerMap.entrySet()
+                                                                                                                              .iterator();
 
       while (iter.hasNext())
       {
-         Map.Entry<Pair<TransportConfiguration,TransportConfiguration>, ConnectionManager> entry = iter.next();
+         Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, ConnectionManager> entry = iter.next();
 
          if (!connectorSet.contains(entry.getKey()))
          {
@@ -591,27 +712,31 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          }
       }
 
-      for (Pair<TransportConfiguration,TransportConfiguration> connectorPair : newConnectors)
+      for (Pair<TransportConfiguration, TransportConfiguration> connectorPair : newConnectors)
       {
          if (!connectionManagerMap.containsKey(connectorPair))
          {
-            //Create a new ConnectionManager
-             
+            // Create a new ConnectionManager
+
             ConnectionManager connectionManager = new ConnectionManagerImpl(connectorPair.a,
                                                                             connectorPair.b,
                                                                             maxConnections,
                                                                             callTimeout,
-                                                                            pingPeriod);
+                                                                            pingPeriod,
+                                                                            retryOnFailure,
+                                                                            retryInterval,
+                                                                            retryIntervalMultiplier,
+                                                                            maxRetries);
 
-            connectionManagerMap.put(connectorPair, connectionManager);                       
+            connectionManagerMap.put(connectorPair, connectionManager);
          }
       }
-      
+
       updateConnectionManagerArray();
    }
-   
+
    // Protected ------------------------------------------------------------------------------
-   
+
    protected void finalize() throws Throwable
    {
       if (discoveryGroup != null)
@@ -619,7 +744,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          discoveryGroup.stop();
       }
    }
-   
+
    // Private --------------------------------------------------------------------------------
 
    private synchronized ClientSession createSessionInternal(final String username,
@@ -662,7 +787,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                              blockOnNonPersistentSend,
                                              blockOnPersistentSend);
    }
-   
+
    private ConnectionLoadBalancingPolicy instantiateLoadBalancingPolicy(final String className)
    {
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -679,11 +804,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       return lbPolicy;
    }
-   
+
    private void updateConnectionManagerArray()
-   {      
+   {
       connectionManagerArray = new ConnectionManager[connectionManagerMap.size()];
-      
+
       connectionManagerMap.values().toArray(connectionManagerArray);
    }
 

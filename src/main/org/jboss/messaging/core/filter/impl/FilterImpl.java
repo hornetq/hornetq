@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.filter.impl;
 
@@ -65,143 +65,143 @@ import org.jboss.messaging.util.SimpleString;
 public class FilterImpl implements Filter
 {
 
-  // Constants -----------------------------------------------------
+   // Constants -----------------------------------------------------
 
-  private static final Logger log = Logger.getLogger(FilterImpl.class);
-   
-  private static final SimpleString JBM_EXPIRATION = new SimpleString("JBMExpiration");
+   private static final Logger log = Logger.getLogger(FilterImpl.class);
 
-  private static final SimpleString JBM_DURABLE = new SimpleString("JBMDurable");
+   private static final SimpleString JBM_EXPIRATION = new SimpleString("JBMExpiration");
 
-  private static final SimpleString NON_DURABLE = new SimpleString("NON_DURABLE");
+   private static final SimpleString JBM_DURABLE = new SimpleString("JBMDurable");
 
-  private static final SimpleString DURABLE = new SimpleString("DURABLE");
+   private static final SimpleString NON_DURABLE = new SimpleString("NON_DURABLE");
 
-  private static final SimpleString JBM_TIMESTAMP = new SimpleString("JBMTimestamp");
+   private static final SimpleString DURABLE = new SimpleString("DURABLE");
 
-  private static final SimpleString JBM_PRIORITY = new SimpleString("JBMPriority");
+   private static final SimpleString JBM_TIMESTAMP = new SimpleString("JBMTimestamp");
 
-  private static final SimpleString JBM_MESSAGE_ID = new SimpleString("JBMMessageID");
-  
-  private static final SimpleString JBM_SIZE = new SimpleString("JBMSize");
+   private static final SimpleString JBM_PRIORITY = new SimpleString("JBMPriority");
 
-  private static final SimpleString JBM_PREFIX = new SimpleString("JBM");
-   
-  // Attributes -----------------------------------------------------
-  
-  private final SimpleString sfilterString;
-  
-  private final Map<SimpleString, Identifier> identifiers = new HashMap<SimpleString, Identifier>();
-  
-  private final Operator operator;
-  
-  private final FilterParser parser = new FilterParser();
-  
-  // Static ---------------------------------------------------------
+   private static final SimpleString JBM_MESSAGE_ID = new SimpleString("JBMMessageID");
 
-  /**
-   * @return null if <code>filterStr</code> is null or a valid filter else
-   * @throws MessagingException if the string does not correspond to a valid filter
-   */
-  public static Filter createFilter(final String filterStr) throws MessagingException
-  {
-     Filter filter = (filterStr == null) ? null : new FilterImpl(new SimpleString(filterStr));
-     return filter;
-  }
+   private static final SimpleString JBM_SIZE = new SimpleString("JBMSize");
 
-  // Constructors ---------------------------------------------------
-  
-  public FilterImpl(final SimpleString str) throws MessagingException
-  {
-     this.sfilterString = str;
+   private static final SimpleString JBM_PREFIX = new SimpleString("JBM");
 
-     try
-     {
-        operator = (Operator)parser.parse(sfilterString, identifiers);
-     }
-     catch (Throwable e)
-     {   	  
-        throw new MessagingException(MessagingException.INVALID_FILTER_EXPRESSION, "Invalid filter: " + sfilterString);
-     }
-  }
-  
-  // Filter implementation ---------------------------------------------------------------------
-  
-  public SimpleString getFilterString()
-  {
-     return sfilterString;
-  }
-  
-  public boolean match(final ServerMessage message)
-  {
-     try
-     {                 
-        // Set the identifiers values
-                 
-        for (Identifier id : identifiers.values())
-        { 
-           Object val = null;
-           
-           if (id.getName().startsWith(JBM_PREFIX))
-           {           
-              //Look it up as header fields              
-              val = getHeaderFieldValue(message, id.getName());
-           }
-                     
-           if (val == null)
-           {
-              val = message.getProperty(id.getName());             
-           }
+   // Attributes -----------------------------------------------------
 
-           id.setValue(val);
+   private final SimpleString sfilterString;
 
-        }
-        
-        // Compute the result of this operator
-        
-        boolean res = (Boolean)operator.apply();
-        
-        return res;
-     }
-     catch (Exception e)
-     {
-        log.warn("Invalid filter string: " + sfilterString, e);
-        
-        return false;
-     }
-  }
-  
-  // Private --------------------------------------------------------------------------
- 
-  private Object getHeaderFieldValue(final ServerMessage msg, final SimpleString fieldName)
-  {
-     if (JBM_MESSAGE_ID.equals(fieldName))
-     {
-        return msg.getMessageID();
-     }
-     else if (JBM_PRIORITY.equals(fieldName))
-     {
-        return new Integer(msg.getPriority());
-     }
-     else if (JBM_TIMESTAMP.equals(fieldName))
-     {
-        return msg.getTimestamp();
-     }
-     else if (JBM_DURABLE.equals(fieldName))
-     {
-        return msg.isDurable() ? DURABLE : NON_DURABLE;
-     }
-     else if (JBM_EXPIRATION.equals(fieldName))
-     {
-        return msg.getExpiration();
-     }
-     else if (JBM_SIZE.equals(fieldName))
-     {
-        return msg.getEncodeSize();
-     }
-     else
-     {
-        return null;
-     }     
-  }
+   private final Map<SimpleString, Identifier> identifiers = new HashMap<SimpleString, Identifier>();
+
+   private final Operator operator;
+
+   private final FilterParser parser = new FilterParser();
+
+   // Static ---------------------------------------------------------
+
+   /**
+    * @return null if <code>filterStr</code> is null or a valid filter else
+    * @throws MessagingException if the string does not correspond to a valid filter
+    */
+   public static Filter createFilter(final String filterStr) throws MessagingException
+   {
+      Filter filter = filterStr == null ? null : new FilterImpl(new SimpleString(filterStr));
+      return filter;
+   }
+
+   // Constructors ---------------------------------------------------
+
+   public FilterImpl(final SimpleString str) throws MessagingException
+   {
+      sfilterString = str;
+
+      try
+      {
+         operator = (Operator)parser.parse(sfilterString, identifiers);
+      }
+      catch (Throwable e)
+      {
+         throw new MessagingException(MessagingException.INVALID_FILTER_EXPRESSION, "Invalid filter: " + sfilterString);
+      }
+   }
+
+   // Filter implementation ---------------------------------------------------------------------
+
+   public SimpleString getFilterString()
+   {
+      return sfilterString;
+   }
+
+   public boolean match(final ServerMessage message)
+   {
+      try
+      {
+         // Set the identifiers values
+
+         for (Identifier id : identifiers.values())
+         {
+            Object val = null;
+
+            if (id.getName().startsWith(JBM_PREFIX))
+            {
+               // Look it up as header fields
+               val = getHeaderFieldValue(message, id.getName());
+            }
+
+            if (val == null)
+            {
+               val = message.getProperty(id.getName());
+            }
+
+            id.setValue(val);
+
+         }
+
+         // Compute the result of this operator
+
+         boolean res = (Boolean)operator.apply();
+
+         return res;
+      }
+      catch (Exception e)
+      {
+         log.warn("Invalid filter string: " + sfilterString, e);
+
+         return false;
+      }
+   }
+
+   // Private --------------------------------------------------------------------------
+
+   private Object getHeaderFieldValue(final ServerMessage msg, final SimpleString fieldName)
+   {
+      if (JBM_MESSAGE_ID.equals(fieldName))
+      {
+         return msg.getMessageID();
+      }
+      else if (JBM_PRIORITY.equals(fieldName))
+      {
+         return new Integer(msg.getPriority());
+      }
+      else if (JBM_TIMESTAMP.equals(fieldName))
+      {
+         return msg.getTimestamp();
+      }
+      else if (JBM_DURABLE.equals(fieldName))
+      {
+         return msg.isDurable() ? DURABLE : NON_DURABLE;
+      }
+      else if (JBM_EXPIRATION.equals(fieldName))
+      {
+         return msg.getExpiration();
+      }
+      else if (JBM_SIZE.equals(fieldName))
+      {
+         return msg.getEncodeSize();
+      }
+      else
+      {
+         return null;
+      }
+   }
 }

@@ -45,6 +45,7 @@ import org.xml.sax.InputSource;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
@@ -396,6 +397,74 @@ public class XMLUtil
 
       }
       return xml;
+   }
+   
+   public static long parseLong(final Node elem)
+   {
+      String value = elem.getTextContent().trim();
+
+      try
+      {
+         return Long.parseLong(value);
+      }
+      catch (NumberFormatException e)
+      {
+         throw new IllegalArgumentException("Element " + elem +
+                                            " requires a valid Long value, but '" +
+                                            value +
+                                            "' cannot be parsed as a Long");
+      }
+   }
+
+   public static int parseInt(final Node elem)
+   {
+      String value = elem.getTextContent().trim();
+
+      try
+      {
+         return Integer.parseInt(value);
+      }
+      catch (NumberFormatException e)
+      {
+         throw new IllegalArgumentException("Element " + elem +
+                                            " requires a valid Integer value, but '" +
+                                            value +
+                                            "' cannot be parsed as an Integer");
+      }
+   }
+
+   public static boolean parseBoolean(final Node elem)
+   {
+      String value = elem.getTextContent().trim();
+
+      try
+      {
+         return Boolean.parseBoolean(value);
+      }
+      catch (NumberFormatException e)
+      {
+         throw new IllegalArgumentException("Element " + elem +
+                                            " requires a valid Boolean value, but '" +
+                                            value +
+                                            "' cannot be parsed as a Boolean");
+      }
+   }
+   
+   public static double parseDouble(final Node elem)
+   {
+      String value = elem.getTextContent().trim();
+
+      try
+      {
+         return Double.parseDouble(value);
+      }
+      catch (NumberFormatException e)
+      {
+         throw new IllegalArgumentException("Element " + elem +
+                                            " requires a valid Double value, but '" +
+                                            value +
+                                            "' cannot be parsed as a Double");
+      }
    }
 
    // Attributes -----------------------------------------------------------------------------------

@@ -273,7 +273,7 @@ public class FileConfiguration extends ConfigurationImpl
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)
       {
-         return parseBoolean(nl.item(0));
+         return XMLUtil.parseBoolean(nl.item(0));
       }
       return def;
    }
@@ -283,7 +283,7 @@ public class FileConfiguration extends ConfigurationImpl
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)
       {
-         return parseInt(nl.item(0));
+         return XMLUtil.parseInt(nl.item(0));
       }
       return def;
    }
@@ -293,7 +293,7 @@ public class FileConfiguration extends ConfigurationImpl
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)
       {
-         return parseLong(nl.item(0));
+         return XMLUtil.parseLong(nl.item(0));
       }
       return def;
    }
@@ -344,13 +344,13 @@ public class FileConfiguration extends ConfigurationImpl
 
             if (type.equalsIgnoreCase("Integer"))
             {
-               int iVal = parseInt(nValue);
+               int iVal = XMLUtil.parseInt(nValue);
 
                params.put(key, iVal);
             }
             else if (type.equalsIgnoreCase("Long"))
             {
-               long lVal = parseLong(nValue);
+               long lVal = XMLUtil.parseLong(nValue);
 
                params.put(key, lVal);
             }
@@ -360,7 +360,7 @@ public class FileConfiguration extends ConfigurationImpl
             }
             else if (type.equalsIgnoreCase("Boolean"))
             {
-               boolean bVal = parseBoolean(nValue);
+               boolean bVal = XMLUtil.parseBoolean(nValue);
 
                params.put(key, bVal);
             }
@@ -402,7 +402,7 @@ public class FileConfiguration extends ConfigurationImpl
          }
          else if (child.getNodeName().equals("local-bind-port"))
          {
-            localBindPort = parseInt(child);
+            localBindPort = XMLUtil.parseInt(child);
          }
          else if (child.getNodeName().equals("group-address"))
          {
@@ -410,11 +410,11 @@ public class FileConfiguration extends ConfigurationImpl
          }
          else if (child.getNodeName().equals("group-port"))
          {
-            groupPort = parseInt(child);
+            groupPort = XMLUtil.parseInt(child);
          }
          else if (child.getNodeName().equals("broadcast-period"))
          {
-            broadcastPeriod = parseLong(child);
+            broadcastPeriod = XMLUtil.parseLong(child);
          }
          else if (child.getNodeName().equals("connector-ref"))
          {
@@ -468,11 +468,11 @@ public class FileConfiguration extends ConfigurationImpl
          }
          else if (child.getNodeName().equals("group-port"))
          {
-            groupPort = parseInt(child);
+            groupPort = XMLUtil.parseInt(child);
          }
          else if (child.getNodeName().equals("refresh-timeout"))
          {
-            refreshTimeout = parseLong(child);
+            refreshTimeout = XMLUtil.parseLong(child);
          }
       }
 
@@ -529,15 +529,15 @@ public class FileConfiguration extends ConfigurationImpl
          }
          else if (child.getNodeName().equals("fanout"))
          {
-            fanout = parseBoolean(child);
+            fanout = XMLUtil.parseBoolean(child);
          }
          else if (child.getNodeName().equals("max-batch-size"))
          {
-            maxBatchSize = parseInt(child);
+            maxBatchSize = XMLUtil.parseInt(child);
          }
          else if (child.getNodeName().equals("max-batch-time"))
          {
-            maxBatchTime = parseLong(child);
+            maxBatchTime = XMLUtil.parseLong(child);
          }
          else if (child.getNodeName().equals("discovery-group-ref"))
          {
@@ -592,54 +592,5 @@ public class FileConfiguration extends ConfigurationImpl
       messageFlowConfigurations.add(config);
    }
 
-   private long parseLong(final Node elem)
-   {
-      String value = elem.getTextContent().trim();
 
-      try
-      {
-         return Long.parseLong(value);
-      }
-      catch (NumberFormatException e)
-      {
-         throw new IllegalArgumentException("Element " + elem +
-                                            " requires a valid Long value, but '" +
-                                            value +
-                                            "' cannot be parsed as a Long");
-      }
-   }
-
-   private int parseInt(final Node elem)
-   {
-      String value = elem.getTextContent().trim();
-
-      try
-      {
-         return Integer.parseInt(value);
-      }
-      catch (NumberFormatException e)
-      {
-         throw new IllegalArgumentException("Element " + elem +
-                                            " requires a valid Integer value, but '" +
-                                            value +
-                                            "' cannot be parsed as an Integer");
-      }
-   }
-
-   private boolean parseBoolean(final Node elem)
-   {
-      String value = elem.getTextContent().trim();
-
-      try
-      {
-         return Boolean.parseBoolean(value);
-      }
-      catch (NumberFormatException e)
-      {
-         throw new IllegalArgumentException("Element " + elem +
-                                            " requires a valid Boolean value, but '" +
-                                            value +
-                                            "' cannot be parsed as a Boolean");
-      }
-   }
 }

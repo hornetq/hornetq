@@ -106,7 +106,15 @@ public interface JMSServerControlMBean
                                 @Parameter(name = "maxConnections", desc = "The maximum number of physical connections created per client using this connection factory. Sessions created will be assigned a connection in a round-robin fashion")
                                 int maxConnections,
                                 @Parameter(name = "preAcknowledge", desc = "If the server will acknowledge delivery of a message before it is delivered")
-                                boolean preAcknowledge,
+                                boolean preAcknowledge,                                
+                                @Parameter(name = "retryOnFailure", desc = "Will the server attempt to retry connecting to same server in event of failure?")
+                                boolean retryOnFailure,                                
+                                @Parameter(name = "retryInterval", desc = "The retry interval in ms when retrying connecting to same server")
+                                long retryInterval,                                
+                                @Parameter(name = "retryIntervalMultiplier", desc = "The retry interval multiplier when retrying connecting to same server")
+                                double retryIntervalMultiplier,                                
+                                @Parameter(name = "maxRetries", desc = "The maximum number of retries when retrying connecting to same server. -1 means no maximum")
+                                int maxRetries,                                
                                 @Parameter(name = "jndiBinding", desc = "JNDI Binding")
                                 String jndiBinding) throws Exception;
    
@@ -151,6 +159,14 @@ public interface JMSServerControlMBean
                                 int maxConnections,
                                 @Parameter(name = "preAcknowledge", desc = "If the server will acknowledge delivery of a message before it is delivered")
                                 boolean preAcknowledge,
+                                @Parameter(name = "retryOnFailure", desc = "Will the server attempt to retry connecting to same server in event of failure?")
+                                boolean retryOnFailure,                                
+                                @Parameter(name = "retryInterval", desc = "The retry interval in ms when retrying connecting to same server")
+                                long retryInterval,                                
+                                @Parameter(name = "retryIntervalMultiplier", desc = "The retry interval multiplier when retrying connecting to same server")
+                                double retryIntervalMultiplier,                                
+                                @Parameter(name = "maxRetries", desc = "The maximum number of retries when retrying connecting to same server. -1 means no maximum")
+                                int maxRetries,    
                                 @Parameter(name = "jndiBinding", desc = "JNDI Binding")
                                 String jndiBinding) throws Exception;
 

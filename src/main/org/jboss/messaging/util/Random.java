@@ -37,7 +37,7 @@ public class Random
 {
    private static int extraSeed;
    
-   private static long getSeed()
+   private static synchronized long getSeed()
    {
       long seed = System.currentTimeMillis() + extraSeed++;
       

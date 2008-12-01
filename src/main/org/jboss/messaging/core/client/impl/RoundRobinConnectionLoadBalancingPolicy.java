@@ -37,7 +37,7 @@ import org.jboss.messaging.util.Random;
  */
 public class RoundRobinConnectionLoadBalancingPolicy implements ConnectionLoadBalancingPolicy
 {
-   private Random random = new Random();
+   private final Random random = new Random();
    
    private boolean first = true;
    

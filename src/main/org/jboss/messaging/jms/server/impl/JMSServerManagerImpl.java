@@ -231,6 +231,10 @@ public class JMSServerManagerImpl implements JMSServerManager
                                           final boolean autoGroup,
                                           final int maxConnections,
                                           final boolean preAcknowledge,
+                                          final boolean retryOnFailure,
+                                          final long retryInterval,
+                                          final double retryIntervalMultiplier,
+                                          final int maxRetries,
                                           final List<String> jndiBindings) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
@@ -253,7 +257,11 @@ public class JMSServerManagerImpl implements JMSServerManager
                                          blockOnPersistentSend,
                                          autoGroup,
                                          maxConnections,
-                                         preAcknowledge);
+                                         preAcknowledge,
+                                         retryOnFailure,
+                                         retryInterval,
+                                         retryIntervalMultiplier,
+                                         maxRetries);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
@@ -281,6 +289,10 @@ public class JMSServerManagerImpl implements JMSServerManager
                                           final boolean autoGroup,
                                           final int maxConnections,
                                           final boolean preAcknowledge,
+                                          final boolean retryOnFailure,
+                                          final long retryInterval,
+                                          final double retryIntervalMultiplier,
+                                          final int maxRetries,
                                           final List<String> jndiBindings) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
@@ -306,7 +318,11 @@ public class JMSServerManagerImpl implements JMSServerManager
                                          blockOnPersistentSend,
                                          autoGroup,
                                          maxConnections,
-                                         preAcknowledge);
+                                         preAcknowledge,
+                                         retryOnFailure,
+                                         retryInterval,
+                                         retryIntervalMultiplier,
+                                         maxRetries);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);

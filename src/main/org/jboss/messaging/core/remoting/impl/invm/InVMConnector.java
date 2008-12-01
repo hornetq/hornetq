@@ -42,6 +42,9 @@ import org.jboss.messaging.util.ConfigurationHelper;
 public class InVMConnector implements Connector
 {
    public static final Logger log = Logger.getLogger(InVMConnector.class);
+   
+   //Used for testing failure only
+   public static volatile boolean failOnCreateConnection;
 
    private final int id;
    
@@ -94,6 +97,12 @@ public class InVMConnector implements Connector
 
    public Connection createConnection()
    {
+      if (failOnCreateConnection)
+      {
+         //For testing only
+         return null;
+      }
+      
       Connection conn = internalCreateConnection(acceptor.getHandler(), new Listener());
       
       acceptor.connect((String)conn.getID(), handler, this);
@@ -131,9 +140,7 @@ public class InVMConnector implements Connector
    {
       return new InVMConnection(handler, listener);
    }
-
-   
-   
+      
    private class Listener implements ConnectionLifeCycleListener
    {
       public void connectionCreated(final Connection connection)
