@@ -137,8 +137,8 @@
       <ant antfile="build-messaging.xml" target="jar-logging"/>
    </target> 
 
-   <target name="client-jar" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="client-jar"/>
+   <target name="jar-client" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="jar-client"/>
    </target>
    <!-- ======================================================================================== -->
    <!-- Distro Tasks                                                                           -->
