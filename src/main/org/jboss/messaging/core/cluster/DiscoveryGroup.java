@@ -21,18 +21,33 @@
  */
 
 
-package org.jboss.messaging.core.server.cluster;
+package org.jboss.messaging.core.cluster;
+
+import java.util.List;
+
+import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.util.Pair;
 
 /**
- * A DiscoveryListener
+ * A DiscoveryGroup
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 17 Nov 2008 14:30:39
+ * Created 18 Nov 2008 09:26:54
  *
  *
  */
-public interface DiscoveryListener
+public interface DiscoveryGroup
 {
-   void connectorsChanged();
+   void start() throws Exception;
+   
+   void stop() throws Exception;
+
+   List<Pair<TransportConfiguration, TransportConfiguration>> getConnectors();
+   
+   boolean waitForBroadcast(long timeout);
+   
+   void registerListener(final DiscoveryListener listener);
+   
+   void unregisterListener(final DiscoveryListener listener);
 }

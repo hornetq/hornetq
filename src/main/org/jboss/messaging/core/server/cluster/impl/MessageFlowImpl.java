@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.jboss.messaging.core.cluster.DiscoveryGroup;
+import org.jboss.messaging.core.cluster.DiscoveryListener;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
@@ -37,8 +39,6 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.cluster.DiscoveryGroup;
-import org.jboss.messaging.core.server.cluster.DiscoveryListener;
 import org.jboss.messaging.core.server.cluster.Forwarder;
 import org.jboss.messaging.core.server.cluster.MessageFlow;
 import org.jboss.messaging.core.server.cluster.Transformer;

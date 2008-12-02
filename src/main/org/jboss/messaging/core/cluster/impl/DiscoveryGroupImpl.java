@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.server.cluster.impl;
+package org.jboss.messaging.core.cluster.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.InterruptedIOException;
@@ -34,10 +34,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.messaging.core.cluster.DiscoveryListener;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.cluster.DiscoveryGroup;
-import org.jboss.messaging.core.server.cluster.DiscoveryListener;
+import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.util.Pair;
 
 /**

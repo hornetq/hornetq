@@ -65,7 +65,7 @@
    <property name="security.jar.name" value="jbm-jbossas-security.jar"/>
    <property name="bootstrap.jar.name" value="jbm-bootstrap.jar"/>
    <property name="logging.jar.name" value="jbm-logging.jar"/>
-   <property name="core.client..jar.name" value="jbm-core-client.jar"/>
+   <property name="core.client.jar.name" value="jbm-core-client.jar"/>
 
    <!--source and build dirs-->
    <property name="build.dir" value="build"/>
@@ -583,7 +583,7 @@
    </target>
 
    <target name="jar-client" depends="compile-core">
-      <jar jarfile="${build.jars.dir}/${core.client..jar.name}">
+      <jar jarfile="${build.jars.dir}/${core.client.jar.name}">
          <fileset dir="${build.core.classes.dir}">
             <include name="version.properties"/>
             <include name="org/jboss/messaging/core/client/**/*.class"/>
@@ -591,6 +591,7 @@
             <include name="org/jboss/messaging/core/logging/**/*.class"/>
             <include name="org/jboss/messaging/core/remoting/**/*.class"/>
             <include name="org/jboss/messaging/util/**/*.class"/>
+             <include name="org/jboss/messaging/core/cluster/**/*.class"/>
             <include name="org/jboss/messaging/core/config/**/*.class"/>
             <include name="org/jboss/messaging/core/list/**/*.class"/>
             <include name="org/jboss/messaging/core/message/**/*.class"/>
@@ -634,7 +635,7 @@
             <include name="${security.jar.name}"/>
             <include name="${bootstrap.jar.name}"/>
             <include name="${logging.jar.name}"/>
-            <include name="${core.client..jar.name}"/>
+            <include name="${core.client.jar.name}"/>
          </fileset>
          <fileset dir="${jboss.microcontainer.lib}">
             <include name="jboss-container.jar"/>

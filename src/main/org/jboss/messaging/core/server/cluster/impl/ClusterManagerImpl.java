@@ -32,6 +32,8 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
+import org.jboss.messaging.core.cluster.DiscoveryGroup;
+import org.jboss.messaging.core.cluster.impl.DiscoveryGroupImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
@@ -42,7 +44,6 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
 import org.jboss.messaging.core.server.cluster.ClusterManager;
-import org.jboss.messaging.core.server.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.server.cluster.MessageFlow;
 import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.core.settings.HierarchicalRepository;

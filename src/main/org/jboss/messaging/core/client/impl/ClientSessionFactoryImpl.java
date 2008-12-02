@@ -22,13 +22,13 @@ import java.util.Set;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ConnectionLoadBalancingPolicy;
 import org.jboss.messaging.core.client.ConnectionManager;
+import org.jboss.messaging.core.cluster.DiscoveryListener;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.cluster.DiscoveryGroup;
-import org.jboss.messaging.core.server.cluster.DiscoveryListener;
-import org.jboss.messaging.core.server.cluster.impl.DiscoveryGroupImpl;
+import org.jboss.messaging.core.cluster.DiscoveryGroup;
+import org.jboss.messaging.core.cluster.impl.DiscoveryGroupImpl;
 import org.jboss.messaging.util.Pair;
 
 /**
