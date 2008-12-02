@@ -30,6 +30,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -46,7 +47,7 @@ public class WildCardClient
       SimpleString wildCardQ = new SimpleString("queuejms.#");
       try
       {
-         ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.netty.NettyConnectorFactory"));
+         ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
          clientSession = sessionFactory.createSession(false, true, true);
          SimpleString queue = new SimpleString("queuejms.testQueue");
          SimpleString queue2 = new SimpleString("queuejms.MyQueue");
