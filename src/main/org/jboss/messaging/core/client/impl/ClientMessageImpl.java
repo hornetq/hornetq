@@ -24,9 +24,9 @@ package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -38,6 +38,9 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
  */
 public class ClientMessageImpl extends MessageImpl implements ClientMessage
 {
+   // added this constant here so that the client package have no dependency on JMS
+   public static final SimpleString REPLYTO_HEADER_NAME = new SimpleString("JMSReplyTo");
+   
    private int deliveryCount;
 
    private ClientConsumerInternal consumer;
