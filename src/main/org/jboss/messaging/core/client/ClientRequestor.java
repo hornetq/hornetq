@@ -60,7 +60,7 @@ public class ClientRequestor
       return request(request, 0);
    }
 
-   public ClientMessage request(ClientMessage request, int timeout) throws Exception
+   public ClientMessage request(ClientMessage request, long timeout) throws Exception
    {
       request.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyAddress);
       requestProducer.send(request);
