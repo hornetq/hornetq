@@ -29,6 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
@@ -47,15 +49,16 @@ import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.SendLockImpl;
 import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.JBMThreadFactory;
 
 /**
- * 
  * A PostOfficeImpl
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- *
  */
 public class PostOfficeImpl implements PostOffice
 {
@@ -81,10 +84,21 @@ public class PostOfficeImpl implements PostOffice
 
    private Map<SimpleString, SendLock> addressLocks = new HashMap<SimpleString, SendLock>();
 
+   private ScheduledThreadPoolExecutor messageExpiryExecutor;
+
+   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+
+   private final long messageExpiryScanPeriod;
+
+   private final int messageExpiryThreadPriority;
+
    public PostOfficeImpl(final StorageManager storageManager,
                          final PagingManager pagingManager,
                          final QueueFactory queueFactory,
                          final ManagementService managementService,
+                         final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                         final long messageExpiryScanPeriod,
+                         final int messageExpiryThreadPriority,
                          final boolean checkAllowable,
                          final ResourceManager resourceManager,
                          final boolean enableWildCardRouting,
@@ -101,6 +115,12 @@ public class PostOfficeImpl implements PostOffice
       this.pagingManager = pagingManager;
 
       this.resourceManager = resourceManager;
+
+      this.queueSettingsRepository = queueSettingsRepository;
+
+      this.messageExpiryScanPeriod = messageExpiryScanPeriod;
+
+      this.messageExpiryThreadPriority = messageExpiryThreadPriority;
 
       if (enableWildCardRouting)
       {
@@ -130,11 +150,28 @@ public class PostOfficeImpl implements PostOffice
 
       loadBindings();
 
+      if (messageExpiryScanPeriod > 0)
+      {
+         MessageExpiryRunner messageExpiryRunner = new MessageExpiryRunner();
+         messageExpiryRunner.setPriority(3);
+         messageExpiryExecutor = new ScheduledThreadPoolExecutor(1,
+                                                                 new JBMThreadFactory("JBM-scheduled-threads",
+                                                                                      messageExpiryThreadPriority));
+         messageExpiryExecutor.scheduleAtFixedRate(messageExpiryRunner,
+                                                messageExpiryScanPeriod,
+                                                messageExpiryScanPeriod,
+                                                TimeUnit.MILLISECONDS);
+      }
       started = true;
    }
 
    public void stop() throws Exception
    {
+      if(messageExpiryExecutor != null)
+      {
+         messageExpiryExecutor.shutdown();
+      }
+
       pagingManager.stop();
 
       addressManager.clear();
@@ -218,14 +255,14 @@ public class PostOfficeImpl implements PostOffice
                                           final boolean fanout) throws Exception
    {
       Binding binding = createBinding(address, queueName, filter, durable, temporary, fanout);
-      
+
       addBindingInMemory(binding);
 
       if (durable)
       {
          storageManager.addBinding(binding);
       }
-      
+
       pagingManager.createPageStore(address);
 
       return binding;
@@ -292,9 +329,9 @@ public class PostOfficeImpl implements PostOffice
          if (bindings != null)
          {
             Binding theBinding = null;
-            
+
             long lowestRoutings = -1;
-            
+
             for (Binding binding : bindings)
             {
                Queue queue = binding.getQueue();
@@ -316,23 +353,23 @@ public class PostOfficeImpl implements PostOffice
                      //This gives us a weighted round robin, where the weight
                      //Can be determined from the number of consumers on the queue
                      long routings = binding.getRoutings();
-                     
+
                      if (routings < lowestRoutings || lowestRoutings == -1)
-                     {                        
+                     {
                         lowestRoutings = routings;
-                        
+
                         theBinding = binding;
                      }
                   }
                }
             }
-            
+
             if (theBinding != null)
-            {             
+            {
                MessageReference reference = message.createReference(theBinding.getQueue());
 
                refs.add(reference);
-               
+
                theBinding.incrementRoutings();
             }
 
@@ -375,21 +412,6 @@ public class PostOfficeImpl implements PostOffice
       return queues;
    }
 
-   public List<Queue> getQueues()
-   {
-      Map<SimpleString, Binding> nameMap = addressManager.getBindings();
-
-      List<Queue> queues = new ArrayList<Queue>();
-
-      for (Binding binding : nameMap.values())
-      {
-         Queue queue = binding.getQueue();
-         queues.add(queue);
-      }
-
-      return queues;
-   }
-
    public synchronized SendLock getAddressLock(final SimpleString address)
    {
       SendLock lock = addressLocks.get(address);
@@ -410,7 +432,7 @@ public class PostOfficeImpl implements PostOffice
                                  final SimpleString name,
                                  final Filter filter,
                                  final boolean durable,
-                                 final boolean temporary,             
+                                 final boolean temporary,
                                  final boolean fanout) throws Exception
    {
       Queue queue = queueFactory.createQueue(-1, name, filter, durable, false);
@@ -474,32 +496,32 @@ public class PostOfficeImpl implements PostOffice
          queues.put(binding.getQueue().getPersistenceID(), binding.getQueue());
       }
       // TODO: This is related to http://www.jboss.com/index.html?module=bb&op=viewtopic&t=145597
-      
+
       //FIXME This is incorrect - you cannot assume there is an allowable address in existence
       //for every address in the post office.
       //This code is unnecessary if paging stores are loaded lazily
       HashSet<SimpleString> addresses = new HashSet<SimpleString>();
-      
-      for (Binding binding: bindings)
+
+      for (Binding binding : bindings)
       {
          addresses.add(binding.getAddress());
       }
-      
-      for (SimpleString destination: dests)
+
+      for (SimpleString destination : dests)
       {
          addresses.add(destination);
       }
-      
+
       for (SimpleString destination : addresses)
       {
          pagingManager.createPageStore(destination);
       }
-      
+
       // End TODO -------------------------------------
 
 
       storageManager.loadMessages(this, queues, resourceManager);
-      
+
       for (SimpleString destination : addresses)
       {
          PagingStore store = pagingManager.getPageStore(destination);
@@ -512,6 +534,34 @@ public class PostOfficeImpl implements PostOffice
             else
             {
                store.startDepaging();
+            }
+         }
+      }
+   }
+
+
+   private class MessageExpiryRunner extends Thread
+   {
+      public void run()
+      {
+         Map<SimpleString, Binding> nameMap = addressManager.getBindings();
+
+         List<Queue> queues = new ArrayList<Queue>();
+
+         for (Binding binding : nameMap.values())
+         {
+            Queue queue = binding.getQueue();
+            queues.add(queue);
+         }
+         for (Queue queue : queues)
+         {
+            try
+            {
+               queue.expireMessages(storageManager, PostOfficeImpl.this, queueSettingsRepository);
+            }
+            catch (Exception e)
+            {
+               log.error("failed to expire messages for queue " + queue.getName(), e);
             }
          }
       }

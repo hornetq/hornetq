@@ -42,6 +42,7 @@ import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.ConcurrentSet;
 
 /**
  * Implementation of a Queue TODO use Java 5 concurrent queue
@@ -75,7 +76,7 @@ public class QueueImpl implements Queue
 
    private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(NUM_PRIORITIES);
 
-   private final ConcurrentHashSet<MessageReference> expiringMessageReferences = new ConcurrentHashSet<MessageReference>();
+   private final ConcurrentSet<MessageReference> expiringMessageReferences = new ConcurrentHashSet<MessageReference>();
 
    private final ScheduledDeliveryHandler scheduledDeliveryHandler;
 
@@ -186,10 +187,6 @@ public class QueueImpl implements Queue
          if (!scheduledDeliveryHandler.checkAndSchedule(ref, backup))
          {
             messageReferences.addFirst(ref, msg.getPriority());
-         }
-         if (ref.getMessage().getExpiration() != 0)
-         {
-            expiringMessageReferences.addIfAbsent(ref);
          }
       }
 
@@ -520,20 +517,11 @@ public class QueueImpl implements Queue
                               final PostOffice postOffice,
                               final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
-      List<MessageReference> refs = new ArrayList<MessageReference>();
-
       for (MessageReference expiringMessageReference : expiringMessageReferences)
       {
          if (expiringMessageReference.getMessage().isExpired())
          {
-            refs.add(expiringMessageReference);
-         }
-      }
-      for (MessageReference ref : refs)
-      {
-         if (expiringMessageReferences.remove(ref))
-         {
-            expireMessage(ref.getMessage().getMessageID(), storageManager, postOffice, queueSettingsRepository);
+            expireMessage(expiringMessageReference.getMessage().getMessageID(), storageManager, postOffice, queueSettingsRepository);
          }
       }
    }

@@ -136,7 +136,7 @@ public class MessagingServerImpl implements MessagingServer
 
    private ManagementService managementService;
 
-   private ScheduledThreadPoolExecutor messageExpiryExecutor;
+
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -227,6 +227,9 @@ public class MessagingServerImpl implements MessagingServer
                                       pagingManager,
                                       queueFactory,
                                       managementService,
+                                      queueSettingsRepository,
+                                      configuration.getMessageExpiryScanPeriod(),
+                                      configuration.getMessageExpiryThreadPriority(),
                                       configuration.isRequireDestinations(),
                                       resourceManager,
                                       configuration.isWildcardRoutingEnabled(),
@@ -245,15 +248,7 @@ public class MessagingServerImpl implements MessagingServer
                                                           this);
 
       postOffice.start();
-      MessageExpiryRunner messageExpiryRunner = new MessageExpiryRunner(postOffice);
-      messageExpiryRunner.setPriority(3);
-      messageExpiryExecutor = new ScheduledThreadPoolExecutor(1,
-                                                              new JBMThreadFactory("JBM-scheduled-threads",
-                                                                                   configuration.getMessageExpiryThreadPriority()));
-      messageExpiryExecutor.scheduleAtFixedRate(messageExpiryRunner,
-                                                configuration.getMessageExpiryScanPeriod(),
-                                                configuration.getMessageExpiryScanPeriod(),
-                                                TimeUnit.MILLISECONDS);
+
       resourceManager.start();
 
       // FIXME the destination corresponding to the notification address is always created
@@ -340,7 +335,6 @@ public class MessagingServerImpl implements MessagingServer
       securityStore = null;
       resourceManager.stop();
       resourceManager = null;
-      messageExpiryExecutor.shutdown();
       postOffice.stop();
       postOffice = null;
       securityRepository = null;
@@ -753,32 +747,6 @@ public class MessagingServerImpl implements MessagingServer
       public void run()
       {
          queue.activateNow(asyncDeliveryPool);
-      }
-   }
-
-   private class MessageExpiryRunner extends Thread
-   {
-      private final PostOffice postOffice;
-
-      public MessageExpiryRunner(PostOffice postOffice)
-      {
-         this.postOffice = postOffice;
-      }
-
-      public void run()
-      {
-         List<Queue> queues = postOffice.getQueues();
-         for (Queue queue : queues)
-         {
-            try
-            {
-               queue.expireMessages(storageManager, postOffice, queueSettingsRepository);
-            }
-            catch (Exception e)
-            {
-               log.error("failed to expire messages for queue " + queue.getName(), e);
-            }
-         }
       }
    }
 
