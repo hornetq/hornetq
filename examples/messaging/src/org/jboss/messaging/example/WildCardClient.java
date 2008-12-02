@@ -30,7 +30,6 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -54,17 +53,9 @@ public class WildCardClient
 
          ClientProducer clientProducer = clientSession.createProducer(queue);
          ClientProducer clientProducer2 = clientSession.createProducer(queue2);
-         ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE,
-                                                                   false,
-                                                                   0,
-                                                                   System.currentTimeMillis(),
-                                                                   (byte)1);
+         ClientMessage message = clientSession.createClientMessage(false);
          message.getBody().putString("This is a message from queue " + queue);
-         ClientMessage message2 = clientSession.createClientMessage(JBossTextMessage.TYPE,
-                                                                    false,
-                                                                    0,
-                                                                    System.currentTimeMillis(),
-                                                                    (byte)1);
+         ClientMessage message2 = clientSession.createClientMessage(false);
          message2.getBody().putString("This is a message from queue " + queue2);
 
          clientSession.createQueue(wildCardQ, wildCardQ, null, false, true, true);

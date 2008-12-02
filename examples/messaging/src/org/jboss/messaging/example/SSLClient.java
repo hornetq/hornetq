@@ -30,7 +30,6 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.integration.transports.netty.TransportConstants;
-import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -51,8 +50,7 @@ public class SSLClient
          clientSession = sessionFactory.createSession(false, true, true);
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);
-         ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, false, 0,
-               System.currentTimeMillis(), (byte) 1);
+         ClientMessage message = clientSession.createClientMessage(false);
          message.getBody().putString("Hello!");
          clientProducer.send(message);
          ClientConsumer clientConsumer = clientSession.createConsumer(queue);

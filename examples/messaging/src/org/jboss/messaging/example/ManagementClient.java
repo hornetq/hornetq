@@ -37,7 +37,6 @@ import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
-import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /*
@@ -200,11 +199,7 @@ public class ManagementClient
    private static void sendMessages(final ClientSession clientSession, final SimpleString queue) throws MessagingException
    {
       ClientProducer clientProducer = clientSession.createProducer(queue);
-      ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE,
-                                                                false,
-                                                                0,
-                                                                System.currentTimeMillis(),
-                                                                (byte)1);
+      ClientMessage message = clientSession.createClientMessage(false);
       message.getBody().putString("Hello, World!");
       clientProducer.send(message);
       clientProducer.send(message);

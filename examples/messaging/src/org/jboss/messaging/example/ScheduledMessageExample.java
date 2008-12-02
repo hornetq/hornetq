@@ -35,7 +35,6 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -55,8 +54,7 @@ public class ScheduledMessageExample
          clientSession = sessionFactory.createSession(false, true, true);
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);
-         ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, false, 0,
-                                                       System.currentTimeMillis(), (byte) 1);
+         ClientMessage message = clientSession.createClientMessage(false);
          message.getBody().putString("Hello!");
          Calendar cal = Calendar.getInstance();
          log.info("current time " + df.format(cal.getTime()));

@@ -32,7 +32,6 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
-import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -63,8 +62,7 @@ public class SimpleExample
          SimpleString atestq = new SimpleString("atestq");
          clientSession.createQueue(atestq, atestq, null, false, true, true);
          ClientProducer clientProducer = clientSession.createProducer(atestq);
-         ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, false, 0,
-                 System.currentTimeMillis(), (byte) 1);
+         ClientMessage message = clientSession.createClientMessage(false);
          message.getBody().putString("Hello!");
          clientProducer.send(message);
          ClientConsumer clientConsumer = clientSession.createConsumer(atestq);
