@@ -33,58 +33,43 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class ClientRequestor
 {
-   private ClientSession queueSession;
+   private final ClientSession queueSession;
 
-   private ClientProducer requestProducer;
+   private final ClientProducer requestProducer;
 
-   private ClientConsumer replyConsumer;
+   private final ClientConsumer replyConsumer;
 
-   private SimpleString replyAddress;
+   private final SimpleString replyQueue;
 
-   private SimpleString replyQueue;
-
-   public ClientRequestor(ClientSession session, SimpleString requestAddress) throws Exception
+   public ClientRequestor(final ClientSession session, final SimpleString requestAddress) throws Exception
    {
       queueSession = session;
 
       requestProducer = queueSession.createProducer(requestAddress);
-      replyAddress = new SimpleString(UUID.randomUUID().toString());
       replyQueue = new SimpleString(UUID.randomUUID().toString());
-      queueSession.addDestination(replyAddress, false, true);
-      queueSession.createQueue(replyAddress, replyQueue, null, false, true, false);
+      queueSession.addDestination(replyQueue, false, true);
+      queueSession.createQueue(replyQueue, replyQueue, null, false, true, false);
       replyConsumer = queueSession.createConsumer(replyQueue);
    }
 
-   public ClientMessage request(ClientMessage request) throws Exception
+   public ClientMessage request(final ClientMessage request) throws Exception
    {
       return request(request, 0);
    }
 
-   public ClientMessage request(ClientMessage request, long timeout) throws Exception
+   public ClientMessage request(final ClientMessage request, final long timeout) throws Exception
    {
-      request.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyAddress);
+      request.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyQueue);
       requestProducer.send(request);
       return replyConsumer.receive(timeout);
    }
 
    public void close() throws Exception
    {
-      try
-      {
-         replyConsumer.close();
-      }
-      catch (Exception ignored)
-      {
-      }
-      try
-      {
-         queueSession.deleteQueue(replyQueue);
-         queueSession.removeDestination(replyAddress, false);
-      }
-      catch (Exception ignored)
-      {
-      }
+      replyConsumer.close();
+      queueSession.deleteQueue(replyQueue);
+      queueSession.removeDestination(replyQueue, false);
       queueSession.close();
    }
 
- }
+}
