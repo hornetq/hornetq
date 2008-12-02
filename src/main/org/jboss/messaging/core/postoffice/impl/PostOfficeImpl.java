@@ -25,7 +25,6 @@ package org.jboss.messaging.core.postoffice.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,11 +47,11 @@ import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.SendLockImpl;
-import org.jboss.messaging.core.transaction.ResourceManager;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.JBMThreadFactory;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A PostOfficeImpl
@@ -495,36 +494,21 @@ public class PostOfficeImpl implements PostOffice
 
          queues.put(binding.getQueue().getPersistenceID(), binding.getQueue());
       }
-      // TODO: This is related to http://www.jboss.com/index.html?module=bb&op=viewtopic&t=145597
-
-      //FIXME This is incorrect - you cannot assume there is an allowable address in existence
-      //for every address in the post office.
-      //This code is unnecessary if paging stores are loaded lazily
-      HashSet<SimpleString> addresses = new HashSet<SimpleString>();
-
-      for (Binding binding : bindings)
-      {
-         addresses.add(binding.getAddress());
-      }
-
-      for (SimpleString destination : dests)
-      {
-         addresses.add(destination);
-      }
-
-      for (SimpleString destination : addresses)
+      
+      for (SimpleString destination : addressManager.getMappings().keySet())
       {
          pagingManager.createPageStore(destination);
       }
 
-      // End TODO -------------------------------------
-
-
       storageManager.loadMessages(this, queues, resourceManager);
 
-      for (SimpleString destination : addresses)
+
+      // If Paging was interrupted due a server stop, during restart we need to resume depaging those addresses
+      for (SimpleString destination : addressManager.getMappings().keySet())
       {
          PagingStore store = pagingManager.getPageStore(destination);
+         
+         // FIXME this should be changed as soon as we change the threading model
          if (!pagingManager.isGlobalPageMode())
          {
             if (store.isPaging() && store.getMaxSizeBytes() < 0)
@@ -537,6 +521,7 @@ public class PostOfficeImpl implements PostOffice
             }
          }
       }
+
    }
 
 

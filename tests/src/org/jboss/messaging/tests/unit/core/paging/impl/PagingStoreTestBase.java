@@ -42,6 +42,8 @@ import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreImpl;
 import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
@@ -106,6 +108,8 @@ public abstract class PagingStoreTestBase extends UnitTestCase
       settings.setPageSizeBytes(MAX_SIZE);
 
       final TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),
+                                                                 createStorageManagerMock(),
+                                                                 createPostOfficeMock(),
                                                                  factory,
                                                                  new SimpleString("test"),
                                                                  settings,
@@ -259,7 +263,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
          fileTmp.close();
       }
 
-      TestSupportPageStore storeImpl2 = new PagingStoreImpl(createMockManager(), factory, new SimpleString("test"), settings, executor);
+      TestSupportPageStore storeImpl2 = new PagingStoreImpl(createMockManager(), createStorageManagerMock(), createPostOfficeMock(), factory, new SimpleString("test"), settings, executor);
       storeImpl2.start();
 
       int numberOfPages = storeImpl2.getNumberOfPages();
@@ -356,6 +360,21 @@ public abstract class PagingStoreTestBase extends UnitTestCase
       EasyMock.expect(mockManager.getDefaultPageSize()).andStubReturn(ConfigurationImpl.DEFAULT_PAGE_SIZE);
       EasyMock.replay(mockManager);
       return mockManager;
+   }
+   
+   protected StorageManager createStorageManagerMock()
+   {
+      StorageManager storageManager = EasyMock.createNiceMock(StorageManager.class);
+      EasyMock.replay(storageManager);
+      return storageManager;
+   }
+   
+   
+   protected PostOffice createPostOfficeMock()
+   {
+      PostOffice postOffice = EasyMock.createNiceMock(PostOffice.class);
+      EasyMock.replay(postOffice);
+      return postOffice;
    }
 
    // Private -------------------------------------------------------

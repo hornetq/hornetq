@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.paging.impl;
 
+import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PagingStore;
 
 /**
@@ -31,5 +32,16 @@ import org.jboss.messaging.core.paging.PagingStore;
  */
 public interface TestSupportPageStore extends PagingStore
 {
+   /** 
+    * Remove the first page from the Writing Queue.
+    * The file will still exist until Page.delete is called, 
+    * So, case the system is reloaded the same Page will be loaded back if delete is not called.
+    * @return
+    * @throws Exception
+    * 
+    * Note: This should still be part of the interface, even though JBossMessaging only uses through the 
+    */
+   Page depage() throws Exception;
+
    void forceAnotherPage() throws Exception;
 }

@@ -33,6 +33,8 @@ import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.paging.PagingStoreFactory;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.SimpleString;
@@ -54,6 +56,10 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    private final ExecutorService executor;
 
    private PagingManager pagingManager;
+   
+   private StorageManager storageManager;
+   
+   private PostOffice postOffice;
 
    // Static --------------------------------------------------------
 
@@ -91,15 +97,27 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
       destinationFile.mkdirs();
 
       return new PagingStoreImpl(pagingManager,
+                                 storageManager,
+                                 postOffice,
                                  newFileFactory(destinationDirectory),
                                  destinationName,
                                  settings,
                                  executor);
    }
 
-   public void setPagingManager(final PagingManager manager)
+   public void setPagingManager(final PagingManager pagingManager)
    {
-      pagingManager = manager;
+      this.pagingManager = pagingManager;
+   }
+   
+   public void setStorageManager(final StorageManager storageManager)
+   {
+      this.storageManager = storageManager; 
+   }
+   
+   public void setPostOffice(final PostOffice postOffice)
+   {
+      this.postOffice = postOffice;
    }
 
    // Package protected ---------------------------------------------

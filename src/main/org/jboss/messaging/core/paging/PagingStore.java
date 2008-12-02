@@ -46,17 +46,11 @@ public interface PagingStore extends MessagingComponent
    /** Maximum number of bytes allowed in memory */
    long getMaxSizeBytes();
 
-   boolean isPrintedDropMessagesWarning();
-
-   void setPrintedDropMessagesWarning(boolean droppedMessages);
-
    boolean isDropWhenMaxSize();
 
    long getPageSizeBytes();
 
    long getAddressSize();
-
-   long addAddressSize(long add);
 
    /** @return true if paging was started, or false if paging was already started before this call */
    boolean startPaging() throws Exception;
@@ -68,16 +62,7 @@ public interface PagingStore extends MessagingComponent
    public boolean readPage() throws Exception;
 
    boolean page(PagedMessage message) throws Exception;
-
-   /** 
-    * Remove the first page from the Writing Queue.
-    * The file will still exist until Page.delete is called, 
-    * So, case the system is reloaded the same Page will be loaded back if delete is not called.
-    * @return
-    * @throws Exception 
-    */
-   Page depage() throws Exception;
-
+   
    /**
     * 
     * @return false if a thread was already started, or if not in page mode
@@ -88,4 +73,11 @@ public interface PagingStore extends MessagingComponent
    LastPageRecord getLastPageRecord();
 
    void setLastPageRecord(LastPageRecord record);
+
+   /**
+    * @param memoryEstimate
+    * @return
+    * @throws Exception 
+    */
+   long addSize(long memoryEstimate) throws Exception;
 }

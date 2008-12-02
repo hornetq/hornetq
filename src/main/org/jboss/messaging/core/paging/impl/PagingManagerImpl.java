@@ -22,10 +22,7 @@
 
 package org.jboss.messaging.core.paging.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,14 +30,12 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.LastPageRecord;
-import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -79,8 +74,6 @@ public class PagingManagerImpl implements PagingManager
    private final StorageManager storageManager;
 
    private final long defaultPageSize;
-
-   private PostOffice postOffice;
 
    private final ConcurrentMap</*TransactionID*/Long, PageTransactionInfo> transactions = new ConcurrentHashMap<Long, PageTransactionInfo>();
 
@@ -177,146 +170,7 @@ public class PagingManagerImpl implements PagingManager
     *  (There is a one-to-one relationship here) */
    public void setPostOffice(final PostOffice postOffice)
    {
-      this.postOffice = postOffice;
-   }
-
-   public void clearLastPageRecord(final LastPageRecord lastRecord) throws Exception
-   {
-      trace("Clearing lastRecord information " + lastRecord.getLastId());
-      
-      storageManager.storeDelete(lastRecord.getRecordId());
-   }
-
-   /**
-    * This method will remove files from the page system and and route them, doing it transactionally
-    * 
-    * A Transaction will be opened only if persistent messages are used.
-    * 
-    * If persistent messages are also used, it will update eventual PageTransactions
-    */
-   
-   //TODO - this method should be moved to PagingStoreImpl
-   public boolean onDepage(final int pageId,
-                           final SimpleString destination,
-                           final PagingStore pagingStore,
-                           final PagedMessage[] data) throws Exception
-   {
-      trace("Depaging....");
-
-      // Depage has to be done atomically, in case of failure it should be
-      // back to where it was
-      final long depageTransactionID = storageManager.generateUniqueID();
-
-      LastPageRecord lastPage = pagingStore.getLastPageRecord();
-
-      if (lastPage == null)
-      {
-         lastPage = new LastPageRecordImpl(pageId, destination);
-         
-         pagingStore.setLastPageRecord(lastPage);
-      }
-      else
-      {
-         if (pageId <= lastPage.getLastId())
-         {
-            log.warn("Page " + pageId + " was already processed, ignoring the page");
-            return true;
-         }
-      }
-
-      lastPage.setLastId(pageId);
-      
-      storageManager.storeLastPage(depageTransactionID, lastPage);
-
-      HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
-
-      final List<MessageReference> refsToAdd = new ArrayList<MessageReference>();
-
-      for (PagedMessage msg : data)
-      {
-         ServerMessage pagedMessage = null;
-
-         pagedMessage = (ServerMessage)msg.getMessage(storageManager);
-
-         final long transactionIdDuringPaging = msg.getTransactionID();
-         
-         if (transactionIdDuringPaging >= 0)
-         {
-            final PageTransactionInfo pageTransactionInfo = transactions.get(transactionIdDuringPaging);
-
-            // http://wiki.jboss.org/wiki/JBossMessaging2Paging
-            // This is the Step D described on the "Transactions on Paging"
-            // section
-            if (pageTransactionInfo == null)
-            {
-               if (isTrace)
-               {
-                  trace("Transaction " + msg.getTransactionID() + " not found, ignoring message " + pagedMessage);
-               }
-               continue;
-            }
-
-            // This is to avoid a race condition where messages are depaged
-            // before the commit arrived
-            if (!pageTransactionInfo.waitCompletion())
-            {
-               trace("Rollback was called after prepare, ignoring message " + pagedMessage);
-               continue;
-            }
-
-            // Update information about transactions
-            if (pagedMessage.isDurable())
-            {
-               pageTransactionInfo.decrement();
-               pageTransactionsToUpdate.add(pageTransactionInfo);
-            }
-         }
-
-         refsToAdd.addAll(postOffice.route(pagedMessage));
-
-         if (pagedMessage.getDurableRefCount() != 0)
-         {
-            storageManager.storeMessageTransactional(depageTransactionID, pagedMessage);
-         }
-      }
-
-      for (PageTransactionInfo pageWithTransaction : pageTransactionsToUpdate)
-      {
-         if (pageWithTransaction.getNumberOfMessages() == 0)
-         {
-            // http://wiki.jboss.org/wiki/JBossMessaging2Paging
-            // numberOfReads==numberOfWrites -> We delete the record
-            storageManager.storeDeletePageTransaction(depageTransactionID, pageWithTransaction.getRecordID());
-            transactions.remove(pageWithTransaction.getTransactionID());
-         }
-         else
-         {
-            storageManager.storePageTransaction(depageTransactionID, pageWithTransaction);
-         }
-      }
-
-      storageManager.commit(depageTransactionID);
-
-      trace("Depage committed");
-
-      for (MessageReference ref : refsToAdd)
-      {
-         ref.getQueue().addLast(ref);
-      }
-
-      if (globalMode.get())
-      {
-         // We use the Default Page Size when in global mode for the calculation of the Watermark
-         return globalSize.get() < maxGlobalSize - defaultPageSize && pagingStore.getMaxSizeBytes() <= 0 ||
-                pagingStore.getAddressSize() < pagingStore.getMaxSizeBytes();
-      }
-      else
-      {
-         // If Max-size is not configured (-1) it will aways return true, as
-         // this method was probably called by global-depage
-         return pagingStore.getMaxSizeBytes() <= 0 || pagingStore.getAddressSize() < pagingStore.getMaxSizeBytes();
-      }
-
+      pagingSPI.setPostOffice(postOffice);
    }
 
    public long getDefaultPageSize()
@@ -338,12 +192,12 @@ public class PagingManagerImpl implements PagingManager
 
    public void messageDone(final ServerMessage message) throws Exception
    {
-      addSize(message.getDestination(), message.getMemoryEstimate() * -1);
+      getPageStore(message.getDestination()).addSize(message.getMemoryEstimate() * -1);
    }
 
    public long addSize(final ServerMessage message) throws Exception
    {
-      return addSize(message.getDestination(), message.getMemoryEstimate());
+      return getPageStore(message.getDestination()).addSize(message.getMemoryEstimate());
    }
 
    public boolean page(final ServerMessage message, final long transactionId) throws Exception
@@ -360,6 +214,17 @@ public class PagingManagerImpl implements PagingManager
    {
       transactions.put(pageTransaction.getTransactionID(), pageTransaction);
    }
+   
+   public void removeTransaction(final long id)
+   {
+      transactions.remove(id);
+   }
+   
+   public PageTransactionInfo getTransaction(final long id)
+   {
+      return transactions.get(id);
+   }
+   
 
    public void sync(final Collection<SimpleString> destinationsToSync) throws Exception
    {
@@ -386,6 +251,8 @@ public class PagingManagerImpl implements PagingManager
       
       pagingSPI.setPagingManager(this);
       
+      pagingSPI.setStorageManager(storageManager);
+      
       started = true;
    }
 
@@ -405,6 +272,42 @@ public class PagingManagerImpl implements PagingManager
          store.stop();
       }
    }
+   
+   public void startGlobalDepage()
+   {
+      if (globalDepageRunning.compareAndSet(false, true))
+      {
+         Runnable globalDepageRunnable = new GlobalDepager();
+         pagingSPI.getPagingExecutor().execute(globalDepageRunnable);
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.paging.PagingManager#getGlobalSize()
+    */
+   public long getGlobalSize()
+   {
+      return this.globalSize.get();
+   }
+   
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.paging.PagingManager#addGlobalSize(long)
+    */
+   public long addGlobalSize(long size)
+   {
+      return globalSize.addAndGet(size);
+   }
+
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.paging.PagingManager#getMaxGlobalSize()
+    */
+   public long getMaxGlobalSize()
+   {
+      return maxGlobalSize;
+   }
+   
 
    // Package protected ---------------------------------------------
 
@@ -415,110 +318,6 @@ public class PagingManagerImpl implements PagingManager
    private PagingStore newStore(final SimpleString destinationName)
    {
       return pagingSPI.newStore(destinationName, queueSettingsRepository.getMatch(destinationName.toString()));
-   }
-
-   //TODO - this method should be moved to PagingStoreImpl
-   private long addSize(final SimpleString destination, final long size) throws Exception
-   {
-      final PagingStore store = getPageStore(destination);
-
-      final long maxSize = store.getMaxSizeBytes();
-
-      final long pageSize = store.getPageSizeBytes();
-
-      if (store.isDropWhenMaxSize() && size > 0)
-      {
-         // if destination configured to drop messages && size is over the
-         // limit, we return -1 which means drop the message
-         if (store.getAddressSize() + size > maxSize || maxGlobalSize > 0 && globalSize.get() + size > maxGlobalSize)
-         {
-            if (!store.isPrintedDropMessagesWarning())
-            {
-               store.setPrintedDropMessagesWarning(true);
-               
-               log.warn("Messages are being dropped on adress " + store.getStoreName());
-            }
-
-            return -1l;
-         }
-         else
-         {
-            return store.addAddressSize(size);
-         }
-      }
-      else
-      {
-         long currentGlobalSize = globalSize.addAndGet(size);
-
-         final long addressSize = store.addAddressSize(size);
-
-         if (size > 0)
-         {
-            if (maxGlobalSize > 0 && currentGlobalSize > maxGlobalSize)
-            {
-               globalMode.set(true);
-               
-               if (store.startPaging())
-               {
-                  if (isTrace)
-                  {
-                     trace("Starting paging on " + destination + ", size = " + addressSize + ", maxSize=" + maxSize);
-                  }
-               }
-            }
-            else if (maxSize > 0 && addressSize > maxSize)
-            {
-               if (store.startPaging())
-               {
-                  if (isTrace)
-                  {
-                     trace("Starting paging on " + destination + ", size = " + addressSize + ", maxSize=" + maxSize);
-                  }
-               }
-            }
-         }
-         else
-         {
-            // When in Global mode, we use the default page size as the minimal
-            // watermark to start depage
-
-            if (isTrace)
-            {
-               log.trace("globalMode.get = " + globalMode.get() +
-                         " currentGlobalSize = " +
-                         currentGlobalSize +
-                         " defaultPageSize = " +
-                         defaultPageSize +
-                         " maxGlobalSize = " +
-                         maxGlobalSize +
-                         "maxGlobalSize - defaultPageSize = " +
-                         (maxGlobalSize - defaultPageSize));
-            }
-
-            if (globalMode.get() && currentGlobalSize < maxGlobalSize - defaultPageSize)
-            {
-               startGlobalDepage();
-            }
-            else if (maxSize > 0 && addressSize < maxSize - pageSize)
-            {
-               if (store.startDepaging())
-               {
-                  log.info("Starting depaging Thread, size = " + addressSize);
-               }
-            }
-         }
-
-         return addressSize;
-      }
-   }
-
-   private void startGlobalDepage()
-   {
-      if (globalDepageRunning.compareAndSet(false, true))
-      {
-         Runnable globalDepageRunnable = new GlobalDepager();
-         pagingSPI.getPagingExecutor().execute(globalDepageRunnable);
-      }
    }
 
    // Inner classes -------------------------------------------------
@@ -574,4 +373,5 @@ public class PagingManagerImpl implements PagingManager
          }
       }
    }
+
 }

@@ -23,6 +23,8 @@
 package org.jboss.messaging.core.paging.impl;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -37,9 +39,14 @@ import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.Page;
+import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
 
@@ -56,6 +63,10 @@ public class PagingStoreImpl implements TestSupportPageStore
    private static final Logger log = Logger.getLogger(PagingStoreImpl.class);
 
    // Attributes ----------------------------------------------------
+
+   private final StorageManager storageManager;
+   
+   private final PostOffice postOffice;
 
    private final DecimalFormat format = new DecimalFormat("000000000");
 
@@ -103,9 +114,24 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    // Static --------------------------------------------------------
 
+   // private static final boolean isTrace = log.isTraceEnabled();
+   private static final boolean isTrace = true;
+
+   // This is just a debug tool method.
+   // During debugs you could make log.trace as log.info, and change the
+   // variable isTrace above
+   private static void trace(final String message)
+   {
+      // log.trace(message);
+      log.info(message);
+   }
+
+
    // Constructors --------------------------------------------------
 
    public PagingStoreImpl(final PagingManager pagingManager,
+                          final StorageManager storageManager,
+                          final PostOffice postOffice,
                           final SequentialFileFactory fileFactory,
                           final SimpleString storeName,
                           final QueueSettings queueSettings,
@@ -115,6 +141,10 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          throw new IllegalStateException("Paging Manager can't be null");
       }
+      
+      this.storageManager = storageManager;
+      
+      this.postOffice = postOffice;
       
       this.fileFactory = fileFactory;
       
@@ -142,26 +172,9 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    // PagingStore implementation ------------------------------------
 
-   //TODO - this methods shouldn't be necessary if move functionality from
-   //PagingManagerImpl to PagingStoreImpl
-   public boolean isPrintedDropMessagesWarning()
-   {
-      return printedDropMessagesWarning;
-   }
-
-   public void setPrintedDropMessagesWarning(final boolean droppedMessages)
-   {
-      this.printedDropMessagesWarning = droppedMessages;
-   }
-
    public long getAddressSize()
    {
       return sizeInBytes.get();
-   }
-
-   public long addAddressSize(final long delta)
-   {
-      return sizeInBytes.addAndGet(delta);
    }
 
    /** Maximum number of bytes allowed in memory */
@@ -217,7 +230,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          if (lastPageRecord != null)
          {
-            pagingManager.clearLastPageRecord(lastPageRecord);
+            clearLastPageRecord(lastPageRecord);
          }
          
          lastPageRecord = null;
@@ -229,7 +242,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       
       PagedMessage messages[] = page.read();
       
-      boolean addressNotFull = pagingManager.onDepage(page.getPageId(), storeName, PagingStoreImpl.this, messages);
+      boolean addressNotFull = onDepage(page.getPageId(), storeName, messages);
       
       page.delete();
 
@@ -241,7 +254,6 @@ public class PagingStoreImpl implements TestSupportPageStore
     *  The method calling this method will remove the page and will start reading it outside of any locks. 
     *  
     * */
-   //FIXME - why is this public?
    public Page depage() throws Exception
    {
       writeLock.lock();
@@ -303,6 +315,102 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    }
 
+   
+   public long addSize(final long size) throws Exception
+   {
+      final long maxSize = getMaxSizeBytes();
+
+      final long pageSize = getPageSizeBytes();
+
+      if (isDropWhenMaxSize() && size > 0)
+      {
+         // if destination configured to drop messages && size is over the
+         // limit, we return -1 which means drop the message
+         if (getAddressSize() + size > maxSize || pagingManager.getMaxGlobalSize() > 0 && pagingManager.getGlobalSize() + size > pagingManager.getMaxGlobalSize())
+         {
+            if (!printedDropMessagesWarning)
+            {
+               printedDropMessagesWarning = true;
+               
+               log.warn("Messages are being dropped on adress " + getStoreName());
+            }
+
+            return -1l;
+         }
+         else
+         {
+            return addAddressSize(size);
+         }
+      }
+      else
+      {
+         final long currentGlobalSize = pagingManager.addGlobalSize(size);
+         
+         final long maxGlobalSize = pagingManager.getMaxGlobalSize();
+
+         final long addressSize = addAddressSize(size);
+         
+         if (size > 0)
+         {
+            if (maxGlobalSize > 0 && currentGlobalSize > maxGlobalSize)
+            {
+               pagingManager.setGlobalPageMode(true);
+               
+               if (startPaging())
+               {
+                  if (isTrace)
+                  {
+                     trace("Starting paging on " + getStoreName() + ", size = " + addressSize + ", maxSize=" + maxSize);
+                  }
+               }
+            }
+            else if (maxSize > 0 && addressSize > maxSize)
+            {
+               if (startPaging())
+               {
+                  if (isTrace)
+                  {
+                     trace("Starting paging on " + getStoreName() + ", size = " + addressSize + ", maxSize=" + maxSize);
+                  }
+               }
+            }
+         }
+         else
+         {
+            // When in Global mode, we use the default page size as the minimal
+            // watermark to start depage
+
+            if (isTrace)
+            {
+               log.trace("globalMode.get = " + pagingManager.isGlobalPageMode() +
+                         " currentGlobalSize = " +
+                         currentGlobalSize +
+                         " defaultPageSize = " +
+                         pagingManager.getDefaultPageSize() +
+                         " maxGlobalSize = " +
+                         maxGlobalSize +
+                         "maxGlobalSize - defaultPageSize = " +
+                         (maxGlobalSize - pagingManager.getDefaultPageSize()));
+            }
+
+            if (pagingManager.isGlobalPageMode() && currentGlobalSize < maxGlobalSize - pagingManager.getDefaultPageSize())
+            {
+               pagingManager.startGlobalDepage();
+            }
+            else if (maxSize > 0 && addressSize < maxSize - pageSize)
+            {
+               if (startDepaging())
+               {
+                  log.info("Starting depaging Thread, size = " + addressSize);
+               }
+            }
+         }
+
+         return addressSize;
+      }
+   }
+
+   
    public boolean page(final PagedMessage message) throws Exception
    {
       // Max-size is set, but reject is activated, what means.. never page on
@@ -564,6 +672,8 @@ public class PagingStoreImpl implements TestSupportPageStore
          writeLock.unlock();
       }
    }
+   
+   
 
    // TestSupportPageStore ------------------------------------------
 
@@ -577,6 +687,143 @@ public class PagingStoreImpl implements TestSupportPageStore
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+   
+   
+   /**
+    * This method will remove files from the page system and and route them, doing it transactionally
+    * 
+    * A Transaction will be opened only if persistent messages are used.
+    * 
+    * If persistent messages are also used, it will update eventual PageTransactions
+    */
+   
+   private boolean onDepage(final int pageId,
+                           final SimpleString destination,
+                           final PagedMessage[] data) throws Exception
+   {
+      trace("Depaging....");
+
+      // Depage has to be done atomically, in case of failure it should be
+      // back to where it was
+      final long depageTransactionID = storageManager.generateUniqueID();
+
+      LastPageRecord lastPage = getLastPageRecord();
+
+      if (lastPage == null)
+      {
+         lastPage = new LastPageRecordImpl(pageId, destination);
+         
+         setLastPageRecord(lastPage);
+      }
+      else
+      {
+         if (pageId <= lastPage.getLastId())
+         {
+            log.warn("Page " + pageId + " was already processed, ignoring the page");
+            return true;
+         }
+      }
+
+      lastPage.setLastId(pageId);
+      
+      storageManager.storeLastPage(depageTransactionID, lastPage);
+
+      HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
+
+      final List<MessageReference> refsToAdd = new ArrayList<MessageReference>();
+
+      for (PagedMessage msg : data)
+      {
+         ServerMessage pagedMessage = null;
+
+         pagedMessage = (ServerMessage)msg.getMessage(storageManager);
+
+         final long transactionIdDuringPaging = msg.getTransactionID();
+         
+         if (transactionIdDuringPaging >= 0)
+         {
+            final PageTransactionInfo pageTransactionInfo = pagingManager.getTransaction(transactionIdDuringPaging); 
+
+            // http://wiki.jboss.org/wiki/JBossMessaging2Paging
+            // This is the Step D described on the "Transactions on Paging"
+            // section
+            if (pageTransactionInfo == null)
+            {
+               if (isTrace)
+               {
+                  trace("Transaction " + msg.getTransactionID() + " not found, ignoring message " + pagedMessage);
+               }
+               continue;
+            }
+
+            // This is to avoid a race condition where messages are depaged
+            // before the commit arrived
+            if (!pageTransactionInfo.waitCompletion())
+            {
+               trace("Rollback was called after prepare, ignoring message " + pagedMessage);
+               continue;
+            }
+
+            // Update information about transactions
+            if (pagedMessage.isDurable())
+            {
+               pageTransactionInfo.decrement();
+               pageTransactionsToUpdate.add(pageTransactionInfo);
+            }
+         }
+
+         refsToAdd.addAll(postOffice.route(pagedMessage));
+
+         if (pagedMessage.getDurableRefCount() != 0)
+         {
+            storageManager.storeMessageTransactional(depageTransactionID, pagedMessage);
+         }
+      }
+
+      for (PageTransactionInfo pageWithTransaction : pageTransactionsToUpdate)
+      {
+         if (pageWithTransaction.getNumberOfMessages() == 0)
+         {
+            // http://wiki.jboss.org/wiki/JBossMessaging2Paging
+            // numberOfReads==numberOfWrites -> We delete the record
+            storageManager.storeDeletePageTransaction(depageTransactionID, pageWithTransaction.getRecordID());
+            pagingManager.removeTransaction(pageWithTransaction.getTransactionID());
+         }
+         else
+         {
+            storageManager.storePageTransaction(depageTransactionID, pageWithTransaction);
+         }
+      }
+
+      storageManager.commit(depageTransactionID);
+
+      trace("Depage committed");
+
+      for (MessageReference ref : refsToAdd)
+      {
+         ref.getQueue().addLast(ref);
+      }
+
+      if (pagingManager.isGlobalPageMode())
+      {
+         // We use the Default Page Size when in global mode for the calculation of the Watermark
+         return pagingManager.getGlobalSize() < pagingManager.getMaxGlobalSize() - pagingManager.getDefaultPageSize() && getMaxSizeBytes() <= 0 ||
+                getAddressSize() < getMaxSizeBytes();
+      }
+      else
+      {
+         // If Max-size is not configured (-1) it will aways return true, as
+         // this method was probably called by global-depage
+         return getMaxSizeBytes() <= 0 || getAddressSize() < getMaxSizeBytes();
+      }
+
+   }
+
+
+   private long addAddressSize(final long delta)
+   {
+      return sizeInBytes.addAndGet(delta);
+   }
 
    private synchronized void clearDequeueThread()
    {
@@ -613,6 +860,13 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          currentPageLock.writeLock().unlock();
       }
+   }
+
+   public void clearLastPageRecord(final LastPageRecord lastRecord) throws Exception
+   {
+      trace("Clearing lastRecord information " + lastRecord.getLastId());
+      
+      storageManager.storeDelete(lastRecord.getRecordId());
    }
 
    private Page createPage(final int page) throws Exception

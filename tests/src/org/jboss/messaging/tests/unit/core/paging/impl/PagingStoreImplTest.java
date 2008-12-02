@@ -61,7 +61,13 @@ public class PagingStoreImplTest extends PagingStoreTestBase
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();
 
-      PagingStore storeImpl = new PagingStoreImpl(createMockManager(), factory, destinationTestName, new QueueSettings(), executor);
+      PagingStore storeImpl = new PagingStoreImpl(createMockManager(),
+                                                  createStorageManagerMock(),
+                                                  createPostOfficeMock(),
+                                                  factory,
+                                                  destinationTestName,
+                                                  new QueueSettings(),
+                                                  executor);
 
       storeImpl.start();
 
@@ -78,7 +84,13 @@ public class PagingStoreImplTest extends PagingStoreTestBase
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();
 
-      PagingStore storeImpl = new PagingStoreImpl(createMockManager(), factory, destinationTestName, new QueueSettings(), executor);
+      PagingStore storeImpl = new PagingStoreImpl(createMockManager(),
+                                                  createStorageManagerMock(),
+                                                  createPostOfficeMock(),
+                                                  factory,
+                                                  destinationTestName,
+                                                  new QueueSettings(),
+                                                  executor);
 
       storeImpl.start();
 
@@ -105,7 +117,13 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
       storeImpl.sync();
 
-      storeImpl = new PagingStoreImpl(createMockManager(), factory, destinationTestName, new QueueSettings(), executor);
+      storeImpl = new PagingStoreImpl(createMockManager(),
+                                      createStorageManagerMock(),
+                                      createPostOfficeMock(),
+                                      factory,
+                                      destinationTestName,
+                                      new QueueSettings(),
+                                      executor);
 
       storeImpl.start();
 
@@ -113,12 +131,17 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
    }
 
-   
    public void testDepageOnCurrentPage() throws Exception
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();
 
-      PagingStore storeImpl = new PagingStoreImpl(createMockManager(), factory, destinationTestName, new QueueSettings(), executor);
+      TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),
+                                                  createStorageManagerMock(),
+                                                  createPostOfficeMock(),
+                                                  factory,
+                                                  destinationTestName,
+                                                  new QueueSettings(),
+                                                  executor);
 
       storeImpl.start();
 
@@ -174,6 +197,8 @@ public class PagingStoreImplTest extends PagingStoreTestBase
       SequentialFileFactory factory = new FakeSequentialFileFactory();
 
       TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),
+                                                           createStorageManagerMock(),
+                                                           createPostOfficeMock(),
                                                            factory,
                                                            destinationTestName,
                                                            new QueueSettings(),
@@ -292,9 +317,9 @@ public class PagingStoreImplTest extends PagingStoreTestBase
       testConcurrentPaging(factory, 10);
 
    }
-   
+
    public void testFoo()
-   {      
+   {
    }
 
    // Protected ----------------------------------------------------

@@ -31,6 +31,7 @@ import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
 import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
+import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
@@ -65,7 +66,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
    {
       HierarchicalRepository<QueueSettings> queueSettings = new HierarchicalObjectRepository<QueueSettings>();
       queueSettings.setDefault(new QueueSettings());
-      
+
       PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(journalDir),
                                                             null,
                                                             queueSettings,
@@ -74,7 +75,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
       managerImpl.start();
 
-      PagingStore store = managerImpl.createPageStore(new SimpleString("simple-test"));
+      TestSupportPageStore store = (TestSupportPageStore)managerImpl.createPageStore(new SimpleString("simple-test"));
 
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(10));
 
@@ -120,7 +121,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
                                                             -1,
                                                             1024 * 1024);
       managerImpl.start();
-      
+
       managerImpl.createPageStore(new SimpleString("simple-test"));
 
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(100));

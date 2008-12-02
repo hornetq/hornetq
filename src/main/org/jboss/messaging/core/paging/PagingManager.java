@@ -77,12 +77,6 @@ public interface PagingManager extends MessagingComponent
    void setPostOffice(PostOffice postOffice);
 
    /**
-    * @param pagingStoreImpl 
-    * @return false if the listener can't handle more pages
-    */
-   boolean onDepage(int pageId, SimpleString destination, PagingStore pagingStoreImpl, PagedMessage[] data) throws Exception;
-
-   /**
     * To be used by transactions only.
     * If you're sure you will page if isPaging, just call the method page and look at its return. 
     * @param destination
@@ -108,6 +102,11 @@ public interface PagingManager extends MessagingComponent
     * Point to inform/restoring Transactions used when the messages were added into paging
     * */
    void addTransaction(PageTransactionInfo pageTransaction);
+   
+   /**
+    * Point to inform/restoring Transactions used when the messages were added into paging
+    * */
+   PageTransactionInfo getTransaction(long transactionID);
 
    /**
     * 
@@ -130,14 +129,33 @@ public interface PagingManager extends MessagingComponent
    void sync(Collection<SimpleString> destinationsToSync) throws Exception;
 
    /**
-    * When we stop depaging, The Last page record needs to removed.
-    * Or else the record could live forever on the journal. 
-    * @throws Exception 
-    * */
-   void clearLastPageRecord(LastPageRecord lastRecord) throws Exception;
+    * @return
+    */
+   long getDefaultPageSize();
+
+   /**
+    * @param transactionID
+    */
+   void removeTransaction(long transactionID);
 
    /**
     * @return
     */
-   long getDefaultPageSize();
+   long getMaxGlobalSize();
+
+   /**
+    * @return
+    */
+   long getGlobalSize();
+
+   /**
+    * @param size
+    * @return
+    */
+   long addGlobalSize(long size);
+
+   /**
+    * 
+    */
+   void startGlobalDepage();
 }
