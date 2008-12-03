@@ -28,17 +28,18 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_ON_FAILURE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
@@ -51,7 +52,6 @@ import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 
@@ -79,6 +79,7 @@ public class JMSUtil
                                                              null,
                                                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                              DEFAULT_PING_PERIOD,
+                                                             DEFAULT_CONNECTION_TTL,
                                                              DEFAULT_CALL_TIMEOUT,
                                                              null,
                                                              DEFAULT_ACK_BATCH_SIZE,
@@ -93,11 +94,11 @@ public class JMSUtil
                                                              true,
                                                              DEFAULT_AUTO_GROUP,
                                                              DEFAULT_MAX_CONNECTIONS,
-                                                             DEFAULT_PRE_ACKNOWLEDGE,
-                                                             DEFAULT_RETRY_ON_FAILURE,
+                                                             DEFAULT_PRE_ACKNOWLEDGE,                                                  
                                                              DEFAULT_RETRY_INTERVAL,
                                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                             DEFAULT_MAX_RETRIES);
+                                                             DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                             DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
 
       return cf.createConnection();
    }
@@ -108,6 +109,7 @@ public class JMSUtil
                                                              null,
                                                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                              DEFAULT_PING_PERIOD,
+                                                             DEFAULT_CONNECTION_TTL,
                                                              DEFAULT_CALL_TIMEOUT,
                                                              null,
                                                              DEFAULT_ACK_BATCH_SIZE,
@@ -122,11 +124,11 @@ public class JMSUtil
                                                              true,
                                                              DEFAULT_AUTO_GROUP,
                                                              DEFAULT_MAX_CONNECTIONS,
-                                                             DEFAULT_PRE_ACKNOWLEDGE,
-                                                             DEFAULT_RETRY_ON_FAILURE,
+                                                             DEFAULT_PRE_ACKNOWLEDGE,                                                
                                                              DEFAULT_RETRY_INTERVAL,
                                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                             DEFAULT_MAX_RETRIES);
+                                                             DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                             DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
 
       Connection conn = cf.createConnection();
 
@@ -153,6 +155,7 @@ public class JMSUtil
                                                              null,
                                                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                              DEFAULT_PING_PERIOD,
+                                                             DEFAULT_CONNECTION_TTL,
                                                              DEFAULT_CALL_TIMEOUT,
                                                              null,
                                                              DEFAULT_ACK_BATCH_SIZE,
@@ -167,11 +170,11 @@ public class JMSUtil
                                                              true,
                                                              DEFAULT_AUTO_GROUP,
                                                              DEFAULT_MAX_CONNECTIONS,
-                                                             DEFAULT_PRE_ACKNOWLEDGE,
-                                                             DEFAULT_RETRY_ON_FAILURE,
+                                                             DEFAULT_PRE_ACKNOWLEDGE,                                                       
                                                              DEFAULT_RETRY_INTERVAL,
                                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                             DEFAULT_MAX_RETRIES);
+                                                             DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                             DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
 
       Connection conn = cf.createConnection();
 
@@ -187,6 +190,7 @@ public class JMSUtil
                                                              null,
                                                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                              DEFAULT_PING_PERIOD,
+                                                             DEFAULT_CONNECTION_TTL,
                                                              DEFAULT_CALL_TIMEOUT,
                                                              null,
                                                              DEFAULT_ACK_BATCH_SIZE,
@@ -201,11 +205,11 @@ public class JMSUtil
                                                              true,
                                                              DEFAULT_AUTO_GROUP,
                                                              DEFAULT_MAX_CONNECTIONS,
-                                                             DEFAULT_PRE_ACKNOWLEDGE,
-                                                             DEFAULT_RETRY_ON_FAILURE,
+                                                             DEFAULT_PRE_ACKNOWLEDGE,                                                            
                                                              DEFAULT_RETRY_INTERVAL,
                                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                             DEFAULT_MAX_RETRIES);
+                                                             DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                             DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
 
       Connection conn = cf.createConnection();
 

@@ -88,6 +88,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    private final int transactionBatchSize;
 
    private final long pingPeriod;
+   
+   private final long connectionTTL;
 
    private final long callTimeout;
 
@@ -113,14 +115,13 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    private final boolean preAcknowledge;
    
-
-   private final boolean retryOnFailure;
-
    private final long retryInterval;
 
    private final double retryIntervalMultiplier; // For exponential backoff
-
-   private final int maxRetries;
+     
+   private final int maxRetriesBeforeFailover;
+   
+   private final int maxRetriesAfterFailover;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -130,6 +131,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  final long discoveryInitialWaitTimeout,
                                  final String loadBalancingPolicyClassName,
                                  final long pingPeriod,
+                                 final long connectionTTL,
                                  final long callTimeout,
                                  final String clientID,
                                  final int dupsOKBatchSize,
@@ -145,10 +147,10 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  final boolean autoGroup,
                                  final int maxConnections,
                                  final boolean preAcknowledge,
-                                 final boolean retryOnFailure,
                                  final long retryInterval,
-                                 final double retryIntervalMultiplier,
-                                 final int maxRetries)
+                                 final double retryIntervalMultiplier,                                 
+                                 final int maxRetriesBeforeFailover,
+                                 final int maxRetriesAfterFailover)
    {
       this.connectorConfigs = null;
       this.discoveryGroupAddress = discoveryGroupAddress;
@@ -160,6 +162,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.dupsOKBatchSize = dupsOKBatchSize;
       this.transactionBatchSize = transactionBatchSize;
       this.pingPeriod = pingPeriod;
+      this.connectionTTL = connectionTTL;
       this.callTimeout = callTimeout;
       this.consumerMaxRate = consumerMaxRate;
       this.consumerWindowSize = consumerWindowSize;
@@ -172,10 +175,10 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.autoGroup = autoGroup;
       this.maxConnections = maxConnections;
       this.preAcknowledge = preAcknowledge;
-      this.retryOnFailure = retryOnFailure;
       this.retryInterval = retryInterval;
-      this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.maxRetries = maxRetries;
+      this.retryIntervalMultiplier = retryIntervalMultiplier;      
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
    }
 
    public JBossConnectionFactory(final String discoveryGroupAddress,
@@ -193,6 +196,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.dupsOKBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
       this.transactionBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
       this.pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
+      this.connectionTTL = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
       this.callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
       this.consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
       this.consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
@@ -204,11 +208,11 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
       this.autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
       this.maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-      this.preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-      this.retryOnFailure = ClientSessionFactoryImpl.DEFAULT_RETRY_ON_FAILURE;
+      this.preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;     
       this.retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-      this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      this.maxRetries = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES;
+      this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;      
+      this.maxRetriesBeforeFailover = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
+      this.maxRetriesAfterFailover = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
    }
 
    public JBossConnectionFactory(final String discoveryGroupName, final int discoveryGroupPort)
@@ -222,6 +226,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    public JBossConnectionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
                                  final String loadBalancingPolicyClassName,
                                  final long pingPeriod,
+                                 final long connectionTTL,
                                  final long callTimeout,
                                  final String clientID,
                                  final int dupsOKBatchSize,
@@ -237,10 +242,10 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  final boolean autoGroup,
                                  final int maxConnections,
                                  final boolean preAcknowledge,
-                                 final boolean retryOnFailure,
                                  final long retryInterval,
-                                 final double retryIntervalMultiplier,
-                                 final int maxRetries)
+                                 final double retryIntervalMultiplier,                        
+                                 final int maxRetriesBeforeFailover,
+                                 final int maxRetriesAfterFailover)
    {
       this.discoveryGroupAddress = null;
       this.discoveryGroupPort = -1;
@@ -252,6 +257,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.dupsOKBatchSize = dupsOKBatchSize;
       this.transactionBatchSize = transactionBatchSize;
       this.pingPeriod = pingPeriod;
+      this.connectionTTL = connectionTTL;
       this.callTimeout = callTimeout;
       this.consumerMaxRate = consumerMaxRate;
       this.consumerWindowSize = consumerWindowSize;
@@ -264,16 +270,17 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.autoGroup = autoGroup;
       this.maxConnections = maxConnections;
       this.preAcknowledge = preAcknowledge;
-      this.retryOnFailure = retryOnFailure;
       this.retryInterval = retryInterval;
-      this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.maxRetries = maxRetries;
+      this.retryIntervalMultiplier = retryIntervalMultiplier;      
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
    }
    
    public JBossConnectionFactory(final TransportConfiguration transportConfig,
                                  final TransportConfiguration backupConfig,
                                  final String loadBalancingPolicyClassName,
                                  final long pingPeriod,
+                                 final long connectionTTL,
                                  final long callTimeout,
                                  final String clientID,
                                  final int dupsOKBatchSize,
@@ -288,11 +295,11 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  final boolean blockOnPersistentSend,
                                  final boolean autoGroup,
                                  final int maxConnections,
-                                 final boolean preAcknowledge,
-                                 final boolean retryOnFailure,
+                                 final boolean preAcknowledge,                           
                                  final long retryInterval,
-                                 final double retryIntervalMultiplier,
-                                 final int maxRetries)
+                                 final double retryIntervalMultiplier,                              
+                                 final int maxRetriesBeforeFailover,
+                                 final int maxRetriesAfterFailover)
    {
       this.discoveryGroupAddress = null;
       this.discoveryGroupPort = -1;
@@ -306,6 +313,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.dupsOKBatchSize = dupsOKBatchSize;
       this.transactionBatchSize = transactionBatchSize;
       this.pingPeriod = pingPeriod;
+      this.connectionTTL = connectionTTL;
       this.callTimeout = callTimeout;
       this.consumerMaxRate = consumerMaxRate;
       this.consumerWindowSize = consumerWindowSize;
@@ -318,10 +326,10 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.autoGroup = autoGroup;
       this.maxConnections = maxConnections;
       this.preAcknowledge = preAcknowledge;
-      this.retryOnFailure = retryOnFailure;
       this.retryInterval = retryInterval;
-      this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.maxRetries = maxRetries;
+      this.retryIntervalMultiplier = retryIntervalMultiplier;      
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
    }
 
 
@@ -337,6 +345,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.dupsOKBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
       this.transactionBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
       this.pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
+      this.connectionTTL = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
       this.callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
       this.consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
       this.consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
@@ -349,10 +358,10 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
       this.maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
       this.preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-      this.retryOnFailure = ClientSessionFactoryImpl.DEFAULT_RETRY_ON_FAILURE;
       this.retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-      this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      this.maxRetries = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES;
+      this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;      
+      this.maxRetriesBeforeFailover = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
+      this.maxRetriesAfterFailover = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
    }
    
    public JBossConnectionFactory(final TransportConfiguration connectorConfig)
@@ -371,6 +380,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.dupsOKBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
       this.transactionBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
       this.pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
+      this.connectionTTL = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
       this.callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
       this.consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
       this.consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
@@ -383,10 +393,10 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
       this.maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
       this.preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-      this.retryOnFailure = ClientSessionFactoryImpl.DEFAULT_RETRY_ON_FAILURE;
       this.retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-      this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      this.maxRetries = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES;
+      this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;     
+      this.maxRetriesBeforeFailover = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
+      this.maxRetriesAfterFailover = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
    }
 
    // ConnectionFactory implementation -------------------------------------------------------------
@@ -551,6 +561,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                sessionFactory = new ClientSessionFactoryImpl(connectorConfigs,
                                                              connectionLoadBalancingPolicyClassName,
                                                              pingPeriod,
+                                                             connectionTTL,
                                                              callTimeout,
                                                              consumerWindowSize,
                                                              consumerMaxRate,
@@ -563,11 +574,11 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                              autoGroup,
                                                              maxConnections,
                                                              preAcknowledge,
-                                                             dupsOKBatchSize,
-                                                             retryOnFailure,
+                                                             dupsOKBatchSize,                                                     
                                                              retryInterval,
-                                                             retryIntervalMultiplier,
-                                                             maxRetries);
+                                                             retryIntervalMultiplier,                                                             
+                                                             maxRetriesBeforeFailover,
+                                                             maxRetriesAfterFailover);
             }
             else
             {
@@ -577,6 +588,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                              discoveryInitialWaitTimeout,
                                                              connectionLoadBalancingPolicyClassName,
                                                              pingPeriod,
+                                                             connectionTTL,
                                                              callTimeout,
                                                              consumerWindowSize,
                                                              consumerMaxRate,
@@ -589,11 +601,11 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                              autoGroup,
                                                              maxConnections,
                                                              preAcknowledge,
-                                                             dupsOKBatchSize,
-                                                             retryOnFailure,
+                                                             dupsOKBatchSize,                                                             
                                                              retryInterval,
                                                              retryIntervalMultiplier,
-                                                             maxRetries);
+                                                             maxRetriesBeforeFailover,
+                                                             maxRetriesAfterFailover);
             }
    
          }

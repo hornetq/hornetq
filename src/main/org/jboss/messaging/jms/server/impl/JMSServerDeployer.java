@@ -43,6 +43,8 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String CLIENTID_ELEMENT = "client-id";
 
    private static final String PING_PERIOD_ELEMENT = "ping-period";
+   
+   private static final String CONNECTION_TTL_ELEMENT = "connection-ttl";
 
    private static final String CALL_TIMEOUT_ELEMENT = "call-timeout";
 
@@ -78,7 +80,9 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String RETRY_INTERVAL_MULTIPLIER = "retry-interval-multiplier";
 
-   private static final String MAX_RETRIES = "max-retries";
+   private static final String MAX_RETRIES_BEFORE_FAILOVER = "max-retries-before-failover";
+   
+   private static final String MAX_RETRIES_AFTER_FAILOVER = "max-retries-after-failover";
 
    private static final String CONNECTOR_LINK_ELEMENT = "connector-ref";
 
@@ -144,6 +148,7 @@ public class JMSServerDeployer extends XmlDeployer
          NodeList children = node.getChildNodes();
 
          long pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
+         long connectionTTL = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
          long callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
          String clientID = null;
          int dupsOKBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
@@ -159,10 +164,10 @@ public class JMSServerDeployer extends XmlDeployer
          boolean autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
          int maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
          boolean preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-         boolean retryOnFailure = ClientSessionFactoryImpl.DEFAULT_RETRY_ON_FAILURE;
          long retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-         double retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-         int maxRetries = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES;
+         double retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;         
+         int maxRetriesBeforeFailover = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
+         int maxRetriesAfterFailover = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
 
          List<String> jndiBindings = new ArrayList<String>();
          List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
@@ -177,6 +182,10 @@ public class JMSServerDeployer extends XmlDeployer
             if (PING_PERIOD_ELEMENT.equals(child.getNodeName()))
             {
                pingPeriod = XMLUtil.parseLong(child);
+            }
+            else if (CONNECTION_TTL_ELEMENT.equals(child.getNodeName()))
+            {
+               connectionTTL = XMLUtil.parseLong(child);
             }
             else if (CALL_TIMEOUT_ELEMENT.equals(child.getNodeName()))
             {
@@ -250,10 +259,14 @@ public class JMSServerDeployer extends XmlDeployer
             {
                retryIntervalMultiplier = XMLUtil.parseDouble(child);
             }
-            else if (MAX_RETRIES.equals(child.getNodeName()))
+            else if (MAX_RETRIES_BEFORE_FAILOVER.equals(child.getNodeName()))
             {
-               maxRetries = XMLUtil.parseInt(child);;
+               maxRetriesBeforeFailover = XMLUtil.parseInt(child);;
             }
+            else if (MAX_RETRIES_AFTER_FAILOVER.equals(child.getNodeName()))
+            {
+               maxRetriesAfterFailover = XMLUtil.parseInt(child);;
+            }            
             else if (ENTRY_NODE_NAME.equals(child.getNodeName()))
             {
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
@@ -325,6 +338,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      discoveryInitialWait,
                                                      connectionLoadBalancingPolicyClassName,
                                                      pingPeriod,
+                                                     connectionTTL,
                                                      callTimeout,
                                                      clientID,
                                                      dupsOKBatchSize,
@@ -339,11 +353,11 @@ public class JMSServerDeployer extends XmlDeployer
                                                      blockOnPersistentSend,
                                                      autoGroup,
                                                      maxConnections,
-                                                     preAcknowledge,
-                                                     retryOnFailure,
+                                                     preAcknowledge,                                                   
                                                      retryInterval,
-                                                     retryIntervalMultiplier,
-                                                     maxRetries,
+                                                     retryIntervalMultiplier,                                                     
+                                                     maxRetriesBeforeFailover,
+                                                     maxRetriesAfterFailover,
                                                      jndiBindings);
          }
          else
@@ -352,6 +366,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      connectorConfigs,
                                                      connectionLoadBalancingPolicyClassName,
                                                      pingPeriod,
+                                                     connectionTTL,
                                                      callTimeout,
                                                      clientID,
                                                      dupsOKBatchSize,
@@ -366,11 +381,11 @@ public class JMSServerDeployer extends XmlDeployer
                                                      blockOnPersistentSend,
                                                      autoGroup,
                                                      maxConnections,
-                                                     preAcknowledge,
-                                                     retryOnFailure,
+                                                     preAcknowledge,                                                
                                                      retryInterval,
-                                                     retryIntervalMultiplier,
-                                                     maxRetries,
+                                                     retryIntervalMultiplier,                                                     
+                                                     maxRetriesBeforeFailover,
+                                                     maxRetriesAfterFailover,
                                                      jndiBindings);
          }
       }

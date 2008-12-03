@@ -125,12 +125,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
             if (!consumer.isClosed() && !this.transactedOrClientAck)
             {
                message.acknowledge();
-            }
-            
-            if (consumer.isClosed())
-            {
-               log.info("not acking, consumer is closed");
-            }
+            }            
          }
          catch (MessagingException e)
          {

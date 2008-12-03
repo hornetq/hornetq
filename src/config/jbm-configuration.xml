@@ -60,7 +60,7 @@
       <message-counter-enabled>false</message-counter-enabled>
     
       <connection-scan-period>10000</connection-scan-period>
-
+            
       <!--how long before timing a transaction out-->
       <transaction-timeout>60000</transaction-timeout>
       <!--how often to scan for timedout transactions-->

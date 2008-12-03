@@ -21,10 +21,11 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_ON_FAILURE;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
@@ -55,13 +56,13 @@ import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.integration.bootstrap.JBMBootstrapServer;
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
-import org.jboss.messaging.integration.bootstrap.JBMBootstrapServer;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.test.messaging.tools.ConfigurationHelper;
@@ -551,7 +552,8 @@ public class LocalTestServer implements Server, Runnable
       getJMSServerManager().createConnectionFactory(objectName,
                                                     connectorConfigs,
                                                     ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                    ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,                                                       
+                                                    ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,        
+                                                    DEFAULT_CONNECTION_TTL,
                                                     ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                                     clientId,
                                                     dupsOkBatchSize,
@@ -566,11 +568,11 @@ public class LocalTestServer implements Server, Runnable
                                                     true,
                                                     false,
                                                     8,
-                                                    false,
-                                                    DEFAULT_RETRY_ON_FAILURE,
+                                                    false,                                                  
                                                     DEFAULT_RETRY_INTERVAL,
                                                     DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                    DEFAULT_MAX_RETRIES,
+                                                    DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                    DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                     jndiBindings);
    }
 

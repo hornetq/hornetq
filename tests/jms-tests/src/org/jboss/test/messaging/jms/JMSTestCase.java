@@ -1,9 +1,10 @@
 package org.jboss.test.messaging.jms;
 
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_ON_FAILURE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +59,8 @@ public class JMSTestCase extends JBMServerTestCase
       getJmsServerManager().createConnectionFactory("testsuitecf",
                                                     connectorConfigs,
                                                     ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                    ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,                                                       
+                                                    ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,    
+                                                    DEFAULT_CONNECTION_TTL,
                                                     ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                                     null,
                                                     ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
@@ -73,11 +75,11 @@ public class JMSTestCase extends JBMServerTestCase
                                                     true,
                                                     ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                                                     ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                                                    ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
-                                                    DEFAULT_RETRY_ON_FAILURE,
+                                                    ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,                                   
                                                     DEFAULT_RETRY_INTERVAL,
                                                     DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                    DEFAULT_MAX_RETRIES,
+                                                    DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                    DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                     jndiBindings);
       
       cf = (JBossConnectionFactory)getInitialContext().lookup("/testsuitecf");

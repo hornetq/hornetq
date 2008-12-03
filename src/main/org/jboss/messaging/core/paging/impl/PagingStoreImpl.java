@@ -90,6 +90,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    // Bytes consumed by the queue on the memory
    private final AtomicLong sizeInBytes = new AtomicLong();
 
+   //FIXME - don't call this a thread - it's a Runnable not a Thread
    private volatile Runnable dequeueThread;
 
    private volatile int numberOfPages;

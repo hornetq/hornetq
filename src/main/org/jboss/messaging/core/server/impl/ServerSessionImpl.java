@@ -1956,6 +1956,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          result = channel.replicatePacket(packet);
 
          // note we process start before response is back from the backup
+         
          setStarted(true);
       }
       finally
@@ -2033,7 +2034,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void handleFailedOver(final Packet packet)
    {
-      // No need to replicate since this only occurs after failover
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
 
       for (ServerConsumer consumer : consumersClone)
@@ -2246,6 +2246,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          msg.setMessageID(id);
       }
+      
+      if (channel.getReplicatingChannel() != null)
+      {
+         msg.putBooleanProperty(new SimpleString("clustered"), true);
+      }
 
       DelayedResult result = channel.replicatePacket(packet);
 
@@ -2351,9 +2356,27 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public int transferConnection(final RemotingConnection newConnection, final int lastReceivedCommandID)
    {
+      boolean wasStarted = this.started;
+      
+      if (wasStarted)
+      {
+         this.setStarted(false);
+      }
+      
       remotingConnection.removeFailureListener(this);
 
       channel.transferConnection(newConnection);
+      
+      RemotingConnection oldReplicatingConnection = newConnection.getReplicatingConnection();
+      
+      if (oldReplicatingConnection != null)
+      {
+         oldReplicatingConnection.destroy();
+      }
+      
+      newConnection.setReplicatingConnection(remotingConnection.getReplicatingConnection());
+      
+      remotingConnection.setReplicatingConnection(null);
 
       newConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
 
@@ -2367,7 +2390,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       int serverLastReceivedCommandID = channel.getLastReceivedCommandID();
 
       channel.replayCommands(lastReceivedCommandID);
-
+      
+      if (wasStarted)
+      {
+         this.setStarted(true);
+      }
+      
       return serverLastReceivedCommandID;
    }
 
@@ -2383,7 +2411,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       try
       {
-         log.info("Connection failed, so clearing up resources for session " + name);
+         log.info("Connection timed out, so clearing up resources for session " + name);
+         
          for (Runnable runner : failureRunners)
          {
             try

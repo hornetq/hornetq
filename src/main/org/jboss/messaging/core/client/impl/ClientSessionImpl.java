@@ -690,7 +690,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          return;
       }
-
+      
       // We lock the channel to prevent any packets to be added to the resend
       // cache during the failover process
       channel.lock();
@@ -734,7 +734,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       channel.send(new SessionFailoverCompleteMessage(name));
 
       // Now we can add a failure listener since if a further failure occurs we cleanup since no backup any more
-      remotingConnection.addFailureListener(this);
+      //remotingConnection.addFailureListener(this);
    }
 
    // XAResource implementation

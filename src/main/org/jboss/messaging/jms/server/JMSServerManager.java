@@ -111,6 +111,7 @@ public interface JMSServerManager
                                    List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
                                    String connectionLoadBalancingPolicyClassName,
                                    long pingPeriod,
+                                   long connectionTTL,
                                    long callTimeout,
                                    String clientID,
                                    int dupsOKBatchSize,
@@ -125,11 +126,11 @@ public interface JMSServerManager
                                    boolean blockOnPersistentSend,
                                    boolean autoGroup,
                                    int maxConnections,
-                                   boolean preAcknowledge,
-                                   final boolean retryOnFailure,
+                                   boolean preAcknowledge,                               
                                    final long retryInterval,
-                                   final double retryIntervalMultiplier,
-                                   final int maxRetries,
+                                   final double retryIntervalMultiplier,                                   
+                                   final int maxRetriesBeforeFailover,
+                                   final int maxRetriesAfterFailover,
                                    List<String> jndiBindings) throws Exception;
    
    boolean createConnectionFactory(String name,
@@ -137,6 +138,7 @@ public interface JMSServerManager
                                    long discoveryInitialWait,
                                    String connectionLoadBalancingPolicyClassName,
                                    long pingPeriod,
+                                   long connectionTTL,
                                    long callTimeout,
                                    String clientID,
                                    int dupsOKBatchSize,
@@ -151,11 +153,11 @@ public interface JMSServerManager
                                    boolean blockOnPersistentSend,
                                    boolean autoGroup,
                                    int maxConnections,
-                                   boolean preAcknowledge,
-                                   final boolean retryOnFailure,
+                                   boolean preAcknowledge,                            
                                    final long retryInterval,
-                                   final double retryIntervalMultiplier,
-                                   final int maxRetries,
+                                   final double retryIntervalMultiplier,                                   
+                                   final int maxRetriesBeforeFailover,
+                                   final int maxRetriesAfterFailover,
                                    List<String> jndiBindings) throws Exception;
 
    /**

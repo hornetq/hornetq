@@ -39,7 +39,7 @@ public interface RemotingConnection extends BufferHandler
    MessagingBuffer createBuffer(int size);
 
    void fail(MessagingException me);
-
+      
    void destroy();
 
    boolean isExpired(long now);
@@ -55,4 +55,6 @@ public interface RemotingConnection extends BufferHandler
    void freeze();
    
    RemotingConnection getReplicatingConnection();
+   
+   void setReplicatingConnection(RemotingConnection connection);
 }

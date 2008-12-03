@@ -29,29 +29,26 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_ON_FAILURE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.ConnectionManager;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionInternal;
-import org.jboss.messaging.core.client.impl.ConnectionManagerImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -62,9 +59,7 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 
 /**
@@ -134,6 +129,7 @@ public class PingTest extends ServiceTestBase
                                                               null,
                                                               DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                               PING_INTERVAL,
+                                                              DEFAULT_CONNECTION_TTL,
                                                               DEFAULT_CALL_TIMEOUT,
                                                               DEFAULT_CONSUMER_WINDOW_SIZE,
                                                               DEFAULT_CONSUMER_MAX_RATE,
@@ -146,11 +142,11 @@ public class PingTest extends ServiceTestBase
                                                               DEFAULT_AUTO_GROUP,
                                                               DEFAULT_MAX_CONNECTIONS,
                                                               DEFAULT_PRE_ACKNOWLEDGE,
-                                                              DEFAULT_ACK_BATCH_SIZE,
-                                                              DEFAULT_RETRY_ON_FAILURE,
+                                                              DEFAULT_ACK_BATCH_SIZE,                                                            
                                                               DEFAULT_RETRY_INTERVAL,
                                                               DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                              DEFAULT_MAX_RETRIES);
+                                                              DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                              DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
 
       ClientSession session = csf.createSession(false, true, true);
 
@@ -208,6 +204,7 @@ public class PingTest extends ServiceTestBase
                                                               null,
                                                               DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                               PING_INTERVAL,
+                                                              DEFAULT_CONNECTION_TTL,
                                                               DEFAULT_CALL_TIMEOUT,
                                                               DEFAULT_CONSUMER_WINDOW_SIZE,
                                                               DEFAULT_CONSUMER_MAX_RATE,
@@ -220,11 +217,11 @@ public class PingTest extends ServiceTestBase
                                                               DEFAULT_AUTO_GROUP,
                                                               DEFAULT_MAX_CONNECTIONS,
                                                               DEFAULT_PRE_ACKNOWLEDGE,
-                                                              DEFAULT_ACK_BATCH_SIZE,
-                                                              DEFAULT_RETRY_ON_FAILURE,
+                                                              DEFAULT_ACK_BATCH_SIZE,                                                          
                                                               DEFAULT_RETRY_INTERVAL,
                                                               DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                              DEFAULT_MAX_RETRIES);
+                                                              DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                              DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
 
       ClientSession session = csf.createSession(false, true, true);
       
@@ -282,6 +279,7 @@ public class PingTest extends ServiceTestBase
                                                               null,
                                                               DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                               PING_INTERVAL,
+                                                              (long)(PING_INTERVAL * 1.5),
                                                               DEFAULT_CALL_TIMEOUT,
                                                               DEFAULT_CONSUMER_WINDOW_SIZE,
                                                               DEFAULT_CONSUMER_MAX_RATE,
@@ -294,11 +292,11 @@ public class PingTest extends ServiceTestBase
                                                               DEFAULT_AUTO_GROUP,
                                                               DEFAULT_MAX_CONNECTIONS,
                                                               DEFAULT_PRE_ACKNOWLEDGE,
-                                                              DEFAULT_ACK_BATCH_SIZE,
-                                                              DEFAULT_RETRY_ON_FAILURE,
+                                                              DEFAULT_ACK_BATCH_SIZE,                                                             
                                                               DEFAULT_RETRY_INTERVAL,
                                                               DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                              DEFAULT_MAX_RETRIES);
+                                                              DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                              DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
       
       Listener clientListener = new Listener();
 
@@ -377,6 +375,7 @@ public class PingTest extends ServiceTestBase
                                                               null,
                                                               DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                               PING_INTERVAL,
+                                                              (long)(PING_INTERVAL * 1.5),
                                                               DEFAULT_CALL_TIMEOUT,
                                                               DEFAULT_CONSUMER_WINDOW_SIZE,
                                                               DEFAULT_CONSUMER_MAX_RATE,
@@ -389,11 +388,11 @@ public class PingTest extends ServiceTestBase
                                                               DEFAULT_AUTO_GROUP,
                                                               DEFAULT_MAX_CONNECTIONS,
                                                               DEFAULT_PRE_ACKNOWLEDGE,
-                                                              DEFAULT_ACK_BATCH_SIZE,
-                                                              DEFAULT_RETRY_ON_FAILURE,
+                                                              DEFAULT_ACK_BATCH_SIZE,                                                              
                                                               DEFAULT_RETRY_INTERVAL,
                                                               DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                              DEFAULT_MAX_RETRIES);
+                                                              0,
+                                                              0);
       
       ClientSession session = csf.createSession(false, true, true);
       

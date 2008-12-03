@@ -216,6 +216,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                           final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
                                           final String connectionLoadBalancingPolicyClassName,
                                           final long pingPeriod,
+                                          final long connectionTTL,
                                           final long callTimeout,
                                           final String clientID,
                                           final int dupsOKBatchSize,
@@ -230,11 +231,11 @@ public class JMSServerManagerImpl implements JMSServerManager
                                           final boolean blockOnPersistentSend,
                                           final boolean autoGroup,
                                           final int maxConnections,
-                                          final boolean preAcknowledge,
-                                          final boolean retryOnFailure,
+                                          final boolean preAcknowledge,                                        
                                           final long retryInterval,
-                                          final double retryIntervalMultiplier,
-                                          final int maxRetries,
+                                          final double retryIntervalMultiplier,                                          
+                                          final int maxRetriesBeforeFailover,
+                                          final int maxRetriesAfterFailover,
                                           final List<String> jndiBindings) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
@@ -243,6 +244,7 @@ public class JMSServerManagerImpl implements JMSServerManager
          cf = new JBossConnectionFactory(connectorConfigs,
                                          connectionLoadBalancingPolicyClassName,
                                          pingPeriod,
+                                         connectionTTL,
                                          callTimeout,
                                          clientID,
                                          dupsOKBatchSize,
@@ -257,11 +259,11 @@ public class JMSServerManagerImpl implements JMSServerManager
                                          blockOnPersistentSend,
                                          autoGroup,
                                          maxConnections,
-                                         preAcknowledge,
-                                         retryOnFailure,
+                                         preAcknowledge,                                     
                                          retryInterval,
-                                         retryIntervalMultiplier,
-                                         maxRetries);
+                                         retryIntervalMultiplier,                                         
+                                         maxRetriesBeforeFailover,
+                                         maxRetriesAfterFailover);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
@@ -274,6 +276,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                           final long discoveryInitialWait,
                                           final String connectionLoadBalancingPolicyClassName,
                                           final long pingPeriod,
+                                          final long connectionTTL,
                                           final long callTimeout,
                                           final String clientID,
                                           final int dupsOKBatchSize,
@@ -288,11 +291,11 @@ public class JMSServerManagerImpl implements JMSServerManager
                                           final boolean blockOnPersistentSend,
                                           final boolean autoGroup,
                                           final int maxConnections,
-                                          final boolean preAcknowledge,
-                                          final boolean retryOnFailure,
+                                          final boolean preAcknowledge,                                 
                                           final long retryInterval,
-                                          final double retryIntervalMultiplier,
-                                          final int maxRetries,
+                                          final double retryIntervalMultiplier,                                          
+                                          final int maxRetriesBeforeFailover,
+                                          final int maxRetriesAfterFailover,
                                           final List<String> jndiBindings) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
@@ -304,6 +307,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                          discoveryInitialWait,
                                          connectionLoadBalancingPolicyClassName,
                                          pingPeriod,
+                                         connectionTTL,
                                          callTimeout,
                                          clientID,
                                          dupsOKBatchSize,
@@ -318,11 +322,11 @@ public class JMSServerManagerImpl implements JMSServerManager
                                          blockOnPersistentSend,
                                          autoGroup,
                                          maxConnections,
-                                         preAcknowledge,
-                                         retryOnFailure,
+                                         preAcknowledge,                                   
                                          retryInterval,
-                                         retryIntervalMultiplier,
-                                         maxRetries);
+                                         retryIntervalMultiplier,                                         
+                                         maxRetriesBeforeFailover,
+                                         maxRetriesAfterFailover);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);

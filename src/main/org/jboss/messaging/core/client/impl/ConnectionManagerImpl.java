@@ -93,6 +93,8 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
    private final long callTimeout;
    
    private final long pingPeriod;
+   
+   private final long connectionTTL;
 
    private final Map<ClientSessionInternal, RemotingConnection> sessions = new HashMap<ClientSessionInternal, RemotingConnection>();
 
@@ -116,13 +118,13 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
    private Object failConnectionLock = new Object();
    
-   private final boolean retryOnFailure;
-
    private final long retryInterval;
 
    private final double retryIntervalMultiplier; // For exponential backoff
-
-   private final int maxRetries;
+      
+   private final int maxRetriesBeforeFailover;
+   
+   private final int maxRetriesAfterFailover;
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -134,11 +136,12 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
                                 final TransportConfiguration backupConfig,
                                 final int maxConnections,
                                 final long callTimeout,
-                                final long pingPeriod,
-                                final boolean retryOnFailure,
+                                final long pingPeriod,             
+                                final long connectionTTL,
                                 final long retryInterval,
-                                final double retryIntervalMultiplier,
-                                final int maxRetries)
+                                final double retryIntervalMultiplier,                                
+                                final int maxRetriesBeforeFailover,
+                                final int maxRetriesAfterFailover)
    {
       connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
 
@@ -163,13 +166,15 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
       
       this.pingPeriod = pingPeriod;
       
-      this.retryOnFailure = retryOnFailure;
+      this.connectionTTL = connectionTTL;
       
       this.retryInterval = retryInterval;
       
       this.retryIntervalMultiplier = retryIntervalMultiplier;
+                 
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
       
-      this.maxRetries = maxRetries;
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
    }
 
    // ConnectionLifeCycleListener implementation --------------------
@@ -275,7 +280,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
                   // So we just need to return our connections and flag for retry
 
-                  this.returnConnection(connection.getID());
+                  returnConnection(connection.getID());
 
                   retry = true;
                }
@@ -391,7 +396,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
    // FailureListener implementation --------------------------------------------------------
 
    public void connectionFailed(final MessagingException me)
-   {
+   {      
       if (me.getCode() == MessagingException.OBJECT_CLOSED)
       {
          // The server has closed the connection. We don't want failover to occur in this case -
@@ -428,16 +433,9 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
          // It can then release the channel 1 lock, and retry (which will cause locking on failoverLock
          // until failover is complete
 
-         if (backupConnectorFactory != null || retryOnFailure)
+         if (backupConnectorFactory != null || maxRetriesBeforeFailover != 0 || maxRetriesAfterFailover != 0)
          {
-            if (backupConnectorFactory != null)
-            {
-               log.info("Commencing automatic failover");
-            }
-            else
-            {
-               log.info("Will attempt reconnection");
-            }
+            log.info("Commencing automatic failover / reconnection");
             
             lockAllChannel1s();
 
@@ -473,120 +471,164 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
                   }
                }
             }
-
+            
             // Now we absolutely know that no threads are executing in or blocked in createSession, and no
             // more will execute it until failover is complete
 
             // So.. do failover / reconnection
-
+            
             Set<RemotingConnection> oldConnections = new HashSet<RemotingConnection>();
 
             for (ConnectionEntry entry : connections.values())
             {
                oldConnections.add(entry.connection);
             }
-
+            
             connections.clear();
 
             refCount = 0;
 
             mapIterator = null;
-
-            if (backupConnectorFactory != null)
-            {
-               connectorFactory = backupConnectorFactory;
-   
-               transportParams = backupTransportParams;
-            }
-
-            backupConnectorFactory = null;
-
-            backupTransportParams = null;
-
-            // We fail over sessions per connection to ensure there is the same mapping of channel id
-            // on live and backup connections
-
-            Map<RemotingConnection, List<ClientSessionInternal>> sessionsPerConnection = new HashMap<RemotingConnection, List<ClientSessionInternal>>();
-
-            for (Map.Entry<ClientSessionInternal, RemotingConnection> entry : sessions.entrySet())
-            {
-               ClientSessionInternal session = entry.getKey();
-
-               RemotingConnection connection = entry.getValue();
-
-               List<ClientSessionInternal> sessions = sessionsPerConnection.get(connection);
-
-               if (sessions == null)
-               {
-                  sessions = new ArrayList<ClientSessionInternal>();
-
-                  sessionsPerConnection.put(connection, sessions);
-               }
-
-               sessions.add(session);
-            }
-
-            boolean ok = true;
             
-            for (Map.Entry<RemotingConnection, List<ClientSessionInternal>> entry : sessionsPerConnection.entrySet())
+            boolean done = false;
+                       
+            if (maxRetriesBeforeFailover != 0)
             {
-               List<ClientSessionInternal> theSessions = entry.getValue();
+               //First try reconnecting to current node if configured to do this
                
-               RemotingConnection backupConnection = getConnectionWithRetry(theSessions);
-
-               if (backupConnection == null)
+               done = reconnect(maxRetriesBeforeFailover);
+               
+               if (done)
                {
-                  log.warn("Failed to reconnect to server.");
-                  
-                  ok = false;
-                  
-                  break;
+                  log.info("reconnected to original node");
                }
+            }
+            
+            if (!done)
+            {
+               //If didn't reconnect to current node then try failover to backup
                
-               for (ClientSessionInternal session : theSessions)
+               int retries = maxRetriesAfterFailover;
+               
+               if (backupConnectorFactory != null)
                {
-                  session.handleFailover(backupConnection);
+                  connectorFactory = backupConnectorFactory;
+      
+                  transportParams = backupTransportParams;
+                  
+                  if (maxRetriesAfterFailover == 0)
+                  {
+                     retries = 1;
+                  }
+                  
+                  log.info("Failing over to backup");
+               }
+               else
+               {
+                  log.info("Attempting reconnection");
+               }
 
-                  sessions.put(session, backupConnection);
+               backupConnectorFactory = null;
+
+               backupTransportParams = null;
+               
+               done = reconnect(retries);           
+               
+               if (done)
+               {
+                  log.info("Successfully reconnected");
                }
             }
 
             for (RemotingConnection connection : oldConnections)
             {
                connection.destroy();
-            }
-
-            if (ok)
-            {
-               log.info("Failover complete");
-            }
+            }            
          }
       }
    }
 
-   private RemotingConnection getConnectionWithRetry(final List<ClientSessionInternal> sessions)
+   private boolean reconnect(final int retries)
+   {     
+      // We fail over sessions per connection to ensure there is the same mapping of channel id
+      // on live and backup connections
+
+      Map<RemotingConnection, List<ClientSessionInternal>> sessionsPerConnection = new HashMap<RemotingConnection, List<ClientSessionInternal>>();
+
+      for (Map.Entry<ClientSessionInternal, RemotingConnection> entry : sessions.entrySet())
+      {
+         ClientSessionInternal session = entry.getKey();
+
+         RemotingConnection connection = entry.getValue();
+         
+         List<ClientSessionInternal> sessions = sessionsPerConnection.get(connection);
+
+         if (sessions == null)
+         {
+            sessions = new ArrayList<ClientSessionInternal>();
+
+            sessionsPerConnection.put(connection, sessions);
+         }
+
+         sessions.add(session);
+      }
+
+      boolean ok = true;
+      
+      for (Map.Entry<RemotingConnection, List<ClientSessionInternal>> entry : sessionsPerConnection.entrySet())
+      {
+         List<ClientSessionInternal> theSessions = entry.getValue();
+         
+         RemotingConnection backupConnection = getConnectionWithRetry(theSessions, retries);
+                  
+         if (backupConnection == null)
+         {
+            log.warn("Failed to reconnect to server.");
+            
+            ok = false;
+            
+            break;
+         }
+         
+         backupConnection.addFailureListener(this);
+                  
+         for (ClientSessionInternal session : theSessions)
+         {
+            sessions.put(session, backupConnection);
+         }
+      }
+      
+      if (ok)
+      {
+         //If all connections got ok, then handle failover
+         for (Map.Entry<ClientSessionInternal, RemotingConnection> entry: sessions.entrySet())
+         {
+            entry.getKey().handleFailover(entry.getValue());
+         }
+      }
+  
+      return ok;
+   }
+   
+   private RemotingConnection getConnectionWithRetry(final List<ClientSessionInternal> sessions, final int retries)
    {
       long interval = retryInterval;
       
       int count = 0;
       
-      log.info("Getting connection with retry");
-      
       while (true)
       {                        
          RemotingConnection connection = getConnection(sessions.size());
-         
-         log.info("Got connection " + connection);
-         
+               
          if (connection == null)
          {
             //Failed to get backup connection
             
-            if (retryOnFailure)
+            if (retries != 0)
             {
-               if (maxRetries != -1 && count == maxRetries)
+               if (retries != -1 && count == retries)
                {
-                  log.warn("Retried " + maxRetries + " times to reconnect. Now giving up.");
+                  log.warn("Retried " + retries + " times to reconnect. Now giving up.");
                   
                   return null;                  
                }
@@ -676,7 +718,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
             return null;
          }
 
-         conn = new RemotingConnectionImpl(tc, callTimeout, pingPeriod, pingExecutor, null);
+         conn = new RemotingConnectionImpl(tc, callTimeout, pingPeriod, connectionTTL, pingExecutor, null);
 
          handler.conn = conn;
 

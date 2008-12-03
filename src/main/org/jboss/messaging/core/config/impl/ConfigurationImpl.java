@@ -54,6 +54,8 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_JMX_MANAGEMENT_ENABLED = true;
 
    public static final long DEFAULT_CONNECTION_SCAN_PERIOD = 1000;
+   
+   public static final long DEFAULT_CONNECTION_TTL_OVERRIDE = -1;
 
    public static final String DEFAULT_BINDINGS_DIRECTORY = "data/bindings";
 
@@ -126,6 +128,8 @@ public class ConfigurationImpl implements Configuration
    protected boolean jmxManagementEnabled = DEFAULT_JMX_MANAGEMENT_ENABLED;
 
    protected long connectionScanPeriod = DEFAULT_CONNECTION_SCAN_PERIOD;
+   
+   protected long connectionTTLOverride = DEFAULT_CONNECTION_TTL_OVERRIDE;
 
    protected long messageExpiryScanPeriod = DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD;
 
@@ -260,6 +264,16 @@ public class ConfigurationImpl implements Configuration
    public void setConnectionScanPeriod(final long scanPeriod)
    {
       connectionScanPeriod = scanPeriod;
+   }
+   
+   public long getConnectionTTLOverride()
+   {
+      return connectionTTLOverride;
+   }
+
+   public void setConnectionTTLOverride(final long ttl)
+   {
+      this.connectionTTLOverride = ttl;
    }
 
    public List<String> getInterceptorClassNames()

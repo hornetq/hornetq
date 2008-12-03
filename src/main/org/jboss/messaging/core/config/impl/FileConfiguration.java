@@ -94,6 +94,8 @@ public class FileConfiguration extends ConfigurationImpl
       securityInvalidationInterval = getLong(e, "security-invalidation-interval", securityInvalidationInterval);
 
       connectionScanPeriod = getLong(e, "connection-scan-period", connectionScanPeriod);
+      
+      connectionTTLOverride = getLong(e, "connection-ttl-override", connectionTTLOverride);
 
       transactionTimeout = getLong(e, "transaction-timeout", transactionTimeout);
 

@@ -25,6 +25,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -135,8 +136,6 @@ public class MessagingServerImpl implements MessagingServer
    private Configuration configuration;
 
    private ManagementService managementService;
-
-
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -610,11 +609,13 @@ public class MessagingServerImpl implements MessagingServer
       if (backupConnectorFactory != null)
       {
          NoCacheConnectionLifeCycleListener listener = new NoCacheConnectionLifeCycleListener();
+         
          RemotingConnectionImpl replicatingConnection = (RemotingConnectionImpl)RemotingConnectionImpl.createConnection(backupConnectorFactory,
                                                                                                                         backupConnectorParams,
-                                                                                                                        30000,
-                                                                                                                        5000,
-                                                                                                                        this.scheduledExecutor,
+                                                                                                                        ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                                                                                                        ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                                                                                                                        ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                                                                                                        scheduledExecutor,
                                                                                                                         listener);
 
          listener.conn = replicatingConnection;

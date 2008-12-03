@@ -163,7 +163,7 @@ public class QueueImpl implements Queue
    }
 
    public HandleStatus addLast(final MessageReference ref)
-   {
+   {      
       HandleStatus status = add(ref, false);
 
       return status;
@@ -727,7 +727,7 @@ public class QueueImpl implements Queue
       // because it's async and could get out of step
       // with the live node. Instead, when we replicate the delivery we remove
       // the ref from the queue
-
+  
       if (backup)
       {
          return;

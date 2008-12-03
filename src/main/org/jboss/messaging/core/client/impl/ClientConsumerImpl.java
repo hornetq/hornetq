@@ -63,17 +63,17 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private final Executor sessionExecutor;
 
    private final int clientWindowSize;
-   
+
    private final int ackBatchSize;
 
    private final Queue<ClientMessage> buffer = new LinkedList<ClientMessage>();
 
    private final Runner runner = new Runner();
-   
+
    private File directory;
 
    private ClientMessage currentChunkMessage;
-   
+
    private volatile Thread receiverThread;
 
    private volatile Thread onMessageThread;
@@ -81,23 +81,23 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private volatile MessageHandler handler;
 
    private volatile boolean closing;
-   
+
    private volatile boolean closed;
 
    private volatile int creditsToSend;
 
    private volatile Exception lastException;
-   
+
    private volatile int ackBytes;
-   
+
    private volatile ClientMessage lastAckedMessage;
-   
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
    public ClientConsumerImpl(final ClientSessionInternal session,
                              final long id,
-                             final int clientWindowSize,     
+                             final int clientWindowSize,
                              final int ackBatchSize,
                              final Executor executor,
                              final Channel channel,
@@ -112,9 +112,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       sessionExecutor = executor;
 
       this.clientWindowSize = clientWindowSize;
-      
+
       this.ackBatchSize = ackBatchSize;
-      
+
       this.directory = directory;
    }
 
@@ -148,16 +148,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          while (true)
          {
             ClientMessage m = null;
-            
+
             synchronized (this)
-            {              
+            {
                while ((m = buffer.poll()) == null && !closed && toWait > 0)
                {
                   if (start == -1)
                   {
-                     start = System.currentTimeMillis();                     
+                     start = System.currentTimeMillis();
                   }
-                  
+
                   try
                   {
                      wait(toWait);
@@ -165,16 +165,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                   catch (InterruptedException e)
                   {
                   }
-                    
+
                   if (m != null || closed)
                   {
                      break;
                   }
-   
+
                   long now = System.currentTimeMillis();
-   
+
                   toWait -= now - start;
-   
+
                   start = now;
                }
             }
@@ -192,7 +192,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                if (expired)
                {
                   session.expire(id, m.getMessageID());
-                                   
+
                   if (toWait > 0)
                   {
                      continue;
@@ -216,7 +216,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          receiverThread = null;
       }
    }
-        
+
    public ClientMessage receive() throws MessagingException
    {
       return receive(0);
@@ -234,8 +234,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return handler;
    }
 
-   //Must be synchronized since messages may be arriving while handler is being set and might otherwise end
-   //up not queueing enough executors - so messages get stranded
+   // Must be synchronized since messages may be arriving while handler is being set and might otherwise end
+   // up not queueing enough executors - so messages get stranded
    public synchronized void setMessageHandler(final MessageHandler theHandler) throws MessagingException
    {
       checkClosed();
@@ -289,7 +289,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       return directory != null;
    }
-   
+
    public Exception getLastException()
    {
       return lastException;
@@ -310,9 +310,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // This is ok - we just ignore the message
          return;
       }
-      
+
       ClientMessage messageToHandle = message;
-            
+
       if (isFileConsumer())
       {
          messageToHandle = cloneAsFileMessage(message);
@@ -323,28 +323,29 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       if (handler != null)
       {
          // Execute using executor
-     
+
          buffer.add(messageToHandle);
 
-         queueExecutor();         
+         queueExecutor();
       }
       else
-      { 
+      {
          // Add it to the buffer
          buffer.add(messageToHandle);
 
          notify();
       }
    }
+
    public void handleChunk(SessionSendChunkMessage chunk) throws Exception
    {
       if (closed)
       {
          return;
       }
-      
+
       flowControl(chunk.getBody().length);
-      
+
       if (chunk.getHeader() != null)
       {
          // The Header only comes on the first message, so a buffer has to be created on the client
@@ -394,13 +395,13 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             ((ClientFileMessage)currentChunkMessage).closeChannel();
          }
-         
+
          ClientMessage msgToSend = currentChunkMessage;
          currentChunkMessage = null;
          handleMessage(msgToSend);
-      }      
+      }
    }
-   
+
    public void clear()
    {
       synchronized (this)
@@ -425,13 +426,13 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       return creditsToSend;
    }
-   
+
    public void acknowledge(final ClientMessage message) throws MessagingException
    {
       ackBytes += message.getEncodeSize();
-      
+
       if (ackBytes >= ackBatchSize)
-      {      
+      {
          doAck(message);
       }
       else
@@ -439,15 +440,15 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          lastAckedMessage = message;
       }
    }
-   
+
    public void flushAcks() throws MessagingException
    {
       if (lastAckedMessage != null)
-      {         
+      {
          doAck(lastAckedMessage);
       }
    }
-   
+
    // Public7
    // ---------------------------------------------------------------------------------------
 
@@ -524,7 +525,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       // ordering. If we just added a Runnable with the message to the executor immediately as we get it
       // we could not do that
 
-
       ClientMessage message;
 
       // Must store handler in local variable since might get set to null
@@ -566,19 +566,19 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             return;
          }
-             
-         //We need an extra flag closing, since we need to prevent any more messages getting queued to execute
-         //after this and we can't just set the closed flag to true here, since after/in onmessage the message
-         //might be acked and if the consumer is already closed, the ack will be ignored
+
+         // We need an extra flag closing, since we need to prevent any more messages getting queued to execute
+         // after this and we can't just set the closed flag to true here, since after/in onmessage the message
+         // might be acked and if the consumer is already closed, the ack will be ignored
          closing = true;
-         
+
          // Now we wait for any current handler runners to run.
          waitForOnMessageToComplete();
-  
+
          closed = true;
-         
+
          synchronized (this)
-         {                        
+         {
             if (receiverThread != null)
             {
                // Wake up any receive() thread that might be waiting
@@ -591,7 +591,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          }
 
          flushAcks();
-         
+
          if (sendCloseMessage)
          {
             channel.sendBlocking(new SessionConsumerCloseMessage(id));
@@ -602,45 +602,51 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          session.removeConsumer(this);
       }
    }
-   
+
    private void doAck(final ClientMessage message) throws MessagingException
    {
       ackBytes = 0;
-      
+
       lastAckedMessage = null;
-      
+
       session.acknowledge(id, message.getMessageID());
    }
-   
+
    private ClientFileMessage cloneAsFileMessage(final ClientMessage message) throws Exception
    {
       int propertiesSize = message.getPropertiesEncodeSize();
-      
+
       MessagingBuffer bufferProperties = message.getBody().createNewBuffer(propertiesSize);
 
-      // FIXME: Find a better way to clone this ClientMessageImpl as ClientFileMessageImpl without using the MessagingBuffer.
-      //        There is no direct access into the Properties, and I couldn't add a direct cast to this method without loose abstraction
+      // FIXME: Find a better way to clone this ClientMessageImpl as ClientFileMessageImpl without using the
+      // MessagingBuffer.
+      // There is no direct access into the Properties, and I couldn't add a direct cast to this method without loose
+      // abstraction
       message.encodeProperties(bufferProperties);
-      
+
       bufferProperties.rewind();
 
       ClientFileMessageImpl cloneMessage = new ClientFileMessageImpl();
-      
+
       cloneMessage.decodeProperties(bufferProperties);
-      
+
       cloneMessage.setDeliveryCount(message.getDeliveryCount());
-      
+
       cloneMessage.setLargeMessage(message.isLargeMessage());
 
-      cloneMessage.setFile(new File(this.directory, cloneMessage.getMessageID() + "-" + this.session.getName() + "-" + this.getID() + ".jbm"));
-      
+      cloneMessage.setFile(new File(this.directory, cloneMessage.getMessageID() + "-" +
+                                                    this.session.getName() +
+                                                    "-" +
+                                                    this.getID() +
+                                                    ".jbm"));
+
       addBytesBody(cloneMessage, message.getBody().array());
-      
+
       cloneMessage.closeChannel();
-           
+
       return cloneMessage;
    }
-   
+
    private ClientMessage createFileMessage(final MessagingBuffer propertiesBuffer) throws Exception
    {
       if (isFileConsumer())
@@ -649,10 +655,14 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             directory.mkdirs();
          }
-         
+
          ClientFileMessageImpl message = new ClientFileMessageImpl();
          message.decodeProperties(propertiesBuffer);
-         message.setFile(new File(this.directory, message.getMessageID() + "-" + this.session.getName() + "-" + this.getID() + ".jbm"));
+         message.setFile(new File(this.directory, message.getMessageID() + "-" +
+                                                  this.session.getName() +
+                                                  "-" +
+                                                  this.getID() +
+                                                  ".jbm"));
          message.setLargeMessage(true);
          return message;
       }

@@ -81,7 +81,8 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
    public void createConnectionFactory(String name,
                                        List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
                                        String connectionLoadBalancingPolicyClassName,
-                                       long pingPeriod,                                  
+                                       long pingPeriod,   
+                                       long connectionTTL,
                                        long callTimeout,
                                        String clientID,
                                        int dupsOKBatchSize,
@@ -96,11 +97,11 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        boolean blockOnPersistentSend,
                                        boolean autoGroup,
                                        int maxConnections,
-                                       boolean preAcknowledge,
-                                       boolean retryOnFailure,
+                                       boolean preAcknowledge,                                   
                                        long retryInterval,
-                                       double retryIntervalMultiplier,
-                                       int maxRetries,
+                                       double retryIntervalMultiplier,                                       
+                                       int maxRetriesBeforeFailover,
+                                       int maxRetriesAfterFailover,
                                        String jndiBinding) throws Exception
    {
       List<String> bindings = new ArrayList<String>();
@@ -109,7 +110,8 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
       boolean created = server.createConnectionFactory(name,
                                                        connectorConfigs,
                                                        connectionLoadBalancingPolicyClassName,
-                                                       pingPeriod,                                                    
+                                                       pingPeriod,                
+                                                       connectionTTL,
                                                        callTimeout,
                                                        clientID,
                                                        dupsOKBatchSize,
@@ -124,11 +126,11 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                                        blockOnPersistentSend,
                                                        autoGroup,
                                                        maxConnections,
-                                                       preAcknowledge,
-                                                       retryOnFailure,
+                                                       preAcknowledge,                                                 
                                                        retryInterval,
-                                                       retryIntervalMultiplier,
-                                                       maxRetries,
+                                                       retryIntervalMultiplier,                                                       
+                                                       maxRetriesBeforeFailover,
+                                                       maxRetriesAfterFailover,
                                                        bindings);
       if (created)
       {
@@ -140,7 +142,8 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        DiscoveryGroupConfiguration discoveryGroupConfig,
                                        long discoveryInitialWait,
                                        String connectionLoadBalancingPolicyClassName,
-                                       long pingPeriod,                                  
+                                       long pingPeriod,                        
+                                       long connectionTTL,
                                        long callTimeout,
                                        String clientID,
                                        int dupsOKBatchSize,
@@ -155,11 +158,11 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        boolean blockOnPersistentSend,
                                        boolean autoGroup,
                                        int maxConnections,
-                                       boolean preAcknowledge,
-                                       final boolean retryOnFailure,
+                                       boolean preAcknowledge,                              
                                        final long retryInterval,
-                                       final double retryIntervalMultiplier,
-                                       final int maxRetries,
+                                       final double retryIntervalMultiplier,                                       
+                                       final int maxRetriesBeforeFailover,
+                                       final int maxRetriesAfterFailover,
                                        String jndiBinding) throws Exception
    {
       List<String> bindings = new ArrayList<String>();
@@ -169,7 +172,8 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                                        discoveryGroupConfig,
                                                        discoveryInitialWait,
                                                        connectionLoadBalancingPolicyClassName,
-                                                       pingPeriod,                                                    
+                                                       pingPeriod,          
+                                                       connectionTTL,
                                                        callTimeout,
                                                        clientID,
                                                        dupsOKBatchSize,
@@ -184,11 +188,11 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                                        blockOnPersistentSend,
                                                        autoGroup,
                                                        maxConnections,
-                                                       preAcknowledge,
-                                                       retryOnFailure,
+                                                       preAcknowledge,                                               
                                                        retryInterval,
-                                                       retryIntervalMultiplier,
-                                                       maxRetries,
+                                                       retryIntervalMultiplier,                                                       
+                                                       maxRetriesBeforeFailover,
+                                                       maxRetriesAfterFailover,
                                                        bindings);
       if (created)
       {

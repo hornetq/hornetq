@@ -151,8 +151,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    private static final Logger log = Logger.getLogger(RemotingConnectionImpl.class);
 
-   private static final float EXPIRE_FACTOR = 1.5f;
-
    // Static
    // ---------------------------------------------------------------------------------------
 
@@ -160,6 +158,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                                                      final Map<String, Object> params,
                                                      final long callTimeout,
                                                      final long pingInterval,
+                                                     final long connectionTTL,
                                                      final ScheduledExecutorService pingExecutor,
                                                      final ConnectionLifeCycleListener listener)
    {
@@ -176,7 +175,12 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          throw new IllegalStateException("Failed to connect");
       }
 
-      RemotingConnection connection = new RemotingConnectionImpl(tc, callTimeout, pingInterval, pingExecutor, null);
+      RemotingConnection connection = new RemotingConnectionImpl(tc,
+                                                                 callTimeout,
+                                                                 pingInterval,
+                                                                 connectionTTL,
+                                                                 pingExecutor,
+                                                                 null);
 
       handler.conn = connection;
 
@@ -216,21 +220,22 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    private volatile boolean destroyed;
 
-   private long expirePeriod;
-
    private volatile boolean stopPinging;
 
    private volatile long expireTime = -1;
 
    private final Channel pingChannel;
 
-   private final RemotingConnection replicatingConnection;
+   private volatile RemotingConnection replicatingConnection;
 
    private volatile boolean active;
 
    private final boolean client;
 
    private final long pingPeriod;
+
+   // How long without a ping before the connection times out
+   private final long connectionTTL;
 
    private final ScheduledExecutorService pingExecutor;
 
@@ -262,10 +267,19 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    public RemotingConnectionImpl(final Connection transportConnection,
                                  final long blockingCallTimeout,
                                  final long pingPeriod,
+                                 final long connectionTTL,
                                  final ScheduledExecutorService pingExecutor,
                                  final List<Interceptor> interceptors)
    {
-      this(transportConnection, blockingCallTimeout, pingPeriod, pingExecutor, interceptors, null, true, true);
+      this(transportConnection,
+           blockingCallTimeout,
+           pingPeriod,
+           connectionTTL,
+           pingExecutor,
+           interceptors,
+           null,
+           true,
+           true);
    }
 
    /*
@@ -274,15 +288,17 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    public RemotingConnectionImpl(final Connection transportConnection,
                                  final List<Interceptor> interceptors,
                                  final RemotingConnection replicatingConnection,
-                                 final boolean active)
+                                 final boolean active,
+                                 final long connectionTTL)
 
    {
-      this(transportConnection, -1, -1, null, interceptors, replicatingConnection, active, false);
+      this(transportConnection, -1, -1, connectionTTL, null, interceptors, replicatingConnection, active, false);
    }
 
    private RemotingConnectionImpl(final Connection transportConnection,
                                   final long blockingCallTimeout,
                                   final long pingPeriod,
+                                  final long connectionTTL,
                                   final ScheduledExecutorService pingExecutor,
                                   final List<Interceptor> interceptors,
                                   final RemotingConnection replicatingConnection,
@@ -307,6 +323,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       this.pingPeriod = pingPeriod;
 
+      this.connectionTTL = connectionTTL;
+
       this.pingExecutor = pingExecutor;
 
       // Channel zero is reserved for pinging
@@ -324,8 +342,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       if (pingPeriod != -1)
       {
          pinger = new Pinger();
-
-         expirePeriod = (long)(EXPIRE_FACTOR * pingPeriod);
 
          future = pingExecutor.scheduleWithFixedDelay(pinger, 0, pingPeriod, TimeUnit.MILLISECONDS);
       }
@@ -390,6 +406,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    public RemotingConnection getReplicatingConnection()
    {
       return replicatingConnection;
+   }
+   
+   public void setReplicatingConnection(final RemotingConnection connection)
+   {
+      this.replicatingConnection = connection;
    }
 
    /*
@@ -1005,11 +1026,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       }
 
       public Packet sendBlocking(final Packet packet) throws MessagingException
-      {         
+      {
          // System.identityHashCode(this.connection) + " " + packet.getType());
 
          if (closed)
-         {            
+         {
             throw new MessagingException(MessagingException.NOT_CONNECTED, "Connection is destroyed");
          }
 
@@ -1042,7 +1063,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             }
 
             lock.lock();
-            
+
             try
             {
                while (failingOver)
@@ -1120,8 +1141,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             if (replicatingChannel != null)
             {
                DelayedResult result = new DelayedResult();
-
+ 
                responseActions.add(result);
+               
+               responseActionCount++;
 
                replicatingChannel.send(packet);
 
@@ -1156,6 +1179,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                   break;
                }
             }
+            
+            responseActionCount = 0;
          }
       }
 
@@ -1175,6 +1200,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       // This will never get called concurrently by more than one thread
 
+      private int responseActionCount;
+      
       // TODO it's not ideal synchronizing this since it forms a contention point with replication
       // but we need to do this to protect it w.r.t. the check on replicatingChannel
       public void replicateResponseReceived()
@@ -1190,7 +1217,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                if (result == null)
                {
                   throw new IllegalStateException("Cannot find response action");
-               }
+               }                            
             }
          }
 
@@ -1198,6 +1225,52 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          if (result != null)
          {
             result.replicated();
+            
+            //TODO - we can optimise this not to lock every time - only if waiting for all replications to return
+            synchronized (replicationLock)
+            {
+               responseActionCount--;
+               
+               if (responseActionCount == 0)
+               {
+                  replicationLock.notify();
+               }
+            }
+         }
+      }
+      
+      private void waitForAllReplicationResponse()
+      {       
+         synchronized (replicationLock)
+         {
+            if (replicatingChannel != null)
+            {
+               long toWait = 10000; // TODO don't hardcode timeout
+               
+               long start = System.currentTimeMillis();
+               
+               while (responseActionCount > 0 && toWait > 0)
+               {                       
+                  try
+                  {
+                     replicationLock.wait();
+                  }
+                  catch (InterruptedException e)
+                  {                     
+                  }
+                  
+                  long now = System.currentTimeMillis();
+
+                  toWait -= now - start;
+
+                  start = now;                                                     
+               }
+               
+               if (toWait <= 0)
+               {
+                  log.warn("Timed out waiting for replication responses to return");
+               }
+            }
          }
       }
 
@@ -1207,7 +1280,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       }
 
       public void close()
-      {         
+      {
          if (closed)
          {
             return;
@@ -1238,10 +1311,17 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       public void transferConnection(final RemotingConnection newConnection)
       {
          // Needs to synchronize on the connection to make sure no packets from
-         // the old connection get processed after transfer has occurred
+         // the old connection get processed after transfer has occurred         
          synchronized (connection.transferLock)
          {
             connection.channels.remove(id);
+            
+            //If we're reconnecting to a live node which is replicated then there will be a replicating channel
+            //too. We need to then make sure that all replication responses come back since packets aren't
+            //considered confirmed until response comes back and is processed. Otherwise responses to previous
+            //message sends could come back after reconnection resulting in clients resending same message
+            //since it wasn't confirmed yet.
+            waitForAllReplicationResponse();
 
             // And switch it
 
@@ -1255,7 +1335,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             rnewConnection.channels.put(id, this);
 
             connection = rnewConnection;
-         }
+         }         
       }
 
       public void replayCommands(final int otherLastReceivedCommandID)
@@ -1263,7 +1343,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          clearUpTo(otherLastReceivedCommandID);
 
          for (final Packet packet : resendCache)
-         {
+         {            
             doWrite(packet);
          }
       }
@@ -1482,7 +1562,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          firstTime = false;
 
          // Send ping
-         final Packet ping = new Ping(expirePeriod);
+         final Packet ping = new Ping(connectionTTL);
 
          pingChannel.send(ping);
       }
@@ -1505,7 +1585,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
          else if (type == PING)
          {
-            expireTime = System.currentTimeMillis() + ((Ping)packet).getExpirePeriod();
+            // connectionTTL if specified on the server overrides any value specified in the ping.
+
+            long connectionTTLToUse = connectionTTL != -1 ? connectionTTL : ((Ping)packet).getExpirePeriod();
+
+            expireTime = System.currentTimeMillis() + connectionTTLToUse;
 
             // Parameter is placeholder for future
             final Packet pong = new Pong(-1);

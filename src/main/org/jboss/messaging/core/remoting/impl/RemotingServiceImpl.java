@@ -68,6 +68,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    private TimerTask failedConnectionsTask;
 
    private final long connectionScanPeriod;
+   
+   private final long connectionTTL;
 
    private final BufferHandler bufferHandler = new DelegatingBufferHandler();
 
@@ -98,6 +100,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
 
       connectionScanPeriod = config.getConnectionScanPeriod();
+      
+      connectionTTL = config.getConnectionTTLOverride();
 
       backup = config.isBackup();
    }
@@ -215,7 +219,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       RemotingConnection rc = new RemotingConnectionImpl(connection,                                                                                             
                                                          interceptors,
                                                          replicatingConnection,
-                                                         !backup);
+                                                         !backup,
+                                                         connectionTTL);
 
       Channel channel1 = rc.getChannel(1,  -1, false);
 

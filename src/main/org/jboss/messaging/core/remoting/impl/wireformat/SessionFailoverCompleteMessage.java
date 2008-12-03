@@ -71,6 +71,11 @@ public class SessionFailoverCompleteMessage extends PacketImpl
    {
       name = buffer.getString();
    }
+   
+   public boolean isRequiresConfirmations()
+   {
+      return false;
+   }
 
    public boolean equals(Object other)
    {

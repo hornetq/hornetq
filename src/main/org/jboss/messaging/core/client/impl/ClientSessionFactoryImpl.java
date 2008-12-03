@@ -51,6 +51,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public static final String DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME = "org.jboss.messaging.core.client.impl.RoundRobinConnectionLoadBalancingPolicy";
 
    public static final long DEFAULT_PING_PERIOD = 5000;
+   
+   //5 minutes - normally this should be much higher than ping period, this allows clients to re-attach on live
+   //or backup without fear of session having already been closed when connection times out.
+   public static final long DEFAULT_CONNECTION_TTL = 5 * 60000;
 
    // Any message beyond this size is considered a large message (to be sent in chunks)
    public static final int DEFAULT_MIN_LARGE_MESSAGE_SIZE = 100 * 1024;
@@ -81,13 +85,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final long DEFAULT_DISCOVERY_INITIAL_WAIT = 10000;
 
-   public static final boolean DEFAULT_RETRY_ON_FAILURE = true;
-
-   public static final long DEFAULT_RETRY_INTERVAL = 5000;
+   public static final long DEFAULT_RETRY_INTERVAL = 2000;
 
    public static final double DEFAULT_RETRY_INTERVAL_MULTIPLIER = 1d;
 
-   public static final int DEFAULT_MAX_RETRIES = -1;
+   public static final int DEFAULT_MAX_RETRIES_BEFORE_FAILOVER = 0;
+
+   public static final int DEFAULT_MAX_RETRIES_AFTER_FAILOVER = 10;
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -97,6 +101,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private ConnectionManager[] connectionManagerArray;
 
    private final long pingPeriod;
+   
+   private final long connectionTTL;
 
    private final long callTimeout;
 
@@ -135,16 +141,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    private final long initialWaitTimeout;
 
-   //Reconnect params
-   
-   private final boolean retryOnFailure;
+   // Reconnect params
 
    private final long retryInterval;
 
    private final double retryIntervalMultiplier; // For exponential backoff
 
-   private final int maxRetries;
-   
+   private final int maxRetriesBeforeFailover;
+
+   private final int maxRetriesAfterFailover;
+
    // Static
    // ---------------------------------------------------------------------------------------
 
@@ -175,6 +181,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.initialWaitTimeout = initialWaitTimeout;
       this.loadBalancingPolicy = instantiateLoadBalancingPolicy(DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME);
       this.pingPeriod = DEFAULT_PING_PERIOD;
+      this.connectionTTL = DEFAULT_CONNECTION_TTL;
       this.callTimeout = DEFAULT_CALL_TIMEOUT;
       this.consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
       this.consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
@@ -188,10 +195,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.maxConnections = DEFAULT_MAX_CONNECTIONS;
       this.ackBatchSize = DEFAULT_ACK_BATCH_SIZE;
       this.preAcknowledge = DEFAULT_PRE_ACKNOWLEDGE;
-      this.retryOnFailure = DEFAULT_RETRY_ON_FAILURE;
       this.retryInterval = DEFAULT_RETRY_INTERVAL;
       this.retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      this.maxRetries = DEFAULT_MAX_RETRIES;
+      this.maxRetriesBeforeFailover = DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
+      this.maxRetriesAfterFailover = DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
    }
 
    public ClientSessionFactoryImpl(final String discoveryGroupName,
@@ -200,6 +207,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    final long initialWaitTimeout,
                                    final String connectionloadBalancingPolicyClassName,
                                    final long pingPeriod,
+                                   final long connectionTTL,
                                    final long callTimeout,
                                    final int consumerWindowSize,
                                    final int consumerMaxRate,
@@ -213,10 +221,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    final int maxConnections,
                                    final boolean preAcknowledge,
                                    final int ackBatchSize,
-                                   final boolean retryOnFailure,
                                    final long retryInterval,
                                    final double retryIntervalMultiplier,
-                                   final int maxRetries) throws MessagingException
+                                   final int maxRetriesBeforeFailover,
+                                   final int maxRetriesAfterFailover) throws MessagingException
    {
       try
       {
@@ -237,6 +245,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.initialWaitTimeout = initialWaitTimeout;
       this.loadBalancingPolicy = instantiateLoadBalancingPolicy(connectionloadBalancingPolicyClassName);
       this.pingPeriod = pingPeriod;
+      this.connectionTTL = connectionTTL;
       this.callTimeout = callTimeout;
       this.consumerWindowSize = consumerWindowSize;
       this.consumerMaxRate = consumerMaxRate;
@@ -250,15 +259,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.maxConnections = maxConnections;
       this.ackBatchSize = ackBatchSize;
       this.preAcknowledge = preAcknowledge;
-      this.retryOnFailure = retryOnFailure;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.maxRetries = maxRetries;
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
    }
 
    public ClientSessionFactoryImpl(final List<Pair<TransportConfiguration, TransportConfiguration>> connectors,
                                    final String connectionloadBalancingPolicyClassName,
                                    final long pingPeriod,
+                                   final long connectionTTL,
                                    final long callTimeout,
                                    final int consumerWindowSize,
                                    final int consumerMaxRate,
@@ -272,13 +282,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    final int maxConnections,
                                    final boolean preAcknowledge,
                                    final int ackBatchSize,
-                                   final boolean retryOnFailure,
                                    final long retryInterval,
                                    final double retryIntervalMultiplier,
-                                   final int maxRetries)
+                                   final int maxRetriesBeforeFailover,
+                                   final int maxRetriesAfterFailover)
    {
       this.loadBalancingPolicy = instantiateLoadBalancingPolicy(connectionloadBalancingPolicyClassName);
       this.pingPeriod = pingPeriod;
+      this.connectionTTL = connectionTTL;
       this.callTimeout = callTimeout;
       this.consumerWindowSize = consumerWindowSize;
       this.consumerMaxRate = consumerMaxRate;
@@ -292,10 +303,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.maxConnections = maxConnections;
       this.ackBatchSize = ackBatchSize;
       this.preAcknowledge = preAcknowledge;
-      this.retryOnFailure = retryOnFailure;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.maxRetries = maxRetries;
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
 
       this.initialWaitTimeout = -1;
 
@@ -306,10 +317,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                           maxConnections,
                                                           callTimeout,
                                                           pingPeriod,
-                                                          retryOnFailure,
+                                                          connectionTTL,
                                                           retryInterval,
                                                           retryIntervalMultiplier,
-                                                          maxRetries);
+                                                          maxRetriesBeforeFailover,
+                                                          maxRetriesAfterFailover);
 
          connectionManagerMap.put(pair, cm);
       }
@@ -318,14 +330,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       this.discoveryGroup = null;
    }
-   
-   public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,                                                                  
+
+   public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
+                                   final TransportConfiguration backupConnectorConfig,
                                    final long retryInterval,
                                    final double retryIntervalMultiplier,
-                                   final int maxRetries)
+                                   final int maxRetriesBeforeFailover,
+                                   final int maxRetriesAfterFailover)
    {
       this.loadBalancingPolicy = new FirstElementConnectionLoadBalancingPolicy();
       this.pingPeriod = DEFAULT_PING_PERIOD;
+      this.connectionTTL = DEFAULT_CONNECTION_TTL;
       this.callTimeout = DEFAULT_CALL_TIMEOUT;
       this.consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
       this.consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
@@ -339,10 +354,60 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.maxConnections = DEFAULT_MAX_CONNECTIONS;
       this.ackBatchSize = DEFAULT_ACK_BATCH_SIZE;
       this.preAcknowledge = DEFAULT_PRE_ACKNOWLEDGE;
-      this.retryOnFailure = true;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.maxRetries = maxRetries;
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
+
+      this.initialWaitTimeout = -1;
+
+      Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connectorConfig,
+                                                                                                                           backupConnectorConfig);
+
+      ConnectionManager cm = new ConnectionManagerImpl(pair.a,
+                                                       pair.b,
+                                                       maxConnections,
+                                                       callTimeout,
+                                                       pingPeriod,
+                                                       connectionTTL,
+                                                       retryInterval,
+                                                       retryIntervalMultiplier,
+                                                       maxRetriesBeforeFailover,
+                                                       maxRetriesAfterFailover);
+
+      connectionManagerMap.put(pair, cm);
+
+      updateConnectionManagerArray();
+
+      discoveryGroup = null;
+   }
+
+   public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
+                                   final long retryInterval,
+                                   final double retryIntervalMultiplier,
+                                   final int maxRetriesBeforeFailover,
+                                   final int maxRetriesAfterFailover)
+   {
+      this.loadBalancingPolicy = new FirstElementConnectionLoadBalancingPolicy();
+      this.pingPeriod = DEFAULT_PING_PERIOD;
+      this.connectionTTL = DEFAULT_CONNECTION_TTL;
+      this.callTimeout = DEFAULT_CALL_TIMEOUT;
+      this.consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
+      this.consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
+      this.sendWindowSize = DEFAULT_SEND_WINDOW_SIZE;
+      this.producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
+      this.blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
+      this.blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+      this.blockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+      this.minLargeMessageSize = DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+      this.autoGroup = DEFAULT_AUTO_GROUP;
+      this.maxConnections = DEFAULT_MAX_CONNECTIONS;
+      this.ackBatchSize = DEFAULT_ACK_BATCH_SIZE;
+      this.preAcknowledge = DEFAULT_PRE_ACKNOWLEDGE;
+      this.retryInterval = retryInterval;
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
 
       this.initialWaitTimeout = -1;
 
@@ -354,10 +419,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                        maxConnections,
                                                        callTimeout,
                                                        pingPeriod,
-                                                       retryOnFailure,
+                                                       connectionTTL,
                                                        retryInterval,
                                                        retryIntervalMultiplier,
-                                                       maxRetries);
+                                                       maxRetriesBeforeFailover,
+                                                       maxRetriesAfterFailover);
 
       connectionManagerMap.put(pair, cm);
 
@@ -372,6 +438,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.loadBalancingPolicy = new FirstElementConnectionLoadBalancingPolicy();
       this.pingPeriod = DEFAULT_PING_PERIOD;
       this.callTimeout = DEFAULT_CALL_TIMEOUT;
+      this.connectionTTL = DEFAULT_CONNECTION_TTL;
       this.consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
       this.consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
       this.sendWindowSize = DEFAULT_SEND_WINDOW_SIZE;
@@ -384,10 +451,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.maxConnections = DEFAULT_MAX_CONNECTIONS;
       this.ackBatchSize = DEFAULT_ACK_BATCH_SIZE;
       this.preAcknowledge = DEFAULT_PRE_ACKNOWLEDGE;
-      this.retryOnFailure = DEFAULT_RETRY_ON_FAILURE;
       this.retryInterval = DEFAULT_RETRY_INTERVAL;
       this.retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      this.maxRetries = DEFAULT_MAX_RETRIES;
+      this.maxRetriesBeforeFailover = DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
+      this.maxRetriesAfterFailover = DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
 
       this.initialWaitTimeout = -1;
 
@@ -399,10 +466,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                        maxConnections,
                                                        callTimeout,
                                                        pingPeriod,
-                                                       retryOnFailure,
+                                                       connectionTTL,
                                                        retryInterval,
                                                        retryIntervalMultiplier,
-                                                       maxRetries);
+                                                       maxRetriesBeforeFailover,
+                                                       maxRetriesAfterFailover);
 
       connectionManagerMap.put(pair, cm);
 
@@ -415,6 +483,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    final TransportConfiguration backupConfig,
                                    final String connectionloadBalancingPolicyClassName,
                                    final long pingPeriod,
+                                   final long connectionTTL,
                                    final long callTimeout,
                                    final int consumerWindowSize,
                                    final int consumerMaxRate,
@@ -428,13 +497,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    final int maxConnections,
                                    final boolean preAcknowledge,
                                    final int ackBatchSize,
-                                   final boolean retryOnFailure,
                                    final long retryInterval,
                                    final double retryIntervalMultiplier,
-                                   final int maxRetries)
+                                   final int maxRetriesBeforeFailover,
+                                   final int maxRetriesAfterFailover)
    {
       this.loadBalancingPolicy = instantiateLoadBalancingPolicy(connectionloadBalancingPolicyClassName);
       this.pingPeriod = pingPeriod;
+      this.connectionTTL = connectionTTL;
       this.callTimeout = callTimeout;
       this.consumerWindowSize = consumerWindowSize;
       this.consumerMaxRate = consumerMaxRate;
@@ -448,25 +518,25 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.maxConnections = maxConnections;
       this.ackBatchSize = ackBatchSize;
       this.preAcknowledge = preAcknowledge;
-      this.retryOnFailure = retryOnFailure;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.maxRetries = maxRetries;
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
 
       this.initialWaitTimeout = -1;
 
       Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connectorConfig,
                                                                                                                            backupConfig);
-
       ConnectionManager cm = new ConnectionManagerImpl(pair.a,
                                                        pair.b,
                                                        maxConnections,
                                                        callTimeout,
                                                        pingPeriod,
-                                                       retryOnFailure,
+                                                       connectionTTL,
                                                        retryInterval,
                                                        retryIntervalMultiplier,
-                                                       maxRetries);
+                                                       maxRetriesBeforeFailover,
+                                                       maxRetriesAfterFailover);
 
       connectionManagerMap.put(pair, cm);
 
@@ -723,10 +793,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                                             maxConnections,
                                                                             callTimeout,
                                                                             pingPeriod,
-                                                                            retryOnFailure,
+                                                                            connectionTTL,
                                                                             retryInterval,
                                                                             retryIntervalMultiplier,
-                                                                            maxRetries);
+                                                                            maxRetriesBeforeFailover,
+                                                                            maxRetriesAfterFailover);
 
             connectionManagerMap.put(connectorPair, connectionManager);
          }

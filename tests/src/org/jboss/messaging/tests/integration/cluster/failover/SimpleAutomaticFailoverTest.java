@@ -680,9 +680,21 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
    public void testFailureAfterFailover() throws Exception
    {
+      final long retryInterval = 500;
+
+      final double retryMultiplier = 1d;
+
+      final int maxRetriesBeforeFailover = 0;
+      
+      final int maxRetriesAfterFailover = 0;      
+      
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                backupParams));
+                                                                                                backupParams),
+                                                                     retryInterval,
+                                                                     retryMultiplier,
+                                                                     maxRetriesBeforeFailover,
+                                                                     maxRetriesAfterFailover);
 
       sf.setSendWindowSize(32 * 1024);
       
@@ -759,7 +771,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
       }
       catch (MessagingException me)
       {
-         assertEquals(MessagingException.OBJECT_CLOSED, me.getCode());
+         assertEquals(MessagingException.NOT_CONNECTED, me.getCode());
       }
 
       session.close();
