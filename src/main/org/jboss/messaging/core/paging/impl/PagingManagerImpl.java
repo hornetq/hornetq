@@ -63,8 +63,6 @@ public class PagingManagerImpl implements PagingManager
 
    private final AtomicBoolean globalMode = new AtomicBoolean(false);
 
-   private final AtomicBoolean globalDepageRunning = new AtomicBoolean(false);
-
    private final ConcurrentMap<SimpleString, PagingStore> stores = new ConcurrentHashMap<SimpleString, PagingStore>();
 
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
@@ -265,21 +263,21 @@ public class PagingManagerImpl implements PagingManager
       
       started = false;
 
-      pagingSPI.stop();
-
       for (PagingStore store : stores.values())
       {
          store.stop();
       }
+
+      pagingSPI.stop();
    }
    
-   public void startGlobalDepage()
+   public synchronized void startGlobalDepage()
    {
-      if (globalDepageRunning.compareAndSet(false, true))
+      for (PagingStore store: stores.values())
       {
-         Runnable globalDepageRunnable = new GlobalDepager();
-         pagingSPI.getPagingExecutor().execute(globalDepageRunnable);
+         store.startDepaging(pagingSPI.getGlobalDepagerExecutor());
       }
+      globalMode.set(false);
    }
 
    /* (non-Javadoc)
@@ -321,57 +319,5 @@ public class PagingManagerImpl implements PagingManager
    }
 
    // Inner classes -------------------------------------------------
-
-   private class GlobalDepager implements Runnable
-   {
-      public void run()
-      {
-         try
-         {
-            while (globalSize.get() < maxGlobalSize && started)
-            {
-               boolean depaged = false;
-               // Round robin depaging one page at the time from each
-               // destination
-               for (PagingStore store : stores.values())
-               {
-                  if (globalSize.get() < maxGlobalSize)
-                  {
-                     if (store.isPaging())
-                     {
-                        depaged = true;
-                        try
-                        {
-                           store.readPage();
-                        }
-                        catch (Exception e)
-                        {
-                           log.error(e.getMessage(), e);
-                        }
-                     }
-                  }
-               }
-               if (!depaged)
-               {
-                  break;
-               }
-            }
-
-            if (globalSize.get() < maxGlobalSize && started)
-            {
-               globalMode.set(false);
-               // Clearing possible messages still in page-mode
-               for (PagingStore store : stores.values())
-               {
-                  store.startDepaging();
-               }
-            }
-         }
-         finally
-         {
-            globalDepageRunning.set(false);
-         }
-      }
-   }
 
 }

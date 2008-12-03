@@ -81,7 +81,7 @@ public class MessageChunkTest extends ChunkTestBase
    {
       clearData();
 
-      createLargeFile(largeMessagesDir, "1234.tmp", 13333);
+      createLargeFile(getLargeMessagesDir(), "1234.tmp", 13333);
 
       Configuration config = createDefaultConfig();
 
@@ -92,7 +92,7 @@ public class MessageChunkTest extends ChunkTestBase
       try
       {
 
-         File directoryLarge = new File(largeMessagesDir);
+         File directoryLarge = new File(getLargeMessagesDir());
 
          assertEquals(0, directoryLarge.list().length);
       }
@@ -199,7 +199,7 @@ public class MessageChunkTest extends ChunkTestBase
    {
       clearData();
 
-      File file = createLargeFile(temporaryDir, "test.tst", 13333);
+      File file = createLargeFile(getTemporaryDir(), "test.tst", 13333);
 
       checkFileRead(file, 13333);
    }
@@ -318,7 +318,7 @@ public class MessageChunkTest extends ChunkTestBase
          producer.close();
 
          
-         ClientConsumer consumer = session.createFileConsumer(new File(clientLargeMessagesDir), queue[1]);
+         ClientConsumer consumer = session.createFileConsumer(new File(getClientLargeMessagesDir()), queue[1]);
          ClientMessage msg = consumer.receive(5000);
          assertNull(consumer.receive(1000)); 
          assertNotNull(msg);
@@ -330,7 +330,7 @@ public class MessageChunkTest extends ChunkTestBase
 
          session.stop();
          
-         ClientConsumer consumer1 = session.createFileConsumer(new File(clientLargeMessagesDir), queue[0]);
+         ClientConsumer consumer1 = session.createFileConsumer(new File(getClientLargeMessagesDir()), queue[0]);
 
          session.start();
          

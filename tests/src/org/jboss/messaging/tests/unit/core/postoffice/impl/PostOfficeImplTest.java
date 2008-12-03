@@ -1401,9 +1401,10 @@ public class PostOfficeImplTest extends UnitTestCase
 
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 
-      PagingManager pgm = EasyMock.createMock(PagingManager.class);
+      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
       pgm.setPostOffice(EasyMock.isA(PostOffice.class));
       pgm.start();
+      pgm.startGlobalDepage();
 
       EasyMock.expect(pgm.addSize(EasyMock.isA(ServerMessage.class))).andReturn(-1l);
 

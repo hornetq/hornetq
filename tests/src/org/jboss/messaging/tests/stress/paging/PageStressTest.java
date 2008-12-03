@@ -37,7 +37,7 @@ public class PageStressTest extends ServiceTestBase
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    private MessagingService messagingService;
 
    // Static --------------------------------------------------------
@@ -45,19 +45,18 @@ public class PageStressTest extends ServiceTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    public void testStopDuringGlobalDepage() throws Exception
    {
       testStopDuringDepage(true);
    }
-   
+
    public void testStopDuringRegularDepage() throws Exception
    {
       testStopDuringDepage(false);
    }
-   
-   
-   public void testStopDuringDepage(boolean globalPage) throws Exception
+
+   public void testStopDuringDepage(final boolean globalPage) throws Exception
    {
       Configuration config = createDefaultConfig();
 
@@ -89,7 +88,7 @@ public class PageStressTest extends ServiceTestBase
       {
 
          final int NUMBER_OF_MESSAGES = 60000;
-         
+
          session = factory.createSession(null, null, false, false, true, false, 1024 * NUMBER_OF_MESSAGES);
 
          SimpleString address = new SimpleString("page-adr");
@@ -103,7 +102,9 @@ public class PageStressTest extends ServiceTestBase
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
             if (i % 10000 == 0)
+            {
                System.out.println("Sent " + i);
+            }
             prod.send(message);
          }
 
@@ -113,7 +114,6 @@ public class PageStressTest extends ServiceTestBase
 
          ClientConsumer consumer = session.createConsumer(address);
 
-
          int msgs = 0;
          ClientMessage msg = null;
          do
@@ -122,33 +122,33 @@ public class PageStressTest extends ServiceTestBase
             if (msg != null)
             {
                msg.acknowledge();
-               if ((++msgs) % 1000 == 0)
+               if (++msgs % 1000 == 0)
                {
                   System.out.println("Received " + msgs);
                }
             }
-         } while (msg != null);
+         }
+         while (msg != null);
 
          session.commit();
-         
+
          session.close();
-         
+
          messagingService.stop();
-         
+
          System.out.println("server stopped, nr msgs: " + msgs);
 
          messagingService = createService(true, config, settings);
          messagingService.start();
-         
-         
+
          factory = createInVMFactory();
-         
+
          session = factory.createSession(false, false, false);
 
          consumer = session.createConsumer(address);
-         
+
          session.start();
-         
+
          msg = null;
          do
          {
@@ -157,15 +157,16 @@ public class PageStressTest extends ServiceTestBase
             {
                msg.acknowledge();
                session.commit();
-               if ((++msgs) % 1000 == 0)
+               if (++msgs % 1000 == 0)
                {
                   System.out.println("Received " + msgs);
                }
-             }
-         } while (msg != null);
-         
+            }
+         }
+         while (msg != null);
+
          System.out.println("msgs second time: " + msgs);
-         
+
          assertEquals(NUMBER_OF_MESSAGES, msgs);
       }
       finally
@@ -186,7 +187,7 @@ public class PageStressTest extends ServiceTestBase
       testPageOnMultipleDestinations(false);
    }
 
-   public void testPageOnMultipleDestinations(boolean globalPage) throws Exception
+   public void testPageOnMultipleDestinations(final boolean globalPage) throws Exception
    {
       Configuration config = createDefaultConfig();
 
@@ -232,7 +233,9 @@ public class PageStressTest extends ServiceTestBase
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
             if (i % 10000 == 0)
+            {
                System.out.println(i);
+            }
             prod.send(message);
          }
 
@@ -280,7 +283,7 @@ public class PageStressTest extends ServiceTestBase
 
    }
 
-   private int readMessages(ClientSession session, ClientConsumer consumer, SimpleString queue) throws MessagingException
+   private int readMessages(final ClientSession session, final ClientConsumer consumer, final SimpleString queue) throws MessagingException
    {
       session.start();
       int msgs = 0;
@@ -306,43 +309,21 @@ public class PageStressTest extends ServiceTestBase
 
       return msgs;
    }
-   
-   /**
-    * @param globalPage
-    * @param settings
-    * @return
-    */
-   private Configuration createConfig(boolean globalPage, HashMap<String, QueueSettings> settings)
-   {
-      Configuration config = createDefaultConfig();
-
-      if (globalPage)
-      {
-         config.setPagingMaxGlobalSizeBytes(20 * 1024 * 1024);
-         QueueSettings setting = new QueueSettings();
-         setting.setMaxSizeBytes(-1);
-         settings.put("page-adr", setting);
-      }
-      else
-      {
-         config.setPagingMaxGlobalSizeBytes(-1);
-         QueueSettings setting = new QueueSettings();
-         setting.setMaxSizeBytes(20 * 1024 * 1024);
-         settings.put("page-adr", setting);
-      }
-      return config;
-   }
-
-   
-
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
+   @Override
    protected void setUp() throws Exception
    {
       clearData();
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
    }
 
    // Private -------------------------------------------------------

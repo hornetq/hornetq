@@ -564,4 +564,12 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
    }
 
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.journal.SequentialFileFactory#createDirs()
+    */
+   public void createDirs() throws Exception
+   {
+      // nothing to be done on the fake Sequential file
+   }
+
 }

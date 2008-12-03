@@ -20,9 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.tests.stress.journal;
-
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,55 +41,49 @@ import org.jboss.messaging.tests.util.UnitTestCase;
  */
 public class AddAndRemoveStressTest extends UnitTestCase
 {
-   
-   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
-   
+
    // Constants -----------------------------------------------------
 
-   private static final LoadManager dummyLoader = new LoadManager(){
+   private static final LoadManager dummyLoader = new LoadManager()
+   {
 
-      public void addPreparedTransaction(
-            PreparedTransactionInfo preparedTransaction)
+      public void addPreparedTransaction(final PreparedTransactionInfo preparedTransaction)
       {
       }
 
-      public void addRecord(RecordInfo info)
+      public void addRecord(final RecordInfo info)
       {
       }
 
-      public void deleteRecord(long id)
+      public void deleteRecord(final long id)
       {
       }
 
-      public void updateRecord(RecordInfo info)
+      public void updateRecord(final RecordInfo info)
       {
-      }};
-   
+      }
+   };
 
    private static final long NUMBER_OF_MESSAGES = 210000l;
-   
+
    // Attributes ----------------------------------------------------
-   
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
-   
+
    public void testInsertAndLoad() throws Exception
    {
-      
-      File file = new File(journalDir);
-      deleteDirectory(file);
-      file.mkdirs();
-      
-      SequentialFileFactory factory = new AIOSequentialFileFactory(journalDir);
-      JournalImpl impl = new JournalImpl(10*1024*1024, 60, true, false, factory, "jbm", "jbm", 1000, 0);
+
+      SequentialFileFactory factory = new AIOSequentialFileFactory(getTestDir());
+      JournalImpl impl = new JournalImpl(10 * 1024 * 1024, 60, true, false, factory, "jbm", "jbm", 1000, 0);
 
       impl.start();
-      
+
       impl.load(dummyLoader);
-      
+
       for (long i = 1; i <= NUMBER_OF_MESSAGES; i++)
       {
          if (i % 10000 == 0)
@@ -100,15 +92,14 @@ public class AddAndRemoveStressTest extends UnitTestCase
          }
          impl.appendAddRecord(i, (byte)0, new SimpleEncoding(1024, (byte)'f'));
       }
-      
+
       impl.stop();
-      
-      
-      factory = new AIOSequentialFileFactory(journalDir);
-      impl = new JournalImpl(10*1024*1024, 60, true, false, factory, "jbm", "jbm", 1000, 0);
+
+      factory = new AIOSequentialFileFactory(getTestDir());
+      impl = new JournalImpl(10 * 1024 * 1024, 60, true, false, factory, "jbm", "jbm", 1000, 0);
 
       impl.start();
-      
+
       impl.load(dummyLoader);
 
       for (long i = 1; i <= NUMBER_OF_MESSAGES; i++)
@@ -117,25 +108,22 @@ public class AddAndRemoveStressTest extends UnitTestCase
          {
             System.out.println("Delete " + i);
          }
-         
+
          impl.appendDeleteRecord(i);
       }
-      
+
       impl.stop();
-      
-      factory = new AIOSequentialFileFactory(journalDir);
-      impl = new JournalImpl(10*1024*1024, 60, true, false, factory, "jbm", "jbm", 1000, 0);
+
+      factory = new AIOSequentialFileFactory(getTestDir());
+      impl = new JournalImpl(10 * 1024 * 1024, 60, true, false, factory, "jbm", "jbm", 1000, 0);
 
       impl.start();
-      
 
-      
       ArrayList<RecordInfo> info = new ArrayList<RecordInfo>();
-      ArrayList<PreparedTransactionInfo> trans  = new ArrayList<PreparedTransactionInfo>();
-      
+      ArrayList<PreparedTransactionInfo> trans = new ArrayList<PreparedTransactionInfo>();
+
       impl.load(info, trans);
 
-      
       if (info.size() > 0)
       {
          System.out.println("Info ID: " + info.get(0).id);
@@ -143,16 +131,29 @@ public class AddAndRemoveStressTest extends UnitTestCase
 
       assertEquals(0, info.size());
       assertEquals(0, trans.size());
-      
-      
+
    }
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
+   @Override
+   protected void setUp()
+   {
+      File file = new File(getTestDir());
+      deleteDirectory(file);
+      file.mkdirs();
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+   }
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
+
 }

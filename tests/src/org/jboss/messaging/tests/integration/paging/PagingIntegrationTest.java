@@ -24,8 +24,6 @@ package org.jboss.messaging.tests.integration.paging;
 
 import java.io.File;
 
-import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
-import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.tests.unit.core.paging.impl.PageImplTestBase;
 
@@ -41,8 +39,6 @@ public class PagingIntegrationTest extends PageImplTestBase
 
    // Attributes ----------------------------------------------------
 
-   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -51,7 +47,7 @@ public class PagingIntegrationTest extends PageImplTestBase
 
    public void testPageWithNIO() throws Exception
    {
-      testAdd(new NIOSequentialFileFactory(journalDir), 1000);
+      testAdd(new NIOSequentialFileFactory(getTestDir()), 1000);
    }
 
    // Package protected ---------------------------------------------
@@ -62,7 +58,7 @@ public class PagingIntegrationTest extends PageImplTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-      File fileJournalDir = new File(journalDir);
+      File fileJournalDir = new File(getTestDir());
       deleteDirectory(fileJournalDir);
       fileJournalDir.mkdirs();
    }
@@ -71,7 +67,6 @@ public class PagingIntegrationTest extends PageImplTestBase
    protected void tearDown() throws Exception
    {
       super.tearDown();
-      deleteDirectory(new File(journalDir));
    }
 
    // Private -------------------------------------------------------

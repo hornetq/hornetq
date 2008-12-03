@@ -82,7 +82,7 @@ public class ScheduledMessageTest extends ServiceTestBase
             // ignore
          }
       }
-      deleteData();
+      super.tearDown();
    }
 
    public void testRecoveredMessageDeliveredCorrectly() throws Exception

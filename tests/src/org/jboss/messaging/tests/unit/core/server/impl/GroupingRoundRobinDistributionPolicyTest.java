@@ -42,12 +42,14 @@ public class GroupingRoundRobinDistributionPolicyTest extends UnitTestCase
 
    protected void setUp() throws Exception
    {
+      super.setUp();
       policy = new GroupingRoundRobinDistributionPolicy();
    }
 
    protected void tearDown() throws Exception
    {
       policy = null;
+      super.tearDown();
    }
 
    public void testSingleConsumerSingleGroup() throws Exception

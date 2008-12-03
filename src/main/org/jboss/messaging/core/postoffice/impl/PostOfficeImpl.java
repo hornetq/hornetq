@@ -502,25 +502,7 @@ public class PostOfficeImpl implements PostOffice
 
       storageManager.loadMessages(this, queues, resourceManager);
 
-
-      // If Paging was interrupted due a server stop, during restart we need to resume depaging those addresses
-      for (SimpleString destination : addressManager.getMappings().keySet())
-      {
-         PagingStore store = pagingManager.getPageStore(destination);
-         
-         // FIXME this should be changed as soon as we change the threading model
-         if (!pagingManager.isGlobalPageMode())
-         {
-            if (store.isPaging() && store.getMaxSizeBytes() < 0)
-            {
-               pagingManager.setGlobalPageMode(true);
-            }
-            else
-            {
-               store.startDepaging();
-            }
-         }
-      }
+      pagingManager.startGlobalDepage();
 
    }
 

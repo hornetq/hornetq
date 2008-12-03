@@ -43,71 +43,89 @@ import org.jboss.messaging.tests.util.UnitTestCase;
  */
 public class ValidateTransactionHealthTest extends UnitTestCase
 {
-   
+
    // Constants -----------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
 
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
-   
+
    public void testAIO() throws Exception
    {
-      internalTest("aio", journalDir, 10000, 100, true, true, 1);
+      internalTest("aio", getTestDir(), 10000, 100, true, true, 1);
    }
-   
+
    public void testAIOHugeTransaction() throws Exception
    {
-      internalTest("aio", journalDir, 10000, 10000, true, true, 1);
+      internalTest("aio", getTestDir(), 10000, 10000, true, true, 1);
    }
-   
+
    public void testAIOMultiThread() throws Exception
    {
-      internalTest("aio", journalDir, 1000, 100, true, true, 10);
+      internalTest("aio", getTestDir(), 1000, 100, true, true, 10);
    }
-   
+
    public void testAIONonTransactional() throws Exception
    {
-      internalTest("aio", journalDir, 10000, 0, true, true, 1);
+      internalTest("aio", getTestDir(), 10000, 0, true, true, 1);
    }
-   
+
    public void testAIONonTransactionalNoExternalProcess() throws Exception
    {
-      internalTest("aio", journalDir, 1000, 0, true, false, 10);
+      internalTest("aio", getTestDir(), 1000, 0, true, false, 10);
    }
-   
+
    public void testNIO() throws Exception
    {
-      internalTest("nio", journalDir, 10000, 100, true, true, 1);
+      internalTest("nio", getTestDir(), 10000, 100, true, true, 1);
    }
-   
+
    public void testNIOHugeTransaction() throws Exception
    {
-      internalTest("nio", journalDir, 10000, 10000, true, true, 1);
+      internalTest("nio", getTestDir(), 10000, 10000, true, true, 1);
    }
-   
+
    public void testNIOMultiThread() throws Exception
    {
-      internalTest("nio", journalDir, 1000, 100, true, true, 10);
+      internalTest("nio", getTestDir(), 1000, 100, true, true, 10);
    }
-   
+
    public void testNIONonTransactional() throws Exception
    {
-      internalTest("nio", journalDir, 10000, 0, true, true, 1);
+      internalTest("nio", getTestDir(), 10000, 0, true, true, 1);
    }
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+   }
+
+   @Override
+   protected void setUp()
+   {
+      File file = new File(getTestDir());
+      deleteDirectory(file);
+      file.mkdir();
+   }
+
    // Private -------------------------------------------------------
-   
-   private void internalTest(String type, String journalDir,
-         long numberOfRecords, int transactionSize, boolean append, boolean externalProcess, int numberOfThreads) throws Exception
+
+   private void internalTest(final String type,
+                             final String journalDir,
+                             final long numberOfRecords,
+                             final int transactionSize,
+                             final boolean append,
+                             final boolean externalProcess,
+                             final int numberOfThreads) throws Exception
    {
       try
       {
@@ -117,29 +135,32 @@ public class ValidateTransactionHealthTest extends UnitTestCase
             System.out.println("AIO not found, test being ignored on this platform");
             return;
          }
-         
+
          // This property could be set to false for debug purposes.
          if (append)
          {
-            File file = new File(journalDir);
-            deleteDirectory(file);
-            file.mkdir();
-            
             if (externalProcess)
             {
-               Process process = SpawnedVMSupport.spawnVM(RemoteJournalAppender.class
-                     .getCanonicalName(), type, journalDir, Long
-                     .toString(numberOfRecords), Integer.toString(transactionSize), Integer.toString(numberOfThreads));
+               Process process = SpawnedVMSupport.spawnVM(RemoteJournalAppender.class.getCanonicalName(),
+                                                          type,
+                                                          journalDir,
+                                                          Long.toString(numberOfRecords),
+                                                          Integer.toString(transactionSize),
+                                                          Integer.toString(numberOfThreads));
                process.waitFor();
                assertEquals(RemoteJournalAppender.OK, process.exitValue());
             }
             else
             {
-               JournalImpl journal = RemoteJournalAppender.appendData(type, journalDir, numberOfRecords, transactionSize, numberOfThreads);
+               JournalImpl journal = RemoteJournalAppender.appendData(type,
+                                                                      journalDir,
+                                                                      numberOfRecords,
+                                                                      transactionSize,
+                                                                      numberOfThreads);
                journal.stop();
             }
          }
-         
+
          reload(type, journalDir, numberOfRecords, numberOfThreads);
       }
       finally
@@ -148,13 +169,11 @@ public class ValidateTransactionHealthTest extends UnitTestCase
          deleteDirectory(file);
       }
    }
-   
-   private void reload(String type, String journalDir, long numberOfRecords, int numberOfThreads)
-         throws Exception
+
+   private void reload(final String type, final String journalDir, final long numberOfRecords, final int numberOfThreads) throws Exception
    {
-      JournalImpl journal = RemoteJournalAppender.createJournal(type,
-            journalDir);
-      
+      JournalImpl journal = RemoteJournalAppender.createJournal(type, journalDir);
+
       journal.start();
       Loader loadTest = new Loader(numberOfRecords);
       journal.load(loadTest);
@@ -162,73 +181,75 @@ public class ValidateTransactionHealthTest extends UnitTestCase
       assertEquals(0, loadTest.numberOfPreparedTransactions);
       assertEquals(0, loadTest.numberOfUpdates);
       assertEquals(0, loadTest.numberOfDeletes);
-      
+
       if (loadTest.ex != null)
       {
          throw loadTest.ex;
       }
    }
-   
+
    // Inner classes -------------------------------------------------
-   
+
    class Loader implements LoadManager
    {
       int numberOfPreparedTransactions = 0;
+
       int numberOfAdds = 0;
+
       int numberOfDeletes = 0;
+
       int numberOfUpdates = 0;
+
       long expectedRecords = 0;
-      
+
       Exception ex = null;
-      
+
       long lastID = 0;
-      
-      public Loader(long expectedRecords)
+
+      public Loader(final long expectedRecords)
       {
          this.expectedRecords = expectedRecords;
       }
-      
-      public void addPreparedTransaction(
-            PreparedTransactionInfo preparedTransaction)
+
+      public void addPreparedTransaction(final PreparedTransactionInfo preparedTransaction)
       {
          numberOfPreparedTransactions++;
-         
+
       }
-      
-      public void addRecord(RecordInfo info)
+
+      public void addRecord(final RecordInfo info)
       {
          if (info.id == lastID)
          {
             System.out.println("id = " + info.id + " last id = " + lastID);
          }
-         
+
          ByteBuffer buffer = ByteBuffer.wrap(info.data);
          long recordValue = buffer.getLong();
-         
+
          if (recordValue != info.id)
          {
-            ex = new Exception("Content not as expected (" + recordValue
-                  + " != " + info.id + ")");
-            
+            ex = new Exception("Content not as expected (" + recordValue + " != " + info.id + ")");
+
          }
-         
+
          lastID = info.id;
          numberOfAdds++;
-         
+
       }
-      
-      public void deleteRecord(long id)
+
+      public void deleteRecord(final long id)
       {
          numberOfDeletes++;
-         
+
       }
-      
-      public void updateRecord(RecordInfo info)
+
+      public void updateRecord(final RecordInfo info)
       {
          numberOfUpdates++;
-         
+
       }
-      
+
    }
-   
+
 }

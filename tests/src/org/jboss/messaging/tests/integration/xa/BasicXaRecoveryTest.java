@@ -35,8 +35,6 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
@@ -52,15 +50,23 @@ import org.jboss.util.id.GUID;
  */
 public class BasicXaRecoveryTest extends ServiceTestBase
 {
-   private Map<String, QueueSettings> queueSettings = new HashMap<String, QueueSettings>();
-   private MessagingService messagingService;
-   private ClientSession clientSession;
-   private ClientProducer clientProducer;
-   private ClientConsumer clientConsumer;
-   private ClientSessionFactory sessionFactory;
-   private Configuration configuration;
-   private SimpleString atestq = new SimpleString("atestq");
+   private final Map<String, QueueSettings> queueSettings = new HashMap<String, QueueSettings>();
 
+   private MessagingService messagingService;
+
+   private ClientSession clientSession;
+
+   private ClientProducer clientProducer;
+
+   private ClientConsumer clientConsumer;
+
+   private ClientSessionFactory sessionFactory;
+
+   private Configuration configuration;
+
+   private final SimpleString atestq = new SimpleString("atestq");
+
+   @Override
    protected void setUp() throws Exception
    {
       clearData();
@@ -68,17 +74,18 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       configuration = createDefaultConfig();
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
-      configuration.setPagingDirectory(pageDir);
+      configuration.setPagingDirectory(getPageDir());
 
       messagingService = createService(true, configuration, queueSettings);
 
-      //start the server
+      // start the server
       messagingService.start();
 
-      //then we create a client as normal
+      // then we create a client as normal
       createClients(true, false);
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       if (clientSession != null)
@@ -105,6 +112,8 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       }
       messagingService = null;
       clientSession = null;
+
+      super.tearDown();
    }
 
    public void testBasicSendWithCommit() throws Exception
@@ -115,7 +124,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    public void testBasicSendWithCommitWithServerStopped() throws Exception
    {
-      testBasicSendWithCommit(true);   
+      testBasicSendWithCommit(true);
    }
 
    public void testBasicSendWithRollback() throws Exception
@@ -135,7 +144,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    public void testMultipleBeforeSendWithCommitWithServerStopped() throws Exception
    {
-      testMultipleBeforeSendWithCommit(true);   
+      testMultipleBeforeSendWithCommit(true);
    }
 
    public void testMultipleTxSendWithCommit() throws Exception
@@ -215,50 +224,50 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    public void testMultipleTxReceiveWithRollbackWithServerStopped() throws Exception
    {
-      testMultipleTxReceiveWithRollback(true);  
+      testMultipleTxReceiveWithRollback(true);
    }
-   
+
    public void testPagingServerRestarted() throws Exception
    {
       testPaging(true);
    }
-   
+
    public void testPaging() throws Exception
    {
       testPaging(false);
    }
-   
-   public void testPaging(boolean restartServer) throws Exception
+
+   public void testPaging(final boolean restartServer) throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
-      
+
       SimpleString pageQueue = new SimpleString("pagequeue");
-      
+
       QueueSettings pageQueueSettings = new QueueSettings();
-      pageQueueSettings.setMaxSizeBytes(100*1024);
-      pageQueueSettings.setPageSizeBytes(10*1024);
-      
+      pageQueueSettings.setMaxSizeBytes(100 * 1024);
+      pageQueueSettings.setPageSizeBytes(10 * 1024);
+
       queueSettings.put(pageQueue.toString(), pageQueueSettings);
 
       addSettings();
-      
+
       clientSession.createQueue(pageQueue, pageQueue, null, true, true, true);
-      
+
       clientSession.start(xid, XAResource.TMNOFLAGS);
-      
+
       ClientProducer pageProducer = clientSession.createProducer(pageQueue);
-      
+
       for (int i = 0; i < 1000; i++)
       {
          ClientMessage m = createBytesMessage(new byte[512], true);
          pageProducer.send(m);
       }
-      
+
       pageProducer.close();
 
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.prepare(xid);
-      
+
       if (restartServer)
       {
          stopAndRestartServer();
@@ -267,7 +276,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       {
          recreateClients();
       }
-      
+
       Xid[] xids = clientSession.recover(XAResource.TMSTARTRSCAN);
       assertEquals(xids.length, 1);
       assertEquals(xids[0].getFormatId(), xid.getFormatId());
@@ -277,11 +286,11 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientSession.commit(xid, true);
 
       clientSession.close();
-      
+
       clientSession = sessionFactory.createSession(false, false, false);
 
       clientSession.start();
-      
+
       ClientConsumer pageConsumer = clientSession.createConsumer(pageQueue);
 
       for (int i = 0; i < 1000; i++)
@@ -290,40 +299,40 @@ public class BasicXaRecoveryTest extends ServiceTestBase
          assertNotNull(m);
          m.acknowledge();
          clientSession.commit();
-      }  
-      
+      }
+
    }
-   
+
    public void testRollbackPaging() throws Exception
    {
       testRollbackPaging(false);
    }
-   
+
    public void testRollbackPagingServerRestarted() throws Exception
    {
       testRollbackPaging(true);
    }
-   
-   public void testRollbackPaging(boolean restartServer) throws Exception
+
+   public void testRollbackPaging(final boolean restartServer) throws Exception
    {
-     Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
-      
+      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+
       SimpleString pageQueue = new SimpleString("pagequeue");
-      
+
       QueueSettings pageQueueSettings = new QueueSettings();
-      pageQueueSettings.setMaxSizeBytes(100*1024);
-      pageQueueSettings.setPageSizeBytes(10*1024);
-      
+      pageQueueSettings.setMaxSizeBytes(100 * 1024);
+      pageQueueSettings.setPageSizeBytes(10 * 1024);
+
       queueSettings.put(pageQueue.toString(), pageQueueSettings);
 
       addSettings();
-      
+
       clientSession.createQueue(pageQueue, pageQueue, null, true, true, true);
-      
+
       clientSession.start(xid, XAResource.TMNOFLAGS);
-      
+
       ClientProducer pageProducer = clientSession.createProducer(pageQueue);
-      
+
       for (int i = 0; i < 1000; i++)
       {
          ClientMessage m = createBytesMessage(new byte[512], true);
@@ -332,7 +341,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.prepare(xid);
-      
+
       if (restartServer)
       {
          stopAndRestartServer();
@@ -341,7 +350,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       {
          recreateClients();
       }
-      
+
       Xid[] xids = clientSession.recover(XAResource.TMSTARTRSCAN);
       assertEquals(1, xids.length);
       assertEquals(xids[0].getFormatId(), xid.getFormatId());
@@ -355,15 +364,14 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       ClientConsumer pageConsumer = clientSession.createConsumer(pageQueue);
 
       assertNull(pageConsumer.receive(100));
-      
+
    }
-   
+
    public void testNonPersistent() throws Exception
    {
       testNonPersistent(true);
       testNonPersistent(false);
    }
-
 
    public void testNonPersistent(final boolean commit) throws Exception
    {
@@ -401,7 +409,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
          clientSession.rollback(xid);
       }
    }
-   
+
    public void testNonPersistentMultipleIDs() throws Exception
    {
       for (int i = 0; i < 10; i++)
@@ -412,7 +420,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
          ClientMessage m2 = createTextMessage("m2", false);
          ClientMessage m3 = createTextMessage("m3", false);
          ClientMessage m4 = createTextMessage("m4", false);
-   
+
          clientSession.start(xid, XAResource.TMNOFLAGS);
          clientProducer.send(m1);
          clientProducer.send(m2);
@@ -420,15 +428,14 @@ public class BasicXaRecoveryTest extends ServiceTestBase
          clientProducer.send(m4);
          clientSession.end(xid, XAResource.TMSUCCESS);
          clientSession.prepare(xid);
-         
+
          if (i == 2)
          {
             clientSession.commit(xid, true);
          }
-         
+
          recreateClients();
-         
-         
+
       }
 
       stopAndRestartServer();
@@ -437,8 +444,8 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
       assertEquals(9, xids.length);
    }
-   
-   public void testBasicSendWithCommit(boolean stopServer) throws Exception
+
+   public void testBasicSendWithCommit(final boolean stopServer) throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
 
@@ -469,10 +476,10 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEquals(xids[0].getFormatId(), xid.getFormatId());
       assertEqualsByteArrays(xids[0].getBranchQualifier(), xid.getBranchQualifier());
       assertEqualsByteArrays(xids[0].getGlobalTransactionId(), xid.getGlobalTransactionId());
-      
+
       xids = clientSession.recover(XAResource.TMENDRSCAN);
       assertEquals(xids.length, 0);
-      
+
       clientSession.commit(xid, true);
       clientSession.start();
       ClientMessage m = clientConsumer.receive(1000);
@@ -489,7 +496,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEquals(m.getBody().getString(), "m4");
    }
 
-   public void testBasicSendWithRollback(boolean stopServer) throws Exception
+   public void testBasicSendWithRollback(final boolean stopServer) throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
 
@@ -529,7 +536,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertNull(m);
    }
 
-   public void testMultipleBeforeSendWithCommit(boolean stopServer) throws Exception
+   public void testMultipleBeforeSendWithCommit(final boolean stopServer) throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
       ClientMessage m1 = createTextMessage("m1");
@@ -588,7 +595,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEquals(m.getBody().getString(), "m8");
    }
 
-   public void testMultipleTxSendWithCommit(boolean stopServer) throws Exception
+   public void testMultipleTxSendWithCommit(final boolean stopServer) throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
       Xid xid2 = new XidImpl("xa2".getBytes(), 1, new GUID().toString().getBytes());
@@ -662,7 +669,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEquals(m.getBody().getString(), "m4");
    }
 
-   public void testMultipleTxSendWithRollback(boolean stopServer) throws Exception
+   public void testMultipleTxSendWithRollback(final boolean stopServer) throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
       Xid xid2 = new XidImpl("xa2".getBytes(), 1, new GUID().toString().getBytes());
@@ -714,7 +721,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertNull(m);
    }
 
-   public void testMultipleTxSendWithCommitAndRollback(boolean stopServer) throws Exception
+   public void testMultipleTxSendWithCommitAndRollback(final boolean stopServer) throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
       Xid xid2 = new XidImpl("xa2".getBytes(), 1, new GUID().toString().getBytes());
@@ -778,7 +785,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertNull(m);
    }
 
-   public void testMultipleTxSameXidSendWithCommit(boolean stopServer) throws Exception
+   public void testMultipleTxSameXidSendWithCommit(final boolean stopServer) throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
       ClientMessage m1 = createTextMessage("m1");
@@ -851,7 +858,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEquals(m.getBody().getString(), "m8");
    }
 
-   public void testBasicReceiveWithCommit(boolean stopServer) throws Exception
+   public void testBasicReceiveWithCommit(final boolean stopServer) throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
       ClientMessage m1 = createTextMessage("m1");
@@ -909,7 +916,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertNull(m);
    }
 
-   public void testBasicReceiveWithRollback(boolean stopServer) throws Exception
+   public void testBasicReceiveWithRollback(final boolean stopServer) throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
       ClientMessage m1 = createTextMessage("m1");
@@ -977,97 +984,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEquals(m.getBody().getString(), "m4");
    }
 
-    public void testMultipleTxReceiveWithCommit(boolean stopServer) throws Exception
-   {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
-      Xid xid2 = new XidImpl("xa2".getBytes(), 1, new GUID().toString().getBytes());
-      ClientMessage m1 = createTextMessage("m1");
-      ClientMessage m2 = createTextMessage("m2");
-      ClientMessage m3 = createTextMessage("m3");
-      ClientMessage m4 = createTextMessage("m4");
-      ClientMessage m5 = createTextMessage("m5");
-      ClientMessage m6 = createTextMessage("m6");
-      ClientMessage m7 = createTextMessage("m7");
-      ClientMessage m8 = createTextMessage("m8");
-      ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
-      ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
-      SimpleString anewtestq = new SimpleString("anewtestq");
-      clientSession.createQueue(anewtestq, anewtestq, null, true, true, true);
-      ClientProducer clientProducer3 = clientSession2.createProducer(anewtestq);
-      clientProducer2.send(m1);
-      clientProducer2.send(m2);
-      clientProducer2.send(m3);
-      clientProducer2.send(m4);
-      clientProducer3.send(m5);
-      clientProducer3.send(m6);
-      clientProducer3.send(m7);
-      clientProducer3.send(m8);
-      clientSession2.close();
-      clientSession2 = sessionFactory.createSession(true, false, false);
-      ClientConsumer clientConsumer2 = clientSession2.createConsumer(anewtestq);
-      clientSession2.start(xid2, XAResource.TMNOFLAGS);
-      clientSession2.start();
-      ClientMessage m = clientConsumer2.receive(1000);
-      m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m5");
-      m = clientConsumer2.receive(1000);
-      assertNotNull(m);
-      m.acknowledge();
-      assertEquals(m.getBody().getString(), "m6");
-      m = clientConsumer2.receive(1000);
-      m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m7");
-      m = clientConsumer2.receive(1000);
-      m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m8"); 
-      clientSession2.end(xid2, XAResource.TMSUCCESS);
-      clientSession2.prepare(xid2);
-      clientSession2.close();
-      clientSession2 = null;
-      clientSession.start(xid, XAResource.TMNOFLAGS);
-      clientSession.start();
-      m = clientConsumer.receive(1000);
-      m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m1");
-      m = clientConsumer.receive(1000);
-      assertNotNull(m);
-      m.acknowledge();
-      assertEquals(m.getBody().getString(), "m2");
-      m = clientConsumer.receive(1000);
-      m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m3");
-      m = clientConsumer.receive(1000);
-      m.acknowledge();
-      assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m4");
-      clientSession.end(xid, XAResource.TMSUCCESS);
-      clientSession.prepare(xid);
-
-      if (stopServer)
-      {
-         stopAndRestartServer();
-      }
-      else
-      {
-         recreateClients();
-      }
-
-      Xid[] xids = clientSession.recover(XAResource.TMSTARTRSCAN);
-      assertEqualXids(xids, xid, xid2);
-      xids = clientSession.recover(XAResource.TMENDRSCAN);
-      assertEquals(xids.length, 0);
-      clientSession.commit(xid, true);
-      clientSession.start();
-      m = clientConsumer.receive(1000);
-      assertNull(m);
-   }
-
-    public void testMultipleTxReceiveWithRollback(boolean stopServer) throws Exception
+   public void testMultipleTxReceiveWithCommit(final boolean stopServer) throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
       Xid xid2 = new XidImpl("xa2".getBytes(), 1, new GUID().toString().getBytes());
@@ -1138,7 +1055,97 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.prepare(xid);
 
-       if (stopServer)
+      if (stopServer)
+      {
+         stopAndRestartServer();
+      }
+      else
+      {
+         recreateClients();
+      }
+
+      Xid[] xids = clientSession.recover(XAResource.TMSTARTRSCAN);
+      assertEqualXids(xids, xid, xid2);
+      xids = clientSession.recover(XAResource.TMENDRSCAN);
+      assertEquals(xids.length, 0);
+      clientSession.commit(xid, true);
+      clientSession.start();
+      m = clientConsumer.receive(1000);
+      assertNull(m);
+   }
+
+   public void testMultipleTxReceiveWithRollback(final boolean stopServer) throws Exception
+   {
+      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid2 = new XidImpl("xa2".getBytes(), 1, new GUID().toString().getBytes());
+      ClientMessage m1 = createTextMessage("m1");
+      ClientMessage m2 = createTextMessage("m2");
+      ClientMessage m3 = createTextMessage("m3");
+      ClientMessage m4 = createTextMessage("m4");
+      ClientMessage m5 = createTextMessage("m5");
+      ClientMessage m6 = createTextMessage("m6");
+      ClientMessage m7 = createTextMessage("m7");
+      ClientMessage m8 = createTextMessage("m8");
+      ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
+      ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
+      SimpleString anewtestq = new SimpleString("anewtestq");
+      clientSession.createQueue(anewtestq, anewtestq, null, true, true, true);
+      ClientProducer clientProducer3 = clientSession2.createProducer(anewtestq);
+      clientProducer2.send(m1);
+      clientProducer2.send(m2);
+      clientProducer2.send(m3);
+      clientProducer2.send(m4);
+      clientProducer3.send(m5);
+      clientProducer3.send(m6);
+      clientProducer3.send(m7);
+      clientProducer3.send(m8);
+      clientSession2.close();
+      clientSession2 = sessionFactory.createSession(true, false, false);
+      ClientConsumer clientConsumer2 = clientSession2.createConsumer(anewtestq);
+      clientSession2.start(xid2, XAResource.TMNOFLAGS);
+      clientSession2.start();
+      ClientMessage m = clientConsumer2.receive(1000);
+      m.acknowledge();
+      assertNotNull(m);
+      assertEquals(m.getBody().getString(), "m5");
+      m = clientConsumer2.receive(1000);
+      assertNotNull(m);
+      m.acknowledge();
+      assertEquals(m.getBody().getString(), "m6");
+      m = clientConsumer2.receive(1000);
+      m.acknowledge();
+      assertNotNull(m);
+      assertEquals(m.getBody().getString(), "m7");
+      m = clientConsumer2.receive(1000);
+      m.acknowledge();
+      assertNotNull(m);
+      assertEquals(m.getBody().getString(), "m8");
+      clientSession2.end(xid2, XAResource.TMSUCCESS);
+      clientSession2.prepare(xid2);
+      clientSession2.close();
+      clientSession2 = null;
+      clientSession.start(xid, XAResource.TMNOFLAGS);
+      clientSession.start();
+      m = clientConsumer.receive(1000);
+      m.acknowledge();
+      assertNotNull(m);
+      assertEquals(m.getBody().getString(), "m1");
+      m = clientConsumer.receive(1000);
+      assertNotNull(m);
+      m.acknowledge();
+      assertEquals(m.getBody().getString(), "m2");
+      m = clientConsumer.receive(1000);
+      m.acknowledge();
+      assertNotNull(m);
+      assertEquals(m.getBody().getString(), "m3");
+      m = clientConsumer.receive(1000);
+      m.acknowledge();
+      assertNotNull(m);
+      assertEquals(m.getBody().getString(), "m4");
+      clientSession.end(xid, XAResource.TMSUCCESS);
+      clientSession.prepare(xid);
+
+      if (stopServer)
       {
          stopAndRestartServer();
       }
@@ -1173,20 +1180,20 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    protected void stopAndRestartServer() throws Exception
    {
-      //now stop and start the server
+      // now stop and start the server
       clientSession.close();
       clientSession = null;
       messagingService.stop();
       messagingService = null;
       messagingService = createService(true, configuration, queueSettings);
-      
+
       messagingService.start();
       createClients();
    }
 
    private void addSettings()
    {
-      for (Map.Entry<String, QueueSettings> setting: this.queueSettings.entrySet())
+      for (Map.Entry<String, QueueSettings> setting : queueSettings.entrySet())
       {
          messagingService.getServer().getQueueSettingsRepository().addMatch(setting.getKey(), setting.getValue());
       }
@@ -1199,22 +1206,30 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       createClients();
    }
 
-   private ClientMessage createTextMessage(String s)
+   private ClientMessage createTextMessage(final String s)
    {
       return createTextMessage(s, true);
    }
 
-   private ClientMessage createTextMessage(String s, boolean durable)
+   private ClientMessage createTextMessage(final String s, final boolean durable)
    {
-      ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, durable, 0, System.currentTimeMillis(), (byte) 1);
+      ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE,
+                                                                durable,
+                                                                0,
+                                                                System.currentTimeMillis(),
+                                                                (byte)1);
       message.getBody().putString(s);
       message.getBody().flip();
       return message;
    }
 
-   private ClientMessage createBytesMessage(byte[] b, boolean durable)
+   private ClientMessage createBytesMessage(final byte[] b, final boolean durable)
    {
-      ClientMessage message = clientSession.createClientMessage(JBossBytesMessage.TYPE, durable, 0, System.currentTimeMillis(), (byte) 1);
+      ClientMessage message = clientSession.createClientMessage(JBossBytesMessage.TYPE,
+                                                                durable,
+                                                                0,
+                                                                System.currentTimeMillis(),
+                                                                (byte)1);
       message.getBody().putBytes(b);
       message.getBody().flip();
       return message;
@@ -1225,8 +1240,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       createClients(false, true);
    }
 
-   private void createClients(boolean createQueue, boolean commitACKs)
-         throws MessagingException
+   private void createClients(final boolean createQueue, final boolean commitACKs) throws MessagingException
    {
 
       sessionFactory = createInVMFactory();
@@ -1238,8 +1252,8 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientProducer = clientSession.createProducer(atestq);
       clientConsumer = clientSession.createConsumer(atestq);
    }
-   
-   private void assertEqualXids(Xid[] xids, Xid... origXids)
+
+   private void assertEqualXids(final Xid[] xids, final Xid... origXids)
    {
       assertEquals(xids.length, origXids.length);
       for (Xid xid : xids)
@@ -1248,7 +1262,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
          for (Xid origXid : origXids)
          {
             found = Arrays.equals(origXid.getBranchQualifier(), xid.getBranchQualifier());
-            if(found)
+            if (found)
             {
                assertEquals(xid.getFormatId(), origXid.getFormatId());
                assertEqualsByteArrays(xid.getBranchQualifier(), origXid.getBranchQualifier());
@@ -1256,7 +1270,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
                break;
             }
          }
-         if(!found)
+         if (!found)
          {
             fail("correct xid not found: " + xid);
          }

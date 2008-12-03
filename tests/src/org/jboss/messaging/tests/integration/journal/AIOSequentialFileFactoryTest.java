@@ -44,8 +44,6 @@ import org.jboss.messaging.tests.unit.core.journal.impl.SequentialFileFactoryTes
 public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
 {
 
-   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
-
    @Override
    protected void setUp() throws Exception
    {
@@ -59,25 +57,23 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
                             System.getProperty("os.version")));
       }
 
-      File file = new File(journalDir);
+      File file = new File(getTestDir());
 
       deleteDirectory(file);
 
-      file.mkdir();
+      file.mkdirs();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
-
-      deleteDirectory(new File(journalDir));
    }
 
    @Override
    protected SequentialFileFactory createFactory()
    {
-      return new AIOSequentialFileFactory(journalDir);
+      return new AIOSequentialFileFactory(getTestDir());
    }
 
    public void testBuffer() throws Exception

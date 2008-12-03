@@ -54,5 +54,10 @@ public interface SequentialFileFactory
     *  The journal will complete the buffer when reusing the buffer.
     *  Look at JournalImpl#newBuffer for more information about this */
    void clearBuffer(ByteBuffer buffer);
+   
+   /** 
+    * Create the directory if it doesn't exist yet
+    */
+   void createDirs() throws Exception;
 
 }

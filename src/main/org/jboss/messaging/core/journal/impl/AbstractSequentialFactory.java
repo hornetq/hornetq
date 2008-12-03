@@ -46,6 +46,16 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
    {
       this.journalDir = journalDir;
    }
+   
+   /** 
+    * Create the directory if it doesn't exist yet
+    */
+   public void createDirs() throws Exception
+   {
+      File file = new File(journalDir);
+      file.mkdirs();
+   }
+   
 
    public List<String> listFiles(final String extension) throws Exception
    {

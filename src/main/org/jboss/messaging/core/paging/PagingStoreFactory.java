@@ -39,7 +39,7 @@ public interface PagingStoreFactory
 {
    PagingStore newStore(SimpleString destinationName, QueueSettings queueSettings);
 
-   Executor getPagingExecutor();
+   Executor getGlobalDepagerExecutor();
 
    void stop() throws InterruptedException;
 

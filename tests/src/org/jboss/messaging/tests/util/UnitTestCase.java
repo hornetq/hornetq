@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.util;
 
@@ -33,8 +33,6 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.AbstractExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.transaction.xa.Xid;
 
@@ -42,6 +40,8 @@ import junit.framework.TestCase;
 
 import org.easymock.EasyMock;
 import org.easymock.IArgumentMatcher;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
@@ -50,8 +50,6 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 
 /**
@@ -59,6 +57,7 @@ import org.jboss.messaging.jms.client.JBossTextMessage;
  * Helper base class for our unit tests
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:csuconic@redhat.com">Clebert</a>
  *
  */
 public class UnitTestCase extends TestCase
@@ -68,32 +67,46 @@ public class UnitTestCase extends TestCase
    public static final String INVM_ACCEPTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory";
 
    public static final String INVM_CONNECTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory";
+
    // Attributes ----------------------------------------------------
-   
+
+   private String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/jbm-unit-test";
+
+   private String journalDir = testDir + "/journal";
+
+   private String bindingsDir = testDir + "/bindings";
+
+   private String pageDir = testDir + "/page";
+
+   private String largeMessagesDir = testDir + "/large-msg";
+
+   private String clientLargeMessagesDir = testDir + "/client-large-msg";
+
+   private String temporaryDir = testDir + "/temporary";
+
    // Static --------------------------------------------------------
-   
+
    public static String dumpBytes(byte[] bytes)
    {
       StringBuffer buff = new StringBuffer();
-      
+
       buff.append(System.identityHashCode(bytes) + ", size: " + bytes.length + " [");
-      
+
       for (int i = 0; i < bytes.length; i++)
       {
          buff.append(bytes[i]);
-         
+
          if (i != bytes.length - 1)
          {
             buff.append(", ");
          }
       }
-      
+
       buff.append("]");
-      
-      return buff.toString();      
+
+      return buff.toString();
    }
-   
-   
+
    public static String dumbBytesHex(final byte[] buffer, int bytesPerLine)
    {
 
@@ -104,7 +117,7 @@ public class UnitTestCase extends TestCase
       for (int i = 0; i < buffer.length; i++)
       {
          buff.append(String.format("%1$2X", buffer[i]));
-         if (i + 1 < buffer.length) 
+         if (i + 1 < buffer.length)
          {
             buff.append(", ");
          }
@@ -114,12 +127,10 @@ public class UnitTestCase extends TestCase
          }
       }
       buff.append("]");
-      
+
       return buff.toString();
    }
 
-
-   
    public static void assertEqualsByteArrays(byte[] expected, byte[] actual)
    {
       assertEquals(expected.length, actual.length);
@@ -146,20 +157,17 @@ public class UnitTestCase extends TestCase
       assertNotNull(expected);
       assertNotNull(actual);
       assertEquals(expected.size(), actual.size());
-   
+
       for (int i = 0; i < expected.size(); i++)
       {
          Xid expectedXid = expected.get(i);
          Xid actualXid = actual.get(i);
-         UnitTestCase.assertEqualsByteArrays(expectedXid.getBranchQualifier(), actualXid
-               .getBranchQualifier());
+         UnitTestCase.assertEqualsByteArrays(expectedXid.getBranchQualifier(), actualXid.getBranchQualifier());
          assertEquals(expectedXid.getFormatId(), actualXid.getFormatId());
-         UnitTestCase.assertEqualsByteArrays(expectedXid.getGlobalTransactionId(), actualXid
-               .getGlobalTransactionId());
+         UnitTestCase.assertEqualsByteArrays(expectedXid.getGlobalTransactionId(), actualXid.getGlobalTransactionId());
       }
    }
 
-   
    public static MessagingException messagingExceptionMatch(final int errorID)
    {
       EasyMock.reportMatcher(new IArgumentMatcher()
@@ -172,29 +180,92 @@ public class UnitTestCase extends TestCase
 
          public boolean matches(Object argument)
          {
-            MessagingException ex = (MessagingException) argument;
-            
+            MessagingException ex = (MessagingException)argument;
+
             return ex.getCode() == errorID;
          }
-         
+
       });
-      
+
       return null;
    }
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
-   
+
+   /**
+    * @return the testDir
+    */
+   public String getTestDir()
+   {
+      return testDir;
+   }
+
+   /**
+    * @return the journalDir
+    */
+   public String getJournalDir()
+   {
+      return journalDir;
+   }
+
+   /**
+    * @return the bindingsDir
+    */
+   public String getBindingsDir()
+   {
+      return bindingsDir;
+   }
+
+   /**
+    * @return the pageDir
+    */
+   public String getPageDir()
+   {
+      return pageDir;
+   }
+
+   /**
+    * @return the largeMessagesDir
+    */
+   public String getLargeMessagesDir()
+   {
+      return largeMessagesDir;
+   }
+
+   /**
+    * @return the clientLargeMessagesDir
+    */
+   public String getClientLargeMessagesDir()
+   {
+      return clientLargeMessagesDir;
+   }
+
+   /**
+    * @return the temporaryDir
+    */
+   public String getTemporaryDir()
+   {
+      return temporaryDir;
+   }
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+      deleteDirectory(new File(getTestDir()));
+   }
+
    protected byte[] autoEncode(Object... args)
    {
-      
+
       int size = 0;
-      
+
       for (Object arg : args)
       {
          if (arg instanceof Byte)
@@ -223,56 +294,53 @@ public class UnitTestCase extends TestCase
          }
          else
          {
-            throw new IllegalArgumentException(
-                  "method autoEncode doesn't know how to convert "
-                        + arg.getClass() + " yet");
+            throw new IllegalArgumentException("method autoEncode doesn't know how to convert " + arg.getClass() +
+                                               " yet");
          }
       }
-      
+
       ByteBuffer buffer = ByteBuffer.allocate(size);
-      
+
       for (Object arg : args)
       {
          if (arg instanceof Byte)
          {
-            buffer.put(((Byte) arg).byteValue());
+            buffer.put(((Byte)arg).byteValue());
          }
          else if (arg instanceof Boolean)
          {
-            Boolean b = (Boolean) arg;
-            buffer.put((byte) (b.booleanValue() ? 1 : 0));
+            Boolean b = (Boolean)arg;
+            buffer.put((byte)(b.booleanValue() ? 1 : 0));
          }
          else if (arg instanceof Integer)
          {
-            buffer.putInt(((Integer) arg).intValue());
+            buffer.putInt(((Integer)arg).intValue());
          }
          else if (arg instanceof Long)
          {
-            buffer.putLong(((Long) arg).longValue());
+            buffer.putLong(((Long)arg).longValue());
          }
          else if (arg instanceof Float)
          {
-            buffer.putFloat(((Float) arg).floatValue());
+            buffer.putFloat(((Float)arg).floatValue());
          }
          else if (arg instanceof Double)
          {
-            buffer.putDouble(((Double) arg).doubleValue());
+            buffer.putDouble(((Double)arg).doubleValue());
          }
          else
          {
-            throw new IllegalArgumentException(
-                  "method autoEncode doesn't know how to convert "
-                        + arg.getClass() + " yet");
+            throw new IllegalArgumentException("method autoEncode doesn't know how to convert " + arg.getClass() +
+                                               " yet");
          }
       }
-      
+
       return buffer.array();
    }
-   
-   
+
    protected ByteBuffer compareByteBuffer(final byte expectedArray[])
    {
-      
+
       EasyMock.reportMatcher(new IArgumentMatcher()
       {
 
@@ -283,17 +351,17 @@ public class UnitTestCase extends TestCase
 
          public boolean matches(Object argument)
          {
-            ByteBuffer buffer = (ByteBuffer) argument;
-            
+            ByteBuffer buffer = (ByteBuffer)argument;
+
             buffer.rewind();
             byte[] compareArray = new byte[buffer.limit()];
             buffer.get(compareArray);
-            
+
             if (compareArray.length != expectedArray.length)
             {
                return false;
             }
-            
+
             for (int i = 0; i < expectedArray.length; i++)
             {
                if (expectedArray[i] != compareArray[i])
@@ -301,18 +369,18 @@ public class UnitTestCase extends TestCase
                   return false;
                }
             }
-            
+
             return true;
          }
-         
+
       });
-      
+
       return null;
    }
 
    protected EncodingSupport compareEncodingSupport(final byte expectedArray[])
    {
-      
+
       EasyMock.reportMatcher(new IArgumentMatcher()
       {
 
@@ -323,21 +391,21 @@ public class UnitTestCase extends TestCase
 
          public boolean matches(Object argument)
          {
-            EncodingSupport encoding = (EncodingSupport) argument;
+            EncodingSupport encoding = (EncodingSupport)argument;
 
             final int size = encoding.getEncodeSize();
-            
+
             if (size != expectedArray.length)
             {
                System.out.println(size + " != " + expectedArray.length);
                return false;
             }
-            
+
             byte[] compareArray = new byte[size];
-            
+
             MessagingBuffer buffer = new ByteBufferWrapper(ByteBuffer.wrap(compareArray));
             encoding.encode(buffer);
-            
+
             for (int i = 0; i < expectedArray.length; i++)
             {
                if (expectedArray[i] != compareArray[i])
@@ -345,16 +413,14 @@ public class UnitTestCase extends TestCase
                   return false;
                }
             }
-            
+
             return true;
          }
-         
+
       });
-      
+
       return null;
    }
-
-   
 
    protected boolean deleteDirectory(File directory)
    {
@@ -373,109 +439,112 @@ public class UnitTestCase extends TestCase
 
       return directory.delete();
    }
-   
-   protected void copyRecursive(File from , File to) throws Exception
-   {     
-       if (from.isDirectory())
-       {
-           if (!to.exists())
-           {
-               to.mkdir();
-           }
-           
-           String[] subs = from.list();
-           
-           for (int i = 0; i < subs.length; i++)
-           {
-               copyRecursive(new File(from, subs[i]),
-                             new File(to, subs[i]));
-           }
-       }
-       else
-       {           
-           InputStream in = null;
-           
-           OutputStream out = null;
-                      
-           try
-           {           
-              in = new BufferedInputStream(new FileInputStream(from));              
-              
-              out = new BufferedOutputStream(new FileOutputStream(to));
-              
-              int b;
-              
-              while ((b = in.read()) != -1)
-              {
-                  out.write(b);
-              }
-           }
-           finally
-           {   
-              if (in != null)
-              {
-                 in.close();
-              }
-              
-              if (out != null)
-              {
-                 out.close();
-              }
-           }
-       }
+
+   protected void copyRecursive(File from, File to) throws Exception
+   {
+      if (from.isDirectory())
+      {
+         if (!to.exists())
+         {
+            to.mkdir();
+         }
+
+         String[] subs = from.list();
+
+         for (int i = 0; i < subs.length; i++)
+         {
+            copyRecursive(new File(from, subs[i]), new File(to, subs[i]));
+         }
+      }
+      else
+      {
+         InputStream in = null;
+
+         OutputStream out = null;
+
+         try
+         {
+            in = new BufferedInputStream(new FileInputStream(from));
+
+            out = new BufferedOutputStream(new FileOutputStream(to));
+
+            int b;
+
+            while ((b = in.read()) != -1)
+            {
+               out.write(b);
+            }
+         }
+         finally
+         {
+            if (in != null)
+            {
+               in.close();
+            }
+
+            if (out != null)
+            {
+               out.close();
+            }
+         }
+      }
    }
-   
+
    protected void assertRefListsIdenticalRefs(List<MessageReference> l1, List<MessageReference> l2)
    {
       if (l1.size() != l2.size())
       {
          fail("Lists different sizes: " + l1.size() + ", " + l2.size());
       }
-      
+
       Iterator<MessageReference> iter1 = l1.iterator();
       Iterator<MessageReference> iter2 = l2.iterator();
-      
+
       while (iter1.hasNext())
       {
          MessageReference o1 = iter1.next();
          MessageReference o2 = iter2.next();
-                  
+
          assertTrue(o1 == o2);
-      }                   
+      }
    }
-           
+
    protected ServerMessage generateMessage(long id)
    {
-      ServerMessage message = new ServerMessageImpl((byte)0, true, 0, System.currentTimeMillis(), (byte)4, new ByteBufferWrapper(ByteBuffer.allocateDirect(1024)));
-      
+      ServerMessage message = new ServerMessageImpl((byte)0,
+                                                    true,
+                                                    0,
+                                                    System.currentTimeMillis(),
+                                                    (byte)4,
+                                                    new ByteBufferWrapper(ByteBuffer.allocateDirect(1024)));
+
       message.setMessageID(id);
-      
+
       byte[] bytes = new byte[1024];
-      
+
       for (int i = 0; i < 1024; i++)
       {
          bytes[i] = (byte)i;
       }
-      
-      //message.setPayload(bytes);
-      
+
+      // message.setPayload(bytes);
+
       message.getBody().putString(UUID.randomUUID().toString());
-      
+
       return message;
    }
-   
+
    protected MessageReference generateReference(Queue queue, long id)
    {
       ServerMessage message = generateMessage(id);
-      
+
       return message.createReference(queue);
    }
-   
-	protected int calculateRecordSize(int size, int alignment)
+
+   protected int calculateRecordSize(int size, int alignment)
    {
       return ((size / alignment) + (size % alignment != 0 ? 1 : 0)) * alignment;
    }
-
 
    protected ClientMessage createTextMessage(String s, ClientSession clientSession)
    {
@@ -484,47 +553,17 @@ public class UnitTestCase extends TestCase
 
    protected ClientMessage createTextMessage(String s, boolean durable, ClientSession clientSession)
    {
-      ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, durable, 0, System.currentTimeMillis(), (byte) 1);
+      ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE,
+                                                                durable,
+                                                                0,
+                                                                System.currentTimeMillis(),
+                                                                (byte)1);
       message.getBody().putString(s);
       message.getBody().flip();
       return message;
    }
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
-   public static class DirectExecutorService extends AbstractExecutorService
-   {
-      public boolean awaitTermination(long timeout, TimeUnit unit)
-            throws InterruptedException
-      {
-         return false;
-      }
 
-      public boolean isShutdown()
-      {
-         return false;
-      }
-
-      public void shutdown()
-      { 
-      }
-
-      public boolean isTerminated()
-      {
-         return false;
-      }
-
-      public List<Runnable> shutdownNow()
-      {
-         return null;
-      }
-
-      public void execute(Runnable command)
-      {
-         command.run();
-      }
-   }
-
-   
 }

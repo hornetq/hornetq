@@ -61,7 +61,7 @@ public class AIOSequentialFileTest extends UnitTestCase
 
    public void testAlignment() throws Exception
    {
-      SequentialFile file = new MockAIOSequentialFileImpl("/tmp", "nothing", 1);
+      SequentialFile file = new MockAIOSequentialFileImpl(getTestDir(), "nothing", 1);
 
       try
       {
@@ -85,7 +85,7 @@ public class AIOSequentialFileTest extends UnitTestCase
 
    public void testCalculateblockStart() throws Exception
    {
-      SequentialFile file = new MockAIOSequentialFileImpl("/tmp", "nothing", 1);
+      SequentialFile file = new MockAIOSequentialFileImpl(getTestDir(), "nothing", 1);
 
       try
       {
@@ -109,7 +109,7 @@ public class AIOSequentialFileTest extends UnitTestCase
 
    public void testClose() throws Exception
    {
-      SequentialFile file = new MockAIOSequentialFileImpl("/tmp", "nothing", 1);
+      SequentialFile file = new MockAIOSequentialFileImpl(getTestDir(), "nothing", 1);
 
       try
       {
@@ -486,7 +486,7 @@ public class AIOSequentialFileTest extends UnitTestCase
 
    private SequentialFile openFile() throws Exception
    {
-      return openFile("/tmp", "nothing");
+      return openFile(getTemporaryDir(), "nothing");
    }
 
    private SequentialFile openFile(final String directory, final String fileName) throws Exception

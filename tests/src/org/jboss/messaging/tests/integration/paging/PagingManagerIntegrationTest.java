@@ -54,8 +54,6 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test2";
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -67,7 +65,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
       HierarchicalRepository<QueueSettings> queueSettings = new HierarchicalObjectRepository<QueueSettings>();
       queueSettings.setDefault(new QueueSettings());
 
-      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(journalDir),
+      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(getPageDir()),
                                                             null,
                                                             queueSettings,
                                                             -1,
@@ -115,7 +113,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
       queueSettings.addMatch("simple-test", simpleTestSettings);
 
-      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(journalDir),
+      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(getJournalDir()),
                                                             null,
                                                             queueSettings,
                                                             -1,
@@ -193,7 +191,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
    private void recreateDirectory()
    {
-      File fileJournalDir = new File(journalDir);
+      File fileJournalDir = new File(getJournalDir());
       deleteDirectory(fileJournalDir);
       fileJournalDir.mkdirs();
    }

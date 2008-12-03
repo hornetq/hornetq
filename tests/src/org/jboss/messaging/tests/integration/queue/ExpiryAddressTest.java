@@ -218,6 +218,8 @@ public class ExpiryAddressTest extends UnitTestCase
       }
       messagingService = null;
       clientSession = null;
+      
+      super.tearDown();
    }
 
 }

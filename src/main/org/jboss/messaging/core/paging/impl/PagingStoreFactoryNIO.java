@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.paging.impl;
 
-import java.io.File;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,7 +35,9 @@ import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.util.Base64;
 import org.jboss.messaging.util.JBMThreadFactory;
+import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -53,7 +54,11 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    private final String directory;
 
-   private final ExecutorService executor;
+   private final ExecutorService parentExecutor;
+   
+   private final OrderedExecutorFactory executorFactory;
+   
+   private final Executor globalDepagerExecutor;
 
    private PagingManager pagingManager;
    
@@ -69,32 +74,31 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    {
       this.directory = directory;
 
-      executor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-depaging-threads"));
+      parentExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-depaging-threads"));
+      
+      executorFactory = new OrderedExecutorFactory(parentExecutor);
+      
+      globalDepagerExecutor = executorFactory.getExecutor();
    }
 
    // Public --------------------------------------------------------
 
-   public Executor getPagingExecutor()
+   public Executor getGlobalDepagerExecutor()
    {
-      return executor;
+      return globalDepagerExecutor;
    }
 
    public void stop() throws InterruptedException
    {
-      executor.shutdown();
+      parentExecutor.shutdown();
 
-      executor.awaitTermination(30, TimeUnit.SECONDS);
+      parentExecutor.awaitTermination(30, TimeUnit.SECONDS);
    }
 
    public PagingStore newStore(final SimpleString destinationName, final QueueSettings settings)
    {
-      // FIXME: This directory creation should be done inside PagingStoreImpl::start, or this method should be made
-      // synchornized
-      final String destinationDirectory = directory + "/" + destinationName.toString();
-
-      File destinationFile = new File(destinationDirectory);
-
-      destinationFile.mkdirs();
+      
+      final String destinationDirectory = directory + "/" + Base64.encodeBytes(destinationName.getData(), Base64.URL_SAFE);
 
       return new PagingStoreImpl(pagingManager,
                                  storageManager,
@@ -102,7 +106,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
                                  newFileFactory(destinationDirectory),
                                  destinationName,
                                  settings,
-                                 executor);
+                                 executorFactory.getExecutor());
    }
 
    public void setPagingManager(final PagingManager pagingManager)

@@ -95,6 +95,7 @@ public class PingTest extends ServiceTestBase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
       Configuration config = createDefaultConfig(true);
       messagingService = createService(false, config);
       messagingService.start();
@@ -104,6 +105,7 @@ public class PingTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       messagingService.stop();
+      super.tearDown();
    }
 
    class Listener implements FailureListener

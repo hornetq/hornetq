@@ -338,6 +338,8 @@ public class ExpiryRunnerTest extends UnitTestCase
       }
       messagingService = null;
       clientSession = null;
+      
+      super.tearDown();
    }
 
    private static class DummyMessageHandler implements Runnable

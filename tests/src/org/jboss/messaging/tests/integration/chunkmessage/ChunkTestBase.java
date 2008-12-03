@@ -81,7 +81,6 @@ public class ChunkTestBase extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       super.tearDown();
-      deleteData();
    }
 
    protected void testChunks(final boolean realFiles,
@@ -136,7 +135,7 @@ public class ChunkTestBase extends ServiceTestBase
 
          if (useFile)
          {
-            File tmpData = createLargeFile(temporaryDir, "someFile.dat", numberOfIntegers);
+            File tmpData = createLargeFile(getTemporaryDir(), "someFile.dat", numberOfIntegers);
 
             for (int i = 0; i < numberOfMessages; i++)
             {
@@ -208,7 +207,7 @@ public class ChunkTestBase extends ServiceTestBase
 
          if (realFiles)
          {
-            consumer = session.createFileConsumer(new File(clientLargeMessagesDir), ADDRESS);
+            consumer = session.createFileConsumer(new File(getClientLargeMessagesDir()), ADDRESS);
          }
          else
          {
@@ -307,7 +306,7 @@ public class ChunkTestBase extends ServiceTestBase
 
       ClientFileMessage clientMessage = session.createFileMessage(true);
 
-      File tmpFile = createLargeFile(temporaryDir, "tmpUpload.data", numberOfIntegers);
+      File tmpFile = createLargeFile(getTemporaryDir(), "tmpUpload.data", numberOfIntegers);
 
       clientMessage.setFile(tmpFile);
 
@@ -372,7 +371,7 @@ public class ChunkTestBase extends ServiceTestBase
    {
       session.start();
 
-      ClientConsumer consumer = session.createFileConsumer(new File(clientLargeMessagesDir), queueToRead);
+      ClientConsumer consumer = session.createFileConsumer(new File(getClientLargeMessagesDir()), queueToRead);
 
       ClientMessage clientMessage = consumer.receive(5000);
 
@@ -440,7 +439,7 @@ public class ChunkTestBase extends ServiceTestBase
     */
    protected void validateNoFilesOnLargeDir() throws Exception
    {
-      File largeMessagesFileDir = new File(largeMessagesDir);
+      File largeMessagesFileDir = new File(getLargeMessagesDir());
 
       // Deleting the file is async... we keep looking for a period of the time until the file is really gone
       for (int i = 0; i < 100; i++)

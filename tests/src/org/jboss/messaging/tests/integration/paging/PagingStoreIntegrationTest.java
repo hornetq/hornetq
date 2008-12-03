@@ -40,8 +40,6 @@ public class PagingStoreIntegrationTest extends PagingStoreTestBase
 
    // Attributes ----------------------------------------------------
 
-   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -57,7 +55,7 @@ public class PagingStoreIntegrationTest extends PagingStoreTestBase
                             System.getProperty("os.arch"),
                             System.getProperty("os.version")));
       }
-      testConcurrentPaging(new AIOSequentialFileFactory(journalDir), 10);
+      testConcurrentPaging(new AIOSequentialFileFactory(getTestDir()), 10);
    }
 
    public void testPageWithNIO() throws Exception
@@ -67,7 +65,7 @@ public class PagingStoreIntegrationTest extends PagingStoreTestBase
       {
          recreateDirectory();
          System.out.println("Test " + i);
-         testConcurrentPaging(new NIOSequentialFileFactory(journalDir), 1);
+         testConcurrentPaging(new NIOSequentialFileFactory(getTestDir()), 1);
       }
    }
 
@@ -93,7 +91,7 @@ public class PagingStoreIntegrationTest extends PagingStoreTestBase
 
    private void recreateDirectory()
    {
-      File fileJournalDir = new File(journalDir);
+      File fileJournalDir = new File(getTestDir());
       deleteDirectory(fileJournalDir);
       fileJournalDir.mkdirs();
    }

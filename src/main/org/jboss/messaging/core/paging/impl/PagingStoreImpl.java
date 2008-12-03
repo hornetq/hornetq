@@ -26,8 +26,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -65,7 +64,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    // Attributes ----------------------------------------------------
 
    private final StorageManager storageManager;
-   
+
    private final PostOffice postOffice;
 
    private final DecimalFormat format = new DecimalFormat("000000000");
@@ -86,7 +85,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private final PagingManager pagingManager;
 
-   private final ExecutorService executor;
+   private final Executor executor;
 
    // Bytes consumed by the queue on the memory
    private final AtomicLong sizeInBytes = new AtomicLong();
@@ -126,7 +125,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       log.info(message);
    }
 
-
    // Constructors --------------------------------------------------
 
    public PagingStoreImpl(final PagingManager pagingManager,
@@ -135,36 +133,36 @@ public class PagingStoreImpl implements TestSupportPageStore
                           final SequentialFileFactory fileFactory,
                           final SimpleString storeName,
                           final QueueSettings queueSettings,
-                          final ExecutorService executor)
+                          final Executor executor)
    {
       if (pagingManager == null)
       {
          throw new IllegalStateException("Paging Manager can't be null");
       }
-      
+
       this.storageManager = storageManager;
-      
+
       this.postOffice = postOffice;
-      
+
       this.fileFactory = fileFactory;
-      
+
       this.storeName = storeName;
-      
+
       maxSize = queueSettings.getMaxSizeBytes();
-      
+
       if (queueSettings.getPageSizeBytes() != null)
       {
          this.pageSize = queueSettings.getPageSizeBytes();
-      }     
+      }
       else
       {
          this.pageSize = pagingManager.getDefaultPageSize();
       }
 
       dropMessagesWhenFull = queueSettings.isDropMessagesWhenFull();
-      
+
       this.executor = executor;
-      
+
       this.pagingManager = pagingManager;
    }
 
@@ -221,29 +219,29 @@ public class PagingStoreImpl implements TestSupportPageStore
     * @return
     * @throws Exception
     */
-   //FIXME - why is this public?
+   // FIXME - why is this public?
    public boolean readPage() throws Exception
    {
       Page page = depage();
-      
+
       if (page == null)
       {
          if (lastPageRecord != null)
          {
             clearLastPageRecord(lastPageRecord);
          }
-         
+
          lastPageRecord = null;
-         
+
          return false;
       }
-      
+
       page.open();
-      
+
       PagedMessage messages[] = page.read();
-      
+
       boolean addressNotFull = onDepage(page.getPageId(), storeName, messages);
-      
+
       page.delete();
 
       return addressNotFull;
@@ -257,7 +255,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    public Page depage() throws Exception
    {
       writeLock.lock();
-      currentPageLock.writeLock().lock();  // Make sure no checks are done on currentPage while we are depaging
+      currentPageLock.writeLock().lock(); // Make sure no checks are done on currentPage while we are depaging
 
       try
       {
@@ -315,7 +313,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    }
 
-   
    public long addSize(final long size) throws Exception
    {
       final long maxSize = getMaxSizeBytes();
@@ -326,12 +323,13 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          // if destination configured to drop messages && size is over the
          // limit, we return -1 which means drop the message
-         if (getAddressSize() + size > maxSize || pagingManager.getMaxGlobalSize() > 0 && pagingManager.getGlobalSize() + size > pagingManager.getMaxGlobalSize())
+         if (getAddressSize() + size > maxSize || pagingManager.getMaxGlobalSize() > 0 &&
+             pagingManager.getGlobalSize() + size > pagingManager.getMaxGlobalSize())
          {
             if (!printedDropMessagesWarning)
             {
                printedDropMessagesWarning = true;
-               
+
                log.warn("Messages are being dropped on adress " + getStoreName());
             }
 
@@ -345,17 +343,17 @@ public class PagingStoreImpl implements TestSupportPageStore
       else
       {
          final long currentGlobalSize = pagingManager.addGlobalSize(size);
-         
+
          final long maxGlobalSize = pagingManager.getMaxGlobalSize();
 
          final long addressSize = addAddressSize(size);
-         
+
          if (size > 0)
          {
             if (maxGlobalSize > 0 && currentGlobalSize > maxGlobalSize)
             {
                pagingManager.setGlobalPageMode(true);
-               
+
                if (startPaging())
                {
                   if (isTrace)
@@ -410,18 +408,23 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
 
-   
    public boolean page(final PagedMessage message) throws Exception
    {
+      
+      if (!running)
+      {
+         throw new IllegalStateException ("PagingStore(" + this.getStoreName() + ") not initialized");
+      }
+      
       // Max-size is set, but reject is activated, what means.. never page on
       // this address
       if (dropMessagesWhenFull)
       {
          return false;
       }
-      
+
       currentPageLock.readLock().lock();
-      
+
       try
       {
          // First check done concurrently, to avoid synchronization and increase throughput
@@ -434,7 +437,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          currentPageLock.readLock().unlock();
       }
-
 
       writeLock.lock();
 
@@ -461,7 +463,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                currentPageLock.writeLock().unlock();
             }
          }
- 
+
          currentPageLock.readLock().lock();
 
          try
@@ -505,7 +507,13 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
 
+
    public boolean startDepaging()
+   {
+      return startDepaging(executor);
+   }
+
+   public boolean startDepaging(Executor executor)
    {
       currentPageLock.readLock().lock();
       try
@@ -520,7 +528,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             {
                if (dequeueThread == null)
                {
-                  dequeueThread = new DepageRunnable();
+                  dequeueThread = new DepageRunnable(executor);
                   executor.execute(dequeueThread);
                   return true;
                }
@@ -564,10 +572,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          try
          {
             running = false;
-
-            executor.shutdown();
-            executor.awaitTermination(60, TimeUnit.SECONDS);
-
+            
             if (currentPage != null)
             {
                currentPage.close();
@@ -581,60 +586,79 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
 
-   public synchronized void start() throws Exception
+   public void start() throws Exception
    {
-      if (running)
-      {
-         // don't throw an exception.
-         // You could have two threads adding PagingStore to a
-         // ConcurrentHashMap,
-         // and having both threads calling init. One of the calls should just
-         // need to be ignored
-         return;
-      }
-
-      currentPageLock.writeLock().lock();
-
-      firstPageId = Integer.MAX_VALUE;
-      currentPageId = 0;
-      currentPage = null;
+      writeLock.lock();
 
       try
       {
-         List<String> files = fileFactory.listFiles("page");
 
-         numberOfPages = files.size();
-
-         for (String fileName : files)
+         if (running)
          {
-            final int fileId = getPageIdFromFileName(fileName);
-
-            if (fileId > currentPageId)
-            {
-               currentPageId = fileId;
-            }
-
-            if (fileId < firstPageId)
-            {
-               firstPageId = fileId;
-            }
+            // don't throw an exception.
+            // You could have two threads adding PagingStore to a
+            // ConcurrentHashMap,
+            // and having both threads calling init. One of the calls should just
+            // need to be ignored
+            return;
          }
-
-         running = true;
-
-         if (numberOfPages != 0)
+         else
          {
-            startPaging();
+            currentPageLock.writeLock().lock();
+            
+            fileFactory.createDirs();
+
+            firstPageId = Integer.MAX_VALUE;
+            currentPageId = 0;
+            currentPage = null;
+
+            try
+            {
+               List<String> files = fileFactory.listFiles("page");
+
+               numberOfPages = files.size();
+
+               for (String fileName : files)
+               {
+                  final int fileId = getPageIdFromFileName(fileName);
+
+                  if (fileId > currentPageId)
+                  {
+                     currentPageId = fileId;
+                  }
+
+                  if (fileId < firstPageId)
+                  {
+                     firstPageId = fileId;
+                  }
+               }
+
+               running = true;
+
+               if (numberOfPages != 0)
+               {
+                  startPaging();
+               }
+            }
+            finally
+            {
+               currentPageLock.writeLock().unlock();
+            }
          }
       }
       finally
       {
-         currentPageLock.writeLock().unlock();
+         writeLock.unlock();
       }
    }
 
    public boolean startPaging() throws Exception
    {
+      if (!running)
+      {
+         return false;
+      }
+      
       // First check without any global locks.
       // (Faster)
       currentPageLock.readLock().lock();
@@ -659,7 +683,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          if (currentPage == null)
          {
             openNewPage();
-            
+
             return true;
          }
          else
@@ -672,8 +696,6 @@ public class PagingStoreImpl implements TestSupportPageStore
          writeLock.unlock();
       }
    }
-   
-   
 
    // TestSupportPageStore ------------------------------------------
 
@@ -687,8 +709,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
-   
+
    /**
     * This method will remove files from the page system and and route them, doing it transactionally
     * 
@@ -696,10 +717,8 @@ public class PagingStoreImpl implements TestSupportPageStore
     * 
     * If persistent messages are also used, it will update eventual PageTransactions
     */
-   
-   private boolean onDepage(final int pageId,
-                           final SimpleString destination,
-                           final PagedMessage[] data) throws Exception
+
+   private boolean onDepage(final int pageId, final SimpleString destination, final PagedMessage[] data) throws Exception
    {
       trace("Depaging....");
 
@@ -712,7 +731,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       if (lastPage == null)
       {
          lastPage = new LastPageRecordImpl(pageId, destination);
-         
+
          setLastPageRecord(lastPage);
       }
       else
@@ -725,7 +744,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
 
       lastPage.setLastId(pageId);
-      
+
       storageManager.storeLastPage(depageTransactionID, lastPage);
 
       HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
@@ -739,10 +758,10 @@ public class PagingStoreImpl implements TestSupportPageStore
          pagedMessage = (ServerMessage)msg.getMessage(storageManager);
 
          final long transactionIdDuringPaging = msg.getTransactionID();
-         
+
          if (transactionIdDuringPaging >= 0)
          {
-            final PageTransactionInfo pageTransactionInfo = pagingManager.getTransaction(transactionIdDuringPaging); 
+            final PageTransactionInfo pageTransactionInfo = pagingManager.getTransaction(transactionIdDuringPaging);
 
             // http://wiki.jboss.org/wiki/JBossMessaging2Paging
             // This is the Step D described on the "Transactions on Paging"
@@ -819,7 +838,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    }
 
-
    private long addAddressSize(final long delta)
    {
       return sizeInBytes.addAndGet(delta);
@@ -837,7 +855,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       try
       {
          numberOfPages++;
-         
+
          currentPageId++;
 
          if (currentPageId < firstPageId)
@@ -865,14 +883,14 @@ public class PagingStoreImpl implements TestSupportPageStore
    public void clearLastPageRecord(final LastPageRecord lastRecord) throws Exception
    {
       trace("Clearing lastRecord information " + lastRecord.getLastId());
-      
+
       storageManager.storeDelete(lastRecord.getRecordId());
    }
 
    private Page createPage(final int page) throws Exception
    {
       String fileName = createFileName(page);
-      
+
       SequentialFile file = fileFactory.createSequentialFile(fileName, 1000);
 
       file.open();
@@ -912,27 +930,33 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private class DepageRunnable implements Runnable
    {
-      public DepageRunnable()
+      private final Executor followingExecutor;
+      
+      public DepageRunnable(Executor followingExecutor)
       {
+         this.followingExecutor = followingExecutor;
       }
 
       public void run()
       {
          try
          {
-            boolean needMorePages = true;
-            while (needMorePages && running)
+            if (running)
             {
-               needMorePages = readPage();
+               boolean needMorePages = readPage();
+               if (needMorePages)
+               {
+                  followingExecutor.execute(this);
+               }
+               else
+               {
+                  clearDequeueThread();
+               }
             }
          }
          catch (Exception e)
          {
             log.error(e, e);
-         }
-         finally
-         {
-            clearDequeueThread();
          }
       }
    }

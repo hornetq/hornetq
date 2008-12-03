@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.messaging.core.asyncio.AIOCallback;
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * The base class for AIO Tests
@@ -41,16 +40,15 @@ public abstract class AIOTestBase extends UnitTestCase
 {
    // The AIO Test must use a local filesystem. Sometimes $HOME is on a NFS on
    // most enterprise systems
-   protected String fileDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test-" + UUIDGenerator.getInstance().generateSimpleStringUUID().toString();
 
-   protected String FILE_NAME = fileDir + "/fileUsedOnNativeTests.log";
+   protected String FILE_NAME = getTestDir() + "/fileUsedOnNativeTests.log";
 
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
 
-      File file = new File(fileDir);
+      File file = new File(getTestDir());
 
       deleteDirectory(file);
 
@@ -70,7 +68,6 @@ public abstract class AIOTestBase extends UnitTestCase
    {
       super.tearDown();
       assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
-      deleteDirectory(new File(fileDir));
    }
 
    protected void encodeBufer(final ByteBuffer buffer)

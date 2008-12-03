@@ -67,20 +67,6 @@ public class ServiceTestBase extends UnitTestCase
 
    protected static final String NETTY_CONNECTOR_FACTORY = NettyConnectorFactory.class.getCanonicalName();
 
-   protected String baseDir = System.getProperty("java.io.tmpdir", "/tmp") + "/jbm-unit-test";
-
-   protected String journalDir = baseDir + "/journal";
-
-   protected String bindingsDir = baseDir + "/bindings";
-
-   protected String pageDir = baseDir + "/page";
-
-   protected String largeMessagesDir = baseDir + "/large-msg";
-
-   protected String clientLargeMessagesDir = baseDir + "/client-large-msg";
-
-   protected String temporaryDir = baseDir + "/temporary";
-
    // Static --------------------------------------------------------
    private final Logger log = Logger.getLogger(this.getClass());
 
@@ -94,18 +80,12 @@ public class ServiceTestBase extends UnitTestCase
 
    protected void clearData()
    {
-      deleteAndCreateDir(journalDir);
-      deleteAndCreateDir(bindingsDir);
-      deleteAndCreateDir(pageDir);
-      deleteAndCreateDir(largeMessagesDir);
-      deleteAndCreateDir(clientLargeMessagesDir);
-      deleteAndCreateDir(temporaryDir);
-   }
-
-   protected void deleteData()
-   {
-      log.info("deleting directory " + baseDir);
-      deleteDirectory(new File(baseDir));
+      deleteAndCreateDir(getJournalDir());
+      deleteAndCreateDir(getBindingsDir());
+      deleteAndCreateDir(getPageDir());
+      deleteAndCreateDir(getLargeMessagesDir());
+      deleteAndCreateDir(getClientLargeMessagesDir());
+      deleteAndCreateDir(getTemporaryDir());
    }
 
    protected void deleteAndCreateDir(String directory)
@@ -125,9 +105,9 @@ public class ServiceTestBase extends UnitTestCase
       if (realFiles)
       {
          service = MessagingServiceImpl.newNioStorageMessagingServer(configuration,
-                                                                     journalDir,
-                                                                     bindingsDir,
-                                                                     largeMessagesDir);
+                                                                     getJournalDir(),
+                                                                     getBindingsDir(),
+                                                                     getLargeMessagesDir());
       }
       else
       {
@@ -176,8 +156,8 @@ public class ServiceTestBase extends UnitTestCase
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
       configuration.setJournalFileSize(100 * 1024);
-      configuration.setPagingDirectory(pageDir);
-      configuration.setLargeMessagesDirectory(largeMessagesDir);
+      configuration.setPagingDirectory(getPageDir());
+      configuration.setLargeMessagesDirectory(getLargeMessagesDir());
 
       configuration.getAcceptorConfigurations().clear();
 

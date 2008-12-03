@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.paging;
 
+import java.util.concurrent.Executor;
+
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.util.SimpleString;
 
@@ -69,6 +71,9 @@ public interface PagingStore extends MessagingComponent
     * @throws Exception 
     */
    boolean startDepaging();
+   
+   /** When start depaging from a global perspective, we don't want all the stores depaging at once what could saturate the servers */
+   boolean startDepaging(Executor executor);
 
    LastPageRecord getLastPageRecord();
 
