@@ -63,6 +63,6 @@
 	<classpathentry kind="lib" path="thirdparty/cglib/lib/cglib.jar"/>
 	<classpathentry kind="lib" path="tests/tmpfiles"/>
 	<classpathentry kind="lib" path="thirdparty/apache-mina/lib/mina-core-2.0.0-M3-20080730.120633-1.jar" sourcepath="thirdparty/apache-mina/lib/mina-core-2.0.0-M3-20080730.120633-1-sources.jar"/>
-	<classpathentry kind="lib" path="thirdparty/netty/lib/netty-3.0.2.GA.jar" sourcepath="thirdparty/netty/lib/netty-3.0.2.GA-sources.jar"/>
+	<classpathentry kind="lib" path="thirdparty/netty/lib/netty-3.1.0.ALPHA2.jar"/>
 	<classpathentry kind="output" path="eclipse-output"/>
 </classpath>
