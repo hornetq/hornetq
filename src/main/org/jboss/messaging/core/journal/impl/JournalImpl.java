@@ -656,7 +656,7 @@ public class JournalImpl implements TestableJournal
          }
       }
 
-      // We should wait this outside of the lock, to increase throuput
+      // We should wait this outside of the lock, to increase throughput
       if (callback != null)
       {
          callback.waitCompletion();
@@ -1779,29 +1779,19 @@ public class JournalImpl implements TestableJournal
 
          if (counter == null)
          {
-            // (III) One of the original files didn't show any record. This
-            // would still be okay if the file was reclaimed
-            boolean found = false;
-
-            for (JournalFile lookupFile : orderedFiles)
+             for (JournalFile lookupFile : orderedFiles)
             {
                if (lookupFile.getOrderingID() == ref.a)
                {
-                  // (IV) oops, we were expecting at least one record on this
+                  // (III) oops, we were expecting at least one record on this
                   // file.
                   // The file still exists and no records were found.
                   // That means the transaction crashed before complete,
                   // so this transaction is broken and needs to be ignored.
                   // This is probably a hole caused by a crash during commit.
-                  found = true;
+                  healthy = false;
                   break;
                }
-            }
-            if (found)
-            {
-               healthy = false;
-
-               break;
             }
          }
          else
