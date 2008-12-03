@@ -22,22 +22,7 @@
 
 package org.jboss.messaging.tests.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
-
-import javax.transaction.xa.Xid;
-
 import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.easymock.IArgumentMatcher;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -52,10 +37,23 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 
+import javax.transaction.xa.Xid;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
+
 /**
- * 
+ *
  * Helper base class for our unit tests
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:csuconic@redhat.com">Clebert</a>
  *
@@ -68,6 +66,9 @@ public class UnitTestCase extends TestCase
 
    public static final String INVM_CONNECTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory";
 
+   public static final String NETTY_ACCEPTOR_FACTORY = "org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory";
+
+   public static final String NETTY_CONNECTOR_FACTORY = "org.jboss.messaging.integration.transports.netty.NettyConnectorFactory";
    // Attributes ----------------------------------------------------
 
    private String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/jbm-unit-test";

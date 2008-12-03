@@ -31,6 +31,8 @@ public class TransportConstants
 {
    public static final String SSL_ENABLED_PROP_NAME = "jbm.remoting.netty.sslenabled";
    
+   public static final String HTTP_ENABLED_PROP_NAME = "jbm.remoting.netty.httpenabled";
+   
    public static final String USE_NIO_PROP_NAME = "jbm.remoting.netty.usenio";
    
    public static final String HOST_PROP_NAME = "jbm.remoting.netty.host";
@@ -71,5 +73,7 @@ public class TransportConstants
    
    public static final int DEFAULT_TCP_SENDBUFFER_SIZE = 32768;
    
-   public static final int DEFAULT_TCP_RECEIVEBUFFER_SIZE = 32768;  
+   public static final int DEFAULT_TCP_RECEIVEBUFFER_SIZE = 32768;
+
+   public static final boolean DEFAULT_HTTP_ENABLED = false;
 }

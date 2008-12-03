@@ -120,16 +120,24 @@
       </acceptor>
       <!-- Netty standard TCP acceptor -->
       <acceptor>
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>            	                                 
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
       </acceptor>   
       <!-- Netty SSL Acceptor
       <acceptor>
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>            	            
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
          <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
          <param key="jbm.remoting.netty.port" value="5500" type="Integer"/>	                     
          <param key="jbm.remoting.netty.sslenabled" value="true" type="Boolean"/>
       </acceptor> 
-      -->      
+      -->
+       <!-- Netty HTTP Acceptor
+      <acceptor>
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
+         <param key="jbm.remoting.netty.port" value="8080" type="Integer"/>
+         <param key="jbm.remoting.netty.httpenabled" value="true" type="Boolean"/>  
+      </acceptor>-->
+
       <!-- Mina Acceptor -->
       <acceptor>
          <factory-class>org.jboss.messaging.integration.transports.mina.MinaAcceptorFactory</factory-class>           	            

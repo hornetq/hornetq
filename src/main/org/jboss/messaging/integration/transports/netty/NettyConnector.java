@@ -21,17 +21,6 @@
  */
 package org.jboss.messaging.integration.transports.netty;
 
-import static org.jboss.netty.channel.Channels.pipeline;
-
-import java.net.InetSocketAddress;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
@@ -41,15 +30,38 @@ import org.jboss.messaging.core.remoting.spi.Connector;
 import org.jboss.messaging.util.ConfigurationHelper;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.netty.bootstrap.ClientBootstrap;
+import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
+import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
+import static org.jboss.netty.channel.Channels.pipeline;
+import static org.jboss.netty.channel.Channels.write;
+import org.jboss.netty.channel.DefaultMessageEvent;
+import org.jboss.netty.channel.MessageEvent;
+import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
+import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
+import org.jboss.netty.handler.codec.http.HttpHeaders;
+import org.jboss.netty.handler.codec.http.HttpMethod;
+import org.jboss.netty.handler.codec.http.HttpRequest;
+import org.jboss.netty.handler.codec.http.HttpRequestEncoder;
+import org.jboss.netty.handler.codec.http.HttpResponse;
+import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
+import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.ssl.SslHandler;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import java.net.InetSocketAddress;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -79,6 +91,8 @@ public class NettyConnector implements Connector
    private final ConnectionLifeCycleListener listener;
 
    private final boolean sslEnabled;
+
+   private final boolean httpEnabled;
 
    private final boolean useNio;
 
@@ -123,6 +137,9 @@ public class NettyConnector implements Connector
       this.sslEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME,
                                                                TransportConstants.DEFAULT_SSL_ENABLED,
                                                                configuration);
+      this.httpEnabled =
+                  ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME, TransportConstants.DEFAULT_HTTP_ENABLED, configuration);
+
       this.useNio = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME,
                                                            TransportConstants.DEFAULT_USE_NIO,
                                                            configuration);
@@ -218,6 +235,12 @@ public class NettyConnector implements Connector
             if (sslEnabled)
             {
                ChannelPipelineSupport.addSSLFilter(pipeline, context, true);
+            }
+            if (httpEnabled)
+            {
+               pipeline.addLast("httpRequestEncoder", new HttpRequestEncoder());
+               pipeline.addLast("httpResponseDecoder", new HttpResponseDecoder());
+               pipeline.addLast("httphandler", new HttpHandler());
             }
             ChannelPipelineSupport.addCodecFilter(pipeline, handler);
             pipeline.addLast("handler", new MessagingClientChannelHandler(handler, listener));
@@ -327,4 +350,28 @@ public class NettyConnector implements Connector
          super(handler, listener);
       }
    }
+
+   @ChannelPipelineCoverage("all")
+   class HttpHandler extends SimpleChannelHandler
+   {
+      @Override
+      public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
+      {
+         HttpResponse response = (HttpResponse) e.getMessage();
+         MessageEvent event = new DefaultMessageEvent(e.getChannel(), e.getFuture(), response.getContent(), e.getRemoteAddress());
+         ctx.sendUpstream(event);
+      }
+
+      @Override
+      public void writeRequested(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
+      {
+         HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/jbm/");
+         ChannelBuffer buf = (ChannelBuffer) e.getMessage();
+         httpRequest.setContent(buf);
+         httpRequest.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(buf.writerIndex()));
+         write(ctx, e.getChannel(), e.getFuture(), httpRequest, e.getRemoteAddress());
+      }
+   }
+
+
 }
