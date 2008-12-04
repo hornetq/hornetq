@@ -73,15 +73,14 @@ public class PagingManagerImpl implements PagingManager
 
    private final long defaultPageSize;
 
+   private final boolean syncNonTransactional;
+
    private final ConcurrentMap</*TransactionID*/Long, PageTransactionInfo> transactions = new ConcurrentHashMap<Long, PageTransactionInfo>();
 
    // Static
    // --------------------------------------------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(PagingManagerImpl.class);
-
-   // private static final boolean isTrace = log.isTraceEnabled();
-   private static final boolean isTrace = true;
 
    // This is just a debug tool method.
    // During debugs you could make log.trace as log.info, and change the
@@ -99,13 +98,15 @@ public class PagingManagerImpl implements PagingManager
                             final StorageManager storageManager,
                             final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                             final long maxGlobalSize,
-                            final long defaultPageSize)
+                            final long defaultPageSize,
+                            final boolean syncNonTransactional)
    {
       this.pagingSPI = pagingSPI;
       this.queueSettingsRepository = queueSettingsRepository;
       this.storageManager = storageManager;
       this.defaultPageSize = defaultPageSize;
       this.maxGlobalSize = maxGlobalSize;
+      this.syncNonTransactional = syncNonTransactional;
    }
 
    // Public
@@ -119,7 +120,7 @@ public class PagingManagerImpl implements PagingManager
       return globalMode.get();
    }
 
-   public void setGlobalPageMode(boolean globalMode)
+   public void setGlobalPageMode(final boolean globalMode)
    {
       this.globalMode.set(globalMode);
    }
@@ -179,7 +180,7 @@ public class PagingManagerImpl implements PagingManager
    public void setLastPageRecord(final LastPageRecord lastPage) throws Exception
    {
       trace("LastPage loaded was " + lastPage.getLastId() + " recordID = " + lastPage.getRecordId());
-      
+
       getPageStore(lastPage.getDestination()).setLastPageRecord(lastPage);
    }
 
@@ -200,29 +201,32 @@ public class PagingManagerImpl implements PagingManager
 
    public boolean page(final ServerMessage message, final long transactionId) throws Exception
    {
-      return getPageStore(message.getDestination()).page(new PagedMessageImpl(message, transactionId));
+      // The sync on transactions is done on commit only
+      return getPageStore(message.getDestination()).page(new PagedMessageImpl(message, transactionId), false);
    }
 
    public boolean page(final ServerMessage message) throws Exception
    {
-      return getPageStore(message.getDestination()).page(new PagedMessageImpl(message));
+      // If non Durable, there is no need to sync as there is no requirement for persistence for those messages in case
+      // of crash
+      return getPageStore(message.getDestination()).page(new PagedMessageImpl(message),
+                                                         syncNonTransactional && message.isDurable());
    }
 
    public void addTransaction(final PageTransactionInfo pageTransaction)
    {
       transactions.put(pageTransaction.getTransactionID(), pageTransaction);
    }
-   
+
    public void removeTransaction(final long id)
    {
       transactions.remove(id);
    }
-   
+
    public PageTransactionInfo getTransaction(final long id)
    {
       return transactions.get(id);
    }
-   
 
    public void sync(final Collection<SimpleString> destinationsToSync) throws Exception
    {
@@ -246,11 +250,11 @@ public class PagingManagerImpl implements PagingManager
       {
          return;
       }
-      
+
       pagingSPI.setPagingManager(this);
-      
+
       pagingSPI.setStorageManager(storageManager);
-      
+
       started = true;
    }
 
@@ -260,7 +264,7 @@ public class PagingManagerImpl implements PagingManager
       {
          return;
       }
-      
+
       started = false;
 
       for (PagingStore store : stores.values())
@@ -270,10 +274,10 @@ public class PagingManagerImpl implements PagingManager
 
       pagingSPI.stop();
    }
-   
+
    public synchronized void startGlobalDepage()
    {
-      for (PagingStore store: stores.values())
+      for (PagingStore store : stores.values())
       {
          store.startDepaging(pagingSPI.getGlobalDepagerExecutor());
       }
@@ -285,18 +289,16 @@ public class PagingManagerImpl implements PagingManager
     */
    public long getGlobalSize()
    {
-      return this.globalSize.get();
+      return globalSize.get();
    }
-   
 
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.paging.PagingManager#addGlobalSize(long)
     */
-   public long addGlobalSize(long size)
+   public long addGlobalSize(final long size)
    {
       return globalSize.addAndGet(size);
    }
-
 
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.paging.PagingManager#getMaxGlobalSize()
@@ -305,7 +307,6 @@ public class PagingManagerImpl implements PagingManager
    {
       return maxGlobalSize;
    }
-   
 
    // Package protected ---------------------------------------------
 

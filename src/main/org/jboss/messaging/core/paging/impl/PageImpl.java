@@ -27,10 +27,12 @@ import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
@@ -44,6 +46,8 @@ public class PageImpl implements Page
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(PageImpl.class);
+
    public static final int SIZE_RECORD = SIZE_BYTE + SIZE_INT + SIZE_BYTE;
 
    private static final byte START_BYTE = (byte)'{';
@@ -53,6 +57,8 @@ public class PageImpl implements Page
    // Attributes ----------------------------------------------------
 
    private final int pageId;
+
+   private boolean suspiciousRecords = false;
 
    private final AtomicInteger numberOfMessages = new AtomicInteger(0);
 
@@ -82,7 +88,7 @@ public class PageImpl implements Page
       return pageId;
    }
 
-   public PagedMessage[] read() throws Exception
+   public List<PagedMessage> read() throws Exception
    {
       ArrayList<PagedMessage> messages = new ArrayList<PagedMessage>();
 
@@ -108,23 +114,31 @@ public class PageImpl implements Page
                {
                   PagedMessage msg = new PagedMessageImpl();
                   msg.decode(messageBuffer);
+                  if (buffer.get() != END_BYTE)
+                  {
+                     // Sanity Check: This would only happen if there is a bug on decode or any internal code, as this
+                     // constraint was already checked
+                     throw new IllegalStateException("Internal error, it wasn't possible to locate END_BYTE");
+                  }
                   messages.add(msg);
                }
                else
                {
-                  buffer.position(position + 1);
+                  markFileAsSuspect(position, messages.size());
+                  break;
                }
             }
          }
          else
          {
-            buffer.position(position + 1);
+            markFileAsSuspect(position, messages.size());
+            break;
          }
       }
 
       numberOfMessages.set(messages.size());
 
-      return messages.toArray(new PagedMessage[messages.size()]);
+      return messages;
    }
 
    public void write(final PagedMessage message) throws Exception
@@ -136,7 +150,7 @@ public class PageImpl implements Page
       buffer.put(END_BYTE);
       buffer.rewind();
 
-      file.write(buffer, false);      
+      file.write(buffer, false);
 
       numberOfMessages.incrementAndGet();
       size.addAndGet(buffer.limit());
@@ -144,7 +158,7 @@ public class PageImpl implements Page
 
    public void sync() throws Exception
    {
-      file.sync();      
+      file.sync();
    }
 
    public void open() throws Exception
@@ -161,7 +175,18 @@ public class PageImpl implements Page
 
    public void delete() throws Exception
    {
-      file.delete();
+      if (suspiciousRecords)
+      {
+         log.warn("File " + file.getFileName() +
+                  " being renamed to " +
+                  file.getFileName() +
+                  ".invalidPage as it was loaded partially. Please verify your data.");
+         file.renameTo(file.getFileName() + ".invalidPage");
+      }
+      else
+      {
+         file.delete();
+      }
    }
 
    public int getNumberOfMessages()
@@ -179,6 +204,16 @@ public class PageImpl implements Page
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+
+   /**
+    * @param position
+    * @param msgNumber
+    */
+   private void markFileAsSuspect(final int position, final int msgNumber)
+   {
+      log.warn("Page file had incomplete records at position " + position + " at record number " + msgNumber);
+      suspiciousRecords = true;
+   }
 
    // Inner classes -------------------------------------------------
 }

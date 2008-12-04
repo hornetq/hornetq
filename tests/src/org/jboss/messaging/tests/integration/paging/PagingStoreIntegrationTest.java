@@ -24,8 +24,6 @@ package org.jboss.messaging.tests.integration.paging;
 
 import java.io.File;
 
-import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
-import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.tests.unit.core.paging.impl.PagingStoreTestBase;
 
@@ -45,18 +43,6 @@ public class PagingStoreIntegrationTest extends PagingStoreTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
-   public void testPageStoreWithAIO() throws Exception
-   {
-      if (!AsynchronousFileImpl.isLoaded())
-      {
-         fail(String.format("libAIO is not loaded on %s %s %s",
-                            System.getProperty("os.name"),
-                            System.getProperty("os.arch"),
-                            System.getProperty("os.version")));
-      }
-      testConcurrentPaging(new AIOSequentialFileFactory(getTestDir()), 10);
-   }
 
    public void testPageWithNIO() throws Exception
    {

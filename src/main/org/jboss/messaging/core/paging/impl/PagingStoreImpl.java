@@ -90,8 +90,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    // Bytes consumed by the queue on the memory
    private final AtomicLong sizeInBytes = new AtomicLong();
 
-   //FIXME - don't call this a thread - it's a Runnable not a Thread
-   private volatile Runnable dequeueThread;
+   private volatile Runnable depageAction;
 
    private volatile int numberOfPages;
 
@@ -153,11 +152,11 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       if (queueSettings.getPageSizeBytes() != null)
       {
-         this.pageSize = queueSettings.getPageSizeBytes();
+         pageSize = queueSettings.getPageSizeBytes();
       }
       else
       {
-         this.pageSize = pagingManager.getDefaultPageSize();
+         pageSize = pagingManager.getDefaultPageSize();
       }
 
       dropMessagesWhenFull = queueSettings.isDropMessagesWhenFull();
@@ -215,39 +214,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       return storeName;
    }
 
-   /**
-    * Depage one page-file, read it and send it to the pagingManager / postoffice
-    * @return
-    * @throws Exception
-    */
-   // FIXME - why is this public?
-   public boolean readPage() throws Exception
-   {
-      Page page = depage();
-
-      if (page == null)
-      {
-         if (lastPageRecord != null)
-         {
-            clearLastPageRecord(lastPageRecord);
-         }
-
-         lastPageRecord = null;
-
-         return false;
-      }
-
-      page.open();
-
-      PagedMessage messages[] = page.read();
-
-      boolean addressNotFull = onDepage(page.getPageId(), storeName, messages);
-
-      page.delete();
-
-      return addressNotFull;
-   }
-
    /** 
     *  It returns a Page out of the Page System without reading it. 
     *  The method calling this method will remove the page and will start reading it outside of any locks. 
@@ -269,6 +235,9 @@ public class PagingStoreImpl implements TestSupportPageStore
             numberOfPages--;
 
             final Page returnPage;
+
+            // We are out of old pages, all that is left now is the current page.
+            // On that case we need to replace it by a new empty page, and return the current page immediately
             if (currentPageId == firstPageId)
             {
                firstPageId = Integer.MAX_VALUE;
@@ -285,14 +254,19 @@ public class PagingStoreImpl implements TestSupportPageStore
                   throw new IllegalStateException("CurrentPage is null");
                }
 
+               // The current page is empty... what means we achieved the end of the pages
                if (returnPage.getNumberOfMessages() == 0)
                {
                   returnPage.open();
                   returnPage.delete();
+
+                  // This will trigger this Destination to exit the page mode,
+                  // and this will make JBM start using the journal again
                   return null;
                }
                else
                {
+                  // We need to create a new page, as we can't lock the address until we finish depaging.
                   openNewPage();
                }
 
@@ -409,21 +383,21 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
 
-   public boolean page(final PagedMessage message) throws Exception
+   public boolean page(final PagedMessage message, final boolean sync) throws Exception
    {
-      
+
       if (!running)
       {
-         throw new IllegalStateException ("PagingStore(" + this.getStoreName() + ") not initialized");
+         throw new IllegalStateException("PagingStore(" + getStoreName() + ") not initialized");
       }
-      
-      // Max-size is set, but reject is activated, what means.. never page on
-      // this address
+
+      // We should never page when drop-messages is activated.
       if (dropMessagesWhenFull)
       {
          return false;
       }
 
+      // We need to ensure a read lock, as depage could change the paging state
       currentPageLock.readLock().lock();
 
       try
@@ -457,6 +431,8 @@ public class PagingStoreImpl implements TestSupportPageStore
             try
             {
                openNewPage();
+
+               // openNewPage will set pageUsedSize to zero, we need to set it again
                pageUsedSize.addAndGet(bytesToWrite);
             }
             finally
@@ -472,6 +448,10 @@ public class PagingStoreImpl implements TestSupportPageStore
             if (currentPage != null)
             {
                currentPage.write(message);
+               if (sync)
+               {
+                  currentPage.sync();
+               }
                return true;
             }
             else
@@ -489,6 +469,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          writeLock.unlock();
       }
+
    }
 
    public void sync() throws Exception
@@ -508,13 +489,12 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
 
-
    public boolean startDepaging()
    {
       return startDepaging(executor);
    }
 
-   public boolean startDepaging(Executor executor)
+   public boolean startDepaging(final Executor executor)
    {
       currentPageLock.readLock().lock();
       try
@@ -527,10 +507,10 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             synchronized (this)
             {
-               if (dequeueThread == null)
+               if (depageAction == null)
                {
-                  dequeueThread = new DepageRunnable(executor);
-                  executor.execute(dequeueThread);
+                  depageAction = new DepageRunnable(executor);
+                  executor.execute(depageAction);
                   return true;
                }
                else
@@ -573,7 +553,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          try
          {
             running = false;
-            
+
             if (currentPage != null)
             {
                currentPage.close();
@@ -606,7 +586,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          else
          {
             currentPageLock.writeLock().lock();
-            
+
             fileFactory.createDirs();
 
             firstPageId = Integer.MAX_VALUE;
@@ -659,7 +639,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          return false;
       }
-      
+
       // First check without any global locks.
       // (Faster)
       currentPageLock.readLock().lock();
@@ -719,7 +699,7 @@ public class PagingStoreImpl implements TestSupportPageStore
     * If persistent messages are also used, it will update eventual PageTransactions
     */
 
-   private boolean onDepage(final int pageId, final SimpleString destination, final PagedMessage[] data) throws Exception
+   private boolean onDepage(final int pageId, final SimpleString destination, final List<PagedMessage> data) throws Exception
    {
       trace("Depaging....");
 
@@ -756,7 +736,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          ServerMessage pagedMessage = null;
 
-         pagedMessage = (ServerMessage)msg.getMessage(storageManager);
+         pagedMessage = msg.getMessage(storageManager);
 
          final long transactionIdDuringPaging = msg.getTransactionID();
 
@@ -846,7 +826,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private synchronized void clearDequeueThread()
    {
-      dequeueThread = null;
+      depageAction = null;
    }
 
    private void openNewPage() throws Exception
@@ -927,13 +907,45 @@ public class PagingStoreImpl implements TestSupportPageStore
       return Integer.parseInt(fileName.substring(0, fileName.indexOf('.')));
    }
 
+   /**
+    * Depage one page-file, read it and send it to the pagingManager / postoffice
+    * @return
+    * @throws Exception
+    */
+   private boolean readPage() throws Exception
+   {
+      Page page = depage();
+
+      if (page == null)
+      {
+         if (lastPageRecord != null)
+         {
+            clearLastPageRecord(lastPageRecord);
+         }
+
+         lastPageRecord = null;
+
+         return false;
+      }
+
+      page.open();
+
+      List<PagedMessage> messages = page.read();
+
+      boolean addressNotFull = onDepage(page.getPageId(), storeName, messages);
+
+      page.delete();
+
+      return addressNotFull;
+   }
+
    // Inner classes -------------------------------------------------
 
    private class DepageRunnable implements Runnable
    {
       private final Executor followingExecutor;
-      
-      public DepageRunnable(Executor followingExecutor)
+
+      public DepageRunnable(final Executor followingExecutor)
       {
          this.followingExecutor = followingExecutor;
       }

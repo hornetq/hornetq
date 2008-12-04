@@ -46,7 +46,7 @@ public class JournalLargeMessageImpl extends ServerMessageImpl implements Server
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(JournalLargeMessageImpl.class);
-   
+
    private static boolean isTrace = log.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
@@ -55,14 +55,14 @@ public class JournalLargeMessageImpl extends ServerMessageImpl implements Server
 
    // We should only use the NIO implementation on the Journal
    private volatile SequentialFile file;
-   
+
    private volatile boolean complete = false;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public JournalLargeMessageImpl(JournalStorageManager storageManager)
+   public JournalLargeMessageImpl(final JournalStorageManager storageManager)
    {
       this.storageManager = storageManager;
    }
@@ -187,7 +187,7 @@ public class JournalLargeMessageImpl extends ServerMessageImpl implements Server
 
    public void deleteFile() throws MessagingException
    {
-      this.storageManager.deleteFile(file);
+      storageManager.deleteFile(file);
    }
 
    @Override
@@ -196,15 +196,15 @@ public class JournalLargeMessageImpl extends ServerMessageImpl implements Server
       // The body won't be on memory (aways on-file), so we don't consider this for paging
       return super.getPropertiesEncodeSize();
    }
-   
+
    public synchronized void complete() throws Exception
    {
       releaseResources();
-      
+
       if (!complete)
       {
-         SequentialFile fileToRename = storageManager.createFileForLargeMessage(this.getMessageID(), true);
-         file.renameTo(fileToRename);         
+         SequentialFile fileToRename = storageManager.createFileForLargeMessage(getMessageID(), true);
+         file.renameTo(fileToRename.getFileName());
       }
    }
 
@@ -233,16 +233,15 @@ public class JournalLargeMessageImpl extends ServerMessageImpl implements Server
    {
       if (file == null)
       {
-         if (this.messageID <= 0)
+         if (messageID <= 0)
          {
             throw new RuntimeException("MessageID not set on LargeMessage");
          }
-         
-         file = storageManager.createFileForLargeMessage(this.getMessageID(), complete);
-         
+
+         file = storageManager.createFileForLargeMessage(getMessageID(), complete);
+
       }
    }
-
 
    // Inner classes -------------------------------------------------
 

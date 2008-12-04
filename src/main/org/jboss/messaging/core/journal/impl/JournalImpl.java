@@ -1213,7 +1213,7 @@ public class JournalImpl implements TestableJournal
                   }
                   else
                   {
-                     log.warn("Prepared transaction " + healthy + " wasn't considered completed, it will be ignored");
+                     log.warn("Prepared transaction " + transactionID + " wasn't considered completed, it will be ignored");
                      tx.invalid = true;
                   }
 
@@ -1779,7 +1779,7 @@ public class JournalImpl implements TestableJournal
 
          if (counter == null)
          {
-             for (JournalFile lookupFile : orderedFiles)
+            for (JournalFile lookupFile : orderedFiles)
             {
                if (lookupFile.getOrderingID() == ref.a)
                {
@@ -1796,7 +1796,7 @@ public class JournalImpl implements TestableJournal
          }
          else
          {
-            // (V) Missing a record... Transaction was not completed as stated.
+            // (IV) Missing a record... Transaction was not completed as stated.
             // we will ignore the whole transaction
             // This is probably a hole caused by a crash during commit/prepare.
             if (counter.get() != ref.b)

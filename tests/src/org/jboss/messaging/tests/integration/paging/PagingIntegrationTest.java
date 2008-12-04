@@ -50,6 +50,11 @@ public class PagingIntegrationTest extends PageImplTestBase
       testAdd(new NIOSequentialFileFactory(getTestDir()), 1000);
    }
 
+   public void testDamagedDataWithNIO() throws Exception
+   {
+      testDamagedPage(new NIOSequentialFileFactory(getTestDir()), 1000);
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -61,9 +61,7 @@ public interface PagingStore extends MessagingComponent
 
    void sync() throws Exception;
 
-   public boolean readPage() throws Exception;
-
-   boolean page(PagedMessage message) throws Exception;
+   boolean page(PagedMessage message, boolean sync) throws Exception;
    
    /**
     * 

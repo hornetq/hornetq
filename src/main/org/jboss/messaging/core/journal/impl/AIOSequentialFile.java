@@ -182,7 +182,7 @@ public class AIOSequentialFile implements SequentialFile
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.journal.SequentialFile#renameTo(org.jboss.messaging.core.journal.SequentialFile)
     */
-   public void renameTo(SequentialFile file) throws Exception
+   public void renameTo(String fileName) throws Exception
    {
       throw new IllegalStateException ("method rename not supported on AIO");
       

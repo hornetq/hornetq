@@ -24,6 +24,7 @@ package org.jboss.messaging.tests.integration.paging;
 
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.List;
 
 import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PagedMessage;
@@ -60,7 +61,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
-   public void testPagingManagerNIO() throws Exception
+   public void testPagingManager() throws Exception
    {
       HierarchicalRepository<QueueSettings> queueSettings = new HierarchicalObjectRepository<QueueSettings>();
       queueSettings.setDefault(new QueueSettings());
@@ -69,7 +70,8 @@ public class PagingManagerIntegrationTest extends UnitTestCase
                                                             null,
                                                             queueSettings,
                                                             -1,
-                                                            1024 * 1024);
+                                                            1024 * 1024,
+                                                            true);
 
       managerImpl.start();
 
@@ -77,30 +79,31 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(10));
 
-      assertFalse(store.page(new PagedMessageImpl(msg)));
+      assertFalse(store.page(new PagedMessageImpl(msg), true));
 
       store.startPaging();
 
-      assertTrue(store.page(new PagedMessageImpl(msg)));
+      assertTrue(store.page(new PagedMessageImpl(msg), true));
 
       Page page = store.depage();
 
       page.open();
 
-      PagedMessage msgs[] = page.read();
+      List<PagedMessage> msgs = page.read();
 
       page.close();
 
-      assertEquals(1, msgs.length);
+      assertEquals(1, msgs.size());
 
-      assertEqualsByteArrays(msg.getBody().array(), (msgs[0].getMessage(null)).getBody().array());
+      assertEqualsByteArrays(msg.getBody().array(), (msgs.get(0).getMessage(null)).getBody().array());
 
       assertTrue(store.isPaging());
 
       assertNull(store.depage());
 
-      assertFalse(store.page(new PagedMessageImpl(msg)));
+      assertFalse(store.page(new PagedMessageImpl(msg), true));
    }
+
 
    public void testPagingManagerAddressFull() throws Exception
    {
@@ -117,7 +120,8 @@ public class PagingManagerIntegrationTest extends UnitTestCase
                                                             null,
                                                             queueSettings,
                                                             -1,
-                                                            1024 * 1024);
+                                                            1024 * 1024,
+                                                            false);
       managerImpl.start();
 
       managerImpl.createPageStore(new SimpleString("simple-test"));

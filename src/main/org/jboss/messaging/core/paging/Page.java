@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.paging;
 
+import java.util.List;
+
 /**
  * 
  * <p>Look at the <a href="http://wiki.jboss.org/wiki/JBossMessaging2Paging">WIKI</a> for more information.</p>
@@ -36,7 +38,7 @@ public interface Page
 
    void write(PagedMessage message) throws Exception;
 
-   PagedMessage[] read() throws Exception;
+   List<PagedMessage> read() throws Exception;
 
    int getSize();
 

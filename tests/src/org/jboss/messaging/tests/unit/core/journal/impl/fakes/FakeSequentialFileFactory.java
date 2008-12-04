@@ -304,7 +304,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    {
       private volatile boolean open;
 
-      private final String fileName;
+      private String fileName;
 
       private ByteBuffer data;
 
@@ -557,9 +557,11 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.journal.SequentialFile#renameTo(org.jboss.messaging.core.journal.SequentialFile)
        */
-      public void renameTo(SequentialFile file) throws Exception
+      public void renameTo(String newFileName) throws Exception
       {
-         throw new IllegalStateException("Method rename not supoprted on FakeSequentialFile");
+         fileMap.remove(this.fileName);
+         this.fileName = newFileName;
+         fileMap.put(newFileName, this);
       }
 
    }

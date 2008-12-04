@@ -87,6 +87,7 @@ public interface PagingManager extends MessagingComponent
    /**
     * Page, only if destination is in page mode.
     * @param message
+    * @param sync - Sync should be called right after the write
     * @return false if destination is not on page mode
     */
    boolean page(ServerMessage message) throws Exception;

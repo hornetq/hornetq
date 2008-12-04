@@ -43,7 +43,10 @@ import org.jboss.messaging.core.logging.Logger;
 public class NIOSequentialFile implements SequentialFile
 {
    private static final Logger log = Logger.getLogger(NIOSequentialFile.class);
+
    private File file;
+
+   private final String directory;
 
    private FileChannel channel;
 
@@ -51,9 +54,10 @@ public class NIOSequentialFile implements SequentialFile
 
    BufferCallback bufferCallback;
 
-   public NIOSequentialFile(final String journalDir, final String fileName)
+   public NIOSequentialFile(final String directory, final String fileName)
    {
-       this.file = new File(journalDir + "/" + fileName);
+      this.directory = directory;
+      file = new File(directory + "/" + fileName);
    }
 
    public int getAlignment()
@@ -70,7 +74,7 @@ public class NIOSequentialFile implements SequentialFile
    {
       return file.getName();
    }
-   
+
    public synchronized boolean isOpen()
    {
       return channel != null;
@@ -114,7 +118,7 @@ public class NIOSequentialFile implements SequentialFile
    }
 
    public void close() throws Exception
-   {      
+   {
       if (channel != null)
       {
          channel.close();
@@ -210,8 +214,7 @@ public class NIOSequentialFile implements SequentialFile
          throw e;
       }
    }
-   
-   
+
    public void sync() throws Exception
    {
       channel.force(false);
@@ -232,20 +235,18 @@ public class NIOSequentialFile implements SequentialFile
       return channel.position();
    }
 
-   public void renameTo(SequentialFile newFile) throws Exception
+   public void renameTo(final String newFileName) throws Exception
    {
       close();
-      this.file.renameTo(((NIOSequentialFile)newFile).file);
-      file = ((NIOSequentialFile)newFile).file;
-   }
-   
-   
-   
-   public String toString()
-   {
-      return "NIOSequentialFile " + this.file;
+      File newFile = new File(directory + "/" + newFileName);
+      file.renameTo(newFile);
+      file = newFile;
    }
 
-   
-   
+   @Override
+   public String toString()
+   {
+      return "NIOSequentialFile " + file;
+   }
+
 }

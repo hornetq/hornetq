@@ -78,6 +78,6 @@ public interface SequentialFile
 
    long size() throws Exception;
    
-   void renameTo(SequentialFile file) throws Exception;
+   void renameTo(String newFileName) throws Exception;
 
 }

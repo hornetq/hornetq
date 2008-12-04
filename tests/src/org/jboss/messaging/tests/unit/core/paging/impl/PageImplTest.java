@@ -46,6 +46,12 @@ public class PageImplTest extends PageImplTestBase
       testAdd(new FakeSequentialFileFactory(1, false), 10);
    }
 
+   /** Validate if everything we add is recovered */
+   public void testDamagedPage() throws Exception
+   {
+      testDamagedPage(new FakeSequentialFileFactory(1, false), 100);
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

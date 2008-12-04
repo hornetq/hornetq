@@ -141,7 +141,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
                {
                   long id = messageIdGenerator.incrementAndGet();
                   PagedMessageImpl msg = createMessage(destination, createRandomBuffer(id, 5));
-                  if (storeImpl.page(msg))
+                  if (storeImpl.page(msg, false))
                   {
                      buffers.put(id, msg);
                   }
@@ -231,7 +231,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
       for (Page page : readPages)
       {
          page.open();
-         PagedMessage msgs[] = page.read();
+         List<PagedMessage> msgs = page.read();
          page.close();
 
          for (PagedMessage msg : msgs)
@@ -278,7 +278,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
       long lastMessageId = messageIdGenerator.incrementAndGet();
       PagedMessage lastMsg = createMessage(destination, createRandomBuffer(lastMessageId, 5));
 
-      storeImpl2.page(lastMsg);
+      storeImpl2.page(lastMsg, false);
       buffers2.put(lastMessageId, lastMsg);
 
       Page lastPage = null;
@@ -294,7 +294,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
 
          page.open();
 
-         PagedMessage[] msgs = page.read();
+         List<PagedMessage> msgs = page.read();
 
          page.close();
 
@@ -312,13 +312,13 @@ public abstract class PagingStoreTestBase extends UnitTestCase
       }
 
       lastPage.open();
-      PagedMessage lastMessages[] = lastPage.read();
+      List<PagedMessage> lastMessages = lastPage.read();
       lastPage.close();
-      assertEquals(1, lastMessages.length);
+      assertEquals(1, lastMessages.size());
 
-      (lastMessages[0].getMessage(null)).getBody().rewind();
-      assertEquals((lastMessages[0].getMessage(null)).getBody().getLong(), lastMessageId);
-      assertEqualsByteArrays((lastMessages[0].getMessage(null)).getBody().array(), (lastMsg.getMessage(null)).getBody()
+      (lastMessages.get(0).getMessage(null)).getBody().rewind();
+      assertEquals((lastMessages.get(0).getMessage(null)).getBody().getLong(), lastMessageId);
+      assertEqualsByteArrays((lastMessages.get(0).getMessage(null)).getBody().array(), (lastMsg.getMessage(null)).getBody()
                                                                                                              .array());
 
       assertEquals(0, buffers2.size());

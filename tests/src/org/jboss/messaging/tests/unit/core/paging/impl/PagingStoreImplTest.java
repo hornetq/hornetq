@@ -111,7 +111,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
       assertTrue(storeImpl.isPaging());
 
-      assertTrue(storeImpl.page(msg));
+      assertTrue(storeImpl.page(msg, true));
 
       assertEquals(1, storeImpl.getNumberOfPages());
 
@@ -162,7 +162,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
          PagedMessageImpl msg = createMessage(destination, buffer);
 
-         assertTrue(storeImpl.page(msg));
+         assertTrue(storeImpl.page(msg, true));
       }
 
       assertEquals(1, storeImpl.getNumberOfPages());
@@ -173,9 +173,9 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
       page.open();
 
-      PagedMessage msg[] = page.read();
+      List<PagedMessage> msg = page.read();
 
-      assertEquals(10, msg.length);
+      assertEquals(10, msg.size());
       assertEquals(1, storeImpl.getNumberOfPages());
 
       page = storeImpl.depage();
@@ -186,8 +186,8 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
       for (int i = 0; i < 10; i++)
       {
-         assertEquals(0, (msg[i].getMessage(null)).getMessageID());
-         assertEqualsByteArrays(buffers.get(i).array(), (msg[i].getMessage(null)).getBody().array());
+         assertEquals(0, (msg.get(i).getMessage(null)).getMessageID());
+         assertEqualsByteArrays(buffers.get(i).array(), (msg.get(i).getMessage(null)).getBody().array());
       }
 
    }
@@ -230,7 +230,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
          PagedMessageImpl msg = createMessage(destination, buffer);
 
-         assertTrue(storeImpl.page(msg));
+         assertTrue(storeImpl.page(msg, true));
       }
 
       assertEquals(2, storeImpl.getNumberOfPages());
@@ -243,16 +243,16 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
          page.open();
 
-         PagedMessage msg[] = page.read();
+         List<PagedMessage> msg = page.read();
 
          page.close();
 
-         assertEquals(5, msg.length);
+         assertEquals(5, msg.size());
 
          for (int i = 0; i < 5; i++)
          {
-            assertEquals(0, (msg[i].getMessage(null)).getMessageID());
-            assertEqualsByteArrays(buffers.get(pageNr * 5 + i).array(), (msg[i].getMessage(null)).getBody().array());
+            assertEquals(0, (msg.get(i).getMessage(null)).getMessageID());
+            assertEqualsByteArrays(buffers.get(pageNr * 5 + i).array(), (msg.get(i).getMessage(null)).getBody().array());
          }
       }
 
@@ -262,13 +262,13 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
       PagedMessageImpl msg = createMessage(destination, buffers.get(0));
 
-      assertTrue(storeImpl.page(msg));
+      assertTrue(storeImpl.page(msg, true));
 
       Page newPage = storeImpl.depage();
 
       newPage.open();
 
-      assertEquals(1, newPage.read().length);
+      assertEquals(1, newPage.read().size());
 
       newPage.delete();
 
@@ -280,23 +280,23 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
       assertFalse(storeImpl.isPaging());
 
-      assertFalse(storeImpl.page(msg));
+      assertFalse(storeImpl.page(msg, true));
 
       storeImpl.startPaging();
 
-      assertTrue(storeImpl.page(msg));
+      assertTrue(storeImpl.page(msg, true));
 
       Page page = storeImpl.depage();
 
       page.open();
 
-      PagedMessage msgs[] = page.read();
+      List<PagedMessage> msgs = page.read();
 
-      assertEquals(1, msgs.length);
+      assertEquals(1, msgs.size());
 
-      assertEquals(0l, (msgs[0].getMessage(null)).getMessageID());
+      assertEquals(0l, (msgs.get(0).getMessage(null)).getMessageID());
 
-      assertEqualsByteArrays(buffers.get(0).array(), (msgs[0].getMessage(null)).getBody().array());
+      assertEqualsByteArrays(buffers.get(0).array(), (msgs.get(0).getMessage(null)).getBody().array());
 
       assertEquals(1, storeImpl.getNumberOfPages());
 

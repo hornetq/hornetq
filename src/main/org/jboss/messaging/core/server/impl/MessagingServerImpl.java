@@ -214,7 +214,8 @@ public class MessagingServerImpl implements MessagingServer
                                             storageManager,
                                             queueSettingsRepository,
                                             configuration.getPagingMaxGlobalSizeBytes(),
-                                            configuration.getPagingDefaultSize());
+                                            configuration.getPagingDefaultSize(),
+                                            configuration.isJournalSyncNonTransactional());
       pagingManager.start();
 
       resourceManager = new ResourceManagerImpl((int)configuration.getTransactionTimeout() / 1000,
