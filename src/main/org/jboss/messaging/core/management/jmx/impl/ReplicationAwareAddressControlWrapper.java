@@ -79,12 +79,12 @@ public class ReplicationAwareAddressControlWrapper extends ReplicationAwareStand
       return localAddressControl.getRoles();
    }
 
-   public void removeRole(String name) throws Exception
+   public void removeRole(final String name) throws Exception
    {
       replicationAwareInvoke("removeRole", name);
    }
 
-   public void addRole(String name, boolean create, boolean read, boolean write) throws Exception
+   public void addRole(final String name, final boolean create, final boolean read, final boolean write) throws Exception
    {
       replicationAwareInvoke("addRole", name, create, read, write);
    }

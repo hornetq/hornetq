@@ -159,7 +159,7 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return localQueueControl.listMessageCounterHistoryAsHTML();
    }
 
-   public TabularData listMessages(String filter) throws Exception
+   public TabularData listMessages(final String filter) throws Exception
    {
       return localQueueControl.listMessages(filter);
    }
@@ -169,32 +169,32 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return localQueueControl.listScheduledMessages();
    }
 
-   public boolean changeMessagePriority(long messageID, int newPriority) throws Exception
+   public boolean changeMessagePriority(final long messageID, final int newPriority) throws Exception
    {
       return (Boolean)replicationAwareInvoke("changeMessagePriority", messageID, newPriority);
    }
 
-   public boolean expireMessage(long messageID) throws Exception
+   public boolean expireMessage(final long messageID) throws Exception
    {
       return (Boolean)replicationAwareInvoke("expireMessage", messageID);
    }
 
-   public int expireMessages(String filter) throws Exception
+   public int expireMessages(final String filter) throws Exception
    {
       return (Integer)replicationAwareInvoke("expireMessages", filter);
    }
 
-   public int moveAllMessages(String otherQueueName) throws Exception
+   public int moveAllMessages(final String otherQueueName) throws Exception
    {
       return (Integer)replicationAwareInvoke("moveAllMessages", otherQueueName);
    }
 
-   public int moveMatchingMessages(String filter, String otherQueueName) throws Exception
+   public int moveMatchingMessages(final String filter, final String otherQueueName) throws Exception
    {
       return (Integer)replicationAwareInvoke("moveMatchingMessages", filter, otherQueueName);
    }
 
-   public boolean moveMessage(long messageID, String otherQueueName) throws Exception
+   public boolean moveMessage(final long messageID, final String otherQueueName) throws Exception
    {
       return (Boolean)replicationAwareInvoke("moveMessage", messageID, otherQueueName);
    }
@@ -204,17 +204,17 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return (Integer)replicationAwareInvoke("removeAllMessages");
    }
 
-   public int removeMatchingMessages(String filter) throws Exception
+   public int removeMatchingMessages(final String filter) throws Exception
    {
       return (Integer)replicationAwareInvoke("removeMatchingMessages", filter);
    }
 
-   public boolean removeMessage(long messageID) throws Exception
+   public boolean removeMessage(final long messageID) throws Exception
    {
       return (Boolean)replicationAwareInvoke("removeMessage", messageID);
    }
 
-   public boolean sendMessageToDeadLetterAddress(long messageID) throws Exception
+   public boolean sendMessageToDeadLetterAddress(final long messageID) throws Exception
    {
       return (Boolean)replicationAwareInvoke("sendMessageToDeadLetterAddress", messageID);
    }

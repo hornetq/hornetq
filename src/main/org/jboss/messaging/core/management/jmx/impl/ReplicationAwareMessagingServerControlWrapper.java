@@ -243,27 +243,27 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
       return (Boolean)replicationAwareInvoke("addAddress", address);
    }
 
-   public boolean closeConnectionsForAddress(String ipAddress) throws Exception
+   public boolean closeConnectionsForAddress(final String ipAddress) throws Exception
    {
       return (Boolean)replicationAwareInvoke("closeConnectionsForAddress", ipAddress);
    }
 
-   public boolean commitPreparedTransaction(String transactionAsBase64) throws Exception
+   public boolean commitPreparedTransaction(final String transactionAsBase64) throws Exception
    {
       return (Boolean)replicationAwareInvoke("commitPreparedTransaction", transactionAsBase64);
    }
 
-   public void createQueue(String address, String name) throws Exception
+   public void createQueue(final String address, final String name) throws Exception
    {
       replicationAwareInvoke("createQueue", address, name);
    }
 
-   public void createQueue(String address, String name, String filter, boolean durable, boolean fanout) throws Exception
+   public void createQueue(final String address, final String name, final String filter, final boolean durable, final boolean fanout) throws Exception
    {
       replicationAwareInvoke("createQueue", address, name, filter, durable, fanout);
    }
 
-   public void destroyQueue(String name) throws Exception
+   public void destroyQueue(final String name) throws Exception
    {
       replicationAwareInvoke("destroyQueue", name);
    }
@@ -278,7 +278,7 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
       replicationAwareInvoke("enableMessageCounters");
    }
 
-   public boolean removeAddress(String address) throws Exception
+   public boolean removeAddress(final String address) throws Exception
    {
       return (Boolean)replicationAwareInvoke("removeAddress", address);
    }
@@ -293,17 +293,17 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
       replicationAwareInvoke("resetAllMessageCounters");
    }
 
-   public boolean rollbackPreparedTransaction(String transactionAsBase64) throws Exception
+   public boolean rollbackPreparedTransaction(final String transactionAsBase64) throws Exception
    {
       return (Boolean)replicationAwareInvoke("rollbackPreparedTransaction", transactionAsBase64);
    }
 
-   public void setMessageCounterMaxDayCount(int count) throws Exception
+   public void setMessageCounterMaxDayCount(final int count) throws Exception
    {
       replicationAwareInvoke("setMessageCounterMaxDayCount", count);
    }
 
-   public void setMessageCounterSamplePeriod(long newPeriod) throws Exception
+   public void setMessageCounterSamplePeriod(final long newPeriod) throws Exception
    {
       replicationAwareInvoke("setMessageCounterSamplePeriod", newPeriod);
    }
