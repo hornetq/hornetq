@@ -54,26 +54,26 @@ public class GroupingRoundRobinDistributionPolicy extends RoundRobinDistribution
 
    public HandleStatus distribute(MessageReference reference)
    {
+      if (getConsumerCount() == 0)
+      {
+         return HandleStatus.BUSY;
+      }
       final SimpleString groupId = (SimpleString) reference.getMessage().getProperty(MessageImpl.HDR_GROUP_ID);
       if (groupId != null)
       {
-         boolean bound;
          int startPos = pos;
          boolean filterRejected = false;
 
          while (true)
          {
             Consumer consumer = cons.putIfAbsent(groupId, consumers.get(pos));
+
             if (consumer == null)
             {
                incrementPosition();
                consumer = cons.get(groupId);
-               bound = false;
             }
-            else
-            {
-               bound = true;
-            }
+            
             HandleStatus status = handle(reference, consumer);
             if (status == HandleStatus.HANDLED)
             {
@@ -86,14 +86,7 @@ public class GroupingRoundRobinDistributionPolicy extends RoundRobinDistribution
             else if (status == HandleStatus.BUSY)
             {
                //if we were previously bound, we can remove and try the next consumer
-               if (bound)
-               {
-                  return HandleStatus.BUSY;
-               }
-               else
-               {
-                  cons.remove(groupId);
-               }
+               return HandleStatus.BUSY;
             }
             //if we've tried all of them
             if (startPos == pos)
@@ -127,7 +120,6 @@ public class GroupingRoundRobinDistributionPolicy extends RoundRobinDistribution
             if (consumer == cons.get(group))
             {
                cons.remove(group);
-               break;
             }
          }
       }

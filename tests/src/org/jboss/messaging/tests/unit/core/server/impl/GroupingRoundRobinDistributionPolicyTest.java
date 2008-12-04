@@ -195,9 +195,8 @@ public class GroupingRoundRobinDistributionPolicyTest extends UnitTestCase
       EasyMock.expect(reference.getMessage()).andStubReturn(serverMessage);
       EasyMock.expect(serverMessage.getProperty(MessageImpl.HDR_GROUP_ID)).andStubReturn(new SimpleString("gid1"));
       EasyMock.expect(consumer.handle(reference)).andReturn(HandleStatus.BUSY);
-      EasyMock.expect(consumer2.handle(reference)).andReturn(HandleStatus.HANDLED);
       EasyMock.replay(consumer, consumer2, consumer3, serverMessage, reference);
-      assertEquals(HandleStatus.HANDLED, policy.distribute(reference));
+      assertEquals(HandleStatus.BUSY, policy.distribute(reference));
       EasyMock.verify(consumer, consumer2, consumer3, serverMessage, reference);
    }
 
