@@ -303,7 +303,7 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
       return server.listRemoteAddresses(ipAddress);
    }
 
-   public boolean closeConnectionsForAddress(final String ipAddress)
+   public boolean closeConnectionsForAddress(final String ipAddress) throws Exception
    {
       return server.closeConnectionsForAddress(ipAddress);
    }

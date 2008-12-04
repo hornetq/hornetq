@@ -35,6 +35,7 @@ import java.util.Set;
 import javax.management.MBeanServer;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
+import javax.management.StandardMBean;
 
 import junit.framework.TestCase;
 
@@ -79,10 +80,8 @@ public class ManagementServiceImplTest extends TestCase
 
    public void testRegisterMessagingServer() throws Exception
    {
-      ObjectName objectName = ManagementServiceImpl
-            .getMessagingServerObjectName();
-      ObjectInstance objectInstance = new ObjectInstance(objectName,
-            MessagingServerControl.class.getName());
+      ObjectName objectName = ManagementServiceImpl.getMessagingServerObjectName();
+      ObjectInstance objectInstance = new ObjectInstance(objectName, MessagingServerControl.class.getName());
 
       PostOffice postOffice = createMock(PostOffice.class);
       StorageManager storageManager = createMock(StorageManager.class);
@@ -96,24 +95,43 @@ public class ManagementServiceImplTest extends TestCase
       MessagingServer messagingServer = createMock(MessagingServer.class);
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(false);
-      expect(
-            mbeanServer.registerMBean(isA(MessagingServerControl.class),
-                  eq(objectName))).andReturn(objectInstance);
+      expect(mbeanServer.registerMBean(isA(StandardMBean.class), eq(objectName))).andReturn(objectInstance);
 
-      replay(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, resourceManager, remotingService, messagingServer);
+      replay(mbeanServer,
+             postOffice,
+             storageManager,
+             configuration,
+             securityRepository,
+             queueSettingsRepository,
+             resourceManager,
+             remotingService,
+             messagingServer);
 
       ManagementService service = new ManagementServiceImpl(mbeanServer, true);
-      service.registerServer(postOffice, storageManager, configuration, queueSettingsRepository, resourceManager, remotingService, messagingServer);
+      service.registerServer(postOffice,
+                             storageManager,
+                             configuration,
+                             queueSettingsRepository,
+                             securityRepository,
+                             resourceManager,
+                             remotingService,
+                             messagingServer);
 
-      verify(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, resourceManager, remotingService, messagingServer);
+      verify(mbeanServer,
+             postOffice,
+             storageManager,
+             configuration,
+             securityRepository,
+             queueSettingsRepository,
+             resourceManager,
+             remotingService,
+             messagingServer);
    }
 
    public void testRegisterAlreadyRegisteredMessagingServer() throws Exception
    {
-      ObjectName objectName = ManagementServiceImpl
-            .getMessagingServerObjectName();
-      ObjectInstance objectInstance = new ObjectInstance(objectName,
-            MessagingServerControl.class.getName());
+      ObjectName objectName = ManagementServiceImpl.getMessagingServerObjectName();
+      ObjectInstance objectInstance = new ObjectInstance(objectName, MessagingServerControl.class.getName());
 
       PostOffice postOffice = createMock(PostOffice.class);
       StorageManager storageManager = createMock(StorageManager.class);
@@ -128,22 +146,42 @@ public class ManagementServiceImplTest extends TestCase
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(true);
       mbeanServer.unregisterMBean(objectName);
-      expect(
-            mbeanServer.registerMBean(isA(MessagingServerControlMBean.class),
-                  eq(objectName))).andReturn(objectInstance);
+      expect(mbeanServer.registerMBean(isA(StandardMBean.class), eq(objectName))).andReturn(objectInstance);
 
-      replay(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, resourceManager, remotingService, messagingServer);
+      replay(mbeanServer,
+             postOffice,
+             storageManager,
+             configuration,
+             securityRepository,
+             queueSettingsRepository,
+             resourceManager,
+             remotingService,
+             messagingServer);
 
       ManagementService service = new ManagementServiceImpl(mbeanServer, true);
-      service.registerServer(postOffice, storageManager, configuration, queueSettingsRepository, resourceManager, remotingService, messagingServer);
+      service.registerServer(postOffice,
+                             storageManager,
+                             configuration,
+                             queueSettingsRepository,
+                             securityRepository,
+                             resourceManager,
+                             remotingService,
+                             messagingServer);
 
-      verify(mbeanServer, postOffice, storageManager, configuration, securityRepository, queueSettingsRepository, resourceManager, remotingService, messagingServer);
+      verify(mbeanServer,
+             postOffice,
+             storageManager,
+             configuration,
+             securityRepository,
+             queueSettingsRepository,
+             resourceManager,
+             remotingService,
+             messagingServer);
    }
 
    public void testUnregisterMessagingServer() throws Exception
    {
-      ObjectName objectName = ManagementServiceImpl
-            .getMessagingServerObjectName();
+      ObjectName objectName = ManagementServiceImpl.getMessagingServerObjectName();
 
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(true);
@@ -160,16 +198,12 @@ public class ManagementServiceImplTest extends TestCase
    public void testRegisterAddress() throws Exception
    {
       SimpleString address = randomSimpleString();
-      ObjectName objectName = ManagementServiceImpl
-            .getAddressObjectName(address);
-      ObjectInstance objectInstance = new ObjectInstance(objectName,
-            AddressControl.class.getName());
+      ObjectName objectName = ManagementServiceImpl.getAddressObjectName(address);
+      ObjectInstance objectInstance = new ObjectInstance(objectName, AddressControl.class.getName());
 
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(false);
-      expect(
-            mbeanServer.registerMBean(isA(AddressControlMBean.class),
-                  eq(objectName))).andReturn(objectInstance);
+      expect(mbeanServer.registerMBean(isA(StandardMBean.class), eq(objectName))).andReturn(objectInstance);
 
       replay(mbeanServer);
 
@@ -182,17 +216,13 @@ public class ManagementServiceImplTest extends TestCase
    public void testRegisterAlreadyRegisteredAddress() throws Exception
    {
       SimpleString address = randomSimpleString();
-      ObjectName objectName = ManagementServiceImpl
-            .getAddressObjectName(address);
-      ObjectInstance objectInstance = new ObjectInstance(objectName,
-            AddressControl.class.getName());
+      ObjectName objectName = ManagementServiceImpl.getAddressObjectName(address);
+      ObjectInstance objectInstance = new ObjectInstance(objectName, AddressControl.class.getName());
 
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(true);
       mbeanServer.unregisterMBean(objectName);
-      expect(
-            mbeanServer.registerMBean(isA(AddressControlMBean.class),
-                  eq(objectName))).andReturn(objectInstance);
+      expect(mbeanServer.registerMBean(isA(StandardMBean.class), eq(objectName))).andReturn(objectInstance);
 
       replay(mbeanServer);
 
@@ -205,8 +235,7 @@ public class ManagementServiceImplTest extends TestCase
    public void testUnregisterAddress() throws Exception
    {
       SimpleString address = randomSimpleString();
-      ObjectName objectName = ManagementServiceImpl
-            .getAddressObjectName(address);
+      ObjectName objectName = ManagementServiceImpl.getAddressObjectName(address);
 
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(true);
@@ -224,10 +253,8 @@ public class ManagementServiceImplTest extends TestCase
    {
       SimpleString address = randomSimpleString();
       SimpleString name = randomSimpleString();
-      ObjectName objectName = ManagementServiceImpl.getQueueObjectName(address,
-            name);
-      ObjectInstance objectInstance = new ObjectInstance(objectName,
-            QueueControl.class.getName());
+      ObjectName objectName = ManagementServiceImpl.getQueueObjectName(address, name);
+      ObjectInstance objectInstance = new ObjectInstance(objectName, QueueControl.class.getName());
 
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       Queue queue = createMock(Queue.class);
@@ -235,9 +262,7 @@ public class ManagementServiceImplTest extends TestCase
       expect(queue.isDurable()).andReturn(true);
       StorageManager storageManager = createMock(StorageManager.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(false);
-      expect(
-            mbeanServer.registerMBean(isA(QueueControlMBean.class),
-                  eq(objectName))).andReturn(objectInstance);
+      expect(mbeanServer.registerMBean(isA(StandardMBean.class), eq(objectName))).andReturn(objectInstance);
 
       replay(mbeanServer, queue, storageManager);
 
@@ -251,10 +276,8 @@ public class ManagementServiceImplTest extends TestCase
    {
       SimpleString address = randomSimpleString();
       SimpleString name = randomSimpleString();
-      ObjectName objectName = ManagementServiceImpl.getQueueObjectName(address,
-            name);
-      ObjectInstance objectInstance = new ObjectInstance(objectName,
-            QueueControl.class.getName());
+      ObjectName objectName = ManagementServiceImpl.getQueueObjectName(address, name);
+      ObjectInstance objectInstance = new ObjectInstance(objectName, QueueControl.class.getName());
 
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       Queue queue = createMock(Queue.class);
@@ -263,9 +286,7 @@ public class ManagementServiceImplTest extends TestCase
       StorageManager storageManager = createMock(StorageManager.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(true);
       mbeanServer.unregisterMBean(objectName);
-      expect(
-            mbeanServer.registerMBean(isA(QueueControlMBean.class),
-                  eq(objectName))).andReturn(objectInstance);
+      expect(mbeanServer.registerMBean(isA(StandardMBean.class), eq(objectName))).andReturn(objectInstance);
 
       replay(mbeanServer, queue, storageManager);
 
@@ -279,8 +300,7 @@ public class ManagementServiceImplTest extends TestCase
    {
       SimpleString address = randomSimpleString();
       SimpleString name = randomSimpleString();
-      ObjectName objectName = ManagementServiceImpl.getQueueObjectName(address,
-            name);
+      ObjectName objectName = ManagementServiceImpl.getQueueObjectName(address, name);
 
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(true);

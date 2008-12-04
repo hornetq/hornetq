@@ -243,6 +243,7 @@ public class MessagingServerImpl implements MessagingServer
                                                           storageManager,
                                                           configuration,
                                                           queueSettingsRepository,
+                                                          securityRepository,
                                                           resourceManager,
                                                           remotingService,
                                                           this);

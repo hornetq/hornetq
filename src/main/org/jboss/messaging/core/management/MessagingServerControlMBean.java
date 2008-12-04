@@ -85,11 +85,11 @@ public interface MessagingServerControlMBean
 
    int getMessageCounterMaxDayCount();
 
-   void setMessageCounterMaxDayCount(int count);
+   void setMessageCounterMaxDayCount(int count) throws Exception;
 
    long getMessageCounterSamplePeriod();
 
-   void setMessageCounterSamplePeriod(long newPeriod);
+   void setMessageCounterSamplePeriod(long newPeriod) throws Exception;
    
    public boolean isBackup();
 
@@ -134,13 +134,13 @@ public interface MessagingServerControlMBean
          @Parameter(name = "address", desc = "The address to remove") String address)
          throws Exception;
 
-   void enableMessageCounters();
+   void enableMessageCounters() throws Exception;
 
-   void disableMessageCounters();
+   void disableMessageCounters() throws Exception;
 
-   void resetAllMessageCounters();
+   void resetAllMessageCounters() throws Exception;
 
-   void resetAllMessageCounterHistories();
+   void resetAllMessageCounterHistories() throws Exception;
    
    @Operation(desc = "List all the prepared transaction, sorted by date, oldest first")
    public String[] listPreparedTransactions();
@@ -158,7 +158,7 @@ public interface MessagingServerControlMBean
    String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress);
 
    @Operation(desc = "Closes all the connections for the given IP Address", impact = INFO)
-   boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress);
+   boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
 
    @Operation(desc = "List all the connection IDs", impact = INFO)
    String[] listConnectionIDs();

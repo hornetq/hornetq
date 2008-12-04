@@ -33,6 +33,7 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
@@ -116,10 +117,9 @@ public class FailoverManagementTest extends TestCase
          ClientMessage managementMessage  = session1.createClientMessage(false);
          
          ManagementHelper.putAttributes(managementMessage,
-                                        replyTo,
                                         ManagementServiceImpl.getQueueObjectName(ADDRESS, ADDRESS),
                                         "MessageCount");
-         
+         managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);
          managementMessage.getBody().flip();
          
          producer.send(DEFAULT_MANAGEMENT_ADDRESS, managementMessage);
@@ -137,10 +137,10 @@ public class FailoverManagementTest extends TestCase
          ClientMessage managementMessage  = session1.createClientMessage(false);
          
          ManagementHelper.putAttributes(managementMessage,
-                                        replyTo,
                                         ManagementServiceImpl.getQueueObjectName(ADDRESS, ADDRESS),
                                         "MessageCount");
-         
+         managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);
+
          managementMessage.getBody().flip();
          
          producer.send(DEFAULT_MANAGEMENT_ADDRESS, managementMessage);
@@ -211,10 +211,9 @@ public class FailoverManagementTest extends TestCase
          ClientMessage managementMessage  = session1.createClientMessage(false);
          
          ManagementHelper.putAttributes(managementMessage,
-                                        replyTo,
                                         ManagementServiceImpl.getQueueObjectName(ADDRESS, ADDRESS),
                                         "MessageCount");
-         
+         managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);
          managementMessage.getBody().flip();
          
          producer.send(DEFAULT_MANAGEMENT_ADDRESS, managementMessage);

@@ -27,7 +27,7 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.client.management.impl.ManagementHelper;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
@@ -2330,7 +2330,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       managementService.handleMessage(message);
 
-      message.setDestination((SimpleString)message.getProperty(ManagementHelper.HDR_JMX_REPLYTO));
+      message.setDestination((SimpleString)message.getProperty(ClientMessageImpl.REPLYTO_HEADER_NAME));
 
       send(message);
    }

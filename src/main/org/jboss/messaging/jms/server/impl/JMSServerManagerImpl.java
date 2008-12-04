@@ -363,7 +363,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       return messagingServer.listRemoteAddresses(ipAddress);
    }
 
-   public boolean closeConnectionsForAddress(final String ipAddress)
+   public boolean closeConnectionsForAddress(final String ipAddress) throws Exception
    {
       return messagingServer.closeConnectionsForAddress(ipAddress);
    }

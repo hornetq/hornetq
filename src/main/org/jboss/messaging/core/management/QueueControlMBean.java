@@ -51,7 +51,7 @@ public interface QueueControlMBean
    String getFilter();
 
    long getSizeBytes();
-
+   
    int getMessageCount();
 
    long getScheduledCount();
@@ -121,8 +121,8 @@ public interface QueueControlMBean
          @Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to") String otherQueueName)
          throws Exception;
 
-   @Operation(desc = "Send the message corresponding to the given messageID to this queue's Dead Letter Queue", impact = ACTION)
-   boolean sendMessageToDLQ(
+   @Operation(desc = "Send the message corresponding to the given messageID to this queue's Dead Letter Address", impact = ACTION)
+   boolean sendMessageToDeadLetterAddress(
          @Parameter(name = "messageID", desc = "A message ID") long messageID)
          throws Exception;
    
@@ -132,11 +132,11 @@ public interface QueueControlMBean
          @Parameter(name = "newPriority", desc = "the new priority (between 0 and 9)") int newPriority)
          throws Exception;
 
-   CompositeData listMessageCounter();
+   CompositeData listMessageCounter() throws Exception;
 
-   String listMessageCounterAsHTML();
+   String listMessageCounterAsHTML() throws Exception;
 
    TabularData listMessageCounterHistory() throws Exception;
 
-   String listMessageCounterHistoryAsHTML();
+   String listMessageCounterHistoryAsHTML() throws Exception;
 }

@@ -29,6 +29,7 @@ import java.util.Set;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientRequestor;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.MessageHandler;
@@ -59,43 +60,6 @@ public class ManagementClient
       // add temporary destination and queue
       clientSession.addDestination(replytoQueue, false, true);
       clientSession.createQueue(replytoQueue, replytoQueue, null, false, true, true);
-
-      ClientConsumer mngmntConsumer = clientSession.createConsumer(replytoQueue);
-      mngmntConsumer.setMessageHandler(new MessageHandler()
-      {
-
-         public void onMessage(final ClientMessage message)
-         {
-            System.out.println("received management message");
-            if (ManagementHelper.isOperationResult(message))
-            {
-               System.out.println("\toperation succeeded:" + ManagementHelper.hasOperationSucceeded(message));
-               if (ManagementHelper.hasOperationSucceeded(message))
-               {
-                  System.out.println("\t- result=" + message.getProperty(new SimpleString("sendMessageToDeadLetterAddress")));
-               }
-               else
-               {
-                  System.out.println("\t- exception=" + ManagementHelper.getOperationExceptionMessage(message));
-               }
-            }
-            else if (ManagementHelper.isAttributesResult(message))
-            {
-               System.out.println("\tattributes:");
-               System.out.println("\t- MessageCount=" + message.getProperty(new SimpleString("MessageCount")));
-               System.out.println("\t- Durable=" + message.getProperty(new SimpleString("Durable")));
-            }
-            try
-            {
-               message.acknowledge();
-            }
-            catch (MessagingException e)
-            {
-               e.printStackTrace();
-            }
-         }
-
-      });
 
       SimpleString notifQueue = new SimpleString("notifQueue");
       clientSession.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, null, false, true, true);
@@ -130,44 +94,70 @@ public class ManagementClient
       clientSession.addDestination(new SimpleString("anotherQueue"), false, true);
       clientSession.removeDestination(new SimpleString("anotherQueue"), false);
 
-      ClientProducer producer = clientSession.createProducer(replytoQueue);
+      ClientRequestor requestor = new ClientRequestor(clientSession, DEFAULT_MANAGEMENT_ADDRESS);
 
       // to set a new value for an attribute, invoke the corresponding setter
       // method
       ClientMessage mngmntMessage = clientSession.createClientMessage(false);
       ManagementHelper.putOperationInvocation(mngmntMessage,
-                                              replytoQueue,
                                               ManagementServiceImpl.getMessagingServerObjectName(),
                                               "setMessageCounterSamplePeriod",
                                               (long)30000);
-      producer.send(DEFAULT_MANAGEMENT_ADDRESS, mngmntMessage);
+      ClientMessage reply = requestor.request(mngmntMessage);
       System.out.println("sent management message to set an attribute");
+      if (reply != null)
+      {
+         if (ManagementHelper.isOperationResult(reply))
+         {
+            System.out.println("\toperation succeeded:" + ManagementHelper.hasOperationSucceeded(reply));
+            if (!ManagementHelper.hasOperationSucceeded(reply))
+            {
+               System.out.println("\t- exception=" + ManagementHelper.getOperationExceptionMessage(reply));
+            }
+         }
+      }
 
       // create a message to retrieve one or many attributes
       mngmntMessage = clientSession.createClientMessage(false);
       ManagementHelper.putAttributes(mngmntMessage,
-                                     replytoQueue,
                                      ManagementServiceImpl.getQueueObjectName(queue, queue),
                                      "MessageCount",
                                      "Durable");
-
-      producer.send(DEFAULT_MANAGEMENT_ADDRESS, mngmntMessage);
+      reply = requestor.request(mngmntMessage);
       System.out.println("sent management message to retrieve attributes");
+      if (reply != null)
+      {
+         System.out.println("\tattributes:");
+         System.out.println("\t- MessageCount=" + reply.getProperty(new SimpleString("MessageCount")));
+         System.out.println("\t- Durable=" + reply.getProperty(new SimpleString("Durable")));
+      }
 
       // create a message to invoke the operation sendMessageToDeadLetterAddress(long) on the
       // queue
       mngmntMessage = clientSession.createClientMessage(false);
       ManagementHelper.putOperationInvocation(mngmntMessage,
-                                              replytoQueue,
                                               ManagementServiceImpl.getQueueObjectName(queue, queue),
-                                              "sendMessageToDeadLetterAddress",
+                                              "sendMessageToDLQ",
                                               (long)6161);
-      producer.send(DEFAULT_MANAGEMENT_ADDRESS, mngmntMessage);
-      System.out.println("sent management message to invoke operation");
+      reply = requestor.request(mngmntMessage);
+      System.out.println("sent management message to retrieve attributes");
+      if (reply != null)
+      {
+         if (ManagementHelper.isOperationResult(reply))
+         {
+            System.out.println("\toperation succeeded:" + ManagementHelper.hasOperationSucceeded(reply));
+            if (ManagementHelper.hasOperationSucceeded(reply))
+            {
+               System.out.println("\t- result=" + reply.getProperty(new SimpleString("sendMessageToDLQ")));
+            }
+            else
+            {
+               System.out.println("\t- exception=" + ManagementHelper.getOperationExceptionMessage(reply));
+            }
+         }
+      }
 
       Thread.sleep(5000);
-
-      mngmntConsumer.close();
 
       consumeMessages(clientSession, queue);
 

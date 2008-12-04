@@ -75,7 +75,6 @@ public class ManagementServiceImplTest extends TestCase
       ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), true);
       assertNotNull(managementService);
 
-      SimpleString replyTo = RandomUtil.randomSimpleString();
       SimpleString address = RandomUtil.randomSimpleString();
       managementService.registerAddress(address);
 
@@ -83,7 +82,7 @@ public class ManagementServiceImplTest extends TestCase
       ServerMessage message = new ServerMessageImpl();
       MessagingBuffer body = new ByteBufferWrapper(ByteBuffer.allocate(2048));
       message.setBody(body);
-      ManagementHelper.putAttributes(message, replyTo, ManagementServiceImpl.getAddressObjectName(address), "Address");
+      ManagementHelper.putAttributes(message, ManagementServiceImpl.getAddressObjectName(address), "Address");
 
       managementService.handleMessage(message);
 
@@ -104,7 +103,6 @@ public class ManagementServiceImplTest extends TestCase
       resource.addRole(role.getName(), role.isCheckType(CREATE), role.isCheckType(READ), role.isCheckType(WRITE));
       replay(resource);
 
-      SimpleString replyTo = RandomUtil.randomSimpleString();
       SimpleString address = RandomUtil.randomSimpleString();
       ObjectName on = ManagementServiceImpl.getAddressObjectName(address);
       managementService.registerResource(on, resource);
@@ -114,7 +112,6 @@ public class ManagementServiceImplTest extends TestCase
       MessagingBuffer body = new ByteBufferWrapper(ByteBuffer.allocate(2048));
       message.setBody(body);
       ManagementHelper.putOperationInvocation(message,
-                                              replyTo,
                                               on,
                                               "addRole",
                                               role.getName(),
@@ -143,7 +140,6 @@ public class ManagementServiceImplTest extends TestCase
       expectLastCall().andThrow(new Exception(exceptionMessage));
       replay(resource);
 
-      SimpleString replyTo = RandomUtil.randomSimpleString();
       SimpleString address = RandomUtil.randomSimpleString();
       ObjectName on = ManagementServiceImpl.getAddressObjectName(address);
       managementService.registerResource(on, resource);
@@ -153,7 +149,6 @@ public class ManagementServiceImplTest extends TestCase
       MessagingBuffer body = new ByteBufferWrapper(ByteBuffer.allocate(2048));
       message.setBody(body);
       ManagementHelper.putOperationInvocation(message,
-                                              replyTo,
                                               on,
                                               "addRole",
                                               role.getName(),

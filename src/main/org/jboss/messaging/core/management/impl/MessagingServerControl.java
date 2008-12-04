@@ -34,13 +34,11 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import javax.management.ListenerNotFoundException;
-import javax.management.MBeanInfo;
 import javax.management.MBeanNotificationInfo;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
-import javax.management.StandardMBean;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.config.Configuration;
@@ -74,7 +72,7 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class MessagingServerControl extends StandardMBean implements MessagingServerControlMBean, NotificationEmitter
+public class MessagingServerControl implements MessagingServerControlMBean, NotificationEmitter
 {
    // Constants -----------------------------------------------------
 
@@ -134,7 +132,6 @@ public class MessagingServerControl extends StandardMBean implements MessagingSe
                                  final MessageCounterManager messageCounterManager,
                                  final NotificationBroadcasterSupport broadcaster) throws Exception
    {
-      super(MessagingServerControlMBean.class);
       this.postOffice = postOffice;
       this.storageManager = storageManager;
       this.configuration = configuration;
@@ -234,20 +231,6 @@ public class MessagingServerControl extends StandardMBean implements MessagingSe
          return refs.size();
       }
       return 0;
-   }
-
-   // StandardMBean overrides ---------------------------------------
-
-   @Override
-   public MBeanInfo getMBeanInfo()
-   {
-      MBeanInfo info = super.getMBeanInfo();
-      return new MBeanInfo(info.getClassName(),
-                           info.getDescription(),
-                           info.getAttributes(),
-                           info.getConstructors(),
-                           MBeanInfoHelper.getMBeanOperationsInfo(MessagingServerControlMBean.class),
-                           getNotificationInfo());
    }
 
    // MessagingServerControlMBean implementation --------------------

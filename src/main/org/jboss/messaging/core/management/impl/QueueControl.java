@@ -58,7 +58,7 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class QueueControl extends StandardMBean implements QueueControlMBean
+public class QueueControl implements QueueControlMBean
 {
 
    // Constants -----------------------------------------------------
@@ -80,7 +80,6 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
          final HierarchicalRepository<QueueSettings> queueSettingsRepository,
          final MessageCounter counter) throws NotCompliantMBeanException
    {
-      super(QueueControlMBean.class);
       this.queue = queue;
       this.storageManager = storageManager;
       this.postOffice = postOffice;
@@ -306,7 +305,7 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
       return moveMatchingMessages(null, otherQueueName);
    }
 
-   public boolean sendMessageToDLQ(final long messageID) throws Exception
+   public boolean sendMessageToDeadLetterAddress(final long messageID) throws Exception
    {
       return queue.sendMessageToDeadLetterAddress(messageID, storageManager, postOffice,
             queueSettingsRepository);
@@ -360,18 +359,6 @@ public class QueueControl extends StandardMBean implements QueueControlMBean
    public String listMessageCounterHistoryAsHTML()
    {
       return MessageCounterHelper.listMessageCounterHistoryAsHTML(new MessageCounter[] { counter });
-   }
-   
-   // StandardMBean overrides ---------------------------------------
-
-   @Override
-   public MBeanInfo getMBeanInfo()
-   {
-      MBeanInfo info = super.getMBeanInfo();
-      return new MBeanInfo(info.getClassName(), info.getDescription(), info
-            .getAttributes(), info.getConstructors(), MBeanInfoHelper
-            .getMBeanOperationsInfo(QueueControlMBean.class), info
-            .getNotifications());
    }
 
    // Package protected ---------------------------------------------

@@ -46,8 +46,6 @@ public class ManagementHelper
 
    public static final SimpleString HDR_JMX_OBJECTNAME = new SimpleString("JBMJMXObjectName");
 
-   public static final SimpleString HDR_JMX_REPLYTO = new SimpleString("JBMJMXReplyTo");
-
    public static final SimpleString HDR_JMX_ATTRIBUTE_PREFIX = new SimpleString("JBMJMXAttribute.");
 
    public static final SimpleString HDR_JMX_OPERATION_PREFIX = new SimpleString("JBMJMXOperation.");
@@ -69,12 +67,10 @@ public class ManagementHelper
    // Static --------------------------------------------------------
 
    public static void putAttributes(final Message message,
-                                    final SimpleString replyTo,
                                     final ObjectName objectName,
                                     final String... attributes)
    {
       message.putStringProperty(HDR_JMX_OBJECTNAME, new SimpleString(objectName.toString()));
-      message.putStringProperty(HDR_JMX_REPLYTO, replyTo);
       for (int i = 0; i < attributes.length; i++)
       {
          message.putStringProperty(new SimpleString(HDR_JMX_ATTRIBUTE_PREFIX + Integer.toString(i)),
@@ -83,14 +79,12 @@ public class ManagementHelper
    }
 
    public static void putOperationInvocation(final Message message,
-                                             final SimpleString replyTo,
                                              final ObjectName objectName,
                                              final String operationName,
                                              final Object... parameters)
    {
       // store the name of the operation...
       message.putStringProperty(HDR_JMX_OBJECTNAME, new SimpleString(objectName.toString()));
-      message.putStringProperty(HDR_JMX_REPLYTO, replyTo);
       message.putStringProperty(HDR_JMX_OPERATION_NAME, new SimpleString(operationName));
       // ... and all the parameters (preserving their types)
       for (int i = 0; i < parameters.length; i++)
@@ -119,6 +113,16 @@ public class ManagementHelper
          return (TabularData)from((byte[])object);
       }
       throw new IllegalArgumentException(key + " property is not a valid TabularData");
+   }
+   
+   public static CompositeData getCompositeDataProperty(final Message message, final String key)
+   {
+      Object object = message.getProperty(new SimpleString(key));
+      if (object instanceof byte[])
+      {
+         return (CompositeData)from((byte[])object);
+      }
+      throw new IllegalArgumentException(key + " property is not a valid CompositeData");
    }
 
    public static boolean hasOperationSucceeded(final Message message)
@@ -192,17 +196,7 @@ public class ManagementHelper
       }
    }
 
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   private static Object from(final byte[] bytes)
+   public static Object from(final byte[] bytes)
    {
       ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
       ObjectInputStream ois;
@@ -216,6 +210,16 @@ public class ManagementHelper
          throw new IllegalStateException(e);
       }
    }
+
+   // Constructors --------------------------------------------------
+
+   // Public --------------------------------------------------------
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
 
    private static void storePropertyAsBytes(final Message message, final SimpleString key, final Object property)
    {

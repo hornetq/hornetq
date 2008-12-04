@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.management;
 
+import java.util.Set;
+
 import javax.management.ObjectName;
 
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
@@ -30,6 +32,7 @@ import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -53,6 +56,7 @@ public interface ManagementService
                                               StorageManager storageManager,
                                               Configuration configuration,                                            
                                               HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                                              HierarchicalRepository<Set<Role>> securityRepository,
                                               ResourceManager resourceManager,
                                               RemotingService remotingService,
                                               MessagingServer messagingServer) throws Exception;

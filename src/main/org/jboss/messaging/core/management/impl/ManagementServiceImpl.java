@@ -39,6 +39,7 @@ import java.util.Set;
 import javax.management.MBeanServer;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
+import javax.management.StandardMBean;
 
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.Configuration;
@@ -48,6 +49,9 @@ import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.QueueControlMBean;
+import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareAddressControlWrapper;
+import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareMessagingServerControlWrapper;
+import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareQueueControlWrapper;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
@@ -98,7 +102,7 @@ public class ManagementServiceImpl implements ManagementService
 
    private HierarchicalRepository<QueueSettings> queueSettingsRepository;
 
-   private MessagingServerControlMBean managedServer;
+   private MessagingServerControl managedServer;
 
    private final MessageCounterManager messageCounterManager = new MessageCounterManagerImpl(10000);
 
@@ -155,12 +159,14 @@ public class ManagementServiceImpl implements ManagementService
                                                      final StorageManager storageManager,
                                                      final Configuration configuration,                                     
                                                      final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                                                     final HierarchicalRepository<Set<Role>> securityRepository,
                                                      final ResourceManager resourceManager,
                                                      final RemotingService remotingService,
                                                      final MessagingServer messagingServer) throws Exception
    {
       this.postOffice = postOffice;
       this.queueSettingsRepository = queueSettingsRepository;
+      this.securityRepository = securityRepository;
       this.storageManager = storageManager;
       this.managementNotificationAddress = configuration.getManagementNotificationAddress();
       managedServer = new MessagingServerControl(postOffice,
@@ -173,7 +179,8 @@ public class ManagementServiceImpl implements ManagementService
                                                  messageCounterManager,
                                                  broadcaster);
       ObjectName objectName = getMessagingServerObjectName();
-      registerResource(objectName, managedServer);
+      registerInJMX(objectName, new StandardMBean(new ReplicationAwareMessagingServerControlWrapper(objectName, managedServer), MessagingServerControlMBean.class));
+      registerInRegistry(objectName, managedServer);
 
       return managedServer;
    }
@@ -187,8 +194,10 @@ public class ManagementServiceImpl implements ManagementService
    public void registerAddress(final SimpleString address) throws Exception
    {
       ObjectName objectName = getAddressObjectName(address);
-      AddressControlMBean addressControl = new AddressControl(address, postOffice, securityRepository);
-      registerResource(objectName, addressControl);
+      AddressControl addressControl = new AddressControl(address, postOffice, securityRepository);
+      
+      registerInJMX(objectName, new StandardMBean(new ReplicationAwareAddressControlWrapper(objectName, addressControl), AddressControlMBean.class));
+      registerInRegistry(objectName, addressControl);
       if (log.isDebugEnabled())
       {
          log.debug("registered address " + objectName);
@@ -213,12 +222,13 @@ public class ManagementServiceImpl implements ManagementService
                                                   messageCounterManager.getMaxDayCount());
       messageCounterManager.registerMessageCounter(queue.getName().toString(), counter);
       ObjectName objectName = getQueueObjectName(address, queue.getName());
-      QueueControlMBean queueControl = new QueueControl(queue,
+      QueueControl queueControl = new QueueControl(queue,
                                                         storageManager,
                                                         postOffice,
                                                         queueSettingsRepository,
-                                                        counter);
-      registerResource(objectName, queueControl);
+                                                        counter);      
+      registerInJMX(objectName, new StandardMBean(new ReplicationAwareQueueControlWrapper(objectName, queueControl), QueueControlMBean.class));
+      registerInRegistry(objectName, queueControl);
 
       if (log.isDebugEnabled())
       {

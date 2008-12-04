@@ -601,7 +601,7 @@ public class QueueControlTest extends TestCase
       verifyMockedAttributes();
    }
 
-   public void testSendMessageToDLQ() throws Exception
+   public void testSendMessageToDeadLetterAddress() throws Exception
    {
       long messageID = randomLong();
       expect(
@@ -611,12 +611,12 @@ public class QueueControlTest extends TestCase
       replayMockedAttributes();
 
       QueueControlMBean control = createControl();
-      assertTrue(control.sendMessageToDLQ(messageID));
+      assertTrue(control.sendMessageToDeadLetterAddress(messageID));
 
       verifyMockedAttributes();
    }
 
-   public void testSendMessageToDLQWithNoMessageID() throws Exception
+   public void testSendMessageToDeadLetterAddressWithNoMessageID() throws Exception
    {
       long messageID = randomLong();
       expect(
@@ -626,7 +626,7 @@ public class QueueControlTest extends TestCase
       replayMockedAttributes();
 
       QueueControlMBean control = createControl();
-      assertFalse(control.sendMessageToDLQ(messageID));
+      assertFalse(control.sendMessageToDeadLetterAddress(messageID));
 
       verifyMockedAttributes();
    }

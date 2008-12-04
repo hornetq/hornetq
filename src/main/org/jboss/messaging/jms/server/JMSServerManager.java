@@ -175,7 +175,7 @@ public interface JMSServerManager
 
    String[] listRemoteAddresses(String ipAddress);
 
-   boolean closeConnectionsForAddress(String ipAddress);
+   boolean closeConnectionsForAddress(String ipAddress) throws Exception;
 
    String[] listConnectionIDs();
 
