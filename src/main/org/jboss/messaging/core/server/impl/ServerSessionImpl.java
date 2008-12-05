@@ -2329,10 +2329,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       doSecurity(message);
 
       managementService.handleMessage(message);
-
-      message.setDestination((SimpleString)message.getProperty(ClientMessageImpl.REPLYTO_HEADER_NAME));
-
-      send(message);
+      
+      SimpleString replyTo = (SimpleString)message.getProperty(ClientMessageImpl.REPLYTO_HEADER_NAME);
+      if (replyTo != null)
+      {
+         message.setDestination(replyTo);
+         send(message);
+      }
    }
 
    public void handleReplicatedDelivery(final SessionReplicateDeliveryMessage packet)
