@@ -26,9 +26,6 @@ import java.text.DateFormat;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import javax.management.MBeanInfo;
-import javax.management.NotCompliantMBeanException;
-import javax.management.StandardMBean;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
@@ -78,7 +75,7 @@ public class QueueControl implements QueueControlMBean
    public QueueControl(final Queue queue, final StorageManager storageManager,
          final PostOffice postOffice,
          final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-         final MessageCounter counter) throws NotCompliantMBeanException
+         final MessageCounter counter)
    {
       this.queue = queue;
       this.storageManager = storageManager;

@@ -26,9 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.management.MBeanInfo;
-import javax.management.NotCompliantMBeanException;
-import javax.management.StandardMBean;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.management.AddressControlMBean;
@@ -46,8 +43,7 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class AddressControl extends StandardMBean implements
-      AddressControlMBean
+public class AddressControl implements AddressControlMBean
 {
 
    // Constants -----------------------------------------------------
@@ -55,7 +51,9 @@ public class AddressControl extends StandardMBean implements
    // Attributes ----------------------------------------------------
 
    private final SimpleString address;
+
    private final PostOffice postOffice;
+
    private final HierarchicalRepository<Set<Role>> securityRepository;
 
    // Static --------------------------------------------------------
@@ -63,11 +61,9 @@ public class AddressControl extends StandardMBean implements
    // Constructors --------------------------------------------------
 
    public AddressControl(final SimpleString address,
-         final PostOffice postOffice,
-         final HierarchicalRepository<Set<Role>> securityRepository)
-         throws NotCompliantMBeanException
+                         final PostOffice postOffice,
+                         final HierarchicalRepository<Set<Role>> securityRepository)
    {
-      super(AddressControlMBean.class);
       this.address = address;
       this.postOffice = postOffice;
       this.securityRepository = securityRepository;
@@ -94,7 +90,8 @@ public class AddressControl extends StandardMBean implements
             queueNames[i] = binding.getQueue().getName().toString();
          }
          return queueNames;
-      } catch (Throwable t)
+      }
+      catch (Throwable t)
       {
          throw new IllegalStateException(t.getMessage());
       }
@@ -112,16 +109,15 @@ public class AddressControl extends StandardMBean implements
       int i = 0;
       for (Role role : roles)
       {
-         roleInfos[i++] = new RoleInfo(role.getName(), role
-               .isCheckType(CheckType.CREATE),
-               role.isCheckType(CheckType.READ), role
-                     .isCheckType(CheckType.WRITE));
+         roleInfos[i++] = new RoleInfo(role.getName(),
+                                       role.isCheckType(CheckType.CREATE),
+                                       role.isCheckType(CheckType.READ),
+                                       role.isCheckType(CheckType.WRITE));
       }
       return roleInfos;
    }
 
-   public void addRole(final String name, final boolean create,
-         final boolean read, final boolean write) throws Exception
+   public void addRole(final String name, final boolean create, final boolean read, final boolean write) throws Exception
    {
       Set<Role> roles = securityRepository.getMatch(address.toString());
       Role newRole = new Role(name, read, write, create);
@@ -153,18 +149,6 @@ public class AddressControl extends StandardMBean implements
          throw new IllegalArgumentException("Role " + role + " does not exist");
       }
       securityRepository.addMatch(address.toString(), roles);
-   }
-
-   // StandardMBean overrides ---------------------------------------
-
-   @Override
-   public MBeanInfo getMBeanInfo()
-   {
-      MBeanInfo info = super.getMBeanInfo();
-      return new MBeanInfo(info.getClassName(), info.getDescription(), info
-            .getAttributes(), info.getConstructors(), MBeanInfoHelper
-            .getMBeanOperationsInfo(AddressControlMBean.class), info
-            .getNotifications());
    }
 
    // Package protected ---------------------------------------------
