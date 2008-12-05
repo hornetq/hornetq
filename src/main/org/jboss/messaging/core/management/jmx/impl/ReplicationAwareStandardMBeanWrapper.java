@@ -41,7 +41,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * 
- * Created 3 déc. 2008 11:23:11
+ * Created Dec 3, 2008 11:23:11
  *
  *
  */
