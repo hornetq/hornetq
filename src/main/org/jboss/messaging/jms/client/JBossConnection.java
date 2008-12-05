@@ -515,11 +515,11 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
    private class JMSFailureListener implements FailureListener
    {
-      public void connectionFailed(final MessagingException me)
+      public boolean connectionFailed(final MessagingException me)
       {
          if (me == null)
          {
-            return;
+            return true;
          }
 
          if (exceptionListener != null)
@@ -530,6 +530,8 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
             exceptionListener.onException(je);
          }
+         
+         return true;
       }
 
    }

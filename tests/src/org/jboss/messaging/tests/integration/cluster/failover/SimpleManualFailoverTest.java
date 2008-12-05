@@ -135,10 +135,12 @@ public class SimpleManualFailoverTest extends TestCase
 
       class MyListener implements FailureListener
       {
-         public void connectionFailed(MessagingException me)
+         public boolean connectionFailed(MessagingException me)
          {
             log.info("*** connection failed");
             latch.countDown();
+            
+            return true;
          }
       }
 

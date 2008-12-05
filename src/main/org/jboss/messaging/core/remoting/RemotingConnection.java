@@ -12,6 +12,8 @@
 
 package org.jboss.messaging.core.remoting;
 
+import java.util.List;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
@@ -35,6 +37,10 @@ public interface RemotingConnection extends BufferHandler
    void addFailureListener(FailureListener listener);
 
    boolean removeFailureListener(FailureListener listener);
+   
+   List<FailureListener> getFailureListeners();
+   
+   void setFailureListeners(List<FailureListener> listeners);
 
    MessagingBuffer createBuffer(int size);
 

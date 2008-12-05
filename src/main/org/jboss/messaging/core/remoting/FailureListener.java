@@ -34,5 +34,5 @@ import org.jboss.messaging.core.exception.MessagingException;
  */
 public interface FailureListener
 {
-   void connectionFailed(MessagingException me);
+   boolean connectionFailed(MessagingException me);
 }

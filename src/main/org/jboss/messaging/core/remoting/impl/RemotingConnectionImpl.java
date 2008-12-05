@@ -64,11 +64,10 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_START;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SUSPEND;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -354,6 +353,18 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    // RemotingConnection implementation
    // ------------------------------------------------------------
 
+   public List<FailureListener> getFailureListeners()
+   {
+      return new ArrayList<FailureListener>(failureListeners);
+   }
+   
+   public void setFailureListeners(final List<FailureListener> listeners)
+   {
+      this.failureListeners.clear();
+      
+      this.failureListeners.addAll(listeners);
+   }
+   
    public Object getID()
    {
       return transportConnection.getID();
@@ -379,7 +390,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    }
 
    public void addFailureListener(final FailureListener listener)
-   {
+   {   
       if (listener == null)
       {
          throw new IllegalStateException("FailureListener cannot be null");
@@ -535,13 +546,18 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    private void callListeners(final MessagingException me)
    {
-      final Set<FailureListener> listenersClone = new HashSet<FailureListener>(failureListeners);
+      final List<FailureListener> listenersClone = new ArrayList<FailureListener>(failureListeners);
 
       for (final FailureListener listener : listenersClone)
       {
          try
          {
-            listener.connectionFailed(me);
+            boolean callNext = listener.connectionFailed(me);
+            
+            if (!callNext)
+            {
+               break;
+            }
          }
          catch (final Throwable t)
          {
@@ -1605,7 +1621,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    private class ReplicatingConnectionFailureListener implements FailureListener
    {
-      public void connectionFailed(final MessagingException me)
+      public boolean connectionFailed(final MessagingException me)
       {
          synchronized (RemotingConnectionImpl.this)
          {
@@ -1614,6 +1630,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                channel.replicatingChannelDead();
             }
          }
+         
+         return true;
       }
    }
 }

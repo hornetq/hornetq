@@ -186,11 +186,7 @@ public class JMSFailoverTest extends TestCase
 
       conn.close();
 
-      assertNotNull(listener.e);
-
-      JMSException je = listener.e;
-
-      assertEquals(me, je.getCause());
+      assertNull(listener.e);     
    }
 
    public void testManualFailover() throws Exception
@@ -217,8 +213,8 @@ public class JMSFailoverTest extends TestCase
                                                                    DEFAULT_PRE_ACKNOWLEDGE,                                                                
                                                                    DEFAULT_RETRY_INTERVAL,
                                                                    DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                   DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
-                                                                   DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
+                                                                   0,
+                                                                   0);
 
       JBossConnectionFactory jbcfBackup = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams),
@@ -243,8 +239,8 @@ public class JMSFailoverTest extends TestCase
                                                                      DEFAULT_PRE_ACKNOWLEDGE,                                                                   
                                                                      DEFAULT_RETRY_INTERVAL,
                                                                      DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                     DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
-                                                                     DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
+                                                                     0,
+                                                                     0);
 
       Connection connLive = jbcfLive.createConnection();
 

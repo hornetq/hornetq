@@ -45,6 +45,22 @@ public class InVMConnector implements Connector
    
    //Used for testing failure only
    public static volatile boolean failOnCreateConnection;
+   public static volatile int numberOfFailures = -1;
+   private static volatile int failures;
+   public static synchronized void resetFailures()
+   {
+      failures = 0;
+      failOnCreateConnection = false;
+      numberOfFailures = -1;
+   }
+   private static synchronized void incFailures()
+   {
+      failures++;
+      if (failures == numberOfFailures)
+      {
+         resetFailures();
+      }
+   }
 
    private final int id;
    
@@ -99,6 +115,7 @@ public class InVMConnector implements Connector
    {
       if (failOnCreateConnection)
       {
+         incFailures();
          //For testing only
          return null;
       }

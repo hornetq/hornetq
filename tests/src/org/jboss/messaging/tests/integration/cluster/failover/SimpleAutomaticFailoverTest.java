@@ -437,90 +437,7 @@ public class SimpleAutomaticFailoverTest extends TestCase
       assertEquals(0, sf.numConnections());
    }
 
-   public void testFailureListenerCalledOnFailure() throws Exception
-   {
-      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                backupParams));
-
-      sf.setSendWindowSize(32 * 1024);
-      
-      ClientSession session = sf.createSession(false, true, true);
-
-      session.createQueue(ADDRESS, ADDRESS, null, false, false, true);
-
-      ClientProducer producer = session.createProducer(ADDRESS);
-
-      final int numMessages = 1000;
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
-         message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
-         producer.send(message);
-      }
-
-      RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
-
-      final CountDownLatch latch = new CountDownLatch(1);
-
-      class MyListener implements FailureListener
-      {
-         public void connectionFailed(final MessagingException me)
-         {
-            latch.countDown();
-         }
-      }
-
-      conn.addFailureListener(new MyListener());
-
-      // Simulate failure on connection
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
-
-      ClientConsumer consumer = session.createConsumer(ADDRESS);
-
-      session.start();
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message2 = consumer.receive();
-
-         assertEquals("aardvarks", message2.getBody().getString());
-
-         assertEquals(i, message2.getProperty(new SimpleString("count")));
-
-         message2.acknowledge();
-      }
-
-      session.close();
-
-      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                   backupParams));
-
-      session = sf.createSession(false, true, true);
-
-      consumer = session.createConsumer(ADDRESS);
-
-      ClientMessage message3 = consumer.receive(250);
-
-      assertNull(message3);
-
-      session.close();
-
-      assertEquals(0, sf.numSessions());
-
-      assertEquals(0, sf.numConnections());
-   }
+  
 
    public void testFailoverMultipleSessions() throws Exception
    {
@@ -747,9 +664,11 @@ public class SimpleAutomaticFailoverTest extends TestCase
 
       class MyListener implements FailureListener
       {
-         public void connectionFailed(final MessagingException me)
+         public boolean connectionFailed(final MessagingException me)
          {
             latch.countDown();
+            
+            return true;
          }
       }
 

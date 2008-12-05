@@ -628,6 +628,8 @@ public class ReconnectTest extends TestCase
    @Override
    protected void tearDown() throws Exception
    {
+      InVMConnector.resetFailures();
+      
       assertEquals(0, service.getServer().getRemotingService().getConnections().size());
 
       service.stop();

@@ -107,9 +107,11 @@ public class PingTest extends ServiceTestBase
    {
       volatile MessagingException me;
 
-      public void connectionFailed(MessagingException me)
+      public boolean connectionFailed(MessagingException me)
       {
          this.me = me;
+         
+         return true;
       }
 
       public MessagingException getException()

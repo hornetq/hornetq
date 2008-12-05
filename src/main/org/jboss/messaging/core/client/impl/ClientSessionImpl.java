@@ -719,8 +719,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             // closed on the server so we need to interrupt it
             channel.returnBlocking();
          }
-
-         //backupConnection = null;
       }
       catch (Throwable t)
       {
@@ -732,9 +730,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
 
       channel.send(new SessionFailoverCompleteMessage(name));
-
-      // Now we can add a failure listener since if a further failure occurs we cleanup since no backup any more
-      //remotingConnection.addFailureListener(this);
    }
 
    // XAResource implementation
@@ -1007,7 +1002,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // FailureListener implementation --------------------------------------------
 
-   public void connectionFailed(final MessagingException me)
+   public boolean connectionFailed(final MessagingException me)
    {
       try
       {
@@ -1017,6 +1012,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          log.error("Failed to cleanup session");
       }
+      
+      return true;
    }
 
    // Public
@@ -1031,16 +1028,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return remotingConnection;
    }
-
-//   public RemotingConnection getBackupConnection()
-//   {
-//      return backupConnection;
-//   }
-//
-//   public void setBackupConnection(RemotingConnection connection)
-//   {
-//      this.backupConnection = connection;
-//   }
 
    // Protected
    // ----------------------------------------------------------------------------

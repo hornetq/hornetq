@@ -89,11 +89,11 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
    private Map<String, Object> backupTransportParams;
 
    private final int maxConnections;
-   
+
    private final long callTimeout;
-   
+
    private final long pingPeriod;
-   
+
    private final long connectionTTL;
 
    private final Map<ClientSessionInternal, RemotingConnection> sessions = new HashMap<ClientSessionInternal, RemotingConnection>();
@@ -117,13 +117,13 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
    private Iterator<ConnectionEntry> mapIterator;
 
    private Object failConnectionLock = new Object();
-   
+
    private final long retryInterval;
 
    private final double retryIntervalMultiplier; // For exponential backoff
-      
+
    private final int maxRetriesBeforeFailover;
-   
+
    private final int maxRetriesAfterFailover;
 
    // Static
@@ -136,10 +136,10 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
                                 final TransportConfiguration backupConfig,
                                 final int maxConnections,
                                 final long callTimeout,
-                                final long pingPeriod,             
+                                final long pingPeriod,
                                 final long connectionTTL,
                                 final long retryInterval,
-                                final double retryIntervalMultiplier,                                
+                                final double retryIntervalMultiplier,
                                 final int maxRetriesBeforeFailover,
                                 final int maxRetriesAfterFailover)
    {
@@ -159,21 +159,21 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
          backupTransportParams = null;
       }
-      
+
       this.maxConnections = maxConnections;
-      
+
       this.callTimeout = callTimeout;
-      
+
       this.pingPeriod = pingPeriod;
-      
+
       this.connectionTTL = connectionTTL;
-      
+
       this.retryInterval = retryInterval;
-      
+
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-                 
+
       this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
-      
+
       this.maxRetriesAfterFailover = maxRetriesAfterFailover;
    }
 
@@ -202,9 +202,9 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
    {
       failConnection(me);
    }
-   
-   // ConnectionManager implementation ------------------------------------------------------------------
 
+   // ConnectionManager implementation ------------------------------------------------------------------
+   
    public ClientSession createSession(final String username,
                                       final String password,
                                       final boolean xa,
@@ -216,10 +216,10 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
                                       final boolean blockOnAcknowledge,
                                       final boolean autoGroup,
                                       final int sendWindowSize,
-                                      final int consumerWindowSize,                            
-                                      final int consumerMaxRate,                            
-                                      final int producerMaxRate,                            
-                                      final boolean blockOnNonPersistentSend,                            
+                                      final int consumerWindowSize,
+                                      final int consumerMaxRate,
+                                      final int producerMaxRate,
+                                      final boolean blockOnNonPersistentSend,
                                       final boolean blockOnPersistentSend) throws MessagingException
    {
       synchronized (createSessionLock)
@@ -241,7 +241,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
                synchronized (failoverLock)
                {
-                  connection = getConnection(1);
+                  connection = getConnectionForCreateSession();
 
                   channel1 = connection.getChannel(1, -1, false);
 
@@ -299,11 +299,11 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
                                                                         blockOnAcknowledge,
                                                                         autoGroup,
                                                                         ackBatchSize,
-                                                                        consumerWindowSize,                            
-                                                                        consumerMaxRate,                            
-                                                                        producerMaxRate,                            
-                                                                        blockOnNonPersistentSend,                            
-                                                                        blockOnPersistentSend,                            
+                                                                        consumerWindowSize,
+                                                                        consumerMaxRate,
+                                                                        producerMaxRate,
+                                                                        blockOnNonPersistentSend,
+                                                                        blockOnPersistentSend,
                                                                         minLargeMessageSize,
                                                                         connection,
                                                                         response.getServerVersion(),
@@ -395,17 +395,58 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
    // FailureListener implementation --------------------------------------------------------
 
-   public void connectionFailed(final MessagingException me)
-   {      
+   public boolean connectionFailed(final MessagingException me)
+   {
       if (me.getCode() == MessagingException.OBJECT_CLOSED)
       {
          // The server has closed the connection. We don't want failover to occur in this case -
          // either the server has booted off the connection, or it didn't receive a ping in time
          // in either case server side resources on both live and backup will be removed so the client
          // can't failover anyway
-         return;
+         return true;
       }
 
+      return !failover();
+   }
+
+   // Public
+   // ---------------------------------------------------------------------------------------
+
+   // Protected
+   // ------------------------------------------------------------------------------------
+
+   // Package Private
+   // ------------------------------------------------------------------------------
+
+   // Private
+   // --------------------------------------------------------------------------------------
+
+   private RemotingConnection getConnectionForCreateSession() throws MessagingException
+   {
+      while (true)
+      {
+         RemotingConnection connection = getConnection(1);
+   
+         if (connection == null)
+         {
+            // Connection is dead - failover/reconnect
+            boolean failedOver = failover();
+            
+            if (!failedOver)
+            {
+               //Nothing we can do here
+               throw new MessagingException(MessagingException.NOT_CONNECTED, "Unabled to create session - server is unavailable and no backup server or backup is unavailable");
+            }
+         }
+         else
+         {
+            return connection;
+         }
+      }
+   }
+   
+   private boolean failover()
+   {
       synchronized (failoverLock)
       {
          // Now get locks on all channel 1s, whilst holding the failoverLock - this makes sure
@@ -436,7 +477,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
          if (backupConnectorFactory != null || maxRetriesBeforeFailover != 0 || maxRetriesAfterFailover != 0)
          {
             log.info("Commencing automatic failover / reconnection");
-            
+
             lockAllChannel1s();
 
             final boolean needToInterrupt;
@@ -471,56 +512,56 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
                   }
                }
             }
-            
+
             // Now we absolutely know that no threads are executing in or blocked in createSession, and no
             // more will execute it until failover is complete
 
             // So.. do failover / reconnection
-            
+
             Set<RemotingConnection> oldConnections = new HashSet<RemotingConnection>();
 
             for (ConnectionEntry entry : connections.values())
             {
                oldConnections.add(entry.connection);
             }
-            
+
             connections.clear();
 
             refCount = 0;
 
             mapIterator = null;
-            
+
             boolean done = false;
-                       
+
             if (maxRetriesBeforeFailover != 0)
             {
-               //First try reconnecting to current node if configured to do this
-               
+               // First try reconnecting to current node if configured to do this
+
                done = reconnect(maxRetriesBeforeFailover);
-               
+
                if (done)
                {
                   log.info("reconnected to original node");
                }
             }
-            
+
             if (!done)
             {
-               //If didn't reconnect to current node then try failover to backup
-               
+               // If didn't reconnect to current node then try failover to backup
+
                int retries = maxRetriesAfterFailover;
-               
+
                if (backupConnectorFactory != null)
                {
                   connectorFactory = backupConnectorFactory;
-      
+
                   transportParams = backupTransportParams;
-                  
+
                   if (maxRetriesAfterFailover == 0)
                   {
                      retries = 1;
                   }
-                  
+
                   log.info("Failing over to backup");
                }
                else
@@ -531,25 +572,37 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
                backupConnectorFactory = null;
 
                backupTransportParams = null;
-               
-               done = reconnect(retries);           
-               
+
+               done = reconnect(retries);
+
                if (done)
                {
                   log.info("Successfully reconnected");
+               }
+               else
+               {
+                  log.info("Unable to failover/reconnect");
                }
             }
 
             for (RemotingConnection connection : oldConnections)
             {
                connection.destroy();
-            }            
+            }
+
+            log.info("done is " + done);
+
+            return done;
+         }
+         else
+         {
+            return false;
          }
       }
    }
 
    private boolean reconnect(final int retries)
-   {     
+   {
       // We fail over sessions per connection to ensure there is the same mapping of channel id
       // on live and backup connections
 
@@ -560,7 +613,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
          ClientSessionInternal session = entry.getKey();
 
          RemotingConnection connection = entry.getValue();
-         
+
          List<ClientSessionInternal> sessions = sessionsPerConnection.get(connection);
 
          if (sessions == null)
@@ -574,78 +627,96 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
       }
 
       boolean ok = true;
-      
+
       for (Map.Entry<RemotingConnection, List<ClientSessionInternal>> entry : sessionsPerConnection.entrySet())
       {
          List<ClientSessionInternal> theSessions = entry.getValue();
-         
+
          RemotingConnection backupConnection = getConnectionWithRetry(theSessions, retries);
-                  
+
          if (backupConnection == null)
          {
             log.warn("Failed to reconnect to server.");
-            
+
             ok = false;
-            
+
             break;
          }
-         
-         backupConnection.addFailureListener(this);
-                  
+
+         List<FailureListener> oldListeners = entry.getKey().getFailureListeners();
+
+         List<FailureListener> newListeners = new ArrayList<FailureListener>(oldListeners.size());
+
+         newListeners.add(this);
+
+         for (int i = 0; i < oldListeners.size(); i++)
+         {
+            // Add all apart from the first one which is the old connectionmanager
+
+            FailureListener listener = oldListeners.get(i);
+
+            if (listener instanceof ConnectionManagerImpl == false)
+            {
+               newListeners.add(oldListeners.get(i));
+            }
+         }
+
+         backupConnection.setFailureListeners(newListeners);
+
          for (ClientSessionInternal session : theSessions)
          {
             sessions.put(session, backupConnection);
          }
       }
-      
+
       if (ok)
       {
-         //If all connections got ok, then handle failover
-         for (Map.Entry<ClientSessionInternal, RemotingConnection> entry: sessions.entrySet())
+         // If all connections got ok, then handle failover
+         for (Map.Entry<ClientSessionInternal, RemotingConnection> entry : sessions.entrySet())
          {
             entry.getKey().handleFailover(entry.getValue());
          }
       }
-  
+
       return ok;
    }
-   
+
    private RemotingConnection getConnectionWithRetry(final List<ClientSessionInternal> sessions, final int retries)
    {
       long interval = retryInterval;
-      
+
       int count = 0;
-      
+
       while (true)
-      {                        
+      {
          RemotingConnection connection = getConnection(sessions.size());
-               
+
          if (connection == null)
          {
-            //Failed to get backup connection
-            
+            // Failed to get backup connection
+
             if (retries != 0)
             {
                if (retries != -1 && count == retries)
                {
                   log.warn("Retried " + retries + " times to reconnect. Now giving up.");
-                  
-                  return null;                  
+
+                  return null;
                }
-               
+
                count++;
-               
+
                log.warn("Now waiting " + interval + " ms before attempting reconnection.");
-               
+
                try
                {
                   Thread.sleep(interval);
                }
                catch (InterruptedException ignore)
-               {                  
+               {
                }
-               
-               //Exponential back-off
+
+               // Exponential back-off
                interval *= retryIntervalMultiplier;
             }
             else
@@ -659,19 +730,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
          }
       }
    }
-      
-   // Public
-   // ---------------------------------------------------------------------------------------
-
-   // Protected
-   // ------------------------------------------------------------------------------------
-
-   // Package Private
-   // ------------------------------------------------------------------------------
-
-   // Private
-   // --------------------------------------------------------------------------------------
-
+   
    private void checkCloseConnections()
    {
       if (refCount == 0)
@@ -711,7 +770,20 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
          connector.start();
 
-         Connection tc = connector.createConnection();
+         Connection tc;
+         
+         try
+         {
+            tc = connector.createConnection();
+         }
+         catch (Exception e)
+         {
+            //Sanity catch for badly behaved remoting plugins
+            
+            log.warn("connector.create should never throw an exception, implementation is badly behaved");
+            
+            tc = null;
+         }
 
          if (tc == null)
          {

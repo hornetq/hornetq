@@ -230,7 +230,6 @@ public class ReconnectWithBackupTest extends TestCase
       
       for (int j = 0; j < numIterations; j++)
       {
-
          // Send some more messages
 
          for (int i = numMessages; i < numMessages * 2; i++)

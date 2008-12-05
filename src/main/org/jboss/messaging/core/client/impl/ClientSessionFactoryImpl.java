@@ -550,7 +550,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    */
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig)
    {
-      this(connectorConfig, null);
+      this(connectorConfig, null, 0, 0, 0, 0);
    }
 
    // ClientSessionFactory implementation------------------------------------------------------------
