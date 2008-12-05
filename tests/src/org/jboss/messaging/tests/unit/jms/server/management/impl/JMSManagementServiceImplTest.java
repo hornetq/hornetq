@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.management.ObjectName;
+import javax.management.StandardMBean;
 
 import junit.framework.TestCase;
 
@@ -49,12 +50,12 @@ import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
-import org.jboss.messaging.jms.server.management.ConnectionFactoryControlMBean;
 import org.jboss.messaging.jms.server.management.JMSManagementService;
-import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
-import org.jboss.messaging.jms.server.management.TopicControlMBean;
+import org.jboss.messaging.jms.server.management.impl.ConnectionFactoryControl;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
+import org.jboss.messaging.jms.server.management.impl.JMSQueueControl;
+import org.jboss.messaging.jms.server.management.impl.TopicControl;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -80,7 +81,8 @@ public class JMSManagementServiceImplTest extends TestCase
       JMSServerManager server = createMock(JMSServerManager.class);
 
       ManagementService managementService = createMock(ManagementService.class);
-      managementService.registerResource(eq(objectName), isA(JMSServerControlMBean.class));
+      managementService.registerInJMX(eq(objectName), isA(StandardMBean.class));
+      managementService.registerInRegistry(eq(objectName), isA(JMSServerControlMBean.class));
       replay(managementService, server);
 
       JMSManagementService service = new JMSManagementServiceImpl(managementService);
@@ -107,7 +109,8 @@ public class JMSManagementServiceImplTest extends TestCase
       expect(managementService.getMessageCounterManager()).andReturn(messageCounterManager );
       expect(messageCounterManager.getMaxDayCount()).andReturn(randomPositiveInt());
       messageCounterManager.registerMessageCounter(eq(name), isA(MessageCounter.class));
-      managementService.registerResource(eq(objectName), isA(JMSQueueControlMBean.class));
+      managementService.registerInJMX(eq(objectName), isA(StandardMBean.class));
+      managementService.registerInRegistry(eq(objectName), isA(JMSQueueControl.class));
       
       replay(managementService, messageCounterManager, coreQueue, postOffice, storageManager, queueSettingsRepository);
 
@@ -128,7 +131,8 @@ public class JMSManagementServiceImplTest extends TestCase
       StorageManager storageManager = createMock(StorageManager.class);
 
       ManagementService managementService = createMock(ManagementService.class);
-      managementService.registerResource(eq(objectName), isA(TopicControlMBean.class));
+      managementService.registerInJMX(eq(objectName), isA(StandardMBean.class));
+      managementService.registerInRegistry(eq(objectName), isA(TopicControl.class));
 
       replay(managementService, postOffice, storageManager);
 
@@ -149,7 +153,8 @@ public class JMSManagementServiceImplTest extends TestCase
 
       JBossConnectionFactory connectionFactory = createMock(JBossConnectionFactory.class);
       ManagementService managementService = createMock(ManagementService.class);
-      managementService.registerResource(eq(objectName), isA(ConnectionFactoryControlMBean.class));
+      managementService.registerInJMX(eq(objectName), isA(StandardMBean.class));
+      managementService.registerInRegistry(eq(objectName), isA(ConnectionFactoryControl.class));
 
       replay(managementService, connectionFactory);
 

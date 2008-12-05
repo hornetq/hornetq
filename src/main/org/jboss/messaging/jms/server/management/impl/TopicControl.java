@@ -26,15 +26,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.management.MBeanInfo;
-import javax.management.NotCompliantMBeanException;
-import javax.management.StandardMBean;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.Operation;
-import org.jboss.messaging.core.management.Parameter;
-import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -54,52 +48,35 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class TopicControl extends StandardMBean implements TopicControlMBean
+public class TopicControl implements TopicControlMBean
 {
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(TopicControl.class);
-   
+
    // Attributes ----------------------------------------------------
 
    private final JBossTopic managedTopic;
+
    private final String binding;
+
    private final PostOffice postOffice;
+
    private final StorageManager storageManager;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public TopicControl(final JBossTopic topic, final String jndiBinding,
-         final PostOffice postOffice, final StorageManager storageManager)
-         throws NotCompliantMBeanException
+   public TopicControl(final JBossTopic topic,
+                       final String jndiBinding,
+                       final PostOffice postOffice,
+                       final StorageManager storageManager)
    {
-      super(TopicControlMBean.class);
       this.managedTopic = topic;
       this.binding = jndiBinding;
       this.postOffice = postOffice;
       this.storageManager = storageManager;
-   }
-
-   // Public --------------------------------------------------------
-
-   // StandardMBean overrides ---------------------------------------
-
-   /**
-    * overrides getMBeanInfo to add operations info using annotations
-    * 
-    * @see Operation
-    * @see Parameter
-    */
-   @Override
-   public MBeanInfo getMBeanInfo()
-   {
-      MBeanInfo info = super.getMBeanInfo();
-      return new MBeanInfo(info.getClassName(), info.getDescription(), info
-            .getAttributes(), info.getConstructors(), MBeanInfoHelper
-            .getMBeanOperationsInfo(TopicControlMBean.class), info
-            .getNotifications());
    }
 
    // TopicControlMBean implementation ------------------------------
@@ -184,8 +161,7 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
       return listSubscribersInfos(DurabilityType.NON_DURABLE);
    }
 
-   public TabularData listMessagesForSubscription(final String queueName)
-         throws Exception
+   public TabularData listMessagesForSubscription(final String queueName) throws Exception
    {
       SimpleString sAddress = new SimpleString(queueName);
       Binding binding = postOffice.getBinding(sAddress);
@@ -195,8 +171,7 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
       }
       Queue queue = binding.getQueue();
       List<MessageReference> messageRefs = queue.list(null);
-      List<JMSMessageInfo> infos = new ArrayList<JMSMessageInfo>(messageRefs
-            .size());
+      List<JMSMessageInfo> infos = new ArrayList<JMSMessageInfo>(messageRefs.size());
 
       for (MessageReference messageRef : messageRefs)
       {
@@ -210,18 +185,17 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
    public int removeAllMessages() throws Exception
    {
       int count = 0;
-      List<Binding> bindings = postOffice.getBindingsForAddress(managedTopic
-            .getSimpleAddress());
+      List<Binding> bindings = postOffice.getBindingsForAddress(managedTopic.getSimpleAddress());
 
       for (Binding binding : bindings)
       {
          Queue queue = binding.getQueue();
          count += queue.deleteAllReferences(storageManager);
       }
-      
+
       return count;
    }
-   
+
    public void dropDurableSubscription(String clientID, String subscriptionName) throws Exception
    {
       String queueName = JBossTopic.createQueueNameForDurableSubscription(clientID, subscriptionName);
@@ -229,7 +203,9 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
 
       if (binding == null)
       {
-         throw new IllegalArgumentException("No durable subscription for clientID=" + clientID + ", subcription=" + subscriptionName);
+         throw new IllegalArgumentException("No durable subscription for clientID=" + clientID +
+                                            ", subcription=" +
+                                            subscriptionName);
       }
 
       Queue queue = binding.getQueue();
@@ -241,8 +217,7 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
 
    public void dropAllSubscriptions() throws Exception
    {
-      List<Binding> bindings = postOffice.getBindingsForAddress(managedTopic
-                                                                .getSimpleAddress());
+      List<Binding> bindings = postOffice.getBindingsForAddress(managedTopic.getSimpleAddress());
 
       for (Binding binding : bindings)
       {
@@ -261,32 +236,30 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
    private SubscriptionInfo[] listSubscribersInfos(final DurabilityType durability)
    {
       List<Queue> queues = getQueues(durability);
-      List<SubscriptionInfo> subInfos = new ArrayList<SubscriptionInfo>(queues
-            .size());
-      
+      List<SubscriptionInfo> subInfos = new ArrayList<SubscriptionInfo>(queues.size());
+
       for (Queue queue : queues)
       {
          String clientID = null;
-         String subName = null;                 
+         String subName = null;
 
          if (queue.isDurable())
          {
-            Pair<String, String> pair = JBossTopic
-                  .decomposeQueueNameForDurableSubscription(queue.getName()
-                        .toString());
+            Pair<String, String> pair = JBossTopic.decomposeQueueNameForDurableSubscription(queue.getName().toString());
             clientID = pair.a;
             subName = pair.b;
          }
-         
-         String filter = queue.getFilter() != null ? queue.getFilter()
-               .getFilterString().toString() : null;
+
+         String filter = queue.getFilter() != null ? queue.getFilter().getFilterString().toString() : null;
          SubscriptionInfo info = new SubscriptionInfo(queue.getName().toString(),
-               clientID, subName, queue.isDurable(), filter, queue
-                     .getMessageCount());
+                                                      clientID,
+                                                      subName,
+                                                      queue.isDurable(),
+                                                      filter,
+                                                      queue.getMessageCount());
          subInfos.add(info);
       }
-      return (SubscriptionInfo[]) subInfos.toArray(new SubscriptionInfo[subInfos
-            .size()]);
+      return (SubscriptionInfo[])subInfos.toArray(new SubscriptionInfo[subInfos.size()]);
    }
 
    private int getMessageCount(final DurabilityType durability)
@@ -304,23 +277,21 @@ public class TopicControl extends StandardMBean implements TopicControlMBean
    {
       try
       {
-         List<Binding> bindings = postOffice.getBindingsForAddress(managedTopic
-               .getSimpleAddress());
+         List<Binding> bindings = postOffice.getBindingsForAddress(managedTopic.getSimpleAddress());
          List<Queue> matchingQueues = new ArrayList<Queue>();
 
          for (Binding binding : bindings)
          {
             Queue queue = binding.getQueue();
-            if (durability == DurabilityType.ALL
-                  || (durability == DurabilityType.DURABLE && queue.isDurable())
-                  || (durability == DurabilityType.NON_DURABLE && !queue
-                        .isDurable()))
+            if (durability == DurabilityType.ALL || (durability == DurabilityType.DURABLE && queue.isDurable()) ||
+                (durability == DurabilityType.NON_DURABLE && !queue.isDurable()))
             {
                matchingQueues.add(queue);
             }
          }
          return matchingQueues;
-      } catch (Exception e)
+      }
+      catch (Exception e)
       {
          e.printStackTrace();
          return Collections.emptyList();

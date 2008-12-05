@@ -27,9 +27,6 @@ import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import javax.management.MBeanInfo;
-import javax.management.NotCompliantMBeanException;
-import javax.management.StandardMBean;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
@@ -39,7 +36,6 @@ import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.DayCounterInfo;
 import org.jboss.messaging.core.management.MessageCounterInfo;
-import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounter.DayCounter;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterHelper;
@@ -65,8 +61,7 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JMSQueueControl extends StandardMBean implements
-      JMSQueueControlMBean
+public class JMSQueueControl implements JMSQueueControlMBean
 {
    // Constants -----------------------------------------------------
 
@@ -75,11 +70,17 @@ public class JMSQueueControl extends StandardMBean implements
    // Attributes ----------------------------------------------------
 
    private final JBossQueue managedQueue;
+
    private final Queue coreQueue;
+
    private final String binding;
+
    private final PostOffice postOffice;
+
    private final StorageManager storageManager;
+
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+
    private final MessageCounter counter;
 
    // Static --------------------------------------------------------
@@ -89,24 +90,22 @@ public class JMSQueueControl extends StandardMBean implements
       String filterStr = (selectorStr == null) ? null : SelectorTranslator.convertToJBMFilterString(selectorStr);
       return FilterImpl.createFilter(filterStr);
    }
-   
-   private static Filter createFilterForJMSMessageID(String jmsMessageID)
-         throws Exception
+
+   private static Filter createFilterForJMSMessageID(String jmsMessageID) throws Exception
    {
-      return new FilterImpl(new SimpleString(JBossMessage.JBM_MESSAGE_ID
-            + " = '" + jmsMessageID + "'"));
+      return new FilterImpl(new SimpleString(JBossMessage.JBM_MESSAGE_ID + " = '" + jmsMessageID + "'"));
    }
 
    // Constructors --------------------------------------------------
 
-   public JMSQueueControl(final JBossQueue queue, final Queue coreQueue,
-         final String jndiBinding, final PostOffice postOffice,
-         final StorageManager storageManager,
-         final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-         final MessageCounter counter)
-         throws NotCompliantMBeanException
+   public JMSQueueControl(final JBossQueue queue,
+                          final Queue coreQueue,
+                          final String jndiBinding,
+                          final PostOffice postOffice,
+                          final StorageManager storageManager,
+                          final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                          final MessageCounter counter)
    {
-      super(JMSQueueControlMBean.class);
       this.managedQueue = queue;
       this.coreQueue = coreQueue;
       this.binding = jndiBinding;
@@ -185,9 +184,9 @@ public class JMSQueueControl extends StandardMBean implements
       QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
       if (queueSettings != null && queueSettings.getDeadLetterAddress() != null)
       {
-         return JBossDestination.fromAddress(queueSettings.getDeadLetterAddress().toString())
-               .getName();
-      } else
+         return JBossDestination.fromAddress(queueSettings.getDeadLetterAddress().toString()).getName();
+      }
+      else
       {
          return null;
       }
@@ -198,9 +197,9 @@ public class JMSQueueControl extends StandardMBean implements
       QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
       if (queueSettings != null && queueSettings.getExpiryAddress() != null)
       {
-         return JBossDestination.fromAddress(
-               queueSettings.getExpiryAddress().toString()).getName();
-      } else
+         return JBossDestination.fromAddress(queueSettings.getExpiryAddress().toString()).getName();
+      }
+      else
       {
          return null;
       }
@@ -209,7 +208,7 @@ public class JMSQueueControl extends StandardMBean implements
    public void setExpiryAddress(String expiryQueueName)
    {
       QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
-      
+
       if (expiryQueueName != null)
       {
          queueSettings.setExpiryAddress(new SimpleString(expiryQueueName));
@@ -222,11 +221,9 @@ public class JMSQueueControl extends StandardMBean implements
       List<MessageReference> refs = coreQueue.list(filter);
       if (refs.size() != 1)
       {
-         throw new IllegalArgumentException(
-               "No message found for JMSMessageID: " + messageID);
+         throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
-      return coreQueue.deleteReference(refs.get(0).getMessage().getMessageID(),
-            storageManager);
+      return coreQueue.deleteReference(refs.get(0).getMessage().getMessageID(), storageManager);
    }
 
    public int removeMatchingMessages(String filterStr) throws Exception
@@ -235,12 +232,13 @@ public class JMSQueueControl extends StandardMBean implements
       {
          Filter filter = createFilterFromJMSSelector(filterStr);
          return coreQueue.deleteMatchingReferences(filter, storageManager);
-      } catch (MessagingException e)
+      }
+      catch (MessagingException e)
       {
          throw new IllegalStateException(e.getMessage());
       }
    }
-   
+
    public int removeAllMessages() throws Exception
    {
       return coreQueue.deleteAllReferences(storageManager);
@@ -258,8 +256,7 @@ public class JMSQueueControl extends StandardMBean implements
          Filter filter = createFilterFromJMSSelector(filterStr);
 
          List<MessageReference> messageRefs = coreQueue.list(filter);
-         List<JMSMessageInfo> infos = new ArrayList<JMSMessageInfo>(messageRefs
-               .size());
+         List<JMSMessageInfo> infos = new ArrayList<JMSMessageInfo>(messageRefs.size());
          for (MessageReference messageRef : messageRefs)
          {
             ServerMessage message = messageRef.getMessage();
@@ -267,7 +264,8 @@ public class JMSQueueControl extends StandardMBean implements
             infos.add(info);
          }
          return JMSMessageInfo.toTabularData(infos);
-      } catch (MessagingException e)
+      }
+      catch (MessagingException e)
       {
          throw new IllegalStateException(e.getMessage());
       }
@@ -279,11 +277,12 @@ public class JMSQueueControl extends StandardMBean implements
       List<MessageReference> refs = coreQueue.list(filter);
       if (refs.size() != 1)
       {
-         throw new IllegalArgumentException(
-               "No message found for JMSMessageID: " + messageID);
+         throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
       return coreQueue.expireMessage(refs.get(0).getMessage().getMessageID(),
-            storageManager, postOffice, queueSettingsRepository);
+                                     storageManager,
+                                     postOffice,
+                                     queueSettingsRepository);
    }
 
    public int expireMessages(final String filterStr) throws Exception
@@ -296,10 +295,13 @@ public class JMSQueueControl extends StandardMBean implements
          for (MessageReference ref : refs)
          {
             coreQueue.expireMessage(ref.getMessage().getMessageID(),
-                  storageManager, postOffice, queueSettingsRepository);
+                                    storageManager,
+                                    postOffice,
+                                    queueSettingsRepository);
          }
          return refs.size();
-      } catch (MessagingException e)
+      }
+      catch (MessagingException e)
       {
          throw new IllegalStateException(e.getMessage());
       }
@@ -311,64 +313,62 @@ public class JMSQueueControl extends StandardMBean implements
       List<MessageReference> refs = coreQueue.list(filter);
       if (refs.size() != 1)
       {
-         throw new IllegalArgumentException(
-               "No message found for JMSMessageID: " + messageID);
+         throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
-      return coreQueue.sendMessageToDeadLetterAddress(
-            refs.get(0).getMessage().getMessageID(), storageManager,
-            postOffice, queueSettingsRepository);
+      return coreQueue.sendMessageToDeadLetterAddress(refs.get(0).getMessage().getMessageID(),
+                                                      storageManager,
+                                                      postOffice,
+                                                      queueSettingsRepository);
    }
 
-   public boolean changeMessagePriority(final String messageID,
-         final int newPriority) throws Exception
+   public boolean changeMessagePriority(final String messageID, final int newPriority) throws Exception
    {
       if (newPriority < 0 || newPriority > 9)
       {
-         throw new IllegalArgumentException("invalid newPriority value: "
-               + newPriority + ". It must be between 0 and 9 (both included)");
+         throw new IllegalArgumentException("invalid newPriority value: " + newPriority +
+                                            ". It must be between 0 and 9 (both included)");
       }
       Filter filter = createFilterForJMSMessageID(messageID);
       List<MessageReference> refs = coreQueue.list(filter);
       if (refs.size() != 1)
       {
-         throw new IllegalArgumentException(
-               "No message found for JMSMessageID: " + messageID);
+         throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
-      return coreQueue.changeMessagePriority(refs.get(0).getMessage()
-            .getMessageID(), (byte) newPriority, storageManager, postOffice,
-            queueSettingsRepository);
+      return coreQueue.changeMessagePriority(refs.get(0).getMessage().getMessageID(),
+                                             (byte)newPriority,
+                                             storageManager,
+                                             postOffice,
+                                             queueSettingsRepository);
    }
-   
+
    public boolean moveMessage(long messageID, String otherQueueName) throws Exception
    {
       Binding binding = postOffice.getBinding(new SimpleString(otherQueueName));
       if (binding == null)
       {
-         throw new IllegalArgumentException("No queue found for "
-               + otherQueueName);
+         throw new IllegalArgumentException("No queue found for " + otherQueueName);
       }
 
       return coreQueue.moveMessage(messageID, binding.getAddress(), storageManager, postOffice);
    }
-   
+
    public int moveMatchingMessages(String filterStr, String otherQueueName) throws Exception
    {
       Binding otherBinding = postOffice.getBinding(new SimpleString(otherQueueName));
       if (otherBinding == null)
       {
-         throw new IllegalArgumentException("No queue found for "
-               + otherQueueName);
+         throw new IllegalArgumentException("No queue found for " + otherQueueName);
       }
 
       Filter filter = createFilterFromJMSSelector(filterStr);
       return coreQueue.moveMessages(filter, otherBinding.getAddress(), storageManager, postOffice);
    }
-   
+
    public int moveAllMessages(String otherQueueName) throws Exception
    {
       return moveMatchingMessages(null, otherQueueName);
    }
-   
+
    public CompositeData listMessageCounter()
    {
       return MessageCounterInfo.toCompositeData(counter);
@@ -395,22 +395,10 @@ public class JMSQueueControl extends StandardMBean implements
       }
       return DayCounterInfo.toTabularData(infos);
    }
-   
+
    public String listMessageCounterHistoryAsHTML()
    {
       return MessageCounterHelper.listMessageCounterHistoryAsHTML(new MessageCounter[] { counter });
-   }
-
-   // StandardMBean overrides ---------------------------------------
-
-   @Override
-   public MBeanInfo getMBeanInfo()
-   {
-      MBeanInfo info = super.getMBeanInfo();
-      return new MBeanInfo(info.getClassName(), info.getDescription(), info
-            .getAttributes(), info.getConstructors(), MBeanInfoHelper
-            .getMBeanOperationsInfo(JMSQueueControlMBean.class), info
-            .getNotifications());
    }
 
    // Package protected ---------------------------------------------

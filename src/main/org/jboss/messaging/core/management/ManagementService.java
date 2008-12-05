@@ -63,6 +63,10 @@ public interface ManagementService
 
    void unregisterServer() throws Exception;
 
+   void registerInJMX(ObjectName objectName, Object managedResource) throws Exception;
+
+   void registerInRegistry(ObjectName objectName, Object managedResource);
+
    void registerAddress(SimpleString address) throws Exception;
 
    void unregisterAddress(SimpleString address) throws Exception;
@@ -94,4 +98,5 @@ public interface ManagementService
     * @see ManagementHelper
     */
    void sendNotification(NotificationType type, String message, TypedProperties props) throws Exception;
+
 }

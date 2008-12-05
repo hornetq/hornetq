@@ -39,16 +39,13 @@ import java.util.Set;
 import javax.management.MBeanServer;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
-import javax.management.StandardMBean;
 
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.NotificationType;
-import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareAddressControlWrapper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareMessagingServerControlWrapper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareQueueControlWrapper;
@@ -179,7 +176,7 @@ public class ManagementServiceImpl implements ManagementService
                                                  messageCounterManager,
                                                  broadcaster);
       ObjectName objectName = getMessagingServerObjectName();
-      registerInJMX(objectName, new StandardMBean(new ReplicationAwareMessagingServerControlWrapper(objectName, managedServer), MessagingServerControlMBean.class));
+      registerInJMX(objectName, new ReplicationAwareMessagingServerControlWrapper(objectName, managedServer));
       registerInRegistry(objectName, managedServer);
 
       return managedServer;
@@ -196,7 +193,7 @@ public class ManagementServiceImpl implements ManagementService
       ObjectName objectName = getAddressObjectName(address);
       AddressControl addressControl = new AddressControl(address, postOffice, securityRepository);
       
-      registerInJMX(objectName, new StandardMBean(new ReplicationAwareAddressControlWrapper(objectName, addressControl), AddressControlMBean.class));
+      registerInJMX(objectName, new ReplicationAwareAddressControlWrapper(objectName, addressControl));
       registerInRegistry(objectName, addressControl);
       if (log.isDebugEnabled())
       {
@@ -227,7 +224,7 @@ public class ManagementServiceImpl implements ManagementService
                                                         postOffice,
                                                         queueSettingsRepository,
                                                         counter);      
-      registerInJMX(objectName, new StandardMBean(new ReplicationAwareQueueControlWrapper(objectName, queueControl), QueueControlMBean.class));
+      registerInJMX(objectName, new ReplicationAwareQueueControlWrapper(objectName, queueControl));
       registerInRegistry(objectName, queueControl);
 
       if (log.isDebugEnabled())
@@ -318,24 +315,8 @@ public class ManagementServiceImpl implements ManagementService
       return registry.get(objectName);
    }
 
-   // Package protected ---------------------------------------------
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   public void registerInRegistry(final ObjectName objectName, final Object managedResource)
-   {
-      unregisterFromRegistry(objectName);
-      registry.put(objectName, managedResource);
-   }
-
-   private void unregisterFromRegistry(final ObjectName objectName)
-   {
-      registry.remove(objectName);
-   }
-
-   private void registerInJMX(final ObjectName objectName, final Object managedResource) throws Exception
+   public void registerInJMX(final ObjectName objectName, final Object managedResource) throws Exception
    {
       if (!jmxManagementEnabled)
       {
@@ -346,6 +327,23 @@ public class ManagementServiceImpl implements ManagementService
          unregisterFromJMX(objectName);
          mbeanServer.registerMBean(managedResource, objectName);         
       }
+   }
+   
+   public void registerInRegistry(final ObjectName objectName, final Object managedResource)
+   {
+      unregisterFromRegistry(objectName);
+      registry.put(objectName, managedResource);
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   private void unregisterFromRegistry(final ObjectName objectName)
+   {
+      registry.remove(objectName);
    }
 
    // the JMX unregistration is synchronized to avoid race conditions if 2 clients tries to 

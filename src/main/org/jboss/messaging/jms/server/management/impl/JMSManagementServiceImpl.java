@@ -42,6 +42,10 @@ import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSManagementService;
+import org.jboss.messaging.jms.server.management.jmx.impl.ReplicationAwareConnectionFactoryControlWrapper;
+import org.jboss.messaging.jms.server.management.jmx.impl.ReplicationAwareJMSQueueControlWrapper;
+import org.jboss.messaging.jms.server.management.jmx.impl.ReplicationAwareJMSServerControlWrapper;
+import org.jboss.messaging.jms.server.management.jmx.impl.ReplicationAwareTopicControlWrapper;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -97,7 +101,9 @@ public class JMSManagementServiceImpl implements JMSManagementService
    {
       ObjectName objectName = getJMSServerObjectName();
       JMSServerControl control = new JMSServerControl(server);
-      managementService.registerResource(objectName, control);
+      managementService.registerInJMX(objectName,
+                                      new ReplicationAwareJMSServerControlWrapper(objectName, control));
+      managementService.registerInRegistry(objectName, control);
    }
 
    public void unregisterJMSServer() throws Exception
@@ -129,7 +135,9 @@ public class JMSManagementServiceImpl implements JMSManagementService
                                                     storageManager,
                                                     queueSettingsRepository,
                                                     counter);
-      managementService.registerResource(objectName, control);
+      managementService.registerInJMX(objectName,
+                                      new ReplicationAwareJMSQueueControlWrapper(objectName, control));
+      managementService.registerInRegistry(objectName, control);
    }
 
    public void unregisterQueue(final String name) throws Exception
@@ -145,7 +153,8 @@ public class JMSManagementServiceImpl implements JMSManagementService
    {
       ObjectName objectName = getJMSTopicObjectName(topic.getTopicName());
       TopicControl control = new TopicControl(topic, jndiBinding, postOffice, storageManager);
-      managementService.registerResource(objectName, control);
+      managementService.registerInJMX(objectName, new ReplicationAwareTopicControlWrapper(objectName, control));
+      managementService.registerInRegistry(objectName, control);
    }
 
    public void unregisterTopic(final String name) throws Exception
@@ -160,7 +169,9 @@ public class JMSManagementServiceImpl implements JMSManagementService
    {
       ObjectName objectName = getConnectionFactoryObjectName(name);
       ConnectionFactoryControl control = new ConnectionFactoryControl(connectionFactory, name, bindings);
-      managementService.registerResource(objectName, control);
+      managementService.registerInJMX(objectName,
+                                      new ReplicationAwareConnectionFactoryControlWrapper(objectName, control));
+      managementService.registerInRegistry(objectName, control);
    }
 
    public void unregisterConnectionFactory(final String name) throws Exception

@@ -117,11 +117,15 @@ public class JMSQueueControlTest extends TestCase
 
       JMSUtil.sendMessages(queue, 2);
 
+      Thread.sleep(100);
+
       assertEquals(2, queueControl.getMessageCount());
       assertEquals(2, queueControl.getMessagesAdded());
 
       assertNotNull(consumer.receive(500));
       assertNotNull(consumer.receive(500));
+
+      Thread.sleep(100);
 
       assertEquals(0, queueControl.getMessageCount());
       assertEquals(2, queueControl.getMessagesAdded());
