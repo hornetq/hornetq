@@ -435,19 +435,21 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          {
             return;
          }
-
-         log.warn(me.getMessage());
-
-         // Then call the listeners
-         callListeners(me);
-
-         internalClose();
-
-         for (Channel channel : channels.values())
-         {
-            channel.fail();
-         }
+         
+         destroyed = true;
       }
+
+      log.warn(me.getMessage());
+
+      // Then call the listeners
+      callListeners(me);
+
+      internalClose();
+
+      for (Channel channel : channels.values())
+      {
+         channel.fail();
+      }      
    }
 
    public void destroy()
@@ -458,14 +460,16 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          {
             return;
          }
-
-         internalClose();
-
-         // TODO: https://jira.jboss.org/jira/browse/JBMESSAGING-1421
-         // This affects clustering, so I'm keeping this out for now
-         // We need to inform Listeners about the connection being closed
-         // callListeners(null);
+         
+         destroyed = true;
       }
+
+      internalClose();
+
+      // TODO: https://jira.jboss.org/jira/browse/JBMESSAGING-1421
+      // This affects clustering, so I'm keeping this out for now
+      // We need to inform Listeners about the connection being closed
+      // callListeners(null);      
    }
 
    public boolean isExpired(final long now)
@@ -577,8 +581,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       }
 
       pingChannel.close();
-
-      destroyed = true;
 
       // We close the underlying transport connection
       transportConnection.close();

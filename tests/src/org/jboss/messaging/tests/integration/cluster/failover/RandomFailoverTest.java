@@ -36,6 +36,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.MessagingService;
@@ -65,7 +66,7 @@ public class RandomFailoverTest extends TestCase
    private MessagingService backupService;
 
    private final Map<String, Object> backupParams = new HashMap<String, Object>();
-   
+
    private Timer timer;
 
    // Static --------------------------------------------------------
@@ -74,7 +75,6 @@ public class RandomFailoverTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   
    public void testA() throws Exception
    {
       runTest(new RunnableT()
@@ -85,7 +85,7 @@ public class RandomFailoverTest extends TestCase
          }
       });
    }
-   
+
    public void testB() throws Exception
    {
       runTest(new RunnableT()
@@ -96,7 +96,7 @@ public class RandomFailoverTest extends TestCase
          }
       });
    }
-   
+
    public void testC() throws Exception
    {
       runTest(new RunnableT()
@@ -107,7 +107,7 @@ public class RandomFailoverTest extends TestCase
          }
       });
    }
-   
+
    public void testD() throws Exception
    {
       runTest(new RunnableT()
@@ -118,7 +118,7 @@ public class RandomFailoverTest extends TestCase
          }
       });
    }
-   
+
    public void testE() throws Exception
    {
       runTest(new RunnableT()
@@ -129,7 +129,7 @@ public class RandomFailoverTest extends TestCase
          }
       });
    }
-   
+
    public void testF() throws Exception
    {
       runTest(new RunnableT()
@@ -140,7 +140,7 @@ public class RandomFailoverTest extends TestCase
          }
       });
    }
-   
+
    public void testG() throws Exception
    {
       runTest(new RunnableT()
@@ -151,7 +151,7 @@ public class RandomFailoverTest extends TestCase
          }
       });
    }
-   
+
    public void testH() throws Exception
    {
       runTest(new RunnableT()
@@ -162,7 +162,7 @@ public class RandomFailoverTest extends TestCase
          }
       });
    }
-   
+
    public void testI() throws Exception
    {
       runTest(new RunnableT()
@@ -173,7 +173,7 @@ public class RandomFailoverTest extends TestCase
          }
       });
    }
-   
+
    public void testJ() throws Exception
    {
       runTest(new RunnableT()
@@ -184,7 +184,7 @@ public class RandomFailoverTest extends TestCase
          }
       });
    }
-   
+
    public void testK() throws Exception
    {
       runTest(new RunnableT()
@@ -195,7 +195,7 @@ public class RandomFailoverTest extends TestCase
          }
       });
    }
-   
+
    public void testL() throws Exception
    {
       runTest(new RunnableT()
@@ -206,7 +206,7 @@ public class RandomFailoverTest extends TestCase
          }
       });
    }
-   
+
    public void testN() throws Exception
    {
       runTest(new RunnableT()
@@ -221,17 +221,21 @@ public class RandomFailoverTest extends TestCase
    public void runTest(final RunnableT runnable) throws Exception
    {
       final int numIts = getNumIterations();
-      
+
       for (int its = 0; its < numIts; its++)
       {
          start();
 
          ClientSessionFactoryImpl sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                               backupParams));
+                                                                                               backupParams),
+                                                                    0,
+                                                                    1,
+                                                                    ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                                    ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
 
          sf.setSendWindowSize(32 * 1024);
-         
+
          ClientSession session = sf.createSession(false, false, false);
 
          Failer failer = startFailer(1000, session);
@@ -242,25 +246,27 @@ public class RandomFailoverTest extends TestCase
             runnable.run(sf);
          }
          while (!failer.isExecuted());
+         
+         InVMConnector.resetFailures();
 
          session.close();
 
          assertEquals(0, sf.numSessions());
-         
+
          assertEquals(0, sf.numConnections());
-         
+
          stop();
       }
    }
-       
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    protected void doTestA(final ClientSessionFactory sf) throws Exception
    {
       long start = System.currentTimeMillis();
-      
+
       log.info("starting================");
 
       ClientSession s = sf.createSession(false, false, false);
@@ -902,7 +908,7 @@ public class RandomFailoverTest extends TestCase
 
       Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
       Set<ClientSession> sessions = new HashSet<ClientSession>();
-      
+
       for (int i = 0; i < numSessions; i++)
       {
          SimpleString subName = new SimpleString("sub" + i);
@@ -933,12 +939,12 @@ public class RandomFailoverTest extends TestCase
          message.getBody().flip();
          producer.send(message);
       }
-      
+
       for (ClientSession session : sessions)
       {
          session.start();
       }
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          for (ClientConsumer consumer : consumers)
@@ -949,7 +955,7 @@ public class RandomFailoverTest extends TestCase
             {
                throw new IllegalStateException("Failed to receive message " + i);
             }
-            
+
             assertNotNull(msg);
 
             assertEquals(i, msg.getProperty(new SimpleString("count")));
@@ -982,7 +988,7 @@ public class RandomFailoverTest extends TestCase
       }
 
       s.close();
-      
+
       assertEquals(1, ((ClientSessionFactoryImpl)sf).numSessions());
 
       long end = System.currentTimeMillis();
@@ -1051,7 +1057,7 @@ public class RandomFailoverTest extends TestCase
       }
 
       sessSend.commit();
-      
+
       log.info("sent and committed");
 
       for (int i = 0; i < numMessages; i++)
@@ -1305,7 +1311,7 @@ public class RandomFailoverTest extends TestCase
 
       sessCreate.deleteQueue(ADDRESS);
 
-      sessCreate.close();     
+      sessCreate.close();
    }
 
    protected void doTestJ(final ClientSessionFactory sf) throws Exception
@@ -1379,7 +1385,6 @@ public class RandomFailoverTest extends TestCase
 
       s.close();
    }
-   
 
    protected void doTestN(final ClientSessionFactory sf) throws Exception
    {
@@ -1426,44 +1431,44 @@ public class RandomFailoverTest extends TestCase
 
       sessCreate.close();
    }
-   
+
    protected int getNumIterations()
    {
       return 20;
    }
-   
+
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       log.info("*********** created timer");
       timer = new Timer(true);
-      
+
       log.info("************ Starting test " + this.getName());
    }
-   
+
    protected void tearDown() throws Exception
    {
       timer.cancel();
-      
+
       log.info("************ Ended test " + this.getName());
-      
+
       InVMRegistry.instance.clear();
-      
+
       super.tearDown();
    }
-     
+
    // Private -------------------------------------------------------
-   
+
    private Failer startFailer(final long time, final ClientSession session)
    {
       Failer failer = new Failer((ClientSessionInternal)session);
 
       timer.schedule(failer, (long)(time * Math.random()), 100);
-      
+
       return failer;
    }
-   
+
    private void start() throws Exception
    {
       Configuration backupConf = new ConfigurationImpl();
@@ -1486,7 +1491,8 @@ public class RandomFailoverTest extends TestCase
               .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
       TransportConfiguration backupTC = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                   backupParams, "backup-connector");
+                                                                   backupParams,
+                                                                   "backup-connector");
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
@@ -1506,26 +1512,28 @@ public class RandomFailoverTest extends TestCase
 
       assertEquals(0, InVMRegistry.instance.size());
    }
-  
+
    // Inner classes -------------------------------------------------
-   
+
    class Failer extends TimerTask
-   { 
+   {
       private final ClientSessionInternal session;
 
       private boolean executed;
 
       public Failer(final ClientSessionInternal session)
-      {     
+      {
          this.session = session;
       }
 
       public synchronized void run()
       {
          log.info("** Failing connection");
- 
+
+         InVMConnector.numberOfFailures = 1;
+         InVMConnector.failOnCreateConnection = true;
          session.getConnection().fail(new MessagingException(MessagingException.NOT_CONNECTED, "oops"));
-         
+
          log.info("** Fail complete");
 
          cancel();
@@ -1538,9 +1546,9 @@ public class RandomFailoverTest extends TestCase
          return executed;
       }
    }
-   
+
    public abstract class RunnableT
    {
-      abstract void run(final ClientSessionFactory sf) throws Exception;      
+      abstract void run(final ClientSessionFactory sf) throws Exception;
    }
 }

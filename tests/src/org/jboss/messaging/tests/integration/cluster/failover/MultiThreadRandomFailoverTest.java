@@ -40,6 +40,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.MessagingService;
@@ -290,7 +291,9 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
          if (!ok)
          {
-            throw new Exception("Timed out waiting for messages on handler " + System.identityHashCode(handler) + " threadnum " + threadNum);
+            throw new Exception("Timed out waiting for messages on handler " + System.identityHashCode(handler) +
+                                " threadnum " +
+                                threadNum);
          }
 
          if (handler.failure != null)
@@ -375,7 +378,9 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
          if (!ok)
          {
-            throw new Exception("Timed out waiting for messages on handler " + System.identityHashCode(handler) + " threadnum " + threadNum);
+            throw new Exception("Timed out waiting for messages on handler " + System.identityHashCode(handler) +
+                                " threadnum " +
+                                threadNum);
          }
 
          if (handler.failure != null)
@@ -465,7 +470,9 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
          if (!ok)
          {
-            throw new Exception("Timed out waiting for messages on handler " + System.identityHashCode(handler) + " threadnum " + threadNum);
+            throw new Exception("Timed out waiting for messages on handler " + System.identityHashCode(handler) +
+                                " threadnum " +
+                                threadNum);
          }
 
          if (handler.failure != null)
@@ -538,7 +545,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
          sessions.add(sessConsume);
       }
-      
+
       ClientSession sessSend = sf.createSession(false, false, false);
 
       ClientProducer producer = sessSend.createProducer(ADDRESS);
@@ -546,17 +553,16 @@ public class MultiThreadRandomFailoverTest extends TestCase
       sendMessages(sessSend, producer, numMessages, threadNum);
 
       sessSend.rollback();
-      
+
       sendMessages(sessSend, producer, numMessages, threadNum);
-      
+
       sessSend.commit();
-      
 
       for (ClientSession session : sessions)
       {
          session.start();
       }
-       
+
       Set<MyHandler> handlers = new HashSet<MyHandler>();
 
       for (ClientConsumer consumer : consumers)
@@ -574,7 +580,9 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
          if (!ok)
          {
-            throw new Exception("Timed out waiting for messages on handler " + System.identityHashCode(handler) + " threadnum " + threadNum);
+            throw new Exception("Timed out waiting for messages on handler " + System.identityHashCode(handler) +
+                                " threadnum " +
+                                threadNum);
          }
 
          if (handler.failure != null)
@@ -582,9 +590,9 @@ public class MultiThreadRandomFailoverTest extends TestCase
             throw new Exception("Handler failed: " + handler.failure);
          }
       }
-      
+
       handlers.clear();
-      
+
       // Set handlers to null
       for (ClientConsumer consumer : consumers)
       {
@@ -595,7 +603,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
       {
          session.rollback();
       }
-      
+
       // New handlers
       for (ClientConsumer consumer : consumers)
       {
@@ -605,27 +613,29 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
          handlers.add(handler);
       }
-      
+
       for (MyHandler handler : handlers)
       {
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
 
          if (!ok)
          {
-            throw new Exception("Timed out waiting for messages on handler " + System.identityHashCode(handler) + " threadnum " + threadNum);
+            throw new Exception("Timed out waiting for messages on handler " + System.identityHashCode(handler) +
+                                " threadnum " +
+                                threadNum);
          }
-         
+
          if (handler.failure != null)
          {
             throw new Exception("Handler failed on rollback: " + handler.failure);
          }
       }
-        
+
       for (ClientSession session : sessions)
       {
          session.commit();
       }
-      
+
       sessSend.close();
       for (ClientSession session : sessions)
       {
@@ -1236,8 +1246,12 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
          final ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                               new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                         backupParams));
-         
+                                                                                                         backupParams),
+                                                                              0,
+                                                                              1,
+                                                                              ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                                              ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
+
          sf.setSendWindowSize(32 * 1024);
 
          ClientSession session = sf.createSession(false, false, false);
@@ -1298,6 +1312,8 @@ public class MultiThreadRandomFailoverTest extends TestCase
          }
          while (!failer.isExecuted());
 
+         InVMConnector.resetFailures();
+
          session.close();
 
          assertEquals(0, sf.numSessions());
@@ -1339,7 +1355,8 @@ public class MultiThreadRandomFailoverTest extends TestCase
               .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
       TransportConfiguration backupTC = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                   backupParams, "backup-connector");
+                                                                   backupParams,
+                                                                   "backup-connector");
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
@@ -1402,8 +1419,8 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
             int tn = (Integer)msg.getProperty(new SimpleString("threadnum"));
             int cnt = (Integer)msg.getProperty(new SimpleString("count"));
-            
-           // log.info("Got message " + tn + ":" + cnt);
+
+            // log.info("Got message " + tn + ":" + cnt);
 
             Integer c = consumerCounts.get(tn);
             if (c == null)
@@ -1450,6 +1467,8 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
          RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionImpl)session).getConnection();
 
+         InVMConnector.numberOfFailures = 1;
+         InVMConnector.failOnCreateConnection = true;
          conn.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
 
          log.info("** Fail complete");
@@ -1538,11 +1557,11 @@ public class MultiThreadRandomFailoverTest extends TestCase
             c = new Integer(cnt);
          }
 
-         //log.info(System.identityHashCode(this) + " consumed message " + threadNum + ":" + cnt);
-         
+         // log.info(System.identityHashCode(this) + " consumed message " + threadNum + ":" + cnt);
+
          if (tn == threadNum && cnt != c.intValue())
          {
-            failure = "Invalid count, expected " + threadNum + ":" + c + " got " + cnt;            
+            failure = "Invalid count, expected " + threadNum + ":" + c + " got " + cnt;
             log.error(failure);
 
             latch.countDown();
