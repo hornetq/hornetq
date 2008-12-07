@@ -103,7 +103,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       
       connectionTTL = config.getConnectionTTLOverride();
 
-      backup = config.isBackup();
+      backup = config.isBackup();            
    }
 
    // RemotingService implementation -------------------------------

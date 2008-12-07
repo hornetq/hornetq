@@ -84,7 +84,7 @@ public class ClusterManagerImpl implements ClusterManager
    private final Configuration configuration;
 
    private volatile boolean started;
-
+      
    public ClusterManagerImpl(final ExecutorFactory executorFactory,
                              final StorageManager storageManager,
                              final PostOffice postOffice,
@@ -164,6 +164,11 @@ public class ClusterManagerImpl implements ClusterManager
    public boolean isStarted()
    {
       return started;
+   }
+   
+   public Map<String, MessageFlow> getMessageFlows()
+   {
+      return new HashMap<String, MessageFlow>(messageFlows);
    }
 
    private synchronized void deployBroadcastGroup(final BroadcastGroupConfiguration config) throws Exception
@@ -359,6 +364,10 @@ public class ClusterManagerImpl implements ClusterManager
                                     queueSettingsRepository,
                                     scheduledExecutor,
                                     transformer,
+                                    config.getRetryInterval(),
+                                    config.getRetryIntervalMultiplier(),
+                                    config.getMaxRetriesBeforeFailover(),
+                                    config.getMaxRetriesAfterFailover(),
                                     conns);
       }
       else
@@ -388,6 +397,10 @@ public class ClusterManagerImpl implements ClusterManager
                                     queueSettingsRepository,
                                     scheduledExecutor,
                                     transformer,
+                                    config.getRetryInterval(),
+                                    config.getRetryIntervalMultiplier(),
+                                    config.getMaxRetriesBeforeFailover(),
+                                    config.getMaxRetriesAfterFailover(),
                                     group);
       }
 

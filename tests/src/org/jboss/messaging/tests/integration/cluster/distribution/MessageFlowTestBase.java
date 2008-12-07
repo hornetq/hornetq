@@ -20,11 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.tests.integration.cluster.distribution;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import junit.framework.TestCase;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -32,8 +33,6 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
-
-import junit.framework.TestCase;
 
 /**
  * A MessageFlowTestBase
@@ -46,11 +45,25 @@ import junit.framework.TestCase;
  */
 public abstract class MessageFlowTestBase extends TestCase
 {
-   protected MessagingService createMessagingService(final int id, Map<String, Object> params)
+   protected MessagingService createMessagingService(final int id, final Map<String, Object> params)
    {
       Configuration serviceConf = new ConfigurationImpl();
       serviceConf.setClustered(true);
       serviceConf.setSecurityEnabled(false);     
+      params.put(TransportConstants.SERVER_ID_PROP_NAME, id);
+      serviceConf.getAcceptorConfigurations()
+                  .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
+                                                  params));
+      MessagingService service = MessagingServiceImpl.newNullStorageMessagingServer(serviceConf);
+      return service;
+   }
+   
+   protected MessagingService createMessagingService(final int id, final Map<String, Object> params, final boolean backup)
+   {
+      Configuration serviceConf = new ConfigurationImpl();
+      serviceConf.setClustered(true);
+      serviceConf.setSecurityEnabled(false);     
+      serviceConf.setBackup(backup);
       params.put(TransportConstants.SERVER_ID_PROP_NAME, id);
       serviceConf.getAcceptorConfigurations()
                   .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",

@@ -22,6 +22,11 @@
 
 package org.jboss.messaging.core.config.impl;
 
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
@@ -30,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
@@ -514,6 +520,14 @@ public class FileConfiguration extends ConfigurationImpl
       String discoveryGroupName = null;
 
       String transformerClassName = null;
+      
+      long retryInterval = DEFAULT_RETRY_INTERVAL;
+      
+      double retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+      
+      int maxRetriesBeforeFailover = DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
+      
+      int maxRetriesAfterFailover = DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
 
       NodeList children = bgNode.getChildNodes();
 
@@ -549,6 +563,22 @@ public class FileConfiguration extends ConfigurationImpl
          {
             transformerClassName = child.getTextContent().trim();
          }
+         else if (child.getNodeName().equals("retry-interval"))
+         {
+            retryInterval = XMLUtil.parseLong(child);
+         }
+         else if (child.getNodeName().equals("retry-interval-multiplier"))
+         {
+            retryIntervalMultiplier = XMLUtil.parseDouble(child);
+         }
+         else if (child.getNodeName().equals("max-retries-before-failover"))
+         {
+            maxRetriesBeforeFailover = XMLUtil.parseInt(child);
+         }
+         else if (child.getNodeName().equals("max-retries-after-failover"))
+         {
+            maxRetriesAfterFailover = XMLUtil.parseInt(child);
+         }
          else if (child.getNodeName().equals("connector"))
          {
             String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
@@ -577,6 +607,10 @@ public class FileConfiguration extends ConfigurationImpl
                                                maxBatchSize,
                                                maxBatchTime,
                                                transformerClassName,
+                                               retryInterval,
+                                               retryIntervalMultiplier,
+                                               maxRetriesBeforeFailover,
+                                               maxRetriesAfterFailover,
                                                staticConnectorNames);
       }
       else
@@ -588,6 +622,10 @@ public class FileConfiguration extends ConfigurationImpl
                                                maxBatchSize,
                                                maxBatchTime,
                                                transformerClassName,
+                                               retryInterval,
+                                               retryIntervalMultiplier,
+                                               maxRetriesBeforeFailover,
+                                               maxRetriesAfterFailover,                                               
                                                discoveryGroupName);
       }
 

@@ -444,12 +444,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       // Then call the listeners
       callListeners(me);
 
-      internalClose();
-
-      for (Channel channel : channels.values())
-      {
-         channel.fail();
-      }      
+      internalClose();   
    }
 
    public void destroy()
@@ -1045,8 +1040,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       public Packet sendBlocking(final Packet packet) throws MessagingException
       {
-         // System.identityHashCode(this.connection) + " " + packet.getType());
-
          if (closed)
          {
             throw new MessagingException(MessagingException.NOT_CONNECTED, "Connection is destroyed");
@@ -1203,7 +1196,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       }
 
       public void replicateComplete()
-      {
+      {      
          if (!connection.active)
          {
             // We're on backup so send back a replication response
@@ -1315,10 +1308,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
 
          closed = true;
-      }
-
-      public void fail()
-      {
       }
 
       public Channel getReplicatingChannel()

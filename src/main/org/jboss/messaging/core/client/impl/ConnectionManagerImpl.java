@@ -590,8 +590,6 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
                connection.destroy();
             }
 
-            log.info("done is " + done);
-
             return done;
          }
          else
@@ -682,7 +680,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
    }
 
    private RemotingConnection getConnectionWithRetry(final List<ClientSessionInternal> sessions, final int retries)
-   {
+   {      
       long interval = retryInterval;
 
       int count = 0;
@@ -696,15 +694,15 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
             // Failed to get backup connection
 
             if (retries != 0)
-            {
+            {              
+               count++;
+               
                if (retries != -1 && count == retries)
                {
                   log.warn("Retried " + retries + " times to reconnect. Now giving up.");
 
                   return null;
                }
-
-               count++;
 
                log.warn("Now waiting " + interval + " ms before attempting reconnection.");
 

@@ -26,6 +26,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMe
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.cluster.ClusterManager;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
@@ -110,4 +111,6 @@ public interface MessagingServer extends MessagingComponent
    ResourceManager getResourceManager();
 
    List<ServerSession> getSessions(String connectionID);
+   
+   ClusterManager getClusterManager();
 }

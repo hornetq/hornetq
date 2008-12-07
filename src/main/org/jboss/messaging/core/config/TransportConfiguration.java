@@ -74,8 +74,6 @@ public class TransportConfiguration implements Serializable
       return params;
    }
    
-   private int hash = -1;
-   
    public int hashCode()
    {
       return factoryClassName.hashCode();

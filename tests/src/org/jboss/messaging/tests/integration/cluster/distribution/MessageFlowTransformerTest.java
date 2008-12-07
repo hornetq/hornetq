@@ -22,6 +22,11 @@
 
 package org.jboss.messaging.tests.integration.cluster.distribution;
 
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -95,6 +100,10 @@ public class MessageFlowTransformerTest extends MessageFlowTestBase
                                                                        1,
                                                                        -1,
                                                                        "org.jboss.messaging.tests.integration.cluster.distribution.SimpleTransformer",
+                                                                       DEFAULT_RETRY_INTERVAL,
+                                                                       DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                                       DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                                       DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                                        connectorNames);
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
       ofconfigs.add(ofconfig);

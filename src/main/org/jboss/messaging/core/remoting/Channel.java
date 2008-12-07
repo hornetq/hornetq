@@ -36,8 +36,6 @@ public interface Channel
 
    void close();
 
-   void fail();
-
    Channel getReplicatingChannel();
 
    void transferConnection(RemotingConnection newConnection);

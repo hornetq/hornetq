@@ -92,6 +92,14 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
 
    private volatile boolean started;
 
+   private final long retryInterval;
+
+   private final double retryIntervalMultiplier;
+
+   private final int maxRetriesBeforeFailover;
+
+   private final int maxRetriesAfterFailover;
+
    /*
     * Constructor using static list of connectors
     */
@@ -107,7 +115,11 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
                           final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                           final ScheduledExecutorService scheduledExecutor,
                           final Transformer transformer,
-                          final List<Pair<TransportConfiguration,TransportConfiguration>> connectors) throws Exception
+                          final long retryInterval,
+                          final double retryIntervalMultiplier,
+                          final int maxRetriesBeforeFailover,
+                          final int maxRetriesAfterFailover,
+                          final List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception
    {
       this.name = name;
 
@@ -135,6 +147,14 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
 
       this.scheduledExecutor = scheduledExecutor;
 
+      this.retryInterval = retryInterval;
+
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
+
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
+
       this.updateConnectors(connectors);
    }
 
@@ -153,6 +173,10 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
                           final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                           final ScheduledExecutorService scheduledExecutor,
                           final Transformer transformer,
+                          final long retryInterval,
+                          final double retryIntervalMultiplier,
+                          final int maxRetriesBeforeFailover,
+                          final int maxRetriesAfterFailover,
                           final DiscoveryGroup discoveryGroup) throws Exception
    {
       this.name = name;
@@ -180,6 +204,14 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
       this.transformer = transformer;
 
       this.discoveryGroup = discoveryGroup;
+
+      this.retryInterval = retryInterval;
+
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
+
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
    }
 
    public synchronized void start() throws Exception
@@ -223,6 +255,12 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
    {
       return started;
    }
+   
+   //For testing only
+   public Set<Forwarder> getForwarders()
+   {
+      return new HashSet<Forwarder>(forwarders.values());
+   }
 
    // DiscoveryListener implementation ------------------------------------------------------------------
 
@@ -246,11 +284,12 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
 
       connectorSet.addAll(connectors);
 
-      Iterator<Map.Entry<Pair<TransportConfiguration,TransportConfiguration>, Forwarder>> iter = forwarders.entrySet().iterator();
+      Iterator<Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, Forwarder>> iter = forwarders.entrySet()
+                                                                                                            .iterator();
 
       while (iter.hasNext())
       {
-         Map.Entry<Pair<TransportConfiguration,TransportConfiguration>, Forwarder> entry = iter.next();
+         Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, Forwarder> entry = iter.next();
 
          if (!connectorSet.contains(entry.getKey()))
          {
@@ -262,7 +301,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
          }
       }
 
-      for (Pair<TransportConfiguration,TransportConfiguration> connectorPair : connectors)
+      for (Pair<TransportConfiguration, TransportConfiguration> connectorPair : connectors)
       {
          if (!forwarders.containsKey(connectorPair))
          {
@@ -290,7 +329,11 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
                                                     postOffice,
                                                     queueSettingsRepository,
                                                     scheduledExecutor,
-                                                    transformer);
+                                                    transformer,
+                                                    retryInterval,
+                                                    retryIntervalMultiplier,
+                                                    maxRetriesBeforeFailover,
+                                                    maxRetriesAfterFailover);
 
             forwarders.put(connectorPair, forwarder);
 

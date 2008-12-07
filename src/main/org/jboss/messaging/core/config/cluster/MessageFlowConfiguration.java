@@ -58,6 +58,14 @@ public class MessageFlowConfiguration implements Serializable
 
    private final String transformerClassName;
 
+   private final long retryInterval;
+
+   private final double retryIntervalMultiplier;
+
+   private final int maxRetriesBeforeFailover;
+
+   private final int maxRetriesAfterFailover;
+
    public MessageFlowConfiguration(final String name,
                                    final String address,
                                    final String filterString,
@@ -65,6 +73,10 @@ public class MessageFlowConfiguration implements Serializable
                                    final int maxBatchSize,
                                    final long maxBatchTime,
                                    final String transformerClassName,
+                                   final long retryInterval,
+                                   final double retryIntervalMultiplier,
+                                   final int maxRetriesBeforeFailover,
+                                   final int maxRetriesAfterFailover,
                                    final List<Pair<String, String>> staticConnectorNamePairs)
    {
       this.name = name;
@@ -74,6 +86,10 @@ public class MessageFlowConfiguration implements Serializable
       this.maxBatchSize = maxBatchSize;
       this.maxBatchTime = maxBatchTime;
       this.transformerClassName = transformerClassName;
+      this.retryInterval = retryInterval;
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
       this.staticConnectorNamePairs = staticConnectorNamePairs;
       this.discoveryGroupName = null;
    }
@@ -85,6 +101,10 @@ public class MessageFlowConfiguration implements Serializable
                                    final int maxBatchSize,
                                    final long maxBatchTime,
                                    final String transformerClassName,
+                                   final long retryInterval,
+                                   final double retryIntervalMultiplier,
+                                   final int maxRetriesBeforeFailover,
+                                   final int maxRetriesAfterFailover,
                                    final String discoveryGroupName)
    {
       this.name = name;
@@ -94,6 +114,10 @@ public class MessageFlowConfiguration implements Serializable
       this.maxBatchSize = maxBatchSize;
       this.maxBatchTime = maxBatchTime;
       this.transformerClassName = transformerClassName;
+      this.retryInterval = retryInterval;
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
       this.staticConnectorNamePairs = null;
       this.discoveryGroupName = discoveryGroupName;
    }
@@ -141,5 +165,30 @@ public class MessageFlowConfiguration implements Serializable
    public String getDiscoveryGroupName()
    {
       return this.discoveryGroupName;
+   }
+
+   public List<Pair<String, String>> getStaticConnectorNamePairs()
+   {
+      return staticConnectorNamePairs;
+   }
+
+   public long getRetryInterval()
+   {
+      return retryInterval;
+   }
+
+   public double getRetryIntervalMultiplier()
+   {
+      return retryIntervalMultiplier;
+   }
+
+   public int getMaxRetriesBeforeFailover()
+   {
+      return maxRetriesBeforeFailover;
+   }
+
+   public int getMaxRetriesAfterFailover()
+   {
+      return maxRetriesAfterFailover;
    }
 }

@@ -20,12 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.server.cluster;
 
-import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
-import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
-import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
+import java.util.Map;
+
 import org.jboss.messaging.core.server.MessagingComponent;
 
 /**
@@ -35,8 +33,8 @@ import org.jboss.messaging.core.server.MessagingComponent;
  * 
  * Created 18 Nov 2008 09:23:26
  *
- *
  */
 public interface ClusterManager extends MessagingComponent
 {
+   Map<String, MessageFlow> getMessageFlows();
 }

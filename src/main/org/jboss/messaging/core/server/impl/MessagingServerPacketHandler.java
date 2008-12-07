@@ -65,7 +65,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
       if (packet.getType() == PacketImpl.CREATESESSION && channel1.getReplicatingChannel() != null)
       {
          CreateSessionMessage msg = (CreateSessionMessage)packet;
-
+         
          Packet replPacket = new ReplicateCreateSessionMessage(msg.getName(), msg.getSessionChannelID(),
                                                                msg.getVersion(), msg.getUsername(),
                                                                msg.getPassword(), msg.getMinLargeMessageSize(), 

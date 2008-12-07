@@ -43,7 +43,6 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -64,8 +63,6 @@ public class FailureListenerOnFailoverTest extends TestCase
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
    private MessagingService liveService;
 

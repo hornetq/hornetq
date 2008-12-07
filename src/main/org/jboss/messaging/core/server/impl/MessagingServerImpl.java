@@ -452,6 +452,11 @@ public class MessagingServerImpl implements MessagingServer
    {
       return started;
    }
+   
+   public ClusterManager getClusterManager()
+   {
+      return clusterManager;
+   }
 
    private synchronized void checkActivate(final RemotingConnection connection)
    {

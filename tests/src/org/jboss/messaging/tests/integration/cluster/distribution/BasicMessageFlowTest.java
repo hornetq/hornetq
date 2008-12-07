@@ -22,6 +22,11 @@
 
 package org.jboss.messaging.tests.integration.cluster.distribution;
 
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -98,6 +103,10 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
                                                                         1,
                                                                         -1,
                                                                         null,
+                                                                        DEFAULT_RETRY_INTERVAL,
+                                                                        DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                                        DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                                        DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                                         connectorNames);
       MessageFlowConfiguration ofconfig2 = new MessageFlowConfiguration("flow1",
                                                                         address1.toString(),
@@ -106,6 +115,10 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
                                                                         1,
                                                                         -1,
                                                                         null,
+                                                                        DEFAULT_RETRY_INTERVAL,
+                                                                        DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                                        DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                                        DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                                         connectorNames);
 
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
@@ -193,6 +206,10 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
                                                                         1,
                                                                         -1,
                                                                         null,
+                                                                        DEFAULT_RETRY_INTERVAL,
+                                                                        DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                                        DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                                        DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                                         connectorNames);
 
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
@@ -267,6 +284,10 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
                                                                         1,
                                                                         -1,
                                                                         null,
+                                                                        DEFAULT_RETRY_INTERVAL,
+                                                                        DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                                        DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                                        DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                                         connectorNames);
 
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();

@@ -32,10 +32,14 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
@@ -58,7 +62,7 @@ import org.jboss.messaging.util.Pair;
  *
  *
  */
-public class ForwarderImpl implements Forwarder
+public class ForwarderImpl implements Forwarder, FailureListener
 {
    // Constants -----------------------------------------------------
 
@@ -81,25 +85,25 @@ public class ForwarderImpl implements Forwarder
    private java.util.Queue<MessageReference> refs = new LinkedList<MessageReference>();
 
    private Transaction tx;
-   
+
    private long lastReceivedTime = -1;
-   
+
    private final StorageManager storageManager;
 
    private final PostOffice postOffice;
 
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
-     
+
    private final Transformer transformer;
 
    private final ClientSessionFactory csf;
-   
+
    private ClientSession session;
 
    private ClientProducer producer;
-      
+
    private volatile boolean started;
-   
+
    private final ScheduledFuture<?> future;
 
    // Static --------------------------------------------------------
@@ -109,15 +113,19 @@ public class ForwarderImpl implements Forwarder
    // Public --------------------------------------------------------
 
    public ForwarderImpl(final Queue queue,
-                        final Pair<TransportConfiguration,TransportConfiguration> connectorPair,
+                        final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                         final Executor executor,
                         final int maxBatchSize,
                         final long maxBatchTime,
                         final StorageManager storageManager,
                         final PostOffice postOffice,
-                        final HierarchicalRepository<QueueSettings> queueSettingsRepository,  
+                        final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                         final ScheduledExecutorService scheduledExecutor,
-                        final Transformer transformer) throws Exception
+                        final Transformer transformer,
+                        final long retryInterval,
+                        final double retryIntervalMultiplier,
+                        final int maxRetriesBeforeFailover,
+                        final int maxRetriesAfterFailover)
    {
       this.queue = queue;
 
@@ -132,36 +140,42 @@ public class ForwarderImpl implements Forwarder
       this.postOffice = postOffice;
 
       this.queueSettingsRepository = queueSettingsRepository;
-      
+
       this.transformer = transformer;
-      
-      this.csf = new ClientSessionFactoryImpl(connectorPair.a, connectorPair.b);  
-      
+
+      this.csf = new ClientSessionFactoryImpl(connectorPair.a,
+                                              connectorPair.b,
+                                              retryInterval,
+                                              retryIntervalMultiplier,
+                                              maxRetriesBeforeFailover,
+                                              maxRetriesAfterFailover);
+
       if (maxBatchTime != -1)
       {
-         future = scheduledExecutor.scheduleAtFixedRate(new BatchTimeout(), maxBatchTime, maxBatchTime, TimeUnit.MILLISECONDS);
+         future = scheduledExecutor.scheduleAtFixedRate(new BatchTimeout(),
+                                                        maxBatchTime,
+                                                        maxBatchTime,
+                                                        TimeUnit.MILLISECONDS);
       }
       else
       {
          future = null;
       }
    }
-   
+
    public synchronized void start() throws Exception
    {
       if (started)
       {
          return;
       }
-      
+
       createTx();
-      
-      session = csf.createSession(false, false, false);
 
-      producer = session.createProducer(null);
+      createObjects();
 
-      queue.addConsumer(this);       
-      
+      queue.addConsumer(this);
+
       started = true;
    }
 
@@ -170,7 +184,7 @@ public class ForwarderImpl implements Forwarder
       started = false;
 
       queue.removeConsumer(this);
-      
+
       if (future != null)
       {
          future.cancel(false);
@@ -188,19 +202,25 @@ public class ForwarderImpl implements Forwarder
       {
          log.warn("Timed out waiting for batch to be sent");
       }
-      
+
       session.close();
-      
+
       started = false;
    }
-   
+
    public boolean isStarted()
    {
       return started;
    }
+   
+   //For testing only
+   public RemotingConnection getForwardingConnection()
+   {
+      return ((ClientSessionImpl)session).getConnection();
+   }
 
    // Consumer implementation ---------------------------------------
-   
+
    public HandleStatus handle(final MessageReference reference) throws Exception
    {
       if (busy)
@@ -216,7 +236,7 @@ public class ForwarderImpl implements Forwarder
          }
 
          refs.add(reference);
-         
+
          if (maxBatchTime != -1)
          {
             lastReceivedTime = System.currentTimeMillis();
@@ -235,11 +255,53 @@ public class ForwarderImpl implements Forwarder
       }
    }
 
+   // FailureListener implementation --------------------------------
+
+   public synchronized boolean connectionFailed(final MessagingException me)
+   {
+      //By the time this is called
+      synchronized (this)
+      {      
+         try
+         {
+            session.close();
+   
+            createObjects();
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to reconnect", e);
+         }
+   
+         return true;
+      }
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+
+   private void createObjects() throws Exception
+   {
+      try
+      {
+         session = csf.createSession(false, false, false);
+      }
+      catch (MessagingException me)
+      {
+         log.warn("Unable to connect. Message flow is now disabled.");
+         
+         stop();
+         
+         return;
+      }
+
+      session.addFailureListener(this);
+
+      producer = session.createProducer(null);      
+   }
 
    private synchronized void timeoutBatch()
    {
@@ -247,63 +309,60 @@ public class ForwarderImpl implements Forwarder
       {
          return;
       }
-      
+
       if (lastReceivedTime != -1 && count > 0)
       {
          long now = System.currentTimeMillis();
-         
+
          if (now - lastReceivedTime >= maxBatchTime)
          {
             sendBatch();
          }
-      }      
+      }
    }
-   
-   private void sendBatch()
+
+   private synchronized void sendBatch()
    {
       try
       {
-         synchronized (this)
+         if (count == 0)
          {
-            if (count == 0)
+            return;
+         }
+         
+         // TODO - duplicate detection on sendee and if batch size = 1 then don't need tx
+
+         while (true)
+         {
+            MessageReference ref = refs.poll();
+
+            if (ref == null)
             {
-               return;
-            }
-            
-            // TODO - duplicate detection on sendee and if batch size = 1 then don't need tx
-
-            while (true)
-            {
-               MessageReference ref = refs.poll();
-
-               if (ref == null)
-               {
-                  break;
-               }
-
-               tx.addAcknowledgement(ref);
-
-               ServerMessage message = ref.getMessage();
-               
-               if (transformer != null)
-               {
-                  message = transformer.transform(message);
-               }
-
-               producer.send(message.getDestination(), message);
+               break;
             }
 
-            session.commit();
+            tx.addAcknowledgement(ref);
 
-            tx.commit();
+            ServerMessage message = ref.getMessage();
 
-            createTx();
+            if (transformer != null)
+            {
+               message = transformer.transform(message);
+            }
 
-            busy = false;
-
-            count = 0;
+            producer.send(message.getDestination(), message);
          }
 
+         session.commit();
+
+         tx.commit();
+
+         createTx();
+
+         busy = false;
+
+         count = 0;
+         
          queue.deliverAsync(executor);
       }
       catch (Exception e)
@@ -335,7 +394,7 @@ public class ForwarderImpl implements Forwarder
          sendBatch();
       }
    }
-   
+
    private class BatchTimeout implements Runnable
    {
       public void run()
