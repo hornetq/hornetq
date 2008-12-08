@@ -33,6 +33,8 @@ import java.util.List;
  */
 public interface ConnectionFactoryControlMBean
 {   
+   String getName();
+   
    List<String> getBindings();
 
    String getClientID();

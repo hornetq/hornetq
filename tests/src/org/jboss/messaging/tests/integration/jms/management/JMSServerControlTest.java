@@ -29,13 +29,16 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.management.MBeanServerInvocationHandler;
+import javax.naming.InitialContext;
 
 import junit.framework.TestCase;
 
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -48,8 +51,10 @@ import org.jboss.messaging.integration.transports.mina.MinaConnectorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
+import org.jboss.messaging.jms.server.management.ConnectionFactoryControlMBean;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
+import org.jboss.messaging.tests.util.RandomUtil;
 
 /**
  * A QueueControlTest
@@ -76,6 +81,15 @@ public class JMSServerControlTest extends TestCase
                                                                                                            false);
       return control;
    }
+   
+   private static ConnectionFactoryControlMBean createConnectionFactoryControl(String name) throws Exception
+   {
+      ConnectionFactoryControlMBean control = (ConnectionFactoryControlMBean)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+                                                                                                           JMSManagementServiceImpl.getConnectionFactoryObjectName(name),
+                                                                                                           ConnectionFactoryControlMBean.class,
+                                                                                                           false);
+      return control;
+   }
 
    private MessagingService startMessagingService(String acceptorFactory) throws Exception
    {
@@ -83,6 +97,7 @@ public class JMSServerControlTest extends TestCase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactory));
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       MessagingService service = MessagingServiceImpl.newNullStorageMessagingServer(conf);
       service.start();
 
@@ -92,7 +107,7 @@ public class JMSServerControlTest extends TestCase
 
       return service;
    }
-
+   
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
@@ -126,7 +141,7 @@ public class JMSServerControlTest extends TestCase
    {
       doCloseConnectionsForAddress(MinaAcceptorFactory.class.getName(), MinaConnectorFactory.class.getName());
    }
-   
+
    public void testCloseConnectionsForUnknownAddressForInVM() throws Exception
    {
       doCloseConnectionsForUnknownAddress(InVMAcceptorFactory.class.getName(), InVMConnectorFactory.class.getName());
@@ -141,7 +156,7 @@ public class JMSServerControlTest extends TestCase
    {
       doCloseConnectionsForUnknownAddress(MinaAcceptorFactory.class.getName(), MinaConnectorFactory.class.getName());
    }
-   
+
    public void testListSessionsForInVM() throws Exception
    {
       doListSessions(InVMAcceptorFactory.class.getName(), InVMConnectorFactory.class.getName());
@@ -172,6 +187,66 @@ public class JMSServerControlTest extends TestCase
       doListConnectionIDs(MinaAcceptorFactory.class.getName(), MinaConnectorFactory.class.getName());
    }
 
+   public void testCreateConnectionFactoryWithDiscoveryGroup() throws Exception
+   {
+      String cfJNDIBinding = randomString();
+      String cfName = randomString();
+      MessagingService service = null;
+      try
+      {
+         service = startMessagingService(NettyAcceptorFactory.class.getName());
+
+         try {
+            ConnectionFactoryControlMBean cfControl = createConnectionFactoryControl(cfName);
+            // invoke an operation on the proxy to check that there is no such mbean
+            cfControl.getName();
+            fail("no CF was created with name " + cfName);          
+         } catch (Exception e)
+         {
+         }
+         JMSServerControlMBean control = createJMSServerControl();
+         control.createConnectionFactory(cfName,
+                                         randomString(),
+                                         "localhost",
+                                         8765,
+                                         ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
+                                         ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT,
+                                         ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                         ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                                         ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                         ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                         null,
+                                         ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                         ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                         ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                         ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                         ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                                         ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                         ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                         ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                         ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                         ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                         ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                                         ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
+                                         ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
+                                         ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                                         ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                         ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                         ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
+                                         cfJNDIBinding);     
+         
+         ConnectionFactoryControlMBean cfControl = createConnectionFactoryControl(cfName);
+         assertEquals(cfName, cfControl.getName());
+      }
+      finally
+      {
+         if (service != null)
+         {
+            service.stop();
+         }
+      }
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -186,13 +261,13 @@ public class JMSServerControlTest extends TestCase
          service = startMessagingService(acceptorFactory);
 
          JMSServerControlMBean control = createJMSServerControl();
-         
+
          assertEquals(0, control.listConnectionIDs().length);
 
          Connection connection = JMSUtil.createConnection(connectorFactory);
          connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         String[] connectionIDs = control.listConnectionIDs();         
+
+         String[] connectionIDs = control.listConnectionIDs();
          assertEquals(1, connectionIDs.length);
 
          Connection connection2 = JMSUtil.createConnection(connectorFactory);
@@ -201,12 +276,12 @@ public class JMSServerControlTest extends TestCase
 
          connection.close();
          Thread.sleep(500);
-         
+
          assertEquals(1, control.listConnectionIDs().length);
 
          connection2.close();
          Thread.sleep(500);
-         
+
          assertEquals(0, control.listConnectionIDs().length);
       }
       finally
@@ -217,7 +292,7 @@ public class JMSServerControlTest extends TestCase
          }
       }
    }
-   
+
    private void doListSessions(String acceptorFactory, String connectorFactory) throws Exception
    {
       MessagingService service = null;
@@ -226,13 +301,13 @@ public class JMSServerControlTest extends TestCase
          service = startMessagingService(acceptorFactory);
 
          JMSServerControlMBean control = createJMSServerControl();
-         
+
          assertEquals(0, control.listConnectionIDs().length);
 
          Connection connection = JMSUtil.createConnection(connectorFactory);
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         String[] connectionIDs = control.listConnectionIDs();         
+
+         String[] connectionIDs = control.listConnectionIDs();
          assertEquals(1, connectionIDs.length);
          String connectionID = connectionIDs[0];
 
@@ -245,9 +320,9 @@ public class JMSServerControlTest extends TestCase
          assertEquals(0, sessions.length);
 
          connection.close();
-         
+
          Thread.sleep(500);
-         
+
          assertEquals(0, control.listConnectionIDs().length);
       }
       finally
@@ -258,7 +333,7 @@ public class JMSServerControlTest extends TestCase
          }
       }
    }
-   
+
    private void doListClientConnections(String acceptorFactory, String connectorFactory) throws Exception
    {
       MessagingService service = null;
@@ -344,13 +419,13 @@ public class JMSServerControlTest extends TestCase
          }
       }
    }
-   
+
    private void doCloseConnectionsForUnknownAddress(String acceptorFactory, String connectorFactory) throws Exception
    {
       String unknownAddress = randomString();
-      
+
       MessagingService service = null;
-      
+
       try
       {
          service = startMessagingService(acceptorFactory);

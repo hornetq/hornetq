@@ -28,7 +28,6 @@ import javax.management.MBeanInfo;
 import javax.management.ObjectName;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareStandardMBeanWrapper;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
@@ -123,7 +122,10 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
    }
 
    public void createConnectionFactory(final String name,
-                                       final DiscoveryGroupConfiguration discoveryGroupConfig,
+                                       final String discoveryGroupName,
+                                       final String discoveryGroupAddress,
+                                       final int discoveryGroupPort,
+                                       final long discoveryGroupRefreshTimeout,
                                        final long discoveryInitialWait,
                                        final String connectionLoadBalancingPolicyClassName,
                                        final long pingPeriod,
@@ -149,10 +151,12 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                                        final int maxRetriesAfterFailover,
                                        final String jndiBinding) throws Exception
    {
-      // FIXME need to store correctly the connector configs
       replicationAwareInvoke("createConnectionFactory",
                              name,
-                             discoveryGroupConfig,
+                             discoveryGroupName,
+                             discoveryGroupAddress,
+                             discoveryGroupPort,
+                             discoveryGroupRefreshTimeout,
                              discoveryInitialWait,
                              connectionLoadBalancingPolicyClassName,
                              pingPeriod,

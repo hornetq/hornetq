@@ -28,7 +28,6 @@ import static javax.management.MBeanOperationInfo.INFO;
 import java.util.List;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.management.Operation;
 import org.jboss.messaging.core.management.Parameter;
 import org.jboss.messaging.util.Pair;
@@ -123,8 +122,14 @@ public interface JMSServerControlMBean
    @Operation(desc = "Create a JMS ConnectionFactory specifying a discovery group to obtain list of servers from", impact = ACTION)
    void createConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create")
                                 String name,
-                                @Parameter(name = "discoveryGroupConfig", desc = "Discovery group configuration")
-                                DiscoveryGroupConfiguration discoveryGroupConfig,
+                                @Parameter(name = "discoveryGroupName", desc = "Name of the Discovery group configuration")
+                                String discoveryGroupName,                      
+                                @Parameter(name = "discoveryGroupAddress", desc = "Address of the Discovery group")
+                                String discoveryGroupAddress,
+                                @Parameter(name = "discoveryGroupPort", desc = "port of the Discovery group")
+                                int discoveryGroupPort,
+                                @Parameter(name = "discoveryGroupRefreshTimeout", desc = "Refresh timeout of the discovery group")
+                                long discoveryGroupRefreshTimeout,
                                 @Parameter(name = "discoveryInitialWait", desc = "The amount of time in ms to wait for initial discovery information to arrive at first using connection factory")
                                 long discoveryInitialWait,
                                 @Parameter(name = "connectionLoadBalancingPolicyClassName", desc = "The name of the class to use for client side connection load-balancing")

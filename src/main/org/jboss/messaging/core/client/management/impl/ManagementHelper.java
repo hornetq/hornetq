@@ -90,7 +90,7 @@ public class ManagementHelper
       for (int i = 0; i < parameters.length; i++)
       {
          Object parameter = parameters[i];
-         SimpleString key = new SimpleString(HDR_JMX_OPERATION_PREFIX + Integer.toString(i));
+         SimpleString key = new SimpleString(String.format("%s%02d", HDR_JMX_OPERATION_PREFIX, i));
          storeTypedProperty(message, key, parameter);
       }
    }
@@ -179,7 +179,7 @@ public class ManagementHelper
       }
       else if (typedProperty instanceof Double)
       {
-         message.putDoubleProperty(key, (Character)typedProperty);
+         message.putDoubleProperty(key, (Double)typedProperty);
       }
       else if (typedProperty instanceof String)
       {

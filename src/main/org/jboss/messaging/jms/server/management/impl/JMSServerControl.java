@@ -138,35 +138,40 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
       }
    }
    
-   public void createConnectionFactory(String name,
-                                       DiscoveryGroupConfiguration discoveryGroupConfig,
-                                       long discoveryInitialWait,
-                                       String connectionLoadBalancingPolicyClassName,
-                                       long pingPeriod,                        
-                                       long connectionTTL,
-                                       long callTimeout,
-                                       String clientID,
-                                       int dupsOKBatchSize,
-                                       int transactionBatchSize,
-                                       int consumerWindowSize,
-                                       int consumerMaxRate,
-                                       int producerWindowSize,
-                                       int producerMaxRate,
-                                       int minLargeMessageSize, 
-                                       boolean blockOnAcknowledge,
-                                       boolean blockOnNonPersistentSend,
-                                       boolean blockOnPersistentSend,
-                                       boolean autoGroup,
-                                       int maxConnections,
-                                       boolean preAcknowledge,                              
+   public void createConnectionFactory(final String name,
+                                       final String discoveryGroupName,
+                                       final String discoveryGroupAddress,
+                                       final int discoveryGroupPort,
+                                       final long discoveryGroupRefreshTimeout,
+                                       final long discoveryInitialWait,
+                                       final String connectionLoadBalancingPolicyClassName,
+                                       final long pingPeriod,
+                                       final long connectionTTL,
+                                       final long callTimeout,
+                                       final String clientID,
+                                       final int dupsOKBatchSize,
+                                       final int transactionBatchSize,
+                                       final int consumerWindowSize,
+                                       final int consumerMaxRate,
+                                       final int producerWindowSize,
+                                       final int producerMaxRate,
+                                       final int minLargeMessageSize,
+                                       final boolean blockOnAcknowledge,
+                                       final boolean blockOnNonPersistentSend,
+                                       final boolean blockOnPersistentSend,
+                                       final boolean autoGroup,
+                                       final int maxConnections,
+                                       final boolean preAcknowledge,
                                        final long retryInterval,
-                                       final double retryIntervalMultiplier,                                       
+                                       final double retryIntervalMultiplier,
                                        final int maxRetriesBeforeFailover,
                                        final int maxRetriesAfterFailover,
-                                       String jndiBinding) throws Exception
-   {
+                                       final String jndiBinding) throws Exception
+   {      
       List<String> bindings = new ArrayList<String>();
       bindings.add(jndiBinding);
+
+      DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(discoveryGroupName, discoveryGroupAddress, discoveryGroupPort, discoveryGroupRefreshTimeout);
 
       boolean created = server.createConnectionFactory(name,
                                                        discoveryGroupConfig,

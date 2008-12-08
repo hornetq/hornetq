@@ -59,6 +59,11 @@ public class ReplicationAwareConnectionFactoryControlWrapper extends Replication
 
    // ConnectionFactoryControlMBean implementation ---------------------------
 
+   public String getName()
+   {
+      return localControl.getName();
+   }
+
    public List<String> getBindings()
    {
       return localControl.getBindings();
