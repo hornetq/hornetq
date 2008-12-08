@@ -138,7 +138,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
       ObjectOutputStream oos = new ObjectOutputStream(bos);
-
+      
       oos.writeInt(connectorPairs.size());
 
       for (Pair<TransportConfiguration, TransportConfiguration> connectorPair : connectorPairs)

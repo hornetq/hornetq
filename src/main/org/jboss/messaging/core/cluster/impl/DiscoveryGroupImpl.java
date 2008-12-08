@@ -71,7 +71,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
    private volatile boolean started;
       
    public DiscoveryGroupImpl(final InetAddress groupAddress, final int groupPort, final long timeout) throws Exception
-   {
+   {      
       socket = new MulticastSocket(groupPort);
 
       socket.joinGroup(groupAddress);
@@ -131,7 +131,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
    }
    
    public boolean waitForBroadcast(final long timeout)
-   {
+   {      
       synchronized (waitLock)
       { 
          long start = System.currentTimeMillis();
@@ -142,7 +142,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          {      
             try
             {
-               waitLock.wait(toWait);
+               waitLock.wait(toWait);        
             }
             catch (InterruptedException e)
             {               
@@ -160,7 +160,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          received = false;
          
          return ret;
-      }
+      }      
    }
 
    public void run()

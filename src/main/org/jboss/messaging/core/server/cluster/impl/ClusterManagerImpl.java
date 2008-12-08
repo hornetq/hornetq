@@ -111,7 +111,7 @@ public class ClusterManagerImpl implements ClusterManager
       {
          return;
       }
-
+      
       for (BroadcastGroupConfiguration config : configuration.getBroadcastGroupConfigurations())
       {
          deployBroadcastGroup(config);

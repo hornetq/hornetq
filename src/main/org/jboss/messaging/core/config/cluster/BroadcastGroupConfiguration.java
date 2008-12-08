@@ -26,6 +26,7 @@ package org.jboss.messaging.core.config.cluster;
 import java.io.Serializable;
 import java.util.List;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.util.Pair;
 
 /**
@@ -40,6 +41,9 @@ import org.jboss.messaging.util.Pair;
 public class BroadcastGroupConfiguration implements Serializable
 {
    private static final long serialVersionUID = 1052413739064253955L;
+   
+   private static final Logger log = Logger.getLogger(BroadcastGroupConfiguration.class);
+
    
    private final String name;
    

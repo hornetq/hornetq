@@ -51,9 +51,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public static final String DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME = "org.jboss.messaging.core.client.impl.RoundRobinConnectionLoadBalancingPolicy";
 
    public static final long DEFAULT_PING_PERIOD = 5000;
-   
-   //5 minutes - normally this should be much higher than ping period, this allows clients to re-attach on live
-   //or backup without fear of session having already been closed when connection times out.
+
+   // 5 minutes - normally this should be much higher than ping period, this allows clients to re-attach on live
+   // or backup without fear of session having already been closed when connection times out.
    public static final long DEFAULT_CONNECTION_TTL = 5 * 60000;
 
    // Any message beyond this size is considered a large message (to be sent in chunks)
@@ -101,7 +101,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private ConnectionManager[] connectionManagerArray;
 
    private final long pingPeriod;
-   
+
    private final long connectionTTL;
 
    private final long callTimeout;
@@ -137,7 +137,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    private final DiscoveryGroup discoveryGroup;
 
-   private boolean receivedBroadcast = false;
+   private volatile boolean receivedBroadcast = false;
 
    private final long initialWaitTimeout;
 
@@ -224,23 +224,15 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    final long retryInterval,
                                    final double retryIntervalMultiplier,
                                    final int maxRetriesBeforeFailover,
-                                   final int maxRetriesAfterFailover) throws MessagingException
+                                   final int maxRetriesAfterFailover) throws Exception
    {
-      try
-      {
-         InetAddress groupAddress = InetAddress.getByName(discoveryGroupName);
+      InetAddress groupAddress = InetAddress.getByName(discoveryGroupName);
 
-         discoveryGroup = new DiscoveryGroupImpl(groupAddress, discoveryGroupPort, discoveryRefreshTimeout);
+      discoveryGroup = new DiscoveryGroupImpl(groupAddress, discoveryGroupPort, discoveryRefreshTimeout);
 
-         discoveryGroup.registerListener(this);
+      discoveryGroup.registerListener(this);
 
-         discoveryGroup.start();
-      }
-      catch (Exception e)
-      {
-         // TODO - better execption
-         throw new MessagingException(MessagingException.INTERNAL_ERROR, "Failed to connect discovery group");
-      }
+      discoveryGroup.start();
 
       this.initialWaitTimeout = initialWaitTimeout;
       this.loadBalancingPolicy = instantiateLoadBalancingPolicy(connectionloadBalancingPolicyClassName);
@@ -818,17 +810,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    // Private --------------------------------------------------------------------------------
 
-   private synchronized ClientSession createSessionInternal(final String username,
-                                                            final String password,
-                                                            final boolean xa,
-                                                            final boolean autoCommitSends,
-                                                            final boolean autoCommitAcks,
-                                                            final boolean preAcknowledge,
-                                                            final int ackBatchSize) throws MessagingException
+   private ClientSession createSessionInternal(final String username,
+                                               final String password,
+                                               final boolean xa,
+                                               final boolean autoCommitSends,
+                                               final boolean autoCommitAcks,
+                                               final boolean preAcknowledge,
+                                               final int ackBatchSize) throws MessagingException
    {
       if (discoveryGroup != null && !receivedBroadcast)
-      {
-         boolean ok = discoveryGroup.waitForBroadcast(initialWaitTimeout);
+      {         
+         boolean ok = discoveryGroup.waitForBroadcast(initialWaitTimeout);         
 
          if (!ok)
          {
@@ -837,26 +829,30 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          }
       }
 
-      int pos = loadBalancingPolicy.select(connectionManagerArray.length);
+      synchronized (this)
+      {
 
-      ConnectionManager connectionManager = connectionManagerArray[pos];
+         int pos = loadBalancingPolicy.select(connectionManagerArray.length);
 
-      return connectionManager.createSession(username,
-                                             password,
-                                             xa,
-                                             autoCommitSends,
-                                             autoCommitAcks,
-                                             preAcknowledge,
-                                             ackBatchSize,
-                                             minLargeMessageSize,
-                                             blockOnAcknowledge,
-                                             autoGroup,
-                                             sendWindowSize,
-                                             consumerWindowSize,
-                                             consumerMaxRate,
-                                             producerMaxRate,
-                                             blockOnNonPersistentSend,
-                                             blockOnPersistentSend);
+         ConnectionManager connectionManager = connectionManagerArray[pos];
+
+         return connectionManager.createSession(username,
+                                                password,
+                                                xa,
+                                                autoCommitSends,
+                                                autoCommitAcks,
+                                                preAcknowledge,
+                                                ackBatchSize,
+                                                minLargeMessageSize,
+                                                blockOnAcknowledge,
+                                                autoGroup,
+                                                sendWindowSize,
+                                                consumerWindowSize,
+                                                consumerMaxRate,
+                                                producerMaxRate,
+                                                blockOnNonPersistentSend,
+                                                blockOnPersistentSend);
+      }
    }
 
    private ConnectionLoadBalancingPolicy instantiateLoadBalancingPolicy(final String className)
