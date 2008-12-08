@@ -12,8 +12,6 @@
 
 package org.jboss.messaging.jms.client;
 
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +34,6 @@ import javax.naming.Reference;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.ConnectionLoadBalancingPolicy;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;

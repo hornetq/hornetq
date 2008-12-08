@@ -224,15 +224,23 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    final long retryInterval,
                                    final double retryIntervalMultiplier,
                                    final int maxRetriesBeforeFailover,
-                                   final int maxRetriesAfterFailover) throws Exception
+                                   final int maxRetriesAfterFailover) throws MessagingException
    {
-      InetAddress groupAddress = InetAddress.getByName(discoveryGroupName);
-
-      discoveryGroup = new DiscoveryGroupImpl(groupAddress, discoveryGroupPort, discoveryRefreshTimeout);
-
-      discoveryGroup.registerListener(this);
-
-      discoveryGroup.start();
+      try
+      {
+         InetAddress groupAddress = InetAddress.getByName(discoveryGroupName);
+   
+         discoveryGroup = new DiscoveryGroupImpl(groupAddress, discoveryGroupPort, discoveryRefreshTimeout);
+   
+         discoveryGroup.registerListener(this);
+   
+         discoveryGroup.start();
+      }
+      catch (Exception e)
+      {
+         //TODO - handle exceptions better
+         throw new MessagingException(MessagingException.NOT_CONNECTED, e.toString());
+      }
 
       this.initialWaitTimeout = initialWaitTimeout;
       this.loadBalancingPolicy = instantiateLoadBalancingPolicy(connectionloadBalancingPolicyClassName);
