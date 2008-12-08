@@ -194,7 +194,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                   continue;
                }
             }
-             
+            
             ByteArrayInputStream bis = new ByteArrayInputStream(data);
             
             ObjectInputStream ois = new ObjectInputStream(bis);
@@ -250,17 +250,18 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
             
             packet.setLength(data.length);
             
+            if (changed)
+            {
+               callListeners();
+            }
+            
             synchronized (waitLock)
             {
                received = true;
                
                waitLock.notify();
             }
-            
-            if (changed)
-            {
-               callListeners();
-            }
+                        
          }
       }
       catch (Exception e)

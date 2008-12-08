@@ -60,9 +60,9 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
    
    private final List<Pair<TransportConfiguration, TransportConfiguration>> connectorPairs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
    
-   private volatile boolean started;
+   private boolean started;
    
-   private volatile ScheduledFuture<?> future;
+   private ScheduledFuture<?> future;
    
    public BroadcastGroupImpl(final InetAddress localBindAddress,
                              final int localPort,
@@ -111,22 +111,27 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       started = false;
    }
    
-   public boolean isStarted()
+   public synchronized boolean isStarted()
    {
       return started;
    }
    
-   public void addConnectorPair(final Pair<TransportConfiguration, TransportConfiguration> connectorPair)
+   public synchronized void addConnectorPair(final Pair<TransportConfiguration, TransportConfiguration> connectorPair)
    {
       connectorPairs.add(connectorPair);
    }
+   
+   public synchronized void removeConnectorPair(final Pair<TransportConfiguration, TransportConfiguration> connectorPair)
+   {
+      connectorPairs.remove(connectorPair);
+   }
 
-   public int size()
+   public synchronized int size()
    {
       return connectorPairs.size();
    }
    
-   public void broadcastConnectors() throws Exception
+   public synchronized void broadcastConnectors() throws Exception
    {
       // TODO - for now we just use plain serialization to serialize the transport configs
       // we should use our own format for a tighter representation
@@ -178,7 +183,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       }
    }
    
-   public void setScheduledFuture(final ScheduledFuture<?> future)
+   public synchronized void setScheduledFuture(final ScheduledFuture<?> future)
    {
       this.future = future;
    }
