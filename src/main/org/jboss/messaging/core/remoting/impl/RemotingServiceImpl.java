@@ -30,6 +30,7 @@ import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
@@ -71,11 +72,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    
    private final long connectionTTL;
 
+   private final boolean jmxEnabled;
+
    private final BufferHandler bufferHandler = new DelegatingBufferHandler();
 
    private volatile boolean backup;
 
    private volatile MessagingServer server;
+
    
    // Static --------------------------------------------------------
 
@@ -103,7 +107,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       
       connectionTTL = config.getConnectionTTLOverride();
 
-      backup = config.isBackup();            
+      backup = config.isBackup();  
+      
+      jmxEnabled= config.isJMXManagementEnabled();
    }
 
    // RemotingService implementation -------------------------------
@@ -113,6 +119,25 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       if (started)
       {
          return;
+      }
+      
+
+      // when JMX is enabled, it requires a INVM acceptor to send the core messages
+      // corresponding to the JMX management operations (@see ReplicationAwareStandardMBeanWrapper)
+      if (jmxEnabled)
+      {
+         boolean invmAcceptorConfigured = false;
+         for (TransportConfiguration config : transportConfigs)
+         {
+            if (InVMAcceptorFactory.class.getName().equals(config.getFactoryClassName()))
+            {
+               invmAcceptorConfigured = true;
+            }
+         }
+         if (!invmAcceptorConfigured)
+         {
+            transportConfigs.add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
+         }
       }
 
       ClassLoader loader = Thread.currentThread().getContextClassLoader();

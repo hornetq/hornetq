@@ -97,7 +97,6 @@ public class JMSServerControlTest extends TestCase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactory));
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       MessagingService service = MessagingServiceImpl.newNullStorageMessagingServer(conf);
       service.start();
 
