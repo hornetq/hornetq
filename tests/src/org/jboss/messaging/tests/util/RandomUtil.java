@@ -67,6 +67,11 @@ public class RandomUtil
       return random.nextLong();
    }
 
+   public static long randomPositiveLong()
+   {
+      return Math.abs(randomLong());
+   }
+
    public static int randomInt()
    {
       return random.nextInt();

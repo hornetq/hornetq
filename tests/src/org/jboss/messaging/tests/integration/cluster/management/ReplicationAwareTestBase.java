@@ -27,6 +27,7 @@ import java.util.Map;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
+import javax.management.ObjectName;
 
 import junit.framework.TestCase;
 
@@ -73,6 +74,49 @@ public class ReplicationAwareTestBase extends TestCase
 
    // Static --------------------------------------------------------
 
+   protected static void assertResourceExists(MBeanServer mbeanServer, ObjectName objectName)
+   {
+      boolean registered = mbeanServer.isRegistered(objectName);
+      if (!registered)
+      {
+         fail("Resource does not exist: " + objectName);
+      }
+   }
+
+   protected static void assertResourceNotExists(MBeanServer mbeanServer, ObjectName objectName)
+   {
+      boolean registered = mbeanServer.isRegistered(objectName);
+      if (registered)
+      {
+         fail("Resource exists: " + objectName);
+      }
+   }
+
+   protected static MessagingService createNullStorageMessagingServer(final Configuration config, MBeanServer mbeanServer)
+   {
+      StorageManager storageManager = new NullStorageManager();
+      
+      RemotingService remotingService = new RemotingServiceImpl(config);
+
+      JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
+      
+      ManagementService managementService = new ManagementServiceImpl(mbeanServer, config.isJMXManagementEnabled());
+      
+      MessagingServer server = new MessagingServerImpl();
+      
+      server.setConfiguration(config);
+      
+      server.setStorageManager(storageManager);
+      
+      server.setRemotingService(remotingService);
+      
+      server.setSecurityManager(securityManager);
+      
+      server.setManagementService(managementService);
+      
+      return new MessagingServiceImpl(server, storageManager, remotingService);
+   }
+   
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
@@ -126,31 +170,6 @@ public class ReplicationAwareTestBase extends TestCase
    }
 
    // Private -------------------------------------------------------
-
-   private static MessagingService createNullStorageMessagingServer(final Configuration config, MBeanServer mbeanServer)
-   {
-      StorageManager storageManager = new NullStorageManager();
-      
-      RemotingService remotingService = new RemotingServiceImpl(config);
-
-      JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
-      
-      ManagementService managementService = new ManagementServiceImpl(mbeanServer, config.isJMXManagementEnabled());
-      
-      MessagingServer server = new MessagingServerImpl();
-      
-      server.setConfiguration(config);
-      
-      server.setStorageManager(storageManager);
-      
-      server.setRemotingService(remotingService);
-      
-      server.setSecurityManager(securityManager);
-      
-      server.setManagementService(managementService);
-      
-      return new MessagingServiceImpl(server, storageManager, remotingService);
-   }
    
    // Inner classes -------------------------------------------------
 

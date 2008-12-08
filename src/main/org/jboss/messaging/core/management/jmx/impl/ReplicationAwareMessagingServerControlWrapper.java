@@ -245,7 +245,7 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
 
    public boolean closeConnectionsForAddress(final String ipAddress) throws Exception
    {
-      return (Boolean)replicationAwareInvoke("closeConnectionsForAddress", ipAddress);
+      return localControl.closeConnectionsForAddress(ipAddress);
    }
 
    public boolean commitPreparedTransaction(final String transactionAsBase64) throws Exception
