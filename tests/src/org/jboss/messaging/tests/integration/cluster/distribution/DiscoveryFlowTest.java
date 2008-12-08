@@ -73,6 +73,7 @@ public class DiscoveryFlowTest extends MessageFlowTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
+   
    public void testDiscoveryOutflow() throws Exception
    {
       Map<String, Object> service0Params = new HashMap<String, Object>();

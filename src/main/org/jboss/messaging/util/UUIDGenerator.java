@@ -120,4 +120,29 @@ public final class UUIDGenerator
       
       return uid;
    }
+   
+   public String generateStringUUID()
+   {
+      InetAddress localHost = null;
+      
+      try
+      {
+         localHost = InetAddress.getLocalHost();
+      }
+      catch (UnknownHostException e)
+      {        
+      }
+      String uid;
+      if (localHost == null)
+      {
+         uid = java.util.UUID.randomUUID().toString();
+      }
+      else
+      {
+         UUIDGenerator gen = UUIDGenerator.getInstance();
+         uid = gen.generateTimeBasedUUID(localHost).toString();
+      }    
+      
+      return uid;
+   }
 }
