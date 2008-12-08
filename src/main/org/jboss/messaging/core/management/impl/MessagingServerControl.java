@@ -178,61 +178,6 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return configuration;
    }
 
-   public int expireMessages(final Filter filter, final SimpleString simpleAddress) throws Exception
-   {
-      Binding binding = postOffice.getBinding(simpleAddress);
-      if (binding != null)
-      {
-         Queue queue = binding.getQueue();
-         List<MessageReference> refs = queue.list(filter);
-         
-         //FIXME - what if the refs have been consumed between listing them and expiring them?
-         
-         for (MessageReference ref : refs)
-         {
-            queue.expireMessage(ref.getMessage().getMessageID(), storageManager, postOffice, queueSettingsRepository);
-         }
-         return refs.size();
-      }
-      return 0;
-   }
-
-   public int sendMessagesToDLQ(final Filter filter, final SimpleString simpleAddress) throws Exception
-   {
-      Binding binding = postOffice.getBinding(simpleAddress);
-      if (binding != null)
-      {
-         Queue queue = binding.getQueue();
-         List<MessageReference> refs = queue.list(filter);
-         for (MessageReference ref : refs)
-         {
-            queue.sendMessageToDeadLetterAddress(ref.getMessage().getMessageID(), storageManager, postOffice, queueSettingsRepository);
-         }
-         return refs.size();
-      }
-      return 0;
-   }
-
-   public int changeMessagesPriority(final Filter filter, final byte newPriority, final SimpleString simpleAddress) throws Exception
-   {
-      Binding binding = postOffice.getBinding(simpleAddress);
-      if (binding != null)
-      {
-         Queue queue = binding.getQueue();
-         List<MessageReference> refs = queue.list(filter);
-         for (MessageReference ref : refs)
-         {
-            queue.changeMessagePriority(ref.getMessage().getMessageID(),
-                                        newPriority,
-                                        storageManager,
-                                        postOffice,
-                                        queueSettingsRepository);
-         }
-         return refs.size();
-      }
-      return 0;
-   }
-
    // MessagingServerControlMBean implementation --------------------
 
    //FIXME
