@@ -290,16 +290,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       try
       {
          Filter filter = createFilterFromJMSSelector(filterStr);
-
-         List<MessageReference> refs = coreQueue.list(filter);
-         for (MessageReference ref : refs)
-         {
-            coreQueue.expireMessage(ref.getMessage().getMessageID(),
-                                    storageManager,
-                                    postOffice,
-                                    queueSettingsRepository);
-         }
-         return refs.size();
+         return coreQueue.expireMessages(filter, storageManager, postOffice, queueSettingsRepository);
       }
       catch (MessagingException e)
       {

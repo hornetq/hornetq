@@ -23,6 +23,7 @@
 package org.jboss.messaging.tests.unit.jms.server.management.impl;
 
 import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.isA;
 import static org.easymock.EasyMock.replay;
@@ -57,7 +58,6 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.server.management.impl.JMSQueueControl;
-import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -420,27 +420,18 @@ public class JMSQueueControlTest extends TestCase
 
    public void testExpireMessages() throws Exception
    {
-      long messageID = randomLong();
-
-      List<MessageReference> refs = new ArrayList<MessageReference>();
-      MessageReference ref = createMock(MessageReference.class);
-      ServerMessage serverMessage = createMock(ServerMessage.class);
-      expect(serverMessage.getMessageID()).andReturn(messageID);
-      expect(ref.getMessage()).andReturn(serverMessage);
-      refs.add(ref);
-      expect(coreQueue.list(isA(Filter.class))).andReturn(refs);
+      int expiredMessages = randomInt();
+      
       expect(
-            coreQueue.expireMessage(messageID, storageManager, postOffice,
-                  queueSettingsRepository)).andReturn(true);
+            coreQueue.expireMessages(isA(Filter.class), eq(storageManager), eq(postOffice),
+                  eq(queueSettingsRepository))).andReturn(expiredMessages);
 
       replayMockedAttributes();
-      replay(ref, serverMessage);
 
       JMSQueueControl control = createControl();
-      assertEquals(1, control.expireMessages("color = 'green'"));
+      assertEquals(expiredMessages, control.expireMessages("color = 'green'"));
 
       verifyMockedAttributes();
-      verify(ref, serverMessage);
    }
 
    public void testSendMessageToDLQ() throws Exception
