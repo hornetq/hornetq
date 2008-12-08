@@ -258,7 +258,7 @@ public class ForwarderImpl implements Forwarder, FailureListener
    // FailureListener implementation --------------------------------
 
    public synchronized boolean connectionFailed(final MessagingException me)
-   {
+   {      
       //By the time this is called
       synchronized (this)
       {      

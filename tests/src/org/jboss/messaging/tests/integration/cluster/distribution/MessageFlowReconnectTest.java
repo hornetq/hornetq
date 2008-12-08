@@ -151,12 +151,6 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
       ClientConsumer cons1 = session1.createConsumer(address1);
 
       session1.start();
-
-      ClientMessage message = session0.createClientMessage(false);
-      SimpleString propKey = new SimpleString("propkey");
-      SimpleString propVal = new SimpleString("propval");
-      message.putStringProperty(propKey, propVal);
-      message.getBody().flip();
       
       //Now we will simulate a failure of the message flow connection between server1 and server2
       //And prevent reconnection for a few tries, then it will reconnect without failing over
@@ -167,11 +161,25 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
       InVMConnector.numberOfFailures = retriesBeforeFailover - 1;
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
-      prod0.send(message);
+      final int numMessages = 10;
+      
+      SimpleString propKey = new SimpleString("propkey");      
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session0.createClientMessage(false);         
+         message.putIntProperty(propKey, i);
+         message.getBody().flip();
+         
+         prod0.send(message);
+      }
 
-      ClientMessage r1 = cons1.receive(1000);
-      assertNotNull(r1);
-      assertEquals(propVal, r1.getProperty(propKey));
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage r1 = cons1.receive(500);
+         assertNotNull(r1);
+         assertEquals(i, r1.getProperty(propKey));
+      }
 
       session0.close();
       session1.close();
@@ -276,11 +284,7 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
 
       session2.start();
 
-      ClientMessage message = session0.createClientMessage(false);
-      SimpleString propKey = new SimpleString("propkey");
-      SimpleString propVal = new SimpleString("propval");
-      message.putStringProperty(propKey, propVal);
-      message.getBody().flip();
+      
       
       //Now we will simulate a failure of the message flow connection between server1 and server2
       //And prevent reconnection for a few tries, then it will failover
@@ -291,11 +295,25 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
       InVMConnector.numberOfFailures = retriesBeforeFailover;
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
-      prod0.send(message);
+      final int numMessages = 10;
+      
+      SimpleString propKey = new SimpleString("propkey");      
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session0.createClientMessage(false);         
+         message.putIntProperty(propKey, i);
+         message.getBody().flip();
+         
+         prod0.send(message);
+      }
 
-      ClientMessage r1 = cons1.receive(2000);
-      assertNotNull(r1);
-      assertEquals(propVal, r1.getProperty(propKey));
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage r1 = cons1.receive(500);
+         assertNotNull(r1);
+         assertEquals(i, r1.getProperty(propKey));
+      }
 
       session0.close();
       session2.close();
@@ -307,6 +325,387 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
       assertEquals(0, service0.getServer().getRemotingService().getConnections().size());
       assertEquals(0, service1.getServer().getRemotingService().getConnections().size());
       assertEquals(0, service2.getServer().getRemotingService().getConnections().size());
+   }
+   
+   public void testFailoverThenReconnectAfterFailover() throws Exception
+   {
+      Map<String, Object> service0Params = new HashMap<String, Object>();
+      MessagingService service0 = createMessagingService(0, service0Params);
+
+      Map<String, Object> service1Params = new HashMap<String, Object>();
+      MessagingService service1 = createMessagingService(1, service1Params);
+            
+      Map<String, Object> service2Params = new HashMap<String, Object>();
+      MessagingService service2 = createMessagingService(2, service2Params, true);
+      
+      TransportConfiguration server0tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                    service0Params,
+                                                                    "server0tc");
+
+      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
+
+      TransportConfiguration server1tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                    service1Params,
+                                                                    "server1tc");
+
+      TransportConfiguration server2tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                    service2Params,
+                                                                    "server2tc");
+      
+      connectors.put(server1tc.getName(), server1tc);
+      
+      connectors.put(server2tc.getName(), server2tc);
+      
+      service1.getServer().getConfiguration().setConnectorConfigurations(connectors);
+      
+      service1.getServer().getConfiguration().setBackupConnectorName(server2tc.getName());
+      
+      service2.getServer().getConfiguration().setBackup(true);
+      
+      service1.start();
+      
+      service2.start();
+      
+      log.info("Started service1 and service2");
+                 
+      service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
+
+      List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();
+      connectorNames.add(new Pair<String, String>(server1tc.getName(), server2tc.getName()));
+
+      final SimpleString address1 = new SimpleString("testaddress");
+
+      final long retryInterval = 50;
+      final double retryIntervalMultiplier = 1d;
+      final int retriesBeforeFailover = 3;
+      final int maxRetriesAfterFailover = 3;
+      
+      final String flowName = "flow1";
+      
+      MessageFlowConfiguration ofconfig1 = new MessageFlowConfiguration(flowName,
+                                                                        address1.toString(),
+                                                                        null,
+                                                                        true,
+                                                                        1,
+                                                                        -1,
+                                                                        null,
+                                                                        retryInterval,
+                                                                        retryIntervalMultiplier,
+                                                                        retriesBeforeFailover,
+                                                                        maxRetriesAfterFailover,
+                                                                        connectorNames);
+
+      Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
+      ofconfigs.add(ofconfig1);
+
+      service0.getServer().getConfiguration().setMessageFlowConfigurations(ofconfigs);
+
+      service0.start();
+      
+      log.info("started service0");
+
+      ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
+      ClientSession session0 = csf0.createSession(false, true, true);
+
+      ClientSessionFactory csf2 = new ClientSessionFactoryImpl(server2tc);
+      ClientSession session2 = csf2.createSession(false, true, true);
+
+      session0.createQueue(address1, address1, null, false, false, false);
+      session2.createQueue(address1, address1, null, false, false, false);
+      ClientProducer prod0 = session0.createProducer(address1);
+
+      ClientConsumer cons1 = session2.createConsumer(address1);
+
+      session2.start();
+     
+      //Now we will simulate a failure of the message flow connection between server1 and server2
+      //And prevent reconnection for a few tries, then it will failover
+      MessageFlow flow = service0.getServer().getClusterManager().getMessageFlows().get(flowName);
+      Forwarder forwarder = flow.getForwarders().iterator().next();
+      RemotingConnection forwardingConnection = ((ForwarderImpl)forwarder).getForwardingConnection();
+      InVMConnector.failOnCreateConnection = true;
+      InVMConnector.numberOfFailures = retriesBeforeFailover;
+      forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      
+      //Now we should be failed over so fail again and should reconnect
+      forwardingConnection = ((ForwarderImpl)forwarder).getForwardingConnection();
+      InVMConnector.resetFailures();
+      InVMConnector.failOnCreateConnection = true;
+      InVMConnector.numberOfFailures = retriesBeforeFailover - 1;
+      forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+
+      final int numMessages = 10;
+      
+      SimpleString propKey = new SimpleString("propkey");      
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session0.createClientMessage(false);         
+         message.putIntProperty(propKey, i);
+         message.getBody().flip();
+         
+         prod0.send(message);
+      }
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage r1 = cons1.receive(500);
+         assertNotNull(r1);
+         assertEquals(i, r1.getProperty(propKey));
+      }
+
+      session0.close();
+      session2.close();
+
+      service0.stop();
+      service1.stop();
+      service2.stop();
+
+      assertEquals(0, service0.getServer().getRemotingService().getConnections().size());
+      assertEquals(0, service1.getServer().getRemotingService().getConnections().size());
+      assertEquals(0, service2.getServer().getRemotingService().getConnections().size());
+   }
+   
+   public void testAutomaticReconnectSingleServer() throws Exception
+   {
+      Map<String, Object> service0Params = new HashMap<String, Object>();
+      MessagingService service0 = createMessagingService(0, service0Params);
+
+      Map<String, Object> service1Params = new HashMap<String, Object>();
+      MessagingService service1 = createMessagingService(1, service1Params);
+      service1.start();
+
+      TransportConfiguration server0tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                    service0Params,
+                                                                    "server0tc");
+
+      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
+
+      TransportConfiguration server1tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                    service1Params,
+                                                                    "server1tc");
+   
+      connectors.put(server1tc.getName(), server1tc);
+      
+ 
+      service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
+
+      List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();
+      connectorNames.add(new Pair<String, String>(server1tc.getName(), null));
+
+      final SimpleString address1 = new SimpleString("testaddress");
+
+      final long retryInterval = 50;
+      final double retryIntervalMultiplier = 1d;
+      final int retriesBeforeFailover = 3;
+      final int maxRetriesAfterFailover = -1;
+      
+      final String flowName = "flow1";
+      
+      MessageFlowConfiguration ofconfig1 = new MessageFlowConfiguration(flowName,
+                                                                        address1.toString(),
+                                                                        null,
+                                                                        true,
+                                                                        1,
+                                                                        -1,
+                                                                        null,
+                                                                        retryInterval,
+                                                                        retryIntervalMultiplier,
+                                                                        retriesBeforeFailover,
+                                                                        maxRetriesAfterFailover,
+                                                                        connectorNames);
+
+      Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
+      ofconfigs.add(ofconfig1);
+
+      service0.getServer().getConfiguration().setMessageFlowConfigurations(ofconfigs);
+
+      service0.start();
+
+      ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
+      ClientSession session0 = csf0.createSession(false, true, true);
+
+      ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
+      ClientSession session1 = csf1.createSession(false, true, true);
+
+      session0.createQueue(address1, address1, null, false, false, false);
+      session1.createQueue(address1, address1, null, false, false, false);
+      ClientProducer prod0 = session0.createProducer(address1);
+
+      ClientConsumer cons1 = session1.createConsumer(address1);
+
+      session1.start();
+      
+      //Now we will simulate a failure of the message flow connection between server1 and server2
+      //And prevent reconnection for a few tries, then it will reconnect without failing over
+      MessageFlow flow = service0.getServer().getClusterManager().getMessageFlows().get(flowName);
+      Forwarder forwarder = flow.getForwarders().iterator().next();
+      RemotingConnection forwardingConnection = ((ForwarderImpl)forwarder).getForwardingConnection();
+      InVMConnector.failOnCreateConnection = true;
+      InVMConnector.numberOfFailures = retriesBeforeFailover - 1;
+      forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+
+      final int numMessages = 10;
+      
+      SimpleString propKey = new SimpleString("propkey");      
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session0.createClientMessage(false);         
+         message.putIntProperty(propKey, i);
+         message.getBody().flip();
+         
+         prod0.send(message);
+      }
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage r1 = cons1.receive(500);
+         assertNotNull(r1);
+         assertEquals(i, r1.getProperty(propKey));
+      }
+
+      session0.close();
+      session1.close();
+
+      service0.stop();
+      service1.stop();
+
+      assertEquals(0, service0.getServer().getRemotingService().getConnections().size());
+      assertEquals(0, service1.getServer().getRemotingService().getConnections().size());
+   }
+   
+   public void testNonAutomaticReconnectSingleServer() throws Exception
+   {
+      Map<String, Object> service0Params = new HashMap<String, Object>();
+      MessagingService service0 = createMessagingService(0, service0Params);
+
+      Map<String, Object> service1Params = new HashMap<String, Object>();
+      MessagingService service1 = createMessagingService(1, service1Params);
+      service1.start();
+
+      TransportConfiguration server0tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                    service0Params,
+                                                                    "server0tc");
+
+      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
+
+      TransportConfiguration server1tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                    service1Params,
+                                                                    "server1tc");
+   
+      connectors.put(server1tc.getName(), server1tc);
+      
+ 
+      service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
+
+      List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();
+      connectorNames.add(new Pair<String, String>(server1tc.getName(), null));
+
+      final SimpleString address1 = new SimpleString("testaddress");
+
+      final long retryInterval = 50;
+      final double retryIntervalMultiplier = 1d;
+      final int retriesBeforeFailover = 3;
+      final int maxRetriesAfterFailover = 0;
+      
+      final String flowName = "flow1";
+      
+      MessageFlowConfiguration ofconfig1 = new MessageFlowConfiguration(flowName,
+                                                                        address1.toString(),
+                                                                        null,
+                                                                        true,
+                                                                        1,
+                                                                        -1,
+                                                                        null,
+                                                                        retryInterval,
+                                                                        retryIntervalMultiplier,
+                                                                        retriesBeforeFailover,
+                                                                        maxRetriesAfterFailover,
+                                                                        connectorNames);
+
+      Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
+      ofconfigs.add(ofconfig1);
+
+      service0.getServer().getConfiguration().setMessageFlowConfigurations(ofconfigs);
+
+      service0.start();
+
+      ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
+      ClientSession session0 = csf0.createSession(false, true, true);
+
+      ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
+      ClientSession session1 = csf1.createSession(false, true, true);
+
+      session0.createQueue(address1, address1, null, false, false, false);
+      session1.createQueue(address1, address1, null, false, false, false);
+      ClientProducer prod0 = session0.createProducer(address1);
+
+      ClientConsumer cons1 = session1.createConsumer(address1);
+
+      session1.start();
+      
+      //Now we will simulate a failure of the message flow connection between server1 and server2
+      //And prevent reconnection for a few tries, then it will reconnect without failing over
+      MessageFlow flow = service0.getServer().getClusterManager().getMessageFlows().get(flowName);
+      Forwarder forwarder = flow.getForwarders().iterator().next();
+      RemotingConnection forwardingConnection = ((ForwarderImpl)forwarder).getForwardingConnection();
+      InVMConnector.failOnCreateConnection = true;
+      InVMConnector.numberOfFailures = retriesBeforeFailover * 2;
+      forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+
+      final int numMessages = 10;
+      
+      SimpleString propKey = new SimpleString("propkey");      
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session0.createClientMessage(false);         
+         message.putIntProperty(propKey, i);
+         message.getBody().flip();
+         
+         prod0.send(message);
+      }
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage r1 = cons1.receive(500);
+         assertNotNull(r1);
+         assertEquals(i, r1.getProperty(propKey));
+      }
+      
+      //Now fail it again
+      
+      InVMConnector.resetFailures();
+      forwardingConnection = ((ForwarderImpl)forwarder).getForwardingConnection();
+      InVMConnector.failOnCreateConnection = true;
+      InVMConnector.numberOfFailures = retriesBeforeFailover * 2;
+      forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session0.createClientMessage(false);         
+         message.putIntProperty(propKey, i);
+         message.getBody().flip();
+         
+         prod0.send(message);
+      }
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage r1 = cons1.receive(500);
+         assertNotNull(r1);
+         assertEquals(i, r1.getProperty(propKey));
+      }
+
+      session0.close();
+      session1.close();
+
+      service0.stop();
+      service1.stop();
+
+      assertEquals(0, service0.getServer().getRemotingService().getConnections().size());
+      assertEquals(0, service1.getServer().getRemotingService().getConnections().size());
    }
 
    // Package protected ---------------------------------------------

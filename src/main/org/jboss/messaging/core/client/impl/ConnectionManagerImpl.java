@@ -424,7 +424,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
    private RemotingConnection getConnectionForCreateSession() throws MessagingException
    {
       while (true)
-      {
+      {         
          RemotingConnection connection = getConnection(1);
    
          if (connection == null)
@@ -755,13 +755,15 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
    }
 
    private RemotingConnection getConnection(final int count)
-   {
+   {      
       RemotingConnection conn;
+      
+      
 
       if (connections.size() < maxConnections)
       {
          // Create a new one
-
+         
          DelegatingBufferHandler handler = new DelegatingBufferHandler();
 
          Connector connector = connectorFactory.createConnector(transportParams, handler, this);
@@ -786,7 +788,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
          if (tc == null)
          {
             return null;
-         }
+         }                 
 
          conn = new RemotingConnectionImpl(tc, callTimeout, pingPeriod, connectionTTL, pingExecutor, null);
 
