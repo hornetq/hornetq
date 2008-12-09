@@ -84,6 +84,11 @@
       <entry name="/TestSSLConnectionFactory"/>
    </connection-factory>
 
+   <connection-factory name="TestHttpConnectionFactory">
+      <connector-ref connector-name="netty-http"/>
+      <entry name="/TestHttpConnectionFactory"/>
+   </connection-factory>
+
    <queue name="MyQueue">
       <entry name="MyQueue"/>
    </queue>

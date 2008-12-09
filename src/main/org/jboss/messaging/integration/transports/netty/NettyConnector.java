@@ -43,6 +43,7 @@ import static org.jboss.netty.channel.Channels.write;
 import org.jboss.netty.channel.DefaultMessageEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
+import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
@@ -59,12 +60,13 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
- *
  * A NettyConnector
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -93,6 +95,10 @@ public class NettyConnector implements Connector
    private final boolean sslEnabled;
 
    private final boolean httpEnabled;
+
+   private final long httpMaxClientIdleTime;
+
+   private final long httpClientIdleScanPeriod;
 
    private final boolean useNio;
 
@@ -138,7 +144,20 @@ public class NettyConnector implements Connector
                                                                TransportConstants.DEFAULT_SSL_ENABLED,
                                                                configuration);
       this.httpEnabled =
-                  ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME, TransportConstants.DEFAULT_HTTP_ENABLED, configuration);
+            ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME, TransportConstants.DEFAULT_HTTP_ENABLED, configuration);
+
+      if(httpEnabled)
+      {
+         this.httpMaxClientIdleTime = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_CLIENT_IDLE_PROP_NAME,
+                                                                      TransportConstants.DEFAULT_HTTP_CLIENT_IDLE_TIME, configuration);
+         this.httpClientIdleScanPeriod = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD,
+                                                                      TransportConstants.DEFAULT_HTTP_CLIENT_SCAN_PERIOD, configuration);
+      }
+      else
+      {
+         this.httpMaxClientIdleTime = 0;
+         this.httpClientIdleScanPeriod = -1;
+      }
 
       this.useNio = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME,
                                                            TransportConstants.DEFAULT_USE_NIO,
@@ -354,22 +373,73 @@ public class NettyConnector implements Connector
    @ChannelPipelineCoverage("all")
    class HttpHandler extends SimpleChannelHandler
    {
+      private Channel channel;
+      private long lastSendTime = 0;
+      private boolean waitingGet = false;
+
+      private Timer idleClientTimer;
+
+      public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
+      {
+         super.channelConnected(ctx, e);
+         channel = e.getChannel();
+         if (httpClientIdleScanPeriod > 0)
+         {
+            idleClientTimer = new Timer("Http Idle Timer", true);
+            idleClientTimer.schedule(new HttpIdleTimerTask(), httpClientIdleScanPeriod, httpClientIdleScanPeriod);
+         }
+      }
+
+
+      public void channelClosed(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
+      {
+         if (idleClientTimer != null)
+         {
+            idleClientTimer.cancel();
+         }
+         super.channelClosed(ctx, e);
+      }
+
       @Override
       public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
       {
          HttpResponse response = (HttpResponse) e.getMessage();
          MessageEvent event = new DefaultMessageEvent(e.getChannel(), e.getFuture(), response.getContent(), e.getRemoteAddress());
+         waitingGet = false;
          ctx.sendUpstream(event);
       }
 
       @Override
       public void writeRequested(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
       {
-         HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/jbm/");
-         ChannelBuffer buf = (ChannelBuffer) e.getMessage();
-         httpRequest.setContent(buf);
-         httpRequest.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(buf.writerIndex()));
-         write(ctx, e.getChannel(), e.getFuture(), httpRequest, e.getRemoteAddress());
+         if (e.getMessage() instanceof ChannelBuffer)
+         {
+            HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/jbm/");
+            ChannelBuffer buf = (ChannelBuffer) e.getMessage();
+            httpRequest.setContent(buf);
+            httpRequest.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(buf.writerIndex()));
+            write(ctx, e.getChannel(), e.getFuture(), httpRequest, e.getRemoteAddress());
+            lastSendTime = System.currentTimeMillis();
+         }
+         else
+         {
+            write(ctx, e.getChannel(), e.getFuture(), e.getMessage(), e.getRemoteAddress());
+            lastSendTime = System.currentTimeMillis();
+         }
+      }
+
+      private class HttpIdleTimerTask extends TimerTask
+      {
+         long currentTime = System.currentTimeMillis();
+         public void run()
+         {
+            if(!waitingGet && System.currentTimeMillis() > lastSendTime + httpMaxClientIdleTime)
+            {
+               HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/jbm/");
+               waitingGet = true;
+               channel.write(httpRequest);
+            }
+         }
       }
    }
 

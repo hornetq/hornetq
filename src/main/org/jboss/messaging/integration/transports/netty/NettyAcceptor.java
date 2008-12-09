@@ -31,7 +31,6 @@ import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.util.ConfigurationHelper;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
@@ -43,24 +42,16 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
 import static org.jboss.netty.channel.Channels.pipeline;
 import static org.jboss.netty.channel.Channels.write;
-import org.jboss.netty.channel.DefaultMessageEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
-import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
-import org.jboss.netty.handler.codec.http.HttpHeaders;
-import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
-import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.ssl.SslHandler;
 
 import javax.net.ssl.SSLContext;
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -95,6 +86,10 @@ public class NettyAcceptor implements Acceptor
 
    private final boolean httpEnabled;
 
+   private final long httpServerScanPeriod;
+
+   private final long httpResponseTime;
+
    private final boolean useNio;
 
    private final String host;
@@ -115,6 +110,10 @@ public class NettyAcceptor implements Acceptor
 
    private final int tcpReceiveBufferSize;
 
+   private final Timer httpKeepAliveTimer;
+
+   private final HttpKeepAliveTask httpKeepAliveTask;
+
    public NettyAcceptor(final Map<String, Object> configuration, final BufferHandler handler,
                         final ConnectionLifeCycleListener listener)
    {
@@ -126,6 +125,22 @@ public class NettyAcceptor implements Acceptor
             ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME, TransportConstants.DEFAULT_SSL_ENABLED, configuration);
       this.httpEnabled =
             ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME, TransportConstants.DEFAULT_HTTP_ENABLED, configuration);
+
+      if(httpEnabled)
+      {
+         httpServerScanPeriod = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_SERVER_SCAN_PERIOD_PROP_NAME, TransportConstants.DEFAULT_HTTP_SERVER_SCAN_PERIOD, configuration);
+         httpResponseTime = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_RESPONSE_TIME_PROP_NAME, TransportConstants.DEFAULT_HTTP_RESPONSE_TIME, configuration);
+         httpKeepAliveTimer = new Timer(true);
+         httpKeepAliveTask = new HttpKeepAliveTask();
+         httpKeepAliveTimer.schedule(httpKeepAliveTask, httpServerScanPeriod, httpServerScanPeriod);
+      }
+      else
+      {
+         httpServerScanPeriod = 0;
+         httpResponseTime = 0;
+         httpKeepAliveTimer = null;
+         httpKeepAliveTask = null;
+      }
       this.useNio =
             ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME, TransportConstants.DEFAULT_USE_NIO, configuration);
       this.host =
@@ -167,7 +182,10 @@ public class NettyAcceptor implements Acceptor
          //Already started
          return;
       }
-
+      if(httpKeepAliveTimer != null)
+      {
+         httpKeepAliveTimer.cancel();
+      }
       bossExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-acceptor-boss-threads"));
       workerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-acceptor-worker-threads"));
       if (useNio)
@@ -218,7 +236,7 @@ public class NettyAcceptor implements Acceptor
             {
                pipeline.addLast("httpRequestDecoder", new HttpRequestDecoder());
                pipeline.addLast("httpResponseEncoder", new HttpResponseEncoder());
-               pipeline.addLast("httphandler", new HttpHandler());
+               pipeline.addLast("httphandler", new HttpAcceptorHandler(httpKeepAliveTask, httpResponseTime));
             }
 
             ChannelPipelineSupport.addCodecFilter(pipeline, handler);
@@ -311,28 +329,6 @@ public class NettyAcceptor implements Acceptor
             listener.connectionCreated(tc);
             active = true;
          }
-      }
-   }
-
-   @ChannelPipelineCoverage("all")
-   class HttpHandler extends SimpleChannelHandler
-   {
-      @Override
-      public void messageReceived(final ChannelHandlerContext ctx,final MessageEvent e) throws Exception
-      {
-         HttpRequest request = (HttpRequest) e.getMessage();
-         MessageEvent event = new DefaultMessageEvent(e.getChannel(), e.getFuture(), request.getContent(), e.getRemoteAddress());
-         ctx.sendUpstream(event);
-      }
-
-      @Override
-      public void writeRequested(final ChannelHandlerContext ctx,final MessageEvent e) throws Exception
-      {
-         HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-         ChannelBuffer buf = (ChannelBuffer) e.getMessage();
-         response.setContent(buf);
-         response.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(buf.writerIndex()));
-         write(ctx, e.getChannel(), e.getFuture(), response, e.getRemoteAddress());
       }
    }
 }

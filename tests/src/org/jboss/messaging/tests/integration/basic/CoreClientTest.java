@@ -84,7 +84,7 @@ public class CoreClientTest extends TestCase
       
       ClientProducer producer = session.createProducer(QUEUE);     
       
-      final int numMessages = 100;
+      final int numMessages = 10000;
       
       for (int i = 0; i < numMessages; i++)
       {

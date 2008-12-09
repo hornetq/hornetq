@@ -32,6 +32,14 @@ public class TransportConstants
    public static final String SSL_ENABLED_PROP_NAME = "jbm.remoting.netty.sslenabled";
    
    public static final String HTTP_ENABLED_PROP_NAME = "jbm.remoting.netty.httpenabled";
+
+   public static final String HTTP_CLIENT_IDLE_PROP_NAME = "jbm.remoting.netty.httpclientidletime";
+
+   public static final String HTTP_CLIENT_IDLE_SCAN_PERIOD = "jbm.remoting.netty.httpclientidlescanperiod";
+
+   public static final String HTTP_RESPONSE_TIME_PROP_NAME = "jbm.remoting.netty.httpresponsetime";
+
+   public static final String HTTP_SERVER_SCAN_PERIOD_PROP_NAME = "jbm.remoting.netty.httpserverscanperiod";
    
    public static final String USE_NIO_PROP_NAME = "jbm.remoting.netty.usenio";
    
@@ -76,4 +84,13 @@ public class TransportConstants
    public static final int DEFAULT_TCP_RECEIVEBUFFER_SIZE = 32768;
 
    public static final boolean DEFAULT_HTTP_ENABLED = false;
+
+   public static final long DEFAULT_HTTP_CLIENT_IDLE_TIME = 500;
+
+   public static final long DEFAULT_HTTP_CLIENT_SCAN_PERIOD = 500;
+
+   public static final long DEFAULT_HTTP_RESPONSE_TIME = 10000;
+
+   public static final long DEFAULT_HTTP_SERVER_SCAN_PERIOD = 5000;
+
 }

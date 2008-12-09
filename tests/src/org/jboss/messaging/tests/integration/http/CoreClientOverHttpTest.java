@@ -95,4 +95,35 @@ public class CoreClientOverHttpTest extends UnitTestCase
 
       messagingService.stop();
    }
+
+   public void testCoreHttpClientIdle() throws Exception
+   {
+      final SimpleString QUEUE = new SimpleString("CoreClientOverHttpTestQueue");
+
+      Configuration conf = new ConfigurationImpl();
+
+      conf.setSecurityEnabled(false);
+
+      HashMap<String, Object> params = new HashMap<String, Object>();
+      params.put("jbm.remoting.netty.httpenabled", true);
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
+
+      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingServer(conf);
+
+      messagingService.start();
+
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params));
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      Thread.sleep(messagingService.getServer().getConfiguration().getConnectionScanPeriod() * 5);
+
+      session.close();
+
+      messagingService.stop();
+   }
 }
