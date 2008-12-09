@@ -46,4 +46,11 @@ public interface ClientMessage extends Message
    void acknowledge() throws MessagingException;
    
    boolean isLargeMessage();
+   
+   /** Size used for FlowControl */
+   int getFlowControlSize();
+   
+   /** Size used for FlowControl */
+   void setFlowControlSize(int flowControlSize);
+
 }

@@ -655,7 +655,7 @@ public class ServerConsumerImpl implements ServerConsumer
                if (availableCredits != null)
                {
                   // RequiredBufferSize on this case represents the right number of bytes sent
-                  availableCredits.addAndGet(-pendingLargeMessage.getPropertiesEncodeSize());
+                  availableCredits.addAndGet(-headerBuffer.limit());
                }
             }
 

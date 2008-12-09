@@ -46,5 +46,5 @@ public interface ClientFileMessage extends ClientMessage
 
    FileChannel getChannel() throws MessagingException;
    
-   void closeChannel() throws MessagingException;     
+   void closeChannel() throws MessagingException;   
 }

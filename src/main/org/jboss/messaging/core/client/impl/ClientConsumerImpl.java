@@ -19,8 +19,8 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.Executor;
 
-import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientFileMessage;
+import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -70,7 +70,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private final Runner runner = new Runner();
 
-   private File directory;
+   private final File directory;
 
    private ClientMessage currentChunkMessage;
 
@@ -243,9 +243,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
 
       // If no handler before then need to queue them up
-      boolean queueUp = this.handler == null;
+      boolean queueUp = handler == null;
 
-      this.handler = theHandler;
+      handler = theHandler;
 
       if (queueUp)
       {
@@ -341,14 +341,14 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          return;
       }
 
+      // Flow control for the first packet, we will have others
+      flowControl(header.length);
+
       currentChunkMessage = createFileMessage(header);
-      
-      // We won't call flow control at this point, as we will only flow control the header right before consumption
-      
 
    }
 
-   public synchronized void handleLargeMessageContinuation(SessionReceiveContinuationMessage chunk) throws Exception
+   public synchronized void handleLargeMessageContinuation(final SessionReceiveContinuationMessage chunk) throws Exception
    {
       if (closing)
       {
@@ -357,7 +357,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       ByteBuffer body = ByteBuffer.wrap(chunk.getBody());
 
-      flowControl(chunk.getBody().length);
+      if (chunk.isContinues())
+      {
+         flowControl(chunk.getBody().length);
+      }
 
       if (isFileConsumer())
       {
@@ -367,7 +370,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       else
       {
          MessagingBuffer currentBody = currentChunkMessage.getBody();
-         
+
          final int currentBodySize = currentBody == null ? 0 : currentBody.limit();
 
          MessagingBuffer newBody = new ByteBufferWrapper(ByteBuffer.allocate(currentBodySize + body.limit()));
@@ -376,7 +379,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             newBody.putBytes(currentBody.array());
          }
-         
+
          newBody.putBytes(body.array());
 
          currentChunkMessage.setBody(newBody);
@@ -389,6 +392,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             ((ClientFileMessage)currentChunkMessage).closeChannel();
          }
+         
+         currentChunkMessage.setFlowControlSize(chunk.getBody().length);
 
          ClientMessage msgToSend = currentChunkMessage;
          currentChunkMessage = null;
@@ -523,7 +528,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       // Must store handler in local variable since might get set to null
       // otherwise while this is executing and give NPE when calling onMessage
-      MessageHandler theHandler = this.handler;
+      MessageHandler theHandler = handler;
 
       if (theHandler != null)
       {
@@ -556,18 +561,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
     * @param message
     * @throws MessagingException
     */
-   private void flowControlBeforeConsumption(ClientMessage message) throws MessagingException
+   private void flowControlBeforeConsumption(final ClientMessage message) throws MessagingException
    {
       // Chunk messages will execute the flow control while receiving the chunks
-      if (!message.isLargeMessage())
-      {
-         flowControl(message.getEncodeSize());
-      }
-      else
-      {
-         // But the header is only flow controlled right before the consumption
-         flowControl(message.getPropertiesEncodeSize());
-      }
+      flowControl(message.getFlowControlSize());
    }
 
    private void doCleanUp(final boolean sendCloseMessage) throws MessagingException
@@ -634,58 +631,54 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       else
       {
          int propertiesSize = message.getPropertiesEncodeSize();
-   
+
          MessagingBuffer bufferProperties = message.getBody().createNewBuffer(propertiesSize);
-   
+
          // FIXME: Find a better way to clone this ClientMessageImpl as ClientFileMessageImpl without using the
          // MessagingBuffer.
          // There is no direct access into the Properties, and I couldn't add a direct cast to this method without loose
          // abstraction
          message.encodeProperties(bufferProperties);
-   
+
          bufferProperties.rewind();
-   
+
          ClientFileMessageImpl cloneMessage = new ClientFileMessageImpl();
-   
+
          cloneMessage.decodeProperties(bufferProperties);
-   
+
          cloneMessage.setDeliveryCount(message.getDeliveryCount());
-   
+
          cloneMessage.setLargeMessage(message.isLargeMessage());
-   
-         cloneMessage.setFile(new File(this.directory, cloneMessage.getMessageID() + "-" +
-                                                       this.session.getName() +
-                                                       "-" +
-                                                       this.getID() +
-                                                       ".jbm"));
-   
+
+         cloneMessage.setFile(new File(directory, cloneMessage.getMessageID() + "-" +
+                                                  session.getName() +
+                                                  "-" +
+                                                  getID() +
+                                                  ".jbm"));
+
          addBytesBody(cloneMessage, message.getBody().array());
-   
+
          cloneMessage.closeChannel();
-   
+
          return cloneMessage;
       }
    }
 
    private ClientMessage createFileMessage(final byte[] header) throws Exception
    {
-      
+
       MessagingBuffer headerBuffer = new ByteBufferWrapper(ByteBuffer.wrap(header));
 
       if (isFileConsumer())
       {
-         if (!this.directory.exists())
+         if (!directory.exists())
          {
             directory.mkdirs();
          }
 
          ClientFileMessageImpl message = new ClientFileMessageImpl();
          message.decodeProperties(headerBuffer);
-         message.setFile(new File(this.directory, message.getMessageID() + "-" +
-                                                  this.session.getName() +
-                                                  "-" +
-                                                  this.getID() +
-                                                  ".jbm"));
+         message.setFile(new File(directory, message.getMessageID() + "-" + session.getName() + "-" + getID() + ".jbm"));
          message.setLargeMessage(true);
          return message;
       }

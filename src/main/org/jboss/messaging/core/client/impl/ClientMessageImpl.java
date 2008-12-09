@@ -40,13 +40,14 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
 {
    // added this constant here so that the client package have no dependency on JMS
    public static final SimpleString REPLYTO_HEADER_NAME = new SimpleString("JMSReplyTo");
-   
+
    private int deliveryCount;
 
    private ClientConsumerInternal consumer;
 
    private boolean largeMessage;
 
+   private int flowControlSize = -1;
 
    /*
     * Constructor for when reading from network
@@ -97,7 +98,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
 
    public int getDeliveryCount()
    {
-      return this.deliveryCount;
+      return deliveryCount;
    }
 
    public void acknowledge() throws MessagingException
@@ -106,6 +107,23 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
       {
          consumer.acknowledge(this);
       }
+   }
+
+   public int getFlowControlSize()
+   {
+      if (flowControlSize > 0)
+      {
+         return flowControlSize;
+      }
+      else
+      {
+         return getEncodeSize();
+      }
+   }
+
+   public void setFlowControlSize(final int flowControlSize)
+   {
+      this.flowControlSize = flowControlSize;
    }
 
    /**
@@ -119,7 +137,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessage
    /**
     * @param largeMessage the largeMessage to set
     */
-   public void setLargeMessage(boolean largeMessage)
+   public void setLargeMessage(final boolean largeMessage)
    {
       this.largeMessage = largeMessage;
    }
