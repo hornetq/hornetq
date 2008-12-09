@@ -41,9 +41,9 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
@@ -156,7 +156,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       messageQueue.addConsumer(this);
 
-      this.minLargeMessageSize = session.getMinLargeMessageSize();
+      minLargeMessageSize = session.getMinLargeMessageSize();
    }
 
    // ServerConsumer implementation
@@ -548,7 +548,6 @@ public class ServerConsumerImpl implements ServerConsumer
             }
          }
 
-
          return HandleStatus.HANDLED;
       }
       finally
@@ -598,14 +597,17 @@ public class ServerConsumerImpl implements ServerConsumer
     *  This Inner class was created to avoid a bunch of loose properties about the current LargeMessage being sent*/
    private class LargeMessageSender
    {
-      private long sizePendingLargeMessage;
+      private final long sizePendingLargeMessage;
 
       /** The current message being processed */
-      private ServerLargeMessage pendingLargeMessage;
+      private final ServerLargeMessage pendingLargeMessage;
 
       private final MessageReference ref;
 
       private boolean sentFirstMessage = false;
+
+      // To avoid ACK to be called twice, as sendLargeMessage could be waiting another call because of flowControl
+      private boolean acked = false;
 
       /** The current position on the message being processed */
       private long positionPendingLargeMessage;
@@ -614,7 +616,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       public LargeMessageSender(final ServerLargeMessage message, final MessageReference ref)
       {
-         pendingLargeMessage = (ServerLargeMessage)message;
+         pendingLargeMessage = message;
 
          sizePendingLargeMessage = pendingLargeMessage.getBodySize();
 
@@ -643,7 +645,7 @@ public class ServerConsumerImpl implements ServerConsumer
                sentFirstMessage = true;
 
                MessagingBuffer headerBuffer = new ByteBufferWrapper(ByteBuffer.allocate(pendingLargeMessage.getPropertiesEncodeSize()));
-               
+
                pendingLargeMessage.encodeProperties(headerBuffer);
 
                SessionReceiveMessage initialMessage = new SessionReceiveMessage(id,
@@ -702,10 +704,9 @@ public class ServerConsumerImpl implements ServerConsumer
 
             pendingLargeMessage.releaseResources();
 
-            ServerConsumerImpl.this.largeMessageSender = null;
-            
-            if (preAcknowledge)
+            if (preAcknowledge && !acked)
             {
+               acked = true;
                try
                {
                   doAck(ref);
@@ -715,6 +716,8 @@ public class ServerConsumerImpl implements ServerConsumer
                   log.warn("Error while ACKing reference " + ref, e);
                }
             }
+
+            largeMessageSender = null;
 
             return true;
          }
@@ -732,11 +735,14 @@ public class ServerConsumerImpl implements ServerConsumer
 
          localChunkLen = (int)Math.min(sizePendingLargeMessage - positionPendingLargeMessage, minLargeMessageSize);
 
-         MessagingBuffer bodyBuffer = new ByteBufferWrapper(ByteBuffer.allocate((int)localChunkLen));
+         MessagingBuffer bodyBuffer = new ByteBufferWrapper(ByteBuffer.allocate(localChunkLen));
 
          pendingLargeMessage.encodeBody(bodyBuffer, positionPendingLargeMessage, localChunkLen);
 
-         chunk = new SessionReceiveContinuationMessage(id, bodyBuffer.array(), positionPendingLargeMessage + localChunkLen < sizePendingLargeMessage, false); 
+         chunk = new SessionReceiveContinuationMessage(id,
+                                                       bodyBuffer.array(),
+                                                       positionPendingLargeMessage + localChunkLen < sizePendingLargeMessage,
+                                                       false);
 
          return chunk;
       }

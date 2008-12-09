@@ -66,6 +66,8 @@ public class MessageChunkTest extends ChunkTestBase
 
    // Constants -----------------------------------------------------
 
+   final static int RECEIVE_WAIT_TIME = 10000;
+   
    // Attributes ----------------------------------------------------
 
    static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
@@ -206,33 +208,33 @@ public class MessageChunkTest extends ChunkTestBase
 
    public void testMessageChunkFilePersistence() throws Exception
    {
-      testChunks(true, false, false, 100, 262144, false, 1000, 0);
+      testChunks(true, false, false, 100, 262144, false, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceBlocked() throws Exception
    {
-      testChunks(true, false, false, 100, 262144, true, 1000, 0);
+      testChunks(true, false, false, 100, 262144, true, RECEIVE_WAIT_TIME, 0);
    }
 
 
    public void testMessageChunkFilePersistenceBlockedPreCommit() throws Exception
    {
-      testChunks(true, false, true, 100, 262144, true, 1000, 0);
+      testChunks(true, false, true, 100, 262144, true, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceDelayed() throws Exception
    {
-      testChunks(true, false, false, 1, 50000, false, 1000, 2000);
+      testChunks(true, false, false, 1, 50000, false, RECEIVE_WAIT_TIME, 2000);
    }
 
    public void testMessageChunkNullPersistence() throws Exception
    {
-      testChunks(false, false, false, 1, 50000, false, 1000, 0);
+      testChunks(false, false, false, 1, 50000, false, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkNullPersistenceDelayed() throws Exception
    {
-      testChunks(false, false, false, 100, 50000, false, 10000, 100);
+      testChunks(false, false, false, 100, 50000, false, RECEIVE_WAIT_TIME, 100);
    }
 
    public void testPageOnLargeMessage() throws Exception
@@ -249,44 +251,44 @@ public class MessageChunkTest extends ChunkTestBase
 
    public void testSendfileMessage() throws Exception
    {
-      testChunks(true, true, false, 100, 50000, false, 1000, 0);
+      testChunks(true, true, false, 100, 50000, false, RECEIVE_WAIT_TIME, 0);
 
    }
 
    public void testSendfileMessageOnNullPersistence() throws Exception
    {
-      testChunks(false, true, false, 100, 50000, false, 1000, 0);
+      testChunks(false, true, false, 100, 50000, false, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendfileMessageOnNullPersistenceSmallMessage() throws Exception
    {
-      testChunks(false, true, false, 100, 100, true, 1000, 0);
+      testChunks(false, true, false, 100, 100, true, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendfileMessageSmallMessage() throws Exception
    {
-      testChunks(true, true, false, 100, 4, false, 1000, 0);
+      testChunks(true, true, false, 100, 4, false, RECEIVE_WAIT_TIME, 0);
 
    }
 
    public void testSendRegularMessageNullPersistence() throws Exception
    {
-      testChunks(false, false, false, 100, 100, false, 1000, 0);
+      testChunks(false, false, false, 100, 100, false, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendRegularMessageNullPersistenceDelayed() throws Exception
    {
-      testChunks(false, false, false, 100, 100, false, 1000, 1000);
+      testChunks(false, false, false, 100, 100, false, RECEIVE_WAIT_TIME, 1000);
    }
 
    public void testSendRegularMessagePersistence() throws Exception
    {
-      testChunks(true, false, false, 100, 100, false, 1000, 0);
+      testChunks(true, false, false, 100, 100, false, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendRegularMessagePersistenceDelayed() throws Exception
    {
-      testChunks(true, false, false, 100, 100, false, 1000, 1000);
+      testChunks(true, false, false, 100, 100, false, RECEIVE_WAIT_TIME, 1000);
    }
 
    public void testTwoBindingsTwoStartedConsumers() throws Exception
@@ -330,7 +332,7 @@ public class MessageChunkTest extends ChunkTestBase
 
          
          ClientConsumer consumer = session.createFileConsumer(new File(getClientLargeMessagesDir()), queue[1]);
-         ClientMessage msg = consumer.receive(5000);
+         ClientMessage msg = consumer.receive(RECEIVE_WAIT_TIME);
          assertNull(consumer.receive(1000)); 
          assertNotNull(msg);
          
@@ -346,7 +348,7 @@ public class MessageChunkTest extends ChunkTestBase
          session.start();
          
 
-         msg = consumer1.receive(5000);
+         msg = consumer1.receive(RECEIVE_WAIT_TIME);
          assertNotNull(msg);
          msg.acknowledge();
          consumer1.close();
@@ -564,7 +566,7 @@ public class MessageChunkTest extends ChunkTestBase
 
          for (int i = 0; i < 100; i++)
          {
-            ClientMessage message2 = consumer.receive(10000);
+            ClientMessage message2 = consumer.receive(RECEIVE_WAIT_TIME);
 
             assertNotNull(message2);
 
