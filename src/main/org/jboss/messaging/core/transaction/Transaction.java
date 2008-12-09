@@ -76,6 +76,10 @@ public interface Transaction
    List<MessageReference> timeout() throws Exception;
 
    long getCreateTime();
+   
+   void addSynchronization(TransactionSynchronization sync);
+   
+   void removeSynchronization(TransactionSynchronization sync);
 
    static enum State
    {

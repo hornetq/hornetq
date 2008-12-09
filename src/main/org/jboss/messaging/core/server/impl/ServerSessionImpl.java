@@ -2634,7 +2634,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             return;
          }
       }
-
+      
       if (autoCommitSends)
       {
          if (!pager.page(msg))
@@ -2649,23 +2649,20 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                }
                else
                {
-                  //We need to store both message and duplicate id entry in a tx
+                  //TODO - We need to store both message and duplicate id entry in a tx - 
+                  //otherwise if crash occurs message may be persisted but dupl id not!
                   
-                  long txID = storageManager.generateUniqueID();
+                  storageManager.storeMessage(msg);
                   
-                  storageManager.storeMessageTransactional(txID, msg);
-                  
-                  cache.addToCache(duplicateID, txID);
-                  
-                  storageManager.commit(txID);
+                  cache.addToCache(duplicateID);
                }
             }
             else
             {
-               //No message to persist - we still persist the duplicate the id though
+               //No message to persist - we still add to cache though
                if (cache != null)
                {
-                  cache.addToCache(duplicateID, -1);
+                  cache.addToCache(duplicateID);
                }
             }
 
@@ -2695,7 +2692,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          //Add to cache in same transaction
          if (cache != null)
          {
-            cache.addToCache(duplicateID, tx.getID());
+            cache.addToCache(duplicateID, tx);
          }
       }
    }

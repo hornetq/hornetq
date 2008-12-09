@@ -26,8 +26,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
+import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.TransactionSynchronization;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
@@ -45,59 +48,105 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class DuplicateIDCacheImpl implements DuplicateIDCache
 {
+   private static final Logger log = Logger.getLogger(DuplicateIDCacheImpl.class);
+   
+   public static volatile boolean debug;
+   
+   private static Set<DuplicateIDCacheImpl> caches = new ConcurrentHashSet<DuplicateIDCacheImpl>();
+
+   public static void dumpCaches()
+   {
+      for (DuplicateIDCacheImpl cache : caches)
+      {
+         log.info("Dumping cache for address: " + cache.address);
+         log.info("First the set:");
+         for (SimpleString duplID : cache.cache)
+         {
+            log.info(duplID);
+         }
+         log.info("End set");
+         log.info("Now the list:");
+         for (Pair<SimpleString, Long> id : cache.ids)
+         {
+            log.info(id.a + ":" + id.b);
+         }
+         log.info("End dump");
+      }
+   }
+
    private final Set<SimpleString> cache = new ConcurrentHashSet<SimpleString>();
 
    private final SimpleString address;
-   
-   //Note - deliberately typed as ArrayList since we want to ensure fast indexed
-   //based array access
+
+   // Note - deliberately typed as ArrayList since we want to ensure fast indexed
+   // based array access
    private final ArrayList<Pair<SimpleString, Long>> ids;
 
    private int pos;
-   
-   private int cacheSize;
-   
-   private final StorageManager storageManager;
 
-   public DuplicateIDCacheImpl(final SimpleString address, final int size, final StorageManager storageManager)
+   private int cacheSize;
+
+   private final StorageManager storageManager;
+   
+   private final boolean persist;
+   
+   public DuplicateIDCacheImpl(final SimpleString address, final int size, final StorageManager storageManager,
+                               final boolean persist)
    {
       this.address = address;
-      
+
       this.cacheSize = size;
-      
+
       this.ids = new ArrayList<Pair<SimpleString, Long>>(size);
-            
+
       this.storageManager = storageManager;
+      
+      this.persist = persist;
+      
+      if (debug)
+      {
+         caches.add(this);
+      }
+   }
+
+   protected void finalize() throws Throwable
+   {
+      if (debug)
+      {
+         caches.remove(this);
+      }
+
+      super.finalize();
    }
 
    public void load(final List<Pair<SimpleString, Long>> theIds) throws Exception
    {
       int count = 0;
-      
+
       long txID = -1;
-      
-      for (Pair<SimpleString, Long> id: ids)
+
+      for (Pair<SimpleString, Long> id : ids)
       {
          if (count < cacheSize)
          {
             cache.add(id.a);
-            
+
             ids.add(id);
          }
          else
          {
-            //cache size has been reduced in config - delete the extra records
+            // cache size has been reduced in config - delete the extra records
             if (txID == -1)
             {
                txID = storageManager.generateUniqueID();
             }
-            
+
             storageManager.deleteDuplicateIDTransactional(txID, id.b);
          }
-         
+
          count++;
       }
-      
+
       if (txID != -1)
       {
          storageManager.commit(txID);
@@ -110,57 +159,106 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
    {
       return cache.contains(duplID);
    }
-
-   public synchronized void addToCache(final SimpleString duplID, final long txID) throws Exception
+   
+   public synchronized void addToCache(final SimpleString duplID) throws Exception
    {
-      cache.add(duplID);
-      
-      Pair<SimpleString, Long> id;
-      
       long recordID = storageManager.generateUniqueID();
       
+      if (persist)
+      {
+         storageManager.storeDuplicateID(address, duplID, recordID);
+      }
+
+      addToCacheInMemory(duplID, recordID);
+   }
+
+   public synchronized void addToCache(final SimpleString duplID, final Transaction tx) throws Exception
+   {
+      long recordID = storageManager.generateUniqueID();
+
+      if (persist)
+      {
+         storageManager.storeDuplicateIDTransactional(tx.getID(), address, duplID, recordID);
+      }
+
+      // For a tx, it's important that the entry is not added to the cache until commit (or prepare)
+      // since if the client fails then resends them tx we don't want it to get rejected
+      tx.addSynchronization(new Sync(duplID, recordID));      
+   }
+
+   private void addToCacheInMemory(final SimpleString duplID, final long recordID) throws Exception
+   {
+      cache.add(duplID);
+
+      Pair<SimpleString, Long> id;
+
       if (pos < ids.size())
       {
-         //Need fast array style access here -hence ArrayList typing
+         // Need fast array style access here -hence ArrayList typing
          id = ids.get(pos);
-         
+
          cache.remove(id.a);
-         
-         //Record already exists - we delete the old one and add the new one
-         //Note we can't use update since journal update doesn't let older records get
-         //reclaimed
+
+         // Record already exists - we delete the old one and add the new one
+         // Note we can't use update since journal update doesn't let older records get
+         // reclaimed
          id.a = duplID;
          
-         if (txID == -1)
-         {
-            storageManager.deleteDuplicateID(id.b);
-         }
-         else
-         {
-            storageManager.deleteDuplicateIDTransactional(txID, id.b);
-         }     
-         
+         storageManager.deleteDuplicateID(id.b);
+
          id.b = recordID;
       }
       else
       {
          id = new Pair<SimpleString, Long>(duplID, recordID);
-         
-         ids.set(pos, id);
+
+         ids.add(id);
       }
- 
-      if (txID == -1)
-      {
-         storageManager.storeDuplicateID(address, duplID, recordID);
-      }
-      else
-      {
-         storageManager.storeDuplicateIDTransactional(txID, address, duplID, recordID);
-      }       
-     
-      if (pos++ == cacheSize)
+
+      if (pos++ == cacheSize - 1)
       {
          pos = 0;
       }
+   }
+
+   private class Sync implements TransactionSynchronization
+   {
+      final SimpleString duplID;
+
+      final long recordID;
+
+      volatile boolean done;
+
+      Sync(final SimpleString duplID, final long recordID)
+      {
+         this.duplID = duplID;
+
+         this.recordID = recordID;
+      }
+
+      private void process() throws Exception
+      {
+         if (!done)
+         {
+            addToCacheInMemory(duplID, recordID);
+
+            done = true;
+         }
+      }
+
+      public void afterCommit() throws Exception
+      {
+         process();
+      }
+
+      public void afterPrepare() throws Exception
+      {
+         process();
+      }
+
+      public void afterRollback() throws Exception
+      {
+      }
+
    }
 }

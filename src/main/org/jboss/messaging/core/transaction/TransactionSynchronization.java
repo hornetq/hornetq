@@ -31,11 +31,9 @@ package org.jboss.messaging.core.transaction;
  */
 public interface TransactionSynchronization
 {
-   void beforeCommit() throws Exception;
-   
    void afterCommit() throws Exception;
    
-   void beforeRollback() throws Exception;
-   
    void afterRollback() throws Exception;
+   
+   void afterPrepare() throws Exception;
 }

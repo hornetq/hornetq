@@ -25,6 +25,7 @@ package org.jboss.messaging.core.postoffice;
 
 import java.util.List;
 
+import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 
@@ -41,7 +42,9 @@ public interface DuplicateIDCache
 {
    boolean contains(SimpleString duplicateID);
    
-   void addToCache(SimpleString duplicateID, long txID) throws Exception;  
+   void addToCache(SimpleString duplicateID) throws Exception; 
+   
+   void addToCache(SimpleString duplicateID, Transaction tx) throws Exception;  
    
    void load(List<Pair<SimpleString, Long>> theIds) throws Exception;
 }

@@ -123,6 +123,10 @@ public interface Configuration extends Serializable
    int getIDCacheSize();
    
    void setIDCacheSize(int idCacheSize);
+   
+   boolean isPersistIDCache();
+   
+   void setPersistIDCache(boolean persist);
 
    
    // Journal related attributes ------------------------------------------------------------

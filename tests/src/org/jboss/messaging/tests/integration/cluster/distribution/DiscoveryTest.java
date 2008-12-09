@@ -209,7 +209,7 @@ public class DiscoveryTest extends UnitTestCase
    }
    
    public void testMultipleGroups() throws Exception
-   {      
+   {     
       final InetAddress groupAddress1 = InetAddress.getByName("230.1.2.3");
       final int groupPort1 = 6745;
       
@@ -297,8 +297,7 @@ public class DiscoveryTest extends UnitTestCase
       
       dg1.stop();
       dg2.stop();
-      dg3.stop();
-      
+      dg3.stop();           
    }
    
    public void testBroadcastNullBackup() throws Exception

@@ -110,6 +110,8 @@ public class ConfigurationImpl implements Configuration
    public static final int DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY = 3;
    
    public static final int DEFAULT_ID_CACHE_SIZE = 100;
+   
+   public static final boolean DEFAULT_PERSIST_ID_CACHE = true;
 
    // Attributes -----------------------------------------------------------------------------
 
@@ -138,6 +140,8 @@ public class ConfigurationImpl implements Configuration
    protected int messageExpiryThreadPriority = DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY;
    
    protected int idCacheSize = DEFAULT_ID_CACHE_SIZE;
+   
+   protected boolean persistIDCache = DEFAULT_PERSIST_ID_CACHE;
 
    protected List<String> interceptorClassNames = new ArrayList<String>();
    
@@ -360,9 +364,16 @@ public class ConfigurationImpl implements Configuration
    {
       this.idCacheSize = idCacheSize;
    }
-
    
-
+   public boolean isPersistIDCache()
+   {
+      return persistIDCache;
+   }
+   
+   public void setPersistIDCache(boolean persist)
+   {
+      this.persistIDCache = persist;
+   }
 
    public String getBindingsDirectory()
    {

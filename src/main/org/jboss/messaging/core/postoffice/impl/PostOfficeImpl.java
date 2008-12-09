@@ -97,6 +97,8 @@ public class PostOfficeImpl implements PostOffice
    private final ConcurrentMap<SimpleString, DuplicateIDCache> duplicateIDCaches = new ConcurrentHashMap<SimpleString, DuplicateIDCache>();
 
    private final int idCacheSize;
+   
+   private final boolean persistIDCache;
 
    public PostOfficeImpl(final StorageManager storageManager,
                          final PagingManager pagingManager,
@@ -109,7 +111,8 @@ public class PostOfficeImpl implements PostOffice
                          final ResourceManager resourceManager,
                          final boolean enableWildCardRouting,
                          final boolean backup,
-                         final int idCacheSize)
+                         final int idCacheSize,
+                         final boolean persistIDCache)
    {
       this.storageManager = storageManager;
 
@@ -141,6 +144,8 @@ public class PostOfficeImpl implements PostOffice
       this.backup = backup;
 
       this.idCacheSize = idCacheSize;
+      
+      this.persistIDCache = persistIDCache;
    }
 
    // MessagingComponent implementation ---------------------------------------
@@ -440,7 +445,7 @@ public class PostOfficeImpl implements PostOffice
 
       if (cache == null)
       {
-         cache = new DuplicateIDCacheImpl(address, idCacheSize, storageManager);
+         cache = new DuplicateIDCacheImpl(address, idCacheSize, storageManager, persistIDCache);
 
          DuplicateIDCache oldCache = duplicateIDCaches.putIfAbsent(address, cache);
 
@@ -538,7 +543,10 @@ public class PostOfficeImpl implements PostOffice
          
          DuplicateIDCache cache = getDuplicateIDCache(address);
          
-         cache.load(entry.getValue());
+         if (persistIDCache)
+         {
+            cache.load(entry.getValue());
+         }
       }
 
       // This is necessary as if the server was previously stopped while a depage was being executed,

@@ -112,6 +112,8 @@ public class FileConfiguration extends ConfigurationImpl
       messageExpiryThreadPriority = getInteger(e, "message-expiry-thread-priority", messageExpiryThreadPriority);
       
       idCacheSize = getInteger(e, "id-cache-size", idCacheSize);
+      
+      persistIDCache = getBoolean(e, "persist-id-cache", persistIDCache);
 
       managementAddress = new SimpleString(getString(e, "management-address", managementAddress.toString()));
 

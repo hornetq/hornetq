@@ -34,6 +34,7 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.TransactionSynchronization;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -44,6 +45,8 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class TransactionImpl implements Transaction
 {
+   private List<TransactionSynchronization> syncs;
+   
    private static final Logger log = Logger.getLogger(TransactionImpl.class);
 
    private final StorageManager storageManager;
@@ -247,6 +250,14 @@ public class TransactionImpl implements Transaction
          storageManager.prepare(id, xid);
 
          state = State.PREPARED;
+         
+         if (syncs != null)
+         {
+            for (TransactionSynchronization sync: syncs)
+            {
+               sync.afterPrepare();
+            }
+         }
       }
    }
 
@@ -312,12 +323,21 @@ public class TransactionImpl implements Transaction
          clear();
 
          state = State.COMMITTED;
+         
+         if (syncs != null)
+         {
+            for (TransactionSynchronization sync: syncs)
+            {
+               sync.afterCommit();
+            }
+         }
       }
    }
 
    public List<MessageReference> rollback(final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       LinkedList<MessageReference> toCancel;
+      
       synchronized (timeoutLock)
       {
          if (xid != null)
@@ -338,43 +358,20 @@ public class TransactionImpl implements Transaction
          toCancel = doRollback();
 
          state = State.ROLLEDBACK;
-      }
-
-      return toCancel;
-   }
-
-   private LinkedList<MessageReference> doRollback() throws Exception
-   {
-      if (containsPersistent || xid != null)
-      {
-         storageManager.rollback(id);
-      }
-
-      if (state == State.PREPARED && pageTransaction != null)
-      {
-         pageTransaction.rollback();
-      }
-
-      LinkedList<MessageReference> toCancel = new LinkedList<MessageReference>();
-
-      for (MessageReference ref : acknowledgements)
-      {
-         Queue queue = ref.getQueue();
-
-         ServerMessage message = ref.getMessage();
-
-         if (message.isDurable() && queue.isDurable())
+         
+         if (syncs != null)
          {
-            message.incrementDurableRefCount();
-
+            for (TransactionSynchronization sync: syncs)
+            {
+               sync.afterRollback();
+            }
          }
-         toCancel.add(ref);
       }
-
-      clear();
 
       return toCancel;
    }
+
+   
 
    public int getAcknowledgementsCount()
    {
@@ -447,9 +444,66 @@ public class TransactionImpl implements Transaction
    {
       this.containsPersistent = containsPersistent;
    }
+   
+   public void addSynchronization(final TransactionSynchronization sync)
+   {
+      checkCreateSyncs();
+      
+      syncs.add(sync);
+   }
+
+   public void removeSynchronization(final TransactionSynchronization sync)
+   {
+      checkCreateSyncs();
+      
+      syncs.remove(sync);
+   }
+
 
    // Private
    // -------------------------------------------------------------------
+   
+   private LinkedList<MessageReference> doRollback() throws Exception
+   {
+      if (containsPersistent || xid != null)
+      {
+         storageManager.rollback(id);
+      }
+
+      if (state == State.PREPARED && pageTransaction != null)
+      {
+         pageTransaction.rollback();
+      }
+
+      LinkedList<MessageReference> toCancel = new LinkedList<MessageReference>();
+
+      for (MessageReference ref : acknowledgements)
+      {
+         Queue queue = ref.getQueue();
+
+         ServerMessage message = ref.getMessage();
+
+         if (message.isDurable() && queue.isDurable())
+         {
+            message.incrementDurableRefCount();
+
+         }
+         toCancel.add(ref);
+      }
+
+      clear();
+
+      return toCancel;
+   }
+   
+   private void checkCreateSyncs()
+   {
+      if (syncs == null)
+      {
+         syncs = new ArrayList<TransactionSynchronization>();
+      }
+   }
+   
 
    private List<MessageReference> route(final ServerMessage message) throws Exception
    {

@@ -234,7 +234,8 @@ public class MessagingServerImpl implements MessagingServer
                                       resourceManager,
                                       configuration.isWildcardRoutingEnabled(),
                                       configuration.isBackup(),
-                                      configuration.getIDCacheSize());
+                                      configuration.getIDCacheSize(),
+                                      configuration.isPersistIDCache());
 
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
       securityRepository.setDefault(new HashSet<Role>());
