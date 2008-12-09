@@ -23,7 +23,7 @@
 package org.jboss.messaging.core.client.impl;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EXCEPTION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CHUNK_SEND;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_CONTINUATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_MSG;
 
 import org.jboss.messaging.core.logging.Logger;
@@ -32,7 +32,7 @@ import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendChunkMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 
 /**
  *
@@ -64,18 +64,25 @@ public class ClientSessionPacketHandler implements ChannelHandler
       {
          switch (type)
          {
-            case SESS_CHUNK_SEND:
+            case SESS_RECEIVE_CONTINUATION:
             {
-               SessionSendChunkMessage chunk = (SessionSendChunkMessage)packet;
-               clientSession.handleReceiveChunk(chunk.getTargetID(), chunk);
+               SessionReceiveContinuationMessage continuation = (SessionReceiveContinuationMessage)packet;
+               clientSession.handleReceiveContinuation(continuation.getConsumerID(), continuation);
 
                break;
             }
             case SESS_RECEIVE_MSG:
             {
                SessionReceiveMessage message = (SessionReceiveMessage) packet;
-      
-               clientSession.handleReceiveMessage(message.getConsumerID(), message.getClientMessage());
+               
+               if (message.isLargeMessage())
+               {
+                  clientSession.handleReceiveLargeMessage(message.getConsumerID(), message.getLargeMessageHeader());
+               }
+               else
+               {
+                  clientSession.handleReceiveMessage(message.getConsumerID(), message.getClientMessage());
+               }
                
                break;
             }

@@ -395,6 +395,34 @@ public abstract class MessageImpl implements Message
    {
       return this.properties;
    }
+
+   /**
+     * Constructs a <code>String</code> with all attributes
+     * in name = value format.
+     *
+     * @return a <code>String</code> representation 
+     * of this object.
+     */
+    public String toString()
+    {
+        final String TAB = ", ";
+        
+        StringBuffer retValue = new StringBuffer();
+        
+        retValue.append("MessageImpl ( ")
+            .append("messageID = ").append(this.messageID).append(TAB)
+            .append("destination = ").append(this.destination).append(TAB)
+            .append("type = ").append(this.type).append(TAB)
+            .append("durable = ").append(this.durable).append(TAB)
+            .append("expiration = ").append(this.expiration).append(TAB)
+            .append("timestamp = ").append(this.timestamp).append(TAB)
+            .append("properties = ").append(this.properties).append(TAB)
+            .append("priority = ").append(this.priority).append(TAB)
+            .append("body = ").append(this.body).append(TAB)
+            .append(" )");
+        
+        return retValue.toString();
+    }
    
    // Private -------------------------------------------------------
 

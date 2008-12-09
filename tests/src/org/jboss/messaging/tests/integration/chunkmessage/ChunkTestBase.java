@@ -85,6 +85,7 @@ public class ChunkTestBase extends ServiceTestBase
 
    protected void testChunks(final boolean realFiles,
                              final boolean useFile,
+                             final boolean preAck,
                              final int numberOfMessages,
                              final int numberOfIntegers,
                              final boolean sendingBlocking,
@@ -93,6 +94,7 @@ public class ChunkTestBase extends ServiceTestBase
    {
       testChunks(realFiles,
                  useFile,
+                 preAck,
                  numberOfMessages,
                  numberOfIntegers,
                  sendingBlocking,
@@ -103,6 +105,7 @@ public class ChunkTestBase extends ServiceTestBase
 
    protected void testChunks(final boolean realFiles,
                              final boolean useFile,
+                             final boolean preAck,
                              final int numberOfMessages,
                              final int numberOfIntegers,
                              final boolean sendingBlocking,
@@ -127,9 +130,11 @@ public class ChunkTestBase extends ServiceTestBase
             sf.setBlockOnAcknowledge(true);
          }
 
-         ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
+         ClientSession session = sf.createSession(null, null, false, true, false, preAck, 0);
 
          session.createQueue(ADDRESS, ADDRESS, null, true, false, true);
+         
+         long initialSize = messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize();
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -201,7 +206,7 @@ public class ChunkTestBase extends ServiceTestBase
             sf = createInVMFactory();
          }
 
-         session = sf.createSession(null, null, false, true, true, false, 0);
+         session = sf.createSession(null, null, false, true, true, preAck, 0);
 
          ClientConsumer consumer = null;
 
@@ -242,7 +247,10 @@ public class ChunkTestBase extends ServiceTestBase
                           System.currentTimeMillis() - originalTime >= delayDelivery);
             }
 
-            message.acknowledge();
+            if (!preAck)
+            {
+               message.acknowledge();
+            }
 
             assertNotNull(message);
 
@@ -272,7 +280,13 @@ public class ChunkTestBase extends ServiceTestBase
 
          session.close();
 
+         assertEquals(initialSize, messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, messagingService.getServer().getPostOffice().getBinding(ADDRESS).getQueue().getDeliveringCount());
+         assertEquals(0, messagingService.getServer().getPostOffice().getBinding(ADDRESS).getQueue().getMessageCount());
+
          validateNoFilesOnLargeDir();
+         
+
       }
       finally
       {

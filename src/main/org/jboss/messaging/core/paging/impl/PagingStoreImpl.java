@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -69,7 +70,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private final DecimalFormat format = new DecimalFormat("000000000");
 
-   private final AtomicInteger pageUsedSize = new AtomicInteger(0);
+   private final AtomicInteger currentPageSize = new AtomicInteger(0);
 
    private final SimpleString storeName;
 
@@ -90,7 +91,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    // Bytes consumed by the queue on the memory
    private final AtomicLong sizeInBytes = new AtomicLong();
 
-   private volatile Runnable depageAction;
+   private final AtomicBoolean depaging = new AtomicBoolean(false);
 
    private volatile int numberOfPages;
 
@@ -214,80 +215,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       return storeName;
    }
 
-   /** 
-    *  It returns a Page out of the Page System without reading it. 
-    *  The method calling this method will remove the page and will start reading it outside of any locks. 
-    *  
-    * */
-   public Page depage() throws Exception
-   {
-      writeLock.lock();
-      currentPageLock.writeLock().lock(); // Make sure no checks are done on currentPage while we are depaging
-
-      try
-      {
-         if (numberOfPages == 0)
-         {
-            return null;
-         }
-         else
-         {
-            numberOfPages--;
-
-            final Page returnPage;
-
-            // We are out of old pages, all that is left now is the current page.
-            // On that case we need to replace it by a new empty page, and return the current page immediately
-            if (currentPageId == firstPageId)
-            {
-               firstPageId = Integer.MAX_VALUE;
-
-               if (currentPage != null)
-               {
-                  returnPage = currentPage;
-                  returnPage.close();
-                  currentPage = null;
-               }
-               else
-               {
-                  // sanity check... it shouldn't happen!
-                  throw new IllegalStateException("CurrentPage is null");
-               }
-
-               // The current page is empty... what means we achieved the end of the pages
-               if (returnPage.getNumberOfMessages() == 0)
-               {
-                  returnPage.open();
-                  returnPage.delete();
-
-                  // This will trigger this Destination to exit the page mode,
-                  // and this will make JBM start using the journal again
-                  return null;
-               }
-               else
-               {
-                  // We need to create a new page, as we can't lock the address until we finish depaging.
-                  openNewPage();
-               }
-
-               return returnPage;
-            }
-            else
-            {
-               returnPage = createPage(firstPageId++);
-            }
-
-            return returnPage;
-         }
-      }
-      finally
-      {
-         currentPageLock.writeLock().unlock();
-         writeLock.unlock();
-      }
-
-   }
-
    public long addSize(final long size) throws Exception
    {
       final long maxSize = getMaxSizeBytes();
@@ -355,15 +282,16 @@ public class PagingStoreImpl implements TestSupportPageStore
 
             if (isTrace)
             {
-               log.trace("globalMode.get = " + pagingManager.isGlobalPageMode() +
-                         " currentGlobalSize = " +
-                         currentGlobalSize +
-                         " defaultPageSize = " +
-                         pagingManager.getDefaultPageSize() +
-                         " maxGlobalSize = " +
-                         maxGlobalSize +
-                         "maxGlobalSize - defaultPageSize = " +
-                         (maxGlobalSize - pagingManager.getDefaultPageSize()));
+
+               log.trace(" globalDepage = " + pagingManager.isGlobalPageMode() +
+                     "\n currentGlobalSize = " +
+                     currentGlobalSize +
+                     "\n defaultPageSize = " +
+                     pagingManager.getDefaultPageSize() +
+                     "\n maxGlobalSize = " +
+                     maxGlobalSize +
+                     "\n maxGlobalSize - defaultPageSize = " +
+                     (maxGlobalSize - pagingManager.getDefaultPageSize()));
             }
 
             if (pagingManager.isGlobalPageMode() && currentGlobalSize < maxGlobalSize - pagingManager.getDefaultPageSize())
@@ -424,16 +352,16 @@ public class PagingStoreImpl implements TestSupportPageStore
 
          int bytesToWrite = fileFactory.calculateBlockSize(message.getEncodeSize() + PageImpl.SIZE_RECORD);
 
-         if (pageUsedSize.addAndGet(bytesToWrite) > pageSize && currentPage.getNumberOfMessages() > 0)
+         if (currentPageSize.addAndGet(bytesToWrite) > pageSize && currentPage.getNumberOfMessages() > 0)
          {
-            // Make sure nothing is currently validating currentPaging
+            // Make sure nothing is currently validating or using currentPage
             currentPageLock.writeLock().lock();
             try
             {
                openNewPage();
 
-               // openNewPage will set pageUsedSize to zero, we need to set it again
-               pageUsedSize.addAndGet(bytesToWrite);
+               // openNewPage will set currentPageSize to zero, we need to set it again
+               currentPageSize.addAndGet(bytesToWrite);
             }
             finally
             {
@@ -505,11 +433,14 @@ public class PagingStoreImpl implements TestSupportPageStore
          }
          else
          {
+            // startDepaging and clearDepage needs to be atomic.
+            // We can't use writeLock to this operation as writeLock would still be used by another thread, and still being a valid usage
             synchronized (this)
             {
-               if (depageAction == null)
+               if (!depaging.get())
                {
-                  depageAction = new DepageRunnable(executor);
+                  depaging.set(true);
+                  Runnable depageAction = new DepageRunnable(executor);
                   executor.execute(depageAction);
                   return true;
                }
@@ -685,6 +616,82 @@ public class PagingStoreImpl implements TestSupportPageStore
       openNewPage();
    }
 
+   /** 
+    *  It returns a Page out of the Page System without reading it. 
+    *  The method calling this method will remove the page and will start reading it outside of any locks.
+    *   
+    *  Observation: This method is used internally as part of the regular depage process, but externally is used only on tests, 
+    *               and that's why this method is part of the Testable Interface 
+    * */
+   public Page depage() throws Exception
+   {
+      writeLock.lock();
+      currentPageLock.writeLock().lock(); // Make sure no checks are done on currentPage while we are depaging
+
+      try
+      {
+         if (numberOfPages == 0)
+         {
+            return null;
+         }
+         else
+         {
+            numberOfPages--;
+
+            final Page returnPage;
+
+            // We are out of old pages, all that is left now is the current page.
+            // On that case we need to replace it by a new empty page, and return the current page immediately
+            if (currentPageId == firstPageId)
+            {
+               firstPageId = Integer.MAX_VALUE;
+
+               if (currentPage != null)
+               {
+                  returnPage = currentPage;
+                  returnPage.close();
+                  currentPage = null;
+               }
+               else
+               {
+                  // sanity check... it shouldn't happen!
+                  throw new IllegalStateException("CurrentPage is null");
+               }
+
+               // The current page is empty... what means we achieved the end of the pages
+               if (returnPage.getNumberOfMessages() == 0)
+               {
+                  returnPage.open();
+                  returnPage.delete();
+
+                  // This will trigger this Destination to exit the page mode,
+                  // and this will make JBM start using the journal again
+                  return null;
+               }
+               else
+               {
+                  // We need to create a new page, as we can't lock the address until we finish depaging.
+                  openNewPage();
+               }
+
+               return returnPage;
+            }
+            else
+            {
+               returnPage = createPage(firstPageId++);
+            }
+
+            return returnPage;
+         }
+      }
+      finally
+      {
+         currentPageLock.writeLock().unlock();
+         writeLock.unlock();
+      }
+
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -699,7 +706,7 @@ public class PagingStoreImpl implements TestSupportPageStore
     * If persistent messages are also used, it will update eventual PageTransactions
     */
 
-   private boolean onDepage(final int pageId, final SimpleString destination, final List<PagedMessage> data) throws Exception
+   private void onDepage(final int pageId, final SimpleString destination, final List<PagedMessage> data) throws Exception
    {
       trace("Depaging....");
 
@@ -720,7 +727,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          if (pageId <= lastPage.getLastId())
          {
             log.warn("Page " + pageId + " was already processed, ignoring the page");
-            return true;
+            return;
          }
       }
 
@@ -804,19 +811,23 @@ public class PagingStoreImpl implements TestSupportPageStore
          ref.getQueue().addLast(ref);
       }
 
-      if (pagingManager.isGlobalPageMode())
-      {
-         // We use the Default Page Size when in global mode for the calculation of the Watermark
-         return pagingManager.getGlobalSize() < pagingManager.getMaxGlobalSize() - pagingManager.getDefaultPageSize() && getMaxSizeBytes() <= 0 ||
-                getAddressSize() < getMaxSizeBytes();
-      }
-      else
-      {
-         // If Max-size is not configured (-1) it will aways return true, as
-         // this method was probably called by global-depage
-         return getMaxSizeBytes() <= 0 || getAddressSize() < getMaxSizeBytes();
-      }
+   }
 
+   /**
+    * @return
+    */
+   private boolean isFull(final long nextPageSize)
+   {
+      return getMaxSizeBytes() > 0 && getAddressSize() + nextPageSize > getMaxSizeBytes();
+   }
+
+   /**
+    * @param nextPageSize
+    * @return
+    */
+   private boolean isGlobalFull(final long nextPageSize)
+   {
+      return pagingManager.getMaxGlobalSize() > 0 && pagingManager.getGlobalSize() + nextPageSize > pagingManager.getMaxGlobalSize();
    }
 
    private long addAddressSize(final long delta)
@@ -824,9 +835,28 @@ public class PagingStoreImpl implements TestSupportPageStore
       return sizeInBytes.addAndGet(delta);
    }
 
-   private synchronized void clearDequeueThread()
+   /**
+    * startDepaging and clearDepage needs to be atomic.
+    * We can't use writeLock to this operation as writeLock would still be used by another thread, and still being a valid usage
+    * @return true if the depage status was cleared
+    */
+   private synchronized boolean clearDepage()
    {
-      depageAction = null;
+      final boolean pageFull = isFull(getPageSizeBytes());
+      final boolean globalFull = isGlobalFull(getPageSizeBytes());
+      if (pageFull || globalFull)
+      {
+         depaging.set(false);
+         if (!globalFull)
+         {
+            pagingManager.setGlobalPageMode(false);
+         }
+         return true;
+      }
+      else
+      {
+         return false;
+      }
    }
 
    private void openNewPage() throws Exception
@@ -851,7 +881,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
          currentPage = createPage(currentPageId);
 
-         pageUsedSize.set(0);
+         currentPageSize.set(0);
 
          currentPage.open();
       }
@@ -912,7 +942,7 @@ public class PagingStoreImpl implements TestSupportPageStore
     * @return
     * @throws Exception
     */
-   private boolean readPage() throws Exception
+   private void readPage() throws Exception
    {
       Page page = depage();
 
@@ -925,18 +955,16 @@ public class PagingStoreImpl implements TestSupportPageStore
 
          lastPageRecord = null;
 
-         return false;
+         return;
       }
 
       page.open();
 
       List<PagedMessage> messages = page.read();
 
-      boolean addressNotFull = onDepage(page.getPageId(), storeName, messages);
+      onDepage(page.getPageId(), storeName, messages);
 
       page.delete();
-
-      return addressNotFull;
    }
 
    // Inner classes -------------------------------------------------
@@ -956,14 +984,14 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             if (running)
             {
-               boolean needMorePages = readPage();
-               if (needMorePages)
+               if (!isFull(getPageSizeBytes()) && !isGlobalFull(getPageSizeBytes()))
+               {
+                  readPage();
+               }
+               // Note: clearDepage is an atomic operation, it needs to be done even if readPage was not executed because the page was full
+               if (!clearDepage())
                {
                   followingExecutor.execute(this);
-               }
-               else
-               {
-                  clearDequeueThread();
                }
             }
          }

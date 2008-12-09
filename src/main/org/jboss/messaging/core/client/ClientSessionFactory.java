@@ -38,13 +38,10 @@ public interface ClientSessionFactory
                                boolean xa,
                                boolean autoCommitSends,
                                boolean autoCommitAcks,
-                               final boolean preAcknowledge,
+                               boolean preAcknowledge,
                                int ackBatchSize) throws MessagingException;
 
-   ClientSession createSession(final boolean xa,
-                               final boolean autoCommitSends,
-                               final boolean autoCommitAcks,
-                               final boolean preAcknowledge) throws MessagingException;
+   ClientSession createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks, boolean preAcknowledge) throws MessagingException;
 
    void setConsumerWindowSize(int size);
 
@@ -64,19 +61,19 @@ public interface ClientSessionFactory
 
    int getMinLargeMessageSize();
 
-   void setMinLargeMessageSize(final int minLargeMessageSize);
+   void setMinLargeMessageSize(int minLargeMessageSize);
 
    boolean isBlockOnPersistentSend();
 
-   void setBlockOnPersistentSend(final boolean blocking);
+   void setBlockOnPersistentSend(boolean blocking);
 
    boolean isBlockOnNonPersistentSend();
 
-   void setBlockOnNonPersistentSend(final boolean blocking);
+   void setBlockOnNonPersistentSend(boolean blocking);
 
    boolean isBlockOnAcknowledge();
 
-   void setBlockOnAcknowledge(final boolean blocking);
+   void setBlockOnAcknowledge(boolean blocking);
 
    boolean isAutoGroup();
 
@@ -95,10 +92,10 @@ public interface ClientSessionFactory
    long getCallTimeout();
 
    int getMaxConnections();
-   
-//   TransportConfiguration getTransportConfiguration();
-//   
-//   TransportConfiguration getBackupTransportConfiguration();
-   
+
+   // TransportConfiguration getTransportConfiguration();
+   //   
+   // TransportConfiguration getBackupTransportConfiguration();
+
    void close();
 }

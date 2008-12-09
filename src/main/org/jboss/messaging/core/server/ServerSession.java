@@ -37,7 +37,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendChunkMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
@@ -66,7 +66,7 @@ public interface ServerSession
    String getUsername();
 
    String getPassword();
-   
+
    int getMinLargeMessageSize();
 
    Object getConnectionID();
@@ -74,11 +74,11 @@ public interface ServerSession
    void removeConsumer(ServerConsumer consumer) throws Exception;
 
    void close() throws Exception;
-   
+
    void promptDelivery(Queue queue);
 
    void handleAcknowledge(final SessionAcknowledgeMessage packet);
-   
+
    void handleExpired(final SessionExpiredMessage packet);
 
    void handleRollback(Packet packet);
@@ -110,15 +110,15 @@ public interface ServerSession
    void handleSetXATimeout(SessionXASetTimeoutMessage packet);
 
    void handleAddDestination(SessionAddDestinationMessage packet);
-   
+
    void handleStart(Packet packet);
-   
+
    void handleStop(Packet packet);
 
    void handleRemoveDestination(SessionRemoveDestinationMessage packet);
 
    void handleCreateQueue(SessionCreateQueueMessage packet);
-  
+
    void handleDeleteQueue(SessionDeleteQueueMessage packet);
 
    void handleCreateConsumer(SessionCreateConsumerMessage packet);
@@ -131,18 +131,20 @@ public interface ServerSession
 
    void handleReceiveConsumerCredits(SessionConsumerFlowCreditMessage packet);
 
-   public void handleSendChunkMessage(SessionSendChunkMessage packet);
+   void handleSendContinuations(SessionSendContinuationMessage packet);
 
    void handleSend(SessionSendMessage packet);
 
+   void handleSendLargeMessage(SessionSendMessage packet);
+
    void handleFailedOver(Packet packet);
-   
+
    void handleClose(Packet packet);
-   
+
    void handleReplicatedDelivery(SessionReplicateDeliveryMessage packet);
-   
+
    int transferConnection(RemotingConnection newConnection, int lastReceivedCommandID);
-   
+
    Channel getChannel();
 
 }

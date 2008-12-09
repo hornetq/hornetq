@@ -15,7 +15,6 @@ package org.jboss.messaging.core.server.impl;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ACKNOWLEDGE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ADD_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CHUNK_SEND;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_COMMIT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_CLOSE;
@@ -30,6 +29,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REPLICATE_DELIVERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ROLLBACK;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_SEND;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_SEND_CONTINUATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_START;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_STOP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_COMMIT;
@@ -60,8 +60,8 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessa
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendChunkMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
@@ -72,8 +72,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResumeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
-import org.jboss.messaging.core.server.ServerLargeMessage;
-import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
 
 /**
@@ -91,8 +89,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
 
    private final Channel channel;
 
-   public ServerSessionPacketHandler(final ServerSession session,
-                                     final Channel channel)
+   public ServerSessionPacketHandler(final ServerSession session, final Channel channel)
 
    {
       this.session = session;
@@ -128,7 +125,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             case SESS_DELETE_QUEUE:
             {
                SessionDeleteQueueMessage request = (SessionDeleteQueueMessage)packet;
-               session.handleDeleteQueue(request);               
+               session.handleDeleteQueue(request);
                break;
             }
             case SESS_QUEUEQUERY:
@@ -146,18 +143,18 @@ public class ServerSessionPacketHandler implements ChannelHandler
             case SESS_ACKNOWLEDGE:
             {
                SessionAcknowledgeMessage message = (SessionAcknowledgeMessage)packet;
-               session.handleAcknowledge(message);               
+               session.handleAcknowledge(message);
                break;
             }
             case SESS_EXPIRED:
             {
                SessionExpiredMessage message = (SessionExpiredMessage)packet;
-               session.handleExpired(message);               
+               session.handleExpired(message);
                break;
             }
             case SESS_COMMIT:
             {
-               session.handleCommit(packet);               
+               session.handleCommit(packet);
                break;
             }
             case SESS_ROLLBACK:
@@ -220,7 +217,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             }
             case SESS_XA_INDOUBT_XIDS:
             {
-               session.handleGetInDoubtXids(packet);               
+               session.handleGetInDoubtXids(packet);
                break;
             }
             case SESS_XA_GET_TIMEOUT:
@@ -243,7 +240,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             case SESS_REMOVE_DESTINATION:
             {
                SessionRemoveDestinationMessage message = (SessionRemoveDestinationMessage)packet;
-               session.handleRemoveDestination(message);              
+               session.handleRemoveDestination(message);
                break;
             }
             case SESS_START:
@@ -281,13 +278,20 @@ public class ServerSessionPacketHandler implements ChannelHandler
             case SESS_SEND:
             {
                SessionSendMessage message = (SessionSendMessage)packet;
-               session.handleSend(message);
+               if (message.isLargeMessage())
+               {
+                  session.handleSendLargeMessage(message);
+               }
+               else
+               {
+                  session.handleSend(message);
+               }
                break;
             }
-            case SESS_CHUNK_SEND:
+            case SESS_SEND_CONTINUATION:
             {
-               SessionSendChunkMessage message = (SessionSendChunkMessage)packet;
-               session.handleSendChunkMessage(message);
+               SessionSendContinuationMessage message = (SessionSendContinuationMessage)packet;
+               session.handleSendContinuations(message);
                break;
             }
             case SESS_REPLICATE_DELIVERY:

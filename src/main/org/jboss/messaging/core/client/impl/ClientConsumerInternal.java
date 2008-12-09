@@ -25,7 +25,7 @@ package org.jboss.messaging.core.client.impl;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendChunkMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 
 /**
  * 
@@ -39,8 +39,10 @@ public interface ClientConsumerInternal extends ClientConsumer
    long getID();
 
    void handleMessage(ClientMessage message) throws Exception;
+
+   void handleLargeMessage(byte[] largeMessageHeader) throws Exception;
    
-   void handleChunk(SessionSendChunkMessage chunk) throws Exception;
+   void handleLargeMessageContinuation(SessionReceiveContinuationMessage continuation) throws Exception;
 
    void clear();
 
@@ -55,4 +57,5 @@ public interface ClientConsumerInternal extends ClientConsumer
    void acknowledge(ClientMessage message) throws MessagingException;
    
    void flushAcks() throws MessagingException;
+
 }

@@ -42,6 +42,8 @@ public interface ClientFileMessage extends ClientMessage
 
    void setFile(File file);
    
+   void setLargeMessage(boolean largeMessage);
+
    FileChannel getChannel() throws MessagingException;
    
    void closeChannel() throws MessagingException;     

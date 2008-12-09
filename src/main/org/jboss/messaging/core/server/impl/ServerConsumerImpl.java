@@ -43,7 +43,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessa
 import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendChunkMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
@@ -180,15 +180,15 @@ public class ServerConsumerImpl implements ServerConsumer
       // Otherwise we could end up with a situation where a close comes in, then a delivery comes in,
       // then close gets replicated to backup, then delivery gets replicated, but consumer is already
       // closed!
-//      lock.lock();
-//      try
-//      {
-         setStarted(false);
-//      }
-//      finally
-//      {
-//         lock.unlock();
-//      }
+      // lock.lock();
+      // try
+      // {
+      setStarted(false);
+      // }
+      // finally
+      // {
+      // lock.unlock();
+      // }
 
       DelayedResult result = channel.replicatePacket(packet);
 
@@ -239,15 +239,15 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public void close() throws Exception
    {
-//      lock.lock();
-//      try
-//      {
-         setStarted(false);
-//      }
-//      finally
-//      {
-//         lock.unlock();
-//      }
+      // lock.lock();
+      // try
+      // {
+      setStarted(false);
+      // }
+      // finally
+      // {
+      // lock.unlock();
+      // }
 
       doClose();
    }
@@ -545,23 +545,25 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             deliveringRefs.add(ref);
          }
-         
+
+         // TODO: get rid of the instanceof by something like message.isLargeMessage()
          if (message instanceof ServerLargeMessage)
          {
             // TODO: How to inform the backup node about the LargeMessage being sent?
-            largeMessageSender = new LargeMessageSender((ServerLargeMessage)message);
+            largeMessageSender = new LargeMessageSender((ServerLargeMessage)message, ref);
 
             largeMessageSender.sendLargeMessage();
          }
          else
          {
             sendStandardMessage(ref, message);
+
+            if (preAcknowledge)
+            {
+               doAck(ref);
+            }
          }
 
-         if (preAcknowledge)
-         {
-            doAck(ref);
-         }
 
          return HandleStatus.HANDLED;
       }
@@ -589,7 +591,7 @@ public class ServerConsumerImpl implements ServerConsumer
       if (result == null)
       {
          // Not replicated - just send now
-         
+
          channel.send(packet);
       }
       else
@@ -598,7 +600,7 @@ public class ServerConsumerImpl implements ServerConsumer
          result.setResultRunner(new Runnable()
          {
             public void run()
-            {               
+            {
                channel.send(packet);
             }
          });
@@ -617,16 +619,22 @@ public class ServerConsumerImpl implements ServerConsumer
       /** The current message being processed */
       private ServerLargeMessage pendingLargeMessage;
 
+      private final MessageReference ref;
+
+      private boolean sentFirstMessage = false;
+
       /** The current position on the message being processed */
       private long positionPendingLargeMessage;
 
-      private SessionSendChunkMessage readAheadChunk;
+      private SessionReceiveContinuationMessage readAheadChunk;
 
-      public LargeMessageSender(final ServerLargeMessage message)
+      public LargeMessageSender(final ServerLargeMessage message, final MessageReference ref)
       {
          pendingLargeMessage = (ServerLargeMessage)message;
 
          sizePendingLargeMessage = pendingLargeMessage.getBodySize();
+
+         this.ref = ref;
       }
 
       public boolean sendLargeMessage()
@@ -645,20 +653,42 @@ public class ServerConsumerImpl implements ServerConsumer
                return false;
             }
 
+            if (!sentFirstMessage)
+            {
+
+               sentFirstMessage = true;
+
+               MessagingBuffer headerBuffer = new ByteBufferWrapper(ByteBuffer.allocate(pendingLargeMessage.getPropertiesEncodeSize()));
+               pendingLargeMessage.encodeProperties(headerBuffer);
+
+               SessionReceiveMessage initialMessage = new SessionReceiveMessage(id,
+                                                                                headerBuffer.array(),
+                                                                                ref.getDeliveryCount() + 1);
+
+               channel.send(initialMessage);
+
+               if (availableCredits != null)
+               {
+                  // RequiredBufferSize on this case represents the right number of bytes sent
+                  availableCredits.addAndGet(-pendingLargeMessage.getPropertiesEncodeSize());
+               }
+            }
+
             if (readAheadChunk != null)
             {
                int chunkLen = readAheadChunk.getBody().length;
-               
+
                positionPendingLargeMessage += chunkLen;
-               
-               channel.send(readAheadChunk);
-               
-               readAheadChunk = null;
-               
+
                if (availableCredits != null)
                {
                   availableCredits.addAndGet(-chunkLen);
                }
+
+               channel.send(readAheadChunk);
+
+               readAheadChunk = null;
+
             }
 
             while (positionPendingLargeMessage < sizePendingLargeMessage)
@@ -672,7 +702,7 @@ public class ServerConsumerImpl implements ServerConsumer
                   return false;
                }
 
-               SessionSendChunkMessage chunk = createChunkSend();
+               SessionReceiveContinuationMessage chunk = createChunkSend();
 
                int chunkLen = chunk.getBody().length;
 
@@ -689,6 +719,19 @@ public class ServerConsumerImpl implements ServerConsumer
             pendingLargeMessage.releaseResources();
 
             ServerConsumerImpl.this.largeMessageSender = null;
+            
+            if (preAcknowledge)
+            {
+               try
+               {
+                  doAck(ref);
+               }
+               catch (Exception e)
+               {
+                  log.warn("Error while ACKing reference " + ref, e);
+               }
+            }
+
 
             return true;
          }
@@ -698,44 +741,19 @@ public class ServerConsumerImpl implements ServerConsumer
          }
       }
 
-      private SessionSendChunkMessage createChunkSend()
+      private SessionReceiveContinuationMessage createChunkSend()
       {
-         SessionSendChunkMessage chunk;
+         SessionReceiveContinuationMessage chunk;
 
          int localChunkLen = 0;
 
-         if (positionPendingLargeMessage == 0)
-         {
-            int headerSize = pendingLargeMessage.getPropertiesEncodeSize();
+         localChunkLen = (int)Math.min(sizePendingLargeMessage - positionPendingLargeMessage, minLargeMessageSize);
 
-            localChunkLen = minLargeMessageSize - headerSize;
+         MessagingBuffer bodyBuffer = new ByteBufferWrapper(ByteBuffer.allocate((int)localChunkLen));
 
-            MessagingBuffer headerBuffer = new ByteBufferWrapper(ByteBuffer.allocate(pendingLargeMessage.getPropertiesEncodeSize()));
-            pendingLargeMessage.encodeProperties(headerBuffer);
+         pendingLargeMessage.encodeBody(bodyBuffer, positionPendingLargeMessage, localChunkLen);
 
-            MessagingBuffer bodyBuffer = new ByteBufferWrapper(ByteBuffer.allocate((int)localChunkLen));
-            pendingLargeMessage.encodeBody(bodyBuffer, 0, localChunkLen);
-
-            chunk = new SessionSendChunkMessage(id,
-                                                headerBuffer.array(),
-                                                bodyBuffer.array(),
-                                                localChunkLen < sizePendingLargeMessage,
-                                                false);
-         }
-         else
-         {
-            localChunkLen = (int)Math.min(sizePendingLargeMessage - positionPendingLargeMessage, minLargeMessageSize);
-
-            MessagingBuffer bodyBuffer = new ByteBufferWrapper(ByteBuffer.allocate((int)localChunkLen));
-
-            pendingLargeMessage.encodeBody(bodyBuffer, positionPendingLargeMessage, localChunkLen);
-
-            chunk = new SessionSendChunkMessage(id,
-                                                null,
-                                                bodyBuffer.array(),
-                                                positionPendingLargeMessage + localChunkLen < sizePendingLargeMessage,
-                                                false);
-         }
+         chunk = new SessionReceiveContinuationMessage(id, bodyBuffer.array(), positionPendingLargeMessage + localChunkLen < sizePendingLargeMessage, false); 
 
          return chunk;
       }

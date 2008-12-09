@@ -78,14 +78,21 @@ public class ServiceTestBase extends UnitTestCase
 
    // Protected -----------------------------------------------------
 
+
    protected void clearData()
    {
-      deleteAndCreateDir(getJournalDir());
-      deleteAndCreateDir(getBindingsDir());
-      deleteAndCreateDir(getPageDir());
-      deleteAndCreateDir(getLargeMessagesDir());
-      deleteAndCreateDir(getClientLargeMessagesDir());
-      deleteAndCreateDir(getTemporaryDir());
+      clearData(getTestDir());
+   }
+
+   
+   protected void clearData(String testDir)
+   {
+      deleteAndCreateDir(getJournalDir(testDir));
+      deleteAndCreateDir(getBindingsDir(testDir));
+      deleteAndCreateDir(getPageDir(testDir));
+      deleteAndCreateDir(getLargeMessagesDir(testDir));
+      deleteAndCreateDir(getClientLargeMessagesDir(testDir));
+      deleteAndCreateDir(getTemporaryDir(testDir));
    }
 
    protected void deleteAndCreateDir(String directory)
@@ -155,6 +162,7 @@ public class ServiceTestBase extends UnitTestCase
       Configuration configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
+      configuration.setJournalDirectory(getJournalDir());
       configuration.setJournalFileSize(100 * 1024);
       configuration.setPagingDirectory(getPageDir());
       configuration.setLargeMessagesDirectory(getLargeMessagesDir());

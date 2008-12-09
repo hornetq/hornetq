@@ -137,15 +137,17 @@ public class PacketImpl implements Packet
 
    public static final byte SESS_SEND = 76;
 
-   public static final byte SESS_CONSUMER_CLOSE = 77;
+   public static final byte SESS_SEND_CONTINUATION = 77;
+
+   public static final byte SESS_CONSUMER_CLOSE = 78;
 
    public static final byte SESS_RECEIVE_MSG = 79;
 
-   public static final byte SESS_FAILOVER_COMPLETE = 80;
+   public static final byte SESS_RECEIVE_CONTINUATION = 80;
 
-   public static final byte SESS_REPLICATE_DELIVERY = 81;
+   public static final byte SESS_FAILOVER_COMPLETE = 81;
 
-   public static final byte SESS_CHUNK_SEND = 95;
+   public static final byte SESS_REPLICATE_DELIVERY = 82;
 
    // Static --------------------------------------------------------
 

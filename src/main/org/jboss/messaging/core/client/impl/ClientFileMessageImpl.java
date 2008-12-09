@@ -113,8 +113,16 @@ public class ClientFileMessageImpl extends ClientMessageImpl implements ClientFi
    @Override
    public MessagingBuffer getBody()
    {
-      // TODO: Throw an unsuported exception. (Make sure no tests are using this method first)
+      throw new UnsupportedOperationException("getBody is not supported on FileMessages.");
+   }
 
+   /**
+    * If a ClientFileMessage is Smaller then the MinLargeMessage configured on the SessionFactory (or JMSConnectionFactory), it will still be sent as any other message,
+    * and for that the file body (which should be small) will be read from the file an populated on the output buffer
+    *  
+    *  */
+   public void encodeBody(MessagingBuffer buffer)
+   {
       FileChannel channel = null;
       try
       {
@@ -122,12 +130,12 @@ public class ClientFileMessageImpl extends ClientMessageImpl implements ClientFi
          // for a better performance, users should be using the channels when using file
          channel = newChannel();
 
-         ByteBuffer buffer = ByteBuffer.allocate((int)channel.size());
+         ByteBuffer fileBuffer = ByteBuffer.allocate((int)channel.size());
 
          channel.position(0);
-         channel.read(buffer);
+         channel.read(fileBuffer);
 
-         return new ByteBufferWrapper(buffer);
+         buffer.putBytes(fileBuffer.array(), 0, fileBuffer.limit());
       }
       catch (Exception e)
       {
@@ -146,6 +154,9 @@ public class ClientFileMessageImpl extends ClientMessageImpl implements ClientFi
       }
    }
 
+   /** 
+    * Read the file content from start to size.
+    */
    @Override
    public synchronized void encodeBody(final MessagingBuffer buffer, final long start, final int size)
    {

@@ -187,7 +187,10 @@ public class JournalLargeMessageImpl extends ServerMessageImpl implements Server
 
    public void deleteFile() throws MessagingException
    {
-      storageManager.deleteFile(file);
+      if (file != null)
+      {
+         storageManager.deleteFile(file);
+      }
    }
 
    @Override

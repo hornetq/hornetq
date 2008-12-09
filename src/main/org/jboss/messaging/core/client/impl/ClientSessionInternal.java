@@ -16,7 +16,7 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendChunkMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 
 /**
  * A ClientSessionInternal
@@ -39,9 +39,11 @@ public interface ClientSessionInternal extends ClientSession
 
    void removeProducer(ClientProducerInternal producer);
 
+   void handleReceiveLargeMessage(final long consumerID, final byte[] headerBytes) throws Exception;
+
    void handleReceiveMessage(long consumerID, ClientMessage message) throws Exception;
    
-   void handleReceiveChunk(long consumerID, SessionSendChunkMessage chunk) throws Exception;
+   void handleReceiveContinuation(final long consumerID, final SessionReceiveContinuationMessage continuation) throws Exception;
 
    void handleFailover(RemotingConnection backupConnection);
    

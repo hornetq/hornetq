@@ -18,11 +18,10 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -32,6 +31,7 @@ import org.jboss.messaging.util.DataConstants;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:csuconic@redhat.com">Clebert Suconic</a>
  * 
  * @version <tt>$Revision$</tt>
  */
@@ -39,14 +39,20 @@ public class SessionSendMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(SessionSendMessage.class);
-   
    // Attributes ----------------------------------------------------
 
    private Message clientMessage;
+
+   private boolean largeMessage;
+
+   /** Used only if largeMessage */
+   private byte[] largeMessageHeader;
    
+   /** We need to set the MessageID when replicating this on the server */
+   private long largeMessageId = -1;
+
    private ServerMessage serverMessage;
-   
+
    private boolean requiresResponse;
 
    // Static --------------------------------------------------------
@@ -57,73 +63,187 @@ public class SessionSendMessage extends PacketImpl
    {
       super(SESS_SEND);
 
-      this.clientMessage = message;
-      
+      clientMessage = message;
+
       this.requiresResponse = requiresResponse;
+
+      largeMessage = false;
    }
-      
+
+   public SessionSendMessage(final byte[] largeMessageHeader, final boolean requiresResponse)
+   {
+      super(SESS_SEND);
+
+      this.largeMessageHeader = largeMessageHeader;
+
+      this.requiresResponse = requiresResponse;
+
+      largeMessage = true;
+   }
+
    public SessionSendMessage()
    {
       super(SESS_SEND);
    }
-   
+
    // Public --------------------------------------------------------
 
+   
+   public boolean isLargeMessage()
+   {
+      return largeMessage;
+   }
+   
    public Message getClientMessage()
    {
       return clientMessage;
    }
-   
+
    public ServerMessage getServerMessage()
    {
       return serverMessage;
    }
-   
+
+   public byte[] getLargeMessageHeader()
+   {
+      return largeMessageHeader;
+   }
+
    public boolean isRequiresResponse()
    {
       return requiresResponse;
    }
    
+   /**
+    * @return the largeMessageId
+    */
+   public long getMessageID()
+   {
+      if (largeMessage)
+      {
+         return largeMessageId;
+      }
+      else
+      {
+         return serverMessage.getMessageID();
+      }
+   }
+
+   /**
+    * @param largeMessageId the largeMessageId to set
+    */
+   public void setMessageID(long id)
+   {
+      if (largeMessage)
+      {
+         this.largeMessageId = id;
+      }
+      else
+      {
+         serverMessage.setMessageID(id);
+      }
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
-      if (clientMessage != null)
+      buffer.putBoolean(largeMessage);
+
+      if (largeMessage)
+      {
+         buffer.putInt(largeMessageHeader.length);
+         buffer.putBytes(largeMessageHeader);
+         
+         if (largeMessageId > 0)
+         {
+            buffer.putBoolean(true);
+            buffer.putLong(largeMessageId);
+         }
+         else
+         {
+            buffer.putBoolean(false);
+         }
+      }
+      else if (clientMessage != null)
       {
          clientMessage.encode(buffer);
       }
       else
       {
-         //If we're replicating a buffer to a backup node then we encode the serverMessage not the clientMessage
+         // If we're replicating a buffer to a backup node then we encode the serverMessage not the clientMessage
          serverMessage.encode(buffer);
       }
-      
+
       buffer.putBoolean(requiresResponse);
    }
-   
+
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
-      //TODO can be optimised
-      
-      serverMessage = new ServerMessageImpl();
-      
-      serverMessage.decode(buffer);
-      
-      serverMessage.getBody().flip();
-      
-      requiresResponse = buffer.getBoolean();
-   }
+      largeMessage = buffer.getBoolean();
 
-   public int getRequiredBufferSize()
-   {
-      if (clientMessage != null)
+      if (largeMessage)
       {
-         return BASIC_PACKET_SIZE + clientMessage.getEncodeSize() + DataConstants.SIZE_BOOLEAN;
+         int largeMessageLength = buffer.getInt();
+
+         largeMessageHeader = new byte[largeMessageLength];
+
+         buffer.getBytes(largeMessageHeader);
+         
+         final boolean largeMessageIDFilled = buffer.getBoolean();
+         
+         if (largeMessageIDFilled)
+         {
+            this.largeMessageId = buffer.getLong();
+         }
+         else
+         {
+            this.largeMessageId = -1;
+         }
       }
       else
       {
-         return BASIC_PACKET_SIZE + serverMessage.getEncodeSize() + DataConstants.SIZE_BOOLEAN;
+         // TODO can be optimised
+
+         serverMessage = new ServerMessageImpl();
+
+         serverMessage.decode(buffer);
+
+         serverMessage.getBody().flip();
+
+         requiresResponse = buffer.getBoolean();
       }
    }
 
+   @Override
+   public int getRequiredBufferSize()
+   {
+      if (largeMessage)
+      {
+         return BASIC_PACKET_SIZE +
+                // IsLargeMessage
+                DataConstants.SIZE_BOOLEAN +
+                // BufferSize
+                DataConstants.SIZE_INT +
+                // Bytes sent
+                largeMessageHeader.length +
+                // LargeMessageID (if > 0) and a boolean statying if the largeMessageID is set
+                DataConstants.SIZE_BOOLEAN + (largeMessageId >= 0 ? DataConstants.SIZE_LONG : 0) + 
+                DataConstants.SIZE_BOOLEAN;
+      }
+      else if (clientMessage != null)
+      {
+         return DataConstants.SIZE_BOOLEAN + BASIC_PACKET_SIZE +
+                clientMessage.getEncodeSize() +
+                DataConstants.SIZE_BOOLEAN;
+      }
+      else
+      {
+         return DataConstants.SIZE_BOOLEAN + BASIC_PACKET_SIZE +
+                serverMessage.getEncodeSize() +
+                DataConstants.SIZE_BOOLEAN;
+      }
+   }
 
    // Package protected ---------------------------------------------
 

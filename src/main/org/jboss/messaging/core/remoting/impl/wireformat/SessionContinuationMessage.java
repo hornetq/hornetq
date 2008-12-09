@@ -20,46 +20,95 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.soak.chunk;
+package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.tests.integration.chunkmessage.ChunkTestBase;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.util.DataConstants;
 
 /**
- * A MessageChunkSoakTest
+ * A SessionContinuationMessage
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * 
- * Created Oct 27, 2008 5:07:05 PM
+ * Created Dec 5, 2008 10:08:40 AM
  *
  *
  */
-public class MessageChunkSoakTest extends ChunkTestBase
+public abstract class SessionContinuationMessage extends PacketImpl
 {
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
+   private byte[] body;
+
+   private boolean continues;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
+   public SessionContinuationMessage(byte type,
+                                     final byte[] body,
+                                     final boolean continues)
+   {
+      super(type);
+      this.body = body;
+      this.continues = continues;
+   }
+
+   public SessionContinuationMessage(byte type)
+   {
+      super(type);
+   }
+
    // Public --------------------------------------------------------
 
-   public void testMessageChunkFilePersistence1G() throws Exception
+   /**
+    * @return the body
+    */
+   public byte[] getBody()
    {
-      testChunks(true, true, false, 2, 268435456, false, 300000, 0, true);
+      return body;
+   }
+
+   /**
+    * @return the continues
+    */
+   public boolean isContinues()
+   {
+      return continues;
+   }
+
+   @Override
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + DataConstants.SIZE_INT +
+             body.length +
+             DataConstants.SIZE_BOOLEAN;
+   }
+
+   @Override
+   public void encodeBody(final MessagingBuffer buffer)
+   {
+      buffer.putInt(body.length);
+      buffer.putBytes(body);
+      buffer.putBoolean(continues);
+   }
+
+   @Override
+   public void decodeBody(final MessagingBuffer buffer)
+   {
+      int size = buffer.getInt();
+      body = new byte[size];
+      buffer.getBytes(body);
+      continues = buffer.getBoolean();
    }
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
 
    // Private -------------------------------------------------------
 

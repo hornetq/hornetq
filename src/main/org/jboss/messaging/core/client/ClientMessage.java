@@ -46,6 +46,4 @@ public interface ClientMessage extends Message
    void acknowledge() throws MessagingException;
    
    boolean isLargeMessage();
-      
-   void setLargeMessage(boolean largeMessage);
 }

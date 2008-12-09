@@ -206,22 +206,33 @@ public class MessageChunkTest extends ChunkTestBase
 
    public void testMessageChunkFilePersistence() throws Exception
    {
-      testChunks(true, false, 100, 262144, false, 1000, 0);
+      testChunks(true, false, false, 100, 262144, false, 1000, 0);
+   }
+
+   public void testMessageChunkFilePersistenceBlocked() throws Exception
+   {
+      testChunks(true, false, false, 100, 262144, true, 1000, 0);
+   }
+
+
+   public void testMessageChunkFilePersistenceBlockedPreCommit() throws Exception
+   {
+      testChunks(true, false, true, 100, 262144, true, 1000, 0);
    }
 
    public void testMessageChunkFilePersistenceDelayed() throws Exception
    {
-      testChunks(true, false, 1, 50000, false, 1000, 2000);
+      testChunks(true, false, false, 1, 50000, false, 1000, 2000);
    }
 
    public void testMessageChunkNullPersistence() throws Exception
    {
-      testChunks(false, false, 1, 50000, false, 1000, 0);
+      testChunks(false, false, false, 1, 50000, false, 1000, 0);
    }
 
    public void testMessageChunkNullPersistenceDelayed() throws Exception
    {
-      testChunks(false, false, 100, 50000, false, 10000, 100);
+      testChunks(false, false, false, 100, 50000, false, 10000, 100);
    }
 
    public void testPageOnLargeMessage() throws Exception
@@ -238,44 +249,44 @@ public class MessageChunkTest extends ChunkTestBase
 
    public void testSendfileMessage() throws Exception
    {
-      testChunks(true, true, 100, 50000, false, 1000, 0);
+      testChunks(true, true, false, 100, 50000, false, 1000, 0);
 
    }
 
    public void testSendfileMessageOnNullPersistence() throws Exception
    {
-      testChunks(false, true, 100, 50000, false, 1000, 0);
+      testChunks(false, true, false, 100, 50000, false, 1000, 0);
    }
 
    public void testSendfileMessageOnNullPersistenceSmallMessage() throws Exception
    {
-      testChunks(false, true, 100, 100, false, 1000, 0);
+      testChunks(false, true, false, 100, 100, true, 1000, 0);
    }
 
    public void testSendfileMessageSmallMessage() throws Exception
    {
-      testChunks(true, true, 100, 4, false, 1000, 0);
+      testChunks(true, true, false, 100, 4, false, 1000, 0);
 
    }
 
    public void testSendRegularMessageNullPersistence() throws Exception
    {
-      testChunks(false, false, 100, 100, false, 1000, 0);
+      testChunks(false, false, false, 100, 100, false, 1000, 0);
    }
 
    public void testSendRegularMessageNullPersistenceDelayed() throws Exception
    {
-      testChunks(false, false, 100, 100, false, 1000, 1000);
+      testChunks(false, false, false, 100, 100, false, 1000, 1000);
    }
 
    public void testSendRegularMessagePersistence() throws Exception
    {
-      testChunks(true, false, 100, 100, false, 1000, 0);
+      testChunks(true, false, false, 100, 100, false, 1000, 0);
    }
 
    public void testSendRegularMessagePersistenceDelayed() throws Exception
    {
-      testChunks(true, false, 100, 100, false, 1000, 1000);
+      testChunks(true, false, false, 100, 100, false, 1000, 1000);
    }
 
    public void testTwoBindingsTwoStartedConsumers() throws Exception

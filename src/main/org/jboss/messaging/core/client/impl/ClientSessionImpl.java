@@ -61,8 +61,8 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionFailoverCompleteMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendChunkMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
@@ -639,14 +639,24 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          consumer.handleMessage(message);
       }
    }
-
-   public void handleReceiveChunk(final long consumerID, final SessionSendChunkMessage chunk) throws Exception
+   
+   public void handleReceiveLargeMessage(final long consumerID, final byte[] headerBytes) throws Exception
    {
       ClientConsumerInternal consumer = consumers.get(consumerID);
 
       if (consumer != null)
       {
-         consumer.handleChunk(chunk);
+         consumer.handleLargeMessage(headerBytes);
+      }
+   }
+
+   public void handleReceiveContinuation(final long consumerID, final SessionReceiveContinuationMessage continuation) throws Exception
+   {
+      ClientConsumerInternal consumer = consumers.get(consumerID);
+
+      if (consumer != null)
+      {
+         consumer.handleLargeMessageContinuation(continuation);
       }
    }
 

@@ -61,7 +61,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessag
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendChunkMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
@@ -1956,7 +1956,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          result = channel.replicatePacket(packet);
 
          // note we process start before response is back from the backup
-         
+
          setStarted(true);
       }
       finally
@@ -2157,36 +2157,244 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void handleSendChunkMessage(final SessionSendChunkMessage packet)
+   public void handleSendLargeMessage(final SessionSendMessage packet)
    {
-      if (packet.getMessageID() == 0)
+
+      DelayedResult result = channel.replicatePacket(packet);
+
+      if (packet.getMessageID() <= 0L)
       {
-         packet.setMessageID(storageManager.generateUniqueID());
+         // must generate message id here, so we know they are in sync on live and backup
+         long id = storageManager.generateUniqueID();
+
+         packet.setMessageID(id);
       }
 
-      Packet response = null;
 
-      // TODO: Replication on ChunkMessages
+      // With a send we must make sure it is replicated to backup before being processed on live
+      // or can end up with delivery being processed on backup before original send
+
+      if (result == null)
+      {
+         doSendLargeMessage(packet);
+      }
+      else
+      {
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doSendLargeMessage(packet);
+            }
+         });
+      }
+      
+   }
+   
+   public void handleSend(final SessionSendMessage packet)
+   {
+      // With a send we must make sure it is replicated to backup before being processed on live
+      // or can end up with delivery being processed on backup before original send
+
+      ServerMessage msg = packet.getServerMessage();
+
+      final SendLock lock;
+
+      if (channel.getReplicatingChannel() != null)
+      {
+         lock = postOffice.getAddressLock(msg.getDestination());
+
+         lock.beforeSend();
+      }
+      else
+      {
+         lock = null;
+      }
+
+      if (packet.getMessageID() <= 0L)
+      {
+         // must generate message id here, so we know they are in sync on live and backup
+         long id = storageManager.generateUniqueID();
+
+         packet.setMessageID(id);
+      }
+
+      if (channel.getReplicatingChannel() != null)
+      {
+         msg.putBooleanProperty(new SimpleString("clustered"), true);
+      }
+
+      DelayedResult result = channel.replicatePacket(packet);
+
+      // With a send we must make sure it is replicated to backup before being processed on live
+      // or can end up with delivery being processed on backup before original send
+
+      if (result == null)
+      {
+         doSend(packet);
+      }
+      else
+      {
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doSend(packet);
+
+               lock.afterSend();
+            }
+         });
+      }
+   }
+   
+   public void handleSendContinuations(final SessionSendContinuationMessage packet)
+   {
+
+      DelayedResult result = channel.replicatePacket(packet);
+
+      // With a send we must make sure it is replicated to backup before being processed on live
+      // or can end up with delivery being processed on backup before original send
+
+      if (result == null)
+      {
+         doSendContinuations(packet);
+      }
+      else
+      {
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               doSendContinuations(packet);
+            }
+         });
+      }
+
+
+   }
+
+   
+   public void handleReplicatedDelivery(final SessionReplicateDeliveryMessage packet)
+   {
+      ServerConsumer consumer = consumers.get(packet.getConsumerID());
+
+      if (consumer == null)
+      {
+         throw new IllegalStateException("Cannot handle replicated delivery, consumer is closed");
+      }
 
       try
       {
-         if (packet.getHeader() != null)
+         consumer.deliverReplicated(packet.getMessageID());
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to handle replicated delivery", e);
+      }
+   }
+
+   public int transferConnection(final RemotingConnection newConnection, final int lastReceivedCommandID)
+   {
+      boolean wasStarted = this.started;
+
+      if (wasStarted)
+      {
+         this.setStarted(false);
+      }
+
+      remotingConnection.removeFailureListener(this);
+
+      channel.transferConnection(newConnection);
+
+      RemotingConnection oldReplicatingConnection = newConnection.getReplicatingConnection();
+
+      if (oldReplicatingConnection != null)
+      {
+         oldReplicatingConnection.destroy();
+      }
+
+      newConnection.setReplicatingConnection(remotingConnection.getReplicatingConnection());
+
+      remotingConnection.setReplicatingConnection(null);
+
+      newConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
+
+      // Destroy the old connection
+      remotingConnection.destroy();
+
+      remotingConnection = newConnection;
+
+      remotingConnection.addFailureListener(this);
+
+      int serverLastReceivedCommandID = channel.getLastReceivedCommandID();
+
+      channel.replayCommands(lastReceivedCommandID);
+
+      if (wasStarted)
+      {
+         this.setStarted(true);
+      }
+
+      return serverLastReceivedCommandID;
+   }
+
+   public Channel getChannel()
+   {
+      return channel;
+   }
+
+   // FailureListener implementation
+   // --------------------------------------------------------------------
+
+   public boolean connectionFailed(final MessagingException me)
+   {
+      try
+      {
+         log.info("Connection timed out, so clearing up resources for session " + name);
+
+         for (Runnable runner : failureRunners)
          {
-            largeMessage = createLargeMessageStorage(packet.getMessageID(), packet.getHeader());
+            try
+            {
+               runner.run();
+            }
+            catch (Throwable t)
+            {
+               log.error("Failed to execute failure runner", t);
+            }
          }
 
-         largeMessage.addBytes(packet.getBody());
+         // We call handleClose() since we need to replicate the close too, if there is a backup
+         handleClose(new PacketImpl(PacketImpl.SESS_CLOSE));
 
-         if (!packet.isContinues())
-         {
-            final ServerLargeMessage message = largeMessage;
+         log.info("Cleared up resources for session " + name);
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed to close connection " + this);
+      }
+      
+      return true;
+   }
 
-            largeMessage = null;
+   // Public
+   // ----------------------------------------------------------------------------
 
-            message.complete();
+   public Transaction getTransaction()
+   {
+      return tx;
+   }
 
-            send(message);
-         }
+   // Private
+   // ----------------------------------------------------------------------------
+
+   private void doSendLargeMessage(final SessionSendMessage packet)
+   {
+      Packet response = null;
+
+      try
+      {
+         largeMessage = createLargeMessageStorage(packet.getMessageID(), packet.getLargeMessageHeader());
 
          if (packet.isRequiresResponse())
          {
@@ -2215,63 +2423,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       if (response != null)
       {
          channel.send(response);
-      }
-
-   }
-
-   public void handleSend(final SessionSendMessage packet)
-   {
-      // With a send we must make sure it is replicated to backup before being processed on live
-      // or can end up with delivery being processed on backup before original send
-
-      ServerMessage msg = packet.getServerMessage();
-
-      final SendLock lock;
-
-      if (channel.getReplicatingChannel() != null)
-      {
-         lock = postOffice.getAddressLock(msg.getDestination());
-
-         lock.beforeSend();
-      }
-      else
-      {
-         lock = null;
-      }
-
-      if (msg.getMessageID() == 0L)
-      {
-         // must generate message id here, so we know they are in sync on live and backup
-         long id = storageManager.generateUniqueID();
-
-         msg.setMessageID(id);
-      }
-      
-      if (channel.getReplicatingChannel() != null)
-      {
-         msg.putBooleanProperty(new SimpleString("clustered"), true);
-      }
-
-      DelayedResult result = channel.replicatePacket(packet);
-
-      // With a send we must make sure it is replicated to backup before being processed on live
-      // or can end up with delivery being processed on backup before original send
-
-      if (result == null)
-      {
-         doSend(packet);
-      }
-      else
-      {
-         result.setResultRunner(new Runnable()
-         {
-            public void run()
-            {
-               doSend(packet);
-
-               lock.afterSend();
-            }
-         });
       }
    }
 
@@ -2323,6 +2474,65 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          channel.send(response);
       }
    }
+   
+   /**
+    * @param packet
+    */
+   private void doSendContinuations(final SessionSendContinuationMessage packet)
+   {
+      Packet response = null;
+
+      try
+      {
+         
+         if (largeMessage == null)
+         {
+            throw new MessagingException(MessagingException.ILLEGAL_STATE, "large-message not initialized on server");
+         }
+         
+         largeMessage.addBytes(packet.getBody());
+
+         if (!packet.isContinues())
+         {
+            final ServerLargeMessage message = largeMessage;
+
+            largeMessage = null;
+
+            message.complete();
+
+            send(message);
+         }
+
+         if (packet.isRequiresResponse())
+         {
+            response = new NullResponseMessage();
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to send message", e);
+
+         if (packet.isRequiresResponse())
+         {
+            if (e instanceof MessagingException)
+            {
+               response = new MessagingExceptionMessage((MessagingException)e);
+            }
+            else
+            {
+               response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            }
+         }
+      }
+
+      channel.confirm(packet);
+
+      if (response != null)
+      {
+         channel.send(response);
+      }
+   }
+
 
    private void handleManagementMessage(final ServerMessage message) throws Exception
    {
@@ -2338,119 +2548,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void handleReplicatedDelivery(final SessionReplicateDeliveryMessage packet)
-   {
-      ServerConsumer consumer = consumers.get(packet.getConsumerID());
-
-      if (consumer == null)
-      {
-         throw new IllegalStateException("Cannot handle replicated delivery, consumer is closed");
-      }
-
-      try
-      {
-         consumer.deliverReplicated(packet.getMessageID());
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to handle replicated delivery", e);
-      }
-   }
-
-   public int transferConnection(final RemotingConnection newConnection, final int lastReceivedCommandID)
-   {
-      boolean wasStarted = this.started;
-      
-      if (wasStarted)
-      {
-         this.setStarted(false);
-      }
-      
-      remotingConnection.removeFailureListener(this);
-
-      channel.transferConnection(newConnection);
-      
-      RemotingConnection oldReplicatingConnection = newConnection.getReplicatingConnection();
-      
-      if (oldReplicatingConnection != null)
-      {
-         oldReplicatingConnection.destroy();
-      }
-      
-      newConnection.setReplicatingConnection(remotingConnection.getReplicatingConnection());
-      
-      remotingConnection.setReplicatingConnection(null);
-
-      newConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
-
-      // Destroy the old connection
-      remotingConnection.destroy();
-
-      remotingConnection = newConnection;
-
-      remotingConnection.addFailureListener(this);
-
-      int serverLastReceivedCommandID = channel.getLastReceivedCommandID();
-
-      channel.replayCommands(lastReceivedCommandID);
-      
-      if (wasStarted)
-      {
-         this.setStarted(true);
-      }
-      
-      return serverLastReceivedCommandID;
-   }
-
-   public Channel getChannel()
-   {
-      return channel;
-   }
-
-   // FailureListener implementation
-   // --------------------------------------------------------------------
-
-   public boolean connectionFailed(final MessagingException me)
-   {
-      try
-      {
-         log.info("Connection timed out, so clearing up resources for session " + name);
-         
-         for (Runnable runner : failureRunners)
-         {
-            try
-            {
-               runner.run();
-            }
-            catch (Throwable t)
-            {
-               log.error("Failed to execute failure runner", t);
-            }
-         }
-
-         // We call handleClose() since we need to replicate the close too, if there is a backup
-         handleClose(new PacketImpl(PacketImpl.SESS_CLOSE));
-
-         log.info("Cleared up resources for session " + name);
-      }
-      catch (Throwable t)
-      {
-         log.error("Failed to close connection " + this);
-      }
-      
-      return true;
-   }
-
-   // Public
-   // ----------------------------------------------------------------------------
-
-   public Transaction getTransaction()
-   {
-      return tx;
-   }
-
-   // Private
-   // ----------------------------------------------------------------------------
 
    private ServerLargeMessage createLargeMessageStorage(final long messageID, final byte[] header) throws Exception
    {

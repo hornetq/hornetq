@@ -281,9 +281,8 @@ public class PagingManagerImpl implements PagingManager
       {
          store.startDepaging(pagingSPI.getGlobalDepagerExecutor());
       }
-      globalMode.set(false);
    }
-
+   
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.paging.PagingManager#getGlobalSize()
     */

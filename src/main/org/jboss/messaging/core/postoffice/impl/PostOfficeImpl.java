@@ -502,6 +502,8 @@ public class PostOfficeImpl implements PostOffice
 
       storageManager.loadMessages(this, queues, resourceManager);
 
+      // This is necessary as if the server was previously stopped while a depage was being executed,
+      // it needs to resume the depage process on those destinations
       pagingManager.startGlobalDepage();
 
    }

@@ -28,7 +28,6 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ADD_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY_RESP;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CHUNK_SEND;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_COMMIT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_CLOSE;
@@ -40,11 +39,13 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FLOWTOKEN;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY_RESP;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_CONTINUATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_MSG;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REMOVE_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REPLICATE_DELIVERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ROLLBACK;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_SEND;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_SEND_CONTINUATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_START;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_STOP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_COMMIT;
@@ -113,10 +114,11 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionFailoverCompleteMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendChunkMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
@@ -357,14 +359,14 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    {
       return new ArrayList<FailureListener>(failureListeners);
    }
-   
+
    public void setFailureListeners(final List<FailureListener> listeners)
    {
       this.failureListeners.clear();
-      
+
       this.failureListeners.addAll(listeners);
    }
-   
+
    public Object getID()
    {
       return transportConnection.getID();
@@ -390,7 +392,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    }
 
    public void addFailureListener(final FailureListener listener)
-   {   
+   {
       if (listener == null)
       {
          throw new IllegalStateException("FailureListener cannot be null");
@@ -418,7 +420,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    {
       return replicatingConnection;
    }
-   
+
    public void setReplicatingConnection(final RemotingConnection connection)
    {
       this.replicatingConnection = connection;
@@ -552,7 +554,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          try
          {
             boolean callNext = listener.connectionFailed(me);
-            
+
             if (!callNext)
             {
                break;
@@ -839,9 +841,14 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             packet = new NullResponseMessage();
             break;
          }
-         case SESS_CHUNK_SEND:
+         case SESS_RECEIVE_CONTINUATION:
          {
-            packet = new SessionSendChunkMessage();
+            packet = new SessionReceiveContinuationMessage();
+            break;
+         }
+         case SESS_SEND_CONTINUATION:
+         {
+            packet = new SessionSendContinuationMessage();
             break;
          }
          case SESS_REPLICATE_DELIVERY:
@@ -1152,9 +1159,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             if (replicatingChannel != null)
             {
                DelayedResult result = new DelayedResult();
- 
+
                responseActions.add(result);
-               
+
                responseActionCount++;
 
                replicatingChannel.send(packet);
@@ -1190,7 +1197,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                   break;
                }
             }
-            
+
             responseActionCount = 0;
          }
       }
@@ -1212,7 +1219,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       // This will never get called concurrently by more than one thread
 
       private int responseActionCount;
-      
+
       // TODO it's not ideal synchronizing this since it forms a contention point with replication
       // but we need to do this to protect it w.r.t. the check on replicatingChannel
       public void replicateResponseReceived()
@@ -1228,7 +1235,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                if (result == null)
                {
                   throw new IllegalStateException("Cannot find response action");
-               }                            
+               }
             }
          }
 
@@ -1236,12 +1243,12 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          if (result != null)
          {
             result.replicated();
-            
-            //TODO - we can optimise this not to lock every time - only if waiting for all replications to return
+
+            // TODO - we can optimise this not to lock every time - only if waiting for all replications to return
             synchronized (replicationLock)
             {
                responseActionCount--;
-               
+
                if (responseActionCount == 0)
                {
                   replicationLock.notify();
@@ -1249,34 +1256,34 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             }
          }
       }
-      
+
       private void waitForAllReplicationResponse()
-      {       
+      {
          synchronized (replicationLock)
          {
             if (replicatingChannel != null)
             {
                long toWait = 10000; // TODO don't hardcode timeout
-               
+
                long start = System.currentTimeMillis();
-               
+
                while (responseActionCount > 0 && toWait > 0)
-               {                       
+               {
                   try
                   {
                      replicationLock.wait();
                   }
                   catch (InterruptedException e)
-                  {                     
+                  {
                   }
-                  
+
                   long now = System.currentTimeMillis();
 
                   toWait -= now - start;
 
-                  start = now;                                                     
+                  start = now;
                }
-               
+
                if (toWait <= 0)
                {
                   log.warn("Timed out waiting for replication responses to return");
@@ -1318,16 +1325,16 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       public void transferConnection(final RemotingConnection newConnection)
       {
          // Needs to synchronize on the connection to make sure no packets from
-         // the old connection get processed after transfer has occurred         
+         // the old connection get processed after transfer has occurred
          synchronized (connection.transferLock)
          {
             connection.channels.remove(id);
-            
-            //If we're reconnecting to a live node which is replicated then there will be a replicating channel
-            //too. We need to then make sure that all replication responses come back since packets aren't
-            //considered confirmed until response comes back and is processed. Otherwise responses to previous
-            //message sends could come back after reconnection resulting in clients resending same message
-            //since it wasn't confirmed yet.
+
+            // If we're reconnecting to a live node which is replicated then there will be a replicating channel
+            // too. We need to then make sure that all replication responses come back since packets aren't
+            // considered confirmed until response comes back and is processed. Otherwise responses to previous
+            // message sends could come back after reconnection resulting in clients resending same message
+            // since it wasn't confirmed yet.
             waitForAllReplicationResponse();
 
             // And switch it
@@ -1342,7 +1349,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             rnewConnection.channels.put(id, this);
 
             connection = rnewConnection;
-         }         
+         }
       }
 
       public void replayCommands(final int otherLastReceivedCommandID)
@@ -1350,7 +1357,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          clearUpTo(otherLastReceivedCommandID);
 
          for (final Packet packet : resendCache)
-         {            
+         {
             doWrite(packet);
          }
       }
@@ -1621,7 +1628,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                channel.replicatingChannelDead();
             }
          }
-         
+
          return true;
       }
    }

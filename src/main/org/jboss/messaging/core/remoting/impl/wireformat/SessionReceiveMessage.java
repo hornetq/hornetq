@@ -46,6 +46,10 @@ public class SessionReceiveMessage extends PacketImpl
 
    private long consumerID;
 
+   private boolean largeMessage;
+
+   private byte[] largeMessageHeader;
+
    private ClientMessage clientMessage;
 
    private ServerMessage serverMessage;
@@ -55,6 +59,19 @@ public class SessionReceiveMessage extends PacketImpl
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
+
+   public SessionReceiveMessage(final long consumerID, final byte[] largeMessageHeader, final int deliveryCount)
+   {
+      super(SESS_RECEIVE_MSG);
+
+      this.consumerID = consumerID;
+
+      this.largeMessageHeader = largeMessageHeader;
+
+      this.deliveryCount = deliveryCount;
+
+      this.largeMessage = true;
+   }
 
    public SessionReceiveMessage(final long consumerID, final ServerMessage message, final int deliveryCount)
    {
@@ -67,6 +84,8 @@ public class SessionReceiveMessage extends PacketImpl
       this.clientMessage = null;
 
       this.deliveryCount = deliveryCount;
+
+      this.largeMessage = false;
    }
 
    public SessionReceiveMessage()
@@ -91,22 +110,57 @@ public class SessionReceiveMessage extends PacketImpl
       return serverMessage;
    }
 
+   public byte[] getLargeMessageHeader()
+   {
+      return largeMessageHeader;
+   }
+   
+   /**
+    * @return the largeMessage
+    */
+   public boolean isLargeMessage()
+   {
+      return largeMessage;
+   }
+
    public int getDeliveryCount()
    {
       return deliveryCount;
    }
 
-   
    public int getRequiredBufferSize()
    {
-      return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG + DataConstants.SIZE_INT + serverMessage.getEncodeSize();
+      if (largeMessage)
+      {
+         return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG +
+                DataConstants.SIZE_INT +
+                DataConstants.SIZE_BOOLEAN +
+                DataConstants.SIZE_INT +
+                largeMessageHeader.length;
+      }
+      else
+      {
+         return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG +
+                DataConstants.SIZE_INT +
+                DataConstants.SIZE_BOOLEAN +
+                serverMessage.getEncodeSize();
+      }
    }
-   
+
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putLong(consumerID);
       buffer.putInt(deliveryCount);
-      serverMessage.encode(buffer);
+      buffer.putBoolean(largeMessage);
+      if (largeMessage)
+      {
+         buffer.putInt(largeMessageHeader.length);
+         buffer.putBytes(largeMessageHeader);
+      }
+      else
+      {
+         serverMessage.encode(buffer);
+      }
    }
 
    public void decodeBody(final MessagingBuffer buffer)
@@ -117,11 +171,20 @@ public class SessionReceiveMessage extends PacketImpl
 
       deliveryCount = buffer.getInt();
 
-      clientMessage = new ClientMessageImpl(deliveryCount);
+      largeMessage = buffer.getBoolean();
 
-      clientMessage.decode(buffer);
-
-      clientMessage.getBody().flip();
+      if (largeMessage)
+      {
+         int size = buffer.getInt();
+         largeMessageHeader = new byte[size];
+         buffer.getBytes(largeMessageHeader);
+      }
+      else
+      {
+         clientMessage = new ClientMessageImpl(deliveryCount);
+         clientMessage.decode(buffer);
+         clientMessage.getBody().flip();
+      }
    }
 
    // Package protected ---------------------------------------------

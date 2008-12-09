@@ -69,21 +69,10 @@ public class UnitTestCase extends TestCase
    public static final String NETTY_ACCEPTOR_FACTORY = "org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory";
 
    public static final String NETTY_CONNECTOR_FACTORY = "org.jboss.messaging.integration.transports.netty.NettyConnectorFactory";
+
    // Attributes ----------------------------------------------------
 
    private String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/jbm-unit-test";
-
-   private String journalDir = testDir + "/journal";
-
-   private String bindingsDir = testDir + "/bindings";
-
-   private String pageDir = testDir + "/page";
-
-   private String largeMessagesDir = testDir + "/large-msg";
-
-   private String clientLargeMessagesDir = testDir + "/client-large-msg";
-
-   private String temporaryDir = testDir + "/temporary";
 
    // Static --------------------------------------------------------
 
@@ -198,7 +187,7 @@ public class UnitTestCase extends TestCase
    /**
     * @return the testDir
     */
-   public String getTestDir()
+   protected String getTestDir()
    {
       return testDir;
    }
@@ -206,49 +195,94 @@ public class UnitTestCase extends TestCase
    /**
     * @return the journalDir
     */
-   public String getJournalDir()
+   protected String getJournalDir()
    {
-      return journalDir;
+      return getJournalDir(testDir);
+   }
+
+   protected String getJournalDir(String testDir)
+   {
+      return testDir + "/journal";
    }
 
    /**
     * @return the bindingsDir
     */
-   public String getBindingsDir()
+   protected String getBindingsDir()
    {
-      return bindingsDir;
+      return getBindingsDir(testDir);
+   }
+
+   /**
+    * @return the bindingsDir
+    */
+   protected String getBindingsDir(String testDir)
+   {
+      return testDir + "/bindings";
    }
 
    /**
     * @return the pageDir
     */
-   public String getPageDir()
+   protected String getPageDir()
    {
-      return pageDir;
+      return getPageDir(testDir);
+   }
+
+   /**
+    * @return the pageDir
+    */
+   protected String getPageDir(String testDir)
+   {
+      return testDir + "/page";
    }
 
    /**
     * @return the largeMessagesDir
     */
-   public String getLargeMessagesDir()
+   protected String getLargeMessagesDir()
    {
-      return largeMessagesDir;
+      return getLargeMessagesDir(testDir);
+   }
+
+   /**
+    * @return the largeMessagesDir
+    */
+   protected String getLargeMessagesDir(String testDir)
+   {
+      return testDir + "/large-msg";
    }
 
    /**
     * @return the clientLargeMessagesDir
     */
-   public String getClientLargeMessagesDir()
+   protected String getClientLargeMessagesDir()
    {
-      return clientLargeMessagesDir;
+      return getClientLargeMessagesDir(testDir);
+   }
+
+   /**
+    * @return the clientLargeMessagesDir
+    */
+   protected String getClientLargeMessagesDir(String testDir)
+   {
+      return testDir + "/client-large-msg";
    }
 
    /**
     * @return the temporaryDir
     */
-   public String getTemporaryDir()
+   protected String getTemporaryDir()
    {
-      return temporaryDir;
+      return getTemporaryDir(testDir);
+   }
+
+   /**
+    * @return the temporaryDir
+    */
+   protected String getTemporaryDir(String testDir)
+   {
+      return testDir + "/temp";
    }
 
    // Package protected ---------------------------------------------

@@ -32,7 +32,7 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendChunkMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
@@ -260,39 +260,38 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       final int bodySize = msg.getBodySize();
 
-      int chunkLength = minLargeMessageSize - headerSize;
+      SessionSendMessage initialChunk = new SessionSendMessage(headerBuffer.array(), false);
 
-      MessagingBuffer bodyBuffer = new ByteBufferWrapper(ByteBuffer.allocate(chunkLength));
+      channel.send(initialChunk);
 
-      msg.encodeBody(bodyBuffer, 0, chunkLength);
-
-      SessionSendChunkMessage chunk = new SessionSendChunkMessage(-1,
-                                                                  headerBuffer.array(),
-                                                                  bodyBuffer.array(),
-                                                                  chunkLength < bodySize,
-                                                                  sendBlocking);
-
-      if (sendBlocking)
+      for (int pos = 0; pos < bodySize;)
       {
-         channel.sendBlocking(chunk);
-      }
-      else
-      {
-         channel.send(chunk);
-      }
-
-      for (int pos = chunkLength; pos < bodySize;)
-      {
-         chunkLength = Math.min(bodySize - pos, minLargeMessageSize);
+         final int chunkLength;
+         final boolean lastChunk;
          
-         bodyBuffer = new ByteBufferWrapper(ByteBuffer.allocate(chunkLength));
+         
+         final int bytesToWrite = bodySize - pos;
+         
+         if (bytesToWrite < minLargeMessageSize)
+         {
+            lastChunk = true;
+            chunkLength = bytesToWrite;
+         }
+         else
+         {
+            lastChunk = false;
+            chunkLength = minLargeMessageSize;
+         }
+         
+         final MessagingBuffer bodyBuffer = new ByteBufferWrapper(ByteBuffer.allocate(chunkLength));
 
          msg.encodeBody(bodyBuffer, pos, chunkLength);
 
-         chunk = new SessionSendChunkMessage(-1, null, bodyBuffer.array(), pos + chunkLength < bodySize, sendBlocking);
+         final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bodyBuffer.array(), !lastChunk, lastChunk && sendBlocking);
 
-         if (sendBlocking)
+         if (sendBlocking && lastChunk)
          {
+            // When sending it blocking, only the last chunk will be blocking.
             channel.sendBlocking(chunk);
          }
          else

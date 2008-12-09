@@ -322,6 +322,8 @@ public abstract class PagingStoreTestBase extends UnitTestCase
                                                                                                              .array());
 
       assertEquals(0, buffers2.size());
+      
+      assertEquals(0, storeImpl.getAddressSize());
 
    }
 
