@@ -260,7 +260,6 @@ public class JMSQueueControlTest extends TestCase
       String expiryQueueName = randomString();
       JBossQueue expiryQueue = new JBossQueue(expiryQueueName);
       serverManager.createQueue(expiryQueueName, expiryQueueName);
-      // FIXME we must be able to pass the queue name, not its address
       queueControl.setExpiryAddress(expiryQueue.getAddress());
       JMSQueueControlMBean expiryQueueControl = createQueueControl(expiryQueue);
 

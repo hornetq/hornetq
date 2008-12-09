@@ -231,16 +231,16 @@ public class JMSQueueControlTest extends TestCase
       verifyMockedAttributes();
    }
 
-   public void testGetDLQ() throws Exception
+   public void testGetDeadLetterAddress() throws Exception
    {
-      final String dlq = randomString();
+      final String deadLetterAddress = randomString();
 
       QueueSettings settings = new QueueSettings()
       {
          @Override
          public SimpleString getDeadLetterAddress()
          {
-            return new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + dlq);
+            return new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + deadLetterAddress);
          }
       };
       expect(queueSettingsRepository.getMatch(name)).andReturn(settings);
@@ -248,12 +248,12 @@ public class JMSQueueControlTest extends TestCase
       replayMockedAttributes();
 
       JMSQueueControl control = createControl();
-      assertEquals(dlq, control.getDeadLetterAddress());
+      assertEquals(settings.getDeadLetterAddress().toString(), control.getDeadLetterAddress());
 
       verifyMockedAttributes();
    }
 
-   public void testGetExpiryQueue() throws Exception
+   public void testGetExpiryAddress() throws Exception
    {
       final String expiryQueue = randomString();
 
@@ -271,7 +271,7 @@ public class JMSQueueControlTest extends TestCase
       replayMockedAttributes();
 
       JMSQueueControl control = createControl();
-      assertEquals(expiryQueue, control.getExpiryQueue());
+      assertEquals(settings.getExpiryAddress().toString(), control.getExpiryAddress());
 
       verifyMockedAttributes();
    }

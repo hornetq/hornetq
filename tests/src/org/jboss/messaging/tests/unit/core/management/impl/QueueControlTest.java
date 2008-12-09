@@ -313,7 +313,7 @@ public class QueueControlTest extends TestCase
       replayMockedAttributes();
 
       QueueControlMBean control = createControl();
-      assertEquals(expiryQueueName, control.getExpiryQueue());
+      assertEquals(expiryQueueName, control.getExpiryAddress());
 
       verifyMockedAttributes();
    }

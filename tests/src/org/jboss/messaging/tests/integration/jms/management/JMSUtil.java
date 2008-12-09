@@ -73,7 +73,7 @@ public class JMSUtil
 
    // Static --------------------------------------------------------
 
-   static Connection createConnection(String connectorFactory) throws JMSException
+   public static Connection createConnection(String connectorFactory) throws JMSException
    {
       JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(connectorFactory),
                                                              null,
@@ -142,7 +142,7 @@ public class JMSUtil
       return s.createConsumer(destination);
    }
 
-   static MessageConsumer createConsumer(Destination destination, boolean startConnection) throws JMSException
+   public static MessageConsumer createConsumer(Destination destination, boolean startConnection) throws JMSException
    {
       return createConsumer(destination,
                             startConnection,
@@ -184,7 +184,7 @@ public class JMSUtil
       return s.createDurableSubscriber(topic, subscriptionName);
    }
 
-   static void sendMessages(Destination destination, int messagesToSend) throws Exception
+   public static void sendMessages(Destination destination, int messagesToSend) throws Exception
    {
       JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                              null,

@@ -184,20 +184,30 @@ public class JMSQueueControl implements JMSQueueControlMBean
       QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
       if (queueSettings != null && queueSettings.getDeadLetterAddress() != null)
       {
-         return JBossDestination.fromAddress(queueSettings.getDeadLetterAddress().toString()).getName();
+         return queueSettings.getDeadLetterAddress().toString();
       }
       else
       {
          return null;
       }
    }
+   
+   public void setDeadLetterAddress(String deadLetterAddress) throws Exception
+   {
+      QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
 
-   public String getExpiryQueue()
+      if (deadLetterAddress != null)
+      {
+         queueSettings.setDeadLetterAddress(new SimpleString(deadLetterAddress));
+      }
+   }
+
+   public String getExpiryAddress()
    {
       QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
       if (queueSettings != null && queueSettings.getExpiryAddress() != null)
       {
-         return JBossDestination.fromAddress(queueSettings.getExpiryAddress().toString()).getName();
+         return queueSettings.getExpiryAddress().toString();
       }
       else
       {
@@ -332,15 +342,21 @@ public class JMSQueueControl implements JMSQueueControlMBean
                                              queueSettingsRepository);
    }
 
-   public boolean moveMessage(long messageID, String otherQueueName) throws Exception
+   public boolean moveMessage(String messageID, String otherQueueName) throws Exception
    {
       Binding binding = postOffice.getBinding(new SimpleString(otherQueueName));
       if (binding == null)
       {
          throw new IllegalArgumentException("No queue found for " + otherQueueName);
       }
+      Filter filter = createFilterForJMSMessageID(messageID);
+      List<MessageReference> refs = coreQueue.list(filter);
+      if (refs.size() != 1)
+      {
+         throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
+      }
 
-      return coreQueue.moveMessage(messageID, binding.getAddress(), storageManager, postOffice);
+      return coreQueue.moveMessage(refs.get(0).getMessage().getMessageID(), binding.getAddress(), storageManager, postOffice);
    }
 
    public int moveMatchingMessages(String filterStr, String otherQueueName) throws Exception

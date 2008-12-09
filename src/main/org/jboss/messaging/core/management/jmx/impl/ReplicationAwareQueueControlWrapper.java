@@ -69,14 +69,24 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return localQueueControl.getDeadLetterAddress();
    }
 
+   public void setDeadLetterAddress(String deadLetterAddress) throws Exception
+   {
+      replicationAwareInvoke("setDeadLetterAddress", deadLetterAddress);
+   }
+   
    public int getDeliveringCount()
    {
       return localQueueControl.getDeliveringCount();
    }
 
-   public String getExpiryQueue()
+   public String getExpiryAddress()
    {
-      return localQueueControl.getExpiryQueue();
+      return localQueueControl.getExpiryAddress();
+   }
+   
+   public void setExpiryAddress(String expiryAddres) throws Exception
+   {
+      replicationAwareInvoke("setExpiryAddress", expiryAddres);
    }
 
    public String getFilter()

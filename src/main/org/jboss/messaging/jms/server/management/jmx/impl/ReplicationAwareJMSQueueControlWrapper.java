@@ -68,15 +68,20 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
    {
       return localControl.getDeadLetterAddress();
    }
+   
+   public void setDeadLetterAddress(String deadLetterAddress) throws Exception
+   {
+      replicationAwareInvoke("setDeadLetterAddress", deadLetterAddress);
+   }
 
    public int getDeliveringCount()
    {
       return localControl.getDeliveringCount();
    }
 
-   public String getExpiryQueue()
+   public String getExpiryAddress()
    {
-      return localControl.getExpiryQueue();
+      return localControl.getExpiryAddress();
    }
 
    public int getMessageCount()
@@ -184,7 +189,7 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
       return (Integer)replicationAwareInvoke("moveMatchingMessages", filter, otherQueueName);
    }
 
-   public boolean moveMessage(final long messageID, final String otherQueueName) throws Exception
+   public boolean moveMessage(final String messageID, final String otherQueueName) throws Exception
    {
       return (Boolean)replicationAwareInvoke("moveMessage", messageID, otherQueueName);
    }
@@ -204,9 +209,9 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
       return (Boolean)replicationAwareInvoke("sendMessageToDLQ", messageID);
    }
 
-   public void setExpiryAddress(final String expiryQueue) throws Exception
+   public void setExpiryAddress(final String expiryAddress) throws Exception
    {
-      replicationAwareInvoke("setExpiryAddress", expiryQueue);
+      replicationAwareInvoke("setExpiryAddress", expiryAddress);
    }
 
    public int removeAllMessages() throws Exception

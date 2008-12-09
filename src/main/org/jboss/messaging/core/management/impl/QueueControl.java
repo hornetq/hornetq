@@ -156,13 +156,46 @@ public class QueueControl implements QueueControlMBean
 
    public String getDeadLetterAddress()
    {
-      return queueSettingsRepository.getMatch(getName()).getDeadLetterAddress().toString();
+      QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
+      if (queueSettings != null && queueSettings.getDeadLetterAddress() != null)
+      {
+         return queueSettings.getDeadLetterAddress().toString();
+      } else
+      {
+         return null;
+      }
    }
 
-   public String getExpiryQueue()
+   public void setDeadLetterAddress(String deadLetterAddress) throws Exception
    {
-      return queueSettingsRepository.getMatch(getName()).getExpiryAddress()
-            .toString();
+      QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
+
+      if (deadLetterAddress != null)
+      {
+         queueSettings.setDeadLetterAddress(new SimpleString(deadLetterAddress));
+      }   
+   }
+   
+   public String getExpiryAddress()
+   {
+      QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
+      if (queueSettings != null  && queueSettings.getExpiryAddress() != null)
+      {
+         return queueSettings.getExpiryAddress().toString();
+      } else
+      {
+         return null;
+      }
+   }
+   
+   public void setExpiryAddress(String expiryAddres) throws Exception
+   {
+      QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
+
+      if (expiryAddres != null)
+      {
+         queueSettings.setExpiryAddress(new SimpleString(expiryAddres));
+      }   
    }
 
    public TabularData listAllMessages() throws Exception

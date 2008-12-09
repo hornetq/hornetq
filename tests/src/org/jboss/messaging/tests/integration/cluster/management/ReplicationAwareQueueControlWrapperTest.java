@@ -24,6 +24,7 @@ package org.jboss.messaging.tests.integration.cluster.management;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerInvocationHandler;
@@ -413,7 +414,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       assertEquals(0, backupQueueControl.getMessageCount());
    }
    
-   public void testSendMessageToDLQ() throws Exception
+   public void testSendMessageToDeadLetterAddress() throws Exception
    {
       QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
       QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
@@ -444,6 +445,44 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       assertEquals(0, backupQueueControl.getMessageCount());
    }
    
+   public void testSetDeadLetterAddress() throws Exception
+   {
+      String deadLetterAddress = randomString();
+      
+      QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
+      QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
+
+      assertFalse(liveQueueControl.isBackup());
+      assertTrue(backupQueueControl.isBackup());
+
+      assertNull(liveQueueControl.getDeadLetterAddress());
+      assertNull(backupQueueControl.getDeadLetterAddress());
+      
+      liveQueueControl.setDeadLetterAddress(deadLetterAddress);
+      
+      assertEquals(deadLetterAddress, liveQueueControl.getDeadLetterAddress());
+      assertEquals(deadLetterAddress, backupQueueControl.getDeadLetterAddress());
+   }
+   
+   public void testSetExpiryAddress() throws Exception
+   {
+      String expiryAddress = randomString();
+      
+      QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
+      QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
+
+      assertFalse(liveQueueControl.isBackup());
+      assertTrue(backupQueueControl.isBackup());
+
+      assertNull(liveQueueControl.getExpiryAddress());
+      assertNull(backupQueueControl.getExpiryAddress());
+      
+      liveQueueControl.setExpiryAddress(expiryAddress);
+      
+      assertEquals(expiryAddress, liveQueueControl.getExpiryAddress());
+      assertEquals(expiryAddress, backupQueueControl.getExpiryAddress());
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

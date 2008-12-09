@@ -129,6 +129,10 @@ public class ReplicationAwareTestBase extends TestCase
    protected void setUp() throws Exception
    {
       backupMBeanServer = MBeanServerFactory.createMBeanServer();
+      liveMBeanServer = MBeanServerFactory.createMBeanServer();
+
+      assertTrue(backupMBeanServer != liveMBeanServer);
+      
       Configuration backupConf = new ConfigurationImpl();
       backupConf.setSecurityEnabled(false);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
@@ -139,7 +143,6 @@ public class ReplicationAwareTestBase extends TestCase
       backupService = createNullStorageMessagingServer(backupConf, backupMBeanServer);
       backupService.start();
 
-      liveMBeanServer = MBeanServerFactory.createMBeanServer();
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));

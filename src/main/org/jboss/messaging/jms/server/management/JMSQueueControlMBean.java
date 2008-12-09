@@ -43,12 +43,14 @@ public interface JMSQueueControlMBean extends DestinationControlMBean
    
    String getName();
    
-   String getExpiryQueue();
+   String getExpiryAddress();
    
-   void setExpiryAddress(@Parameter(name = "expiryQueue", desc = "Name of the expiry queueur") String expiryQueue) throws Exception;
+   void setExpiryAddress(@Parameter(name = "expiryAddress", desc = "Expiry address of the queue") String expiryAddress) throws Exception;
 
    String getDeadLetterAddress();
    
+   void setDeadLetterAddress(@Parameter(name = "deadLetterAddress", desc = "Dead-letter address of the queue") String deadLetterAddress) throws Exception;
+
    int getMessagesAdded();
 
    boolean isClustered();
@@ -110,7 +112,7 @@ public interface JMSQueueControlMBean extends DestinationControlMBean
 
    @Operation(desc = "Move the message corresponding to the given messageID to another queue", impact = ACTION)
    boolean moveMessage(
-         @Parameter(name = "messageID", desc = "A message ID") long messageID,
+         @Parameter(name = "messageID", desc = "A message ID") String messageID,
          @Parameter(name = "otherQueueName", desc = "The name of the queue to move the message to") String otherQueueName)
          throws Exception;
 

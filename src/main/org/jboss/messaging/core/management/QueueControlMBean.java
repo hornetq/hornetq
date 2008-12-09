@@ -62,10 +62,18 @@ public interface QueueControlMBean
 
    int getMessagesAdded();
    
-   String getExpiryQueue();
+   String getExpiryAddress();
+   
+   void setExpiryAddress(@Parameter(name = "expiryAddres", desc = "Expiry address of the queue") 
+                         String expiryAddres) 
+   throws Exception;
    
    String getDeadLetterAddress();
    
+   void setDeadLetterAddress(@Parameter(name = "deadLetterAddress", desc = "Dead-letter address of the queue") 
+                         String deadLetterAddress) 
+   throws Exception;
+
    boolean isBackup();
 
    // Operations ----------------------------------------------------
