@@ -26,6 +26,8 @@ import java.io.Serializable;
 
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.util.Base64;
+
 /**
  * 
  * Xid implementation
@@ -49,6 +51,33 @@ public class XidImpl implements Xid, Serializable
    private int hash;
    
    private boolean hashCalculated;
+   
+   // Static --------------------------------------------------------
+
+   public static String toBase64String(final Xid xid)
+   {
+      return Base64.encodeBytes(toByteArray(xid));
+   }
+   
+   private static byte[] toByteArray(final Xid xid)
+   {
+      byte[] branchQualifier = xid.getBranchQualifier();
+      byte[] globalTransactionId = xid.getGlobalTransactionId();
+      int formatId = xid.getFormatId();
+
+      byte[] hashBytes = new byte[branchQualifier.length + globalTransactionId.length + 4];
+      System.arraycopy(branchQualifier, 0, hashBytes, 0, branchQualifier.length);
+      System.arraycopy(globalTransactionId, 0, hashBytes, branchQualifier.length, globalTransactionId.length);
+      byte[] intBytes = new byte[4];
+      for (int i = 0; i < 4; i++)
+      {
+         intBytes[i] = (byte)((formatId >> (i * 8)) % 0xFF);
+      }
+      System.arraycopy(intBytes, 0, hashBytes, branchQualifier.length + globalTransactionId.length, 4);
+      return hashBytes;
+   }
+   
+   // Constructors --------------------------------------------------
    
    /**
     * Standard constructor
@@ -172,15 +201,7 @@ public class XidImpl implements Xid, Serializable
    
    private void calcHash()
    {
-      byte[] hashBytes = new byte[branchQualifier.length + globalTransactionId.length + 4];
-      System.arraycopy(branchQualifier, 0, hashBytes, 0, branchQualifier.length);
-      System.arraycopy(globalTransactionId, 0, hashBytes, branchQualifier.length, globalTransactionId.length);
-      byte[] intBytes = new byte[4];
-      for (int i = 0; i < 4; i++)
-      {
-         intBytes[i] = (byte)((formatId >> (i * 8)) % 0xFF);
-      }
-      System.arraycopy(intBytes, 0, hashBytes, branchQualifier.length + globalTransactionId.length, 4);
+      byte[] hashBytes = toByteArray(this);
       String s = new String(hashBytes);
       hash = s.hashCode();
       hashCalculated = true;
@@ -194,5 +215,4 @@ public class XidImpl implements Xid, Serializable
       
       return bytes;
    }
-
 }

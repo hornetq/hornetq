@@ -63,7 +63,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.util.Base64;
+import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -101,28 +101,6 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    private boolean messageCounterEnabled;
 
    // Static --------------------------------------------------------
-
-   public static String toBase64String(final Xid xid)
-   {
-      //TODO - is this really necessary?
-      //In JBM we know the XId instance will *always* be an instance of XidImpl
-      //and XidImpl 
-    
-      byte[] branchQualifier = xid.getBranchQualifier();
-      byte[] globalTransactionId = xid.getGlobalTransactionId();
-      int formatId = xid.getFormatId();
-      
-      byte[] hashBytes = new byte[branchQualifier.length + globalTransactionId.length + 4];
-      System.arraycopy(branchQualifier, 0, hashBytes, 0, branchQualifier.length);
-      System.arraycopy(globalTransactionId, 0, hashBytes, branchQualifier.length, globalTransactionId.length);
-      byte[] intBytes = new byte[4];
-      for (int i = 0; i < 4; i++)
-      {
-         intBytes[i] = (byte)((formatId >> (i * 8)) % 0xFF);
-      }
-      System.arraycopy(intBytes, 0, hashBytes, branchQualifier.length + globalTransactionId.length, 4);
-      return Base64.encodeBytes(hashBytes);
-   }
    
    // Constructors --------------------------------------------------
 
@@ -461,7 +439,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       {
          Date creation = new Date(entry.getValue());
          Xid xid = entry.getKey();
-         s[i++] = DATE_FORMAT.format(creation) + " base64: " + toBase64String(xid) + " "+ xid.toString();
+         s[i++] = DATE_FORMAT.format(creation) + " base64: " + XidImpl.toBase64String(xid) + " "+ xid.toString();
       }
       return s;
    }
@@ -472,7 +450,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
       for (Xid xid : xids)
       {
-         if (toBase64String(xid).equals(transactionAsBase64))
+         if (XidImpl.toBase64String(xid).equals(transactionAsBase64))
          {
             Transaction transaction = resourceManager.removeTransaction(xid);
             transaction.commit();
@@ -488,7 +466,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
       for (Xid xid : xids)
       {
-         if (toBase64String(xid).equals(transactionAsBase64))
+         if (XidImpl.toBase64String(xid).equals(transactionAsBase64))
          {
             Transaction transaction = resourceManager.removeTransaction(xid);            
             List<MessageReference> rolledBack = transaction.rollback(queueSettingsRepository);

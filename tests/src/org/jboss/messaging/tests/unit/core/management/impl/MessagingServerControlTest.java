@@ -64,6 +64,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.SimpleString;
 
@@ -534,7 +535,7 @@ public class MessagingServerControlTest extends TestCase
    public void testCommitPreparedTransactionWithKnownPreparedTransaction() throws Exception
    {
       Xid xid = randomXid();
-      String transactionAsBase64 = MessagingServerControl.toBase64String(xid);
+      String transactionAsBase64 = XidImpl.toBase64String(xid);
       Transaction tx = createMock(Transaction.class);
       
       expect(resourceManager.getPreparedTransactions()).andReturn(Arrays.asList(xid));      
@@ -555,7 +556,7 @@ public class MessagingServerControlTest extends TestCase
    public void testCommitPreparedTransactionWithUnknownPreparedTransaction() throws Exception
    {
       Xid xid = randomXid();
-      String transactionAsBase64 = MessagingServerControl.toBase64String(xid);
+      String transactionAsBase64 = XidImpl.toBase64String(xid);
       
       expect(resourceManager.getPreparedTransactions()).andStubReturn(Collections.emptyList());      
 
@@ -571,7 +572,7 @@ public class MessagingServerControlTest extends TestCase
    public void testRollbackPreparedTransactionWithKnownPreparedTransaction() throws Exception
    {
       Xid xid = randomXid();
-      String transactionAsBase64 = MessagingServerControl.toBase64String(xid);
+      String transactionAsBase64 = XidImpl.toBase64String(xid);
       Transaction tx = createMock(Transaction.class);
       
       expect(resourceManager.getPreparedTransactions()).andReturn(Arrays.asList(xid));      
@@ -592,7 +593,7 @@ public class MessagingServerControlTest extends TestCase
    public void testRollbackPreparedTransactionWithUnknownPreparedTransaction() throws Exception
    {
       Xid xid = randomXid();
-      String transactionAsBase64 = MessagingServerControl.toBase64String(xid);
+      String transactionAsBase64 = XidImpl.toBase64String(xid);
       
       expect(resourceManager.getPreparedTransactions()).andStubReturn(Collections.emptyList());      
 
