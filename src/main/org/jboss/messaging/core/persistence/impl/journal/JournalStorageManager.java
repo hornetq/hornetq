@@ -22,11 +22,10 @@
 
 package org.jboss.messaging.core.persistence.impl.journal;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
 import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
 import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
-
-import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -38,7 +37,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.Xid;
 
@@ -80,6 +78,7 @@ import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.JBMThreadFactory;
+import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TimeAndCounterIDGenerator;
 
@@ -121,6 +120,8 @@ public class JournalStorageManager implements StorageManager
 
    public static final byte SET_SCHEDULED_DELIVERY_TIME = 36;
 
+   public static final byte DUPLICATE_ID = 37;
+
    // This will produce a unique id **for this node only**
    private final IDGenerator idGenerator = new TimeAndCounterIDGenerator();
 
@@ -133,14 +134,13 @@ public class JournalStorageManager implements StorageManager
    private final ConcurrentMap<SimpleString, Long> destinationIDMap = new ConcurrentHashMap<SimpleString, Long>();
 
    private volatile boolean started;
-   
+
    private final ExecutorService executor;
-   
-   
+
    public JournalStorageManager(final Configuration config)
    {
       this.executor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-journal-storage-manager"));
-      
+
       if (config.getJournalType() != JournalType.NIO && config.getJournalType() != JournalType.ASYNCIO)
       {
          throw new IllegalArgumentException("Only NIO and AsyncIO are supported journals");
@@ -203,9 +203,9 @@ public class JournalStorageManager implements StorageManager
                                        "jbm",
                                        config.getJournalMaxAIO(),
                                        config.getJournalBufferReuseSize());
-      
+
       String largeMessagesDirectory = config.getLargeMessagesDirectory();
-      
+
       checkAndCreateDir(largeMessagesDirectory, config.isCreateJournalDir());
 
       largeMessagesFactory = new NIOSequentialFileFactory(config.getLargeMessagesDirectory());
@@ -269,6 +269,25 @@ public class JournalStorageManager implements StorageManager
                                                                          ref.getQueue().getPersistenceID());
 
       messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(), SET_SCHEDULED_DELIVERY_TIME, encoding);
+   }
+
+   public void storeDuplicateID(final SimpleString address, final SimpleString duplID, final long recordID) throws Exception
+   {
+      DuplicateIDEncoding encoding = new DuplicateIDEncoding(address, duplID);
+
+      messageJournal.appendAddRecord(recordID, DUPLICATE_ID, encoding);
+   }
+
+   public void updateDuplicateID(final SimpleString address, final SimpleString duplID, final long recordID) throws Exception
+   {
+      DuplicateIDEncoding encoding = new DuplicateIDEncoding(address, duplID);
+
+      messageJournal.appendUpdateRecord(recordID, DUPLICATE_ID, encoding);
+   }
+   
+   public void storeDeleteDuplicateID(long recordID) throws Exception
+   {
+      messageJournal.appendDeleteRecord(recordID);
    }
 
    // Transactional operations
@@ -366,6 +385,31 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendRollbackRecord(txID);
    }
 
+   public void storeDuplicateIDTransactional(final long txID,
+                                             final SimpleString address,
+                                             final SimpleString duplID,
+                                             final long recordID) throws Exception
+   {
+      DuplicateIDEncoding encoding = new DuplicateIDEncoding(address, duplID);
+
+      messageJournal.appendAddRecordTransactional(txID, recordID, DUPLICATE_ID, encoding);
+   }
+
+   public void updateDuplicateIDTransactional(final long txID,
+                                              final SimpleString address,
+                                              final SimpleString duplID,
+                                              final long recordID) throws Exception
+   {
+      DuplicateIDEncoding encoding = new DuplicateIDEncoding(address, duplID);
+
+      messageJournal.appendUpdateRecordTransactional(txID, recordID, DUPLICATE_ID, encoding);
+   }
+   
+   public void storeDeleteDuplicateIDTransactional(long txID, long recordID) throws Exception
+   {
+      messageJournal.appendDeleteRecordTransactional(txID, recordID);
+   }
+
    // Other operations
 
    public void updateDeliveryCount(final MessageReference ref) throws Exception
@@ -376,9 +420,10 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(), UPDATE_DELIVERY_COUNT, updateInfo);
    }
 
-   public void loadMessages(final PostOffice postOffice,
-                            final Map<Long, Queue> queues,
-                            final ResourceManager resourceManager) throws Exception
+   public void loadMessageJournal(final PostOffice postOffice,
+                                  final Map<Long, Queue> queues,
+                                  final ResourceManager resourceManager,
+                                  final Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap) throws Exception
    {
       List<RecordInfo> records = new ArrayList<RecordInfo>();
 
@@ -527,6 +572,21 @@ public class JournalStorageManager implements StorageManager
 
                break;
             }
+            case DUPLICATE_ID:
+            {
+               DuplicateIDEncoding encoding = new DuplicateIDEncoding();
+
+               encoding.decode(buff);
+
+               List<Pair<SimpleString, Long>> ids = duplicateIDMap.get(encoding.address);
+
+               if (ids == null)
+               {
+                  ids = new ArrayList<Pair<SimpleString, Long>>();
+               }
+
+               ids.add(new Pair<SimpleString, Long>(encoding.duplID, record.id));
+            }
             default:
             {
                throw new IllegalStateException("Invalid record type " + recordType);
@@ -534,8 +594,7 @@ public class JournalStorageManager implements StorageManager
          }
       }
 
-      loadPreparedTransactions(postOffice, queues, resourceManager, preparedTransactions);
-
+      loadPreparedTransactions(postOffice, queues, resourceManager, preparedTransactions, duplicateIDMap);
    }
 
    // Bindings operations
@@ -565,7 +624,7 @@ public class JournalStorageManager implements StorageManager
 
       BindingEncoding bindingEncoding = new BindingEncoding(binding.getQueue().getName(),
                                                             binding.getAddress(),
-                                                            filterString,                                                          
+                                                            filterString,
                                                             binding.isFanout());
 
       bindingsJournal.appendAddRecord(queueID, BINDING_RECORD, bindingEncoding);
@@ -681,7 +740,7 @@ public class JournalStorageManager implements StorageManager
       {
          return;
       }
-      
+
       cleanupIncompleteFiles();
 
       bindingsJournal.start();
@@ -697,7 +756,7 @@ public class JournalStorageManager implements StorageManager
       {
          return;
       }
-      
+
       executor.shutdown();
 
       bindingsJournal.stop();
@@ -727,11 +786,12 @@ public class JournalStorageManager implements StorageManager
    }
 
    // Package protected ---------------------------------------------
-   
+
    // This should be accessed from this package only
    void deleteFile(final SequentialFile file)
    {
-      this.executor.execute(new Runnable() {
+      this.executor.execute(new Runnable()
+      {
 
          public void run()
          {
@@ -744,7 +804,7 @@ public class JournalStorageManager implements StorageManager
                log.warn(e.getMessage(), e);
             }
          }
-         
+
       });
    }
 
@@ -769,7 +829,8 @@ public class JournalStorageManager implements StorageManager
    private void loadPreparedTransactions(final PostOffice postOffice,
                                          final Map<Long, Queue> queues,
                                          final ResourceManager resourceManager,
-                                         final List<PreparedTransactionInfo> preparedTransactions) throws Exception
+                                         final List<PreparedTransactionInfo> preparedTransactions,
+                                         final Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap) throws Exception
    {
       // recover prepared transactions
       for (PreparedTransactionInfo preparedTransaction : preparedTransactions)
@@ -870,6 +931,24 @@ public class JournalStorageManager implements StorageManager
                      }
                   }
 
+                  break;
+               }
+               case DUPLICATE_ID:
+               {
+                  //We need load the duplicate ids at prepare time too
+                  DuplicateIDEncoding encoding = new DuplicateIDEncoding();
+                  
+                  encoding.decode(buff);
+                  
+                  List<Pair<SimpleString, Long>> ids = duplicateIDMap.get(encoding.address);
+
+                  if (ids == null)
+                  {
+                     ids = new ArrayList<Pair<SimpleString, Long>>();
+                  }
+
+                  ids.add(new Pair<SimpleString, Long>(encoding.duplID, record.id));
+                  
                   break;
                }
                default:
@@ -1014,7 +1093,7 @@ public class JournalStorageManager implements StorageManager
 
       public BindingEncoding(final SimpleString queueName,
                              final SimpleString address,
-                             final SimpleString filter,                            
+                             final SimpleString filter,
                              final boolean fanout)
       {
          super();
@@ -1043,7 +1122,7 @@ public class JournalStorageManager implements StorageManager
       public int getEncodeSize()
       {
          return SimpleString.sizeofString(queueName) + SimpleString.sizeofString(address) + 1 + // HasFilter?
-                ((filter != null) ? SimpleString.sizeofString(filter) : 0) +              
+                ((filter != null) ? SimpleString.sizeofString(filter) : 0) +
                 SIZE_BOOLEAN;
       }
    }
@@ -1080,7 +1159,6 @@ public class JournalStorageManager implements StorageManager
 
    private static class LargeMessageEncoding implements EncodingSupport
    {
-
       private final ServerLargeMessage message;
 
       public LargeMessageEncoding(ServerLargeMessage message)
@@ -1237,6 +1315,43 @@ public class JournalStorageManager implements StorageManager
       {
          super.decode(buffer);
          scheduledDeliveryTime = buffer.getLong();
+      }
+   }
+
+   private static class DuplicateIDEncoding implements EncodingSupport
+   {
+      SimpleString address;
+
+      SimpleString duplID;
+
+      public DuplicateIDEncoding(final SimpleString address, final SimpleString duplID)
+      {
+         this.address = address;
+
+         this.duplID = duplID;
+      }
+
+      public DuplicateIDEncoding()
+      {
+      }
+
+      public void decode(final MessagingBuffer buffer)
+      {
+         address = buffer.getSimpleString();
+
+         duplID = buffer.getSimpleString();
+      }
+
+      public void encode(final MessagingBuffer buffer)
+      {
+         buffer.putSimpleString(address);
+
+         buffer.putSimpleString(duplID);
+      }
+
+      public int getEncodeSize()
+      {
+         return SimpleString.sizeofString(address) + SimpleString.sizeofString(duplID);
       }
    }
 

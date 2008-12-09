@@ -38,6 +38,7 @@ import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerLargeMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -54,29 +55,37 @@ public interface StorageManager extends MessagingComponent
 
    long generateUniqueID();
 
-   
    void storeMessage(ServerMessage message) throws Exception;
 
    void storeAcknowledge(long queueID, long messageID) throws Exception;
-   
+
    void updateDeliveryCount(MessageReference ref) throws Exception;
-   
+
    void updateScheduledDeliveryTime(MessageReference ref) throws Exception;
 
    void storeDelete(long messageID) throws Exception;
+     
+   void storeDuplicateID(SimpleString address, SimpleString duplID, long recordID) throws Exception;
+
+   void updateDuplicateID(SimpleString address, SimpleString duplID, long recordID) throws Exception;
    
-   
+   void storeDeleteDuplicateID(long recordID) throws Exception;
      
    void storeMessageTransactional(long txID, ServerMessage message) throws Exception;
 
-   void storeAcknowledgeTransactional(long txID, long queueID, long messageiD) throws Exception;
-   
+   void storeAcknowledgeTransactional(long txID, long queueID, long messageID) throws Exception;
+
    void updateScheduledDeliveryTimeTransactional(long txID, MessageReference ref) throws Exception;
 
    void storeDeleteMessageTransactional(long txID, long queueID, long messageID) throws Exception;
-   
-   ServerLargeMessage createLargeMessage();
 
+   void storeDuplicateIDTransactional(long txID, SimpleString address, SimpleString duplID, long recordID) throws Exception;
+
+   void updateDuplicateIDTransactional(long txID, SimpleString address, SimpleString duplID, long recordID) throws Exception;
+   
+   void storeDeleteDuplicateIDTransactional(long txID, long recordID) throws Exception;
+
+   ServerLargeMessage createLargeMessage();
 
    void prepare(long txID, Xid xid) throws Exception;
 
@@ -84,16 +93,16 @@ public interface StorageManager extends MessagingComponent
 
    void rollback(long txID) throws Exception;
 
-   
    void storePageTransaction(long txID, PageTransactionInfo pageTransaction) throws Exception;
 
    void storeLastPage(long txID, LastPageRecord pageTransaction) throws Exception;
-   
+
    void storeDeletePageTransaction(long txID, long recordID) throws Exception;
 
-   
-   
-   void loadMessages(PostOffice postOffice, Map<Long, Queue> queues, ResourceManager resourceManager) throws Exception;
+   void loadMessageJournal(PostOffice postOffice,
+                           Map<Long, Queue> queues,
+                           ResourceManager resourceManager,
+                           Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap) throws Exception;
 
    // Bindings related operations
 

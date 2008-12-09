@@ -46,7 +46,6 @@ import org.jboss.messaging.util.TypedProperties;
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision: 2740 $</tt>
  *
- * For normal message transportation serialization is not used
  *
  * $Id: MessageSupport.java 2740 2007-05-30 11:36:28Z timfox $
  */
@@ -65,6 +64,8 @@ public abstract class MessageImpl implements Message
    public static final SimpleString HDR_GROUP_ID = new SimpleString("JBM_GROUP_ID");
 
    public static final SimpleString HDR_SCHEDULED_DELIVERY_TIME = new SimpleString("JBM_SCHED_DELIVERY");
+   
+   public static final SimpleString HDR_DUPLICATE_DETECTION_ID = new SimpleString("JBM_DUPL_ID");
 
    // Attributes ----------------------------------------------------
 

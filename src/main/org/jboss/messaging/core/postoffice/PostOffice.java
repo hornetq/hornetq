@@ -82,4 +82,6 @@ public interface PostOffice extends MessagingComponent
    PagingManager getPagingManager();
    
    SendLock getAddressLock(SimpleString address);
+   
+   DuplicateIDCache getDuplicateIDCache(SimpleString address);
 }

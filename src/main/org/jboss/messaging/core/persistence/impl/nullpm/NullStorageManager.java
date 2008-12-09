@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.persistence.impl.nullpm;
 
@@ -27,7 +27,6 @@ import java.util.Map;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -40,6 +39,7 @@ import org.jboss.messaging.core.server.ServerLargeMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.IDGenerator;
+import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TimeAndCounterIDGenerator;
 
@@ -53,103 +53,116 @@ import org.jboss.messaging.util.TimeAndCounterIDGenerator;
  */
 public class NullStorageManager implements StorageManager
 {
-   private static final Logger log = Logger.getLogger(NullStorageManager.class);
+   private final IDGenerator idGenerator = new TimeAndCounterIDGenerator();
 
-	private final IDGenerator idGenerator = new TimeAndCounterIDGenerator();
+   private volatile boolean started;
 
-	private volatile boolean started;
-	
-	public void addBinding(Binding binding) throws Exception
-	{
-	}
-
-	public boolean addDestination(SimpleString destination) throws Exception
-	{
-		return true;
-	}
-
-	public void commit(long txID) throws Exception
-	{
-	}
-
-	public void deleteBinding(Binding binding) throws Exception
-	{
-	}
-
-	public boolean deleteDestination(SimpleString destination) throws Exception
-	{
-		return true;
-	}
-
-	public void loadBindings(QueueFactory queueFactory, List<Binding> bindings,
-			List<SimpleString> destinations) throws Exception
-	{
-	}
-
-	public void loadMessages(PostOffice postOffice, Map<Long, Queue> queues, ResourceManager resourceManager)
-			throws Exception
-	{
-	}
-
-	public void prepare(long txID, Xid xid) throws Exception
-	{
-	}
-
-	public void rollback(long txID) throws Exception
-	{
-	}
-
-	public void storeAcknowledge(long queueID, long messageID) throws Exception
-	{
-	}
-
-   public void storeMessageReferenceScheduled(long queueID, long messageID, long scheduledDeliveryTime) throws Exception
+   public void addBinding(final Binding binding) throws Exception
    {
    }
 
-   public void storeAcknowledgeTransactional(long txID, long queueID,
-			long messageiD) throws Exception
-	{
-	}
-
-
-   public void storeDelete(long messageID) throws Exception
-	{
-	}
-
-	public void storeDeletePageTransaction(long txID, long messageID)
-			throws Exception
-	{
-	}
-
-	public void storeMessage(ServerMessage message) throws Exception
-	{
-	}
-
-	public void storeMessageTransactional(long txID, ServerMessage message) throws Exception
-	{
-	}
-
-   public void updateScheduledDeliveryTime(MessageReference ref) throws Exception
-   {      
+   public boolean addDestination(final SimpleString destination) throws Exception
+   {
+      return true;
    }
-   
-   public void updateScheduledDeliveryTimeTransactional(long txID, MessageReference ref) throws Exception
+
+   public void commit(final long txID) throws Exception
    {
    }
 
-   public void storePageTransaction(long txID, PageTransactionInfo pageTransaction) throws Exception
+   public void deleteBinding(final Binding binding) throws Exception
    {
    }
 
-   public void updatePageTransaction(long txID, PageTransactionInfo pageTransaction) throws Exception
+   public boolean deleteDestination(final SimpleString destination) throws Exception
+   {
+      return true;
+   }
+
+   public void loadBindings(final QueueFactory queueFactory,
+                            final List<Binding> bindings,
+                            final List<SimpleString> destinations) throws Exception
    {
    }
 
-   public void updateDeliveryCount(MessageReference ref) throws Exception
-	{
-	}
-   
+   public void prepare(final long txID, final Xid xid) throws Exception
+   {
+   }
+
+   public void rollback(final long txID) throws Exception
+   {
+   }
+
+   public void storeAcknowledge(final long queueID, final long messageID) throws Exception
+   {
+   }
+
+   public void storeMessageReferenceScheduled(final long queueID, final long messageID, final long scheduledDeliveryTime) throws Exception
+   {
+   }
+
+   public void storeAcknowledgeTransactional(final long txID, final long queueID, final long messageiD) throws Exception
+   {
+   }
+
+   public void storeDelete(final long messageID) throws Exception
+   {
+   }
+
+   public void storeDeletePageTransaction(final long txID, final long messageID) throws Exception
+   {
+   }
+
+   public void storeMessage(final ServerMessage message) throws Exception
+   {
+   }
+
+   public void storeMessageTransactional(final long txID, final ServerMessage message) throws Exception
+   {
+   }
+
+   public void updateScheduledDeliveryTime(final MessageReference ref) throws Exception
+   {
+   }
+
+   public void updateScheduledDeliveryTimeTransactional(final long txID, final MessageReference ref) throws Exception
+   {
+   }
+
+   public void storePageTransaction(final long txID, final PageTransactionInfo pageTransaction) throws Exception
+   {
+   }
+
+   public void updatePageTransaction(final long txID, final PageTransactionInfo pageTransaction) throws Exception
+   {
+   }
+
+   public void updateDeliveryCount(final MessageReference ref) throws Exception
+   {
+   }
+
+   public void storeDuplicateID(final SimpleString address, final SimpleString duplID, final long recordID) throws Exception
+   {
+   }
+
+   public void storeDuplicateIDTransactional(final long txID,
+                                             final SimpleString address,
+                                             final SimpleString duplID,
+                                             final long recordID) throws Exception
+   {
+   }
+
+   public void updateDuplicateID(final SimpleString address, final SimpleString duplID, final long recordID) throws Exception
+   {
+   }
+
+   public void updateDuplicateIDTransactional(final long txID,
+                                              final SimpleString address,
+                                              final SimpleString duplID,
+                                              final long recordID) throws Exception
+   {
+   }
+
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.persistence.StorageManager#createLargeMessageStorage(long, int, int)
     */
@@ -158,46 +171,58 @@ public class NullStorageManager implements StorageManager
       return new NullStorageLargeMessageImpl();
    }
 
+   public long generateUniqueID()
+   {
+      // FIXME - this needs to use Howard's ID generator from JBM 1.4
+      return idGenerator.generateID();
+   }
 
-	public long generateUniqueID()
-	{
-	   //FIXME - this needs to use Howard's ID generator from JBM 1.4
-		return idGenerator.generateID();
-	}
-	
-	public synchronized void start() throws Exception
-	{
-		if (started)
-		{
-			throw new IllegalStateException("Already started");
-		}
-			
-		started = true;
-	}
+   public synchronized void start() throws Exception
+   {
+      if (started)
+      {
+         throw new IllegalStateException("Already started");
+      }
 
-	public synchronized void stop() throws Exception
-	{
-		if (!started)
-		{
-			throw new IllegalStateException("Not started");
-		}
-		
-		started = false;
-	}
-	
-	public synchronized boolean isStarted()
-	{
-	   return started;
-	}
+      started = true;
+   }
 
-   public void storeLastPage(long txID, LastPageRecord pageTransaction) throws Exception
+   public synchronized void stop() throws Exception
+   {
+      if (!started)
+      {
+         throw new IllegalStateException("Not started");
+      }
+
+      started = false;
+   }
+
+   public synchronized boolean isStarted()
+   {
+      return started;
+   }
+
+   public void storeLastPage(final long txID, final LastPageRecord pageTransaction) throws Exception
    {
    }
 
-   public void storeDeleteMessageTransactional(long txID, long messageID,
-         long queueID) throws Exception
+   public void storeDeleteMessageTransactional(final long txID, final long messageID, final long queueID) throws Exception
    {
    }
 
+   public void loadMessageJournal(final PostOffice postOffice,
+                                  final Map<Long, Queue> queues,
+                                  final ResourceManager resourceManager,
+                                  final Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap) throws Exception
+   {
+   }
+
+   public void storeDeleteDuplicateIDTransactional(final long txID, final long recordID) throws Exception
+   {
+   }
+
+   public void storeDeleteDuplicateID(final long recordID) throws Exception
+   {
+   }
 
 }

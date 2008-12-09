@@ -119,6 +119,10 @@ public interface Configuration extends Serializable
    SimpleString getManagementNotificationAddress();
    
    void setManagementNotificationAddress(SimpleString address);
+   
+   int getIDCacheSize();
+   
+   void setIDCacheSize(int idCacheSize);
 
    
    // Journal related attributes ------------------------------------------------------------

@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
@@ -146,6 +147,11 @@ public class FakePostOffice implements PostOffice
    }
 
    public SendLockImpl getAddressLock(SimpleString address)
+   {
+      return null;
+   }
+
+   public DuplicateIDCache getDuplicateIDCache(SimpleString address)
    {
       return null;
    }

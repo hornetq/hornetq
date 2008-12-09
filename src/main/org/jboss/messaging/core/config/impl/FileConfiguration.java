@@ -110,6 +110,8 @@ public class FileConfiguration extends ConfigurationImpl
       messageExpiryScanPeriod = getLong(e, "message-expiry-scan-period", messageExpiryScanPeriod);
 
       messageExpiryThreadPriority = getInteger(e, "message-expiry-thread-priority", messageExpiryThreadPriority);
+      
+      idCacheSize = getInteger(e, "id-cache-size", idCacheSize);
 
       managementAddress = new SimpleString(getString(e, "management-address", managementAddress.toString()));
 

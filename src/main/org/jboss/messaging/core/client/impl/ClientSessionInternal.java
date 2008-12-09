@@ -39,17 +39,13 @@ public interface ClientSessionInternal extends ClientSession
 
    void removeProducer(ClientProducerInternal producer);
 
+   void handleReceiveMessage(long consumerID, ClientMessage message) throws Exception;
+      
    void handleReceiveLargeMessage(final long consumerID, final byte[] headerBytes) throws Exception;
 
-   void handleReceiveMessage(long consumerID, ClientMessage message) throws Exception;
-   
    void handleReceiveContinuation(final long consumerID, final SessionReceiveContinuationMessage continuation) throws Exception;
 
    void handleFailover(RemotingConnection backupConnection);
    
    RemotingConnection getConnection();
-   
-//   RemotingConnection getBackupConnection();
-   
- //  void setBackupConnection(RemotingConnection connection);
 }

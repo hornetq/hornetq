@@ -37,6 +37,7 @@ import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.DelayedResult;
@@ -2617,16 +2618,55 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       doSecurity(msg);
 
       Long scheduledDeliveryTime = (Long)msg.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+      
+      SimpleString duplicateID = (SimpleString)msg.getProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
+      
+      DuplicateIDCache cache = null;
+      
+      if (duplicateID != null)
+      {
+         cache = postOffice.getDuplicateIDCache(msg.getDestination());
+         
+         if (cache.contains(duplicateID))
+         {
+            log.warn("Duplicate message detected - message will not be routed");
+            
+            return;
+         }
+      }
 
       if (autoCommitSends)
       {
          if (!pager.page(msg))
          {
             List<MessageReference> refs = postOffice.route(msg);
-
+                        
             if (msg.getDurableRefCount() != 0)
+            {               
+               if (cache == null)
+               {
+                  storageManager.storeMessage(msg);
+               }
+               else
+               {
+                  //We need to store both message and duplicate id entry in a tx
+                  
+                  long txID = storageManager.generateUniqueID();
+                  
+                  storageManager.storeMessageTransactional(txID, msg);
+                  
+                  cache.addToCache(duplicateID, txID);
+                  
+                  storageManager.commit(txID);
+               }
+            }
+            else
             {
-               storageManager.storeMessage(msg);
+               //No message to persist - we still persist the duplicate the id though
+               if (cache != null)
+               {
+                  cache.addToCache(duplicateID, -1);
+               }
             }
 
             // TODO - this code is also duplicated in transactionimpl and in depaging
@@ -2651,6 +2691,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       else
       {
          tx.addMessage(msg);
+         
+         //Add to cache in same transaction
+         if (cache != null)
+         {
+            cache.addToCache(duplicateID, tx.getID());
+         }
       }
    }
 

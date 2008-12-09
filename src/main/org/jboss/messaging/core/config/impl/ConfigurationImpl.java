@@ -108,6 +108,8 @@ public class ConfigurationImpl implements Configuration
    public static final long DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD = 30000;
 
    public static final int DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY = 3;
+   
+   public static final int DEFAULT_ID_CACHE_SIZE = 100;
 
    // Attributes -----------------------------------------------------------------------------
 
@@ -134,6 +136,8 @@ public class ConfigurationImpl implements Configuration
    protected long messageExpiryScanPeriod = DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD;
 
    protected int messageExpiryThreadPriority = DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY;
+   
+   protected int idCacheSize = DEFAULT_ID_CACHE_SIZE;
 
    protected List<String> interceptorClassNames = new ArrayList<String>();
    
@@ -148,7 +152,8 @@ public class ConfigurationImpl implements Configuration
    protected Set<BroadcastGroupConfiguration> broadcastGroupConfigurations = new HashSet<BroadcastGroupConfiguration>();
    
    protected Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations = new HashMap<String, DiscoveryGroupConfiguration>();
-
+   
+   
    // Paging related attributes ------------------------------------------------------------
 
    protected long pagingMaxGlobalSize = -1;
@@ -345,6 +350,18 @@ public class ConfigurationImpl implements Configuration
    {
       this.discoveryGroupConfigurations = discoveryGroupConfigurations;
    }
+   
+   public int getIDCacheSize()
+   {
+      return idCacheSize;
+   }
+   
+   public void setIDCacheSize(int idCacheSize)
+   {
+      this.idCacheSize = idCacheSize;
+   }
+
+   
 
 
    public String getBindingsDirectory()

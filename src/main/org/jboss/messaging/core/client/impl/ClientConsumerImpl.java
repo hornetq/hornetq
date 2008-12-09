@@ -333,7 +333,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-
    public synchronized void handleLargeMessage(final byte[] header) throws Exception
    {
       if (closing)

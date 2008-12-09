@@ -400,7 +400,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       EasyMock.replay(refs2.toArray());
       EasyMock.replay(queue1, queue2, queue3);
 
-      jsm.loadMessages(po, queues, null);
+      jsm.loadMessageJournal(po, queues, null, null);
 
       EasyMock.verify(messageJournal, bindingsJournal, po);
       EasyMock.verify(refs1.toArray());

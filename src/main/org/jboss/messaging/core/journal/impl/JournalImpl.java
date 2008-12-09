@@ -1071,7 +1071,6 @@ public class JournalImpl implements TestableJournal
             {
                case ADD_RECORD:
                {
-
                   loadManager.addRecord(new RecordInfo(recordID, userRecordType, record, false));
 
                   posFilesMap.put(recordID, new PosFiles(file));

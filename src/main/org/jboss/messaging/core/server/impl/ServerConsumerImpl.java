@@ -180,15 +180,7 @@ public class ServerConsumerImpl implements ServerConsumer
       // Otherwise we could end up with a situation where a close comes in, then a delivery comes in,
       // then close gets replicated to backup, then delivery gets replicated, but consumer is already
       // closed!
-      // lock.lock();
-      // try
-      // {
       setStarted(false);
-      // }
-      // finally
-      // {
-      // lock.unlock();
-      // }
 
       DelayedResult result = channel.replicatePacket(packet);
 
@@ -239,15 +231,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public void close() throws Exception
    {
-      // lock.lock();
-      // try
-      // {
       setStarted(false);
-      // }
-      // finally
-      // {
-      // lock.unlock();
-      // }
 
       doClose();
    }
@@ -659,6 +643,7 @@ public class ServerConsumerImpl implements ServerConsumer
                sentFirstMessage = true;
 
                MessagingBuffer headerBuffer = new ByteBufferWrapper(ByteBuffer.allocate(pendingLargeMessage.getPropertiesEncodeSize()));
+               
                pendingLargeMessage.encodeProperties(headerBuffer);
 
                SessionReceiveMessage initialMessage = new SessionReceiveMessage(id,
@@ -688,7 +673,6 @@ public class ServerConsumerImpl implements ServerConsumer
                channel.send(readAheadChunk);
 
                readAheadChunk = null;
-
             }
 
             while (positionPendingLargeMessage < sizePendingLargeMessage)
@@ -731,7 +715,6 @@ public class ServerConsumerImpl implements ServerConsumer
                   log.warn("Error while ACKing reference " + ref, e);
                }
             }
-
 
             return true;
          }

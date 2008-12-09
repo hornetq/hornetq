@@ -231,6 +231,7 @@ public class SessionSendMessage extends PacketImpl
                 DataConstants.SIZE_BOOLEAN + (largeMessageId >= 0 ? DataConstants.SIZE_LONG : 0) + 
                 DataConstants.SIZE_BOOLEAN;
       }
+      //FIXME - why duplicate this?
       else if (clientMessage != null)
       {
          return DataConstants.SIZE_BOOLEAN + BASIC_PACKET_SIZE +

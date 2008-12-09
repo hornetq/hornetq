@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -36,10 +38,10 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.paging.PagingManager;
-import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.AddressManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
@@ -51,6 +53,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.JBMThreadFactory;
+import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -81,7 +84,7 @@ public class PostOfficeImpl implements PostOffice
 
    private final ResourceManager resourceManager;
 
-   private Map<SimpleString, SendLock> addressLocks = new HashMap<SimpleString, SendLock>();
+   private final Map<SimpleString, SendLock> addressLocks = new HashMap<SimpleString, SendLock>();
 
    private ScheduledThreadPoolExecutor messageExpiryExecutor;
 
@@ -90,6 +93,10 @@ public class PostOfficeImpl implements PostOffice
    private final long messageExpiryScanPeriod;
 
    private final int messageExpiryThreadPriority;
+
+   private final ConcurrentMap<SimpleString, DuplicateIDCache> duplicateIDCaches = new ConcurrentHashMap<SimpleString, DuplicateIDCache>();
+
+   private final int idCacheSize;
 
    public PostOfficeImpl(final StorageManager storageManager,
                          final PagingManager pagingManager,
@@ -101,7 +108,8 @@ public class PostOfficeImpl implements PostOffice
                          final boolean checkAllowable,
                          final ResourceManager resourceManager,
                          final boolean enableWildCardRouting,
-                         final boolean backup)
+                         final boolean backup,
+                         final int idCacheSize)
    {
       this.storageManager = storageManager;
 
@@ -131,6 +139,8 @@ public class PostOfficeImpl implements PostOffice
       }
 
       this.backup = backup;
+
+      this.idCacheSize = idCacheSize;
    }
 
    // MessagingComponent implementation ---------------------------------------
@@ -147,26 +157,25 @@ public class PostOfficeImpl implements PostOffice
       // Injecting the postoffice (itself) on queueFactory for paging-control
       queueFactory.setPostOffice(this);
 
-      loadBindings();
+      load();
 
       if (messageExpiryScanPeriod > 0)
       {
          MessageExpiryRunner messageExpiryRunner = new MessageExpiryRunner();
          messageExpiryRunner.setPriority(3);
-         messageExpiryExecutor = new ScheduledThreadPoolExecutor(1,
-                                                                 new JBMThreadFactory("JBM-scheduled-threads",
-                                                                                      messageExpiryThreadPriority));
+         messageExpiryExecutor = new ScheduledThreadPoolExecutor(1, new JBMThreadFactory("JBM-scheduled-threads",
+                                                                                         messageExpiryThreadPriority));
          messageExpiryExecutor.scheduleAtFixedRate(messageExpiryRunner,
-                                                messageExpiryScanPeriod,
-                                                messageExpiryScanPeriod,
-                                                TimeUnit.MILLISECONDS);
+                                                   messageExpiryScanPeriod,
+                                                   messageExpiryScanPeriod,
+                                                   TimeUnit.MILLISECONDS);
       }
       started = true;
    }
 
    public void stop() throws Exception
    {
-      if(messageExpiryExecutor != null)
+      if (messageExpiryExecutor != null)
       {
          messageExpiryExecutor.shutdown();
       }
@@ -341,16 +350,16 @@ public class PostOfficeImpl implements PostOffice
                {
                   if (binding.isFanout())
                   {
-                     //Fanout bindings always get the reference
+                     // Fanout bindings always get the reference
                      MessageReference reference = message.createReference(queue);
 
                      refs.add(reference);
                   }
                   else
                   {
-                     //We choose the queue with the lowest routings value  
-                     //This gives us a weighted round robin, where the weight
-                     //Can be determined from the number of consumers on the queue
+                     // We choose the queue with the lowest routings value
+                     // This gives us a weighted round robin, where the weight
+                     // Can be determined from the number of consumers on the queue
                      long routings = binding.getRoutings();
 
                      if (routings < lowestRoutings || lowestRoutings == -1)
@@ -425,6 +434,25 @@ public class PostOfficeImpl implements PostOffice
       return lock;
    }
 
+   public DuplicateIDCache getDuplicateIDCache(SimpleString address)
+   {
+      DuplicateIDCache cache = duplicateIDCaches.get(address);
+
+      if (cache == null)
+      {
+         cache = new DuplicateIDCacheImpl(address, idCacheSize, storageManager);
+
+         DuplicateIDCache oldCache = duplicateIDCaches.putIfAbsent(address, cache);
+
+         if (oldCache != null)
+         {
+            cache = oldCache;
+         }
+      }
+
+      return cache;
+   }
+
    // Private -----------------------------------------------------------------
 
    private Binding createBinding(final SimpleString address,
@@ -471,7 +499,7 @@ public class PostOfficeImpl implements PostOffice
       return binding;
    }
 
-   private void loadBindings() throws Exception
+   private void load() throws Exception
    {
       List<Binding> bindings = new ArrayList<Binding>();
 
@@ -494,20 +522,29 @@ public class PostOfficeImpl implements PostOffice
 
          queues.put(binding.getQueue().getPersistenceID(), binding.getQueue());
       }
-      
+
       for (SimpleString destination : addressManager.getMappings().keySet())
       {
          pagingManager.createPageStore(destination);
       }
 
-      storageManager.loadMessages(this, queues, resourceManager);
+      Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<SimpleString, Long>>>();
+
+      storageManager.loadMessageJournal(this, queues, resourceManager, duplicateIDMap);
+      
+      for (Map.Entry<SimpleString, List<Pair<SimpleString, Long>>> entry: duplicateIDMap.entrySet())
+      {
+         SimpleString address = entry.getKey();
+         
+         DuplicateIDCache cache = getDuplicateIDCache(address);
+         
+         cache.load(entry.getValue());
+      }
 
       // This is necessary as if the server was previously stopped while a depage was being executed,
       // it needs to resume the depage process on those destinations
       pagingManager.startGlobalDepage();
-
    }
-
 
    private class MessageExpiryRunner extends Thread
    {

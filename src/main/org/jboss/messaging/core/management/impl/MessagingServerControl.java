@@ -104,6 +104,10 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
    public static String toBase64String(final Xid xid)
    {
+      //TODO - is this really necessary?
+      //In JBM we know the XId instance will *always* be an instance of XidImpl
+      //and XidImpl 
+    
       byte[] branchQualifier = xid.getBranchQualifier();
       byte[] globalTransactionId = xid.getGlobalTransactionId();
       int formatId = xid.getFormatId();
