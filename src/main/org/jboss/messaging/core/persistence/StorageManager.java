@@ -57,19 +57,19 @@ public interface StorageManager extends MessagingComponent
 
    void storeMessage(ServerMessage message) throws Exception;
 
+   void deleteMessage(long messageID) throws Exception;
+
    void storeAcknowledge(long queueID, long messageID) throws Exception;
 
    void updateDeliveryCount(MessageReference ref) throws Exception;
 
    void updateScheduledDeliveryTime(MessageReference ref) throws Exception;
-
-   void storeDelete(long messageID) throws Exception;
      
    void storeDuplicateID(SimpleString address, SimpleString duplID, long recordID) throws Exception;
 
    void updateDuplicateID(SimpleString address, SimpleString duplID, long recordID) throws Exception;
    
-   void storeDeleteDuplicateID(long recordID) throws Exception;
+   void deleteDuplicateID(long recordID) throws Exception;
      
    void storeMessageTransactional(long txID, ServerMessage message) throws Exception;
 
@@ -77,13 +77,13 @@ public interface StorageManager extends MessagingComponent
 
    void updateScheduledDeliveryTimeTransactional(long txID, MessageReference ref) throws Exception;
 
-   void storeDeleteMessageTransactional(long txID, long queueID, long messageID) throws Exception;
+   void deleteMessageTransactional(long txID, long queueID, long messageID) throws Exception;
 
    void storeDuplicateIDTransactional(long txID, SimpleString address, SimpleString duplID, long recordID) throws Exception;
 
    void updateDuplicateIDTransactional(long txID, SimpleString address, SimpleString duplID, long recordID) throws Exception;
    
-   void storeDeleteDuplicateIDTransactional(long txID, long recordID) throws Exception;
+   void deleteDuplicateIDTransactional(long txID, long recordID) throws Exception;
 
    ServerLargeMessage createLargeMessage();
 
@@ -96,8 +96,10 @@ public interface StorageManager extends MessagingComponent
    void storePageTransaction(long txID, PageTransactionInfo pageTransaction) throws Exception;
 
    void storeLastPage(long txID, LastPageRecord pageTransaction) throws Exception;
+   
+   void deleteLastPage(long recordID) throws Exception;
 
-   void storeDeletePageTransaction(long txID, long recordID) throws Exception;
+   void deletePageTransactional(long txID, long recordID) throws Exception;
 
    void loadMessageJournal(PostOffice postOffice,
                            Map<Long, Queue> queues,

@@ -465,7 +465,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
          if (count == 0)
          {
-            storageManager.storeDelete(message.getMessageID());
+            storageManager.deleteMessage(message.getMessageID());
          }
          else
          {

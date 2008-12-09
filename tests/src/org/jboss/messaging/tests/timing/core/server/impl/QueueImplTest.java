@@ -296,7 +296,7 @@ public class QueueImplTest extends UnitTestCase
       {
       	if (i % 2 == 0)
       	{
-      		storageManager.storeDeletePageTransaction(1, i);
+      		storageManager.deletePageTransactional(1, i);
       	}
       }
 
@@ -304,7 +304,7 @@ public class QueueImplTest extends UnitTestCase
       {
       	if (i % 2 == 0)
       	{
-      		storageManager.storeDeletePageTransaction(1, i);
+      		storageManager.deletePageTransactional(1, i);
       	}
       }
 

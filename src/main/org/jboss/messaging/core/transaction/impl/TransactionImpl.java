@@ -215,7 +215,7 @@ public class TransactionImpl implements Transaction
 
                if (count == 0)
                {
-                  storageManager.storeDeleteMessageTransactional(id, queue.getPersistenceID(), message.getMessageID());
+                  storageManager.deleteMessageTransactional(id, queue.getPersistenceID(), message.getMessageID());
                }
                else
                {

@@ -258,7 +258,7 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendUpdateRecord(messageID, ACKNOWLEDGE_REF, new ACKEncoding(queueID));
    }
 
-   public void storeDelete(final long messageID) throws Exception
+   public void deleteMessage(final long messageID) throws Exception
    {
       messageJournal.appendDeleteRecord(messageID);
    }
@@ -285,7 +285,7 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendUpdateRecord(recordID, DUPLICATE_ID, encoding);
    }
    
-   public void storeDeleteDuplicateID(long recordID) throws Exception
+   public void deleteDuplicateID(long recordID) throws Exception
    {
       messageJournal.appendDeleteRecord(recordID);
    }
@@ -343,13 +343,19 @@ public class JournalStorageManager implements StorageManager
 
       messageJournal.appendAddRecordTransactional(txID, lastPage.getRecordId(), LAST_PAGE, lastPage);
    }
+   
+   public void deleteLastPage(final long recordID) throws Exception
+   {
+      messageJournal.appendDeleteRecord(recordID);
+   }
+   
 
    public void storeAcknowledgeTransactional(final long txID, final long queueID, final long messageID) throws Exception
    {
       messageJournal.appendUpdateRecordTransactional(txID, messageID, ACKNOWLEDGE_REF, new ACKEncoding(queueID));
    }
 
-   public void storeDeletePageTransaction(final long txID, final long recordID) throws Exception
+   public void deletePageTransactional(final long txID, final long recordID) throws Exception
    {
       messageJournal.appendDeleteRecordTransactional(txID, recordID);
    }
@@ -365,7 +371,7 @@ public class JournalStorageManager implements StorageManager
                                                      encoding);
    }
 
-   public void storeDeleteMessageTransactional(final long txID, final long queueID, final long messageID) throws Exception
+   public void deleteMessageTransactional(final long txID, final long queueID, final long messageID) throws Exception
    {
       messageJournal.appendDeleteRecordTransactional(txID, messageID, new DeleteEncoding(queueID));
    }
@@ -405,7 +411,7 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendUpdateRecordTransactional(txID, recordID, DUPLICATE_ID, encoding);
    }
    
-   public void storeDeleteDuplicateIDTransactional(long txID, long recordID) throws Exception
+   public void deleteDuplicateIDTransactional(long txID, long recordID) throws Exception
    {
       messageJournal.appendDeleteRecordTransactional(txID, recordID);
    }

@@ -793,7 +793,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             // http://wiki.jboss.org/wiki/JBossMessaging2Paging
             // numberOfReads==numberOfWrites -> We delete the record
-            storageManager.storeDeletePageTransaction(depageTransactionID, pageWithTransaction.getRecordID());
+            storageManager.deletePageTransactional(depageTransactionID, pageWithTransaction.getRecordID());
             pagingManager.removeTransaction(pageWithTransaction.getTransactionID());
          }
          else
@@ -895,7 +895,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       trace("Clearing lastRecord information " + lastRecord.getLastId());
 
-      storageManager.storeDelete(lastRecord.getRecordId());
+      storageManager.deleteLastPage(lastRecord.getRecordId());
    }
 
    private Page createPage(final int page) throws Exception

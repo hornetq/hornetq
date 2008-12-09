@@ -92,7 +92,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
                txID = storageManager.generateUniqueID();
             }
             
-            storageManager.storeDeleteDuplicateIDTransactional(txID, id.b);
+            storageManager.deleteDuplicateIDTransactional(txID, id.b);
          }
          
          count++;
@@ -133,11 +133,11 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          
          if (txID == -1)
          {
-            storageManager.storeDeleteDuplicateID(id.b);
+            storageManager.deleteDuplicateID(id.b);
          }
          else
          {
-            storageManager.storeDeleteDuplicateIDTransactional(txID, id.b);
+            storageManager.deleteDuplicateIDTransactional(txID, id.b);
          }     
          
          id.b = recordID;

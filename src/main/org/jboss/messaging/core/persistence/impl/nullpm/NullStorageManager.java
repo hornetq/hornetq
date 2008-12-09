@@ -105,11 +105,11 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   public void storeDelete(final long messageID) throws Exception
+   public void deleteMessage(final long messageID) throws Exception
    {
    }
 
-   public void storeDeletePageTransaction(final long txID, final long messageID) throws Exception
+   public void deletePageTransactional(final long txID, final long messageID) throws Exception
    {
    }
 
@@ -173,7 +173,6 @@ public class NullStorageManager implements StorageManager
 
    public long generateUniqueID()
    {
-      // FIXME - this needs to use Howard's ID generator from JBM 1.4
       return idGenerator.generateID();
    }
 
@@ -206,7 +205,11 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   public void storeDeleteMessageTransactional(final long txID, final long messageID, final long queueID) throws Exception
+   public void deleteLastPage(final long recordID) throws Exception
+   {
+   }
+
+   public void deleteMessageTransactional(final long txID, final long messageID, final long queueID) throws Exception
    {
    }
 
@@ -217,11 +220,11 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   public void storeDeleteDuplicateIDTransactional(final long txID, final long recordID) throws Exception
+   public void deleteDuplicateIDTransactional(final long txID, final long recordID) throws Exception
    {
    }
 
-   public void storeDeleteDuplicateID(final long recordID) throws Exception
+   public void deleteDuplicateID(final long recordID) throws Exception
    {
    }
 
