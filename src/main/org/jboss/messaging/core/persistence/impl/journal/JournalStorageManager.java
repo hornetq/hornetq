@@ -382,7 +382,7 @@ public class JournalStorageManager implements StorageManager
    }
 
    public void commit(final long txID) throws Exception
-   {
+   {    
       messageJournal.appendCommitRecord(txID);
    }
 
@@ -589,9 +589,13 @@ public class JournalStorageManager implements StorageManager
                if (ids == null)
                {
                   ids = new ArrayList<Pair<SimpleString, Long>>();
+                  
+                  duplicateIDMap.put(encoding.address, ids);
                }
 
                ids.add(new Pair<SimpleString, Long>(encoding.duplID, record.id));
+               
+               break;
             }
             default:
             {
@@ -951,6 +955,8 @@ public class JournalStorageManager implements StorageManager
                   if (ids == null)
                   {
                      ids = new ArrayList<Pair<SimpleString, Long>>();
+                     
+                     duplicateIDMap.put(encoding.address, ids);
                   }
 
                   ids.add(new Pair<SimpleString, Long>(encoding.duplID, record.id));

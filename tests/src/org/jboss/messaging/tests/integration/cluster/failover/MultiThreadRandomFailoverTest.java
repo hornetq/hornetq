@@ -1342,7 +1342,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = MessagingServiceImpl.newNullStorageMessagingServer(backupConf);
+      backupService = MessagingServiceImpl.newNullStorageMessagingService(backupConf);
       backupService.start();
 
       // We need to sleep > 16 ms otherwise the id generators on live and backup could be initialised
@@ -1360,7 +1360,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = MessagingServiceImpl.newNullStorageMessagingServer(liveConf);
+      liveService = MessagingServiceImpl.newNullStorageMessagingService(liveConf);
       liveService.start();
    }
 

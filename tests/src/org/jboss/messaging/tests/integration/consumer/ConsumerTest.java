@@ -59,7 +59,7 @@ public class ConsumerTest extends UnitTestCase
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
 
-      messagingService = MessagingServiceImpl.newNullStorageMessagingServer(conf);
+      messagingService = MessagingServiceImpl.newNullStorageMessagingService(conf);
 
       messagingService.start();
    }

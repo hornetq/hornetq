@@ -541,6 +541,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void handleCreateQueue(final SessionCreateQueueMessage packet)
    {
       final SendLock lock;
+      
       if (channel.getReplicatingChannel() != null)
       {
          lock = postOffice.getAddressLock(packet.getAddress());
@@ -2250,7 +2251,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    
    public void handleSendContinuations(final SessionSendContinuationMessage packet)
    {
-
       DelayedResult result = channel.replicatePacket(packet);
 
       // With a send we must make sure it is replicated to backup before being processed on live
@@ -2270,10 +2270,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             }
          });
       }
-
-
    }
-
    
    public void handleReplicatedDelivery(final SessionReplicateDeliveryMessage packet)
    {

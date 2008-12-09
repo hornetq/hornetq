@@ -63,7 +63,7 @@ public class AutoGroupClientTest extends TestCase
 
       conf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
 
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingServer(conf);
+      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService(conf);
 
       messagingService.getServer().getQueueSettingsRepository().addMatch("testGroupQueue", qs);
       messagingService.start();
@@ -124,7 +124,7 @@ public class AutoGroupClientTest extends TestCase
 
       conf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
 
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingServer(conf);
+      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService(conf);
 
       messagingService.getServer().getQueueSettingsRepository().addMatch("testGroupQueue", qs);
       messagingService.start();
@@ -193,7 +193,7 @@ public class AutoGroupClientTest extends TestCase
 
       conf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
 
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingServer(conf);
+      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService(conf);
       messagingService.getServer().getQueueSettingsRepository().addMatch("testGroupQueue", qs);
       messagingService.start();
 

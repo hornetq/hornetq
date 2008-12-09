@@ -186,7 +186,7 @@ public class NotificationTest extends TestCase
       conf.setJMXManagementEnabled(false);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = MessagingServiceImpl.newNullStorageMessagingServer(conf);
+      service = MessagingServiceImpl.newNullStorageMessagingService(conf);
       service.start();
    }
 

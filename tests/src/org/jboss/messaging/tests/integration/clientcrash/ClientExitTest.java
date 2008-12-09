@@ -101,7 +101,7 @@ public class ClientExitTest extends TestCase
       ConfigurationImpl config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
       config.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory"));
-      messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
+      messagingService = MessagingServiceImpl.newNullStorageMessagingService(config);
       messagingService.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));

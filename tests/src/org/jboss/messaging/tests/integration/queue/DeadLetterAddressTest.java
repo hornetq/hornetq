@@ -241,7 +241,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      messagingService = MessagingServiceImpl.newNullStorageMessagingServer(configuration);
+      messagingService = MessagingServiceImpl.newNullStorageMessagingService(configuration);
       //start the server
       messagingService.start();
       //then we create a client as normal

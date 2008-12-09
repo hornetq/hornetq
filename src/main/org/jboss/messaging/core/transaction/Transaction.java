@@ -32,6 +32,7 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A JBoss Messaging internal transaction
@@ -46,6 +47,8 @@ public interface Transaction
    void commit() throws Exception;
 
    List<MessageReference> rollback(HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+
+   void addDuplicateID(SimpleString address, SimpleString duplID, long recordID) throws Exception;
 
    void addMessage(ServerMessage message) throws Exception;
 
@@ -76,9 +79,9 @@ public interface Transaction
    List<MessageReference> timeout() throws Exception;
 
    long getCreateTime();
-   
+
    void addSynchronization(TransactionSynchronization sync);
-   
+
    void removeSynchronization(TransactionSynchronization sync);
 
    static enum State

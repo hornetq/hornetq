@@ -54,7 +54,7 @@ public abstract class MessageFlowTestBase extends TestCase
       serviceConf.getAcceptorConfigurations()
                   .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                   params));
-      MessagingService service = MessagingServiceImpl.newNullStorageMessagingServer(serviceConf);
+      MessagingService service = MessagingServiceImpl.newNullStorageMessagingService(serviceConf);
       return service;
    }
    
@@ -68,7 +68,7 @@ public abstract class MessageFlowTestBase extends TestCase
       serviceConf.getAcceptorConfigurations()
                   .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                   params));
-      MessagingService service = MessagingServiceImpl.newNullStorageMessagingServer(serviceConf);
+      MessagingService service = MessagingServiceImpl.newNullStorageMessagingService(serviceConf);
       return service;
    }
    

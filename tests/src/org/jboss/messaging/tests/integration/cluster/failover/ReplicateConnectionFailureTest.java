@@ -182,7 +182,7 @@ public class ReplicateConnectionFailureTest extends TestCase
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = MessagingServiceImpl.newNullStorageMessagingServer(backupConf);
+      backupService = MessagingServiceImpl.newNullStorageMessagingService(backupConf);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -196,7 +196,7 @@ public class ReplicateConnectionFailureTest extends TestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = MessagingServiceImpl.newNullStorageMessagingServer(liveConf);
+      liveService = MessagingServiceImpl.newNullStorageMessagingService(liveConf);
       liveService.start();
    }
 

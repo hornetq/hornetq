@@ -185,14 +185,14 @@ public class SimpleManualFailoverTest extends TestCase
       server1Conf.getAcceptorConfigurations()
                  .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                  server1Params));
-      server1Service = MessagingServiceImpl.newNullStorageMessagingServer(server1Conf);
+      server1Service = MessagingServiceImpl.newNullStorageMessagingService(server1Conf);
       server1Service.start();
 
       Configuration server0Conf = new ConfigurationImpl();
       server0Conf.setSecurityEnabled(false);
       server0Conf.getAcceptorConfigurations()
                  .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server0Service = MessagingServiceImpl.newNullStorageMessagingServer(server0Conf);
+      server0Service = MessagingServiceImpl.newNullStorageMessagingService(server0Conf);
       server0Service.start();
    }
 

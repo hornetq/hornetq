@@ -95,7 +95,7 @@ public class FailureOnCreateConnectionTest extends TestCase
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      service = MessagingServiceImpl.newNullStorageMessagingServer(liveConf);
+      service = MessagingServiceImpl.newNullStorageMessagingService(liveConf);
       service.start();
    }
 

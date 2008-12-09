@@ -52,7 +52,7 @@ public class SimpleExample
          ConfigurationImpl configuration = new ConfigurationImpl();
          configuration.setSecurityEnabled(false);
          configuration.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory"));
-         messagingService = MessagingServiceImpl.newNullStorageMessagingServer(configuration);
+         messagingService = MessagingServiceImpl.newNullStorageMessagingService(configuration);
          //start the server
          messagingService.start();
 

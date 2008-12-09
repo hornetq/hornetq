@@ -234,7 +234,7 @@ public class ClientRequestorTest extends TestCase
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = MessagingServiceImpl.newNullStorageMessagingServer(conf);
+      service = MessagingServiceImpl.newNullStorageMessagingService(conf);
       service.start();
    }
 

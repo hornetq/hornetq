@@ -150,6 +150,14 @@ public class TransactionImpl implements Transaction
    {
       return id;
    }
+   
+   public void addDuplicateID(final SimpleString address, final SimpleString duplID,
+                              final long recordID) throws Exception
+   {
+      storageManager.storeDuplicateIDTransactional(id, address, duplID, recordID); 
+      
+      containsPersistent = true;
+   }
 
    public void addMessage(final ServerMessage message) throws Exception
    {

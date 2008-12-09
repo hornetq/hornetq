@@ -111,14 +111,11 @@ public class ServiceTestBase extends UnitTestCase
 
       if (realFiles)
       {
-         service = MessagingServiceImpl.newNioStorageMessagingServer(configuration,
-                                                                     getJournalDir(),
-                                                                     getBindingsDir(),
-                                                                     getLargeMessagesDir());
+         service = MessagingServiceImpl.newMessagingService(configuration);
       }
       else
       {
-         service = MessagingServiceImpl.newNullStorageMessagingServer(configuration);
+         service = MessagingServiceImpl.newNullStorageMessagingService(configuration);
       }
 
       for (Map.Entry<String, QueueSettings> setting : settings.entrySet())
@@ -161,6 +158,7 @@ public class ServiceTestBase extends UnitTestCase
    {
       Configuration configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
+      configuration.setBindingsDirectory(getBindingsDir());
       configuration.setJournalMinFiles(2);
       configuration.setJournalDirectory(getJournalDir());
       configuration.setJournalFileSize(100 * 1024);

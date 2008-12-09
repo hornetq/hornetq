@@ -55,7 +55,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       params.put("jbm.remoting.netty.httpenabled", true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
 
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingServer(conf);
+      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService(conf);
 
       messagingService.start();
 
@@ -108,7 +108,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       params.put("jbm.remoting.netty.httpenabled", true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
 
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingServer(conf);
+      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService(conf);
 
       messagingService.start();
 

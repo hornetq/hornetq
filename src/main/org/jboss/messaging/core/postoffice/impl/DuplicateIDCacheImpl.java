@@ -124,13 +124,13 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       int count = 0;
 
       long txID = -1;
-
-      for (Pair<SimpleString, Long> id : ids)
+      
+      for (Pair<SimpleString, Long> id : theIds)
       {
          if (count < cacheSize)
          {
             cache.add(id.a);
-
+            
             ids.add(id);
          }
          else
@@ -178,7 +178,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 
       if (persist)
       {
-         storageManager.storeDuplicateIDTransactional(tx.getID(), address, duplID, recordID);
+         tx.addDuplicateID(address, duplID, recordID);
       }
 
       // For a tx, it's important that the entry is not added to the cache until commit (or prepare)

@@ -542,7 +542,7 @@ public class PostOfficeImpl implements PostOffice
          SimpleString address = entry.getKey();
          
          DuplicateIDCache cache = getDuplicateIDCache(address);
-         
+                           
          if (persistIDCache)
          {
             cache.load(entry.getValue());

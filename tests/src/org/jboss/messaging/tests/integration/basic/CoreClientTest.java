@@ -72,7 +72,7 @@ public class CoreClientTest extends TestCase
       
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactoryClassName));
             
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingServer(conf);   
+      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService(conf);   
            
       messagingService.start();
       

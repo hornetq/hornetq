@@ -73,7 +73,7 @@ public class MessagingServiceImplTest extends UnitTestCase
    public void testNewNullStorageMessagingServer() throws Exception
    {
       Configuration config = new ConfigurationImpl();
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);
+      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService(config);
       messagingService.start();
       assertTrue(messagingService.isStarted());
       assertEquals(messagingService.getServer().getStorageManager().getClass(), NullStorageManager.class);
@@ -83,7 +83,7 @@ public class MessagingServiceImplTest extends UnitTestCase
 
    public void testNewNullStorageMessagingServerDefault() throws Exception
    {
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingServer();
+      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService();
       messagingService.start();
       assertTrue(messagingService.isStarted());
       assertEquals(messagingService.getServer().getStorageManager().getClass(), NullStorageManager.class);

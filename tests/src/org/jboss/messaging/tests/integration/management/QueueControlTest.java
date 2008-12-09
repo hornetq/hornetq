@@ -374,7 +374,7 @@ public class QueueControlTest extends TestCase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = MessagingServiceImpl.newNullStorageMessagingServer(conf);
+      service = MessagingServiceImpl.newNullStorageMessagingService(conf);
       service.start();
    }
 

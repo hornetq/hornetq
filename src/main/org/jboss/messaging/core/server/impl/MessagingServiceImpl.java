@@ -49,54 +49,40 @@ import org.jboss.messaging.core.server.MessagingService;
  */
 public class MessagingServiceImpl implements MessagingService
 {
-   public static MessagingServiceImpl newNullStorageMessagingServer()
+   public static MessagingServiceImpl newNullStorageMessagingService()
    {
-      return newNullStorageMessagingServer(new ConfigurationImpl());
+      return newNullStorageMessagingService(new ConfigurationImpl());
    }
-   
-   public static MessagingServiceImpl newNullStorageMessagingServer(final Configuration config)
+
+   public static MessagingServiceImpl newNullStorageMessagingService(final Configuration config)
    {
       StorageManager storageManager = new NullStorageManager();
-      
+
       RemotingService remotingService = new RemotingServiceImpl(config);
 
       JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
-      
-      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), config.isJMXManagementEnabled());
-      
+
+      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(),
+                                                                      config.isJMXManagementEnabled());
+
       MessagingServer server = new MessagingServerImpl();
-      
+
       server.setConfiguration(config);
-      
+
       server.setStorageManager(storageManager);
-      
+
       server.setRemotingService(remotingService);
-      
+
       server.setSecurityManager(securityManager);
-      
+
       server.setManagementService(managementService);
-      
+
       return new MessagingServiceImpl(server, storageManager, remotingService);
    }
 
-   public static MessagingServiceImpl newNioStorageMessagingServer(final Configuration config, String journalDir, String bindingsDir, String largeMessagesDir)
-   {
-      NIOSequentialFileFactory sequentialFileFactory = new NIOSequentialFileFactory(journalDir);
-      NIOSequentialFileFactory sequentialFileFactory2 = new NIOSequentialFileFactory(bindingsDir);
-      Journal msgs =
-         new JournalImpl(config.getJournalFileSize(),
-	   		config.getJournalMinFiles(), config.isJournalSyncTransactional(),
-	   		config.isJournalSyncNonTransactional(), sequentialFileFactory2,
-	   		"jbm-data", "jbm", config.getJournalMaxAIO(), 0);
-      Journal bindings =
-        new JournalImpl(config.getJournalFileSize(),
-	   		config.getJournalMinFiles(), config.isJournalSyncTransactional(),
-	   		config.isJournalSyncNonTransactional(), sequentialFileFactory,
-	   		"jbm-bindings", "jbm", config.getJournalMaxAIO(), 0);
-      
-      SequentialFileFactory largeMessagesFactory = new NIOSequentialFileFactory(largeMessagesDir);
-
-      StorageManager storageManager = new JournalStorageManager(msgs, bindings, largeMessagesFactory);
+   public static MessagingServiceImpl newMessagingService(final Configuration config)
+   {      
+      StorageManager storageManager = new JournalStorageManager(config);
 
       RemotingService remotingService = new RemotingServiceImpl(config);
 
@@ -118,40 +104,41 @@ public class MessagingServiceImpl implements MessagingService
 
       return new MessagingServiceImpl(server, storageManager, remotingService);
    }
-   
+
    private final MessagingServer server;
-   
+
    private final StorageManager storageManager;
-   
+
    private final RemotingService remotingService;
-   
-   public MessagingServiceImpl(final MessagingServer server, final StorageManager storageManager,
-                           final RemotingService remotingService)
+
+   public MessagingServiceImpl(final MessagingServer server,
+                               final StorageManager storageManager,
+                               final RemotingService remotingService)
    {
       this.server = server;
       this.storageManager = storageManager;
       this.remotingService = remotingService;
    }
-   
+
    public void start() throws Exception
    {
       storageManager.start();
-      remotingService.start();  
+      remotingService.start();
       server.start();
    }
-   
+
    public void stop() throws Exception
    {
       remotingService.stop();
       server.stop();
       storageManager.stop();
    }
-   
+
    public MessagingServer getServer()
    {
       return server;
    }
-   
+
    public boolean isStarted()
    {
       return server.isStarted();

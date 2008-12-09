@@ -83,7 +83,7 @@ public class ConsumerTest extends TestCase
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      service = MessagingServiceImpl.newNullStorageMessagingServer(conf);
+      service = MessagingServiceImpl.newNullStorageMessagingService(conf);
       service.start();
       serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service.getServer());
       serverManager.start();
