@@ -30,7 +30,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +48,7 @@ import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareAddressControlWrapper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareMessagingServerControlWrapper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareQueueControlWrapper;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
@@ -243,7 +243,7 @@ public class ManagementServiceImpl implements ManagementService
       sendNotification(NotificationType.QUEUE_DESTROYED, name.toString());
    }
 
-   public void handleMessage(final ServerMessage message)
+   public void handleMessage(final Message message)
    {
       SimpleString objectName = (SimpleString)message.getProperty(ManagementHelper.HDR_JMX_OBJECTNAME);
       if (log.isDebugEnabled())
@@ -260,7 +260,7 @@ public class ManagementServiceImpl implements ManagementService
       if (propNames.contains(ManagementHelper.HDR_JMX_OPERATION_NAME))
       {
          SimpleString operation = (SimpleString)message.getProperty(ManagementHelper.HDR_JMX_OPERATION_NAME);
-         List<Object> operationParameters = retrieveOperationParameters(message);
+         List<Object> operationParameters = ManagementHelper.retrieveOperationParameters(message);
 
          if (operation != null)
          {
@@ -453,40 +453,6 @@ public class ManagementServiceImpl implements ManagementService
       Object[] p = params.toArray(new Object[params.size()]);
       Object result = method.invoke(resource, p);
       return result;
-   }
-
-   private List<Object> retrieveOperationParameters(final ServerMessage message)
-   {
-      List<Object> params = new ArrayList<Object>();
-      Set<SimpleString> propertyNames = message.getPropertyNames();
-      // put the property names in a list to sort them and have the parameters
-      // in the correct order
-      List<SimpleString> propsNames = new ArrayList<SimpleString>(propertyNames);
-      Collections.sort(propsNames);
-      for (SimpleString propertyName : propsNames)
-      {
-         if (propertyName.startsWith(ManagementHelper.HDR_JMX_OPERATION_PREFIX))
-         {
-            String s = propertyName.toString();
-            // split by the dot
-            String[] ss = s.split("\\.");
-            try
-            {
-               int index = Integer.parseInt(ss[ss.length - 1]);
-               Object value = message.getProperty(propertyName);
-               if (value instanceof SimpleString)
-               {
-                  value = value.toString();
-               }
-               params.add(index, value);
-            }
-            catch (NumberFormatException e)
-            {
-               // ignore the property (it is the operation name)
-            }
-         }
-      }
-      return params;
    }
 
    // Inner classes -------------------------------------------------

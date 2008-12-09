@@ -28,6 +28,7 @@ import javax.management.ObjectName;
 
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -35,7 +36,6 @@ import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
@@ -81,7 +81,7 @@ public interface ManagementService
 
    public Object getResource(ObjectName objectName);
 
-   void handleMessage(ServerMessage message);
+   void handleMessage(Message message);
 
    void sendNotification(NotificationType type, String message) throws Exception;
 

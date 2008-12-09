@@ -26,6 +26,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
@@ -90,11 +94,47 @@ public class ManagementHelper
       for (int i = 0; i < parameters.length; i++)
       {
          Object parameter = parameters[i];
+         // use a zero-filled 2-padded index:
+         // if there is more than 10 parameters, order is preserved (e.g. 02 will be before 10)
          SimpleString key = new SimpleString(String.format("%s%02d", HDR_JMX_OPERATION_PREFIX, i));
          storeTypedProperty(message, key, parameter);
       }
    }
 
+   public static List<Object> retrieveOperationParameters(final Message message)
+   {
+      List<Object> params = new ArrayList<Object>();
+      Set<SimpleString> propertyNames = message.getPropertyNames();
+      // put the property names in a list to sort them and have the parameters
+      // in the correct order
+      List<SimpleString> propsNames = new ArrayList<SimpleString>(propertyNames);
+      Collections.sort(propsNames);
+      for (SimpleString propertyName : propsNames)
+      {
+         if (propertyName.startsWith(ManagementHelper.HDR_JMX_OPERATION_PREFIX))
+         {
+            String s = propertyName.toString();
+            // split by the dot
+            String[] ss = s.split("\\.");
+            try
+            {
+               int index = Integer.parseInt(ss[ss.length - 1]);
+               Object value = message.getProperty(propertyName);
+               if (value instanceof SimpleString)
+               {
+                  value = value.toString();
+               }
+               params.add(index, value);
+            }
+            catch (NumberFormatException e)
+            {
+               // ignore the property (it is the operation name)
+            }
+         }
+      }
+      return params;
+   }
+   
    public static boolean isOperationResult(final Message message)
    {
       return message.containsProperty(HDR_JMX_OPERATION_SUCCEEDED);
