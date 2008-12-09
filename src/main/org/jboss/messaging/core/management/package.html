@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <!--
+
+    JBoss: The OpenSource J2EE WebOS 
+
+    Distributable under LGPL license.
+    See terms of license at gnu.org.
+
+    -->
+  </head>
+  <body>
+  
+<p>Provides management for JBoss Messaging</p>
+
+<h2>Usage</h2>
+
+<p>JBoss Messaging can be managed by sending well-formatted <em>messages</em> to a well-known <em>management address</em>.
+The invocation of management operations (and retrieval of management attributes) is based on JMX semantics. Managed resources are identified
+by <code>ObjectNames</code> (defined in <code>ManagementServiceImpl.getXXXObjectName()</code> methods).</p>
+
+<p>To create a well-formatted management message, use the helper methods defined in <code>ManagementHelper</code>.
+A management message corresponds either to one operation invocation or one (or many) attribute retrievals. 
+If a reply is expected (when the operation returns a value or when retrieving an attribute), a reply-to address
+<strong>must</strong> be set on the message using the <code>ClientMessageImpl.REPLYTO_HEADER_NAME</code> header.</p>
+
+<h2>Configuration</h2>
+
+<p>Management is configured in <code>jbm-configuration.xml</code>:</p>
+
+<pre><code>
+      &lt;management-address&gt;admin.management&lt;/management-address&gt;
+      &lt;management-notification-address&gt;admin.notification&lt;/management-notification-address&gt;      
+
+      &lt;!-- true to expose JBoss Messaging resources through JMX --&gt;
+      &lt;jmx-management-enabled&gt;true&lt;/jmx-management-enabled&gt;
+</code></pre>
+
+<h2>Management using JMX</h2>
+
+<p>In addition to using messages, JBoss Messaging can also be managed using JMX (if the configuration property 
+<code>jmx-management-enabled</code> is set to <code>true</code>).<br />
+JBoss Messaging is run in standalone to allow remote JMX management from the same machine (<code>-Dcom.sun.management.jmxremote</code>).
+A JMX client (e.g. <code>jconsole</code>) can be used locally to manage JBoss Messaging.</p>
+
+<h2>Design</h2>
+
+<p>The core of the management support in JBoss Messaging is the ManagementServiceImpl class.<br />
+This class is responsible to:</p>
+
+<ul>
+  <li>keep track of the managed resources in a registry (and a MBeanServer when JMX management is enabled)</li>
+  <li>handle "management" messages (which are sent to the address configured in <code>management-address</code> property)</li>
+</ul>
+
+<p>Each managed "Resources" (e.g. the server, the queues, the addresses, etc.) is managed through a ControlMBean class 
+(the MBean is appended to make them JMX-compliant). The <code>ControlMBean</code> implementation handles user input 
+validation, type conversion, etc. and delegates to the real resource.</p>
+
+<p>When the ManagementService handles a management message, it uses the registry to find the corresponding ControlMBean 
+(identified by an ObjectName set on the management message) and invoke the operation (or retrieve the attribute value) using Java reflection.</p>
+
+<h2>Management in a clustered environment and JMX</h2>
+
+<p>Using core messages to manage JBoss Messaging also works in a clustered environment: the management messages are 
+replicated on the nodes of the cluster, ensuring that the state is replicated on all the nodes.</p>
+
+<p>To allow JMX to work in a clustered environment, the MBean implementation do not delegates directly to the resources
+ when a management operation is invoked through JMX.<br />
+Instead, the MBean implementation translates the operation invocation into a management messages which is sent from
+</em>inside</em> the server. In turn, this triggers the replication of the messages to all the nodes
+of the clustered. All the MBean implementations are based on the <code>ReplicationAwareStandardMBeanWrapper</code> 
+which provides method to ensure a management operation is correctly replicated.</p>
+
+<p><em>All management operation invocations which alters state are replicated, the operations without side-effect
+ (and retrieval of attributes) are delegated directly to the resource control implementation.</em></p>
+
+  </body>
+</html>
