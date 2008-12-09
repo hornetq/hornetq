@@ -155,8 +155,8 @@ public class ConsumerTest extends TestCase
       }
       // assert that all the messages are there and none have been acked
       SimpleString queueName = new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
-      assertEquals(service.getServer().getPostOffice().getBinding(queueName).getQueue().getDeliveringCount(), 0);
-      assertEquals(service.getServer().getPostOffice().getBinding(queueName).getQueue().getMessageCount(), 0);
+      assertEquals(0, service.getServer().getPostOffice().getBinding(queueName).getQueue().getDeliveringCount());
+      assertEquals(0, service.getServer().getPostOffice().getBinding(queueName).getQueue().getMessageCount());
       session.close();
    }
 }
