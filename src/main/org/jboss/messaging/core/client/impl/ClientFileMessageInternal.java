@@ -20,30 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.client;
 
+package org.jboss.messaging.core.client.impl;
+
+import java.nio.channels.FileChannel;
+
+import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 
 /**
+ * A ClientFileMessageInternal
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
+ * 
+ * Created 10 Dec 2008 19:02:06
+ *
+ *
  */
-public interface ClientConsumer
+public interface ClientFileMessageInternal extends ClientFileMessage
 {
-   ClientMessage receive() throws MessagingException;
+   void setLargeMessage(boolean largeMessage);
 
-   ClientMessage receive(long timeout) throws MessagingException;
-
-   ClientMessage receiveImmediate() throws MessagingException;
-
-   MessageHandler getMessageHandler() throws MessagingException;
-
-   void setMessageHandler(MessageHandler handler) throws MessagingException;
-
-   void close() throws MessagingException;
+   FileChannel getChannel() throws MessagingException;
    
-   boolean isClosed();   
-   
-   Exception getLastException();
+   void closeChannel() throws MessagingException;   
 }

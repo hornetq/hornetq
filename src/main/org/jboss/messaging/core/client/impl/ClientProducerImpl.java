@@ -301,11 +301,12 @@ public class ClientProducerImpl implements ClientProducerInternal
          pos += chunkLength;
       }
 
-      if (msg instanceof ClientFileMessage)
+      if (msg instanceof ClientFileMessageInternal)
       {
+         //FIXME - this is very ugly - do we really need an instanceof check???
          try
          {
-            ((ClientFileMessage)msg).closeChannel();
+            ((ClientFileMessageInternal)msg).closeChannel();
          }
          catch (Exception e)
          {

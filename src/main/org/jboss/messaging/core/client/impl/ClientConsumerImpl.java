@@ -363,7 +363,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       if (isFileConsumer())
       {
-         ClientFileMessage fileMessage = (ClientFileMessage)currentChunkMessage;
+         ClientFileMessageInternal fileMessage = (ClientFileMessageInternal)currentChunkMessage;
          addBytesBody(fileMessage, chunk.getBody());
       }
       else
@@ -389,15 +389,15 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // Close the file that was being generated
          if (isFileConsumer())
          {
-            ((ClientFileMessage)currentChunkMessage).closeChannel();
+            ((ClientFileMessageInternal)currentChunkMessage).closeChannel();
          }
-         
+
          currentChunkMessage.setFlowControlSize(chunk.getBody().length);
 
          ClientMessageInternal msgToSend = currentChunkMessage;
-         
+
          currentChunkMessage = null;
-         
+
          handleMessage(msgToSend);
       }
    }
@@ -692,7 +692,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   private void addBytesBody(final ClientFileMessage fileMessage, final byte[] body) throws Exception
+   private void addBytesBody(final ClientFileMessageInternal fileMessage, final byte[] body) throws Exception
    {
       FileChannel channel = fileMessage.getChannel();
       channel.write(ByteBuffer.wrap(body));

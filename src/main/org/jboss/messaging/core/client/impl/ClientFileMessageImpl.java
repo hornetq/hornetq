@@ -29,7 +29,6 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
@@ -42,7 +41,7 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
  *
  *
  */
-public class ClientFileMessageImpl extends ClientMessageImpl implements ClientFileMessage
+public class ClientFileMessageImpl extends ClientMessageImpl implements ClientFileMessageInternal
 {
    private File file;
 
