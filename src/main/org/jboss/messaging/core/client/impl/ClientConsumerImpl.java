@@ -345,7 +345,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       flowControl(header.length);
 
       currentChunkMessage = createFileMessage(header);
-
    }
 
    public synchronized void handleLargeMessageContinuation(final SessionReceiveContinuationMessage chunk) throws Exception

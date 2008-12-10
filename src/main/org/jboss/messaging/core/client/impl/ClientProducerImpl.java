@@ -268,8 +268,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       {
          final int chunkLength;
          final boolean lastChunk;
-         
-         
+                  
          final int bytesToWrite = bodySize - pos;
          
          if (bytesToWrite < minLargeMessageSize)
