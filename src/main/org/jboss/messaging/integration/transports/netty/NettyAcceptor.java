@@ -182,10 +182,6 @@ public class NettyAcceptor implements Acceptor
          //Already started
          return;
       }
-      if(httpKeepAliveTimer != null)
-      {
-         httpKeepAliveTimer.cancel();
-      }
       bossExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-acceptor-boss-threads"));
       workerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-acceptor-worker-threads"));
       if (useNio)
@@ -270,6 +266,11 @@ public class NettyAcceptor implements Acceptor
          return;
       }
 
+      if(httpKeepAliveTimer != null)
+      {
+         httpKeepAliveTimer.cancel();
+         
+      }
       serverChannel.close().awaitUninterruptibly();
       bossExecutor.shutdown();
       workerExecutor.shutdown();
