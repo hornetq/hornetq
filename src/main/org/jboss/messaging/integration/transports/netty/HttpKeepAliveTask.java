@@ -21,10 +21,9 @@
  */
 package org.jboss.messaging.integration.transports.netty;
 
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.TimerTask;
 
 /**
  * A simple Timer Task to allow HttpAcceptorHandlers to be called intermittently.
@@ -34,15 +33,8 @@ public class HttpKeepAliveTask extends TimerTask
 {
    private final List<HttpAcceptorHandler> handlers = new ArrayList<HttpAcceptorHandler>();
 
-   private boolean cancelled;
-
    public synchronized void run()
    {
-      if(cancelled)
-      {
-         return;
-      }
-      
       long time = System.currentTimeMillis();
       for (HttpAcceptorHandler handler : handlers)
       {
@@ -62,7 +54,6 @@ public class HttpKeepAliveTask extends TimerTask
 
    public synchronized boolean cancel()
    {
-      cancelled = true;
       return super.cancel();
    }
 }

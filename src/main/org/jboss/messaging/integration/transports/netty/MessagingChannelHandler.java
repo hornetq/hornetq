@@ -44,7 +44,9 @@ class MessagingChannelHandler extends SimpleChannelHandler
    private static final Logger log = Logger.getLogger(MessagingChannelHandler.class);
 
    private final BufferHandler handler;
+
    private final ConnectionLifeCycleListener listener;
+
    volatile boolean active;
 
    MessagingChannelHandler(BufferHandler handler, ConnectionLifeCycleListener listener)
@@ -56,7 +58,7 @@ class MessagingChannelHandler extends SimpleChannelHandler
    @Override
    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception
    {
-      ChannelBuffer buffer = (ChannelBuffer) e.getMessage();
+      ChannelBuffer buffer = (ChannelBuffer)e.getMessage();
       handler.bufferReceived(e.getChannel().getId(), new ChannelBufferWrapper(buffer));
    }
 
@@ -82,9 +84,7 @@ class MessagingChannelHandler extends SimpleChannelHandler
    @Override
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception
    {
-      log.error(
-            "caught exception " + e.getCause() + " for channel " +
-            e.getChannel(), e.getCause());
+      log.error("caught exception " + e.getCause() + " for channel " + e.getChannel(), e.getCause());
 
       synchronized (this)
       {
@@ -95,10 +95,13 @@ class MessagingChannelHandler extends SimpleChannelHandler
 
          MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR, "Netty exception");
          me.initCause(e.getCause());
-         try {
+         try
+         {
             listener.connectionException(e.getChannel().getId(), me);
             active = false;
-         } catch (Exception ex) {
+         }
+         catch (Exception ex)
+         {
             log.error("failed to notify the listener:", ex);
          }
       }

@@ -44,7 +44,6 @@ public class MessagingFrameDecoder extends FrameDecoder
 {
    private static final Logger log = Logger.getLogger(MessagingFrameDecoder.class);
 
-   
    private final BufferHandler handler;
 
    public MessagingFrameDecoder(final BufferHandler handler)
@@ -58,7 +57,7 @@ public class MessagingFrameDecoder extends FrameDecoder
    @Override
    protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer in) throws Exception
    {
-      //TODO - we can avoid this entirely if we maintain fragmented packets in the handler
+      // TODO - we can avoid this entirely if we maintain fragmented packets in the handler
       int start = in.readerIndex();
 
       int length = handler.isReadyToHandle(new ChannelBufferWrapper(in));

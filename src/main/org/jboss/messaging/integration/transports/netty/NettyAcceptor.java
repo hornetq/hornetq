@@ -114,22 +114,29 @@ public class NettyAcceptor implements Acceptor
 
    private final HttpKeepAliveTask httpKeepAliveTask;
 
-   public NettyAcceptor(final Map<String, Object> configuration, final BufferHandler handler,
+   public NettyAcceptor(final Map<String, Object> configuration,
+                        final BufferHandler handler,
                         final ConnectionLifeCycleListener listener)
    {
       this.handler = handler;
 
       this.listener = listener;
 
-      this.sslEnabled =
-            ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME, TransportConstants.DEFAULT_SSL_ENABLED, configuration);
-      this.httpEnabled =
-            ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME, TransportConstants.DEFAULT_HTTP_ENABLED, configuration);
+      this.sslEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME,
+                                                               TransportConstants.DEFAULT_SSL_ENABLED,
+                                                               configuration);
+      this.httpEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME,
+                                                                TransportConstants.DEFAULT_HTTP_ENABLED,
+                                                                configuration);
 
-      if(httpEnabled)
+      if (httpEnabled)
       {
-         httpServerScanPeriod = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_SERVER_SCAN_PERIOD_PROP_NAME, TransportConstants.DEFAULT_HTTP_SERVER_SCAN_PERIOD, configuration);
-         httpResponseTime = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_RESPONSE_TIME_PROP_NAME, TransportConstants.DEFAULT_HTTP_RESPONSE_TIME, configuration);
+         httpServerScanPeriod = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_SERVER_SCAN_PERIOD_PROP_NAME,
+                                                                    TransportConstants.DEFAULT_HTTP_SERVER_SCAN_PERIOD,
+                                                                    configuration);
+         httpResponseTime = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_RESPONSE_TIME_PROP_NAME,
+                                                                TransportConstants.DEFAULT_HTTP_RESPONSE_TIME,
+                                                                configuration);
          httpKeepAliveTimer = new Timer();
          httpKeepAliveTask = new HttpKeepAliveTask();
          httpKeepAliveTimer.schedule(httpKeepAliveTask, httpServerScanPeriod, httpServerScanPeriod);
@@ -141,22 +148,29 @@ public class NettyAcceptor implements Acceptor
          httpKeepAliveTimer = null;
          httpKeepAliveTask = null;
       }
-      this.useNio =
-            ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME, TransportConstants.DEFAULT_USE_NIO, configuration);
-      this.host =
-            ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME, TransportConstants.DEFAULT_HOST, configuration);
-      this.port =
-            ConfigurationHelper.getIntProperty(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_PORT, configuration);
+      this.useNio = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME,
+                                                           TransportConstants.DEFAULT_USE_NIO,
+                                                           configuration);
+      this.host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
+                                                        TransportConstants.DEFAULT_HOST,
+                                                        configuration);
+      this.port = ConfigurationHelper.getIntProperty(TransportConstants.PORT_PROP_NAME,
+                                                     TransportConstants.DEFAULT_PORT,
+                                                     configuration);
       if (sslEnabled)
       {
-         this.keyStorePath =
-               ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PATH_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PATH, configuration);
-         this.keyStorePassword =
-               ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PASSWORD, configuration);
-         this.trustStorePath =
-               ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, TransportConstants.DEFAULT_TRUSTSTORE_PATH, configuration);
-         this.trustStorePassword =
-               ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD, configuration);
+         this.keyStorePath = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PATH_PROP_NAME,
+                                                                   TransportConstants.DEFAULT_KEYSTORE_PATH,
+                                                                   configuration);
+         this.keyStorePassword = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
+                                                                       TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
+                                                                       configuration);
+         this.trustStorePath = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PATH_PROP_NAME,
+                                                                     TransportConstants.DEFAULT_TRUSTSTORE_PATH,
+                                                                     configuration);
+         this.trustStorePassword = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME,
+                                                                         TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD,
+                                                                         configuration);
       }
       else
       {
@@ -166,12 +180,15 @@ public class NettyAcceptor implements Acceptor
          this.trustStorePassword = null;
       }
 
-      this.tcpNoDelay =
-            ConfigurationHelper.getBooleanProperty(TransportConstants.TCP_NODELAY_PROPNAME, TransportConstants.DEFAULT_TCP_NODELAY, configuration);
-      this.tcpSendBufferSize =
-            ConfigurationHelper.getIntProperty(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME, TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE, configuration);
-      this.tcpReceiveBufferSize =
-            ConfigurationHelper.getIntProperty(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME, TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE, configuration);
+      this.tcpNoDelay = ConfigurationHelper.getBooleanProperty(TransportConstants.TCP_NODELAY_PROPNAME,
+                                                               TransportConstants.DEFAULT_TCP_NODELAY,
+                                                               configuration);
+      this.tcpSendBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME,
+                                                                  TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE,
+                                                                  configuration);
+      this.tcpReceiveBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME,
+                                                                     TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
+                                                                     configuration);
 
    }
 
@@ -179,7 +196,7 @@ public class NettyAcceptor implements Acceptor
    {
       if (channelFactory != null)
       {
-         //Already started
+         // Already started
          return;
       }
       bossExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-acceptor-boss-threads"));
@@ -199,17 +216,13 @@ public class NettyAcceptor implements Acceptor
       {
          try
          {
-            context = SSLSupport.createServerContext(
-                  keyStorePath,
-                  keyStorePassword,
-                  trustStorePath,
-                  trustStorePassword);
+            context = SSLSupport.createServerContext(keyStorePath, keyStorePassword, trustStorePath, trustStorePassword);
          }
          catch (Exception e)
          {
-            IllegalStateException ise = new IllegalStateException(
-                  "Unable to create NettyAcceptor for " +
-                  host + ":" + port);
+            IllegalStateException ise = new IllegalStateException("Unable to create NettyAcceptor for " + host +
+                                                                  ":" +
+                                                                  port);
             ise.initCause(e);
             throw ise;
          }
@@ -266,16 +279,16 @@ public class NettyAcceptor implements Acceptor
          return;
       }
 
-      if(httpKeepAliveTimer != null)
+      if (httpKeepAliveTimer != null)
       {
          httpKeepAliveTask.cancel();
-         
+
          httpKeepAliveTimer.cancel();
       }
       serverChannel.close().awaitUninterruptibly();
       bossExecutor.shutdown();
       workerExecutor.shutdown();
-      for (; ;)
+      for (;;)
       {
          try
          {

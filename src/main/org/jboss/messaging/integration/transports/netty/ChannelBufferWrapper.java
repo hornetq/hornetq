@@ -192,59 +192,77 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public void putChar(final char chr)
    {
-      putShort((short) chr);
+      putShort((short)chr);
    }
 
    public byte getByte()
    {
-      try {
+      try
+      {
          return buffer.readByte();
-      } catch (IndexOutOfBoundsException e) {
+      }
+      catch (IndexOutOfBoundsException e)
+      {
          throw new BufferUnderflowException();
       }
    }
 
    public short getUnsignedByte()
    {
-      try {
+      try
+      {
          return buffer.readUnsignedByte();
-      } catch (IndexOutOfBoundsException e) {
+      }
+      catch (IndexOutOfBoundsException e)
+      {
          throw new BufferUnderflowException();
       }
    }
 
    public void getBytes(final byte[] b)
    {
-      try {
+      try
+      {
          buffer.readBytes(b);
-      } catch (IndexOutOfBoundsException e) {
+      }
+      catch (IndexOutOfBoundsException e)
+      {
          throw new BufferUnderflowException();
       }
    }
 
    public void getBytes(final byte[] b, final int offset, final int length)
    {
-      try {
+      try
+      {
          buffer.readBytes(b, offset, length);
-      } catch (IndexOutOfBoundsException e) {
+      }
+      catch (IndexOutOfBoundsException e)
+      {
          throw new BufferUnderflowException();
       }
    }
 
    public int getInt()
    {
-      try {
+      try
+      {
          return buffer.readInt();
-      } catch (IndexOutOfBoundsException e) {
+      }
+      catch (IndexOutOfBoundsException e)
+      {
          throw new BufferUnderflowException();
       }
    }
 
    public long getLong()
    {
-      try {
+      try
+      {
          return buffer.readLong();
-      } catch (IndexOutOfBoundsException e) {
+      }
+      catch (IndexOutOfBoundsException e)
+      {
          throw new BufferUnderflowException();
       }
    }
@@ -256,18 +274,24 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public short getShort()
    {
-      try {
+      try
+      {
          return buffer.readShort();
-      } catch (IndexOutOfBoundsException e) {
+      }
+      catch (IndexOutOfBoundsException e)
+      {
          throw new BufferUnderflowException();
       }
    }
 
    public int getUnsignedShort()
    {
-      try {
+      try
+      {
          return buffer.readUnsignedShort();
-      } catch (IndexOutOfBoundsException e) {
+      }
+      catch (IndexOutOfBoundsException e)
+      {
          throw new BufferUnderflowException();
       }
    }
@@ -279,7 +303,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public char getChar()
    {
-      return (char) getShort();
+      return (char)getShort();
    }
 
    public void putBoolean(final boolean b)
@@ -287,7 +311,8 @@ public class ChannelBufferWrapper implements MessagingBuffer
       if (b)
       {
          putByte(TRUE);
-      } else
+      }
+      else
       {
          putByte(FALSE);
       }
@@ -305,7 +330,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
       buffer.writeInt(nullableString.length());
       for (int i = 0; i < nullableString.length(); i++)
       {
-         buffer.writeShort((short) nullableString.charAt(i));
+         buffer.writeShort((short)nullableString.charAt(i));
       }
       buffer.readerIndex(buffer.writerIndex());
    }
@@ -355,13 +380,13 @@ public class ChannelBufferWrapper implements MessagingBuffer
    {
       ChannelBuffer encoded = copiedBuffer(str, "UTF-8");
       int length = encoded.readableBytes();
-      if (length >= 65536) {
-         throw new IllegalArgumentException(
-               "the specified string is too long (" + length + ")");
+      if (length >= 65536)
+      {
+         throw new IllegalArgumentException("the specified string is too long (" + length + ")");
       }
 
       flip();
-      buffer.writeShort((short) length);
+      buffer.writeShort((short)length);
       buffer.writeBytes(encoded);
       buffer.readerIndex(buffer.writerIndex());
    }
@@ -415,10 +440,13 @@ public class ChannelBufferWrapper implements MessagingBuffer
    public String getUTF() throws Exception
    {
       ChannelBuffer utf8value;
-      try {
+      try
+      {
          int length = buffer.readUnsignedShort();
          utf8value = buffer.readSlice(length);
-      } catch (IndexOutOfBoundsException e) {
+      }
+      catch (IndexOutOfBoundsException e)
+      {
          throw new BufferUnderflowException();
       }
 

@@ -21,6 +21,20 @@
  */
 package org.jboss.messaging.integration.transports.netty;
 
+import static org.jboss.netty.channel.Channels.pipeline;
+import static org.jboss.netty.channel.Channels.write;
+
+import java.net.InetSocketAddress;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
@@ -38,12 +52,10 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
-import static org.jboss.netty.channel.Channels.pipeline;
-import static org.jboss.netty.channel.Channels.write;
+import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.DefaultMessageEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
-import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
@@ -55,16 +67,6 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.ssl.SslHandler;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import java.net.InetSocketAddress;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A NettyConnector
@@ -143,15 +145,18 @@ public class NettyConnector implements Connector
       this.sslEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME,
                                                                TransportConstants.DEFAULT_SSL_ENABLED,
                                                                configuration);
-      this.httpEnabled =
-            ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME, TransportConstants.DEFAULT_HTTP_ENABLED, configuration);
+      this.httpEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME,
+                                                                TransportConstants.DEFAULT_HTTP_ENABLED,
+                                                                configuration);
 
-      if(httpEnabled)
+      if (httpEnabled)
       {
          this.httpMaxClientIdleTime = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_CLIENT_IDLE_PROP_NAME,
-                                                                      TransportConstants.DEFAULT_HTTP_CLIENT_IDLE_TIME, configuration);
+                                                                          TransportConstants.DEFAULT_HTTP_CLIENT_IDLE_TIME,
+                                                                          configuration);
          this.httpClientIdleScanPeriod = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD,
-                                                                      TransportConstants.DEFAULT_HTTP_CLIENT_SCAN_PERIOD, configuration);
+                                                                             TransportConstants.DEFAULT_HTTP_CLIENT_SCAN_PERIOD,
+                                                                             configuration);
       }
       else
       {
@@ -374,7 +379,9 @@ public class NettyConnector implements Connector
    class HttpHandler extends SimpleChannelHandler
    {
       private Channel channel;
+
       private long lastSendTime = 0;
+
       private boolean waitingGet = false;
 
       private Timer idleClientTimer;
@@ -390,7 +397,6 @@ public class NettyConnector implements Connector
          }
       }
 
-
       public void channelClosed(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
       {
          if (idleClientTimer != null)
@@ -403,8 +409,11 @@ public class NettyConnector implements Connector
       @Override
       public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
       {
-         HttpResponse response = (HttpResponse) e.getMessage();
-         MessageEvent event = new DefaultMessageEvent(e.getChannel(), e.getFuture(), response.getContent(), e.getRemoteAddress());
+         HttpResponse response = (HttpResponse)e.getMessage();
+         MessageEvent event = new DefaultMessageEvent(e.getChannel(),
+                                                      e.getFuture(),
+                                                      response.getContent(),
+                                                      e.getRemoteAddress());
          waitingGet = false;
          ctx.sendUpstream(event);
       }
@@ -415,7 +424,7 @@ public class NettyConnector implements Connector
          if (e.getMessage() instanceof ChannelBuffer)
          {
             HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/jbm/");
-            ChannelBuffer buf = (ChannelBuffer) e.getMessage();
+            ChannelBuffer buf = (ChannelBuffer)e.getMessage();
             httpRequest.setContent(buf);
             httpRequest.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(buf.writerIndex()));
             write(ctx, e.getChannel(), e.getFuture(), httpRequest, e.getRemoteAddress());
@@ -431,9 +440,10 @@ public class NettyConnector implements Connector
       private class HttpIdleTimerTask extends TimerTask
       {
          long currentTime = System.currentTimeMillis();
+
          public void run()
          {
-            if(!waitingGet && System.currentTimeMillis() > lastSendTime + httpMaxClientIdleTime)
+            if (!waitingGet && System.currentTimeMillis() > lastSendTime + httpMaxClientIdleTime)
             {
                HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/jbm/");
                waitingGet = true;
@@ -442,6 +452,5 @@ public class NettyConnector implements Connector
          }
       }
    }
-
 
 }

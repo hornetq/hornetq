@@ -30,7 +30,7 @@ package org.jboss.messaging.integration.transports.netty;
 public class TransportConstants
 {
    public static final String SSL_ENABLED_PROP_NAME = "jbm.remoting.netty.sslenabled";
-   
+
    public static final String HTTP_ENABLED_PROP_NAME = "jbm.remoting.netty.httpenabled";
 
    public static final String HTTP_CLIENT_IDLE_PROP_NAME = "jbm.remoting.netty.httpclientidletime";
@@ -40,47 +40,47 @@ public class TransportConstants
    public static final String HTTP_RESPONSE_TIME_PROP_NAME = "jbm.remoting.netty.httpresponsetime";
 
    public static final String HTTP_SERVER_SCAN_PERIOD_PROP_NAME = "jbm.remoting.netty.httpserverscanperiod";
-   
+
    public static final String USE_NIO_PROP_NAME = "jbm.remoting.netty.usenio";
-   
+
    public static final String HOST_PROP_NAME = "jbm.remoting.netty.host";
-   
+
    public static final String PORT_PROP_NAME = "jbm.remoting.netty.port";
-   
+
    public static final String KEYSTORE_PATH_PROP_NAME = "jbm.remoting.netty.keystorepath";
-   
+
    public static final String KEYSTORE_PASSWORD_PROP_NAME = "jbm.remoting.netty.keystorepassword";
-   
+
    public static final String TRUSTSTORE_PATH_PROP_NAME = "jbm.remoting.netty.truststorepath";
-   
+
    public static final String TRUSTSTORE_PASSWORD_PROP_NAME = "jbm.remoting.netty.truststorepassword";
-   
+
    public static final String TCP_NODELAY_PROPNAME = "jbm.remoting.netty.tcpnodelay";
-   
+
    public static final String TCP_SENDBUFFER_SIZE_PROPNAME = "jbm.remoting.netty.tcpsendbuffersize";
-   
+
    public static final String TCP_RECEIVEBUFFER_SIZE_PROPNAME = "jbm.remoting.netty.tcpreceivebuffersize";
-   
+
    public static final boolean DEFAULT_SSL_ENABLED = false;
-   
+
    public static final boolean DEFAULT_USE_NIO = true;
-   
+
    public static final String DEFAULT_HOST = "localhost";
-   
+
    public static final int DEFAULT_PORT = 5400;
-   
+
    public static final String DEFAULT_KEYSTORE_PATH = "messaging.keystore";
- 
-   public static final String DEFAULT_KEYSTORE_PASSWORD = "secureexample";    
- 
+
+   public static final String DEFAULT_KEYSTORE_PASSWORD = "secureexample";
+
    public static final String DEFAULT_TRUSTSTORE_PATH = "messaging.truststore";
- 
+
    public static final String DEFAULT_TRUSTSTORE_PASSWORD = "secureexample";
-   
+
    public static final boolean DEFAULT_TCP_NODELAY = true;
-   
+
    public static final int DEFAULT_TCP_SENDBUFFER_SIZE = 32768;
-   
+
    public static final int DEFAULT_TCP_RECEIVEBUFFER_SIZE = 32768;
 
    public static final boolean DEFAULT_HTTP_ENABLED = false;
