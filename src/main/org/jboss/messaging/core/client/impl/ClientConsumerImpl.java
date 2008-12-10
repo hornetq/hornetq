@@ -622,7 +622,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       session.acknowledge(id, message.getMessageID());
    }
 
-   private ClientFileMessage cloneAsFileMessage(final ClientMessage message) throws Exception
+   private ClientFileMessage cloneAsFileMessage(final ClientMessageInternal message) throws Exception
    {
       if (message instanceof ClientFileMessageImpl)
       {

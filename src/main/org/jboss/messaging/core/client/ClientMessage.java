@@ -18,11 +18,10 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.client;
 
-import org.jboss.messaging.core.client.impl.ClientConsumerInternal;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.Message;
 
@@ -36,14 +35,10 @@ import org.jboss.messaging.core.message.Message;
 public interface ClientMessage extends Message
 {
    long getMessageID();
-   
+
    int getDeliveryCount();
    
    void setDeliveryCount(int deliveryCount);
-   
-   void onReceipt(ClientConsumerInternal consumer);
-   
+
    void acknowledge() throws MessagingException;
-   
-   boolean isLargeMessage();
 }

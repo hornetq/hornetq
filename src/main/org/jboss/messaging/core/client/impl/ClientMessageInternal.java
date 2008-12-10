@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.ClientMessage;
@@ -35,10 +34,14 @@ import org.jboss.messaging.core.client.ClientMessage;
  *
  */
 public interface ClientMessageInternal extends ClientMessage
-{   
+{
    /** Size used for FlowControl */
    int getFlowControlSize();
-   
+
    /** Size used for FlowControl */
    void setFlowControlSize(int flowControlSize);
+
+   void onReceipt(ClientConsumerInternal consumer);
+
+   boolean isLargeMessage();
 }
