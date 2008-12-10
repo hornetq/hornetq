@@ -355,7 +355,7 @@ public class QueueImpl implements Queue
       return scheduledDeliveryHandler.getScheduledReferences();
    }
 
-   public int getDeliveringCount()
+   public synchronized int getDeliveringCount()
    {
       return deliveringCount.get();
    }
