@@ -462,6 +462,8 @@ public class AIOSequentialFileTest extends UnitTestCase
    protected void setUp()
    {
       mockFile = null;
+      File testDir = new File(getTestDir());
+      testDir.mkdirs();
    }
 
    // Private -------------------------------------------------------
