@@ -31,7 +31,6 @@ import java.nio.channels.FileChannel;
 
 import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
