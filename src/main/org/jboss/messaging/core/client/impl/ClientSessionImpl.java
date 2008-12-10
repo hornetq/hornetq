@@ -630,7 +630,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       producers.remove(producer);
    }
 
-   public void handleReceiveMessage(final long consumerID, final ClientMessage message) throws Exception
+   public void handleReceiveMessage(final long consumerID, final ClientMessageInternal message) throws Exception
    {
       ClientConsumerInternal consumer = consumers.get(consumerID);
 

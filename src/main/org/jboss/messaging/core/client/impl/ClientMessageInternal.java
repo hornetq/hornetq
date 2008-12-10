@@ -20,42 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
+
 package org.jboss.messaging.core.client.impl;
 
-import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 
 /**
- * 
- * A ClientConsumerInternal
- * 
+ * A ClientMessageInternal
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * Created 10 Dec 2008 18:05:24
+ *
  *
  */
-public interface ClientConsumerInternal extends ClientConsumer
-{
-   long getID();
-
-   void handleMessage(ClientMessageInternal message) throws Exception;
-
-   void handleLargeMessage(byte[] largeMessageHeader) throws Exception;
+public interface ClientMessageInternal extends ClientMessage
+{   
+   /** Size used for FlowControl */
+   int getFlowControlSize();
    
-   void handleLargeMessageContinuation(SessionReceiveContinuationMessage continuation) throws Exception;
-
-   void clear();
-
-   int getClientWindowSize();
-
-   int getBufferSize();
-
-   int getCreditsToSend();
-
-   void cleanUp() throws Exception;
-   
-   void acknowledge(ClientMessage message) throws MessagingException;
-   
-   void flushAcks() throws MessagingException;
-
+   /** Size used for FlowControl */
+   void setFlowControlSize(int flowControlSize);
 }

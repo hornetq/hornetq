@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.tests.integration.cluster.distribution;
 
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_USE_DUPLICATE_DETECTION;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -129,6 +131,7 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
                                                                         retryIntervalMultiplier,
                                                                         retriesBeforeFailover,
                                                                         maxRetriesAfterFailover,
+                                                                        DEFAULT_USE_DUPLICATE_DETECTION,
                                                                         connectorNames);
 
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
@@ -259,6 +262,7 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
                                                                         retryIntervalMultiplier,
                                                                         retriesBeforeFailover,
                                                                         maxRetriesAfterFailover,
+                                                                        DEFAULT_USE_DUPLICATE_DETECTION,
                                                                         connectorNames);
 
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
@@ -393,6 +397,7 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
                                                                         retryIntervalMultiplier,
                                                                         retriesBeforeFailover,
                                                                         maxRetriesAfterFailover,
+                                                                        DEFAULT_USE_DUPLICATE_DETECTION,
                                                                         connectorNames);
 
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
@@ -513,6 +518,7 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
                                                                         retryIntervalMultiplier,
                                                                         retriesBeforeFailover,
                                                                         maxRetriesAfterFailover,
+                                                                        DEFAULT_USE_DUPLICATE_DETECTION,
                                                                         connectorNames);
 
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
@@ -622,6 +628,7 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
                                                                         retryIntervalMultiplier,
                                                                         retriesBeforeFailover,
                                                                         maxRetriesAfterFailover,
+                                                                        DEFAULT_USE_DUPLICATE_DETECTION,
                                                                         connectorNames);
 
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();

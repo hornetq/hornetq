@@ -25,6 +25,7 @@ package org.jboss.messaging.core.client;
 import java.io.File;
 import java.nio.channels.FileChannel;
 
+import org.jboss.messaging.core.client.impl.ClientMessageInternal;
 import org.jboss.messaging.core.exception.MessagingException;
 
 /**
@@ -36,7 +37,7 @@ import org.jboss.messaging.core.exception.MessagingException;
  *
  *
  */
-public interface ClientFileMessage extends ClientMessage
+public interface ClientFileMessage extends ClientMessageInternal
 {
    File getFile();
 

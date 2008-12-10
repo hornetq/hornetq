@@ -24,6 +24,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
+import org.jboss.messaging.core.client.impl.ClientMessageInternal;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -50,7 +51,7 @@ public class SessionReceiveMessage extends PacketImpl
 
    private byte[] largeMessageHeader;
 
-   private ClientMessage clientMessage;
+   private ClientMessageInternal clientMessage;
 
    private ServerMessage serverMessage;
 
@@ -100,7 +101,7 @@ public class SessionReceiveMessage extends PacketImpl
       return consumerID;
    }
 
-   public ClientMessage getClientMessage()
+   public ClientMessageInternal getClientMessage()
    {
       return clientMessage;
    }

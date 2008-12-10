@@ -36,7 +36,7 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  *
  */
-public class ClientMessageImpl extends MessageImpl implements ClientMessage
+public class ClientMessageImpl extends MessageImpl implements ClientMessageInternal
 {
    // added this constant here so that the client package have no dependency on JMS
    public static final SimpleString REPLYTO_HEADER_NAME = new SimpleString("JMSReplyTo");

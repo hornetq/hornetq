@@ -92,7 +92,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public static final int DEFAULT_MAX_RETRIES_BEFORE_FAILOVER = 0;
 
    public static final int DEFAULT_MAX_RETRIES_AFTER_FAILOVER = 10;
-
+   
    // Attributes
    // -----------------------------------------------------------------------------------
 

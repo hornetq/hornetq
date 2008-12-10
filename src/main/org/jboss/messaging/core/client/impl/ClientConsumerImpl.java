@@ -66,13 +66,13 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private final int ackBatchSize;
 
-   private final Queue<ClientMessage> buffer = new LinkedList<ClientMessage>();
+   private final Queue<ClientMessageInternal> buffer = new LinkedList<ClientMessageInternal>();
 
    private final Runner runner = new Runner();
 
    private final File directory;
 
-   private ClientMessage currentChunkMessage;
+   private ClientMessageInternal currentChunkMessage;
 
    private volatile Thread receiverThread;
 
@@ -147,7 +147,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          while (true)
          {
-            ClientMessage m = null;
+            ClientMessageInternal m = null;
 
             synchronized (this)
             {
@@ -299,7 +299,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return id;
    }
 
-   public synchronized void handleMessage(final ClientMessage message) throws Exception
+   public synchronized void handleMessage(final ClientMessageInternal message) throws Exception
    {
       if (closing)
       {
@@ -307,7 +307,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          return;
       }
 
-      ClientMessage messageToHandle = message;
+      ClientMessageInternal messageToHandle = message;
 
       if (isFileConsumer())
       {
@@ -394,8 +394,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          
          currentChunkMessage.setFlowControlSize(chunk.getBody().length);
 
-         ClientMessage msgToSend = currentChunkMessage;
+         ClientMessageInternal msgToSend = currentChunkMessage;
+         
          currentChunkMessage = null;
+         
          handleMessage(msgToSend);
       }
    }
@@ -523,7 +525,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       // ordering. If we just added a Runnable with the message to the executor immediately as we get it
       // we could not do that
 
-      ClientMessage message;
+      ClientMessageInternal message;
 
       // Must store handler in local variable since might get set to null
       // otherwise while this is executing and give NPE when calling onMessage
@@ -560,7 +562,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
     * @param message
     * @throws MessagingException
     */
-   private void flowControlBeforeConsumption(final ClientMessage message) throws MessagingException
+   private void flowControlBeforeConsumption(final ClientMessageInternal message) throws MessagingException
    {
       // Chunk messages will execute the flow control while receiving the chunks
       flowControl(message.getFlowControlSize());
@@ -663,7 +665,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   private ClientMessage createFileMessage(final byte[] header) throws Exception
+   private ClientMessageInternal createFileMessage(final byte[] header) throws Exception
    {
 
       MessagingBuffer headerBuffer = new ByteBufferWrapper(ByteBuffer.wrap(header));

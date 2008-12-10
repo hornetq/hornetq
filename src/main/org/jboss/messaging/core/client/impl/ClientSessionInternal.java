@@ -12,7 +12,6 @@
 
 package org.jboss.messaging.core.client.impl;
 
-import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.RemotingConnection;
@@ -39,7 +38,7 @@ public interface ClientSessionInternal extends ClientSession
 
    void removeProducer(ClientProducerInternal producer);
 
-   void handleReceiveMessage(long consumerID, ClientMessage message) throws Exception;
+   void handleReceiveMessage(long consumerID, ClientMessageInternal message) throws Exception;
       
    void handleReceiveLargeMessage(final long consumerID, final byte[] headerBytes) throws Exception;
 

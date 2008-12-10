@@ -43,8 +43,7 @@ public class BroadcastGroupConfiguration implements Serializable
    private static final long serialVersionUID = 1052413739064253955L;
    
    private static final Logger log = Logger.getLogger(BroadcastGroupConfiguration.class);
-
-   
+  
    private final String name;
    
    private final String localBindAddress;

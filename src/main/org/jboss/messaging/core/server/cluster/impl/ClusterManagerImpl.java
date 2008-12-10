@@ -368,6 +368,7 @@ public class ClusterManagerImpl implements ClusterManager
                                     config.getRetryIntervalMultiplier(),
                                     config.getMaxRetriesBeforeFailover(),
                                     config.getMaxRetriesAfterFailover(),
+                                    config.isUseDuplicateDetection(),
                                     conns);
       }
       else
@@ -401,6 +402,7 @@ public class ClusterManagerImpl implements ClusterManager
                                     config.getRetryIntervalMultiplier(),
                                     config.getMaxRetriesBeforeFailover(),
                                     config.getMaxRetriesAfterFailover(),
+                                    config.isUseDuplicateDetection(),
                                     group);
       }
 

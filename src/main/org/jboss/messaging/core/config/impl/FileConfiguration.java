@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
@@ -532,6 +531,8 @@ public class FileConfiguration extends ConfigurationImpl
       int maxRetriesBeforeFailover = DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
       
       int maxRetriesAfterFailover = DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
+      
+      boolean useDuplicateDetection = DEFAULT_USE_DUPLICATE_DETECTION;
 
       NodeList children = bgNode.getChildNodes();
 
@@ -583,6 +584,10 @@ public class FileConfiguration extends ConfigurationImpl
          {
             maxRetriesAfterFailover = XMLUtil.parseInt(child);
          }
+         else if (child.getNodeName().equals("use-duplicate-detection"))
+         {
+            useDuplicateDetection = XMLUtil.parseBoolean(child);
+         }
          else if (child.getNodeName().equals("connector"))
          {
             String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
@@ -615,6 +620,7 @@ public class FileConfiguration extends ConfigurationImpl
                                                retryIntervalMultiplier,
                                                maxRetriesBeforeFailover,
                                                maxRetriesAfterFailover,
+                                               useDuplicateDetection,
                                                staticConnectorNames);
       }
       else
@@ -629,7 +635,8 @@ public class FileConfiguration extends ConfigurationImpl
                                                retryInterval,
                                                retryIntervalMultiplier,
                                                maxRetriesBeforeFailover,
-                                               maxRetriesAfterFailover,                                               
+                                               maxRetriesAfterFailover,       
+                                               useDuplicateDetection,
                                                discoveryGroupName);
       }
 

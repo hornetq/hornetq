@@ -99,6 +99,8 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
    private final int maxRetriesBeforeFailover;
 
    private final int maxRetriesAfterFailover;
+   
+   private final boolean useDuplicateDetection;
 
    /*
     * Constructor using static list of connectors
@@ -119,6 +121,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
                           final double retryIntervalMultiplier,
                           final int maxRetriesBeforeFailover,
                           final int maxRetriesAfterFailover,
+                          final boolean useDuplicateDetection,
                           final List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception
    {
       this.name = name;
@@ -154,6 +157,8 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
       this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
 
       this.maxRetriesAfterFailover = maxRetriesAfterFailover;
+      
+      this.useDuplicateDetection = useDuplicateDetection;
 
       this.updateConnectors(connectors);
    }
@@ -177,6 +182,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
                           final double retryIntervalMultiplier,
                           final int maxRetriesBeforeFailover,
                           final int maxRetriesAfterFailover,
+                          final boolean useDuplicateDetection,
                           final DiscoveryGroup discoveryGroup) throws Exception
    {
       this.name = name;
@@ -212,6 +218,8 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
       this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
 
       this.maxRetriesAfterFailover = maxRetriesAfterFailover;
+      
+      this.useDuplicateDetection = useDuplicateDetection;
    }
 
    public synchronized void start() throws Exception
