@@ -29,6 +29,7 @@ import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.Future;
 
@@ -333,7 +334,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   public synchronized void handleLargeMessage(final byte[] header) throws Exception
+   public synchronized void handleLargeMessage(final SessionReceiveMessage packet) throws Exception
    {
       if (closing)
       {
@@ -342,9 +343,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
 
       // Flow control for the first packet, we will have others
-      flowControl(header.length);
+      flowControl(packet.getPacketSize());
 
-      currentChunkMessage = createFileMessage(header);
+      currentChunkMessage = createFileMessage(packet.getLargeMessageHeader());
    }
 
    public synchronized void handleLargeMessageContinuation(final SessionReceiveContinuationMessage chunk) throws Exception
@@ -358,7 +359,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       if (chunk.isContinues())
       {
-         flowControl(chunk.getBody().length);
+         flowControl(chunk.getPacketSize());
       }
 
       if (isFileConsumer())
@@ -392,7 +393,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             ((ClientFileMessageInternal)currentChunkMessage).closeChannel();
          }
 
-         currentChunkMessage.setFlowControlSize(chunk.getBody().length);
+         currentChunkMessage.setFlowControlSize(chunk.getPacketSize());
 
          ClientMessageInternal msgToSend = currentChunkMessage;
 
@@ -606,11 +607,28 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             channel.sendBlocking(new SessionConsumerCloseMessage(id));
          }
+         
+         clearBuffer();
       }
       finally
       {
          session.removeConsumer(this);
       }
+   }
+   
+   private void clearBuffer()
+   {
+      if (isFileConsumer())
+      {
+         for (ClientMessage message: buffer)
+         {
+            if (message instanceof ClientFileMessage)
+            {
+               ((ClientFileMessage) message).getFile().delete();
+            }
+         }
+      }
+      buffer.clear();
    }
 
    private void doAck(final ClientMessage message) throws MessagingException
@@ -622,12 +640,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       session.acknowledge(id, message.getMessageID());
    }
 
-   private ClientFileMessage cloneAsFileMessage(final ClientMessageInternal message) throws Exception
+   private ClientMessageInternal cloneAsFileMessage(final ClientMessageInternal message) throws Exception
    {
       if (message instanceof ClientFileMessageImpl)
       {
          // nothing to be done
-         return (ClientFileMessage)message;
+         return message;
       }
       else
       {

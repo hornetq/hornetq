@@ -26,6 +26,7 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 
 /**
  * 
@@ -40,7 +41,7 @@ public interface ClientConsumerInternal extends ClientConsumer
 
    void handleMessage(ClientMessageInternal message) throws Exception;
 
-   void handleLargeMessage(byte[] largeMessageHeader) throws Exception;
+   void handleLargeMessage(SessionReceiveMessage largeMessageHeader) throws Exception;
    
    void handleLargeMessageContinuation(SessionReceiveContinuationMessage continuation) throws Exception;
 

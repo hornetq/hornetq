@@ -61,6 +61,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionFailoverComplete
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
@@ -639,13 +640,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
    }
    
-   public void handleReceiveLargeMessage(final long consumerID, final byte[] headerBytes) throws Exception
+   public void handleReceiveLargeMessage(final long consumerID, final SessionReceiveMessage receiveMessage) throws Exception
    {
       ClientConsumerInternal consumer = consumers.get(consumerID);
 
       if (consumer != null)
       {
-         consumer.handleLargeMessage(headerBytes);
+         consumer.handleLargeMessage(receiveMessage);
+         
       }
    }
 

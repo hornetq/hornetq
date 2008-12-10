@@ -277,6 +277,7 @@ public class PagingManagerImpl implements PagingManager
 
    public synchronized void startGlobalDepage()
    {
+      setGlobalPageMode(true);
       for (PagingStore store : stores.values())
       {
          store.startDepaging(pagingSPI.getGlobalDepagerExecutor());

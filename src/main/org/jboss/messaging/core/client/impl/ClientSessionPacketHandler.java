@@ -77,7 +77,7 @@ public class ClientSessionPacketHandler implements ChannelHandler
                
                if (message.isLargeMessage())
                {
-                  clientSession.handleReceiveLargeMessage(message.getConsumerID(), message.getLargeMessageHeader());
+                  clientSession.handleReceiveLargeMessage(message.getConsumerID(), message);
                }
                else
                {

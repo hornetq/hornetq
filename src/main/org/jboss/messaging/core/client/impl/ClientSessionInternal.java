@@ -16,6 +16,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 
 /**
  * A ClientSessionInternal
@@ -27,7 +28,7 @@ public interface ClientSessionInternal extends ClientSession
    String getName();
 
    void acknowledge(long consumerID, long messageID) throws MessagingException;
-   
+
    void expire(long consumerID, long messageID) throws MessagingException;
 
    void addConsumer(ClientConsumerInternal consumer);
@@ -39,12 +40,12 @@ public interface ClientSessionInternal extends ClientSession
    void removeProducer(ClientProducerInternal producer);
 
    void handleReceiveMessage(long consumerID, ClientMessageInternal message) throws Exception;
-      
-   void handleReceiveLargeMessage(final long consumerID, final byte[] headerBytes) throws Exception;
 
-   void handleReceiveContinuation(final long consumerID, final SessionReceiveContinuationMessage continuation) throws Exception;
+   void handleReceiveLargeMessage(long consumerID, SessionReceiveMessage headerBytes) throws Exception;
+
+   void handleReceiveContinuation(long consumerID, SessionReceiveContinuationMessage continuation) throws Exception;
 
    void handleFailover(RemotingConnection backupConnection);
-   
+
    RemotingConnection getConnection();
 }

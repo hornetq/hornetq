@@ -25,7 +25,6 @@ package org.jboss.messaging.core.client.impl;
 import java.nio.ByteBuffer;
 
 import org.jboss.messaging.core.client.AcknowledgementHandler;
-import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
@@ -229,7 +228,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       if (msg.getEncodeSize() > minLargeMessageSize)
       {
-         sendMessageInChunks(true, msg);
+         sendMessageInChunks(sendBlocking, msg);
       }
       else if (sendBlocking)
       {
@@ -266,25 +265,17 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       for (int pos = 0; pos < bodySize;)
       {
-         final int chunkLength;
          final boolean lastChunk;
                   
-         final int bytesToWrite = bodySize - pos;
-         
-         if (bytesToWrite < minLargeMessageSize)
-         {
-            lastChunk = true;
-            chunkLength = bytesToWrite;
-         }
-         else
-         {
-            lastChunk = false;
-            chunkLength = minLargeMessageSize;
-         }
+         final int chunkLength = Math.min(bodySize - pos, minLargeMessageSize); 
          
          final MessagingBuffer bodyBuffer = new ByteBufferWrapper(ByteBuffer.allocate(chunkLength));
 
          msg.encodeBody(bodyBuffer, pos, chunkLength);
+
+         pos += chunkLength;
+         
+         lastChunk = pos >= bodySize;
 
          final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bodyBuffer.array(), !lastChunk, lastChunk && sendBlocking);
 
@@ -298,7 +289,6 @@ public class ClientProducerImpl implements ClientProducerInternal
             channel.send(chunk);
          }
 
-         pos += chunkLength;
       }
 
       if (msg instanceof ClientFileMessageInternal)

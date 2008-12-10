@@ -657,7 +657,7 @@ public class ServerConsumerImpl implements ServerConsumer
                if (availableCredits != null)
                {
                   // RequiredBufferSize on this case represents the right number of bytes sent
-                  availableCredits.addAndGet(-headerBuffer.limit());
+                  availableCredits.addAndGet(-initialMessage.getRequiredBufferSize());
                }
             }
 
@@ -669,7 +669,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
                if (availableCredits != null)
                {
-                  availableCredits.addAndGet(-chunkLen);
+                  availableCredits.addAndGet(-readAheadChunk.getRequiredBufferSize());
                }
 
                channel.send(readAheadChunk);
@@ -694,7 +694,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
                if (availableCredits != null)
                {
-                  availableCredits.addAndGet(-chunkLen);
+                  availableCredits.addAndGet(-chunk.getRequiredBufferSize());
                }
 
                channel.send(chunk);

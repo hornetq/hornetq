@@ -86,31 +86,33 @@ public class ChunkTestBase extends ServiceTestBase
    protected void testChunks(final boolean realFiles,
                              final boolean useFile,
                              final boolean preAck,
+                             final boolean sendingBlocking,
                              final int numberOfMessages,
                              final int numberOfIntegers,
-                             final boolean sendingBlocking,
                              final int waitOnConsumer,
                              final long delayDelivery) throws Exception
    {
       testChunks(realFiles,
                  useFile,
                  preAck,
+                 sendingBlocking,
                  numberOfMessages,
                  numberOfIntegers,
-                 sendingBlocking,
                  waitOnConsumer,
                  delayDelivery,
+                 -1,
                  false);
    }
 
    protected void testChunks(final boolean realFiles,
                              final boolean useFile,
                              final boolean preAck,
+                             final boolean sendingBlocking,
                              final int numberOfMessages,
                              final int numberOfIntegers,
-                             final boolean sendingBlocking,
                              final int waitOnConsumer,
                              final long delayDelivery,
+                             final int producerWindow,
                              final boolean testTime) throws Exception
    {
 
@@ -128,6 +130,11 @@ public class ChunkTestBase extends ServiceTestBase
             sf.setBlockOnNonPersistentSend(true);
             sf.setBlockOnPersistentSend(true);
             sf.setBlockOnAcknowledge(true);
+         }
+         
+         if (producerWindow > 0)
+         {
+            sf.setSendWindowSize(producerWindow);
          }
 
          ClientSession session = sf.createSession(null, null, false, true, false, preAck, 0);
