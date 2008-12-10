@@ -153,6 +153,11 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
    {
       return localControl.listMessages(filter);
    }
+   
+   public int countMessages(final String filter) throws Exception
+   {
+      return localControl.countMessages(filter);
+   }
 
    public String getAddress()
    {

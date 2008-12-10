@@ -79,6 +79,11 @@ public interface JMSQueueControlMBean extends DestinationControlMBean
          @Parameter(name = "filter", desc = "A JMS Message filter") String filter)
          throws Exception;
 
+   @Operation(desc = "Returns the number of the messages in the queue matching the given filter", impact = INFO)
+   int countMessages(
+         @Parameter(name = "filter", desc = "A JMS message filter") String filter)
+         throws Exception;
+
    @Operation(desc = "Remove the message corresponding to the given messageID", impact = ACTION)
    boolean removeMessage(
          @Parameter(name = "messageID", desc = "A message ID") String messageID)

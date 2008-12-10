@@ -41,6 +41,7 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.lang.management.ManagementFactory;
@@ -60,6 +61,7 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.JBossQueue;
@@ -284,6 +286,32 @@ public class JMSQueueControlTest extends TestCase
       assertEquals(messageID, message.getJMSMessageID());
    }
 
+   public void testCountMessagesWithFilter() throws Exception
+   {
+      String key = "key";
+      long matchingValue = randomLong();
+      long unmatchingValue = matchingValue + 1;
+
+      JMSQueueControlMBean queueControl = createQueueControl(queue);
+
+      Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      JMSUtil.sendMessageWithProperty(session, queue, key, matchingValue);
+      JMSUtil.sendMessageWithProperty(session, queue, key, unmatchingValue);
+      JMSUtil.sendMessageWithProperty(session, queue, key, matchingValue);
+
+      // wiat a little bit to give time for the message to be handled by the server
+      Thread.sleep(200);
+
+      assertEquals(3, queueControl.getMessageCount());
+
+      assertEquals(2, queueControl.countMessages(key + " =" + matchingValue));
+      assertEquals(1, queueControl.countMessages(key + " =" + unmatchingValue));
+      
+      session.close();
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

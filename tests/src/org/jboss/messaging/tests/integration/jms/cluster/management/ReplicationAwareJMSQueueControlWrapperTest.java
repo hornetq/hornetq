@@ -26,8 +26,6 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import javax.jms.Connection;
-import javax.jms.Destination;
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
@@ -92,19 +90,8 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       return queueControl;
    }
    
-   private static Message sendMessageWithProperty(Session session, Destination destination, String key, long value) throws JMSException
-   {
-      MessageProducer producer = session.createProducer(destination);
-      Message message = session.createMessage();
-      message.setLongProperty(key, value);
-      producer.send(message);
-      return message;
-   }
-
-   // Constructors --------------------------------------------------
-
    // Public --------------------------------------------------------
-
+   
    public void testChangeMessagePriority() throws Exception
    {
       byte oldPriority = (byte)1;
@@ -154,8 +141,8 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       long unmatchingValue = matchingValue + 1;
 
       // send 1 message
-      sendMessageWithProperty(session, queue, key, unmatchingValue);
-      sendMessageWithProperty(session, queue, key, matchingValue);
+      JMSUtil.sendMessageWithProperty(session, queue, key, unmatchingValue);
+      JMSUtil.sendMessageWithProperty(session, queue, key, matchingValue);
 
       // wiat a little bit to give time for the message to be handled by the server
       Thread.sleep(timeToSleep);
@@ -202,8 +189,8 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       long unmatchingValue = matchingValue + 1;
 
       // send on queue
-      sendMessageWithProperty(session, queue, key, unmatchingValue);
-      sendMessageWithProperty(session, queue, key, matchingValue);
+      JMSUtil.sendMessageWithProperty(session, queue, key, unmatchingValue);
+      JMSUtil.sendMessageWithProperty(session, queue, key, matchingValue);
 
       // wait a little bit to ensure the message is handled by the server
       Thread.sleep(timeToSleep);
@@ -277,8 +264,8 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       long unmatchingValue = matchingValue + 1;
 
       // send on queue
-      sendMessageWithProperty(session, queue, key, unmatchingValue);
-      sendMessageWithProperty(session, queue, key, matchingValue);
+      JMSUtil.sendMessageWithProperty(session, queue, key, unmatchingValue);
+      JMSUtil.sendMessageWithProperty(session, queue, key, matchingValue);
 
       // wait a little bit to ensure the message is handled by the server
       Thread.sleep(timeToSleep );

@@ -173,6 +173,11 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
    {
       return localQueueControl.listMessages(filter);
    }
+   
+   public int countMessages(final String filter) throws Exception
+   {
+      return localQueueControl.countMessages(filter);
+   }
 
    public TabularData listScheduledMessages() throws Exception
    {

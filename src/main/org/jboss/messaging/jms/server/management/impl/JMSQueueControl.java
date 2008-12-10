@@ -47,7 +47,6 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
-import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.SelectorTranslator;
@@ -281,6 +280,13 @@ public class JMSQueueControl implements JMSQueueControlMBean
       }
    }
 
+   public int countMessages(final String filterStr) throws Exception
+   {
+      Filter filter = createFilterFromJMSSelector(filterStr);
+      List<MessageReference> messageRefs = coreQueue.list(filter);
+      return messageRefs.size();
+   }
+   
    public boolean expireMessage(final String messageID) throws Exception
    {
       Filter filter = createFilterForJMSMessageID(messageID);

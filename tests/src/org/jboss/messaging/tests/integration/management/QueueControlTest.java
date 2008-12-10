@@ -312,6 +312,43 @@ public class QueueControlTest extends TestCase
       session.close();
    }
    
+   public void testCountMessagesWithFilter() throws Exception
+   {
+      SimpleString key = new SimpleString("key");
+      long matchingValue = randomLong();
+      long unmatchingValue = matchingValue + 1;
+
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSession session = sf.createSession(false, true, true);
+
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, true, true);
+      ClientProducer producer = session.createProducer(address);
+      session.start();
+
+      // send on queue
+      ClientMessage matchingMessage = session.createClientMessage(false);
+      matchingMessage.putLongProperty(key, matchingValue);
+      ClientMessage unmatchingMessage = session.createClientMessage(false);
+      unmatchingMessage.putLongProperty(key, unmatchingValue);
+      producer.send(matchingMessage);
+      producer.send(unmatchingMessage);
+      producer.send(matchingMessage);
+
+      // wait a little bit to ensure the message is handled by the server
+      Thread.sleep(100);
+      QueueControlMBean queueControl = createQueueControl(address, queue);
+      assertEquals(3, queueControl.getMessageCount());
+
+      assertEquals(2, queueControl.countMessages(key + " =" + matchingValue));
+      assertEquals(1, queueControl.countMessages(key + " =" + unmatchingValue));
+
+      session.deleteQueue(queue);
+      session.close();
+   }
+   
    public void testExpireMessagesWithFilter() throws Exception
    {
       SimpleString key = new SimpleString("key");

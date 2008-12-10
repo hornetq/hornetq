@@ -67,6 +67,13 @@ public interface TopicControlMBean extends DestinationControlMBean
          @Parameter(name = "queueName", desc = "the name of the queue representing a subscription") String queueName)
          throws Exception;
 
+   @Operation(desc = "Count the number of messages matching the filter for the given subscription")
+   public int countMessagesForSubscription(
+         @Parameter(name = "clientID", desc = "the client ID") String clientID,
+         @Parameter(name = "subscriptionName", desc = "the name of the durable subscription") String subscriptionName,
+         @Parameter(name = "filter", desc = "a JMS filter") String filter)
+         throws Exception;
+
    // Specific API
 
    @Operation(desc = "List all subscriptions")

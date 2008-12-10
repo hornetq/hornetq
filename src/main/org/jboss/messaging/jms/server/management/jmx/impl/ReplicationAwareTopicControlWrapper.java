@@ -118,6 +118,11 @@ public class ReplicationAwareTopicControlWrapper extends ReplicationAwareStandar
    {
       return localControl.listMessagesForSubscription(queueName);
    }
+   
+   public int countMessagesForSubscription(final String clientID, final String subscriptionName, final String filterStr) throws Exception
+   {
+      return localControl.countMessagesForSubscription(clientID, subscriptionName, filterStr);
+   }
 
    public SubscriptionInfo[] listNonDurableSubscriptionInfos()
    {

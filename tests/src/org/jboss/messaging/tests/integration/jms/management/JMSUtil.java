@@ -46,6 +46,7 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
@@ -220,6 +221,15 @@ public class JMSUtil
       {
          producer.send(s.createTextMessage(randomString()));
       }
+   }
+
+   public static Message sendMessageWithProperty(Session session, Destination destination, String key, long value) throws JMSException
+   {
+      MessageProducer producer = session.createProducer(destination);
+      Message message = session.createMessage();
+      message.setLongProperty(key, value);
+      producer.send(message);
+      return message;
    }
 
    // Constructors --------------------------------------------------

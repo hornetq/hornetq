@@ -28,6 +28,8 @@ import java.util.List;
 
 import javax.management.openmbean.TabularData;
 
+import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -180,6 +182,21 @@ public class TopicControl implements TopicControlMBean
          infos.add(info);
       }
       return JMSMessageInfo.toTabularData(infos);
+   }
+   
+   public int countMessagesForSubscription(final String clientID, final String subscriptionName, final String filterStr) throws Exception
+   {
+      String queueName = JBossTopic.createQueueNameForDurableSubscription(clientID, subscriptionName);
+      SimpleString sAddress = new SimpleString(queueName);
+      Binding binding = postOffice.getBinding(sAddress);
+      if (binding == null)
+      {
+         throw new IllegalArgumentException("No queue with name " + sAddress);
+      }
+      Queue queue = binding.getQueue();
+      Filter filter = FilterImpl.createFilter(filterStr);
+      List<MessageReference> messageRefs = queue.list(filter);
+      return messageRefs.size();
    }
 
    public int removeAllMessages() throws Exception

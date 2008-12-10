@@ -89,6 +89,11 @@ public interface QueueControlMBean
          @Parameter(name = "filter", desc = "A message filter") String filter)
          throws Exception;
 
+   @Operation(desc = "Returns the number of the messages in the queue matching the given filter", impact = INFO)
+   int countMessages(
+         @Parameter(name = "filter", desc = "A message filter") String filter)
+         throws Exception;
+
    @Operation(desc = "Remove all the messages from the queue", impact = ACTION)
    int removeAllMessages() throws Exception;
 

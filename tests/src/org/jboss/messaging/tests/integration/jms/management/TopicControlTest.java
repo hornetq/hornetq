@@ -22,10 +22,13 @@
 
 package org.jboss.messaging.tests.integration.jms.management;
 
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.lang.management.ManagementFactory;
 
+import javax.jms.Connection;
+import javax.jms.Session;
 import javax.jms.Topic;
 import javax.management.MBeanServerInvocationHandler;
 
@@ -34,6 +37,7 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.JBossTopic;
@@ -131,6 +135,33 @@ public class TopicControlTest extends TestCase
       assertEquals(3, topicControl.listAllSubscriptionInfos().length);
       assertEquals(1, topicControl.listNonDurableSubscriptionInfos().length);
       assertEquals(2, topicControl.listDurableSubscriptionInfos().length);
+   }
+   
+   public void testCountMessagesForSubscription() throws Exception
+   {
+      String key = "key";
+      long matchingValue = randomLong();
+      long unmatchingValue = matchingValue + 1;
+
+      JMSUtil.createDurableSubscriber(topic, clientID, subscriptionName);
+      
+      Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      connection.setClientID(clientID);
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      JMSUtil.sendMessageWithProperty(session, topic, key, matchingValue);
+      JMSUtil.sendMessageWithProperty(session, topic, key, unmatchingValue);
+      JMSUtil.sendMessageWithProperty(session, topic, key, matchingValue);
+      
+      TopicControlMBean topicControl = createTopicControl(topic);
+      
+      // wiat a little bit to give time for the message to be handled by the server
+      Thread.sleep(200);
+
+      assertEquals(3, topicControl.getMessageCount());
+
+      assertEquals(2, topicControl.countMessagesForSubscription(clientID, subscriptionName, key + " =" + matchingValue));
+      assertEquals(1, topicControl.countMessagesForSubscription(clientID, subscriptionName, key + " =" + unmatchingValue));
    }
    
    public void testDropDurableSubscriptionWithExistingSubscription() throws Exception

@@ -258,6 +258,13 @@ public class QueueControl implements QueueControlMBean
       }
    }
 
+
+   public int countMessages(final String filterStr) throws Exception {
+      Filter filter = FilterImpl.createFilter(filterStr);
+      List<MessageReference> refs = queue.list(filter);
+      return refs.size();
+   }
+   
    public int removeAllMessages() throws Exception
    {
       try
