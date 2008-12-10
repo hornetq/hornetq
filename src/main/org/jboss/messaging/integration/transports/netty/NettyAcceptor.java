@@ -130,7 +130,7 @@ public class NettyAcceptor implements Acceptor
       {
          httpServerScanPeriod = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_SERVER_SCAN_PERIOD_PROP_NAME, TransportConstants.DEFAULT_HTTP_SERVER_SCAN_PERIOD, configuration);
          httpResponseTime = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_RESPONSE_TIME_PROP_NAME, TransportConstants.DEFAULT_HTTP_RESPONSE_TIME, configuration);
-         httpKeepAliveTimer = new Timer(true);
+         httpKeepAliveTimer = new Timer();
          httpKeepAliveTask = new HttpKeepAliveTask();
          httpKeepAliveTimer.schedule(httpKeepAliveTask, httpServerScanPeriod, httpServerScanPeriod);
       }
@@ -268,8 +268,9 @@ public class NettyAcceptor implements Acceptor
 
       if(httpKeepAliveTimer != null)
       {
-         httpKeepAliveTimer.cancel();
+         httpKeepAliveTask.cancel();
          
+         httpKeepAliveTimer.cancel();
       }
       serverChannel.close().awaitUninterruptibly();
       bossExecutor.shutdown();

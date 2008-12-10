@@ -33,8 +33,16 @@ import java.util.ArrayList;
 public class HttpKeepAliveTask extends TimerTask
 {
    private final List<HttpAcceptorHandler> handlers = new ArrayList<HttpAcceptorHandler>();
+
+   private boolean cancelled;
+
    public synchronized void run()
    {
+      if(cancelled)
+      {
+         return;
+      }
+      
       long time = System.currentTimeMillis();
       for (HttpAcceptorHandler handler : handlers)
       {
@@ -50,5 +58,11 @@ public class HttpKeepAliveTask extends TimerTask
    public synchronized void unregisterKeepAliveHandler(HttpAcceptorHandler httpAcceptorHandler)
    {
       handlers.remove(httpAcceptorHandler);
+   }
+
+   public synchronized boolean cancel()
+   {
+      cancelled = true;
+      return super.cancel();
    }
 }
