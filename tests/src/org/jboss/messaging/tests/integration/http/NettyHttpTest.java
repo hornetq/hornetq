@@ -44,6 +44,8 @@ public class NettyHttpTest extends UnitTestCase
 {
    private NettyAcceptor acceptor;
 
+   private NettyConnector connector;
+
    public void testSendAndReceiveAtSameTime() throws Exception
    {
 
@@ -60,7 +62,7 @@ public class NettyHttpTest extends UnitTestCase
       acceptor.start();
 
       SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
-      NettyConnector connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
       connector.start();
       Connection conn = connector.createConnection();
       connCreatedLatch.await(5, TimeUnit.SECONDS);
@@ -112,7 +114,7 @@ public class NettyHttpTest extends UnitTestCase
       acceptor.start();
 
       SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
-      NettyConnector connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
       connector.start();
       Connection conn = connector.createConnection();
       connCreatedLatch.await(5, TimeUnit.SECONDS);
@@ -167,7 +169,7 @@ public class NettyHttpTest extends UnitTestCase
       acceptor.start();
 
       SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
-      NettyConnector connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
       connector.start();
       Connection conn = connector.createConnection();
       connCreatedLatch.await(5, TimeUnit.SECONDS);
@@ -223,7 +225,7 @@ public class NettyHttpTest extends UnitTestCase
       acceptor.start();
 
       SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
-      NettyConnector connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
       connector.start();
       Connection conn = connector.createConnection();
       connCreatedLatch.await(5, TimeUnit.SECONDS);
@@ -279,7 +281,7 @@ public class NettyHttpTest extends UnitTestCase
       acceptor.start();
 
       SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
-      NettyConnector connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
       connector.start();
       Connection conn = connector.createConnection();
       connCreatedLatch.await(5, TimeUnit.SECONDS);
@@ -329,7 +331,7 @@ public class NettyHttpTest extends UnitTestCase
       acceptor.start();
 
       BogusResponseHandler connectorHandler = new BogusResponseHandler(connectorLatch);
-      NettyConnector connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
       connector.start();
       Connection conn = connector.createConnection();
       connCreatedLatch.await(5, TimeUnit.SECONDS);
@@ -360,7 +362,11 @@ public class NettyHttpTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      
+      if(connector != null)
+      {
+         connector.close();
+         connector = null;
+      }
       if(acceptor != null)
       {
          acceptor.stop();
