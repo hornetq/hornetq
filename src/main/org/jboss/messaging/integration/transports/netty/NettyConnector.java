@@ -386,6 +386,8 @@ public class NettyConnector implements Connector
 
       private Timer idleClientTimer;
 
+      private HttpIdleTimerTask task;
+
       public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
       {
          super.channelConnected(ctx, e);
@@ -393,7 +395,8 @@ public class NettyConnector implements Connector
          if (httpClientIdleScanPeriod > 0)
          {
             idleClientTimer = new Timer("Http Idle Timer", true);
-            idleClientTimer.schedule(new HttpIdleTimerTask(), httpClientIdleScanPeriod, httpClientIdleScanPeriod);
+            task = new HttpIdleTimerTask();
+            idleClientTimer.schedule(task, httpClientIdleScanPeriod, httpClientIdleScanPeriod);
          }
       }
 
@@ -401,6 +404,8 @@ public class NettyConnector implements Connector
       {
          if (idleClientTimer != null)
          {
+            task.cancel();
+
             idleClientTimer.cancel();
          }
          super.channelClosed(ctx, e);
@@ -440,8 +445,7 @@ public class NettyConnector implements Connector
       private class HttpIdleTimerTask extends TimerTask
       {
          long currentTime = System.currentTimeMillis();
-
-         public void run()
+         public synchronized void run()
          {
             if (!waitingGet && System.currentTimeMillis() > lastSendTime + httpMaxClientIdleTime)
             {
@@ -449,6 +453,11 @@ public class NettyConnector implements Connector
                waitingGet = true;
                channel.write(httpRequest);
             }
+         }
+
+         public synchronized boolean cancel()
+         {
+            return super.cancel();
          }
       }
    }
