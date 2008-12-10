@@ -895,6 +895,7 @@
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout}">
          <sysproperty key="user.home" value="${user.home}"/>
+         <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
          <jvmarg value="-Djava.library.path=native/bin"/>
          <jvmarg value="-Dmodule.output=./"/>
          <jvmarg value="-Djava.util.logging.config.file=src/config/logging.properties"/>
@@ -956,6 +957,7 @@
          <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
          <!--<jvmarg value="-ea"/>-->
          <sysproperty key="jbm.remoting.disable.invm" value="${disable.invm}"/>
+        <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
          <classpath refid="jms.test.execution.classpath"/>
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
          <batchtest todir="${junit.batchtest.todir}"
@@ -994,6 +996,7 @@
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout}">
 
+        <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
          <jvmarg value="-Xmx1024M"/>
          <jvmarg value="-Djava.library.path=native/bin"/>
          <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
