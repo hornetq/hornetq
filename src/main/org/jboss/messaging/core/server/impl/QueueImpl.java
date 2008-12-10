@@ -163,7 +163,7 @@ public class QueueImpl implements Queue
    }
 
    public HandleStatus addLast(final MessageReference ref)
-   {      
+   {
       HandleStatus status = add(ref, false);
 
       return status;
@@ -253,7 +253,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   public synchronized MessageReference removeReferenceWithID(final long id)
+   public synchronized MessageReference removeReferenceWithID(final long id) throws Exception
    {
       Iterator<MessageReference> iterator = messageReferences.iterator();
 
@@ -269,14 +269,7 @@ public class QueueImpl implements Queue
 
             removed = ref;
 
-            try
-            {
-               referenceRemoved(removed);
-            }
-            catch (Exception e)
-            {
-               log.warn(e.getMessage(), e);
-            }
+            referenceRemoved(removed);
 
             break;
          }
@@ -401,7 +394,7 @@ public class QueueImpl implements Queue
    {
       return deleteMatchingReferences(null, storageManager);
    }
-   
+
    public synchronized int deleteMatchingReferences(final Filter filter, final StorageManager storageManager) throws Exception
    {
       int count = 0;
@@ -422,7 +415,7 @@ public class QueueImpl implements Queue
             count++;
          }
       }
-      
+
       List<MessageReference> cancelled = scheduledDeliveryHandler.cancel();
       for (MessageReference messageReference : cancelled)
       {
@@ -435,7 +428,7 @@ public class QueueImpl implements Queue
       }
 
       tx.commit();
-      
+
       return count;
    }
 
@@ -507,12 +500,12 @@ public class QueueImpl implements Queue
             count++;
          }
       }
-      
+
       tx.commit();
 
       return count;
    }
-   
+
    public void expireMessages(final StorageManager storageManager,
                               final PostOffice postOffice,
                               final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
@@ -521,7 +514,10 @@ public class QueueImpl implements Queue
       {
          if (expiringMessageReference.getMessage().isExpired())
          {
-            expireMessage(expiringMessageReference.getMessage().getMessageID(), storageManager, postOffice, queueSettingsRepository);
+            expireMessage(expiringMessageReference.getMessage().getMessageID(),
+                          storageManager,
+                          postOffice,
+                          queueSettingsRepository);
          }
       }
    }
@@ -567,8 +563,11 @@ public class QueueImpl implements Queue
       }
       return false;
    }
-   
-   public synchronized int moveMessages(final Filter filter, final SimpleString toAddress, final StorageManager storageManager, final PostOffice postOffice) throws Exception
+
+   public synchronized int moveMessages(final Filter filter,
+                                        final SimpleString toAddress,
+                                        final StorageManager storageManager,
+                                        final PostOffice postOffice) throws Exception
    {
       Transaction tx = new TransactionImpl(storageManager, postOffice);
 
@@ -586,7 +585,7 @@ public class QueueImpl implements Queue
             count++;
          }
       }
-      
+
       List<MessageReference> cancelled = scheduledDeliveryHandler.cancel();
       for (MessageReference ref : cancelled)
       {
@@ -600,7 +599,7 @@ public class QueueImpl implements Queue
       }
 
       tx.commit();
-      
+
       return count;
    }
 
@@ -727,7 +726,7 @@ public class QueueImpl implements Queue
       // because it's async and could get out of step
       // with the live node. Instead, when we replicate the delivery we remove
       // the ref from the queue
-  
+
       if (backup)
       {
          return;
@@ -905,7 +904,10 @@ public class QueueImpl implements Queue
 
       if (ref.getMessage().decrementRefCount() == 0)
       {
-         pagingManager.messageDone(ref.getMessage());
+         if (pagingManager != null)
+         {
+            pagingManager.messageDone(ref.getMessage());
+         }
       }
    }
 

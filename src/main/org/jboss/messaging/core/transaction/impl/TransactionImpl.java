@@ -76,7 +76,7 @@ public class TransactionImpl implements Transaction
    private final Object timeoutLock = new Object();
 
    private final long createTime;
-
+      
    public TransactionImpl(final StorageManager storageManager, final PostOffice postOffice)
    {
       this.storageManager = storageManager;
@@ -414,10 +414,6 @@ public class TransactionImpl implements Transaction
       return xid;
    }
 
-   public boolean isEmpty()
-   {
-      return refsToAdd.isEmpty() && acknowledgements.isEmpty();
-   }
 
    public boolean isContainsPersistent()
    {

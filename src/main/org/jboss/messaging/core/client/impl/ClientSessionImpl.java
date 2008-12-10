@@ -879,6 +879,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
 
+         log.error(response.getMessage() + " code " + response.getResponseCode());
+         
          if (response.isError())
          {
             throw new XAException(response.getResponseCode());

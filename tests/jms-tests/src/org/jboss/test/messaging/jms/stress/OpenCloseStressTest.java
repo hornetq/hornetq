@@ -35,8 +35,8 @@ import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import org.jboss.messaging.util.UUIDGenerator;
 import org.jboss.test.messaging.JBMServerTestCase;
-import org.jboss.util.id.GUID;
 
 /**
  * 
@@ -375,9 +375,9 @@ public class OpenCloseStressTest extends JBMServerTestCase
    		
    		if (durable)
    		{
-   			conn.setClientID(new GUID().toString());
+   			conn.setClientID(UUIDGenerator.getInstance().generateStringUUID());
    			
-   			this.subname = new GUID().toString();
+   			this.subname = UUIDGenerator.getInstance().generateStringUUID();
    		}
    	}
 

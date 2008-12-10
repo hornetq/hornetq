@@ -40,7 +40,7 @@ import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.util.SimpleString;
-import org.jboss.util.id.GUID;
+import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -560,8 +560,8 @@ public class ScheduledMessageTest extends ServiceTestBase
 
    public void testTxMessageDeliveredCorrectly(boolean recover) throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
-      Xid xid2 = new XidImpl("xa2".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+      Xid xid2 = new XidImpl("xa2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       
       ClientSessionFactory sessionFactory = createInVMFactory();

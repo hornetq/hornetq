@@ -42,7 +42,7 @@ import org.jboss.messaging.jms.client.JBossBytesMessage;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.util.SimpleString;
-import org.jboss.util.id.GUID;
+import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -239,7 +239,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    public void testPaging(final boolean restartServer) throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       SimpleString pageQueue = new SimpleString("pagequeue");
 
@@ -315,7 +315,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    public void testRollbackPaging(final boolean restartServer) throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       SimpleString pageQueue = new SimpleString("pagequeue");
 
@@ -375,7 +375,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    public void testNonPersistent(final boolean commit) throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       ClientMessage m1 = createTextMessage("m1", false);
       ClientMessage m2 = createTextMessage("m2", false);
@@ -414,7 +414,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
    {
       for (int i = 0; i < 10; i++)
       {
-         Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+         Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
          ClientMessage m1 = createTextMessage("m1", false);
          ClientMessage m2 = createTextMessage("m2", false);
@@ -447,7 +447,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    public void testBasicSendWithCommit(final boolean stopServer) throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       ClientMessage m1 = createTextMessage("m1");
       ClientMessage m2 = createTextMessage("m2");
@@ -498,7 +498,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    public void testBasicSendWithRollback(final boolean stopServer) throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       ClientMessage m1 = createTextMessage("m1");
       ClientMessage m2 = createTextMessage("m2");
@@ -538,7 +538,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    public void testMultipleBeforeSendWithCommit(final boolean stopServer) throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
       ClientMessage m1 = createTextMessage("m1");
       ClientMessage m2 = createTextMessage("m2");
       ClientMessage m3 = createTextMessage("m3");
@@ -597,8 +597,8 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    public void testMultipleTxSendWithCommit(final boolean stopServer) throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
-      Xid xid2 = new XidImpl("xa2".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+      Xid xid2 = new XidImpl("xa2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
       ClientMessage m1 = createTextMessage("m1");
       ClientMessage m2 = createTextMessage("m2");
       ClientMessage m3 = createTextMessage("m3");
@@ -671,8 +671,8 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    public void testMultipleTxSendWithRollback(final boolean stopServer) throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
-      Xid xid2 = new XidImpl("xa2".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+      Xid xid2 = new XidImpl("xa2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
       ClientMessage m1 = createTextMessage("m1");
       ClientMessage m2 = createTextMessage("m2");
       ClientMessage m3 = createTextMessage("m3");
@@ -723,8 +723,8 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    public void testMultipleTxSendWithCommitAndRollback(final boolean stopServer) throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
-      Xid xid2 = new XidImpl("xa2".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+      Xid xid2 = new XidImpl("xa2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
       ClientMessage m1 = createTextMessage("m1");
       ClientMessage m2 = createTextMessage("m2");
       ClientMessage m3 = createTextMessage("m3");
@@ -787,7 +787,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    public void testMultipleTxSameXidSendWithCommit(final boolean stopServer) throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
       ClientMessage m1 = createTextMessage("m1");
       ClientMessage m2 = createTextMessage("m2");
       ClientMessage m3 = createTextMessage("m3");
@@ -860,7 +860,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    public void testBasicReceiveWithCommit(final boolean stopServer) throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
       ClientMessage m1 = createTextMessage("m1");
       ClientMessage m2 = createTextMessage("m2");
       ClientMessage m3 = createTextMessage("m3");
@@ -918,7 +918,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    public void testBasicReceiveWithRollback(final boolean stopServer) throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
       ClientMessage m1 = createTextMessage("m1");
       ClientMessage m2 = createTextMessage("m2");
       ClientMessage m3 = createTextMessage("m3");
@@ -986,8 +986,8 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    public void testMultipleTxReceiveWithCommit(final boolean stopServer) throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
-      Xid xid2 = new XidImpl("xa2".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+      Xid xid2 = new XidImpl("xa2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
       ClientMessage m1 = createTextMessage("m1");
       ClientMessage m2 = createTextMessage("m2");
       ClientMessage m3 = createTextMessage("m3");
@@ -1076,8 +1076,8 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    public void testMultipleTxReceiveWithRollback(final boolean stopServer) throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
-      Xid xid2 = new XidImpl("xa2".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+      Xid xid2 = new XidImpl("xa2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
       ClientMessage m1 = createTextMessage("m1");
       ClientMessage m2 = createTextMessage("m2");
       ClientMessage m3 = createTextMessage("m3");

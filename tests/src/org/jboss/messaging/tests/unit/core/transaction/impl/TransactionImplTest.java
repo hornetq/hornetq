@@ -88,8 +88,6 @@ public class TransactionImplTest extends UnitTestCase
    	assertNull(tx.getXid());
    	
    	assertEquals(0, tx.getAcknowledgementsCount());
-   	
-   	assertTrue(tx.isEmpty());
    }
          
    public void testXAConstructor() throws Exception
@@ -115,8 +113,6 @@ public class TransactionImplTest extends UnitTestCase
    	assertEquals(xid, tx.getXid());
    	
    	assertEquals(0, tx.getAcknowledgementsCount());
-   	
-   	assertTrue(tx.isEmpty());
    }
    
    public void testState() throws Exception
@@ -588,8 +584,6 @@ public class TransactionImplTest extends UnitTestCase
             
       Transaction tx = new TransactionImpl(sm, po);
       
-      assertTrue(tx.isEmpty());
-      
       assertFalse(tx.isContainsPersistent());
             
       EasyMock.verify(sm, postOffice, pagingManager, pagingStore);
@@ -605,7 +599,6 @@ public class TransactionImplTest extends UnitTestCase
       
       tx.addAcknowledgement(ref3);
       
-      assertFalse(tx.isEmpty());
       assertFalse(tx.isContainsPersistent());
       
       tx.addAcknowledgement(ref1);

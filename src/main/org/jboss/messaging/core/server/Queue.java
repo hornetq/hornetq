@@ -100,7 +100,7 @@ public interface Queue
    
    int getMessagesAdded();
 
-   MessageReference removeReferenceWithID(long id);
+   MessageReference removeReferenceWithID(long id) throws Exception;
    
    /** Remove message from queue, add it to the scheduled delivery list without affect reference counting */
    void rescheduleDelivery(long id, long scheduledDeliveryTime);

@@ -28,7 +28,7 @@ import javax.transaction.xa.XAResource;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
-import org.jboss.util.id.GUID;
+import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * 
@@ -86,7 +86,7 @@ public class Transactional2PCReceiver extends Receiver
          
          XidImpl xid = null;
          
-         xid = new XidImpl("bq1".getBytes(), 1, new GUID().toString().getBytes());
+         xid = new XidImpl("bq1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
          xaResource.start(xid, XAResource.TMNOFLAGS);
          
          for (int outerCount = 0; outerCount < iterations; outerCount++)
@@ -141,7 +141,7 @@ public class Transactional2PCReceiver extends Receiver
                   xaResource.commit(xid, false);
                                     
                   //Starting new tx
-                  xid = new XidImpl("bq1".getBytes(), 1, new GUID().toString().getBytes());
+                  xid = new XidImpl("bq1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
                   xaResource.start(xid, XAResource.TMNOFLAGS);
                  
                }
@@ -201,7 +201,7 @@ public class Transactional2PCReceiver extends Receiver
                   xaResource.prepare(xid);
                   xaResource.rollback(xid);
                   
-                  xid = new XidImpl("bq1".getBytes(), 1, new GUID().toString().getBytes());
+                  xid = new XidImpl("bq1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
                   xaResource.start(xid, XAResource.TMNOFLAGS);
                }
                processingDone();

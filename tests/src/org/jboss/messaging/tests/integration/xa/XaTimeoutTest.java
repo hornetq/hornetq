@@ -21,29 +21,29 @@
  */
 package org.jboss.messaging.tests.integration.xa;
 
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.util.id.GUID;
-
-import javax.transaction.xa.Xid;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.XAException;
-import java.util.Map;
-import java.util.HashMap;
+import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -116,7 +116,7 @@ public class XaTimeoutTest extends UnitTestCase
 
    public void testSimpleTimeoutOnSendOnCommit() throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       ClientMessage m1 = createTextMessage("m1", clientSession);
       ClientMessage m2 = createTextMessage("m2", clientSession);
@@ -145,7 +145,7 @@ public class XaTimeoutTest extends UnitTestCase
 
    public void testSimpleTimeoutOnReceive() throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       ClientMessage m1 = createTextMessage("m1", clientSession);
       ClientMessage m2 = createTextMessage("m2", clientSession);
@@ -213,7 +213,7 @@ public class XaTimeoutTest extends UnitTestCase
 
    public void testSimpleTimeoutOnSendAndReceive() throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       ClientMessage m1 = createTextMessage("m1", clientSession);
       ClientMessage m2 = createTextMessage("m2", clientSession);
@@ -291,7 +291,7 @@ public class XaTimeoutTest extends UnitTestCase
 
    public void testPreparedTransactionNotTimedOut() throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       ClientMessage m1 = createTextMessage("m1", clientSession);
       ClientMessage m2 = createTextMessage("m2", clientSession);
@@ -364,7 +364,7 @@ public class XaTimeoutTest extends UnitTestCase
 
    public void testChangingTimeoutGetsPickedUp() throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       ClientMessage m1 = createTextMessage("m1", clientSession);
       ClientMessage m2 = createTextMessage("m2", clientSession);
@@ -394,7 +394,7 @@ public class XaTimeoutTest extends UnitTestCase
 
    public void testChangingTimeoutGetsPickedUpCommit() throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, new GUID().toString().getBytes());
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       ClientMessage m1 = createTextMessage("m1", clientSession);
       ClientMessage m2 = createTextMessage("m2", clientSession);
@@ -437,7 +437,7 @@ public class XaTimeoutTest extends UnitTestCase
       Xid[] xids = new XidImpl[100];
       for (int i = 0; i < xids.length; i++)
       {
-         xids[i] = new XidImpl(("xa" + i).getBytes(), 1, new GUID().toString().getBytes());
+         xids[i] = new XidImpl(("xa" + i).getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
       }
       ClientSession[] clientSessions = new ClientSession[xids.length];
       for (int i = 0; i < clientSessions.length; i++)

@@ -60,8 +60,6 @@ public interface Transaction
 
    Xid getXid();
 
-   boolean isEmpty();
-
    void suspend();
 
    void resume();

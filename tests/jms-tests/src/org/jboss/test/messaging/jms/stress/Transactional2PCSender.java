@@ -28,7 +28,7 @@ import javax.transaction.xa.XAResource;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
-import org.jboss.util.id.GUID;
+import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * 
@@ -78,7 +78,7 @@ public class Transactional2PCSender extends Sender
             XidImpl xid = null;
             if (commitSize > 0)
             {
-               xid = new XidImpl("bq1".getBytes(), 1, new GUID().toString().getBytes());
+               xid = new XidImpl("bq1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
                xaResource.start(xid, XAResource.TMNOFLAGS);
             }
             for (int innerCount = 0; innerCount < commitSize; innerCount++)
@@ -96,7 +96,7 @@ public class Transactional2PCSender extends Sender
             }
             if (rollbackSize > 0)
             {
-               xid = new XidImpl("bq1".getBytes(), 1, new GUID().toString().getBytes());
+               xid = new XidImpl("bq1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
                xaResource.start(xid, XAResource.TMNOFLAGS);
             }
             for (int innerCount = 0; innerCount < rollbackSize; innerCount++)

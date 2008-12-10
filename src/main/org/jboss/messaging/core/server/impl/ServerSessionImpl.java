@@ -1602,6 +1602,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void handleXAPrepare(final SessionXAPrepareMessage packet)
    {
+      log.info("handling xa prepare");
       DelayedResult result = channel.replicatePacket(packet);
 
       if (result == null)
@@ -1654,17 +1655,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                                                           "Cannot prepare transaction, it is suspended " + xid);
                }
                else
-               {
-                  if (theTx.isEmpty())
-                  {
-                     response = new SessionXAResponseMessage(false, XAResource.XA_RDONLY, null);
-                  }
-                  else
-                  {
-                     theTx.prepare();
+               {                  
+                  theTx.prepare();
 
-                     response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
-                  }
+                  response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);                  
                }
             }
          }
@@ -2632,7 +2626,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          }
       }
       
-      if (autoCommitSends)
+      Transaction theTx = null;
+      boolean startedTx = false;
+      
+      if (!autoCommitSends)
+      {
+         theTx = tx;
+      }
+      else if (cache != null)
+      {
+         theTx = new TransactionImpl(storageManager, postOffice);
+         
+         startedTx = true;
+      }
+               
+      if (theTx == null)
       {
          if (!pager.page(msg))
          {
@@ -2640,27 +2648,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                         
             if (msg.getDurableRefCount() != 0)
             {               
-               if (cache == null)
-               {
-                  storageManager.storeMessage(msg);
-               }
-               else
-               {
-                  //TODO - We need to store both message and duplicate id entry in a tx - 
-                  //otherwise if crash occurs message may be persisted but dupl id not!
-                  
-                  storageManager.storeMessage(msg);
-                  
-                  cache.addToCache(duplicateID);
-               }
-            }
-            else
-            {
-               //No message to persist - we still add to cache though
-               if (cache != null)
-               {
-                  cache.addToCache(duplicateID);
-               }
+               storageManager.storeMessage(msg);               
             }
 
             // TODO - this code is also duplicated in transactionimpl and in depaging
@@ -2684,12 +2672,17 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
       else
       {
-         tx.addMessage(msg);
+         theTx.addMessage(msg);
          
          //Add to cache in same transaction
          if (cache != null)
          {
-            cache.addToCache(duplicateID, tx);
+            cache.addToCache(duplicateID, theTx);
+         }
+         
+         if (startedTx)
+         {
+            theTx.commit();
          }
       }
    }

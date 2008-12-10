@@ -22,6 +22,9 @@
 
 package org.jboss.messaging.tests.integration;
 
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -35,8 +38,10 @@ import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.postoffice.impl.DuplicateIDCacheImpl;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
+import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * A DuplicateDetectionTest
@@ -418,6 +423,312 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       message = consumer.receive(250);
       assertNull(message);
+
+      session.close();
+
+      sf.close();
+   }
+   
+   public void testXADuplicateDetection1() throws Exception
+   {
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      ClientSession session = sf.createSession(true, false, false);
+      
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid, XAResource.TMNOFLAGS);
+      
+      session.start();
+      
+      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
+
+      session.createQueue(queueName, queueName, null, false, false, true);
+
+      ClientProducer producer = session.createProducer(queueName);
+
+      ClientMessage message = createMessage(session, 0);
+      SimpleString dupID = new SimpleString("abcdefg");
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+      
+      session.end(xid, XAResource.TMSUCCESS);
+
+      session.close();
+      
+      Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session = sf.createSession(true, false, false);
+      
+      session.start(xid2, XAResource.TMNOFLAGS);
+
+      session.start();
+
+      producer = session.createProducer(queueName);
+
+      ClientConsumer consumer = session.createConsumer(queueName);
+
+      // Should be able to resend it and not get rejected since transaction didn't commit
+
+      message = createMessage(session, 1);
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+      
+      session.end(xid2, XAResource.TMSUCCESS);
+      
+      session.prepare(xid2);
+
+      session.commit(xid2, false);
+      
+      Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid3, XAResource.TMNOFLAGS);
+
+      message = consumer.receive(250);
+      assertEquals(1, message.getProperty(propKey));
+
+      message = consumer.receive(250);
+      assertNull(message);
+      
+      log.info("ending session");
+      session.end(xid3, XAResource.TMSUCCESS);
+      
+      log.info("preparing session");
+      session.prepare(xid3);
+
+      log.info("committing session");
+      session.commit(xid3, false);
+
+      session.close();
+
+      sf.close();
+   }
+   
+   public void testXADuplicateDetection2() throws Exception
+   {
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      ClientSession session = sf.createSession(true, false, false);
+      
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid, XAResource.TMNOFLAGS);
+      
+      session.start();
+      
+      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
+
+      session.createQueue(queueName, queueName, null, false, false, true);
+
+      ClientProducer producer = session.createProducer(queueName);
+
+      ClientMessage message = createMessage(session, 0);
+      SimpleString dupID = new SimpleString("abcdefg");
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+      
+      session.end(xid, XAResource.TMSUCCESS);
+      
+      session.rollback(xid);
+
+      session.close();
+      
+      Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session = sf.createSession(true, false, false);
+      
+      session.start(xid2, XAResource.TMNOFLAGS);
+
+      session.start();
+
+      producer = session.createProducer(queueName);
+
+      ClientConsumer consumer = session.createConsumer(queueName);
+
+      // Should be able to resend it and not get rejected since transaction didn't commit
+
+      message = createMessage(session, 1);
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+      
+      session.end(xid2, XAResource.TMSUCCESS);
+      
+      session.prepare(xid2);
+
+      session.commit(xid2, false);
+      
+      Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid3, XAResource.TMNOFLAGS);
+
+      message = consumer.receive(250);
+      assertEquals(1, message.getProperty(propKey));
+
+      message = consumer.receive(250);
+      assertNull(message);
+      
+      log.info("ending session");
+      session.end(xid3, XAResource.TMSUCCESS);
+      
+      log.info("preparing session");
+      session.prepare(xid3);
+
+      log.info("committing session");
+      session.commit(xid3, false);
+
+      session.close();
+
+      sf.close();
+   }
+   
+   public void testXADuplicateDetection3() throws Exception
+   {
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      ClientSession session = sf.createSession(true, false, false);
+      
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid, XAResource.TMNOFLAGS);
+      
+      session.start();
+      
+      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
+
+      session.createQueue(queueName, queueName, null, false, false, true);
+
+      ClientProducer producer = session.createProducer(queueName);
+
+      ClientMessage message = createMessage(session, 0);
+      SimpleString dupID = new SimpleString("abcdefg");
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+      
+      session.end(xid, XAResource.TMSUCCESS);
+      
+      session.prepare(xid);
+
+      session.close();
+      
+      Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session = sf.createSession(true, false, false);
+      
+      session.start(xid2, XAResource.TMNOFLAGS);
+
+      session.start();
+
+      producer = session.createProducer(queueName);
+
+      ClientConsumer consumer = session.createConsumer(queueName);
+
+      // Should NOT be able to resend it 
+
+      message = createMessage(session, 1);
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+      
+      session.end(xid2, XAResource.TMSUCCESS);
+      
+      session.prepare(xid2);
+
+      session.commit(xid2, false);
+      
+      Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid3, XAResource.TMNOFLAGS);
+
+      message = consumer.receive(250);
+
+      message = consumer.receive(250);
+      assertNull(message);
+      
+      log.info("ending session");
+      session.end(xid3, XAResource.TMSUCCESS);
+      
+      log.info("preparing session");
+      session.prepare(xid3);
+
+      log.info("committing session");
+      session.commit(xid3, false);
+
+      session.close();
+
+      sf.close();
+   }
+   
+   public void testXADuplicateDetection4() throws Exception
+   {
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      ClientSession session = sf.createSession(true, false, false);
+      
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid, XAResource.TMNOFLAGS);
+      
+      session.start();
+      
+      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
+
+      session.createQueue(queueName, queueName, null, false, false, true);
+
+      ClientProducer producer = session.createProducer(queueName);
+
+      ClientMessage message = createMessage(session, 0);
+      SimpleString dupID = new SimpleString("abcdefg");
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+      
+      session.end(xid, XAResource.TMSUCCESS);
+      
+      session.prepare(xid);
+      
+      session.commit(xid, false);
+
+      session.close();
+      
+      Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session = sf.createSession(true, false, false);
+      
+      session.start(xid2, XAResource.TMNOFLAGS);
+
+      session.start();
+
+      producer = session.createProducer(queueName);
+
+      ClientConsumer consumer = session.createConsumer(queueName);
+
+      // Should NOT be able to resend it 
+
+      message = createMessage(session, 1);
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+      
+      session.end(xid2, XAResource.TMSUCCESS);
+      
+      session.prepare(xid2);
+
+      session.commit(xid2, false);
+      
+      Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid3, XAResource.TMNOFLAGS);
+
+      message = consumer.receive(250);
+
+      message = consumer.receive(250);
+      assertNull(message);
+      
+      log.info("ending session");
+      session.end(xid3, XAResource.TMSUCCESS);
+      
+      log.info("preparing session");
+      session.prepare(xid3);
+
+      log.info("committing session");
+      session.commit(xid3, false);
 
       session.close();
 
@@ -1039,7 +1350,402 @@ public class DuplicateDetectionTest extends ServiceTestBase
       messagingService2.stop();
    }
    
-  
+   public void testNoPersistXA1() throws Exception
+   {
+      messagingService.stop();
+      
+      Configuration conf = createDefaultConfig();
+
+      conf.setIDCacheSize(cacheSize);
+      
+      conf.setPersistIDCache(false);
+      
+      MessagingService messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+
+      messagingService2.start();
+
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      ClientSession session = sf.createSession(true, false, false);
+      
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid, XAResource.TMNOFLAGS);
+ 
+      session.start();
+
+      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
+
+      session.createQueue(queueName, queueName, null, false, false, true);
+
+      ClientProducer producer = session.createProducer(queueName);
+
+      ClientConsumer consumer = session.createConsumer(queueName);
+
+      ClientMessage message = createMessage(session, 1);
+      SimpleString dupID = new SimpleString("abcdefg");
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+                
+      message = createMessage(session, 2);
+      SimpleString dupID2 = new SimpleString("hijklmnopqr");
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2);
+      producer.send(message);
+      
+      session.end(xid, XAResource.TMSUCCESS);
+      session.prepare(xid);
+      session.commit(xid, false);
+             
+      session.close();
+
+      sf.close();
+      
+      messagingService2.stop();
+      
+      messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+
+      messagingService2.start();
+
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      session = sf.createSession(true, false, false);
+      
+      Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid2, XAResource.TMNOFLAGS);
+ 
+      session.start();
+
+      session.createQueue(queueName, queueName, null, false, false, true);
+
+      producer = session.createProducer(queueName);
+
+      consumer = session.createConsumer(queueName);
+
+      message = createMessage(session, 1);
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+            
+      message = createMessage(session, 2);
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2);
+      producer.send(message);
+      
+      session.end(xid2, XAResource.TMSUCCESS);
+      session.prepare(xid2);
+      session.commit(xid2, false);
+      
+      Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid3, XAResource.TMNOFLAGS);
+      
+      ClientMessage message2 = consumer.receive(200);
+      assertEquals(1, message2.getProperty(propKey));
+      
+      message2 = consumer.receive(200);
+      assertEquals(2, message2.getProperty(propKey));
+
+      session.close();
+
+      sf.close();
+      
+      messagingService2.stop();
+   }
+   
+   public void testNoPersistXA2() throws Exception
+   {
+      messagingService.stop();
+      
+      Configuration conf = createDefaultConfig();
+
+      conf.setIDCacheSize(cacheSize);
+      
+      MessagingService messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+
+      messagingService2.start();
+
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      ClientSession session = sf.createSession(true, false, false);
+      
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid, XAResource.TMNOFLAGS);
+ 
+      session.start();
+
+      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
+
+      session.createQueue(queueName, queueName, null, false, false, true);
+
+      ClientProducer producer = session.createProducer(queueName);
+
+      ClientConsumer consumer = session.createConsumer(queueName);
+
+      ClientMessage message = createMessage(session, 1);
+      SimpleString dupID = new SimpleString("abcdefg");
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+                
+      message = createMessage(session, 2);
+      SimpleString dupID2 = new SimpleString("hijklmnopqr");
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2);
+      producer.send(message);
+      
+      session.end(xid, XAResource.TMSUCCESS);
+                  
+      session.close();
+
+      sf.close();
+      
+      messagingService2.stop();
+      
+      messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+
+      messagingService2.start();
+
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      session = sf.createSession(true, false, false);
+      
+      Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid2, XAResource.TMNOFLAGS);
+ 
+      session.start();
+
+      session.createQueue(queueName, queueName, null, false, false, true);
+
+      producer = session.createProducer(queueName);
+
+      consumer = session.createConsumer(queueName);
+
+      message = createMessage(session, 1);
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+            
+      message = createMessage(session, 2);
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2);
+      producer.send(message);
+      
+      session.end(xid2, XAResource.TMSUCCESS);
+      session.prepare(xid2);
+      session.commit(xid2, false);
+      
+      Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid3, XAResource.TMNOFLAGS);
+      
+      ClientMessage message2 = consumer.receive(200);
+      assertEquals(1, message2.getProperty(propKey));
+      
+      message2 = consumer.receive(200);
+      assertEquals(2, message2.getProperty(propKey));
+
+      session.close();
+
+      sf.close();
+      
+      messagingService2.stop();
+   }
+   
+   public void testPersistXA1() throws Exception
+   {
+      messagingService.stop();
+      
+      Configuration conf = createDefaultConfig();
+
+      conf.setIDCacheSize(cacheSize);
+      
+      MessagingService messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+
+      messagingService2.start();
+
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      ClientSession session = sf.createSession(true, false, false);
+      
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid, XAResource.TMNOFLAGS);
+ 
+      session.start();
+
+      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
+
+      session.createQueue(queueName, queueName, null, false, false, true);
+
+      ClientProducer producer = session.createProducer(queueName);
+
+      ClientConsumer consumer = session.createConsumer(queueName);
+
+      ClientMessage message = createMessage(session, 1);
+      SimpleString dupID = new SimpleString("abcdefg");
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+                
+      message = createMessage(session, 2);
+      SimpleString dupID2 = new SimpleString("hijklmnopqr");
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2);
+      producer.send(message);
+      
+      session.end(xid, XAResource.TMSUCCESS);
+      session.prepare(xid);
+      session.commit(xid, false);
+             
+      session.close();
+
+      sf.close();
+      
+      messagingService2.stop();
+      
+      messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+
+      messagingService2.start();
+
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      session = sf.createSession(true, false, false);
+      
+      Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid2, XAResource.TMNOFLAGS);
+ 
+      session.start();
+
+      session.createQueue(queueName, queueName, null, false, false, true);
+
+      producer = session.createProducer(queueName);
+
+      consumer = session.createConsumer(queueName);
+
+      message = createMessage(session, 1);
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+            
+      message = createMessage(session, 2);
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2);
+      producer.send(message);
+      
+      session.end(xid2, XAResource.TMSUCCESS);
+      session.prepare(xid2);
+      session.commit(xid2, false);
+      
+      Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid3, XAResource.TMNOFLAGS);
+      
+      ClientMessage message2 = consumer.receive(200);
+      assertNull(message2);
+      
+      message2 = consumer.receive(200);
+      assertNull(message2);
+
+      session.close();
+
+      sf.close();
+      
+      messagingService2.stop();
+   }
+   
+   public void testPersistXA2() throws Exception
+   {
+      messagingService.stop();
+      
+      Configuration conf = createDefaultConfig();
+
+      conf.setIDCacheSize(cacheSize);
+      
+      MessagingService messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+
+      messagingService2.start();
+
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      ClientSession session = sf.createSession(true, false, false);
+      
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid, XAResource.TMNOFLAGS);
+ 
+      session.start();
+
+      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
+
+      session.createQueue(queueName, queueName, null, false, false, true);
+
+      ClientProducer producer = session.createProducer(queueName);
+
+      ClientConsumer consumer = session.createConsumer(queueName);
+
+      ClientMessage message = createMessage(session, 1);
+      SimpleString dupID = new SimpleString("abcdefg");
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+                
+      message = createMessage(session, 2);
+      SimpleString dupID2 = new SimpleString("hijklmnopqr");
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2);
+      producer.send(message);
+      
+      session.end(xid, XAResource.TMSUCCESS);
+      session.prepare(xid);
+             
+      session.close();
+
+      sf.close();
+      
+      messagingService2.stop();
+      
+      messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+
+      messagingService2.start();
+
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      session = sf.createSession(true, false, false);
+      
+      Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid2, XAResource.TMNOFLAGS);
+ 
+      session.start();
+
+      session.createQueue(queueName, queueName, null, false, false, true);
+
+      producer = session.createProducer(queueName);
+
+      consumer = session.createConsumer(queueName);
+
+      message = createMessage(session, 1);
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+            
+      message = createMessage(session, 2);
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2);
+      producer.send(message);
+      
+      session.end(xid2, XAResource.TMSUCCESS);
+      session.prepare(xid2);
+      session.commit(xid2, false);
+      
+      Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid3, XAResource.TMNOFLAGS);
+      
+      ClientMessage message2 = consumer.receive(200);
+      assertNull(message2);
+      
+      message2 = consumer.receive(200);
+      assertNull(message2);
+
+      session.close();
+
+      sf.close();
+      
+      messagingService2.stop();
+   }
+      
+//   TODO - how does dup ids work with paging? on depaging need to check again? 
    @Override
    protected void setUp() throws Exception
    {
