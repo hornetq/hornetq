@@ -340,12 +340,15 @@ public class ServerConsumerImpl implements ServerConsumer
 
          if (ref == null)
          {
-            throw new IllegalStateException("Could not find reference with id " + messageID +
+            throw new IllegalStateException("Could not find reference on consumerID=" + id +
+                                            ", messageId " +
+                                            messageID +
                                             " backup " +
                                             messageQueue.isBackup() +
                                             " closed " +
                                             closed);
          }
+
 
          if (autoCommitAcks)
          {
@@ -533,27 +536,48 @@ public class ServerConsumerImpl implements ServerConsumer
          // TODO: get rid of the instanceof by something like message.isLargeMessage()
          if (message instanceof ServerLargeMessage)
          {
-            // TODO: How to inform the backup node about the LargeMessage being sent?
-            largeMessageSender = new LargeMessageSender((ServerLargeMessage)message, ref);
+            DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id,
+                                                                                               message.getMessageID()));
 
-            largeMessageSender.sendLargeMessage();
+            if (result == null)
+            {
+               sendLargeMessage(ref, message);
+            }
+            else
+            {
+               // Send when replicate delivery response comes back
+               result.setResultRunner(new Runnable()
+               {
+                  public void run()
+                  {
+                     sendLargeMessage(ref, message);
+                  }
+               });
+            }
+
          }
          else
          {
             sendStandardMessage(ref, message);
-
             if (preAcknowledge)
             {
                doAck(ref);
             }
-         }
 
+         }
          return HandleStatus.HANDLED;
       }
       finally
       {
          lock.unlock();
       }
+   }
+
+   private void sendLargeMessage(final MessageReference ref, final ServerMessage message)
+   {
+      largeMessageSender = new LargeMessageSender((ServerLargeMessage)message, ref);
+
+      largeMessageSender.sendLargeMessage();
    }
 
    /**
@@ -713,6 +737,8 @@ public class ServerConsumerImpl implements ServerConsumer
                }
                catch (Exception e)
                {
+                  // Is there anything we could do here besides logging?
+                  // The message was already sent, and this shouldn't happen
                   log.warn("Error while ACKing reference " + ref, e);
                }
             }

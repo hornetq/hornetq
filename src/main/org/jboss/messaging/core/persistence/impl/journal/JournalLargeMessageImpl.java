@@ -54,9 +54,11 @@ public class JournalLargeMessageImpl extends ServerMessageImpl implements Server
    private final JournalStorageManager storageManager;
 
    // We should only use the NIO implementation on the Journal
-   private volatile SequentialFile file;
+   private SequentialFile file;
 
-   private volatile boolean complete = false;
+   private boolean complete = false;
+   
+   private long bodySize = -1;
 
    // Static --------------------------------------------------------
 
@@ -84,15 +86,17 @@ public class JournalLargeMessageImpl extends ServerMessageImpl implements Server
       file.position(file.size());
 
       file.write(ByteBuffer.wrap(bytes), false);
+      
+      bodySize += bytes.length;
    }
 
    @Override
    public synchronized void encodeBody(final MessagingBuffer bufferOut, final long start, final int size)
    {
-      validateFile();
-
       try
       {
+         validateFile();
+
          // This could maybe be optimized (maybe reading directly into bufferOut)
          ByteBuffer bufferRead = ByteBuffer.allocate(size);
          if (!file.isOpen())
@@ -122,22 +126,16 @@ public class JournalLargeMessageImpl extends ServerMessageImpl implements Server
    @Override
    public synchronized int getBodySize()
    {
-      validateFile();
-
       try
       {
-         if (!file.isOpen())
-         {
-            file.open();
-         }
-
-         return (int)file.size();
+         validateFile();
       }
-
       catch (Exception e)
       {
-         throw new RuntimeException("Can't get the file size on " + file.getFileName());
+         throw new RuntimeException(e.getMessage(), e);
       }
+      // FIXME: The file could be bigger than MAX_INT
+      return (int)bodySize;
    }
 
    @Override
@@ -213,7 +211,7 @@ public class JournalLargeMessageImpl extends ServerMessageImpl implements Server
 
    public synchronized void releaseResources()
    {
-      if (file.isOpen())
+      if (file != null && file.isOpen())
       {
          try
          {
@@ -232,7 +230,7 @@ public class JournalLargeMessageImpl extends ServerMessageImpl implements Server
 
    // Private -------------------------------------------------------
 
-   private void validateFile()
+   private synchronized void validateFile() throws Exception
    {
       if (file == null)
       {
@@ -242,6 +240,10 @@ public class JournalLargeMessageImpl extends ServerMessageImpl implements Server
          }
 
          file = storageManager.createFileForLargeMessage(getMessageID(), complete);
+         
+         file.open();
+         
+         bodySize = file.size();
 
       }
    }

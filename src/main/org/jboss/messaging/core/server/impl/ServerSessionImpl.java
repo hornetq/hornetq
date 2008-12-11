@@ -2156,8 +2156,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void handleSendLargeMessage(final SessionSendMessage packet)
    {
 
-      DelayedResult result = channel.replicatePacket(packet);
-
       if (packet.getMessageID() <= 0L)
       {
          // must generate message id here, so we know they are in sync on live and backup
@@ -2166,6 +2164,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          packet.setMessageID(id);
       }
 
+      
+      DelayedResult result = channel.replicatePacket(packet);
 
       // With a send we must make sure it is replicated to backup before being processed on live
       // or can end up with delivery being processed on backup before original send

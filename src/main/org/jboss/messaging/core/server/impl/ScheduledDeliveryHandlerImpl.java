@@ -143,7 +143,15 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
    {
       synchronized (scheduledRunnables)
       {
-         return scheduledRunnables.remove(id).getReference();
+         ScheduledDeliveryRunnable runnable = scheduledRunnables.remove(id);
+         if (runnable == null)
+         {
+            return null;
+         }
+         else
+         {
+            return runnable.getReference();
+         }
       }
    }
 
