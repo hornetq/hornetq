@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.example;
 
+import java.util.HashMap;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -29,10 +31,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.HashMap;
 
 /**
  * Uses the core messaging API to send and receive a message to a queue via http. You will need to enable the server with
@@ -53,8 +52,7 @@ public class HttpClient
          clientSession = sessionFactory.createSession(false, true, true);
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);
-         ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, false, 0,
-                                                       System.currentTimeMillis(), (byte) 1);
+         ClientMessage message = clientSession.createClientMessage(false);
          message.getBody().putString("Hello!");
          clientProducer.send(message);
          ClientConsumer clientConsumer = clientSession.createConsumer(queue);
