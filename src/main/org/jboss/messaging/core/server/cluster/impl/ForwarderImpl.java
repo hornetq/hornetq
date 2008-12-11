@@ -234,7 +234,7 @@ public class ForwarderImpl implements Forwarder, FailureListener
          {
             return HandleStatus.BUSY;
          }
-
+         reference.getQueue().referenceHandled();
          refs.add(reference);
 
          if (maxBatchTime != -1)

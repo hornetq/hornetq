@@ -79,6 +79,8 @@ public interface Queue
    void referenceAcknowledged(MessageReference ref) throws Exception;
   
    void referenceCancelled();
+
+   void referenceHandled();
    
    int getScheduledCount();
    
@@ -161,4 +163,5 @@ public interface Queue
    
    //Only used in testing
    void deliverNow();
+
 }

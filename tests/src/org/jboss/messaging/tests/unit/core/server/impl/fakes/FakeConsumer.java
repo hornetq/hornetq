@@ -110,6 +110,7 @@ public class FakeConsumer implements Consumer
          if (filter.match(reference.getMessage()))
          {
             references.addLast(reference);
+            reference.getQueue().referenceHandled();
             notify();
             
             return HandleStatus.HANDLED;
@@ -136,6 +137,7 @@ public class FakeConsumer implements Consumer
       
       if (statusToReturn == HandleStatus.HANDLED)
       {
+         reference.getQueue().referenceHandled();
          references.addLast(reference);
          notify();
       }

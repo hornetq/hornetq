@@ -355,7 +355,7 @@ public class QueueImpl implements Queue
       return scheduledDeliveryHandler.getScheduledReferences();
    }
 
-   public synchronized int getDeliveringCount()
+   public int getDeliveringCount()
    {
       return deliveringCount.get();
    }
@@ -368,6 +368,11 @@ public class QueueImpl implements Queue
    public void referenceCancelled()
    {
       deliveringCount.decrementAndGet();
+   }
+
+   public void referenceHandled()
+   {
+      deliveringCount.incrementAndGet();
    }
 
    public int getSizeBytes()
@@ -873,12 +878,7 @@ public class QueueImpl implements Queue
    {
       HandleStatus status = distributionPolicy.distribute(reference);
 
-      if (status == HandleStatus.HANDLED)
-      {
-         deliveringCount.incrementAndGet();
-         return HandleStatus.HANDLED;
-      }
-      else if (status == HandleStatus.NO_MATCH)
+      if (status == HandleStatus.NO_MATCH)
       {
          promptDelivery = true;
       }

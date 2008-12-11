@@ -532,7 +532,10 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             deliveringRefs.add(ref);
          }
-
+         if(!browseOnly)
+         {
+            ref.getQueue().referenceHandled();
+         }
          // TODO: get rid of the instanceof by something like message.isLargeMessage()
          if (message instanceof ServerLargeMessage)
          {
