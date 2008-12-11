@@ -28,6 +28,8 @@ import static javax.management.MBeanOperationInfo.INFO;
 import java.util.List;
 import java.util.Map;
 
+import javax.management.openmbean.TabularData;
+
 import org.jboss.messaging.core.config.Configuration;
 
 /**
@@ -165,5 +167,14 @@ public interface MessagingServerControlMBean
 
    @Operation(desc = "List the sessions for the given connectionID", impact = INFO)
    String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID);
+
+   TabularData getMessageFlows() throws Exception;
    
+   TabularData getDiscoveryGroups() throws Exception;
+
+   TabularData getBroadcastGroups() throws Exception;
+   
+   TabularData getAcceptors() throws Exception;
+   
+   TabularData getConnectors() throws Exception;   
 }

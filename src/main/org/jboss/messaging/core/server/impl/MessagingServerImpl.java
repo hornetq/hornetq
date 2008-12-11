@@ -241,14 +241,6 @@ public class MessagingServerImpl implements MessagingServer
       securityRepository.setDefault(new HashSet<Role>());
       securityStore.setSecurityRepository(securityRepository);
       securityStore.setSecurityManager(securityManager);
-      serverManagement = managementService.registerServer(postOffice,
-                                                          storageManager,
-                                                          configuration,
-                                                          queueSettingsRepository,
-                                                          securityRepository,
-                                                          resourceManager,
-                                                          remotingService,
-                                                          this);
 
       postOffice.start();
 
@@ -303,6 +295,16 @@ public class MessagingServerImpl implements MessagingServer
 
          clusterManager.start();
       }
+      
+      serverManagement = managementService.registerServer(postOffice,
+                                                          storageManager,
+                                                          configuration,
+                                                          queueSettingsRepository,
+                                                          securityRepository,
+                                                          resourceManager,
+                                                          remotingService,
+                                                          this);
+
 
       log.info("Started messaging server");
 

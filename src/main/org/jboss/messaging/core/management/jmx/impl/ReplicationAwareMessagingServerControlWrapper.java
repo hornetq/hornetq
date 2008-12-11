@@ -27,6 +27,7 @@ import java.util.Map;
 
 import javax.management.MBeanInfo;
 import javax.management.ObjectName;
+import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
@@ -236,6 +237,31 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
    public String[] listSessions(String connectionID)
    {
       return localControl.listSessions(connectionID);
+   }
+   
+   public TabularData getMessageFlows() throws Exception
+   {
+      return localControl.getMessageFlows();
+   }
+   
+   public TabularData getDiscoveryGroups() throws Exception
+   {
+      return localControl.getDiscoveryGroups();
+   }   
+   
+   public TabularData getBroadcastGroups() throws Exception
+   {
+      return localControl.getBroadcastGroups();
+   }
+   
+   public TabularData getAcceptors() throws Exception
+   {
+      return localControl.getAcceptors();
+   }
+   
+   public TabularData getConnectors() throws Exception
+   {
+      return localControl.getConnectors();
    }
    
    public boolean addAddress(String address) throws Exception

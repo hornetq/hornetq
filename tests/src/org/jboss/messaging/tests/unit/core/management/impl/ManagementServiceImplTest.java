@@ -40,10 +40,7 @@ import javax.management.StandardMBean;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
-import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.management.impl.AddressControl;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.management.impl.MessagingServerControl;
@@ -57,7 +54,6 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
-import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.util.SimpleString;
 
 /**

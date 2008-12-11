@@ -173,11 +173,6 @@ public class MessageFlowConfiguration implements Serializable
       return this.discoveryGroupName;
    }
 
-   public List<Pair<String, String>> getStaticConnectorNamePairs()
-   {
-      return staticConnectorNamePairs;
-   }
-
    public long getRetryInterval()
    {
       return retryInterval;

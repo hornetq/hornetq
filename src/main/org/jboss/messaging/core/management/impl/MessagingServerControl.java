@@ -24,6 +24,7 @@ package org.jboss.messaging.core.management.impl;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -39,15 +40,23 @@ import javax.management.NotificationBroadcasterSupport;
 import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
+import javax.management.openmbean.TabularData;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
+import org.jboss.messaging.core.management.BroadcastGroupConfigurationInfo;
+import org.jboss.messaging.core.management.DiscoveryGroupConfigurationInfo;
+import org.jboss.messaging.core.management.MessageFlowConfigurationInfo;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.NotificationType;
+import org.jboss.messaging.core.management.TransportConfigurationInfo;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -58,6 +67,7 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerSession;
+import org.jboss.messaging.core.server.cluster.ClusterManager;
 import org.jboss.messaging.core.server.impl.ServerSessionImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -545,7 +555,37 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       }
       return sessionIDs;
    }
+   
+   public TabularData getMessageFlows() throws Exception
+   {
+      Set<MessageFlowConfiguration> messageFlowConfigurations = configuration.getMessageFlowConfigurations();
+      return MessageFlowConfigurationInfo.toTabularData(messageFlowConfigurations);
+   }
+   
+   public TabularData getDiscoveryGroups() throws Exception
+   {
+      Collection<DiscoveryGroupConfiguration> discoveryGroupConfigurations = configuration.getDiscoveryGroupConfigurations().values();
+      return DiscoveryGroupConfigurationInfo.toTabularData(discoveryGroupConfigurations);
+   }
+   
+   public TabularData getBroadcastGroups() throws Exception
+   {
+      Set<BroadcastGroupConfiguration> broadcastGroupConfigurations = configuration.getBroadcastGroupConfigurations();
+      return BroadcastGroupConfigurationInfo.toTabularData(broadcastGroupConfigurations);
+   }
 
+   public TabularData getAcceptors() throws Exception
+   {
+      Set<TransportConfiguration> acceptorConfigurations = configuration.getAcceptorConfigurations();
+      return TransportConfigurationInfo.toTabularData(acceptorConfigurations);
+   }
+   
+   public TabularData getConnectors() throws Exception
+   {
+      Collection<TransportConfiguration> connectorConfigurations = configuration.getConnectorConfigurations().values();
+      return TransportConfigurationInfo.toTabularData(connectorConfigurations);
+   }
+   
    // NotificationEmitter implementation ----------------------------
 
    public void removeNotificationListener(final NotificationListener listener,

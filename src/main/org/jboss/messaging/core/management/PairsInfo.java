@@ -26,10 +26,7 @@ import static javax.management.openmbean.SimpleType.STRING;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
@@ -40,7 +37,7 @@ import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 
-import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.util.Pair;
 
 /**
  * Info for a Message property.
@@ -50,86 +47,83 @@ import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class PropertiesInfo
+public class PairsInfo
 {
    // Constants -----------------------------------------------------
 
    public static final TabularType TABULAR_TYPE;
+
    private static CompositeType ROW_TYPE;
 
    static
    {
       try
       {
-         ROW_TYPE = new CompositeType("Property", "Property", new String[] {
-               "key", "value" }, new String[] { "Key of the property",
-               "Value of the property" }, new OpenType[] { STRING, STRING });
-         TABULAR_TYPE = new TabularType("PropertyInfo",
-               "Properties of the message", ROW_TYPE, new String[] { "key" });
-      } catch (OpenDataException e)
+         ROW_TYPE = new CompositeType("Pair",
+                                      "Pair",
+                                      new String[] { "a", "b" },
+                                      new String[] { "First item of the pair", "Second item of the pair" },
+                                      new OpenType[] { STRING, STRING });
+         TABULAR_TYPE = new TabularType("PairInfo", "Pair", ROW_TYPE, new String[] { "a" });
+      }
+      catch (OpenDataException e)
       {
          e.printStackTrace();
          throw new IllegalStateException(e);
       }
    }
 
-   public static PropertiesInfo from(TabularData connectorInfos)
+   public static List<Pair<String, String>> from(TabularData connectorInfos)
    {
-      PropertiesInfo info = new PropertiesInfo();
+      List<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
       Collection values = connectorInfos.values();
       for (Object object : values)
       {
          CompositeData compositeData = (CompositeData)object;
-         info.put((String)compositeData.get("key"), (String)compositeData.get("value"));
+         pairs.add(new Pair<String, String>((String)compositeData.get("a"), (String)compositeData.get("b")));
       }
-      return info;
+      return pairs;
+   }
+
+   public static TabularData toTabularData(List<Pair<String, String>> pairs)
+   {
+      PairsInfo info = new PairsInfo(pairs);
+      return info.toTabularData();
    }
 
    // Attributes ----------------------------------------------------
 
-   private final Map<String, String> properties = new HashMap<String, String>();
+   private final List<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
 
-   // Constructors --------------------------------------------------
+   // Private -------------------------------------------------------
 
-   // Public --------------------------------------------------------
-
-   public Map<String, String> entries()
+   private PairsInfo(List<Pair<String, String>> pairs)
    {
-      return properties;
+      if (pairs != null)
+      {
+         for (Pair<String, String> pair : pairs)
+         {
+            this.pairs.add(pair);
+         }
+      }
    }
 
-   public void put(final String key, final String value)
-   {
-      properties.put(key, value);
-   }
-
-   public TabularData toTabularData()
+   private TabularData toTabularData()
    {
       try
       {
          TabularDataSupport data = new TabularDataSupport(TABULAR_TYPE);
-         for (Entry<String, String> entry : properties.entrySet())
+         for (Pair<String, String> pair : pairs)
          {
-            data
-                  .put(new CompositeDataSupport(ROW_TYPE, new String[] { "key",
-                        "value" }, new Object[] { entry.getKey(),
-                        entry.getValue() }));
+            data.put(new CompositeDataSupport(ROW_TYPE, new String[] { "a", "b" }, new Object[] { pair.a, pair.b }));
          }
          return data;
-      } catch (OpenDataException e)
+      }
+      catch (OpenDataException e)
       {
          e.printStackTrace();
          return null;
       }
    }
 
-   public static TabularData toTabularData(Map<String, Object> params)
-   {
-      PropertiesInfo info = new PropertiesInfo();
-      for (Entry<String, Object> entry : params.entrySet())
-      {
-         info.put(entry.getKey(), entry.getValue().toString());
-      }
-      return info.toTabularData();
-   }  
 }
