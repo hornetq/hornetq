@@ -287,7 +287,8 @@ public class ChunkTestBase extends ServiceTestBase
 
          session.close();
 
-         assertEquals(initialSize, messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+         long globalSize = messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize();
+         assertTrue(globalSize == initialSize || globalSize == 0);
          assertEquals(0, messagingService.getServer().getPostOffice().getBinding(ADDRESS).getQueue().getDeliveringCount());
          assertEquals(0, messagingService.getServer().getPostOffice().getBinding(ADDRESS).getQueue().getMessageCount());
 
