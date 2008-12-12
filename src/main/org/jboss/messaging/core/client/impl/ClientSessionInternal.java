@@ -39,9 +39,9 @@ public interface ClientSessionInternal extends ClientSession
 
    void removeProducer(ClientProducerInternal producer);
 
-   void handleReceiveMessage(long consumerID, ClientMessageInternal message) throws Exception;
+   void handleReceiveMessage(long consumerID, SessionReceiveMessage message) throws Exception;
 
-   void handleReceiveLargeMessage(long consumerID, SessionReceiveMessage headerBytes) throws Exception;
+   void handleReceiveLargeMessage(long consumerID, SessionReceiveMessage message) throws Exception;
 
    void handleReceiveContinuation(long consumerID, SessionReceiveContinuationMessage continuation) throws Exception;
 

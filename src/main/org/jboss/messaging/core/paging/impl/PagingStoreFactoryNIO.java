@@ -74,7 +74,6 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    public PagingStoreFactoryNIO(final String directory, final int maxThreads)
    {
-      System.out.println("maxThreads = " + maxThreads);
       this.directory = directory;
 
       parentExecutor = new ThreadPoolExecutor(0, maxThreads,

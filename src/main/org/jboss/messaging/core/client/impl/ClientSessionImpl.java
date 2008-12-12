@@ -630,23 +630,25 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       producers.remove(producer);
    }
 
-   public void handleReceiveMessage(final long consumerID, final ClientMessageInternal message) throws Exception
+   public void handleReceiveMessage(final long consumerID, final SessionReceiveMessage message) throws Exception
    {
       ClientConsumerInternal consumer = consumers.get(consumerID);
 
       if (consumer != null)
       {
-         consumer.handleMessage(message);
+         ClientMessageInternal clMessage = message.getClientMessage();
+         clMessage.setFlowControlSize(clMessage.getEncodeSize());
+         consumer.handleMessage(message.getClientMessage());
       }
    }
    
-   public void handleReceiveLargeMessage(final long consumerID, final SessionReceiveMessage receiveMessage) throws Exception
+   public void handleReceiveLargeMessage(final long consumerID, final SessionReceiveMessage message) throws Exception
    {
       ClientConsumerInternal consumer = consumers.get(consumerID);
 
       if (consumer != null)
       {
-         consumer.handleLargeMessage(receiveMessage);
+         consumer.handleLargeMessage(message);
          
       }
    }
