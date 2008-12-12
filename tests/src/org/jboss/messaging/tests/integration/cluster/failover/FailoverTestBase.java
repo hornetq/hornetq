@@ -86,7 +86,7 @@ public class FailoverTestBase extends ServiceTestBase
       backupConf.setPagingDirectory(getPageDir(getTestDir() + "/backup"));
       backupConf.setJournalFileSize(100 * 1024);
 
-      backupConf.setPagingMaxGlobalSizeBytes(30 * 1024);
+      backupConf.setPagingMaxGlobalSizeBytes(100 * 1024 * 1024);
       backupConf.setPagingDefaultSize(10 * 1024);
 
       backupConf.setSecurityEnabled(false);
@@ -108,7 +108,7 @@ public class FailoverTestBase extends ServiceTestBase
       liveConf.setBindingsDirectory(getBindingsDir(getTestDir() + "/live"));
       liveConf.setPagingDirectory(getPageDir(getTestDir() + "/live"));
 
-      liveConf.setPagingMaxGlobalSizeBytes(30 * 1024);
+      liveConf.setPagingMaxGlobalSizeBytes(100 * 1024 * 1024);
       liveConf.setPagingDefaultSize(10 * 1024);
       liveConf.setJournalFileSize(100 * 1024);
 

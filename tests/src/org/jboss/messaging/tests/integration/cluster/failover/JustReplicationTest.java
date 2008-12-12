@@ -70,7 +70,7 @@ public class JustReplicationTest extends FailoverTestBase
 
       ClientSession session = factory.createSession(null, null, false, true, true, false, 0);
 
-      final int numberOfMessages = 200;
+      final int numberOfMessages = 500;
 
       final int numberOfBytes = 1200;
       
