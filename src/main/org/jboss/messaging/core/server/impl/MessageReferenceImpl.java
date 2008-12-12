@@ -299,6 +299,7 @@ public class MessageReferenceImpl implements MessageReference
    {
       Transaction tx = new TransactionImpl(persistenceManager, postOffice);
 
+      // FIXME: JBMESSAGING-1468
       ServerMessage copyMessage = makeCopy(expiry, persistenceManager);
 
       copyMessage.setDestination(address);
@@ -323,7 +324,9 @@ public class MessageReferenceImpl implements MessageReference
 
       ServerMessage copy = message.copy();
 
+      // (JBMESSAGING-1468)
       // FIXME - this won't work with replication!!!!!!!!!!!
+      // FIXME - this won't work with LargeMessages also!!!!
       long newMessageId = pm.generateUniqueID();
 
       copy.setMessageID(newMessageId);
