@@ -43,7 +43,6 @@ std::string convertJavaString(JNIEnv * env, jstring& jstr)
 {
 	const char * valueStr = env->GetStringUTFChars(jstr, NULL);
 	std::string data(valueStr);
-	//data+=valueStr;
 	env->ReleaseStringUTFChars(jstr, valueStr);
 	return data;
 }

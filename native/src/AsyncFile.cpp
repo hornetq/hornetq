@@ -153,7 +153,9 @@ void AsyncFile::pollEvents(THREAD_CONTEXT threadContext)
 			if (iocbp->data == (void *) -1)
 			{
 				pollerRunning = 0;
-//				controller->log(threadContext, 2, "Received poller request to stop");
+#ifdef DEBUG
+				controller->log(threadContext, 2, "Received poller request to stop");
+#endif
 			}
 			else
 			{
@@ -174,9 +176,9 @@ void AsyncFile::pollEvents(THREAD_CONTEXT threadContext)
 			delete iocbp;
 		}
 	}
-	
-//	controller->log(threadContext, 2, "Poller finished execution");
-	
+#ifdef DEBUG
+	controller->log(threadContext, 2, "Poller finished execution");
+#endif	
 }
 
 
@@ -264,8 +266,6 @@ void AsyncFile::read(THREAD_CONTEXT threadContext, long position, size_t size, v
 	int tries = 0;
 	int result = 0;
 	
-	// I will hold the lock until I'm done here
-	//LockClass lock(&fileMutex);
 	while ((result = ::io_submit(aioContext, 1, &iocb)) == (-EAGAIN))
 	{
 #ifdef DEBUG
@@ -328,8 +328,7 @@ void AsyncFile::stopPoller(THREAD_CONTEXT threadContext)
 		::usleep(WAIT_FOR_SPOT);
 	}
 	
-//	controller->log(threadContext, 2,"Sent data to stop");
-	// It will wait the Poller to gives up its lock
+	// Waiting the Poller to finish (by giving up the lock)
 	LockClass lock(&pollerMutex);
 }
 
