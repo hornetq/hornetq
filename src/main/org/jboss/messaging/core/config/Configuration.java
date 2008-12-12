@@ -56,6 +56,7 @@ public interface Configuration extends Serializable
    
    void setQueueActivationTimeout(long timeout);
 
+   
    int getScheduledThreadPoolMaxSize();
 
    void setScheduledThreadPoolMaxSize(int maxSize);
@@ -177,6 +178,10 @@ public interface Configuration extends Serializable
 
    
    // Paging Properties --------------------------------------------------------------------
+   
+   int getPagingMaxThreads();
+   
+   void setPagingMaxThread(int pagingMaxThreads);
    
    String getPagingDirectory();
 

@@ -81,6 +81,7 @@ public class ClientSessionPacketHandler implements ChannelHandler
                }
                else
                {
+                  message.getClientMessage().setFlowControlSize(packet.getPacketSize());
                   clientSession.handleReceiveMessage(message.getConsumerID(), message.getClientMessage());
                }
                

@@ -65,6 +65,8 @@ public class ConfigurationImpl implements Configuration
 
    public static final String DEFAULT_PAGING_DIR = "data/paging";
    
+   public static final int DEFAULT_PAGE_MAX_THREADS = 10;
+   
    public static final long DEFAULT_PAGE_SIZE = 10 * 1024 * 1024;
    
    public static final String DEFAULT_LARGE_MESSAGES_DIR = "data/largemessages";
@@ -168,6 +170,8 @@ public class ConfigurationImpl implements Configuration
    protected long pagingDefaultSize = DEFAULT_PAGE_SIZE;
 
    protected String pagingDirectory = DEFAULT_PAGING_DIR;
+   
+   protected int pagingMaxThreads = DEFAULT_PAGE_MAX_THREADS;
    
 
    // File related attributes -----------------------------------------------------------
@@ -402,7 +406,18 @@ public class ConfigurationImpl implements Configuration
    {
       return journalType;
    }
+   
+   public int getPagingMaxThreads()
+   {
+      return pagingMaxThreads;
+   }
+   
+   public void setPagingMaxThread(final int pagingMaxThreads)
+   {
+      this.pagingMaxThreads = pagingMaxThreads;
+   }
 
+   
    public void setPagingDirectory(final String dir)
    {
       pagingDirectory = dir;

@@ -226,6 +226,8 @@ public class FileConfiguration extends ConfigurationImpl
 
       journalDirectory = getString(e, "journal-directory", journalDirectory);
 
+      pagingMaxThreads = getInteger(e, "paging-max-threads", pagingMaxThreads);
+      
       pagingDirectory = getString(e, "paging-directory", pagingDirectory);
 
       pagingMaxGlobalSize = getLong(e, "paging-max-global-size-bytes", pagingMaxGlobalSize);

@@ -156,6 +156,8 @@
       
       <!--  Paging configuration -->
       
+      <paging-max-threads>10</paging-max-threads>
+      
       <paging-directory>data/paging</paging-directory>
       
       <paging-max-global-size-bytes>104857600</paging-max-global-size-bytes>

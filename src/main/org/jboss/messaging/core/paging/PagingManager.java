@@ -26,6 +26,7 @@ import java.util.Collection;
 
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
@@ -103,7 +104,7 @@ public interface PagingManager extends MessagingComponent
     * Point to inform/restoring Transactions used when the messages were added into paging
     * */
    void addTransaction(PageTransactionInfo pageTransaction);
-   
+
    /**
     * Point to inform/restoring Transactions used when the messages were added into paging
     * */
@@ -123,8 +124,12 @@ public interface PagingManager extends MessagingComponent
    void messageDone(ServerMessage message) throws Exception;
 
    /** To be called when an message is being added to the address.
-    *  @return the current size of the queue, or -1 if the queue is full and it should drop the message */
-   long addSize(ServerMessage message) throws Exception;
+    *  @return false is the address is full */
+   boolean addSize(ServerMessage message) throws Exception;
+
+   void removeSize(ServerMessage message) throws Exception;
+
+   void removeSize(MessageReference reference) throws Exception;
 
    /** Sync current-pages on disk for these destinations */
    void sync(Collection<SimpleString> destinationsToSync) throws Exception;

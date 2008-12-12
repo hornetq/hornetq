@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.transaction.xa.Xid;
 
@@ -59,6 +60,12 @@ public class TransactionImpl implements Transaction
 
    private final List<MessageReference> acknowledgements = new ArrayList<MessageReference>();
 
+   /** List of destinations in page mode.
+    *  Once a destination was considered in page, it should go toward paging until commit is called, 
+    *  even if the page-mode has changed, or messageOrder won't be respected */
+   private final Set<SimpleString> destinationsInPageMode = new HashSet<SimpleString>(); 
+   
+   // FIXME: As part of https://jira.jboss.org/jira/browse/JBMESSAGING-1313
    private final List<ServerMessage> pagedMessages = new ArrayList<ServerMessage>();
 
    private PageTransactionInfo pageTransaction;
@@ -165,9 +172,12 @@ public class TransactionImpl implements Transaction
       {
          throw new IllegalStateException("Transaction is in invalid state " + state);
       }
+      
+      SimpleString destination = message.getDestination();
 
-      if (pagingManager.isPaging(message.getDestination()))
+      if (destinationsInPageMode.contains(destination) || pagingManager.isPaging(destination))
       {
+         destinationsInPageMode.add(destination);
          pagedMessages.add(message);
       }
       else
@@ -310,10 +320,7 @@ public class TransactionImpl implements Transaction
             storageManager.commit(id);
          }
 
-         for (MessageReference ref : refsToAdd)
-         {
-            ref.getQueue().addLast(ref);
-         }
+         postOffice.deliver(refsToAdd);
 
          // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
          // transaction until all the messages were added to the queue
@@ -433,6 +440,7 @@ public class TransactionImpl implements Transaction
    {
       containsPersistent = true;
       refsToAdd.addAll(messages);
+      
       this.acknowledgements.addAll(acknowledgements);
       this.pageTransaction = pageTransaction;
 
@@ -494,6 +502,21 @@ public class TransactionImpl implements Transaction
          }
          toCancel.add(ref);
       }
+      
+      HashSet<ServerMessage> messagesAdded = new HashSet<ServerMessage>();
+      
+
+      // We need to remove the sizes added on paging manager, for the messages that only exist here on the Transaction
+      for (MessageReference ref: this.refsToAdd)
+      {
+         messagesAdded.add(ref.getMessage());
+         pagingManager.getPageStore(ref.getMessage().getDestination()).addSize(-ref.getMemoryEstimate());
+      }
+      
+      for (ServerMessage msg: messagesAdded)
+      {
+         pagingManager.removeSize(msg);
+      }
 
       clear();
 
@@ -523,18 +546,10 @@ public class TransactionImpl implements Transaction
 
          containsPersistent = true;
       }
-
+      
       if (scheduledDeliveryTime != null)
       {
-         for (MessageReference ref : refs)
-         {
-            ref.setScheduledDeliveryTime(scheduledDeliveryTime);
-
-            if (ref.getMessage().isDurable() && ref.getQueue().isDurable())
-            {
-               storageManager.updateScheduledDeliveryTimeTransactional(id, ref);
-            }
-         }
+         postOffice.scheduleReferences(id, scheduledDeliveryTime, refs);
       }
 
       return refs;

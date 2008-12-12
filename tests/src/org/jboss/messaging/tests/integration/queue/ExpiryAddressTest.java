@@ -57,14 +57,17 @@ public class ExpiryAddressTest extends UnitTestCase
       messagingService.getServer().getQueueSettingsRepository().addMatch(qName.toString(), queueSettings);
       clientSession.createQueue(ea, eq, null, false, false, false);
       clientSession.createQueue(qName, qName, null, false, false, false);
+      
       ClientProducer producer = clientSession.createProducer(qName);
       ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
       clientMessage.setExpiration(System.currentTimeMillis());
       producer.send(clientMessage);
+      
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(500);
       assertNull(m);
+      System.out.println("size3 = " + messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
       m = clientConsumer.receive(500);
       assertNull(m);
       clientConsumer.close();
@@ -72,6 +75,10 @@ public class ExpiryAddressTest extends UnitTestCase
       m = clientConsumer.receive(500);
       assertNotNull(m);
       assertEquals(m.getBody().getString(), "heyho!");
+      m.acknowledge();
+      
+      // PageSize should be the same as when it started
+      assertEquals(0, messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
    }
 
    public void testBasicSendToMultipleQueues() throws Exception
@@ -89,24 +96,49 @@ public class ExpiryAddressTest extends UnitTestCase
       ClientProducer producer = clientSession.createProducer(qName);
       ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
       clientMessage.setExpiration(System.currentTimeMillis());
+      
+      System.out.println("initialPageSize = " + messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+      
       producer.send(clientMessage);
+      
+      System.out.println("pageSize after message sent = " + messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+      
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(500);
+      
+      System.out.println("pageSize after message received = " + messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+      
       assertNull(m);
+      
       clientConsumer.close();
+      
       clientConsumer = clientSession.createConsumer(eq);
+      
       m = clientConsumer.receive(500);
+      
       assertNotNull(m);
+      
       m.acknowledge();
+      
       assertEquals(m.getBody().getString(), "heyho!");
+      
       clientConsumer.close();
+      
       clientConsumer = clientSession.createConsumer(eq2);
+      
       m = clientConsumer.receive(500);
+      
       assertNotNull(m);
+      
       m.acknowledge();
+      
       assertEquals(m.getBody().getString(), "heyho!");
+      
       clientConsumer.close();
+
+      // PageGlobalSize should be untouched as the message expired
+      assertEquals(0, messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
    }
 
    public void testBasicSendToNoQueue() throws Exception
@@ -188,7 +220,8 @@ public class ExpiryAddressTest extends UnitTestCase
       messagingService.start();
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
-      clientSession = sessionFactory.createSession(true, true, false);
+      sessionFactory.setBlockOnAcknowledge(true); // There are assertions over sizes that needs to be done after the ACK was received on server
+      clientSession = sessionFactory.createSession(null, null, false, true, true, false, 0);
    }
 
    @Override

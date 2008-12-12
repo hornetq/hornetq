@@ -181,6 +181,8 @@ public class MessageReferenceImplTest extends UnitTestCase
       
       EasyMock.expect(po.route(serverMessage)).andReturn(new ArrayList<MessageReference>());
       
+      po.deliver((List<MessageReference>)EasyMock.anyObject());
+      
       EasyMock.expect(serverMessage.getDurableRefCount()).andReturn(0);
       EasyMock.expect(serverMessage.decrementDurableRefCount()).andReturn(0);
       
@@ -227,6 +229,8 @@ public class MessageReferenceImplTest extends UnitTestCase
       EasyMock.expect(queue.isDurable()).andStubReturn(true);
       EasyMock.expect(serverMessage.decrementDurableRefCount()).andReturn(0);
       EasyMock.expect(sm.generateUniqueID()).andReturn(1l);
+      
+      po.deliver((List<MessageReference>)EasyMock.anyObject());
 
       EasyMock.replay(sm, po, repos, serverMessage, queue, pm);
       messageReference.expire(sm, po, repos);
@@ -282,6 +286,8 @@ public class MessageReferenceImplTest extends UnitTestCase
       EasyMock.expect(po.route(serverMessage)).andReturn(new ArrayList<MessageReference>());
       EasyMock.expect(serverMessage.getDurableRefCount()).andReturn(0);
       EasyMock.expect(serverMessage.decrementDurableRefCount()).andReturn(0);
+      
+      po.deliver((List<MessageReference>)EasyMock.anyObject());
 
       EasyMock.replay(sm, po, repos, serverMessage, queue, expQBinding, pm);
       
@@ -334,6 +340,8 @@ public class MessageReferenceImplTest extends UnitTestCase
       EasyMock.expect(serverMessage.isDurable()).andStubReturn(false);
       EasyMock.expect(serverMessage.getMessageID()).andReturn(messageID);
       queue.referenceAcknowledged(messageReference);
+      
+      postOffice.deliver((List<MessageReference>)EasyMock.anyObject());
 
       EasyMock.replay(queue, toBinding, toQueue, postOffice, persistenceManager, serverMessage, copyMessage, pm);
       

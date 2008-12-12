@@ -51,6 +51,7 @@ import org.jboss.messaging.util.SimpleString;
  * route to.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+* @author <a href="mailto:csuconic@redhat.com">Clebert Suconic</a>
  *
  */
 public interface PostOffice extends MessagingComponent
@@ -70,8 +71,11 @@ public interface PostOffice extends MessagingComponent
    
    Binding getBinding(SimpleString queueName);
       
+   /** Deliver references previously routed */
+   void deliver(List<MessageReference> references);
+
    List<MessageReference> route(ServerMessage message) throws Exception;
-      
+
    //For testing only
    Map<SimpleString, List<Binding>> getMappings();
 
@@ -84,4 +88,8 @@ public interface PostOffice extends MessagingComponent
    SendLock getAddressLock(SimpleString address);
    
    DuplicateIDCache getDuplicateIDCache(SimpleString address);
+   
+   void scheduleReferences(long scheduledDeliveryTime,  List<MessageReference> references) throws Exception;
+   
+   void scheduleReferences( long transactionID,  long scheduledDeliveryTime,  List<MessageReference> references) throws Exception;
 }

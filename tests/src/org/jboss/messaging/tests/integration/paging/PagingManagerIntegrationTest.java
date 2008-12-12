@@ -66,7 +66,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
       HierarchicalRepository<QueueSettings> queueSettings = new HierarchicalObjectRepository<QueueSettings>();
       queueSettings.setDefault(new QueueSettings());
 
-      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(getPageDir()),
+      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(getPageDir(), 10),
                                                             null,
                                                             queueSettings,
                                                             -1,
@@ -116,7 +116,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
       queueSettings.addMatch("simple-test", simpleTestSettings);
 
-      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(getJournalDir()),
+      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(getJournalDir(), 10),
                                                             null,
                                                             queueSettings,
                                                             -1,
@@ -128,22 +128,20 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(100));
 
-      long currentSize = managerImpl.addSize(msg);
-
-      assertTrue(currentSize > 0);
-
-      assertEquals(currentSize, managerImpl.getPageStore(new SimpleString("simple-test")).getAddressSize());
+      assertTrue(managerImpl.addSize(msg));
 
       for (int i = 0; i < 10; i++)
       {
-         assertTrue(managerImpl.addSize(msg) < 0);
+         long currentSize = managerImpl.getPageStore(new SimpleString("simple-test")).getAddressSize();
+         assertFalse(managerImpl.addSize(msg));
 
+         // should be unchanged
          assertEquals(currentSize, managerImpl.getPageStore(new SimpleString("simple-test")).getAddressSize());
       }
 
       managerImpl.messageDone(msg);
 
-      assertTrue(managerImpl.addSize(msg) > 0);
+      assertTrue(managerImpl.addSize(msg));
 
       managerImpl.stop();
    }

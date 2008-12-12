@@ -140,8 +140,6 @@ public class ChunkTestBase extends ServiceTestBase
          ClientSession session = sf.createSession(null, null, false, true, false, preAck, 0);
 
          session.createQueue(ADDRESS, ADDRESS, null, true, false, true);
-         
-         long initialSize = messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize();
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -288,7 +286,7 @@ public class ChunkTestBase extends ServiceTestBase
          session.close();
 
          long globalSize = messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize();
-         assertTrue(globalSize == initialSize || globalSize == 0);
+         assertEquals(0l, globalSize);
          assertEquals(0, messagingService.getServer().getPostOffice().getBinding(ADDRESS).getQueue().getDeliveringCount());
          assertEquals(0, messagingService.getServer().getPostOffice().getBinding(ADDRESS).getQueue().getMessageCount());
 

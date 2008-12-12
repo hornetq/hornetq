@@ -42,6 +42,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.paging.PagingManager;
+import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -1259,7 +1260,7 @@ public class QueueImplTest extends UnitTestCase
       storageManager.deleteMessageTransactional(EasyMock.anyLong(), EasyMock.eq(queue.getPersistenceID()), EasyMock.eq(messageID));
       storageManager.commit(EasyMock.anyLong());
 
-      PostOffice postOffice = createMock(PostOffice.class);
+      PostOffice postOffice = EasyMock.createNiceMock(PostOffice.class);
       PagingManager pm = EasyMock.createNiceMock(PagingManager.class);
       EasyMock.expect(pm.page(EasyMock.isA(ServerMessage.class))).andStubReturn(false);
       EasyMock.expect(postOffice.getPagingManager()).andStubReturn(pm);
@@ -1319,7 +1320,7 @@ public class QueueImplTest extends UnitTestCase
       storageManager.deleteMessageTransactional(anyLong(), eq(queue.getPersistenceID()), eq(messageID));
       storageManager.commit(anyLong());
       
-      PostOffice postOffice = createMock(PostOffice.class);
+      PostOffice postOffice = EasyMock.createNiceMock(PostOffice.class);
       PagingManager pm = EasyMock.createNiceMock(PagingManager.class);
       EasyMock.expect(pm.page(EasyMock.isA(ServerMessage.class))).andStubReturn(false);
       EasyMock.expect(postOffice.getPagingManager()).andStubReturn(pm);
@@ -1382,7 +1383,7 @@ public class QueueImplTest extends UnitTestCase
       storageManager.deleteMessageTransactional(EasyMock.anyLong(), EasyMock.eq(queue.getPersistenceID()), EasyMock.eq(messageID));
       storageManager.commit(EasyMock.anyLong());
       
-      PostOffice postOffice = EasyMock.createMock(PostOffice.class);      
+      PostOffice postOffice = EasyMock.createNiceMock(PostOffice.class);      
 
       PagingManager pm = EasyMock.createNiceMock(PagingManager.class);
       EasyMock.expect(pm.page(EasyMock.isA(ServerMessage.class))).andStubReturn(false);
@@ -1422,12 +1423,14 @@ public class QueueImplTest extends UnitTestCase
    /**
     * @return
     */
-   private PostOffice createMockPostOffice()
+   private PostOffice createMockPostOffice() throws Exception
    {
+      PagingStore niceStore = EasyMock.createNiceMock(PagingStore.class);
       PagingManager niceManager = EasyMock.createNiceMock(PagingManager.class);
       PostOffice nicePostOffice = EasyMock.createNiceMock(PostOffice.class);
       EasyMock.expect(nicePostOffice.getPagingManager()).andStubReturn(niceManager);
-      EasyMock.replay(niceManager, nicePostOffice);
+      EasyMock.expect(niceManager.getPageStore((SimpleString)EasyMock.anyObject())).andStubReturn(niceStore);
+      EasyMock.replay(niceManager, nicePostOffice, niceStore);
       return nicePostOffice;
    }
 

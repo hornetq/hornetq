@@ -32,6 +32,7 @@ import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -154,6 +155,28 @@ public class FakePostOffice implements PostOffice
    public DuplicateIDCache getDuplicateIDCache(SimpleString address)
    {
       return null;
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.postoffice.PostOffice#deliver(java.util.List)
+    */
+   public void deliver(List<MessageReference> references)
+   {
+      
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.postoffice.PostOffice#scheduleReferences(long, java.util.List)
+    */
+   public void scheduleReferences(long scheduledDeliveryTime, List<MessageReference> references) throws Exception
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.postoffice.PostOffice#scheduleReferences(long, long, java.util.List)
+    */
+   public void scheduleReferences(long transactionID, long scheduledDeliveryTime, List<MessageReference> references) throws Exception
+   {
    }
 
 }

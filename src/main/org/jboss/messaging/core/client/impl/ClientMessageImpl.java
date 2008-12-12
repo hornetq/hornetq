@@ -111,14 +111,11 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
 
    public int getFlowControlSize()
    {
-      if (flowControlSize > 0)
+      if (flowControlSize < 0)
       {
-         return flowControlSize;
+         throw new IllegalStateException("Flow Control hasn't been set");
       }
-      else
-      {
-         return getEncodeSize();
-      }
+      return flowControlSize;
    }
 
    public void setFlowControlSize(final int flowControlSize)

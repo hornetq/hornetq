@@ -589,12 +589,14 @@ public class ServerConsumerImpl implements ServerConsumer
     */
    private void sendStandardMessage(final MessageReference ref, final ServerMessage message)
    {
-      if (availableCredits != null)
-      {
-         availableCredits.addAndGet(-message.getEncodeSize());
-      }
 
       final SessionReceiveMessage packet = new SessionReceiveMessage(id, message, ref.getDeliveryCount() + 1);
+
+      if (availableCredits != null)
+      {
+         // RequiredBufferSize is the actual size for this packet
+         availableCredits.addAndGet(-packet.getRequiredBufferSize());
+      }
 
       DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id, message.getMessageID()));
 

@@ -37,6 +37,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
+import org.jboss.messaging.util.DataConstants;
 import org.jboss.messaging.util.SimpleString;
 
 import java.util.List;
@@ -62,6 +63,10 @@ public class MessageReferenceImpl implements MessageReference
    private ServerMessage message;
 
    private Queue queue;
+   
+   // Static --------------------------------------------------------
+   
+
 
    // Constructors --------------------------------------------------
 
@@ -84,12 +89,19 @@ public class MessageReferenceImpl implements MessageReference
    }
 
    // MessageReference implementation -------------------------------
-
    public MessageReference copy(final Queue queue)
    {
       return new MessageReferenceImpl(this, queue);
    }
 
+   public int getMemoryEstimate()
+   {
+      // from few tests I have done, deliveryCount and scheduledDelivery will use  two longs (because of alignment)
+      // and each of the references (messages and queue) will use the equivalent to two longs (because of long pointers).
+      // Anyway.. this is just an estimate
+      return DataConstants.SIZE_LONG * 4;
+   }
+   
    public int getDeliveryCount()
    {
       return deliveryCount;

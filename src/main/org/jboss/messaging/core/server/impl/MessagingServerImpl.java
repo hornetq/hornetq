@@ -210,7 +210,8 @@ public class MessagingServerImpl implements MessagingServer
                                                           new JBMThreadFactory("JBM-scheduled-threads"));
       queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);
 
-      pagingManager = new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory()),
+      pagingManager = new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(),
+                                                                      configuration.getPagingMaxThreads()),
                                             storageManager,
                                             queueSettingsRepository,
                                             configuration.getPagingMaxGlobalSizeBytes(),
@@ -295,7 +296,7 @@ public class MessagingServerImpl implements MessagingServer
 
          clusterManager.start();
       }
-      
+
       serverManagement = managementService.registerServer(postOffice,
                                                           storageManager,
                                                           configuration,
@@ -304,7 +305,6 @@ public class MessagingServerImpl implements MessagingServer
                                                           resourceManager,
                                                           remotingService,
                                                           this);
-
 
       log.info("Started messaging server");
 
@@ -456,7 +456,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       return started;
    }
-   
+
    public ClusterManager getClusterManager()
    {
       return clusterManager;
@@ -620,7 +620,7 @@ public class MessagingServerImpl implements MessagingServer
       if (backupConnectorFactory != null)
       {
          NoCacheConnectionLifeCycleListener listener = new NoCacheConnectionLifeCycleListener();
-         
+
          RemotingConnectionImpl replicatingConnection = (RemotingConnectionImpl)RemotingConnectionImpl.createConnection(backupConnectorFactory,
                                                                                                                         backupConnectorParams,
                                                                                                                         ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,

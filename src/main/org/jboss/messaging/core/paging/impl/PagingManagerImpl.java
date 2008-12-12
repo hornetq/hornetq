@@ -36,6 +36,7 @@ import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -194,9 +195,19 @@ public class PagingManagerImpl implements PagingManager
       getPageStore(message.getDestination()).addSize(message.getMemoryEstimate() * -1);
    }
 
-   public long addSize(final ServerMessage message) throws Exception
+   public boolean addSize(final ServerMessage message) throws Exception
    {
       return getPageStore(message.getDestination()).addSize(message.getMemoryEstimate());
+   }
+
+   public void removeSize(final ServerMessage message) throws Exception
+   {
+      getPageStore(message.getDestination()).addSize(-message.getMemoryEstimate());
+   }
+
+   public void removeSize(final MessageReference reference) throws Exception
+   {
+      getPageStore(reference.getMessage().getDestination()).addSize(-reference.getMemoryEstimate());
    }
 
    public boolean page(final ServerMessage message, final long transactionId) throws Exception
@@ -283,7 +294,7 @@ public class PagingManagerImpl implements PagingManager
          store.startDepaging(pagingSPI.getGlobalDepagerExecutor());
       }
    }
-   
+
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.paging.PagingManager#getGlobalSize()
     */

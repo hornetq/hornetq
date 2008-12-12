@@ -674,6 +674,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                                                   "-" +
                                                   getID() +
                                                   ".jbm"));
+         
+         cloneMessage.setFlowControlSize(message.getFlowControlSize());
 
          addBytesBody(cloneMessage, message.getBody().array());
 

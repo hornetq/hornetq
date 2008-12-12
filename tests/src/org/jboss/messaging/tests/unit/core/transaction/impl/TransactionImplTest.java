@@ -24,6 +24,7 @@ package org.jboss.messaging.tests.unit.core.transaction.impl;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomXid;
 
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -534,8 +535,8 @@ public class TransactionImplTest extends UnitTestCase
    {
       
       PagingManager pagingManager = EasyMock.createStrictMock(PagingManager.class);
-      PostOffice postOffice = EasyMock.createMock(PostOffice.class);
-      PagingStore pagingStore = EasyMock.createStrictMock(PagingStore.class);
+      PostOffice postOffice = EasyMock.createNiceMock(PostOffice.class);
+      PagingStore pagingStore = EasyMock.createNiceMock(PagingStore.class);
       
       EasyMock.expect(pagingManager.getPageStore((SimpleString)EasyMock.anyObject())).andStubReturn(pagingStore);
       EasyMock.expect(postOffice.getPagingManager()).andStubReturn(pagingManager);
@@ -572,8 +573,6 @@ public class TransactionImplTest extends UnitTestCase
          
       StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
       
-      PostOffice po= EasyMock.createStrictMock(PostOffice.class);
-      
       final long txID = 123;
       
       EasyMock.expect(sm.generateUniqueID()).andReturn(txID);
@@ -582,7 +581,7 @@ public class TransactionImplTest extends UnitTestCase
       
       EasyMock.replay(sm, postOffice, pagingManager, pagingStore);
             
-      Transaction tx = new TransactionImpl(sm, po);
+      Transaction tx = new TransactionImpl(sm, postOffice);
       
       assertFalse(tx.isContainsPersistent());
             
@@ -632,12 +631,15 @@ public class TransactionImplTest extends UnitTestCase
       
       //Expect:
       
+      postOffice.deliver((List<MessageReference>)EasyMock.anyObject());
+      
+      EasyMock.expectLastCall().anyTimes();
+      
       sm.commit(txID);
-      
-      pagingManager.messageDone(message1);
-      
-      pagingManager.messageDone(message2);
-      
+
+      EasyMock.expect(pagingManager.getPageStore((SimpleString)EasyMock.anyObject())).andStubReturn(pagingStore);
+      EasyMock.expect(postOffice.getPagingManager()).andStubReturn(pagingManager);
+ 
       EasyMock.replay(sm, postOffice, pagingManager, pagingStore);
       
       tx.commit();
@@ -651,21 +653,29 @@ public class TransactionImplTest extends UnitTestCase
    
    // Private -------------------------------------------------------------------------
    
-   private Transaction createTransaction()
+   private Transaction createTransaction() throws Exception
    {
    	StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
       
-      PostOffice po = EasyMock.createStrictMock(PostOffice.class);
+      PostOffice po = EasyMock.createNiceMock(PostOffice.class);
       
       final long txID = 123L;
       
       EasyMock.expect(sm.generateUniqueID()).andReturn(txID);
    	
-      EasyMock.replay(sm);
+      EasyMock.replay(sm, po);
       
       Transaction tx = new TransactionImpl(sm, po);
       
-      EasyMock.verify(sm);
+      EasyMock.verify(sm, po);
+      
+      EasyMock.reset(po);
+      
+      po.deliver((List<MessageReference>)EasyMock.anyObject());
+      
+      EasyMock.expectLastCall().anyTimes();
+      
+      EasyMock.replay(po);
       
       return tx;
    }

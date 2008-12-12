@@ -27,6 +27,7 @@ import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.PagingManager;
+import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Consumer;
@@ -901,12 +902,22 @@ public class QueueImpl implements Queue
       deliveringCount.decrementAndGet();
 
       sizeBytes.addAndGet(-ref.getMessage().getEncodeSize());
+      
+      
+      // TODO: We could optimize this by storing the paging-store for the address on the Queue. We would need to know the Address for the Queue
+      PagingStore store = null;
+      
+      if (pagingManager != null)
+      {
+         store = pagingManager.getPageStore(ref.getMessage().getDestination());
+         store.addSize(-ref.getMemoryEstimate());
+      }
 
       if (ref.getMessage().decrementRefCount() == 0)
       {
-         if (pagingManager != null)
+         if (store != null)
          {
-            pagingManager.messageDone(ref.getMessage());
+            store.addSize(-ref.getMessage().getMemoryEstimate());
          }
       }
    }

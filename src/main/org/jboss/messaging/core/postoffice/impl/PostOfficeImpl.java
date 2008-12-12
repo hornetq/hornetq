@@ -37,7 +37,9 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.paging.PagingManager;
+import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.AddressManager;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -48,6 +50,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.impl.MessageReferenceImpl;
 import org.jboss.messaging.core.server.impl.SendLockImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -61,6 +64,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="csuconic@redhat.com">Clebert Suconic</a>
  */
 public class PostOfficeImpl implements PostOffice
 {
@@ -97,7 +101,7 @@ public class PostOfficeImpl implements PostOffice
    private final ConcurrentMap<SimpleString, DuplicateIDCache> duplicateIDCaches = new ConcurrentHashMap<SimpleString, DuplicateIDCache>();
 
    private final int idCacheSize;
-   
+
    private final boolean persistIDCache;
 
    public PostOfficeImpl(final StorageManager storageManager,
@@ -144,7 +148,7 @@ public class PostOfficeImpl implements PostOffice
       this.backup = backup;
 
       this.idCacheSize = idCacheSize;
-      
+
       this.persistIDCache = persistIDCache;
    }
 
@@ -314,82 +318,96 @@ public class PostOfficeImpl implements PostOffice
       return addressManager.getBinding(queueName);
    }
 
+   public void deliver(final List<MessageReference> references)
+   {
+      for (MessageReference ref : references)
+      {
+         ref.getQueue().addLast(ref);
+      }
+   }
+   
    public List<MessageReference> route(final ServerMessage message) throws Exception
    {
-      long size = pagingManager.addSize(message);
+      final PagingStore pagingStore = pagingManager.getPageStore(message.getDestination());
 
-      if (size < 0)
-      {
-         return new ArrayList<MessageReference>();
-      }
-      else
-      {
-         SimpleString address = message.getDestination();
+      SimpleString address = message.getDestination();
 
-         if (checkAllowable)
+      if (checkAllowable)
+      {
+         if (!addressManager.containsDestination(address))
          {
-            if (!addressManager.containsDestination(address))
-            {
-               throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST,
-                                            "Cannot route to address " + address);
-            }
+            throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST,
+                                         "Cannot route to address " + address);
          }
+      }
 
-         List<Binding> bindings = addressManager.getBindings(address);
+      List<Binding> bindings = addressManager.getBindings(address);
 
-         List<MessageReference> refs = new ArrayList<MessageReference>();
+      List<MessageReference> refs = new ArrayList<MessageReference>();
 
-         if (bindings != null)
+      int refEstimate = 0;
+      if (bindings != null)
+      {
+         Binding theBinding = null;
+
+         long lowestRoutings = -1;
+
+         for (Binding binding : bindings)
          {
-            Binding theBinding = null;
+            Queue queue = binding.getQueue();
 
-            long lowestRoutings = -1;
+            Filter filter = queue.getFilter();
 
-            for (Binding binding : bindings)
+            if (filter == null || filter.match(message))
             {
-               Queue queue = binding.getQueue();
-
-               Filter filter = queue.getFilter();
-
-               if (filter == null || filter.match(message))
+               if (binding.isFanout())
                {
-                  if (binding.isFanout())
+                  // Fanout bindings always get the reference
+                  MessageReference reference = message.createReference(queue);
+
+                  refEstimate += reference.getMemoryEstimate();
+
+                  refs.add(reference);
+               }
+               else
+               {
+                  // We choose the queue with the lowest routings value
+                  // This gives us a weighted round robin, where the weight
+                  // Can be determined from the number of consumers on the queue
+                  long routings = binding.getRoutings();
+
+                  if (routings < lowestRoutings || lowestRoutings == -1)
                   {
-                     // Fanout bindings always get the reference
-                     MessageReference reference = message.createReference(queue);
+                     lowestRoutings = routings;
 
-                     refs.add(reference);
-                  }
-                  else
-                  {
-                     // We choose the queue with the lowest routings value
-                     // This gives us a weighted round robin, where the weight
-                     // Can be determined from the number of consumers on the queue
-                     long routings = binding.getRoutings();
-
-                     if (routings < lowestRoutings || lowestRoutings == -1)
-                     {
-                        lowestRoutings = routings;
-
-                        theBinding = binding;
-                     }
+                     theBinding = binding;
                   }
                }
             }
-
-            if (theBinding != null)
-            {
-               MessageReference reference = message.createReference(theBinding.getQueue());
-
-               refs.add(reference);
-
-               theBinding.incrementRoutings();
-            }
-
          }
 
+         if (theBinding != null)
+         {
+            MessageReference reference = message.createReference(theBinding.getQueue());
+
+            refEstimate += reference.getMemoryEstimate();
+
+            refs.add(reference);
+
+            theBinding.incrementRoutings();
+         }
+
+      }
+
+      if (refs.size() > 0 && pagingStore.addSize(message.getMemoryEstimate() + refEstimate))
+      {
          return refs;
       }
+      else
+      {
+         return new ArrayList<MessageReference>();
+      }
+
    }
 
    public PagingManager getPagingManager()
@@ -457,6 +475,33 @@ public class PostOfficeImpl implements PostOffice
 
       return cache;
    }
+   
+   
+   public void scheduleReferences(final long scheduledDeliveryTime, final List<MessageReference> references) throws Exception
+   {
+      scheduleReferences(-1, scheduledDeliveryTime, references);
+   }
+   
+   public void scheduleReferences(final long transactionID, final long scheduledDeliveryTime, final List<MessageReference> references) throws Exception
+   {
+      for (MessageReference ref : references)
+      {
+         ref.setScheduledDeliveryTime(scheduledDeliveryTime);
+
+         if (ref.getMessage().isDurable() && ref.getQueue().isDurable())
+         {
+            if (transactionID >= 0)
+            {
+               storageManager.updateScheduledDeliveryTimeTransactional(transactionID, ref);
+            }
+            else
+            {
+               storageManager.updateScheduledDeliveryTime(ref);
+            }
+         }
+      }
+   }
+   
 
    // Private -----------------------------------------------------------------
 
@@ -536,13 +581,13 @@ public class PostOfficeImpl implements PostOffice
       Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<SimpleString, Long>>>();
 
       storageManager.loadMessageJournal(this, queues, resourceManager, duplicateIDMap);
-      
-      for (Map.Entry<SimpleString, List<Pair<SimpleString, Long>>> entry: duplicateIDMap.entrySet())
+
+      for (Map.Entry<SimpleString, List<Pair<SimpleString, Long>>> entry : duplicateIDMap.entrySet())
       {
          SimpleString address = entry.getKey();
-         
+
          DuplicateIDCache cache = getDuplicateIDCache(address);
-                           
+
          if (persistIDCache)
          {
             cache.load(entry.getValue());

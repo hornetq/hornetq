@@ -2651,23 +2651,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                storageManager.storeMessage(msg);               
             }
 
-            // TODO - this code is also duplicated in transactionimpl and in depaging
-            // it should all be centralised
-
-            for (MessageReference ref : refs)
+            if (scheduledDeliveryTime != null)
             {
-               if (scheduledDeliveryTime != null)
-               {
-                  ref.setScheduledDeliveryTime(scheduledDeliveryTime.longValue());
-
-                  if (ref.getMessage().isDurable() && ref.getQueue().isDurable())
-                  {
-                     storageManager.updateScheduledDeliveryTime(ref);
-                  }
-               }
-
-               ref.getQueue().addLast(ref);
+               postOffice.scheduleReferences(scheduledDeliveryTime, refs);
             }
+            
+            postOffice.deliver(refs);
          }
       }
       else

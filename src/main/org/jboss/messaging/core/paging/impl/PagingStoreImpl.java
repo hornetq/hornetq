@@ -37,6 +37,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
@@ -215,7 +216,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       return storeName;
    }
 
-   public long addSize(final long size) throws Exception
+   public boolean addSize(final long size) throws Exception
    {
       final long maxSize = getMaxSizeBytes();
 
@@ -235,11 +236,12 @@ public class PagingStoreImpl implements TestSupportPageStore
                log.warn("Messages are being dropped on adress " + getStoreName());
             }
 
-            return -1l;
+            return false;
          }
          else
          {
-            return addAddressSize(size);
+            addAddressSize(size);
+            return true;
          }
       }
       else
@@ -284,14 +286,14 @@ public class PagingStoreImpl implements TestSupportPageStore
             {
 
                log.trace(" globalDepage = " + pagingManager.isGlobalPageMode() +
-                     "\n currentGlobalSize = " +
-                     currentGlobalSize +
-                     "\n defaultPageSize = " +
-                     pagingManager.getDefaultPageSize() +
-                     "\n maxGlobalSize = " +
-                     maxGlobalSize +
-                     "\n maxGlobalSize - defaultPageSize = " +
-                     (maxGlobalSize - pagingManager.getDefaultPageSize()));
+                         "\n currentGlobalSize = " +
+                         currentGlobalSize +
+                         "\n defaultPageSize = " +
+                         pagingManager.getDefaultPageSize() +
+                         "\n maxGlobalSize = " +
+                         maxGlobalSize +
+                         "\n maxGlobalSize - defaultPageSize = " +
+                         (maxGlobalSize - pagingManager.getDefaultPageSize()));
             }
 
             if (pagingManager.isGlobalPageMode() && currentGlobalSize < maxGlobalSize - pagingManager.getDefaultPageSize())
@@ -307,7 +309,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             }
          }
 
-         return addressSize;
+         return true;
       }
    }
 
@@ -434,7 +436,8 @@ public class PagingStoreImpl implements TestSupportPageStore
          else
          {
             // startDepaging and clearDepage needs to be atomic.
-            // We can't use writeLock to this operation as writeLock would still be used by another thread, and still being a valid usage
+            // We can't use writeLock to this operation as writeLock would still be used by another thread, and still
+            // being a valid usage
             synchronized (this)
             {
                if (!depaging.get())
@@ -779,7 +782,16 @@ public class PagingStoreImpl implements TestSupportPageStore
             }
          }
 
-         refsToAdd.addAll(postOffice.route(pagedMessage));
+         List<MessageReference> routedReferences = postOffice.route(pagedMessage);
+
+         Long scheduledDeliveryTime = (Long)pagedMessage.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+
+         if (scheduledDeliveryTime != null)
+         {
+            postOffice.scheduleReferences(depageTransactionID, scheduledDeliveryTime, routedReferences);
+         }
+
+         refsToAdd.addAll(routedReferences);
 
          if (pagedMessage.getDurableRefCount() != 0)
          {
@@ -806,11 +818,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       trace("Depage committed");
 
-      for (MessageReference ref : refsToAdd)
-      {
-         ref.getQueue().addLast(ref);
-      }
-
+      postOffice.deliver(refsToAdd);
    }
 
    /**
@@ -988,7 +996,8 @@ public class PagingStoreImpl implements TestSupportPageStore
                {
                   readPage();
                }
-               // Note: clearDepage is an atomic operation, it needs to be done even if readPage was not executed because the page was full
+               // Note: clearDepage is an atomic operation, it needs to be done even if readPage was not executed
+               // because the page was full
                if (!clearDepage())
                {
                   followingExecutor.execute(this);
