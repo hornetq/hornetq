@@ -67,12 +67,15 @@ public class JustReplicationTest extends FailoverTestBase
       factory.setBlockOnAcknowledge(true);
       factory.setBlockOnNonPersistentSend(true);
       factory.setBlockOnPersistentSend(true);
+      
+      // Enable this and the test will fail
+      //factory.setMinLargeMessageSize(10 * 1024);
 
       ClientSession session = factory.createSession(null, null, false, true, true, false, 0);
 
       final int numberOfMessages = 500;
 
-      final int numberOfBytes = 1200;
+      final int numberOfBytes = 15000;
       
       try
       {
