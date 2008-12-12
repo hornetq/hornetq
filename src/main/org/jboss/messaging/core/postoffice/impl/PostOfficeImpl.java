@@ -37,7 +37,6 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -50,7 +49,6 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.server.impl.MessageReferenceImpl;
 import org.jboss.messaging.core.server.impl.SendLockImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -325,7 +323,7 @@ public class PostOfficeImpl implements PostOffice
          ref.getQueue().addLast(ref);
       }
    }
-   
+
    public List<MessageReference> route(final ServerMessage message) throws Exception
    {
       final PagingStore pagingStore = pagingManager.getPageStore(message.getDestination());
@@ -422,7 +420,7 @@ public class PostOfficeImpl implements PostOffice
 
    public List<Queue> activate()
    {
-      this.backup = false;
+      backup = false;
 
       Map<SimpleString, Binding> nameMap = addressManager.getBindings();
 
@@ -457,7 +455,7 @@ public class PostOfficeImpl implements PostOffice
       return lock;
    }
 
-   public DuplicateIDCache getDuplicateIDCache(SimpleString address)
+   public DuplicateIDCache getDuplicateIDCache(final SimpleString address)
    {
       DuplicateIDCache cache = duplicateIDCaches.get(address);
 
@@ -475,14 +473,15 @@ public class PostOfficeImpl implements PostOffice
 
       return cache;
    }
-   
-   
+
    public void scheduleReferences(final long scheduledDeliveryTime, final List<MessageReference> references) throws Exception
    {
       scheduleReferences(-1, scheduledDeliveryTime, references);
    }
-   
-   public void scheduleReferences(final long transactionID, final long scheduledDeliveryTime, final List<MessageReference> references) throws Exception
+
+   public void scheduleReferences(final long transactionID,
+                                  final long scheduledDeliveryTime,
+                                  final List<MessageReference> references) throws Exception
    {
       for (MessageReference ref : references)
       {
@@ -501,7 +500,6 @@ public class PostOfficeImpl implements PostOffice
          }
       }
    }
-   
 
    // Private -----------------------------------------------------------------
 
@@ -601,6 +599,7 @@ public class PostOfficeImpl implements PostOffice
 
    private class MessageExpiryRunner extends Thread
    {
+      @Override
       public void run()
       {
          Map<SimpleString, Binding> nameMap = addressManager.getBindings();
