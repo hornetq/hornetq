@@ -46,10 +46,10 @@
    <property name="messaging.version.major" value="2"/>
    <property name="messaging.version.minor" value="0"/>
    <property name="messaging.version.micro" value="0"/>
-   <property name="messaging.version.suffix" value="alpha1"/>
-   <property name="messaging.version.tag" value="alpha1"/>
+   <property name="messaging.version.suffix" value="beta1"/>
+   <property name="messaging.version.tag" value="beta1"/>
    <property name="messaging.version.revision" value="0"/>
-   <property name="messaging.version.incrementing" value="100"/>
+   <property name="messaging.version.incrementing" value="101"/>
    <property name="messaging.version.name" value="Stilton"/>
    <property name="messaging.version.svnurl" value="https://svn.jboss.org/repos/messaging/trunk"/>
    <property name="messaging.version.string"
@@ -700,7 +700,7 @@
             <include name="mina-core-2.0.0-M3-20080730.120633-1.jar"/>
          </fileset>
          <fileset dir="${netty.netty.lib}">
-            <include name="netty-3.0.1.GA.jar"/>
+            <include name="netty-3.1.0.ALPHA2.jar"/>
          </fileset>
          <fileset dir="${slf4j.api.lib}">
             <include name="slf4j-api-1.4.3.jar"/>
