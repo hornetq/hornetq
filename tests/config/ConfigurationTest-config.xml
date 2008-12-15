@@ -27,7 +27,7 @@
          <param key="c_mykey3" value="60" type="Integer"/>
          <param key="c_mykey4" value="c_foovalue4" type="String"/>      
       </connector>
-      <backup-connector connector-name="backup-connector"/>
+      <backup-connector-ref connector-name="backup-connector"/>
       <acceptor>
          <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory1</factory-class>           
          <param key="a_mykey1" value="a_foovalue1" type="String"/>
