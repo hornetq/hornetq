@@ -590,7 +590,7 @@ public class FileConfiguration extends ConfigurationImpl
          {
             useDuplicateDetection = XMLUtil.parseBoolean(child);
          }
-         else if (child.getNodeName().equals("connector"))
+         else if (child.getNodeName().equals("connector-ref"))
          {
             String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
 
