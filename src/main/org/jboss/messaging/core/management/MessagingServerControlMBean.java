@@ -26,7 +26,6 @@ import static javax.management.MBeanOperationInfo.ACTION;
 import static javax.management.MBeanOperationInfo.INFO;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.management.openmbean.TabularData;
 
@@ -39,7 +38,7 @@ public interface MessagingServerControlMBean
 {
    // Attributes ----------------------------------------------------
 
-   public Map<String, Object> getBackupConnectorConfiguration();
+   public String getBackupConnectorName();
 
    String getVersion();
 

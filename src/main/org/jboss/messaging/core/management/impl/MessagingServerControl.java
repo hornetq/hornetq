@@ -180,11 +180,9 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return configuration.isBackup();
    }
 
-   //FIXME
-   public Map<String, Object> getBackupConnectorConfiguration()
+   public String getBackupConnectorName()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return configuration.getBackupConnectorName();
    }
    
    public String getBindingsDirectory()

@@ -64,11 +64,12 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
 
    // MessagingServerControlMBean implementation ------------------------------
 
-   public Map<String, Object> getBackupConnectorConfiguration()
+   
+   public String getBackupConnectorName()
    {
-      return localControl.getBackupConnectorConfiguration();
+      return localControl.getBackupConnectorName();
    }
-
+   
    public String getBindingsDirectory()
    {
       return localControl.getBindingsDirectory();
