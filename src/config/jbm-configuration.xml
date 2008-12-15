@@ -83,7 +83,7 @@
       <queue-activation-timeout>30000</queue-activation-timeout>
 
       <!--
-      <backup-connector connector-name="backup-connector"/>
+      <backup-connector-ref connector-name="backup-connector"/>
       -->
       
       <!-- Connectors -->

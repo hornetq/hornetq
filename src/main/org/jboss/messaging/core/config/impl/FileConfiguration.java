@@ -141,7 +141,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       interceptorClassNames = interceptorList;
 
-      NodeList backups = e.getElementsByTagName("backup-connector");
+      NodeList backups = e.getElementsByTagName("backup-connector-ref");
 
       // There should be only one - this will be enforced by the DTD
 
