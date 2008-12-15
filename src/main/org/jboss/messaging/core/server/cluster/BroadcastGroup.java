@@ -38,6 +38,8 @@ import org.jboss.messaging.util.Pair;
  */
 public interface BroadcastGroup extends MessagingComponent
 {
+   String getName();
+
    void addConnectorPair(Pair<TransportConfiguration, TransportConfiguration> connectorPair);
    
    void removeConnectorPair(Pair<TransportConfiguration, TransportConfiguration> connectorPair);

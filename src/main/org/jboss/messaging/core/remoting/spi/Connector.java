@@ -34,6 +34,8 @@ public interface Connector
    
    void close();
    
+   boolean isStarted();
+   
    /**
     * Create and return a connection from this connector.
     * 

@@ -27,16 +27,23 @@ import java.util.Set;
 import javax.management.ObjectName;
 
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
+import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.cluster.ClusterManager;
+import org.jboss.messaging.core.server.cluster.BroadcastGroup;
+import org.jboss.messaging.core.server.cluster.MessageFlow;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
@@ -75,6 +82,22 @@ public interface ManagementService
    void registerQueue(Queue queue, SimpleString address, StorageManager storageManager) throws Exception;
 
    void unregisterQueue(SimpleString name, SimpleString address) throws Exception;
+
+   void registerAcceptor(Acceptor acceptor, TransportConfiguration configuration) throws Exception;
+
+   void unregisterAcceptor(String name) throws Exception;
+
+   void registerBroadcastGroup(BroadcastGroup broadcastGroup, BroadcastGroupConfiguration configuration) throws Exception;
+
+   void unregisterBroadcastGroup(String name) throws Exception;
+
+   void registerDiscoveryGroup(DiscoveryGroup discoveryGroup, DiscoveryGroupConfiguration configuration) throws Exception;
+
+   void unregisterDiscoveryGroup(String name) throws Exception;
+
+   void registerMessageFlow(MessageFlow messageFlow, MessageFlowConfiguration configuration) throws Exception;
+
+   void unregisterMessageFlow(String name) throws Exception;
 
    void registerResource(ObjectName objectName, Object resource) throws Exception;
 

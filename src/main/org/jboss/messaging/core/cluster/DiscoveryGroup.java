@@ -26,6 +26,7 @@ package org.jboss.messaging.core.cluster;
 import java.util.List;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.util.Pair;
 
 /**
@@ -37,11 +38,9 @@ import org.jboss.messaging.util.Pair;
  *
  *
  */
-public interface DiscoveryGroup
+public interface DiscoveryGroup extends MessagingComponent
 {
-   void start() throws Exception;
-   
-   void stop() throws Exception;
+   String getName();
 
    List<Pair<TransportConfiguration, TransportConfiguration>> getConnectors();
    

@@ -55,6 +55,10 @@ public class AcceptorFactory1 implements AcceptorFactory
       {  
       }
       
+      public boolean isStarted()
+      {
+         return false;
+      }      
    }
    
 }

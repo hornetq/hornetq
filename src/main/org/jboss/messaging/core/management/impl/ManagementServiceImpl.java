@@ -38,11 +38,21 @@ import java.util.Set;
 import javax.management.MBeanServer;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
+import javax.management.StandardMBean;
 
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
+import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.AcceptorControlMBean;
+import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
+import org.jboss.messaging.core.management.DiscoveryGroupControlMBean;
 import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.management.MessageFlowControlMBean;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareAddressControlWrapper;
@@ -56,11 +66,14 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.cluster.BroadcastGroup;
+import org.jboss.messaging.core.server.cluster.MessageFlow;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -131,6 +144,34 @@ public class ManagementServiceImpl implements ManagementService
                                                   DOMAIN,
                                                   quote(address.toString()),
                                                   quote(name.toString())));
+   }
+   
+   public static ObjectName getAcceptorObjectName(final String name) throws Exception
+   {
+      return ObjectName.getInstance(String.format("%s:module=Core,type=Acceptor,name=%s",
+                                                  DOMAIN,
+                                                  quote(name)));
+   }
+   
+   public static ObjectName getBroadcastGroupObjectName(final String name) throws Exception
+   {
+      return ObjectName.getInstance(String.format("%s:module=Core,type=BroadcastGroup,name=%s",
+                                                  DOMAIN,
+                                                  quote(name)));
+   }
+   
+   public static ObjectName getMessageFlowObjectName(final String name) throws Exception
+   {
+      return ObjectName.getInstance(String.format("%s:module=Core,type=MessageFlow,name=%s",
+                                                  DOMAIN,
+                                                  quote(name)));
+   }
+
+   public static ObjectName getDiscoveryGroupObjectName(final String name) throws Exception
+   {
+      return ObjectName.getInstance(String.format("%s:module=Core,type=DiscoveryGroup,name=%s",
+                                                  DOMAIN,
+                                                  quote(name)));
    }
 
    // Constructors --------------------------------------------------
@@ -241,6 +282,62 @@ public class ManagementServiceImpl implements ManagementService
       messageCounterManager.unregisterMessageCounter(name.toString());
 
       sendNotification(NotificationType.QUEUE_DESTROYED, name.toString());
+   }
+
+   public void registerAcceptor(final Acceptor acceptor, final TransportConfiguration configuration) throws Exception
+   {
+      ObjectName objectName = getAcceptorObjectName(configuration.getName());
+      AcceptorControlMBean control = new AcceptorControl(acceptor, configuration);
+      registerInJMX(objectName, new StandardMBean(control, AcceptorControlMBean.class));
+      registerInRegistry(objectName, control);
+   }
+   
+   public void unregisterAcceptor(final String name) throws Exception
+   {
+      ObjectName objectName = getAcceptorObjectName(name);
+      unregisterResource(objectName);
+   }
+
+   public void registerBroadcastGroup(BroadcastGroup broadcastGroup, BroadcastGroupConfiguration configuration) throws Exception
+   {
+      ObjectName objectName = getBroadcastGroupObjectName(configuration.getName());
+      BroadcastGroupControlMBean control = new BroadcastGroupControl(broadcastGroup, configuration);
+      registerInJMX(objectName, new StandardMBean(control, BroadcastGroupControlMBean.class));
+      registerInRegistry(objectName, control);
+   }
+   
+   public void unregisterBroadcastGroup(String name) throws Exception
+   {
+      ObjectName objectName = getBroadcastGroupObjectName(name);
+      unregisterResource(objectName);
+   }
+   
+   public void registerDiscoveryGroup(DiscoveryGroup discoveryGroup, DiscoveryGroupConfiguration configuration) throws Exception
+   {
+      ObjectName objectName = getDiscoveryGroupObjectName(configuration.getName());
+      DiscoveryGroupControlMBean control = new DiscoveryGroupControl(discoveryGroup, configuration);
+      registerInJMX(objectName, new StandardMBean(control, DiscoveryGroupControlMBean.class));
+      registerInRegistry(objectName, control);
+   }
+   
+   public void unregisterDiscoveryGroup(String name) throws Exception
+   {
+      ObjectName objectName = getDiscoveryGroupObjectName(name);
+      unregisterResource(objectName);
+   }
+   
+   public void registerMessageFlow(MessageFlow messageFlow, MessageFlowConfiguration configuration) throws Exception
+   {
+      ObjectName objectName = getMessageFlowObjectName(configuration.getName());
+      MessageFlowControlMBean control = new MessageFlowControl(messageFlow, configuration);
+      registerInJMX(objectName, new StandardMBean(control, MessageFlowControlMBean.class));
+      registerInRegistry(objectName, control);
+   }
+   
+   public void unregisterMessageFlow(String name) throws Exception
+   {
+      ObjectName objectName = getMessageFlowObjectName(name);
+      unregisterResource(objectName);
    }
 
    public void handleMessage(final Message message)

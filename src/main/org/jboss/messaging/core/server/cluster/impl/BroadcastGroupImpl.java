@@ -48,6 +48,8 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 {
    private static final Logger log = Logger.getLogger(BroadcastGroupImpl.class);
 
+   private final String name;
+
    private final InetAddress localBindAddress;
 
    private final int localPort;
@@ -64,11 +66,14 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
    
    private ScheduledFuture<?> future;
    
-   public BroadcastGroupImpl(final InetAddress localBindAddress,
+   public BroadcastGroupImpl(final String name,
+                             final InetAddress localBindAddress,
                              final int localPort,
                              final InetAddress groupAddress,
                              final int groupPort) throws Exception
    {
+      this.name = name;
+      
       this.localBindAddress = localBindAddress;
 
       this.localPort = localPort;
@@ -116,6 +121,11 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       return started;
    }
    
+   public String getName()
+   {
+      return name;
+   }
+
    public synchronized void addConnectorPair(final Pair<TransportConfiguration, TransportConfiguration> connectorPair)
    {
       connectorPairs.add(connectorPair);

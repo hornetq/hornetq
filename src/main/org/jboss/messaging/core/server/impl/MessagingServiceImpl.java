@@ -25,10 +25,6 @@ import java.lang.management.ManagementFactory;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.journal.Journal;
-import org.jboss.messaging.core.journal.SequentialFileFactory;
-import org.jboss.messaging.core.journal.impl.JournalImpl;
-import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -64,7 +60,9 @@ public class MessagingServiceImpl implements MessagingService
 
       ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(),
                                                                       config.isJMXManagementEnabled());
-
+      
+      remotingService.setManagementService(managementService);
+      
       MessagingServer server = new MessagingServerImpl();
 
       server.setConfiguration(config);
@@ -90,6 +88,8 @@ public class MessagingServiceImpl implements MessagingService
 
       ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), false);
 
+      remotingService.setManagementService(managementService);
+      
       MessagingServer server = new MessagingServerImpl();
 
       server.setConfiguration(config);

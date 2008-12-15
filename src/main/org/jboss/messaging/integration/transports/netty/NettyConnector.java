@@ -305,6 +305,11 @@ public class NettyConnector implements Connector
          }
       }
    }
+   
+   public boolean isStarted()
+   {
+      return (channelFactory != null);
+   }
 
    public Connection createConnection()
    {

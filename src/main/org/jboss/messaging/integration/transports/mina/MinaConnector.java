@@ -183,7 +183,13 @@ public class MinaConnector implements Connector
       if (connector != null)
       {
          connector.dispose();
+         connector = null;
       }
+   }
+   
+   public boolean isStarted()
+   {
+      return (connector != null);
    }
 
    public Connection createConnection()

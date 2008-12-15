@@ -20,33 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.remoting;
 
-import java.util.Set;
-
-import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.core.server.MessagingServer;
+package org.jboss.messaging.core.management;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * A MessagingComponentControlMBean
+ *
+ * @author jmesnil
+ * 
+ * Created 15 déc. 2008 11:31:28
+ *
+ *
  */
-public interface RemotingService extends MessagingComponent
+public interface MessagingComponentControlMBean
 {
-   RemotingConnection getConnection(Object remotingConnectionID);
-
-   Set<RemotingConnection> getConnections();
+   boolean isStarted();
    
-   void setMessagingServer(MessagingServer server);
+   void start() throws Exception;
    
-   void addInterceptor(Interceptor interceptor);
-   
-   boolean removeInterceptor(Interceptor interceptor);
-   
-   void setBackup(boolean backup);
-
-   void setManagementService(ManagementService managementService);
+   void stop() throws Exception;
 }

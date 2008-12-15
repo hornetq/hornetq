@@ -13,6 +13,7 @@
 package org.jboss.messaging.core.remoting.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.Interceptor;
@@ -80,6 +82,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private volatile MessagingServer server;
 
+   private ManagementService managementService;
+
    
    // Static --------------------------------------------------------
 
@@ -114,6 +118,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    // RemotingService implementation -------------------------------
 
+   public void setManagementService(final ManagementService managementService)
+   {
+      this.managementService = managementService;
+   }
+   
    public synchronized void start() throws Exception
    {
       if (started)
@@ -136,7 +145,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
          if (!invmAcceptorConfigured)
          {
-            transportConfigs.add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
+            transportConfigs.add(new TransportConfiguration(InVMAcceptorFactory.class.getName(), new HashMap<String, Object>(), "in-vm"));
          }
       }
 
@@ -153,6 +162,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             Acceptor acceptor = factory.createAcceptor(info.getParams(), bufferHandler, this);
 
             acceptors.add(acceptor);
+
+            if (managementService != null)
+            {
+               managementService.registerAcceptor(acceptor, info);
+            }
          }
          catch (Exception e)
          {
@@ -203,11 +217,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    public boolean isStarted()
    {
       return started;
-   }
-
-   public Set<Acceptor> getAcceptors()
-   {
-      return acceptors;
    }
 
    public RemotingConnection getConnection(final Object remotingConnectionID)

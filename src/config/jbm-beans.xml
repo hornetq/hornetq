@@ -59,7 +59,10 @@
          <parameter>
             <inject bean="Configuration"/>
          </parameter>
-      </constructor>
+      <property name="managementService">
+         <inject bean="ManagementService"/>
+      </property>
+      </constructor> 
    </bean>
 
    <bean name="JMSServerManager" class="org.jboss.messaging.jms.server.impl.JMSServerManagerImpl">

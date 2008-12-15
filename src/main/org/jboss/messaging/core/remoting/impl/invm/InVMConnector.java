@@ -110,6 +110,11 @@ public class InVMConnector implements Connector
       
       started = false;
    }
+   
+   public boolean isStarted()
+   {
+      return started;
+   }
 
    public Connection createConnection()
    {

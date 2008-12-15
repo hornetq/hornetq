@@ -41,8 +41,6 @@ public interface MessagingServerControlMBean
 
    public Map<String, Object> getBackupConnectorConfiguration();
 
-   public Map<String, Map<String, Object>> getAcceptorConfigurations();
-
    String getVersion();
 
    int getConnectionCount();
@@ -168,13 +166,5 @@ public interface MessagingServerControlMBean
    @Operation(desc = "List the sessions for the given connectionID", impact = INFO)
    String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID);
 
-   TabularData getMessageFlows() throws Exception;
-   
-   TabularData getDiscoveryGroups() throws Exception;
-
-   TabularData getBroadcastGroups() throws Exception;
-   
-   TabularData getAcceptors() throws Exception;
-   
    TabularData getConnectors() throws Exception;   
 }

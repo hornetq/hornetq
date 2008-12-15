@@ -40,6 +40,7 @@ import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
@@ -81,15 +82,18 @@ public class ClusterManagerImpl implements ClusterManager
 
    private final ScheduledExecutorService scheduledExecutor;
 
+   private final ManagementService managementService;
+
    private final Configuration configuration;
 
    private volatile boolean started;
-      
+
    public ClusterManagerImpl(final ExecutorFactory executorFactory,
                              final StorageManager storageManager,
                              final PostOffice postOffice,
                              final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                              final ScheduledExecutorService scheduledExecutor,
+                             final ManagementService managementService,
                              final Configuration configuration)
    {
       this.executorFactory = executorFactory;
@@ -102,6 +106,8 @@ public class ClusterManagerImpl implements ClusterManager
 
       this.scheduledExecutor = scheduledExecutor;
 
+      this.managementService = managementService;
+      
       this.configuration = configuration;
    }
 
@@ -140,16 +146,19 @@ public class ClusterManagerImpl implements ClusterManager
       for (BroadcastGroup group : broadcastGroups.values())
       {
          group.stop();
+         managementService.unregisterBroadcastGroup(group.getName());
       }
 
       for (DiscoveryGroup group : discoveryGroups.values())
       {
          group.stop();
+         managementService.unregisterDiscoveryGroup(group.getName());
       }
 
       for (MessageFlow flow : this.messageFlows.values())
       {
          flow.stop();
+         managementService.unregisterMessageFlow(flow.getName().toString());
       }
 
       broadcastGroups.clear();
@@ -185,7 +194,8 @@ public class ClusterManagerImpl implements ClusterManager
 
       InetAddress groupAddress = InetAddress.getByName(config.getGroupAddress());
 
-      BroadcastGroupImpl group = new BroadcastGroupImpl(localBindAddress,
+      BroadcastGroupImpl group = new BroadcastGroupImpl(config.getName(),
+                                                         localBindAddress,
                                                         config.getLocalBindPort(),
                                                         groupAddress,
                                                         config.getGroupPort());
@@ -226,6 +236,8 @@ public class ClusterManagerImpl implements ClusterManager
       group.setScheduledFuture(future);
 
       broadcastGroups.put(config.getName(), group);
+      
+      managementService.registerBroadcastGroup(group, config);
 
       group.start();
    }
@@ -250,10 +262,12 @@ public class ClusterManagerImpl implements ClusterManager
 
       InetAddress groupAddress = InetAddress.getByName(config.getGroupAddress());
 
-      DiscoveryGroup group = new DiscoveryGroupImpl(groupAddress, config.getGroupPort(), config.getRefreshTimeout());
+      DiscoveryGroup group = new DiscoveryGroupImpl(config.getName(), groupAddress, config.getGroupPort(), config.getRefreshTimeout());
 
       discoveryGroups.put(config.getName(), group);
 
+      managementService.registerDiscoveryGroup(group, config);
+      
       group.start();
    }
 
@@ -407,6 +421,7 @@ public class ClusterManagerImpl implements ClusterManager
       }
 
       messageFlows.put(config.getName(), flow);
+      managementService.registerMessageFlow(flow, config);
 
       flow.start();
    }

@@ -264,6 +264,13 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
       return started;
    }
    
+   // MessageFlow implementation ------------------------------------
+   
+   public SimpleString getName()
+   {
+      return name;
+   }
+   
    //For testing only
    public Set<Forwarder> getForwarders()
    {

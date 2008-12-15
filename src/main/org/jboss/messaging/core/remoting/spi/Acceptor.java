@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.remoting.spi;
 
+import org.jboss.messaging.core.server.MessagingComponent;
+
 /**
  * An Acceptor is used tby the Remoting Service to allow clients to connect. It should take care of dispatchin client requests
  * to the Remoting Service's Dispatcher.
@@ -29,9 +31,7 @@ package org.jboss.messaging.core.remoting.spi;
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public interface Acceptor
+public interface Acceptor extends MessagingComponent
 {
-   void start() throws Exception;
-
    void stop();
 }

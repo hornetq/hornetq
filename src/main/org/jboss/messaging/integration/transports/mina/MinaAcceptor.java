@@ -185,6 +185,11 @@ public class MinaAcceptor implements Acceptor
       acceptor = null;
    }
 
+   public boolean isStarted()
+   {
+      return (acceptor != null);
+   }
+   
    public DefaultIoFilterChainBuilder getFilterChain()
    {
       return acceptor.getFilterChain();

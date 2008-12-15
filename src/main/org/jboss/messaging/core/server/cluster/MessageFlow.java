@@ -26,6 +26,7 @@ package org.jboss.messaging.core.server.cluster;
 import java.util.Set;
 
 import org.jboss.messaging.core.server.MessagingComponent;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A MessageFlow
@@ -38,5 +39,7 @@ import org.jboss.messaging.core.server.MessagingComponent;
  */
 public interface MessageFlow extends MessagingComponent
 {   
+   SimpleString getName();
+   
    Set<Forwarder> getForwarders();
 }

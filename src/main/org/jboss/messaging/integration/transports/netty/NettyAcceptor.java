@@ -22,6 +22,17 @@
 
 package org.jboss.messaging.integration.transports.netty;
 
+import static org.jboss.netty.channel.Channels.pipeline;
+
+import java.net.InetSocketAddress;
+import java.util.Map;
+import java.util.Timer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.SSLContext;
+
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
@@ -40,21 +51,11 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
-import static org.jboss.netty.channel.Channels.pipeline;
-import static org.jboss.netty.channel.Channels.write;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.jboss.netty.handler.ssl.SslHandler;
-
-import javax.net.ssl.SSLContext;
-import java.net.InetSocketAddress;
-import java.util.Map;
-import java.util.Timer;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A Netty TCP Acceptor that supports SSL
@@ -303,6 +304,11 @@ public class NettyAcceptor implements Acceptor
          }
       }
       channelFactory = null;
+   }
+   
+   public boolean isStarted()
+   {
+      return (channelFactory != null);
    }
 
    // Inner classes -----------------------------------------------------------------------------

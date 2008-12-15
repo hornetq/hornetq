@@ -93,6 +93,11 @@ public class InVMAcceptor implements Acceptor
       started = true;
    }
    
+   public boolean isStarted()
+   {
+      return started;
+   }
+
    public BufferHandler getHandler()
    {
       if (!started)

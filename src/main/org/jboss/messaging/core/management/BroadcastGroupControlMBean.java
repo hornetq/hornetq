@@ -20,33 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.remoting;
+package org.jboss.messaging.core.management;
 
-import java.util.Set;
-
-import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.core.server.MessagingServer;
+import javax.management.openmbean.TabularData;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * A DiscoveryGroupControlMBean
+ *
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
+ *
  */
-public interface RemotingService extends MessagingComponent
+public interface BroadcastGroupControlMBean extends MessagingComponentControlMBean
 {
-   RemotingConnection getConnection(Object remotingConnectionID);
+   String getName();
 
-   Set<RemotingConnection> getConnections();
-   
-   void setMessagingServer(MessagingServer server);
-   
-   void addInterceptor(Interceptor interceptor);
-   
-   boolean removeInterceptor(Interceptor interceptor);
-   
-   void setBackup(boolean backup);
+   String getLocalBindAddress();
 
-   void setManagementService(ManagementService managementService);
+   int getLocalBindPort();
+
+   String getGroupAddress();
+
+   int getGroupPort();
+
+   long getBroadcastPeriod();
+   
+   TabularData getConnectorInfos();
 }

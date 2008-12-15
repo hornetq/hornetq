@@ -23,6 +23,7 @@ package org.jboss.messaging.core.config;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * A TransportConfiguration
@@ -51,12 +52,12 @@ public class TransportConfiguration implements Serializable
    
    public TransportConfiguration(final String className, final Map<String, Object> params)
    {
-      this(className, params, null);
+      this(className, params, UUID.randomUUID().toString());
    }
    
    public TransportConfiguration(final String className)
    {
-      this(className, null, null);
+      this(className, null, UUID.randomUUID().toString());
    }
    
    public String getName()

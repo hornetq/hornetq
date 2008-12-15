@@ -58,6 +58,8 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
    private final List<DiscoveryListener> listeners = new ArrayList<DiscoveryListener>();
         
+   private final String name;
+
    private final Thread thread;
    
    private boolean received;
@@ -70,8 +72,10 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
    
    private volatile boolean started;
       
-   public DiscoveryGroupImpl(final InetAddress groupAddress, final int groupPort, final long timeout) throws Exception
-   {      
+   public DiscoveryGroupImpl(final String name, final InetAddress groupAddress, final int groupPort, final long timeout) throws Exception
+   {
+      this.name = name;
+
       socket = new MulticastSocket(groupPort);
 
       socket.joinGroup(groupAddress);
@@ -123,6 +127,11 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
    public boolean isStarted()
    {
       return started;
+   }
+   
+   public String getName()
+   {
+      return name;
    }
         
    public synchronized List<Pair<TransportConfiguration, TransportConfiguration>> getConnectors()

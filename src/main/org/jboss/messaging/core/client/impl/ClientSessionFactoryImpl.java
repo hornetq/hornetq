@@ -21,13 +21,13 @@ import java.util.Set;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ConnectionLoadBalancingPolicy;
+import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.cluster.DiscoveryListener;
+import org.jboss.messaging.core.cluster.impl.DiscoveryGroupImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.cluster.DiscoveryGroup;
-import org.jboss.messaging.core.cluster.impl.DiscoveryGroupImpl;
 import org.jboss.messaging.util.Pair;
 
 /**
@@ -171,7 +171,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       InetAddress groupAddress = InetAddress.getByName(discoveryGroupName);
 
-      discoveryGroup = new DiscoveryGroupImpl(groupAddress, discoveryGroupPort, discoveryRefreshTimeout);
+      discoveryGroup = new DiscoveryGroupImpl(discoveryGroupName, groupAddress, discoveryGroupPort, discoveryRefreshTimeout);
 
       discoveryGroup.registerListener(this);
 
@@ -229,7 +229,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       {
          InetAddress groupAddress = InetAddress.getByName(discoveryGroupName);
    
-         discoveryGroup = new DiscoveryGroupImpl(groupAddress, discoveryGroupPort, discoveryRefreshTimeout);
+         discoveryGroup = new DiscoveryGroupImpl(discoveryGroupName, groupAddress, discoveryGroupPort, discoveryRefreshTimeout);
    
          discoveryGroup.registerListener(this);
    

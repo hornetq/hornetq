@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,15 +44,9 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
-import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
-import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
-import org.jboss.messaging.core.management.BroadcastGroupConfigurationInfo;
-import org.jboss.messaging.core.management.DiscoveryGroupConfigurationInfo;
-import org.jboss.messaging.core.management.MessageFlowConfigurationInfo;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.TransportConfigurationInfo;
@@ -67,7 +60,6 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerSession;
-import org.jboss.messaging.core.server.cluster.ClusterManager;
 import org.jboss.messaging.core.server.impl.ServerSessionImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -172,34 +164,6 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
    // MessagingServerControlMBean implementation --------------------
 
-   //FIXME
-   
-   public Map<String, Object> getBackupConnectorConfiguration()
-   {
-//      TransportConfiguration backupConf = configuration.getBackupConnectorConfiguration();
-//      if (backupConf != null)
-//      {
-//         return backupConf.getParams();
-//      }
-//      else
-//      {
-//         return Collections.emptyMap();
-//      }
-      return Collections.emptyMap();
-   }
-
-   //FIXME
-   public Map<String, Map<String, Object>> getAcceptorConfigurations()
-   {
-      Map<String, Map<String, Object>> result = new HashMap<String, Map<String, Object>>();
-      Set<TransportConfiguration> acceptorConfs = configuration.getAcceptorConfigurations();
-
-      for (TransportConfiguration acceptorConf : acceptorConfs)
-      {
-         result.put(acceptorConf.getFactoryClassName(), acceptorConf.getParams());
-      }
-      return result;
-   }
 
    public boolean isStarted()
    {
@@ -216,6 +180,13 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return configuration.isBackup();
    }
 
+   //FIXME
+   public Map<String, Object> getBackupConnectorConfiguration()
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+   
    public String getBindingsDirectory()
    {
       return configuration.getBindingsDirectory();
@@ -555,31 +526,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       }
       return sessionIDs;
    }
-   
-   public TabularData getMessageFlows() throws Exception
-   {
-      Set<MessageFlowConfiguration> messageFlowConfigurations = configuration.getMessageFlowConfigurations();
-      return MessageFlowConfigurationInfo.toTabularData(messageFlowConfigurations);
-   }
-   
-   public TabularData getDiscoveryGroups() throws Exception
-   {
-      Collection<DiscoveryGroupConfiguration> discoveryGroupConfigurations = configuration.getDiscoveryGroupConfigurations().values();
-      return DiscoveryGroupConfigurationInfo.toTabularData(discoveryGroupConfigurations);
-   }
-   
-   public TabularData getBroadcastGroups() throws Exception
-   {
-      Set<BroadcastGroupConfiguration> broadcastGroupConfigurations = configuration.getBroadcastGroupConfigurations();
-      return BroadcastGroupConfigurationInfo.toTabularData(broadcastGroupConfigurations);
-   }
 
-   public TabularData getAcceptors() throws Exception
-   {
-      Set<TransportConfiguration> acceptorConfigurations = configuration.getAcceptorConfigurations();
-      return TransportConfigurationInfo.toTabularData(acceptorConfigurations);
-   }
-   
    public TabularData getConnectors() throws Exception
    {
       Collection<TransportConfiguration> connectorConfigurations = configuration.getConnectorConfigurations().values();

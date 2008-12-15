@@ -64,11 +64,6 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
 
    // MessagingServerControlMBean implementation ------------------------------
 
-   public Map<String, Map<String, Object>> getAcceptorConfigurations()
-   {
-      return localControl.getAcceptorConfigurations();
-   }
-
    public Map<String, Object> getBackupConnectorConfiguration()
    {
       return localControl.getBackupConnectorConfiguration();
@@ -237,26 +232,6 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
    public String[] listSessions(String connectionID)
    {
       return localControl.listSessions(connectionID);
-   }
-   
-   public TabularData getMessageFlows() throws Exception
-   {
-      return localControl.getMessageFlows();
-   }
-   
-   public TabularData getDiscoveryGroups() throws Exception
-   {
-      return localControl.getDiscoveryGroups();
-   }   
-   
-   public TabularData getBroadcastGroups() throws Exception
-   {
-      return localControl.getBroadcastGroups();
-   }
-   
-   public TabularData getAcceptors() throws Exception
-   {
-      return localControl.getAcceptors();
    }
    
    public TabularData getConnectors() throws Exception

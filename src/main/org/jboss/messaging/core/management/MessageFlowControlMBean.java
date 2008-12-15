@@ -20,33 +20,49 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.remoting;
+package org.jboss.messaging.core.management;
 
-import java.util.Set;
-
-import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.core.server.MessagingServer;
+import javax.management.openmbean.TabularData;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * A AcceptorMBean
+ *
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
+ *
  */
-public interface RemotingService extends MessagingComponent
+public interface MessageFlowControlMBean
 {
-   RemotingConnection getConnection(Object remotingConnectionID);
+   boolean isStarted();
 
-   Set<RemotingConnection> getConnections();
-   
-   void setMessagingServer(MessagingServer server);
-   
-   void addInterceptor(Interceptor interceptor);
-   
-   boolean removeInterceptor(Interceptor interceptor);
-   
-   void setBackup(boolean backup);
+   String getName();
 
-   void setManagementService(ManagementService managementService);
+   void start() throws Exception;
+
+   void stop() throws Exception;
+
+   String getAddress();
+
+   String getFilterString();
+
+   boolean isFanout();
+
+   int getMaxBatchSize();
+
+   long getMaxBatchTime();
+
+   String getTransformerClassName();
+
+   TabularData getConnectorNamePairs();
+
+   String getDiscoveryGroupName();
+
+   long getRetryInterval();
+
+   double getRetryIntervalMultiplier();
+
+   int getMaxRetriesBeforeFailover();
+
+   int getMaxRetriesAfterFailover();
+
+   boolean isUseDuplicateDetection();
 }

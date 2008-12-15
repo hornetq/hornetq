@@ -292,6 +292,7 @@ public class MessagingServerImpl implements MessagingServer
                                                  postOffice,
                                                  queueSettingsRepository,
                                                  scheduledExecutor,
+                                                 managementService,
                                                  configuration);
 
          clusterManager.start();
