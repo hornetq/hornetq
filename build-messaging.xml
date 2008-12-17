@@ -101,6 +101,12 @@
    <property name="build.distro.examples.dir" value="${build.distro.dir}/examples"/>
    <property name="build.distro.licenses.dir" value="${build.distro.dir}/licenses"/>
 
+   <!--default clustering server settings-->   
+   <property name="jbm.remoting.netty.port" value="5445"/>
+   <property name="jbm.remoting.mina.port" value="5600"/>
+   <property name="jnp.port" value="1099"/>
+   <property name="jnp.rmiPort" value="1098"/>
+   <property name="jbm.data.dir" value="data1"/>
    <!-- ======================================================================================== -->
    <!-- Thirdparty Dependency Definitions                                                        -->
    <!-- ======================================================================================== -->
@@ -1142,6 +1148,30 @@
          <jvmarg value="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory"/>
          <jvmarg value="-Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"/>
          <arg line="jbm-standalone-beans.xml"/>
+         <classpath refid="jms.standalone.server.classpath"/>
+      </java>
+   </target>
+
+   <target name="runClusteredServer" depends="jar">
+      <java classname="org.jboss.messaging.integration.bootstrap.JBMBootstrapServer" fork="true">
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-Xms512M"/>
+         <jvmarg value="-Xmx2048M"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+         <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <jvmarg value="-Dcom.sun.management.jmxremote"/>
+         <jvmarg value="-Djava.util.logging.config.file=src/config/logging.properties"/>
+         <jvmarg
+               value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin"/>
+         <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
+         <jvmarg value="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory"/>
+         <jvmarg value="-Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"/>
+         <jvmarg value="-Djbm.remoting.netty.port=${jbm.remoting.netty.port}"/>
+         <jvmarg value="-Djbm.remoting.mina.port=${jbm.remoting.mina.port}"/>
+         <jvmarg value="-Djnp.port=${jnp.port}"/>
+         <jvmarg value="-Djnp.rmiPort=${jnp.rmiPort}"/>
+         <jvmarg value="-Djbm.data.dir=${jbm.data.dir}"/>
+         <arg line="jbm-cluster-standalone-beans.xml"/>
          <classpath refid="jms.standalone.server.classpath"/>
       </java>
    </target>

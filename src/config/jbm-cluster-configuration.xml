@@ -1,0 +1,201 @@
+<deployment>
+   <configuration>
+
+      <clustered>true</clustered>
+      
+      <!-- Clustering configuration -->
+      
+      <broadcast-group name="bg-group1">
+      	<local-bind-address>localhost</local-bind-address>
+      	<local-bind-port>1234</local-bind-port>
+      	<group-address>231.7.7.7</group-address>
+      	<group-port>9876</group-port>
+      	<broadcast-period>5000</broadcast-period>
+      	<connector-ref connector-name="netty" backup-connector-name="netty-backup"/>
+      </broadcast-group>
+      
+      <discovery-group name="dg-group1">
+      	<group-address>231.7.7.7</group-address>
+      	<group-port>9876</group-port>
+      	<refresh-timeout>10000</refresh-timeout>
+      </discovery-group>
+      
+      <message-flow name="jms-distributed-queues">
+         <address>jmsqueues.testDistributedQueue</address>
+         <discovery-group-ref discovery-group-name="dg-group1"/>       
+      </message-flow>
+      
+      <message-flow name="jms-distributed-topics">
+         <address>jmstopics.#</address>
+         <discovery-group-ref discovery-group-name="dg-group1"/>
+         <fanout>true</fanout>      
+      </message-flow>
+      
+      <!--<message-flow name="example-static-connectors">
+         <address>jmstopics.#</address>
+         <connector-ref connector-name="connector1" backup-connector-name="backup-connector1"/>
+         <connector-ref connector-name="connector2"/>
+         <connector-ref connector-name="connector3"/>
+         <fanout>true</fanout>      
+      </message-flow>-->
+      
+      <!-- Maximum number of threads to use for scheduled deliveries -->
+      <scheduled-max-pool-size>30</scheduled-max-pool-size>
+
+      <require-destinations>true</require-destinations>
+      
+      <security-enabled>true</security-enabled>
+      
+      <security-invalidation-interval>10000</security-invalidation-interval>
+
+      <wild-card-routing-enabled>true</wild-card-routing-enabled>
+
+      <management-address>admin.management</management-address>
+      <management-notification-address>admin.notification</management-notification-address>      
+
+      <!-- true to expose JBoss Messaging resources through JMX -->
+      <jmx-management-enabled>true</jmx-management-enabled>
+
+      <!-- by default, message counter is disabled -->
+      <message-counter-enabled>false</message-counter-enabled>
+    
+      <connection-scan-period>10000</connection-scan-period>
+            
+      <!--how long before timing a transaction out-->
+      <transaction-timeout>60000</transaction-timeout>
+      <!--how often to scan for timedout transactions-->
+      <transaction-timeout-scan-period>1000</transaction-timeout-scan-period>
+
+      <!-- how often do we scan the queues for expired messages-->
+      <message-expiry-scan-period>30000</message-expiry-scan-period>
+      <!-- the priority of the thread that expires th emessages (between 1 - 10 inclusive)-->
+      <message-expiry-thread-priority>3</message-expiry-thread-priority>
+      
+      <!-- Example interceptors 
+      <remoting-interceptors>
+         <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1</class-name>
+         <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor2</class-name>
+      </remoting-interceptors>
+      -->
+      
+      <backup>false</backup>
+      
+      <queue-activation-timeout>30000</queue-activation-timeout>
+
+      <!--
+      <backup-connector connector-name="backup-connector"/>
+      -->
+      
+      <!-- Connectors -->
+      
+      <connector name="netty-backup">
+      	<factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
+         <param key="jbm.remoting.netty.port" value="6400" type="Integer"/>
+      </connector>
+      
+      <connector name="netty">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+      </connector>
+      
+      <connector name="netty-ssl">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
+         <param key="jbm.remoting.netty.port" value="5500" type="Integer"/>	                     
+         <param key="jbm.remoting.netty.sslenabled" value="true" type="Boolean"/>
+      </connector>
+
+      <connector name="netty-http">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
+         <param key="jbm.remoting.netty.port" value="6100" type="Integer"/>
+         <param key="jbm.remoting.netty.httpenabled" value="true" type="Boolean"/>
+         <param key="jbm.remoting.netty.httpclientidletime" value="500" type="Long"/>
+         <param key="jbm.remoting.netty.httpclientidlescanperiod" value="500" type="Long"/>
+      </connector>
+      
+      <connector name="in-vm">
+         <factory-class>org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory</factory-class>
+      </connector>
+      
+      <!-- Acceptors -->
+      
+      <!-- In VM acceptor -->
+      <acceptor name="in-vm">            
+         <factory-class>org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory</factory-class>
+         <param key="jbm.remoting.invm.serverid" value="0" type="Integer"/>
+      </acceptor>
+      <!-- Netty standard TCP acceptor -->
+      <acceptor name="netty">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <param key="jbm.remoting.netty.port" value="${jbm.remoting.netty.port}" type="Integer"/>
+      </acceptor>   
+      <!-- Netty SSL Acceptor
+      <acceptor name="netty-ssl">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
+         <param key="jbm.remoting.netty.port" value="5500" type="Integer"/>	                     
+         <param key="jbm.remoting.netty.sslenabled" value="true" type="Boolean"/>
+      </acceptor> 
+      -->
+        <!--Netty HTTP Acceptor-->
+      <!--<acceptor name-"netty-http">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
+         <param key="jbm.remoting.netty.port" value="6100" type="Integer"/>
+         <param key="jbm.remoting.netty.httpenabled" value="true" type="Boolean"/>
+         <param key="jbm.remoting.netty.httpresponsetime" value="10000" type="Long"/>
+         <param key="jbm.remoting.netty.httpserverscanperiod" value="5000" type="Long"/>
+      </acceptor>-->
+
+      <!-- Mina Acceptor -->
+      <acceptor name="mina">
+         <factory-class>org.jboss.messaging.integration.transports.mina.MinaAcceptorFactory</factory-class>           	            
+         <param key="jbm.remoting.mina.host" value="localhost" type="String"/>
+         <param key="jbm.remoting.mina.port" value="${jbm.remoting.mina.port}" type="Integer"/>	                     
+      </acceptor>
+      
+      <!--  Paging configuration -->
+      
+      <paging-max-threads>10</paging-max-threads>
+      
+      <paging-directory>${jbm.data.dir}/paging</paging-directory>
+      
+      <paging-max-global-size-bytes>104857600</paging-max-global-size-bytes>
+      
+      <!-- Storage configuration -->
+
+      <bindings-directory>${jbm.data.dir}/bindings</bindings-directory>
+
+      <create-bindings-dir>true</create-bindings-dir>
+
+      <journal-directory>${jbm.data.dir}/journal</journal-directory>
+
+      <create-journal-dir>true</create-journal-dir>
+
+      <journal-type>ASYNCIO</journal-type>
+
+      <!-- The journal will reuse any buffers where the size < journal-buffer-reuse-size on write operations
+           Set this to -1 to disable this feature -->
+      <journal-buffer-reuse-size>4096</journal-buffer-reuse-size>
+
+      <!-- Does the journal sync to disk on each transaction commit, prepare or rollback? -->
+      <journal-sync-transactional>true</journal-sync-transactional>
+      
+      <!-- Does the journal sync to disk for every non transactional persistent operation? -->
+      <journal-sync-non-transactional>false</journal-sync-non-transactional>
+
+      <!-- 10 MB journal file size -->
+      <journal-file-size>10485760</journal-file-size>
+
+      <journal-min-files>15</journal-min-files>
+
+      <!-- Maximum simultaneous asynchronous writes accepted by the native layer.
+      (parameter ignored on NIO)
+       You can verify the max AIO on the OS level at /proc/sys/fs/aio_max_nr. (aio-nr will give you the current max-aio being used)
+      -->
+      <journal-max-aio>10000</journal-max-aio>
+
+   </configuration>
+
+</deployment>

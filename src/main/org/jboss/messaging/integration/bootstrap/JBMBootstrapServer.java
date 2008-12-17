@@ -98,8 +98,6 @@ public class JBMBootstrapServer extends BasicBootstrap
    public JBMBootstrapServer(final String[] args, KernelConfig kernelConfig) throws Exception
    {
       super(kernelConfig);
-      //System.setProperty("java.naming.factory.initial", "org.jnp.interfaces.LocalOnlyContextFactory");
-      //System.setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
       this.args = args;
    }
    

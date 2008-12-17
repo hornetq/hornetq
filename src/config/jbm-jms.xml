@@ -156,7 +156,7 @@
       <entry name="/topic/TopicWithOwnRedeliveryDelay"/>
    </topic>
    <queue name="testDistributedQueue">
-      <entry name="/topic/testDistributedQueue"/>
+      <entry name="/queue/testDistributedQueue"/>
    </queue>
    <topic name="testDistributedTopic">
       <entry name="/topic/testDistributedTopic"/>

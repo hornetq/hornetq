@@ -35,7 +35,7 @@ import org.w3c.dom.NodeList;
  */
 public class QueueSettingsDeployer extends XmlDeployer
 {   
-   private static final String CLUSTERED_NODE_NAME = "manageConfirmations";
+   private static final String CLUSTERED_NODE_NAME = "clustered";
    
    private static final String DEAD_LETTER_ADDRESS_NODE_NAME = "dead-letter-address";
    

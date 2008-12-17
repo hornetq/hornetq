@@ -226,6 +226,10 @@
       <ant antfile="build-messaging.xml" target="runServer"/>
    </target>
 
+   <target name="runClusteredServer" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="runClusteredServer"/>
+   </target>
+
    <target name="debugServer" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="debugServer"/>
    </target>
