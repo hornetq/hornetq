@@ -32,7 +32,7 @@ import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 /**
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * 
- * Created 12 déc. 2008 16:52:12
+ * Created 12 dec. 2008 16:52:12
  *
  *
  */
