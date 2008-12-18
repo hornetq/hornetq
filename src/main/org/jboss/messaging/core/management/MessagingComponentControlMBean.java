@@ -28,7 +28,7 @@ package org.jboss.messaging.core.management;
  *
  * @author jmesnil
  * 
- * Created 15 déc. 2008 11:31:28
+ * Created 15 dec. 2008 11:31:28
  *
  *
  */

@@ -34,7 +34,7 @@ import org.jboss.messaging.core.server.cluster.BroadcastGroup;
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * 
- * Created 11 déc. 2008 17:09:04
+ * Created 11 dec. 2008 17:09:04
  */
 public class BroadcastGroupControl implements BroadcastGroupControlMBean
 {
