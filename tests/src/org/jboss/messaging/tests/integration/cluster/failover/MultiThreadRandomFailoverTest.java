@@ -1342,6 +1342,8 @@ public class MultiThreadRandomFailoverTest extends TestCase
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
+      // This will make GC easier since it won't hang references to MessageCounters and other objects. (This will make debug easier in certain situations also)
+      backupConf.setJMXManagementEnabled(false);
       backupService = MessagingServiceImpl.newNullStorageMessagingService(backupConf);
       backupService.start();
 
@@ -1359,6 +1361,8 @@ public class MultiThreadRandomFailoverTest extends TestCase
                                                                    "backup-connector");
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
+      // This will make GC easier since it won't hang references to MessageCounters and other objects. (This will make debug easier in certain situations also)
+      liveConf.setJMXManagementEnabled(false);
       liveConf.setBackupConnectorName(backupTC.getName());
       liveService = MessagingServiceImpl.newNullStorageMessagingService(liveConf);
       liveService.start();
