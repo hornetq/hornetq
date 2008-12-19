@@ -205,19 +205,6 @@ public class JMSQueueControlTest extends TestCase
       verifyMockedAttributes();
    }
 
-   public void testGetSizeBytes() throws Exception
-   {
-      int size = randomInt();
-
-      expect(coreQueue.getSizeBytes()).andReturn(size);
-      replayMockedAttributes();
-
-      JMSQueueControl control = createControl();
-      assertEquals(size, control.getSizeBytes());
-
-      verifyMockedAttributes();
-   }
-
    public void testGetScheduledCount() throws Exception
    {
       int count = randomInt();

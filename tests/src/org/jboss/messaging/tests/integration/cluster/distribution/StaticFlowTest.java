@@ -129,7 +129,7 @@ public class StaticFlowTest extends MessageFlowTestBase
       MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1",
                                                                        testAddress.toString(),
                                                                        null,
-                                                                       true,
+                                                                       false,
                                                                        1,
                                                                        -1,
                                                                        null,
@@ -163,11 +163,11 @@ public class StaticFlowTest extends MessageFlowTestBase
       ClientSessionFactory csf4 = new ClientSessionFactoryImpl(server4tc);
       ClientSession session4 = csf4.createSession(false, true, true);
 
-      session0.createQueue(testAddress, testAddress, null, false, false, true);
-      session1.createQueue(testAddress, testAddress, null, false, false, true);
-      session2.createQueue(testAddress, testAddress, null, false, false, true);
-      session3.createQueue(testAddress, testAddress, null, false, false, true);
-      session4.createQueue(testAddress, testAddress, null, false, false, true);
+      session0.createQueue(testAddress, testAddress, null, false, false);
+      session1.createQueue(testAddress, testAddress, null, false, false);
+      session2.createQueue(testAddress, testAddress, null, false, false);
+      session3.createQueue(testAddress, testAddress, null, false, false);
+      session4.createQueue(testAddress, testAddress, null, false, false);
 
       ClientProducer prod0 = session0.createProducer(testAddress);
 
@@ -295,7 +295,7 @@ public class StaticFlowTest extends MessageFlowTestBase
       MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1",
                                                                        testAddress.toString(),
                                                                        null,
-                                                                       false,
+                                                                       true,
                                                                        1,
                                                                        -1,
                                                                        null,
@@ -329,11 +329,11 @@ public class StaticFlowTest extends MessageFlowTestBase
       ClientSessionFactory csf4 = new ClientSessionFactoryImpl(server4tc);
       ClientSession session4 = csf4.createSession(false, true, true);
 
-      session0.createQueue(testAddress, testAddress, null, false, false, false);
-      session1.createQueue(testAddress, testAddress, null, false, false, false);
-      session2.createQueue(testAddress, testAddress, null, false, false, false);
-      session3.createQueue(testAddress, testAddress, null, false, false, false);
-      session4.createQueue(testAddress, testAddress, null, false, false, false);
+      session0.createQueue(testAddress, testAddress, null, false, false);
+      session1.createQueue(testAddress, testAddress, null, false, false);
+      session2.createQueue(testAddress, testAddress, null, false, false);
+      session3.createQueue(testAddress, testAddress, null, false, false);
+      session4.createQueue(testAddress, testAddress, null, false, false);
 
       ClientProducer prod0 = session0.createProducer(testAddress);
 
@@ -553,11 +553,11 @@ public class StaticFlowTest extends MessageFlowTestBase
       ClientSessionFactory csf4 = new ClientSessionFactoryImpl(server4tc);
       ClientSession session4 = csf4.createSession(false, true, true);
 
-      session0.createQueue(testAddress, testAddress, null, false, false, false);
-      session1.createQueue(testAddress, testAddress, null, false, false, false);
-      session2.createQueue(testAddress, testAddress, null, false, false, false);
-      session3.createQueue(testAddress, testAddress, null, false, false, false);
-      session4.createQueue(testAddress, testAddress, null, false, false, false);
+      session0.createQueue(testAddress, testAddress, null, false, false);
+      session1.createQueue(testAddress, testAddress, null, false, false);
+      session2.createQueue(testAddress, testAddress, null, false, false);
+      session3.createQueue(testAddress, testAddress, null, false, false);
+      session4.createQueue(testAddress, testAddress, null, false, false);
 
       ClientProducer prod0 = session0.createProducer(testAddress);
 

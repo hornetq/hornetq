@@ -46,8 +46,7 @@ public interface ClientSession extends XAResource
                     SimpleString queueName,
                     SimpleString filterString,
                     boolean durable,
-                    boolean temporary,
-                    boolean fanout) throws MessagingException;
+                    boolean temporary) throws MessagingException;
 
    void deleteQueue(SimpleString queueName) throws MessagingException;
 

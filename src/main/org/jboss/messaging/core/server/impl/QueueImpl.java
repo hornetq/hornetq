@@ -31,7 +31,7 @@ import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Consumer;
-import org.jboss.messaging.core.server.DistributionPolicy;
+import org.jboss.messaging.core.server.Distributor;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
@@ -81,13 +81,11 @@ public class QueueImpl implements Queue
 
    private final ScheduledDeliveryHandler scheduledDeliveryHandler;
 
-   private volatile DistributionPolicy distributionPolicy = new RoundRobinDistributionPolicy();
+   private volatile Distributor distributionPolicy = new RoundRobinDistributor();
 
    private boolean direct;
 
    private boolean promptDelivery;
-
-   private AtomicInteger sizeBytes = new AtomicInteger(0);
 
    private AtomicInteger messagesAdded = new AtomicInteger(0);
 
@@ -163,7 +161,7 @@ public class QueueImpl implements Queue
       return name;
    }
 
-   public HandleStatus addLast(final MessageReference ref)
+   public HandleStatus add(final MessageReference ref)
    {
       HandleStatus status = add(ref, false);
 
@@ -376,17 +374,12 @@ public class QueueImpl implements Queue
       deliveringCount.incrementAndGet();
    }
 
-   public int getSizeBytes()
-   {
-      return sizeBytes.get();
-   }
-
-   public DistributionPolicy getDistributionPolicy()
+   public Distributor getDistributionPolicy()
    {
       return distributionPolicy;
    }
 
-   public void setDistributionPolicy(final DistributionPolicy distributionPolicy)
+   public void setDistributionPolicy(final Distributor distributionPolicy)
    {
       this.distributionPolicy = distributionPolicy;
    }
@@ -625,7 +618,7 @@ public class QueueImpl implements Queue
             // delete and add the reference so that it
             // goes to the right queues for the new priority
             deleteReference(messageID, storageManager);
-            addLast(ref);
+            add(ref);
             return true;
          }
       }
@@ -805,8 +798,6 @@ public class QueueImpl implements Queue
       if (!first)
       {
          messagesAdded.incrementAndGet();
-
-         sizeBytes.addAndGet(ref.getMessage().getEncodeSize());
       }
 
       if (scheduledDeliveryHandler.checkAndSchedule(ref, backup))
@@ -901,12 +892,10 @@ public class QueueImpl implements Queue
 
       deliveringCount.decrementAndGet();
 
-      sizeBytes.addAndGet(-ref.getMessage().getEncodeSize());
-      
-      
-      // TODO: We could optimize this by storing the paging-store for the address on the Queue. We would need to know the Address for the Queue
+      // TODO: We could optimize this by storing the paging-store for the address on the Queue. We would need to know
+      // the Address for the Queue
       PagingStore store = null;
-      
+
       if (pagingManager != null)
       {
          store = pagingManager.getPageStore(ref.getMessage().getDestination());

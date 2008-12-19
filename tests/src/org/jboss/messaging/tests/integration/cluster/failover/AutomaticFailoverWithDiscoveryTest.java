@@ -102,7 +102,7 @@ public class AutomaticFailoverWithDiscoveryTest extends TestCase
       
       log.info("Created session");
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false, true);
+      session.createQueue(ADDRESS, ADDRESS, null, false, false);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 

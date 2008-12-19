@@ -26,9 +26,12 @@ import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ACTUAL_EXPIR
 import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIGIN_QUEUE;
 import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIG_MESSAGE_ID;
 
+import java.util.List;
+
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
@@ -39,8 +42,6 @@ import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.DataConstants;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.List;
 
 /**
  * Implementation of a MessageReference
@@ -180,9 +181,9 @@ public class MessageReferenceImpl implements MessageReference
                                                               .getDeadLetterAddress();
       if (deadLetterAddress != null)
       {
-         List<Binding> bindingList = postOffice.getBindingsForAddress(deadLetterAddress);
+         Bindings bindingList = postOffice.getBindingsForAddress(deadLetterAddress);
          
-         if (bindingList.isEmpty())
+         if (bindingList.getBindings().isEmpty())
          {
             log.warn("Message has exceeded max delivery attempts. No bindings for Dead Letter Address " + deadLetterAddress +
                      " so dropping it");
@@ -211,9 +212,9 @@ public class MessageReferenceImpl implements MessageReference
 
       if (expiryAddress != null)
       {
-         List<Binding> bindingList = postOffice.getBindingsForAddress(expiryAddress);
+         Bindings bindingList = postOffice.getBindingsForAddress(expiryAddress);
          
-         if (bindingList.isEmpty())
+         if (bindingList.getBindings().isEmpty())
          {
             log.warn("Message has expired. No bindings for Expiry Address " + expiryAddress + " so dropping it");
          }
@@ -242,9 +243,9 @@ public class MessageReferenceImpl implements MessageReference
 
       if (expiryAddress != null)
       {
-         List<Binding> bindingList = postOffice.getBindingsForAddress(expiryAddress);
+         Bindings bindingList = postOffice.getBindingsForAddress(expiryAddress);
          
-         if (bindingList.isEmpty())
+         if (bindingList.getBindings().isEmpty())
          {
             log.warn("Message has expired. No bindings for Expiry Address " + expiryAddress + " so dropping it");
          }

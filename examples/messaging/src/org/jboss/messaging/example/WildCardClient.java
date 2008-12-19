@@ -59,7 +59,7 @@ public class WildCardClient
          ClientMessage message2 = clientSession.createClientMessage(false);
          message2.getBody().putString("This is a message from queue " + queue2);
 
-         clientSession.createQueue(wildCardQ, wildCardQ, null, false, true, true);
+         clientSession.createQueue(wildCardQ, wildCardQ, null, false, true);
          clientConsumer = clientSession.createConsumer(wildCardQ);
          clientProducer.send(message);
          log.info("message sent to " + queue);

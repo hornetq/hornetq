@@ -119,11 +119,6 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return localQueueControl.getScheduledCount();
    }
 
-   public long getSizeBytes()
-   {
-      return localQueueControl.getSizeBytes();
-   }
-
    public boolean isBackup()
    {
       return localQueueControl.isBackup();

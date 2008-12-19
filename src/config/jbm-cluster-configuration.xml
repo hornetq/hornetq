@@ -28,7 +28,7 @@
       <message-flow name="jms-distributed-topics">
          <address>jmstopics.#</address>
          <discovery-group-ref discovery-group-name="dg-group1"/>
-         <fanout>true</fanout>      
+         <exclusive>false</exclusive>      
       </message-flow>
       
       <!--<message-flow name="example-static-connectors">
@@ -36,7 +36,7 @@
          <connector-ref connector-name="connector1" backup-connector-name="backup-connector1"/>
          <connector-ref connector-name="connector2"/>
          <connector-ref connector-name="connector3"/>
-         <fanout>true</fanout>      
+         <exclusive>false</exclusive>      
       </message-flow>-->
       
       <!-- Maximum number of threads to use for scheduled deliveries -->

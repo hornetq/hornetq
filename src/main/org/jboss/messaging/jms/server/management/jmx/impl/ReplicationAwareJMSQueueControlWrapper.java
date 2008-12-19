@@ -104,11 +104,6 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
       return localControl.getScheduledCount();
    }
 
-   public long getSizeBytes()
-   {
-      return localControl.getSizeBytes();
-   }
-
    public boolean isClustered()
    {
       return localControl.isClustered();

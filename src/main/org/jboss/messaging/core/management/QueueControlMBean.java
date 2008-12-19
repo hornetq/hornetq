@@ -50,8 +50,6 @@ public interface QueueControlMBean
 
    String getFilter();
 
-   long getSizeBytes();
-   
    int getMessageCount();
 
    long getScheduledCount();

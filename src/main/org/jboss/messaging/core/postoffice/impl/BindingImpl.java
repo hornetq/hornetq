@@ -34,71 +34,53 @@ import org.jboss.messaging.util.SimpleString;
  *
  */
 public class BindingImpl implements Binding
-{ 
+{  
    private final SimpleString address;
    
    private final Queue queue;
    
-   private final boolean fanout;
+   private final boolean exclusive;
+   
+   private volatile int weight = 1;
    
    private boolean hashAssigned;
    
    private int hash;
-   
-   private long routings;
-   
-   //TODO - currently we don't use weight - it's a placeholder for the future
-   private int weight = 1;
-   
-   private int routingCount;
-         
-   public BindingImpl(final SimpleString address, final Queue queue, final boolean fanout)
+                
+   public BindingImpl(final SimpleString address, final Queue queue, final boolean exclusive)
    {
       this.address = address;
       
       this.queue = queue;
       
-      this.fanout = fanout;
+      this.exclusive = exclusive;
    }
    
    public SimpleString getAddress()
    {
       return address;
    }
-
+   
    public Queue getQueue()
    {
       return queue;
    }
    
-   public boolean isFanout()
+   public boolean isExclusive()
    {
-      return fanout;
+      return exclusive;
    }
    
-   public synchronized long getRoutings()
-   {
-      return routings;
-   }
-   
-   public synchronized void incrementRoutings()
-   {
-      routingCount++;
-      
-      if (routingCount >= weight)
-      {
-         routingCount = 0;
-         
-         routings++;
-      }
-   }
-   
-   public synchronized void setWeight(final int weight)
+   public void setWeight(final int weight)
    {
       this.weight = weight;      
    }
-      
    
+   public int getWeight()
+   {
+      return weight;
+   }
+         
    public boolean equals(Object other)
    {
       if (this == other)

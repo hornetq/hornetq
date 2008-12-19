@@ -461,7 +461,7 @@ public class JournalStorageManager implements StorageManager
 
                for (MessageReference ref : refs)
                {
-                  ref.getQueue().addLast(ref);
+                  ref.getQueue().add(ref);
                }
 
                break;
@@ -476,7 +476,7 @@ public class JournalStorageManager implements StorageManager
 
                for (MessageReference ref : refs)
                {
-                  ref.getQueue().addLast(ref);
+                  ref.getQueue().add(ref);
                }
 
                break;
@@ -635,7 +635,7 @@ public class JournalStorageManager implements StorageManager
       BindingEncoding bindingEncoding = new BindingEncoding(binding.getQueue().getName(),
                                                             binding.getAddress(),
                                                             filterString,
-                                                            binding.isFanout());
+                                                            binding.isExclusive());
 
       bindingsJournal.appendAddRecord(queueID, BINDING_RECORD, bindingEncoding);
    }
@@ -720,7 +720,7 @@ public class JournalStorageManager implements StorageManager
 
             Queue queue = queueFactory.createQueue(id, encodeBinding.queueName, filter, true, false);
 
-            Binding binding = new BindingImpl(encodeBinding.address, queue, encodeBinding.fanout);
+            Binding binding = new BindingImpl(encodeBinding.address, queue, encodeBinding.exclusive);
 
             bindings.add(binding);
          }
@@ -1097,7 +1097,7 @@ public class JournalStorageManager implements StorageManager
 
       SimpleString filter;
 
-      boolean fanout;
+      boolean exclusive;
 
       public BindingEncoding()
       {
@@ -1106,13 +1106,13 @@ public class JournalStorageManager implements StorageManager
       public BindingEncoding(final SimpleString queueName,
                              final SimpleString address,
                              final SimpleString filter,
-                             final boolean fanout)
+                             final boolean exclusive)
       {
          super();
          this.queueName = queueName;
          this.address = address;
          this.filter = filter;
-         this.fanout = fanout;
+         this.exclusive = exclusive;
       }
 
       public void decode(final MessagingBuffer buffer)
@@ -1120,7 +1120,7 @@ public class JournalStorageManager implements StorageManager
          queueName = buffer.getSimpleString();
          address = buffer.getSimpleString();
          filter = buffer.getNullableSimpleString();
-         fanout = buffer.getBoolean();
+         exclusive = buffer.getBoolean();
       }
 
       public void encode(final MessagingBuffer buffer)
@@ -1128,7 +1128,7 @@ public class JournalStorageManager implements StorageManager
          buffer.putSimpleString(queueName);
          buffer.putSimpleString(address);
          buffer.putNullableSimpleString(filter);
-         buffer.putBoolean(fanout);
+         buffer.putBoolean(exclusive);
       }
 
       public int getEncodeSize()

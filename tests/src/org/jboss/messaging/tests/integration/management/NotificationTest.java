@@ -77,7 +77,7 @@ public class NotificationTest extends TestCase
 
       // create a queue to receive the management notifications
       SimpleString notifQueue = randomSimpleString();
-      session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, null, false, true, true);
+      session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, null, false, true);
       ClientConsumer notifConsumer = session.createConsumer(notifQueue);
       session.start();
       
@@ -127,7 +127,7 @@ public class NotificationTest extends TestCase
       SimpleString notifQueue = randomSimpleString();
       SimpleString filter = new SimpleString(ManagementHelper.HDR_NOTIFICATION_MESSAGE + " LIKE '%" + destinationName + "%'" );
       System.out.println(filter);
-      session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, filter, false, true, true);
+      session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, filter, false, true);
       ClientConsumer notifConsumer = session.createConsumer(notifQueue);
       session.start();
 

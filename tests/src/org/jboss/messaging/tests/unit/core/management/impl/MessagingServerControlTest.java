@@ -381,7 +381,7 @@ public class MessagingServerControlTest extends TestCase
       Binding newBinding = createMock(Binding.class);
       expect(
             postOffice.addBinding(new SimpleString(address), new SimpleString(
-                  name), null, true, false, true)).andReturn(newBinding);
+                  name), null, true, false, false)).andReturn(newBinding);
       replayMockedAttributes();
       replay(newBinding);
 
@@ -399,19 +399,19 @@ public class MessagingServerControlTest extends TestCase
       String filter = "color = 'green'";
       boolean durable = true;
       boolean temporary = false;
-      boolean fanout = true;
+      boolean exclusive = false;
 
       expect(postOffice.getBinding(new SimpleString(address))).andReturn(null);
       Binding newBinding = createMock(Binding.class);
       expect(
             postOffice.addBinding(eq(new SimpleString(address)),
                   eq(new SimpleString(name)), isA(Filter.class), eq(durable)
-                  , eq(temporary), eq(fanout))).andReturn(newBinding);
+                  , eq(temporary), eq(exclusive))).andReturn(newBinding);
       replayMockedAttributes();
       replay(newBinding);
 
       MessagingServerControl control = createControl();
-      control.createQueue(address, name, filter, durable, fanout);
+      control.createQueue(address, name, filter, durable);
 
       verify(newBinding);
       verifyMockedAttributes();
@@ -429,12 +429,12 @@ public class MessagingServerControlTest extends TestCase
       Binding newBinding = createMock(Binding.class);
       expect(
             postOffice.addBinding(new SimpleString(address), new SimpleString(
-                  name), null, durable, temporary, true)).andReturn(newBinding);
+                  name), null, durable, temporary, false)).andReturn(newBinding);
       replay(newBinding);
       replayMockedAttributes();
 
       MessagingServerControl control = createControl();
-      control.createQueue(address, name, filter, durable, true);
+      control.createQueue(address, name, filter, durable);
 
       verify(newBinding);
       verifyMockedAttributes();
@@ -452,12 +452,12 @@ public class MessagingServerControlTest extends TestCase
       Binding newBinding = createMock(Binding.class);
       expect(
             postOffice.addBinding(new SimpleString(address), new SimpleString(
-                  name), null, durable, temporary, true)).andReturn(newBinding);
+                  name), null, durable, temporary, false)).andReturn(newBinding);
       replay(newBinding);
       replayMockedAttributes();
 
       MessagingServerControl control = createControl();
-      control.createQueue(address, name, filter, durable, true);
+      control.createQueue(address, name, filter, durable);
 
       verify(newBinding);
       verifyMockedAttributes();

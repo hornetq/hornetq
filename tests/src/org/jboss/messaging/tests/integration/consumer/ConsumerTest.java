@@ -81,7 +81,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -126,7 +126,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -172,7 +172,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -208,7 +208,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -245,7 +245,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -289,7 +289,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -322,7 +322,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -357,7 +357,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -418,7 +418,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -452,7 +452,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, false, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -486,7 +486,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -524,7 +524,7 @@ public class ConsumerTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 

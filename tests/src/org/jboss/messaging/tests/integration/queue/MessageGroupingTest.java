@@ -24,7 +24,7 @@ package org.jboss.messaging.tests.integration.queue;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
-import org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributionPolicy;
+import org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.client.ClientSessionFactory;
@@ -555,12 +555,12 @@ public class MessageGroupingTest extends UnitTestCase
       messagingService.start();
 
       QueueSettings qs = new QueueSettings();
-      qs.setDistributionPolicyClass(GroupingRoundRobinDistributionPolicy.class.getName());
+      qs.setDistributionPolicyClass(GroupingRoundRobinDistributor.class.getName());
       messagingService.getServer().getQueueSettingsRepository().addMatch(qName.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       clientSession = sessionFactory.createSession(false, true, true);
-      clientSession.createQueue(qName, qName, null, false, false, true);
+      clientSession.createQueue(qName, qName, null, false, false);
    }
 
    private static class DummyMessageHandler implements MessageHandler

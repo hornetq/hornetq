@@ -235,8 +235,8 @@ public class SimpleAddressManagerTest extends UnitTestCase
       EasyMock.replay(q);
       sam.addMapping(address, b1);
       assertNotNull(sam.getBindings(address));
-      assertEquals(sam.getBindings(address).size(), 1);
-      assertEquals(sam.getBindings(address).get(0), b1);
+      assertEquals(sam.getBindings(address).getBindings().size(), 1);
+      assertEquals(sam.getBindings(address).getBindings().get(0), b1);
       EasyMock.verify(q);
    }
 
@@ -250,11 +250,10 @@ public class SimpleAddressManagerTest extends UnitTestCase
       EasyMock.replay(q);
       sam.addMapping(address, b1);
       assertNotNull(sam.getBindings(address));
-      assertEquals(sam.getBindings(address).size(), 1);
-      assertEquals(sam.getBindings(address).get(0), b1);
+      assertEquals(sam.getBindings(address).getBindings().size(), 1);
+      assertEquals(sam.getBindings(address).getBindings().get(0), b1);
       sam.removeMapping(address, qName);
-      assertNull(sam.getBindings(address));
-      assertNull(sam.getBindings(address));
+      assertTrue(sam.getBindings(address).getBindings().isEmpty());      
       EasyMock.verify(q);
    }
 
@@ -288,12 +287,12 @@ public class SimpleAddressManagerTest extends UnitTestCase
       sam.addMapping(address, b4);
       sam.addMapping(address, b5);
       assertNotNull(sam.getBindings(address));
-      assertEquals(sam.getBindings(address).size(), 5);
-      assertEquals(sam.getBindings(address).get(0), b1);
-      assertEquals(sam.getBindings(address).get(1), b2);
-      assertEquals(sam.getBindings(address).get(2), b3);
-      assertEquals(sam.getBindings(address).get(3), b4);
-      assertEquals(sam.getBindings(address).get(4), b5);
+      assertEquals(sam.getBindings(address).getBindings().size(), 5);
+      assertEquals(sam.getBindings(address).getBindings().get(0), b1);
+      assertEquals(sam.getBindings(address).getBindings().get(1), b2);
+      assertEquals(sam.getBindings(address).getBindings().get(2), b3);
+      assertEquals(sam.getBindings(address).getBindings().get(3), b4);
+      assertEquals(sam.getBindings(address).getBindings().get(4), b5);
       EasyMock.verify(q, q2, q3, q4, q5);
    }
 
@@ -327,19 +326,19 @@ public class SimpleAddressManagerTest extends UnitTestCase
       sam.addMapping(address, b4);
       sam.addMapping(address, b5);
       assertNotNull(sam.getBindings(address));
-      assertEquals(sam.getBindings(address).size(), 5);
-      assertEquals(sam.getBindings(address).get(0), b1);
-      assertEquals(sam.getBindings(address).get(1), b2);
-      assertEquals(sam.getBindings(address).get(2), b3);
-      assertEquals(sam.getBindings(address).get(3), b4);
-      assertEquals(sam.getBindings(address).get(4), b5);
+      assertEquals(sam.getBindings(address).getBindings().size(), 5);
+      assertEquals(sam.getBindings(address).getBindings().get(0), b1);
+      assertEquals(sam.getBindings(address).getBindings().get(1), b2);
+      assertEquals(sam.getBindings(address).getBindings().get(2), b3);
+      assertEquals(sam.getBindings(address).getBindings().get(3), b4);
+      assertEquals(sam.getBindings(address).getBindings().get(4), b5);
       sam.removeMapping(address, qName2);
       sam.removeMapping(address, qName4);
       assertNotNull(sam.getBindings(address));
-      assertEquals(sam.getBindings(address).size(), 3);
-      assertEquals(sam.getBindings(address).get(0), b1);
-      assertEquals(sam.getBindings(address).get(1), b3);
-      assertEquals(sam.getBindings(address).get(2), b5);
+      assertEquals(sam.getBindings(address).getBindings().size(), 3);
+      assertEquals(sam.getBindings(address).getBindings().get(0), b1);
+      assertEquals(sam.getBindings(address).getBindings().get(1), b3);
+      assertEquals(sam.getBindings(address).getBindings().get(2), b5);
       EasyMock.verify(q, q2, q3, q4, q5);
    }
 
@@ -377,20 +376,20 @@ public class SimpleAddressManagerTest extends UnitTestCase
       sam.addMapping(address4, b4);
       sam.addMapping(address5, b5);
       assertNotNull(sam.getBindings(address));
-      assertEquals(sam.getBindings(address).size(), 1);
-      assertEquals(sam.getBindings(address).get(0), b1);
+      assertEquals(sam.getBindings(address).getBindings().size(), 1);
+      assertEquals(sam.getBindings(address).getBindings().get(0), b1);
       assertNotNull(sam.getBindings(address2));
-      assertEquals(sam.getBindings(address2).size(), 1);
-      assertEquals(sam.getBindings(address2).get(0), b2);
+      assertEquals(sam.getBindings(address2).getBindings().size(), 1);
+      assertEquals(sam.getBindings(address2).getBindings().get(0), b2);
       assertNotNull(sam.getBindings(address3));
-      assertEquals(sam.getBindings(address3).size(), 1);
-      assertEquals(sam.getBindings(address3).get(0), b3);
+      assertEquals(sam.getBindings(address3).getBindings().size(), 1);
+      assertEquals(sam.getBindings(address3).getBindings().get(0), b3);
       assertNotNull(sam.getBindings(address4));
-      assertEquals(sam.getBindings(address4).size(), 1);
-      assertEquals(sam.getBindings(address4).get(0), b4);
+      assertEquals(sam.getBindings(address4).getBindings().size(), 1);
+      assertEquals(sam.getBindings(address4).getBindings().get(0), b4);
       assertNotNull(sam.getBindings(address5));
-      assertEquals(sam.getBindings(address5).size(), 1);
-      assertEquals(sam.getBindings(address5).get(0), b5);
+      assertEquals(sam.getBindings(address5).getBindings().size(), 1);
+      assertEquals(sam.getBindings(address5).getBindings().get(0), b5);
       EasyMock.verify(q, q2, q3, q4, q5);
    }
 
@@ -428,31 +427,31 @@ public class SimpleAddressManagerTest extends UnitTestCase
       sam.addMapping(address4, b4);
       sam.addMapping(address5, b5);
       assertNotNull(sam.getBindings(address));
-      assertEquals(sam.getBindings(address).size(), 1);
-      assertEquals(sam.getBindings(address).get(0), b1);
+      assertEquals(sam.getBindings(address).getBindings().size(), 1);
+      assertEquals(sam.getBindings(address).getBindings().get(0), b1);
       assertNotNull(sam.getBindings(address2));
-      assertEquals(sam.getBindings(address2).size(), 1);
-      assertEquals(sam.getBindings(address2).get(0), b2);
+      assertEquals(sam.getBindings(address2).getBindings().size(), 1);
+      assertEquals(sam.getBindings(address2).getBindings().get(0), b2);
       assertNotNull(sam.getBindings(address3));
-      assertEquals(sam.getBindings(address3).size(), 1);
-      assertEquals(sam.getBindings(address3).get(0), b3);
+      assertEquals(sam.getBindings(address3).getBindings().size(), 1);
+      assertEquals(sam.getBindings(address3).getBindings().get(0), b3);
       assertNotNull(sam.getBindings(address4));
-      assertEquals(sam.getBindings(address4).size(), 1);
-      assertEquals(sam.getBindings(address4).get(0), b4);
+      assertEquals(sam.getBindings(address4).getBindings().size(), 1);
+      assertEquals(sam.getBindings(address4).getBindings().get(0), b4);
       assertNotNull(sam.getBindings(address5));
-      assertEquals(sam.getBindings(address5).size(), 1);
-      assertEquals(sam.getBindings(address5).get(0), b5);
+      assertEquals(sam.getBindings(address5).getBindings().size(), 1);
+      assertEquals(sam.getBindings(address5).getBindings().get(0), b5);
       sam.removeMapping(address2, qName2);
       sam.removeMapping(address4, qName4);
       assertNotNull(sam.getBindings(address));
-      assertEquals(sam.getBindings(address).size(), 1);
-      assertEquals(sam.getBindings(address).get(0), b1);
-      assertNull(sam.getBindings(address2));
-      assertEquals(sam.getBindings(address3).size(), 1);
-      assertEquals(sam.getBindings(address3).get(0), b3);
-      assertNull(sam.getBindings(address4));
-      assertEquals(sam.getBindings(address5).size(), 1);
-      assertEquals(sam.getBindings(address5).get(0), b5);
+      assertEquals(sam.getBindings(address).getBindings().size(), 1);
+      assertEquals(sam.getBindings(address).getBindings().get(0), b1);
+      assertTrue(sam.getBindings(address2).getBindings().isEmpty()); 
+      assertEquals(sam.getBindings(address3).getBindings().size(), 1);
+      assertEquals(sam.getBindings(address3).getBindings().get(0), b3);
+      assertTrue(sam.getBindings(address4).getBindings().isEmpty()); 
+      assertEquals(sam.getBindings(address5).getBindings().size(), 1);
+      assertEquals(sam.getBindings(address5).getBindings().get(0), b5);
       EasyMock.verify(q, q2, q3, q4, q5);
    }
 
@@ -520,19 +519,19 @@ public class SimpleAddressManagerTest extends UnitTestCase
       sam.addMapping(address, b9);
       sam.addMapping(address2, b10);
       assertNotNull(sam.getBindings(address));
-      assertEquals(sam.getBindings(address).size(), 5);
-      assertEquals(sam.getBindings(address).get(0), b1);
-      assertEquals(sam.getBindings(address).get(1), b3);
-      assertEquals(sam.getBindings(address).get(2), b5);
-      assertEquals(sam.getBindings(address).get(3), b7);
-      assertEquals(sam.getBindings(address).get(4), b9);
+      assertEquals(sam.getBindings(address).getBindings().size(), 5);
+      assertEquals(sam.getBindings(address).getBindings().get(0), b1);
+      assertEquals(sam.getBindings(address).getBindings().get(1), b3);
+      assertEquals(sam.getBindings(address).getBindings().get(2), b5);
+      assertEquals(sam.getBindings(address).getBindings().get(3), b7);
+      assertEquals(sam.getBindings(address).getBindings().get(4), b9);
       assertNotNull(sam.getBindings(address2));
-      assertEquals(sam.getBindings(address2).size(), 5);
-      assertEquals(sam.getBindings(address2).get(0), b2);
-      assertEquals(sam.getBindings(address2).get(1), b4);
-      assertEquals(sam.getBindings(address2).get(2), b6);
-      assertEquals(sam.getBindings(address2).get(3), b8);
-      assertEquals(sam.getBindings(address2).get(4), b10);
+      assertEquals(sam.getBindings(address2).getBindings().size(), 5);
+      assertEquals(sam.getBindings(address2).getBindings().get(0), b2);
+      assertEquals(sam.getBindings(address2).getBindings().get(1), b4);
+      assertEquals(sam.getBindings(address2).getBindings().get(2), b6);
+      assertEquals(sam.getBindings(address2).getBindings().get(3), b8);
+      assertEquals(sam.getBindings(address2).getBindings().get(4), b10);
       EasyMock.verify(q);
    }
 
@@ -600,34 +599,34 @@ public class SimpleAddressManagerTest extends UnitTestCase
       sam.addMapping(address, b9);
       sam.addMapping(address2, b10);
       assertNotNull(sam.getBindings(address));
-      assertEquals(sam.getBindings(address).size(), 5);
-      assertEquals(sam.getBindings(address).get(0), b1);
-      assertEquals(sam.getBindings(address).get(1), b3);
-      assertEquals(sam.getBindings(address).get(2), b5);
-      assertEquals(sam.getBindings(address).get(3), b7);
-      assertEquals(sam.getBindings(address).get(4), b9);
+      assertEquals(sam.getBindings(address).getBindings().size(), 5);
+      assertEquals(sam.getBindings(address).getBindings().get(0), b1);
+      assertEquals(sam.getBindings(address).getBindings().get(1), b3);
+      assertEquals(sam.getBindings(address).getBindings().get(2), b5);
+      assertEquals(sam.getBindings(address).getBindings().get(3), b7);
+      assertEquals(sam.getBindings(address).getBindings().get(4), b9);
       assertNotNull(sam.getBindings(address2));
-      assertEquals(sam.getBindings(address2).size(), 5);
-      assertEquals(sam.getBindings(address2).get(0), b2);
-      assertEquals(sam.getBindings(address2).get(1), b4);
-      assertEquals(sam.getBindings(address2).get(2), b6);
-      assertEquals(sam.getBindings(address2).get(3), b8);
-      assertEquals(sam.getBindings(address2).get(4), b10);
+      assertEquals(sam.getBindings(address2).getBindings().size(), 5);
+      assertEquals(sam.getBindings(address2).getBindings().get(0), b2);
+      assertEquals(sam.getBindings(address2).getBindings().get(1), b4);
+      assertEquals(sam.getBindings(address2).getBindings().get(2), b6);
+      assertEquals(sam.getBindings(address2).getBindings().get(3), b8);
+      assertEquals(sam.getBindings(address2).getBindings().get(4), b10);
 
       sam.removeMapping(address, qName3);
       sam.removeMapping(address, qName5);
       sam.removeMapping(address2, qName2);
       sam.removeMapping(address2, qName4);
       assertNotNull(sam.getBindings(address));
-      assertEquals(sam.getBindings(address).size(), 3);
-      assertEquals(sam.getBindings(address).get(0), b1);
-      assertEquals(sam.getBindings(address).get(1), b7);
-      assertEquals(sam.getBindings(address).get(2), b9);
+      assertEquals(sam.getBindings(address).getBindings().size(), 3);
+      assertEquals(sam.getBindings(address).getBindings().get(0), b1);
+      assertEquals(sam.getBindings(address).getBindings().get(1), b7);
+      assertEquals(sam.getBindings(address).getBindings().get(2), b9);
       assertNotNull(sam.getBindings(address2));
-      assertEquals(sam.getBindings(address2).size(), 3);
-      assertEquals(sam.getBindings(address2).get(0), b6);
-      assertEquals(sam.getBindings(address2).get(1), b8);
-      assertEquals(sam.getBindings(address2).get(2), b10);
+      assertEquals(sam.getBindings(address2).getBindings().size(), 3);
+      assertEquals(sam.getBindings(address2).getBindings().get(0), b6);
+      assertEquals(sam.getBindings(address2).getBindings().get(1), b8);
+      assertEquals(sam.getBindings(address2).getBindings().get(2), b10);
       EasyMock.verify(q, q2, q3, q4, q5);
    }
 }

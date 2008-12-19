@@ -29,6 +29,7 @@ import java.util.Map;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.Address;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -39,7 +40,7 @@ import org.jboss.messaging.util.SimpleString;
 public class WildcardAddressManager extends SimpleAddressManager
 {
    private static final Logger log = Logger.getLogger(WildcardAddressManager.class);
-   
+
    static final char SINGLE_WORD = '*';
 
    static final char ANY_WORDS = '#';
@@ -65,16 +66,16 @@ public class WildcardAddressManager extends SimpleAddressManager
     * @return true if the address was a new mapping
     */
    public boolean addMapping(final SimpleString address, final Binding binding)
-   {      
+   {
       Address add = addAndUpdateAddressMap(address);
       if (!add.containsWildCard())
       {
          for (Address destination : add.getLinkedAddresses())
          {
-            List<Binding> bindings = getBindings(destination.getAddress());
+            Bindings bindings = getBindings(destination.getAddress());
             if (bindings != null)
             {
-               for (Binding b : bindings)
+               for (Binding b : bindings.getBindings())
                {
                   super.addMapping(address, b);
                }
@@ -86,7 +87,7 @@ public class WildcardAddressManager extends SimpleAddressManager
       {
          for (Address destination : add.getLinkedAddresses())
          {
-            BindingImpl binding1 = new BindingImpl(destination.getAddress(), binding.getQueue(), binding.isFanout());
+            BindingImpl binding1 = new BindingImpl(destination.getAddress(), binding.getQueue(), binding.isExclusive());
             super.addMapping(destination.getAddress(), binding1);
          }
          return super.addMapping(address, binding);
@@ -109,10 +110,10 @@ public class WildcardAddressManager extends SimpleAddressManager
          boolean removed = super.removeMapping(address, queueName);
          for (Address destination : add.getLinkedAddresses())
          {
-            List<Binding> bindings = getBindings(destination.getAddress());
+            Bindings bindings = getBindings(destination.getAddress());
             if (bindings != null)
             {
-               for (Binding b : bindings)
+               for (Binding b : bindings.getBindings())
                {
                   super.removeMapping(address, b.getQueue().getName());
                }
@@ -139,7 +140,7 @@ public class WildcardAddressManager extends SimpleAddressManager
    private synchronized Address addAndUpdateAddressMap(SimpleString address)
    {
       Address add = addresses.get(address);
-      if(add == null)
+      if (add == null)
       {
          add = new AddressImpl(address);
          addresses.put(address, add);
@@ -150,7 +151,7 @@ public class WildcardAddressManager extends SimpleAddressManager
          for (SimpleString simpleString : adds)
          {
             Address addressToAdd = addresses.get(simpleString);
-            if(addressToAdd == null)
+            if (addressToAdd == null)
             {
                addressToAdd = new AddressImpl(simpleString);
                addresses.put(simpleString, addressToAdd);
@@ -165,14 +166,14 @@ public class WildcardAddressManager extends SimpleAddressManager
    private synchronized Address removeAndUpdateAddressMap(SimpleString address)
    {
       Address add = addresses.get(address);
-      if(add == null)
+      if (add == null)
       {
          return new AddressImpl(address);
       }
       if (!add.containsWildCard())
       {
-         List<Binding> bindings1 = getBindings(address);
-         if(bindings1 == null || bindings1.size() == 0)
+         Bindings bindings1 = getBindings(address);
+         if (bindings1 == null || bindings1.getBindings().size() == 0)
          {
             add = addresses.remove(address);
          }

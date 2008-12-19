@@ -158,11 +158,6 @@ public class JMSQueueControl implements JMSQueueControlMBean
       return coreQueue.getScheduledCount();
    }
 
-   public long getSizeBytes()
-   {
-      return coreQueue.getSizeBytes();
-   }
-
    public boolean isClustered()
    {
       return coreQueue.isClustered();

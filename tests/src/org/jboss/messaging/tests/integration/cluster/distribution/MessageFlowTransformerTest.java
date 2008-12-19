@@ -97,7 +97,7 @@ public class MessageFlowTransformerTest extends MessageFlowTestBase
       MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1",
                                                                        "address1",
                                                                        null,
-                                                                       true,
+                                                                       false,
                                                                        1,
                                                                        -1,
                                                                        "org.jboss.messaging.tests.integration.cluster.distribution.SimpleTransformer",
@@ -124,9 +124,9 @@ public class MessageFlowTransformerTest extends MessageFlowTestBase
 
       ClientSession session1 = csf1.createSession(false, true, true);
 
-      session0.createQueue(address1, address1, null, false, false, true);
+      session0.createQueue(address1, address1, null, false, false);
 
-      session1.createQueue(address1, address1, null, false, false, true);
+      session1.createQueue(address1, address1, null, false, false);
 
       ClientProducer prod0 = session0.createProducer(address1);
 

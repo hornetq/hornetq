@@ -19,23 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.messaging.core.server.impl;
 
-package org.jboss.messaging.core.client;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.io.File;
+import org.jboss.messaging.core.server.Consumer;
+import org.jboss.messaging.core.server.Distributor;
 
 /**
- * A ClientFileMessage
- *
- * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
- * Created Oct 14, 2008 3:21:15 PM
- *
- *
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public interface ClientFileMessage extends ClientMessage
+public abstract class DistributorImpl implements Distributor
 {
-   File getFile();
+   protected final List<Consumer> consumers = new ArrayList<Consumer>();
 
-   void setFile(File file);
+   public void addConsumer(Consumer consumer)
+   {
+      consumers.add(consumer);
+   }
+
+   public boolean removeConsumer(Consumer consumer)
+   {
+      return consumers.remove(consumer);
+   }
+
+   public int getConsumerCount()
+   {
+      return consumers.size();
+   }
+
+   public boolean hasConsumers()
+   {
+      return !consumers.isEmpty();
+   }
 }

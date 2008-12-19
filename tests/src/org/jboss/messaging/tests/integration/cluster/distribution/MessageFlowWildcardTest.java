@@ -105,7 +105,7 @@ public class MessageFlowWildcardTest extends MessageFlowTestBase
       MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1",
                                                                        match1.toString(),
                                                                        null,
-                                                                       true,
+                                                                       false,
                                                                        1,
                                                                        -1,
                                                                        null,
@@ -132,15 +132,15 @@ public class MessageFlowWildcardTest extends MessageFlowTestBase
 
       ClientSession session1 = csf1.createSession(false, true, true);
 
-      session0.createQueue(address1, address1, null, false, false, true);
-      session0.createQueue(address2, address2, null, false, false, true);
-      session0.createQueue(address3, address3, null, false, false, true);
-      session0.createQueue(address4, address4, null, false, false, true);
+      session0.createQueue(address1, address1, null, false, false);
+      session0.createQueue(address2, address2, null, false, false);
+      session0.createQueue(address3, address3, null, false, false);
+      session0.createQueue(address4, address4, null, false, false);
 
-      session1.createQueue(address1, address1, null, false, false, true);
-      session1.createQueue(address2, address2, null, false, false, true);
-      session1.createQueue(address3, address3, null, false, false, true);
-      session1.createQueue(address4, address4, null, false, false, true);
+      session1.createQueue(address1, address1, null, false, false);
+      session1.createQueue(address2, address2, null, false, false);
+      session1.createQueue(address3, address3, null, false, false);
+      session1.createQueue(address4, address4, null, false, false);
 
       ClientProducer prod0_1 = session0.createProducer(address1);
       ClientProducer prod0_2 = session0.createProducer(address2);

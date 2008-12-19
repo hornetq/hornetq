@@ -38,10 +38,10 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.paging.PagingManager;
-import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.AddressManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
@@ -67,6 +67,8 @@ import org.jboss.messaging.util.SimpleString;
 public class PostOfficeImpl implements PostOffice
 {
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
+
+   private static final List<MessageReference> emptyList = Collections.<MessageReference> emptyList();
 
    private final AddressManager addressManager;
 
@@ -267,9 +269,9 @@ public class PostOfficeImpl implements PostOffice
                                           final Filter filter,
                                           final boolean durable,
                                           final boolean temporary,
-                                          final boolean fanout) throws Exception
+                                          final boolean exclusive) throws Exception
    {
-      Binding binding = createBinding(address, queueName, filter, durable, temporary, fanout);
+      Binding binding = createBinding(address, queueName, filter, durable, temporary, exclusive);
 
       addBindingInMemory(binding);
 
@@ -297,18 +299,9 @@ public class PostOfficeImpl implements PostOffice
       return binding;
    }
 
-   public List<Binding> getBindingsForAddress(final SimpleString address)
+   public Bindings getBindingsForAddress(final SimpleString address)
    {
-      List<Binding> bindings = addressManager.getBindings(address);
-
-      if (bindings != null)
-      {
-         return bindings;
-      }
-      else
-      {
-         return Collections.emptyList();
-      }
+      return addressManager.getBindings(address);
    }
 
    public Binding getBinding(final SimpleString queueName)
@@ -320,102 +313,50 @@ public class PostOfficeImpl implements PostOffice
    {
       for (MessageReference ref : references)
       {
-         ref.getQueue().addLast(ref);
+         ref.getQueue().add(ref);
       }
    }
 
    public List<MessageReference> route(final ServerMessage message) throws Exception
    {
-      final PagingStore pagingStore = pagingManager.getPageStore(message.getDestination());
+     // long size = pagingManager.addSize(message);
+      
+      //FIXME - paging
+      long size = Long.MAX_VALUE;
 
-      SimpleString address = message.getDestination();
-
-      if (checkAllowable)
+      if (size < 0)
       {
-         if (!addressManager.containsDestination(address))
-         {
-            throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST,
-                                         "Cannot route to address " + address);
-         }
-      }
-
-      List<Binding> bindings = addressManager.getBindings(address);
-
-      List<MessageReference> refs = new ArrayList<MessageReference>();
-
-      int refEstimate = 0;
-      if (bindings != null)
-      {
-         Binding theBinding = null;
-
-         long lowestRoutings = -1;
-
-         for (Binding binding : bindings)
-         {
-            Queue queue = binding.getQueue();
-
-            Filter filter = queue.getFilter();
-
-            if (filter == null || filter.match(message))
-            {
-               if (binding.isFanout())
-               {
-                  // Fanout bindings always get the reference
-                  MessageReference reference = message.createReference(queue);
-
-                  refEstimate += reference.getMemoryEstimate();
-
-                  refs.add(reference);
-               }
-               else
-               {
-                  // We choose the queue with the lowest routings value
-                  // This gives us a weighted round robin, where the weight
-                  // Can be determined from the number of consumers on the queue
-                  long routings = binding.getRoutings();
-
-                  if (routings < lowestRoutings || lowestRoutings == -1)
-                  {
-                     lowestRoutings = routings;
-
-                     theBinding = binding;
-                  }
-               }
-            }
-         }
-
-         if (theBinding != null)
-         {
-            MessageReference reference = message.createReference(theBinding.getQueue());
-
-            refEstimate += reference.getMemoryEstimate();
-
-            refs.add(reference);
-
-            theBinding.incrementRoutings();
-         }
-
-      }
-
-      if (refs.size() > 0 && pagingStore.addSize(message.getMemoryEstimate() + refEstimate))
-      {
-         return refs;
+         return emptyList;
       }
       else
       {
-         return new ArrayList<MessageReference>();
-      }
+         SimpleString address = message.getDestination();
 
+         if (checkAllowable)
+         {
+            if (!addressManager.containsDestination(address))
+            {
+               throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST,
+                                            "Cannot route to address " + address);
+            }
+         }
+
+         Bindings bindings = addressManager.getBindings(address);
+
+         if (bindings != null)
+         {
+            return bindings.route(message);
+         }
+         else
+         {
+            return emptyList;
+         }
+      }
    }
 
    public PagingManager getPagingManager()
    {
       return pagingManager;
-   }
-
-   public Map<SimpleString, List<Binding>> getMappings()
-   {
-      return addressManager.getMappings();
    }
 
    public List<Queue> activate()
@@ -474,6 +415,11 @@ public class PostOfficeImpl implements PostOffice
       return cache;
    }
 
+   public int numMappings()
+   {
+      return addressManager.numMappings();
+   }
+
    public void scheduleReferences(final long scheduledDeliveryTime, final List<MessageReference> references) throws Exception
    {
       scheduleReferences(-1, scheduledDeliveryTime, references);
@@ -508,7 +454,7 @@ public class PostOfficeImpl implements PostOffice
                                  final Filter filter,
                                  final boolean durable,
                                  final boolean temporary,
-                                 final boolean fanout) throws Exception
+                                 final boolean exclusive) throws Exception
    {
       Queue queue = queueFactory.createQueue(-1, name, filter, durable, false);
 
@@ -517,7 +463,7 @@ public class PostOfficeImpl implements PostOffice
          queue.setBackup();
       }
 
-      Binding binding = new BindingImpl(address, queue, fanout);
+      Binding binding = new BindingImpl(address, queue, exclusive);
 
       return binding;
    }
@@ -569,11 +515,6 @@ public class PostOfficeImpl implements PostOffice
          addBindingInMemory(binding);
 
          queues.put(binding.getQueue().getPersistenceID(), binding.getQueue());
-      }
-
-      for (SimpleString destination : addressManager.getMappings().keySet())
-      {
-         pagingManager.createPageStore(destination);
       }
 
       Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<SimpleString, Long>>>();

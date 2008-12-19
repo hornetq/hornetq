@@ -39,7 +39,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class GroupingRoundRobinDistributionPolicy extends RoundRobinDistributionPolicy
+public class GroupingRoundRobinDistributor extends RoundRobinDistributor
 {
    // Constants -----------------------------------------------------
 

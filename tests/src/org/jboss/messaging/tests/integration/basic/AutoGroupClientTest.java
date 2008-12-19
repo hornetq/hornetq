@@ -38,7 +38,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributionPolicy;
+import org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -55,7 +55,7 @@ public class AutoGroupClientTest extends TestCase
    {
       final SimpleString QUEUE = new SimpleString("testGroupQueue");
       QueueSettings qs = new QueueSettings();
-      qs.setDistributionPolicyClass(GroupingRoundRobinDistributionPolicy.class.getName());
+      qs.setDistributionPolicyClass(GroupingRoundRobinDistributor.class.getName());
 
       Configuration conf = new ConfigurationImpl();
 
@@ -72,7 +72,7 @@ public class AutoGroupClientTest extends TestCase
       sf.setAutoGroup(true);
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -116,7 +116,7 @@ public class AutoGroupClientTest extends TestCase
    {
       final SimpleString QUEUE = new SimpleString("testGroupQueue");
       QueueSettings qs = new QueueSettings();
-      qs.setDistributionPolicyClass(GroupingRoundRobinDistributionPolicy.class.getName());
+      qs.setDistributionPolicyClass(GroupingRoundRobinDistributor.class.getName());
 
       Configuration conf = new ConfigurationImpl();
 
@@ -133,7 +133,7 @@ public class AutoGroupClientTest extends TestCase
       sf.setAutoGroup(true);
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
       ClientProducer producer2 = session.createProducer(QUEUE);
@@ -186,7 +186,7 @@ public class AutoGroupClientTest extends TestCase
    {
       final SimpleString QUEUE = new SimpleString("testGroupQueue");
       QueueSettings qs = new QueueSettings();
-      qs.setDistributionPolicyClass(GroupingRoundRobinDistributionPolicy.class.getName());
+      qs.setDistributionPolicyClass(GroupingRoundRobinDistributor.class.getName());
       Configuration conf = new ConfigurationImpl();
 
       conf.setSecurityEnabled(false);
@@ -201,7 +201,7 @@ public class AutoGroupClientTest extends TestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
       
       ClientProducer producer = session.createProducer(QUEUE);
 

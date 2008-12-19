@@ -79,7 +79,7 @@ public interface MessagingServerControlMBean
    boolean isCreateJournalDir();
 
    Configuration getConfiguration();
-   
+
    boolean isMessageCounterEnabled();
 
    int getMessageCounterMaxDayCount();
@@ -89,7 +89,7 @@ public interface MessagingServerControlMBean
    long getMessageCounterSamplePeriod();
 
    void setMessageCounterSamplePeriod(long newPeriod) throws Exception;
-   
+
    public boolean isBackup();
 
    public long getConnectionScanPeriod();
@@ -103,35 +103,28 @@ public interface MessagingServerControlMBean
    // Operations ----------------------------------------------------
 
    @Operation(desc = "Create a queue with the specified address", impact = ACTION)
-   void createQueue(
-         @Parameter(name = "address", desc = "Address of the queue") String address,
-         @Parameter(name = "name", desc = "Name of the queue") String name)
-         throws Exception;
+   void createQueue(@Parameter(name = "address", desc = "Address of the queue")
+   String address, @Parameter(name = "name", desc = "Name of the queue")
+   String name) throws Exception;
 
    @Operation(desc = "Create a queue", impact = ACTION)
-   void createQueue(
-         @Parameter(name = "address", desc = "Address of the queue") String address,
-         @Parameter(name = "name", desc = "Name of the queue") String name,
-         @Parameter(name = "filter", desc = "Filter of the queue") String filter,
-         @Parameter(name = "durable", desc = "Is the queue durable?") boolean durable,
-         @Parameter(name = "fanout", desc = "Should the queue be bound as a fanout binding") boolean fanout
-        )
-         throws Exception;
+   void createQueue(@Parameter(name = "address", desc = "Address of the queue")
+   String address, @Parameter(name = "name", desc = "Name of the queue")
+   String name, @Parameter(name = "filter", desc = "Filter of the queue")
+   String filter, @Parameter(name = "durable", desc = "Is the queue durable?")
+   boolean durable) throws Exception;
 
    @Operation(desc = "Destroy a queue", impact = ACTION)
-   void destroyQueue(
-         @Parameter(name = "name", desc = "Name of the queue to destroy") String name)
-         throws Exception;
+   void destroyQueue(@Parameter(name = "name", desc = "Name of the queue to destroy")
+   String name) throws Exception;
 
    @Operation(desc = "Add an address to the post office", impact = ACTION)
-   boolean addAddress(
-         @Parameter(name = "address", desc = "The address to add") String address)
-         throws Exception;
+   boolean addAddress(@Parameter(name = "address", desc = "The address to add")
+   String address) throws Exception;
 
    @Operation(desc = "Remove an address from the post office", impact = ACTION)
-   boolean removeAddress(
-         @Parameter(name = "address", desc = "The address to remove") String address)
-         throws Exception;
+   boolean removeAddress(@Parameter(name = "address", desc = "The address to remove")
+   String address) throws Exception;
 
    void enableMessageCounters() throws Exception;
 
@@ -140,30 +133,36 @@ public interface MessagingServerControlMBean
    void resetAllMessageCounters() throws Exception;
 
    void resetAllMessageCounterHistories() throws Exception;
-   
+
    @Operation(desc = "List all the prepared transaction, sorted by date, oldest first")
    public String[] listPreparedTransactions();
 
    @Operation(desc = "Commit a prepared transaction")
-   boolean commitPreparedTransaction(@Parameter(desc = "the Base64 representation of a transaction", name = "transactionAsBase64") String transactionAsBase64) throws Exception;
+   boolean commitPreparedTransaction(@Parameter(desc = "the Base64 representation of a transaction", name = "transactionAsBase64")
+   String transactionAsBase64) throws Exception;
 
    @Operation(desc = "Rollback a prepared transaction")
-   boolean rollbackPreparedTransaction(@Parameter(desc = "the Base64 representation of a transaction", name = "transactionAsBase64") String transactionAsBase64) throws Exception;
+   boolean rollbackPreparedTransaction(@Parameter(desc = "the Base64 representation of a transaction", name = "transactionAsBase64")
+   String transactionAsBase64) throws Exception;
 
    @Operation(desc = "List the client addresses", impact = INFO)
    String[] listRemoteAddresses();
 
    @Operation(desc = "List the client addresses which match the given IP Address", impact = INFO)
-   String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress);
+   String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress")
+   String ipAddress);
 
    @Operation(desc = "Closes all the connections for the given IP Address", impact = INFO)
-   boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
+   boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress")
+   String ipAddress) throws Exception;
 
    @Operation(desc = "List all the connection IDs", impact = INFO)
    String[] listConnectionIDs();
 
    @Operation(desc = "List the sessions for the given connectionID", impact = INFO)
-   String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID);
+   String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID")
+   String connectionID);
 
-   TabularData getConnectors() throws Exception;   
+   TabularData getConnectors() throws Exception;
+
 }

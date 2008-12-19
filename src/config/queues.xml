@@ -103,7 +103,7 @@
       <max-size-bytes>-1</max-size-bytes>
       <page-size-bytes>10485760</page-size-bytes>
       <drop-messages-when-full>false</drop-messages-when-full>
-      <distribution-policy-class>org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributionPolicy</distribution-policy-class>
+      <distribution-policy-class>org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor</distribution-policy-class>
    </queue-settings>
 
    <!--default for catch all-->
@@ -113,7 +113,7 @@
       <expiry-address>queuejms.ExpiryQueue</expiry-address>
       <redelivery-delay>0</redelivery-delay>
       <max-size-bytes>-1</max-size-bytes>
-      <distribution-policy-class>org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy</distribution-policy-class>
+      <distribution-policy-class>org.jboss.messaging.core.server.impl.RoundRobinDistributor</distribution-policy-class>
       <message-counter-history-day-limit>10</message-counter-history-day-limit>
    </queue-settings>
 

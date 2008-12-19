@@ -139,7 +139,7 @@ public class ChunkTestBase extends ServiceTestBase
 
          ClientSession session = sf.createSession(null, null, false, true, false, preAck, 0);
 
-         session.createQueue(ADDRESS, ADDRESS, null, true, false, true);
+         session.createQueue(ADDRESS, ADDRESS, null, true, false);
 
          ClientProducer producer = session.createProducer(ADDRESS);
 

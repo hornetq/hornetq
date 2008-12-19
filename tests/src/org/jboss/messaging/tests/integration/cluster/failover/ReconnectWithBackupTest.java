@@ -103,7 +103,7 @@ public class ReconnectWithBackupTest extends TestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false, true);
+      session.createQueue(ADDRESS, ADDRESS, null, false, false);
 
       final int numIterations = 100;
       
@@ -181,7 +181,7 @@ public class ReconnectWithBackupTest extends TestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false, true);
+      session.createQueue(ADDRESS, ADDRESS, null, false, false);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 

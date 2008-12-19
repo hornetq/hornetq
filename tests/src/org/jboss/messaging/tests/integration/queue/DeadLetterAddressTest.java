@@ -63,8 +63,8 @@ public class DeadLetterAddressTest extends UnitTestCase
       queueSettings.setDeadLetterAddress(dla);
       messagingService.getServer().getQueueSettingsRepository().addMatch(qName.toString(), queueSettings);
       SimpleString dlq = new SimpleString("DLQ1");
-      clientSession.createQueue(dla, dlq, null, false, false, false);
-      clientSession.createQueue(qName, qName, null, false, false, false);
+      clientSession.createQueue(dla, dlq, null, false, false);
+      clientSession.createQueue(qName, qName, null, false, false);
       ClientProducer producer = clientSession.createProducer(qName);
       producer.send(createTextMessage("heyho!", clientSession));
       clientSession.start();
@@ -97,9 +97,9 @@ public class DeadLetterAddressTest extends UnitTestCase
       messagingService.getServer().getQueueSettingsRepository().addMatch(qName.toString(), queueSettings);
       SimpleString dlq = new SimpleString("DLQ1");
       SimpleString dlq2 = new SimpleString("DLQ2");
-      clientSession.createQueue(dla, dlq, null, false, false, true);
-      clientSession.createQueue(dla, dlq2, null, false, false, true);
-      clientSession.createQueue(qName, qName, null, false, false, true);
+      clientSession.createQueue(dla, dlq, null, false, false);
+      clientSession.createQueue(dla, dlq2, null, false, false);
+      clientSession.createQueue(qName, qName, null, false, false);
       ClientProducer producer = clientSession.createProducer(qName);
       producer.send(createTextMessage("heyho!", clientSession));
       clientSession.start();
@@ -137,7 +137,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       QueueSettings queueSettings = new QueueSettings();
       queueSettings.setMaxDeliveryAttempts(1);
       messagingService.getServer().getQueueSettingsRepository().addMatch(qName.toString(), queueSettings);
-      clientSession.createQueue(qName, qName, null, false, false, false);
+      clientSession.createQueue(qName, qName, null, false, false);
       ClientProducer producer = clientSession.createProducer(qName);
       producer.send(createTextMessage("heyho!", clientSession));
       clientSession.start();
@@ -167,8 +167,8 @@ public class DeadLetterAddressTest extends UnitTestCase
       queueSettings.setDeadLetterAddress(dla);
       messagingService.getServer().getQueueSettingsRepository().addMatch(qName.toString(), queueSettings);
       SimpleString dlq = new SimpleString("DLQ1");
-      clientSession.createQueue(dla, dlq, null, false, false, false);
-      clientSession.createQueue(qName, qName, null, false, false, false);
+      clientSession.createQueue(dla, dlq, null, false, false);
+      clientSession.createQueue(qName, qName, null, false, false);
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       ClientSession sendSession = sessionFactory.createSession(false, true, true);
       ClientProducer producer = sendSession.createProducer(qName);

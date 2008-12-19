@@ -72,7 +72,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -142,11 +142,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       final SimpleString queueName3 = new SimpleString("DuplicateDetectionTestQueue3");
 
-      session.createQueue(queueName1, queueName1, null, false, false, true);
+      session.createQueue(queueName1, queueName1, null, false, false);
 
-      session.createQueue(queueName2, queueName2, null, false, false, true);
+      session.createQueue(queueName2, queueName2, null, false, false);
 
-      session.createQueue(queueName3, queueName3, null, false, false, true);
+      session.createQueue(queueName3, queueName3, null, false, false);
 
       ClientProducer producer1 = session.createProducer(queueName1);
       ClientConsumer consumer1 = session.createConsumer(queueName1);
@@ -295,7 +295,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -343,7 +343,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -385,7 +385,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -443,7 +443,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -518,7 +518,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -595,7 +595,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -671,7 +671,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -764,7 +764,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -800,7 +800,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       session.start();
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       producer = session.createProducer(queueName);
 
@@ -847,7 +847,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -879,7 +879,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       session.start();
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       producer = session.createProducer(queueName);
 
@@ -925,7 +925,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -959,7 +959,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       session.start();
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       producer = session.createProducer(queueName);
 
@@ -1014,7 +1014,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -1059,7 +1059,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       session.start();
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       producer = session.createProducer(queueName);
 
@@ -1113,7 +1113,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -1149,7 +1149,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       session.start();
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       producer = session.createProducer(queueName);
 
@@ -1196,7 +1196,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -1234,7 +1234,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       session.start();
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       producer = session.createProducer(queueName);
 
@@ -1281,7 +1281,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -1323,7 +1323,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       session.start();
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       producer = session.createProducer(queueName);
 
@@ -1376,7 +1376,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -1416,7 +1416,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
  
       session.start();
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       producer = session.createProducer(queueName);
 
@@ -1475,7 +1475,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -1513,7 +1513,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
  
       session.start();
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       producer = session.createProducer(queueName);
 
@@ -1572,7 +1572,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -1612,7 +1612,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
  
       session.start();
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       producer = session.createProducer(queueName);
 
@@ -1671,7 +1671,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -1710,7 +1710,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
  
       session.start();
 
-      session.createQueue(queueName, queueName, null, false, false, true);
+      session.createQueue(queueName, queueName, null, false, false);
 
       producer = session.createProducer(queueName);
 

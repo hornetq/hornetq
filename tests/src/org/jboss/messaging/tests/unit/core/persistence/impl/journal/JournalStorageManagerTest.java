@@ -362,9 +362,9 @@ public class JournalStorageManagerTest extends UnitTestCase
       EasyMock.expect(ref1_2.getQueue()).andReturn(queue2);
       EasyMock.expect(ref1_3.getQueue()).andReturn(queue3);
 
-      EasyMock.expect(queue1.addLast(ref1_1)).andReturn(HandleStatus.HANDLED);
-      EasyMock.expect(queue2.addLast(ref1_2)).andReturn(HandleStatus.HANDLED);
-      EasyMock.expect(queue3.addLast(ref1_3)).andReturn(HandleStatus.HANDLED);
+      EasyMock.expect(queue1.add(ref1_1)).andReturn(HandleStatus.HANDLED);
+      EasyMock.expect(queue2.add(ref1_2)).andReturn(HandleStatus.HANDLED);
+      EasyMock.expect(queue3.add(ref1_3)).andReturn(HandleStatus.HANDLED);
 
       List<MessageReference> refs2 = new ArrayList<MessageReference>();
       MessageReference ref2_1 = EasyMock.createStrictMock(MessageReference.class);
@@ -379,9 +379,9 @@ public class JournalStorageManagerTest extends UnitTestCase
       EasyMock.expect(ref2_2.getQueue()).andReturn(queue2);
       EasyMock.expect(ref2_3.getQueue()).andReturn(queue3);
 
-      EasyMock.expect(queue1.addLast(ref2_1)).andReturn(HandleStatus.HANDLED);
-      EasyMock.expect(queue2.addLast(ref2_2)).andReturn(HandleStatus.HANDLED);
-      EasyMock.expect(queue3.addLast(ref2_3)).andReturn(HandleStatus.HANDLED);
+      EasyMock.expect(queue1.add(ref2_1)).andReturn(HandleStatus.HANDLED);
+      EasyMock.expect(queue2.add(ref2_2)).andReturn(HandleStatus.HANDLED);
+      EasyMock.expect(queue3.add(ref2_3)).andReturn(HandleStatus.HANDLED);
 
       Map<Long, Queue> queues = new HashMap<Long, Queue>();
       queues.put(queue1ID, queue1);

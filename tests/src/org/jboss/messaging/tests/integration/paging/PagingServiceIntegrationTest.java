@@ -101,7 +101,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
-         session.createQueue(ADDRESS, ADDRESS, null, true, false, true);
+         session.createQueue(ADDRESS, ADDRESS, null, true, false);
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -230,7 +230,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
-         session.createQueue(ADDRESS, ADDRESS, null, true, false, true);
+         session.createQueue(ADDRESS, ADDRESS, null, true, false);
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -380,7 +380,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
-         session.createQueue(ADDRESS, ADDRESS, null, true, false, true);
+         session.createQueue(ADDRESS, ADDRESS, null, true, false);
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -514,7 +514,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(null, null, false, false, true, false, 0);
 
-         session.createQueue(ADDRESS, ADDRESS, null, true, false, true);
+         session.createQueue(ADDRESS, ADDRESS, null, true, false);
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -597,7 +597,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(null, null, false, false, false, false, 0);
 
-         session.createQueue(ADDRESS, ADDRESS, null, true, false, true);
+         session.createQueue(ADDRESS, ADDRESS, null, true, false);
 
          ClientProducer producer = session.createProducer(ADDRESS);
 

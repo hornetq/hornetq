@@ -286,7 +286,7 @@ public class RandomFailoverTest extends TestCase
 
          sessConsume.start();
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false, true);
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -401,7 +401,7 @@ public class RandomFailoverTest extends TestCase
 
          ClientSession sessConsume = sf.createSession(false, true, true);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false, true);
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -516,7 +516,7 @@ public class RandomFailoverTest extends TestCase
 
          sessConsume.start();
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false, true);
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -667,7 +667,7 @@ public class RandomFailoverTest extends TestCase
 
          ClientSession sessConsume = sf.createSession(false, false, false);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false, true);
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -827,7 +827,7 @@ public class RandomFailoverTest extends TestCase
 
          sessConsume.start();
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false, true);
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -915,7 +915,7 @@ public class RandomFailoverTest extends TestCase
 
          ClientSession sessConsume = sf.createSession(false, true, true);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false, true);
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -1017,7 +1017,7 @@ public class RandomFailoverTest extends TestCase
 
          sessConsume.start();
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false, true);
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -1154,7 +1154,7 @@ public class RandomFailoverTest extends TestCase
 
          ClientSession sessConsume = sf.createSession(false, false, false);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false, true);
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -1282,7 +1282,7 @@ public class RandomFailoverTest extends TestCase
    {
       ClientSession sessCreate = sf.createSession(false, true, true);
 
-      sessCreate.createQueue(ADDRESS, ADDRESS, null, false, false, true);
+      sessCreate.createQueue(ADDRESS, ADDRESS, null, false, false);
 
       ClientSession sess = sf.createSession(false, true, true);
 
@@ -1318,7 +1318,7 @@ public class RandomFailoverTest extends TestCase
    {
       ClientSession sessCreate = sf.createSession(false, true, true);
 
-      sessCreate.createQueue(ADDRESS, ADDRESS, null, false, false, true);
+      sessCreate.createQueue(ADDRESS, ADDRESS, null, false, false);
 
       ClientSession sess = sf.createSession(false, true, true);
 
@@ -1354,7 +1354,7 @@ public class RandomFailoverTest extends TestCase
    {
       ClientSession s = sf.createSession(false, false, false);
 
-      s.createQueue(ADDRESS, ADDRESS, null, false, false, true);
+      s.createQueue(ADDRESS, ADDRESS, null, false, false);
 
       final int numConsumers = 100;
 
@@ -1390,7 +1390,7 @@ public class RandomFailoverTest extends TestCase
    {
       ClientSession sessCreate = sf.createSession(false, true, true);
 
-      sessCreate.createQueue(ADDRESS, new SimpleString(ADDRESS.toString()), null, false, false, true);
+      sessCreate.createQueue(ADDRESS, new SimpleString(ADDRESS.toString()), null, false, false);
 
       ClientSession sess = sf.createSession(false, true, true);
 

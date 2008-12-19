@@ -68,7 +68,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
 
    private final SimpleString filterString;
 
-   private final boolean fanout;
+   private final boolean exclusive;
 
    private final int maxBatchSize;
 
@@ -110,7 +110,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
                           final int maxBatchSize,
                           final long maxBatchTime,
                           final SimpleString filterString,
-                          final boolean fanout,
+                          final boolean exclusive,
                           final ExecutorFactory executorFactory,
                           final StorageManager storageManager,
                           final PostOffice postOffice,
@@ -134,7 +134,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
 
       this.filterString = filterString;
 
-      this.fanout = fanout;
+      this.exclusive = exclusive;
 
       this.executorFactory = executorFactory;
 
@@ -171,7 +171,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
                           final int maxBatchSize,
                           final long maxBatchTime,
                           final SimpleString filterString,
-                          final boolean fanout,
+                          final boolean exclusive,
                           final ExecutorFactory executorFactory,
                           final StorageManager storageManager,
                           final PostOffice postOffice,
@@ -195,7 +195,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
 
       this.filterString = filterString;
 
-      this.fanout = fanout;
+      this.exclusive = exclusive;
 
       this.executorFactory = executorFactory;
 
@@ -332,7 +332,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
             {
                Filter filter = filterString == null ? null : new FilterImpl(filterString);
 
-               binding = postOffice.addBinding(address, queueName, filter, true, false, fanout);
+               binding = postOffice.addBinding(address, queueName, filter, true, false, exclusive);
             }
 
             Forwarder forwarder = new ForwarderImpl(binding.getQueue(),

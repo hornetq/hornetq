@@ -149,11 +149,6 @@ public class QueueControl implements QueueControlMBean
       return queue.getScheduledCount();
    }
 
-   public long getSizeBytes()
-   {
-      return queue.getSizeBytes();
-   }
-
    public String getDeadLetterAddress()
    {
       QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());

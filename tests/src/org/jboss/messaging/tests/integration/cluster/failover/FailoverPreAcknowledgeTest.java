@@ -81,7 +81,7 @@ public class FailoverPreAcknowledgeTest extends TestCase
 
       ClientSession session1 = sf1.createSession(false, true, true, true);
 
-      session1.createQueue(ADDRESS, ADDRESS, null, false, false, true);
+      session1.createQueue(ADDRESS, ADDRESS, null, false, false);
 
       session1.start();
 

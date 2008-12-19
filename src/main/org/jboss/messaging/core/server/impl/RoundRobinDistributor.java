@@ -28,14 +28,14 @@ import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 
 /**
- * A RoundRobinDistributionPolicy
+ * A RoundRobinDistributor
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class RoundRobinDistributionPolicy extends DistributionPolicyImpl
+public class RoundRobinDistributor extends DistributorImpl
 {
-   Logger log = Logger.getLogger(RoundRobinDistributionPolicy.class);
+   private static final Logger log = Logger.getLogger(RoundRobinDistributor.class);
 
    protected int pos = 0;
 
@@ -52,7 +52,7 @@ public class RoundRobinDistributionPolicy extends DistributionPolicyImpl
       pos = 0;
       return super.removeConsumer(consumer);
    }
-   
+
    public synchronized int getConsumerCount()
    {
       return super.getConsumerCount();

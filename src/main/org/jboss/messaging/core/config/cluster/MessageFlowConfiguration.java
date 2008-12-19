@@ -46,7 +46,7 @@ public class MessageFlowConfiguration implements Serializable
 
    private final String filterString;
 
-   private final boolean fanout;
+   private final boolean exclusive;
 
    private final int maxBatchSize;
 
@@ -71,7 +71,7 @@ public class MessageFlowConfiguration implements Serializable
    public MessageFlowConfiguration(final String name,
                                    final String address,
                                    final String filterString,
-                                   final boolean fanout,
+                                   final boolean exclusive,
                                    final int maxBatchSize,
                                    final long maxBatchTime,
                                    final String transformerClassName,
@@ -85,7 +85,7 @@ public class MessageFlowConfiguration implements Serializable
       this.name = name;
       this.address = address;
       this.filterString = filterString;
-      this.fanout = fanout;
+      this.exclusive = exclusive;
       this.maxBatchSize = maxBatchSize;
       this.maxBatchTime = maxBatchTime;
       this.transformerClassName = transformerClassName;
@@ -101,7 +101,7 @@ public class MessageFlowConfiguration implements Serializable
    public MessageFlowConfiguration(final String name,
                                    final String address,
                                    final String filterString,
-                                   final boolean fanout,
+                                   final boolean exclusive,
                                    final int maxBatchSize,
                                    final long maxBatchTime,
                                    final String transformerClassName,
@@ -115,7 +115,7 @@ public class MessageFlowConfiguration implements Serializable
       this.name = name;
       this.address = address;
       this.filterString = filterString;
-      this.fanout = fanout;
+      this.exclusive = exclusive;
       this.maxBatchSize = maxBatchSize;
       this.maxBatchTime = maxBatchTime;
       this.transformerClassName = transformerClassName;
@@ -143,9 +143,9 @@ public class MessageFlowConfiguration implements Serializable
       return filterString;
    }
 
-   public boolean isFanout()
+   public boolean isExclusive()
    {
-      return fanout;
+      return exclusive;
    }
 
    public int getMaxBatchSize()

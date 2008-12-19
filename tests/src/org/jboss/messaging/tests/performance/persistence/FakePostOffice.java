@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
@@ -63,7 +64,7 @@ public class FakePostOffice implements PostOffice
                              Filter filter,
                              boolean durable,
                              boolean temporary,
-                             boolean fanout) throws Exception
+                             boolean exclusive) throws Exception
    {
       Queue queue = queueFactory.createQueue(-1, queueName, filter, durable, false);
       Binding binding = new FakeBinding(address, queue);
@@ -86,11 +87,10 @@ public class FakePostOffice implements PostOffice
       return bindings.get(queueName);
    }
 
-   public List<Binding> getBindingsForAddress(SimpleString address) throws Exception
+   public Bindings getBindingsForAddress(SimpleString address) throws Exception
    {
       return null;
    }
-
 
    public List<Queue> getQueues()
    {
@@ -156,6 +156,12 @@ public class FakePostOffice implements PostOffice
    {
       return null;
    }
+   
+   public int numMappings()
+   {
+      return 0;
+   }
+
 
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.postoffice.PostOffice#deliver(java.util.List)
@@ -178,5 +184,6 @@ public class FakePostOffice implements PostOffice
    public void scheduleReferences(long transactionID, long scheduledDeliveryTime, List<MessageReference> references) throws Exception
    {
    }
+
 
 }

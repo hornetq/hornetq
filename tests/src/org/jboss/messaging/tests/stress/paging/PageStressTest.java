@@ -93,7 +93,7 @@ public class PageStressTest extends ServiceTestBase
 
          SimpleString address = new SimpleString("page-adr");
 
-         session.createQueue(address, address, null, true, false, true);
+         session.createQueue(address, address, null, true, false);
 
          ClientProducer prod = session.createProducer(address);
 
@@ -221,8 +221,8 @@ public class PageStressTest extends ServiceTestBase
          SimpleString address = new SimpleString("page-adr");
          SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };
 
-         session.createQueue(address, queue[0], null, true, false, true);
-         session.createQueue(address, queue[1], null, true, false, true);
+         session.createQueue(address, queue[0], null, true, false);
+         session.createQueue(address, queue[1], null, true, false);
 
          ClientProducer prod = session.createProducer(address);
 

@@ -24,12 +24,12 @@ package org.jboss.messaging.tests.unit.core.server.impl;
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.Consumer;
-import org.jboss.messaging.core.server.DistributionPolicy;
+import org.jboss.messaging.core.server.Distributor;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributionPolicy;
-import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
+import org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor;
+import org.jboss.messaging.core.server.impl.RoundRobinDistributor;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
@@ -38,12 +38,12 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class GroupingRoundRobinDistributionPolicyTest extends UnitTestCase
 {
-   GroupingRoundRobinDistributionPolicy policy = null;
+   GroupingRoundRobinDistributor policy = null;
 
    protected void setUp() throws Exception
    {
       super.setUp();
-      policy = new GroupingRoundRobinDistributionPolicy();
+      policy = new GroupingRoundRobinDistributor();
    }
 
    protected void tearDown() throws Exception
@@ -77,7 +77,7 @@ public class GroupingRoundRobinDistributionPolicyTest extends UnitTestCase
       ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
       EasyMock.expect(reference.getMessage()).andStubReturn(serverMessage);
       EasyMock.expect(serverMessage.getProperty(MessageImpl.HDR_GROUP_ID)).andStubReturn(new SimpleString("gid1"));
-      DistributionPolicy dp = new RoundRobinDistributionPolicy();
+      Distributor dp = new RoundRobinDistributor();
       dp.addConsumer(c1);
       dp.addConsumer(c2);
       dp.addConsumer(c3);
@@ -100,7 +100,7 @@ public class GroupingRoundRobinDistributionPolicyTest extends UnitTestCase
       ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
       EasyMock.expect(reference.getMessage()).andStubReturn(serverMessage);
       EasyMock.expect(serverMessage.getProperty(MessageImpl.HDR_GROUP_ID)).andStubReturn(new SimpleString("gid1"));
-      DistributionPolicy dp = new RoundRobinDistributionPolicy();
+      Distributor dp = new RoundRobinDistributor();
       dp.addConsumer(c1);
       dp.addConsumer(c2);
       dp.addConsumer(c3);

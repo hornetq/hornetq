@@ -524,7 +524,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
                queueName = new SimpleString(UUID.randomUUID().toString());
 
-               session.createQueue(dest.getSimpleAddress(), queueName, coreFilterString, false, true, true);
+               session.createQueue(dest.getSimpleAddress(), queueName, coreFilterString, false, true);
 
                consumer = session.createConsumer(queueName, null, false);
 
@@ -551,7 +551,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
                if (!subResponse.isExists())
                {
-                  session.createQueue(dest.getSimpleAddress(), queueName, coreFilterString, true, false, true);
+                  session.createQueue(dest.getSimpleAddress(), queueName, coreFilterString, true, false);
                }
                else
                {
@@ -585,7 +585,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
                      session.deleteQueue(queueName);
 
                      // Create the new one
-                     session.createQueue(dest.getSimpleAddress(), queueName, coreFilterString, true, false, true);
+                     session.createQueue(dest.getSimpleAddress(), queueName, coreFilterString, true, false);
                   }
                }
 
@@ -670,7 +670,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
          SimpleString simpleAddress = queue.getSimpleAddress();
 
-         session.createQueue(queue.getSimpleAddress(), queue.getSimpleAddress(), null, false, true, false);
+         session.createQueue(queue.getSimpleAddress(), queue.getSimpleAddress(), null, false, true);
 
          session.addDestination(queue.getSimpleAddress(), false, true);
 

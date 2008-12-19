@@ -21,16 +21,14 @@
  */
 package org.jboss.messaging.core.postoffice.impl;
 
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.jboss.messaging.core.postoffice.AddressManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.ConcurrentSet;
 import org.jboss.messaging.util.SimpleString;
@@ -38,11 +36,13 @@ import org.jboss.messaging.util.SimpleString;
 /**
  * A simple address manager that maintains the addresses and bindings.
  *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public  class SimpleAddressManager implements AddressManager
 {
-   private final ConcurrentMap<SimpleString, List<Binding>> mappings = new ConcurrentHashMap<SimpleString, List<Binding>>();
+   private final ConcurrentMap<SimpleString, Bindings> mappings = new ConcurrentHashMap<SimpleString, Bindings>();
 
    private final ConcurrentSet<SimpleString> destinations = new ConcurrentHashSet<SimpleString>();
 
@@ -58,21 +58,37 @@ public  class SimpleAddressManager implements AddressManager
 
    public boolean addMapping(final SimpleString address, final Binding binding)
    {
-      List<Binding> bindings = new CopyOnWriteArrayList<Binding>();
-      List<Binding> prevBindings = mappings.putIfAbsent(address, bindings);
-
-      if (prevBindings != null)
+      Bindings bindings = mappings.get(address);
+      
+      Bindings prevBindings = null;
+      
+      if (bindings == null)
       {
-         bindings = prevBindings;
+         bindings = new BindingsImpl();
+         
+         prevBindings = mappings.putIfAbsent(address, bindings);
+         
+         if (prevBindings != null)
+         {
+            bindings = prevBindings;
+         }
       }
-
-      bindings.add(binding);
+      
+      bindings.addBinding(binding);
+      
       return prevBindings != null;
    }
    
-   public List<Binding> getBindings(final SimpleString address)
+   public Bindings getBindings(final SimpleString address)
    {
-      return mappings.get(address);
+      Bindings bindings = mappings.get(address);
+      
+      if (bindings == null)
+      {
+         bindings = new BindingsImpl();
+      }
+      
+      return bindings;
    }
 
    public boolean addDestination(final SimpleString address)
@@ -112,11 +128,11 @@ public  class SimpleAddressManager implements AddressManager
       mappings.clear();
    }
 
-   public Map<SimpleString, List<Binding>> getMappings()
+   public int numMappings()
    {
-      return mappings;
+      return mappings.size();
    }
-
+   
    public Binding removeBinding(final SimpleString queueName)
    {
       Binding binding = nameMap.remove(queueName);
@@ -130,40 +146,44 @@ public  class SimpleAddressManager implements AddressManager
 
    public boolean removeMapping(final SimpleString address, final SimpleString queueName)
    {
-      List<Binding> bindings = mappings.get(address);
+      Bindings bindings = mappings.get(address);
       
-      Binding binding = removeMapping(queueName, bindings);
-
-      if(bindings.isEmpty())
+      if (bindings != null)
       {
-         mappings.remove(binding.getAddress());
-      }
-      return bindings.isEmpty();
+         removeMapping(queueName, bindings);
+         
+         if (bindings.getBindings().isEmpty())
+         {
+            mappings.remove(address);
+         }
+         
+         return true;
+      }  
+      
+      return false;
    }
 
-   protected Binding removeMapping(final SimpleString queueName, final List<Binding> bindings)
+   protected Binding removeMapping(final SimpleString queueName, final Bindings bindings)
    {
-      Binding binding = null;
+      Binding theBinding = null;
       
-      for (Iterator<Binding> iter = bindings.iterator(); iter.hasNext();)
+      for (Binding binding: bindings.getBindings())
       {
-         Binding b = iter.next();
-
-         if (b.getQueue().getName().equals(queueName))
+         if (binding.getQueue().getName().equals(queueName))
          {
-            binding = b;
+            theBinding = binding;
 
             break;
          }
       }
 
-      if (binding == null)
+      if (theBinding == null)
       {
          throw new IllegalStateException("Cannot find binding " + queueName);
       }
 
-      bindings.remove(binding);
+      bindings.removeBinding(theBinding);
       
-      return binding;
+      return theBinding;
    }
 }

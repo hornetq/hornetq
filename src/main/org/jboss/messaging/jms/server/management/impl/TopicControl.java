@@ -33,6 +33,7 @@ import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
@@ -202,9 +203,9 @@ public class TopicControl implements TopicControlMBean
    public int removeAllMessages() throws Exception
    {
       int count = 0;
-      List<Binding> bindings = postOffice.getBindingsForAddress(managedTopic.getSimpleAddress());
+      Bindings bindings = postOffice.getBindingsForAddress(managedTopic.getSimpleAddress());
 
-      for (Binding binding : bindings)
+      for (Binding binding : bindings.getBindings())
       {
          Queue queue = binding.getQueue();
          count += queue.deleteAllReferences(storageManager);
@@ -234,9 +235,9 @@ public class TopicControl implements TopicControlMBean
 
    public void dropAllSubscriptions() throws Exception
    {
-      List<Binding> bindings = postOffice.getBindingsForAddress(managedTopic.getSimpleAddress());
+      Bindings bindings = postOffice.getBindingsForAddress(managedTopic.getSimpleAddress());
 
-      for (Binding binding : bindings)
+      for (Binding binding : bindings.getBindings())
       {
          Queue queue = binding.getQueue();
          queue.deleteAllReferences(storageManager);
@@ -294,10 +295,10 @@ public class TopicControl implements TopicControlMBean
    {
       try
       {
-         List<Binding> bindings = postOffice.getBindingsForAddress(managedTopic.getSimpleAddress());
+         Bindings bindings = postOffice.getBindingsForAddress(managedTopic.getSimpleAddress());
          List<Queue> matchingQueues = new ArrayList<Queue>();
 
-         for (Binding binding : bindings)
+         for (Binding binding : bindings.getBindings())
          {
             Queue queue = binding.getQueue();
             if (durability == DurabilityType.ALL || (durability == DurabilityType.DURABLE && queue.isDurable()) ||

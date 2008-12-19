@@ -24,12 +24,12 @@ package org.jboss.messaging.core.server;
 
 /**
  * 
- * A DistributionPolicy
+ * A Distributor
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface DistributionPolicy
+public interface Distributor
 {
    HandleStatus distribute(final MessageReference reference);
 

@@ -109,7 +109,7 @@ public class ClientCrashTest extends ServiceTestBase
                                            new String[] { Integer.toString(numberOfConnectionsOnTheClient) });
 
       ClientSession session = sf.createSession(false, true, true);
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
       ClientConsumer consumer = session.createConsumer(QUEUE);
       ClientProducer producer = session.createProducer(QUEUE);
 

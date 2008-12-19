@@ -93,7 +93,7 @@ public class ExpiryRunnerTest extends UnitTestCase
    public void testExpireFromMultipleQueues() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(qName);
-      clientSession.createQueue(qName2, qName2, null, false, false, true);
+      clientSession.createQueue(qName2, qName2, null, false, false);
       QueueSettings queueSettings = new QueueSettings();
       queueSettings.setExpiryAddress(expiryAddress);
       messagingService.getServer().getQueueSettingsRepository().addMatch(qName2.toString(), queueSettings);
@@ -191,7 +191,7 @@ public class ExpiryRunnerTest extends UnitTestCase
 
    public void testExpireToMultipleQueues() throws Exception
    {
-      clientSession.createQueue(qName, qName2, null, false, false, true);
+      clientSession.createQueue(qName, qName2, null, false, false);
       QueueSettings queueSettings = new QueueSettings();
       queueSettings.setExpiryAddress(expiryAddress);
       messagingService.getServer().getQueueSettingsRepository().addMatch(qName2.toString(), queueSettings);
@@ -301,14 +301,14 @@ public class ExpiryRunnerTest extends UnitTestCase
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       sessionFactory.setBlockOnAcknowledge(true);
       clientSession = sessionFactory.createSession(false, true, true);
-      clientSession.createQueue(qName, qName, null, false, false, true);
+      clientSession.createQueue(qName, qName, null, false, false);
       expiryAddress = new SimpleString("EA");
       expiryQueue = new SimpleString("expiryQ");
       QueueSettings queueSettings = new QueueSettings();
       queueSettings.setExpiryAddress(expiryAddress);
       messagingService.getServer().getQueueSettingsRepository().addMatch(qName.toString(), queueSettings);
       messagingService.getServer().getQueueSettingsRepository().addMatch(qName2.toString(), queueSettings);
-      clientSession.createQueue(expiryAddress, expiryQueue, null, false, false, true);
+      clientSession.createQueue(expiryAddress, expiryQueue, null, false, false);
    }
 
    @Override

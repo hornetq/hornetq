@@ -44,7 +44,7 @@ public interface MessageFlowControlMBean
 
    String getFilterString();
 
-   boolean isFanout();
+   boolean isExclusive();
 
    int getMaxBatchSize();
 

@@ -371,7 +371,7 @@ public class ClusterManagerImpl implements ClusterManager
                                     config.getMaxBatchTime(),
                                     config.getFilterString() == null ? null
                                                                     : new SimpleString(config.getFilterString()),
-                                    config.isFanout(),
+                                    config.isExclusive(),
                                     executorFactory,
                                     storageManager,
                                     postOffice,
@@ -405,7 +405,7 @@ public class ClusterManagerImpl implements ClusterManager
                                     config.getMaxBatchTime(),
                                     config.getFilterString() == null ? null
                                                                     : new SimpleString(config.getFilterString()),
-                                    config.isFanout(),
+                                    config.isExclusive(),
                                     this.executorFactory,
                                     storageManager,
                                     postOffice,

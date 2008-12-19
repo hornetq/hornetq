@@ -165,7 +165,7 @@ public class MessageChunkTest extends ChunkTestBase
 
          callback.session = session;
 
-         session.createQueue(ADDRESS, ADDRESS, null, true, false, true);
+         session.createQueue(ADDRESS, ADDRESS, null, true, false);
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -227,7 +227,7 @@ public class MessageChunkTest extends ChunkTestBase
 
          ClientSession session = sf.createSession(null, null, false, true, false, false, 0);
 
-         session.createQueue(ADDRESS, ADDRESS, null, true, false, true);
+         session.createQueue(ADDRESS, ADDRESS, null, true, false);
          
          messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize();
 
@@ -391,8 +391,8 @@ public class MessageChunkTest extends ChunkTestBase
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
-         session.createQueue(ADDRESS, queue[0], null, true, false, true);
-         session.createQueue(ADDRESS, queue[1], null, true, false, true);
+         session.createQueue(ADDRESS, queue[0], null, true, false);
+         session.createQueue(ADDRESS, queue[1], null, true, false);
          
 
          int numberOfIntegers = 100000;
@@ -482,8 +482,8 @@ public class MessageChunkTest extends ChunkTestBase
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
-         session.createQueue(ADDRESS, queue[0], null, true, false, true);
-         session.createQueue(ADDRESS, queue[1], null, true, false, true);
+         session.createQueue(ADDRESS, queue[0], null, true, false);
+         session.createQueue(ADDRESS, queue[1], null, true, false);
          
 
          int numberOfIntegers = 100000;
@@ -583,7 +583,7 @@ public class MessageChunkTest extends ChunkTestBase
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
-         session.createQueue(ADDRESS, ADDRESS, null, true, false, true);
+         session.createQueue(ADDRESS, ADDRESS, null, true, false);
 
          ClientProducer producer = session.createProducer(ADDRESS);
 

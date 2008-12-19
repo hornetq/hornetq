@@ -23,8 +23,8 @@
 package org.jboss.messaging.core.settings.impl;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.DistributionPolicy;
-import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
+import org.jboss.messaging.core.server.Distributor;
+import org.jboss.messaging.core.server.impl.RoundRobinDistributor;
 import org.jboss.messaging.core.settings.Mergeable;
 import org.jboss.messaging.util.SimpleString;
 
@@ -41,7 +41,7 @@ public class QueueSettings implements Mergeable<QueueSettings>
    /**
     * defaults used if null, this allows merging
     */
-   public static final Class<?> DEFAULT_DISTRIBUTION_POLICY_CLASS = new RoundRobinDistributionPolicy().getClass();
+   public static final Class<?> DEFAULT_DISTRIBUTION_POLICY_CLASS = new RoundRobinDistributor().getClass();
 
    public static final Boolean DEFAULT_CLUSTERED = false;
 
@@ -176,17 +176,17 @@ public class QueueSettings implements Mergeable<QueueSettings>
       ExpiryAddress = expiryAddress;
    }
 
-   public DistributionPolicy getDistributionPolicy()
+   public Distributor getDistributionPolicy()
    {
       try
       {
          if (distributionPolicyClass != null)
          {
-            return (DistributionPolicy)getClass().getClassLoader().loadClass(distributionPolicyClass).newInstance();
+            return (Distributor)getClass().getClassLoader().loadClass(distributionPolicyClass).newInstance();
          }
          else
          {
-            return (DistributionPolicy)DEFAULT_DISTRIBUTION_POLICY_CLASS.newInstance();
+            return (Distributor)DEFAULT_DISTRIBUTION_POLICY_CLASS.newInstance();
          }
       }
       catch (Exception e)

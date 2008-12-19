@@ -41,15 +41,13 @@ public class SessionCreateQueueMessage extends PacketImpl
    private SimpleString filterString;
    private boolean durable;
    private boolean temporary;
-   private boolean fanout;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public SessionCreateQueueMessage(final SimpleString address, final SimpleString queueName,
-   		final SimpleString filterString, final boolean durable, final boolean temporary,
-   		final boolean fanout)
+   		final SimpleString filterString, final boolean durable, final boolean temporary)
    {
       super(SESS_CREATEQUEUE);
 
@@ -58,7 +56,6 @@ public class SessionCreateQueueMessage extends PacketImpl
       this.filterString = filterString;
       this.durable = durable;
       this.temporary = temporary;
-      this.fanout = fanout;
    }
    
    public SessionCreateQueueMessage()
@@ -105,12 +102,7 @@ public class SessionCreateQueueMessage extends PacketImpl
    {
       return temporary;
    }
-   
-   public boolean isFanout()
-   {
-      return fanout;
-   }
-   
+    
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putSimpleString(address);
@@ -118,7 +110,6 @@ public class SessionCreateQueueMessage extends PacketImpl
       buffer.putNullableSimpleString(filterString);
       buffer.putBoolean(durable);
       buffer.putBoolean(temporary);
-      buffer.putBoolean(fanout);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
@@ -128,7 +119,6 @@ public class SessionCreateQueueMessage extends PacketImpl
       filterString = buffer.getNullableSimpleString();
       durable = buffer.getBoolean();
       temporary = buffer.getBoolean();
-      fanout = buffer.getBoolean();
    }
    
    public boolean equals(Object other)
@@ -144,8 +134,7 @@ public class SessionCreateQueueMessage extends PacketImpl
              r.queueName.equals(this.queueName) &&
              (r.filterString == null ? this.filterString == null : r.filterString.equals(this.filterString)) &&
              r.durable == this.durable &&
-             r.temporary == this.temporary &&
-             r.fanout == this.fanout;
+             r.temporary == this.temporary;
    }
 
    // Package protected ---------------------------------------------

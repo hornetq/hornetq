@@ -260,9 +260,9 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
       replicationAwareInvoke("createQueue", address, name);
    }
 
-   public void createQueue(final String address, final String name, final String filter, final boolean durable, final boolean fanout) throws Exception
+   public void createQueue(final String address, final String name, final String filter, final boolean durable) throws Exception
    {
-      replicationAwareInvoke("createQueue", address, name, filter, durable, fanout);
+      replicationAwareInvoke("createQueue", address, name, filter, durable);
    }
 
    public void destroyQueue(final String name) throws Exception

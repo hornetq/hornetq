@@ -63,7 +63,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
       
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -116,7 +116,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false, true);
+      session.createQueue(QUEUE, QUEUE, null, false, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 

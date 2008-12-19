@@ -59,10 +59,10 @@ public class ManagementClient
 
       // add temporary destination and queue
       clientSession.addDestination(replytoQueue, false, true);
-      clientSession.createQueue(replytoQueue, replytoQueue, null, false, true, true);
+      clientSession.createQueue(replytoQueue, replytoQueue, null, false, true);
 
       SimpleString notifQueue = new SimpleString("notifQueue");
-      clientSession.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, null, false, true, true);
+      clientSession.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, null, false, true);
       ClientConsumer notifConsumer = clientSession.createConsumer(notifQueue);
       notifConsumer.setMessageHandler(new MessageHandler()
       {

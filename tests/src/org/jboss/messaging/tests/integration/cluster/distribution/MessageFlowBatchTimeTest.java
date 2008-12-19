@@ -100,7 +100,7 @@ public class MessageFlowBatchTimeTest extends MessageFlowTestBase
       MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1",
                                                                        address1.toString(),
                                                                        null,
-                                                                       true,
+                                                                       false,
                                                                        batchSize,
                                                                        batchTime,
                                                                        null,
@@ -127,9 +127,9 @@ public class MessageFlowBatchTimeTest extends MessageFlowTestBase
 
       ClientSession session1 = csf1.createSession(false, true, true);
 
-      session0.createQueue(address1, address1, null, false, false, true);
+      session0.createQueue(address1, address1, null, false, false);
 
-      session1.createQueue(address1, address1, null, false, false, true);
+      session1.createQueue(address1, address1, null, false, false);
 
       ClientProducer prod0_1 = session0.createProducer(address1);
 

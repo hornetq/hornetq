@@ -251,7 +251,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
       addSettings();
 
-      clientSession.createQueue(pageQueue, pageQueue, null, true, true, true);
+      clientSession.createQueue(pageQueue, pageQueue, null, true, true);
 
       clientSession.start(xid, XAResource.TMNOFLAGS);
 
@@ -327,7 +327,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
       addSettings();
 
-      clientSession.createQueue(pageQueue, pageQueue, null, true, true, true);
+      clientSession.createQueue(pageQueue, pageQueue, null, true, true);
       
       long initialPageSize = this.messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize();
 
@@ -1005,7 +1005,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       SimpleString anewtestq = new SimpleString("anewtestq");
-      clientSession.createQueue(anewtestq, anewtestq, null, true, true, true);
+      clientSession.createQueue(anewtestq, anewtestq, null, true, true);
       ClientProducer clientProducer3 = clientSession2.createProducer(anewtestq);
       clientProducer2.send(m1);
       clientProducer2.send(m2);
@@ -1095,7 +1095,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       SimpleString anewtestq = new SimpleString("anewtestq");
-      clientSession.createQueue(anewtestq, anewtestq, null, true, true, true);
+      clientSession.createQueue(anewtestq, anewtestq, null, true, true);
       ClientProducer clientProducer3 = clientSession2.createProducer(anewtestq);
       clientProducer2.send(m1);
       clientProducer2.send(m2);
@@ -1253,7 +1253,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientSession = sessionFactory.createSession(true, false, commitACKs);
       if (createQueue)
       {
-         clientSession.createQueue(atestq, atestq, null, true, true, true);
+         clientSession.createQueue(atestq, atestq, null, true, true);
       }
       clientProducer = clientSession.createProducer(atestq);
       clientConsumer = clientSession.createConsumer(atestq);

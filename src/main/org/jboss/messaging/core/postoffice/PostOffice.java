@@ -51,7 +51,6 @@ import org.jboss.messaging.util.SimpleString;
  * route to.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
-* @author <a href="mailto:csuconic@redhat.com">Clebert Suconic</a>
  *
  */
 public interface PostOffice extends MessagingComponent
@@ -62,26 +61,15 @@ public interface PostOffice extends MessagingComponent
 
    boolean containsDestination(SimpleString address);
 
-   Binding addBinding(SimpleString address,
-                      SimpleString queueName,
-                      Filter filter,
-                      boolean durable,
-                      boolean temporary,
-                      boolean fanout) throws Exception;
+   Binding addBinding(SimpleString address, SimpleString queueName, Filter filter, boolean durable, boolean temporary, boolean exclusive) throws Exception;
 
    Binding removeBinding(SimpleString queueName) throws Exception;
 
-   List<Binding> getBindingsForAddress(SimpleString address) throws Exception;
+   Bindings getBindingsForAddress(SimpleString address) throws Exception;
 
    Binding getBinding(SimpleString queueName);
 
-   /** Deliver references previously routed */
-   void deliver(List<MessageReference> references);
-
    List<MessageReference> route(ServerMessage message) throws Exception;
-
-   // For testing only
-   Map<SimpleString, List<Binding>> getMappings();
 
    Set<SimpleString> listAllDestinations();
 
@@ -93,7 +81,13 @@ public interface PostOffice extends MessagingComponent
 
    DuplicateIDCache getDuplicateIDCache(SimpleString address);
 
+   int numMappings();
+
+   //TODO - why have these methods been put here????
+   
    void scheduleReferences(long scheduledDeliveryTime, List<MessageReference> references) throws Exception;
 
    void scheduleReferences(long transactionID, long scheduledDeliveryTime, List<MessageReference> references) throws Exception;
+   
+   void deliver(final List<MessageReference> references);
 }

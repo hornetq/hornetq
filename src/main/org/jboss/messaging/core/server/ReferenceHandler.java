@@ -20,22 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.client;
 
-import java.io.File;
+package org.jboss.messaging.core.server;
 
 /**
- * A ClientFileMessage
+ * A ReferenceHandler
  *
- * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created Oct 14, 2008 3:21:15 PM
+ * Created 10 Dec 2008 19:14:20
  *
  *
  */
-public interface ClientFileMessage extends ClientMessage
-{
-   File getFile();
 
-   void setFile(File file);
+//TODO - can this be combined with consumer??
+public interface ReferenceHandler
+{
+   HandleStatus add(MessageReference ref);   
 }

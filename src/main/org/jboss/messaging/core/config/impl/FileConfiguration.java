@@ -514,7 +514,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       String filterString = null;
 
-      boolean fanout = false;
+      boolean exclusive = false;
 
       int maxBatchSize = DEFAULT_MAX_FORWARD_BATCH_SIZE;
 
@@ -550,9 +550,9 @@ public class FileConfiguration extends ConfigurationImpl
          {
             filterString = child.getTextContent().trim();
          }
-         else if (child.getNodeName().equals("fanout"))
+         else if (child.getNodeName().equals("exclusive"))
          {
-            fanout = XMLUtil.parseBoolean(child);
+            exclusive = XMLUtil.parseBoolean(child);
          }
          else if (child.getNodeName().equals("max-batch-size"))
          {
@@ -614,7 +614,7 @@ public class FileConfiguration extends ConfigurationImpl
          config = new MessageFlowConfiguration(name,
                                                address,
                                                filterString,
-                                               fanout,
+                                               exclusive,
                                                maxBatchSize,
                                                maxBatchTime,
                                                transformerClassName,
@@ -630,7 +630,7 @@ public class FileConfiguration extends ConfigurationImpl
          config = new MessageFlowConfiguration(name,
                                                address,
                                                filterString,
-                                               fanout,
+                                               exclusive,
                                                maxBatchSize,
                                                maxBatchTime,
                                                transformerClassName,

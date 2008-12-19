@@ -412,7 +412,7 @@
          <redelivery-delay>0</redelivery-delay>
          <max-size>-1</max-size>
          <distribution-policy-class>
-            org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy
+            org.jboss.messaging.core.server.impl.RoundRobinDistributor
          </distribution-policy-class>
          <message-counter-history-day-limit>10</message-counter-history-day-limit>
       </queue-settings>

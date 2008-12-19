@@ -197,7 +197,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public MessagingServerControlMBean registerServer(final PostOffice postOffice,
                                                      final StorageManager storageManager,
-                                                     final Configuration configuration,                                     
+                                                     final Configuration configuration,
                                                      final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                                                      final HierarchicalRepository<Set<Role>> securityRepository,
                                                      final ResourceManager resourceManager,
@@ -211,7 +211,7 @@ public class ManagementServiceImpl implements ManagementService
       this.managementNotificationAddress = configuration.getManagementNotificationAddress();
       managedServer = new MessagingServerControl(postOffice,
                                                  storageManager,
-                                                 configuration,                                                
+                                                 configuration,
                                                  queueSettingsRepository,
                                                  resourceManager,
                                                  remotingService,
@@ -235,7 +235,7 @@ public class ManagementServiceImpl implements ManagementService
    {
       ObjectName objectName = getAddressObjectName(address);
       AddressControl addressControl = new AddressControl(address, postOffice, securityRepository);
-      
+
       registerInJMX(objectName, new ReplicationAwareAddressControlWrapper(objectName, addressControl));
       registerInRegistry(objectName, addressControl);
       if (log.isDebugEnabled())
@@ -262,11 +262,7 @@ public class ManagementServiceImpl implements ManagementService
                                                   messageCounterManager.getMaxDayCount());
       messageCounterManager.registerMessageCounter(queue.getName().toString(), counter);
       ObjectName objectName = getQueueObjectName(address, queue.getName());
-      QueueControl queueControl = new QueueControl(queue,
-                                                        storageManager,
-                                                        postOffice,
-                                                        queueSettingsRepository,
-                                                        counter);      
+      QueueControl queueControl = new QueueControl(queue, storageManager, postOffice, queueSettingsRepository, counter);
       registerInJMX(objectName, new ReplicationAwareQueueControlWrapper(objectName, queueControl));
       registerInRegistry(objectName, queueControl);
 
@@ -414,7 +410,6 @@ public class ManagementServiceImpl implements ManagementService
       return registry.get(objectName);
    }
 
-
    public void registerInJMX(final ObjectName objectName, final Object managedResource) throws Exception
    {
       if (!jmxManagementEnabled)
@@ -424,10 +419,10 @@ public class ManagementServiceImpl implements ManagementService
       synchronized (mbeanServer)
       {
          unregisterFromJMX(objectName);
-         mbeanServer.registerMBean(managedResource, objectName);         
+         mbeanServer.registerMBean(managedResource, objectName);
       }
    }
-   
+
    public void registerInRegistry(final ObjectName objectName, final Object managedResource)
    {
       unregisterFromRegistry(objectName);
@@ -468,9 +463,9 @@ public class ManagementServiceImpl implements ManagementService
       registry.remove(objectName);
    }
 
-   // the JMX unregistration is synchronized to avoid race conditions if 2 clients tries to 
+   // the JMX unregistration is synchronized to avoid race conditions if 2 clients tries to
    // unregister the same resource (e.g. a queue) at the same time since unregisterMBean()
-   // will throw an exception if the MBean has already been unregistered 
+   // will throw an exception if the MBean has already been unregistered
    private void unregisterFromJMX(final ObjectName objectName) throws Exception
    {
       if (!jmxManagementEnabled)
@@ -482,15 +477,15 @@ public class ManagementServiceImpl implements ManagementService
          if (mbeanServer.isRegistered(objectName))
          {
             mbeanServer.unregisterMBean(objectName);
-         }         
+         }
       }
    }
 
    public void sendNotification(final NotificationType type, final String message) throws Exception
    {
-     sendNotification(type, message, null);
+      sendNotification(type, message, null);
    }
-   
+
    public void sendNotification(final NotificationType type, final String message, TypedProperties props) throws Exception
    {
       if (managedServer != null)
@@ -498,27 +493,28 @@ public class ManagementServiceImpl implements ManagementService
          ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
          notificationMessage.setDestination(managementNotificationAddress);
          notificationMessage.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
-         
+
          TypedProperties notifProps;
          if (props != null)
          {
             notifProps = props;
-         } else
+         }
+         else
          {
             notifProps = new TypedProperties();
          }
-         
+
          notifProps.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE, new SimpleString(type.toString()));
-         notifProps.putStringProperty(ManagementHelper.HDR_NOTIFICATION_MESSAGE, new SimpleString(message)); 
-         notifProps.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis()); 
-         
+         notifProps.putStringProperty(ManagementHelper.HDR_NOTIFICATION_MESSAGE, new SimpleString(message));
+         notifProps.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
+
          notificationMessage.putTypedProperties(notifProps);
 
          List<MessageReference> refs = postOffice.route(notificationMessage);
-         
+
          for (MessageReference ref : refs)
          {
-            ref.getQueue().addLast(ref);
+            ref.getQueue().add(ref);
          }
       }
    }

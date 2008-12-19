@@ -59,8 +59,6 @@ public interface JMSQueueControlMBean extends DestinationControlMBean
 
    boolean isDurable();
 
-   long getSizeBytes();
-
    int getMessageCount();
 
    long getScheduledCount();

@@ -349,7 +349,6 @@ public class ServerConsumerImpl implements ServerConsumer
                                             closed);
          }
 
-
          if (autoCommitAcks)
          {
             doAck(ref);
@@ -528,17 +527,23 @@ public class ServerConsumerImpl implements ServerConsumer
             return HandleStatus.NO_MATCH;
          }
 
-         if (!browseOnly && !preAcknowledge)
+         if (!browseOnly)
          {
-            deliveringRefs.add(ref);
-         }
-         if(!browseOnly)
-         {
+            if (!preAcknowledge)
+            {
+               deliveringRefs.add(ref);
+            }
+            
             ref.getQueue().referenceHandled();
          }
+
+         
+         
          // TODO: get rid of the instanceof by something like message.isLargeMessage()
          if (message instanceof ServerLargeMessage)
-         {
+         {            
+            //FIXME - please put the replication logic in the sendLargeMessage method
+            
             DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id,
                                                                                                message.getMessageID()));
 
@@ -562,11 +567,11 @@ public class ServerConsumerImpl implements ServerConsumer
          else
          {
             sendStandardMessage(ref, message);
+            
             if (preAcknowledge)
             {
                doAck(ref);
             }
-
          }
          return HandleStatus.HANDLED;
       }
@@ -742,7 +747,7 @@ public class ServerConsumerImpl implements ServerConsumer
                {
                   // Is there anything we could do here besides logging?
                   // The message was already sent, and this shouldn't happen
-                  log.warn("Error while ACKing reference " + ref, e);
+                  log.error("Error while ACKing reference " + ref, e);
                }
             }
 

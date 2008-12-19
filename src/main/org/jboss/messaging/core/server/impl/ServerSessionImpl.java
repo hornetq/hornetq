@@ -37,6 +37,7 @@ import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
@@ -387,7 +388,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
             for (MessageReference ref : refs)
             {
-               theQueue.addLast(ref);
+               theQueue.add(ref);
             }
          }
          else
@@ -463,8 +464,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       boolean durable = packet.isDurable();
 
-      boolean fanout = packet.isFanout();
-
       Packet response = null;
 
       try
@@ -489,7 +488,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             filter = new FilterImpl(filterString);
          }
 
-         binding = postOffice.addBinding(address, queueName, filter, durable, temporary, fanout);
+         binding = postOffice.addBinding(address, queueName, filter, durable, temporary, false);
 
          if (temporary)
          {
@@ -541,7 +540,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void handleCreateQueue(final SessionCreateQueueMessage packet)
    {
       final SendLock lock;
-      
+
       if (channel.getReplicatingChannel() != null)
       {
          lock = postOffice.getAddressLock(packet.getAddress());
@@ -772,9 +771,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          if (exists)
          {
-            List<Binding> bindings = postOffice.getBindingsForAddress(address);
+            Bindings bindings = postOffice.getBindingsForAddress(address);
 
-            for (Binding binding : bindings)
+            for (Binding binding : bindings.getBindings())
             {
                queueNames.add(binding.getQueue().getName());
             }
@@ -1655,10 +1654,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                                                           "Cannot prepare transaction, it is suspended " + xid);
                }
                else
-               {                  
+               {
                   theTx.prepare();
 
-                  response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);                  
+                  response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
                }
             }
          }
@@ -2164,7 +2163,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          packet.setMessageID(id);
       }
 
-      
       DelayedResult result = channel.replicatePacket(packet);
 
       // With a send we must make sure it is replicated to backup before being processed on live
@@ -2184,9 +2182,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             }
          });
       }
-      
+
    }
-   
+
    public void handleSend(final SessionSendMessage packet)
    {
       // With a send we must make sure it is replicated to backup before being processed on live
@@ -2242,7 +2240,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          });
       }
    }
-   
+
    public void handleSendContinuations(final SessionSendContinuationMessage packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
@@ -2265,7 +2263,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          });
       }
    }
-   
+
    public void handleReplicatedDelivery(final SessionReplicateDeliveryMessage packet)
    {
       ServerConsumer consumer = consumers.get(packet.getConsumerID());
@@ -2365,7 +2363,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          log.error("Failed to close connection " + this);
       }
-      
+
       return true;
    }
 
@@ -2466,7 +2464,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          channel.send(response);
       }
    }
-   
+
    /**
     * @param packet
     */
@@ -2476,12 +2474,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       try
       {
-         
+
          if (largeMessage == null)
          {
             throw new MessagingException(MessagingException.ILLEGAL_STATE, "large-message not initialized on server");
          }
-         
+
          largeMessage.addBytes(packet.getBody());
 
          if (!packet.isContinues())
@@ -2525,13 +2523,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-
    private void handleManagementMessage(final ServerMessage message) throws Exception
    {
       doSecurity(message);
 
       managementService.handleMessage(message);
-      
+
       SimpleString replyTo = (SimpleString)message.getProperty(ClientMessageImpl.REPLYTO_HEADER_NAME);
       if (replyTo != null)
       {
@@ -2539,7 +2536,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          send(message);
       }
    }
-
 
    private ServerLargeMessage createLargeMessageStorage(final long messageID, final byte[] header) throws Exception
    {
@@ -2609,26 +2605,26 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       doSecurity(msg);
 
       Long scheduledDeliveryTime = (Long)msg.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
-      
+
       SimpleString duplicateID = (SimpleString)msg.getProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
-      
+
       DuplicateIDCache cache = null;
-      
+
       if (duplicateID != null)
       {
          cache = postOffice.getDuplicateIDCache(msg.getDestination());
-         
+
          if (cache.contains(duplicateID))
          {
             log.warn("Duplicate message detected - message will not be routed");
-            
+
             return;
          }
       }
-      
+
       Transaction theTx = null;
       boolean startedTx = false;
-      
+
       if (!autoCommitSends)
       {
          theTx = tx;
@@ -2636,39 +2632,39 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       else if (cache != null)
       {
          theTx = new TransactionImpl(storageManager, postOffice);
-         
+
          startedTx = true;
       }
-               
+
       if (theTx == null)
       {
          if (!pager.page(msg))
          {
             List<MessageReference> refs = postOffice.route(msg);
-                        
+
             if (msg.getDurableRefCount() != 0)
-            {               
-               storageManager.storeMessage(msg);               
+            {
+               storageManager.storeMessage(msg);
             }
 
             if (scheduledDeliveryTime != null)
             {
                postOffice.scheduleReferences(scheduledDeliveryTime, refs);
             }
-            
+
             postOffice.deliver(refs);
          }
       }
       else
       {
          theTx.addMessage(msg);
-         
-         //Add to cache in same transaction
+
+         // Add to cache in same transaction
          if (cache != null)
          {
             cache.addToCache(duplicateID, theTx);
          }
-         
+
          if (startedTx)
          {
             theTx.commit();

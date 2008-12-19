@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.management.impl;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import javax.management.openmbean.TabularData;
@@ -31,6 +30,7 @@ import javax.management.openmbean.TabularData;
 import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.RoleInfo;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
@@ -82,11 +82,11 @@ public class AddressControl implements AddressControlMBean
    {
       try
       {
-         List<Binding> bindings = postOffice.getBindingsForAddress(address);
-         String[] queueNames = new String[bindings.size()];
-         for (int i = 0; i < bindings.size(); i++)
+         Bindings bindings = postOffice.getBindingsForAddress(address);
+         String[] queueNames = new String[bindings.getBindings().size()];
+         for (int i = 0; i < bindings.getBindings().size(); i++)
          {
-            Binding binding = bindings.get(i);
+            Binding binding = bindings.getBindings().get(i);
             queueNames[i] = binding.getQueue().getName().toString();
          }
          return queueNames;

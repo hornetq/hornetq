@@ -256,7 +256,7 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
    {
       {
          ClientSession session = factory.createSession(false, false, false);
-         session.createQueue(adr, adr, null, true, false, false);
+         session.createQueue(adr, adr, null, true, false);
          session.close();
       }
    }

@@ -43,7 +43,6 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.server.MessagingService;
@@ -101,7 +100,7 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
       MessageFlowConfiguration ofconfig1 = new MessageFlowConfiguration("flow1",
                                                                         address1.toString(),
                                                                         "car='saab'",
-                                                                        true,
+                                                                        false,
                                                                         1,
                                                                         -1,
                                                                         null,
@@ -114,7 +113,7 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
       MessageFlowConfiguration ofconfig2 = new MessageFlowConfiguration("flow1",
                                                                         address1.toString(),
                                                                         "car='bmw'",
-                                                                        true,
+                                                                        false,
                                                                         1,
                                                                         -1,
                                                                         null,
@@ -140,8 +139,8 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
       ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
       ClientSession session1 = csf1.createSession(false, true, true);
 
-      session0.createQueue(address1, address1, null, false, false, false);
-      session1.createQueue(address1, address1, null, false, false, false);
+      session0.createQueue(address1, address1, null, false, false);
+      session1.createQueue(address1, address1, null, false, false);
       ClientProducer prod0 = session0.createProducer(address1);
 
       ClientConsumer cons1 = session1.createConsumer(address1);
@@ -206,7 +205,7 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
       MessageFlowConfiguration ofconfig1 = new MessageFlowConfiguration(null,
                                                                         address1.toString(),
                                                                         null,
-                                                                        true,
+                                                                        false,
                                                                         1,
                                                                         -1,
                                                                         null,
@@ -230,8 +229,8 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
       ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
       ClientSession session1 = csf1.createSession(false, true, true);
 
-      session0.createQueue(address1, address1, null, false, false, false);
-      session1.createQueue(address1, address1, null, false, false, false);
+      session0.createQueue(address1, address1, null, false, false);
+      session1.createQueue(address1, address1, null, false, false);
       ClientProducer prod0 = session0.createProducer(address1);
 
       ClientConsumer cons1 = session1.createConsumer(address1);
@@ -285,7 +284,7 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
       MessageFlowConfiguration ofconfig1 = new MessageFlowConfiguration("blah",
                                                                         null,
                                                                         null,
-                                                                        true,
+                                                                        false,
                                                                         1,
                                                                         -1,
                                                                         null,
@@ -309,8 +308,8 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
       ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
       ClientSession session1 = csf1.createSession(false, true, true);
 
-      session0.createQueue(address1, address1, null, false, false, false);
-      session1.createQueue(address1, address1, null, false, false, false);
+      session0.createQueue(address1, address1, null, false, false);
+      session1.createQueue(address1, address1, null, false, false);
       ClientProducer prod0 = session0.createProducer(address1);
 
       ClientConsumer cons1 = session1.createConsumer(address1);

@@ -123,7 +123,7 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
       MessageFlowConfiguration ofconfig1 = new MessageFlowConfiguration(flowName,
                                                                         address1.toString(),
                                                                         null,
-                                                                        true,
+                                                                        false,
                                                                         1,
                                                                         -1,
                                                                         null,
@@ -147,8 +147,8 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
       ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
       ClientSession session1 = csf1.createSession(false, true, true);
 
-      session0.createQueue(address1, address1, null, false, false, false);
-      session1.createQueue(address1, address1, null, false, false, false);
+      session0.createQueue(address1, address1, null, false, false);
+      session1.createQueue(address1, address1, null, false, false);
       ClientProducer prod0 = session0.createProducer(address1);
 
       ClientConsumer cons1 = session1.createConsumer(address1);
@@ -254,7 +254,7 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
       MessageFlowConfiguration ofconfig1 = new MessageFlowConfiguration(flowName,
                                                                         address1.toString(),
                                                                         null,
-                                                                        true,
+                                                                        false,
                                                                         1,
                                                                         -1,
                                                                         null,
@@ -280,8 +280,8 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
       ClientSessionFactory csf2 = new ClientSessionFactoryImpl(server2tc);
       ClientSession session2 = csf2.createSession(false, true, true);
 
-      session0.createQueue(address1, address1, null, false, false, false);
-      session2.createQueue(address1, address1, null, false, false, false);
+      session0.createQueue(address1, address1, null, false, false);
+      session2.createQueue(address1, address1, null, false, false);
       ClientProducer prod0 = session0.createProducer(address1);
 
       ClientConsumer cons1 = session2.createConsumer(address1);
@@ -389,7 +389,7 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
       MessageFlowConfiguration ofconfig1 = new MessageFlowConfiguration(flowName,
                                                                         address1.toString(),
                                                                         null,
-                                                                        true,
+                                                                        false,
                                                                         1,
                                                                         -1,
                                                                         null,
@@ -415,8 +415,8 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
       ClientSessionFactory csf2 = new ClientSessionFactoryImpl(server2tc);
       ClientSession session2 = csf2.createSession(false, true, true);
 
-      session0.createQueue(address1, address1, null, false, false, false);
-      session2.createQueue(address1, address1, null, false, false, false);
+      session0.createQueue(address1, address1, null, false, false);
+      session2.createQueue(address1, address1, null, false, false);
       ClientProducer prod0 = session0.createProducer(address1);
 
       ClientConsumer cons1 = session2.createConsumer(address1);
@@ -510,7 +510,7 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
       MessageFlowConfiguration ofconfig1 = new MessageFlowConfiguration(flowName,
                                                                         address1.toString(),
                                                                         null,
-                                                                        true,
+                                                                        false,
                                                                         1,
                                                                         -1,
                                                                         null,
@@ -534,8 +534,8 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
       ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
       ClientSession session1 = csf1.createSession(false, true, true);
 
-      session0.createQueue(address1, address1, null, false, false, false);
-      session1.createQueue(address1, address1, null, false, false, false);
+      session0.createQueue(address1, address1, null, false, false);
+      session1.createQueue(address1, address1, null, false, false);
       ClientProducer prod0 = session0.createProducer(address1);
 
       ClientConsumer cons1 = session1.createConsumer(address1);
@@ -620,7 +620,7 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
       MessageFlowConfiguration ofconfig1 = new MessageFlowConfiguration(flowName,
                                                                         address1.toString(),
                                                                         null,
-                                                                        true,
+                                                                        false,
                                                                         1,
                                                                         -1,
                                                                         null,
@@ -644,8 +644,8 @@ public class MessageFlowReconnectTest extends MessageFlowTestBase
       ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
       ClientSession session1 = csf1.createSession(false, true, true);
 
-      session0.createQueue(address1, address1, null, false, false, false);
-      session1.createQueue(address1, address1, null, false, false, false);
+      session0.createQueue(address1, address1, null, false, false);
+      session1.createQueue(address1, address1, null, false, false);
       ClientProducer prod0 = session0.createProducer(address1);
 
       ClientConsumer cons1 = session1.createConsumer(address1);

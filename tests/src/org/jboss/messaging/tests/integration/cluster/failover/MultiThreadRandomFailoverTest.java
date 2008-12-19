@@ -259,7 +259,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
          sessConsume.start();
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false, true);
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -341,7 +341,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
          ClientSession sessConsume = sf.createSession(false, true, true);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false, true);
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -432,7 +432,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
          sessConsume.start();
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false, true);
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -537,7 +537,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
          ClientSession sessConsume = sf.createSession(false, false, false);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false, true);
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -679,7 +679,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
          sessConsume.start();
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false, true);
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -735,7 +735,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
          ClientSession sessConsume = sf.createSession(false, true, true);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false, true);
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -798,7 +798,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
          sessConsume.start();
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false, true);
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -872,7 +872,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
 
          ClientSession sessConsume = sf.createSession(false, false, false);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false, true);
+         sessConsume.createQueue(ADDRESS, subName, null, false, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -936,7 +936,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
    {
       ClientSession sessCreate = sf.createSession(false, true, true);
 
-      sessCreate.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false, true);
+      sessCreate.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false);
 
       ClientSession sess = sf.createSession(false, true, true);
 
@@ -972,7 +972,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
    {
       ClientSession sessCreate = sf.createSession(false, true, true);
 
-      sessCreate.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false, true);
+      sessCreate.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false);
 
       ClientSession sess = sf.createSession(false, true, true);
 
@@ -1008,7 +1008,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
    {
       ClientSession s = sf.createSession(false, false, false);
 
-      s.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false, true);
+      s.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false);
 
       final int numConsumers = 100;
 
@@ -1160,7 +1160,7 @@ public class MultiThreadRandomFailoverTest extends TestCase
    {
       ClientSession sessCreate = sf.createSession(false, true, true);
 
-      sessCreate.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false, true);
+      sessCreate.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false);
 
       ClientSession sess = sf.createSession(false, true, true);
 

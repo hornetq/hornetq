@@ -24,10 +24,10 @@ package org.jboss.messaging.tests.unit.core.server.impl;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.server.Consumer;
-import org.jboss.messaging.core.server.DistributionPolicy;
+import org.jboss.messaging.core.server.Distributor;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.impl.RoundRobinDistributionPolicy;
+import org.jboss.messaging.core.server.impl.RoundRobinDistributor;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -44,7 +44,7 @@ public class RoundRobinDistributionPolicyTest extends UnitTestCase
    {
       MessageReference messageReference = EasyMock.createStrictMock(MessageReference.class);
       
-      DistributionPolicy dp = new RoundRobinDistributionPolicy();
+      Distributor dp = new RoundRobinDistributor();
 
       EasyMock.replay(messageReference);
       HandleStatus status = dp.distribute(messageReference);
@@ -59,7 +59,7 @@ public class RoundRobinDistributionPolicyTest extends UnitTestCase
       Consumer c2 = EasyMock.createStrictMock(Consumer.class);
       Consumer c3 = EasyMock.createStrictMock(Consumer.class);
       
-      DistributionPolicy dp = new RoundRobinDistributionPolicy();
+      Distributor dp = new RoundRobinDistributor();
       dp.addConsumer(c1);
       dp.addConsumer(c2);
       dp.addConsumer(c3);
@@ -89,7 +89,7 @@ public class RoundRobinDistributionPolicyTest extends UnitTestCase
       Consumer c2 = EasyMock.createStrictMock(Consumer.class);
       Consumer c3 = EasyMock.createStrictMock(Consumer.class);
 
-      DistributionPolicy dp = new RoundRobinDistributionPolicy();
+      Distributor dp = new RoundRobinDistributor();
       dp.addConsumer(c1);
       dp.addConsumer(c2);
       dp.addConsumer(c3);
@@ -109,7 +109,7 @@ public class RoundRobinDistributionPolicyTest extends UnitTestCase
       Consumer c2 = EasyMock.createStrictMock(Consumer.class);
       Consumer c3 = EasyMock.createStrictMock(Consumer.class);
 
-      DistributionPolicy dp = new RoundRobinDistributionPolicy();
+      Distributor dp = new RoundRobinDistributor();
       dp.addConsumer(c1);
       dp.addConsumer(c2);
       dp.addConsumer(c3);

@@ -100,8 +100,8 @@ public class QueueControlTest extends TestCase
       SimpleString otherAddress = randomSimpleString();
       SimpleString otherQueue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true, true);
-      session.createQueue(otherAddress, otherQueue, null, false, true, true);
+      session.createQueue(address, queue, null, false, true);
+      session.createQueue(otherAddress, otherQueue, null, false, true);
       ClientProducer producer = session.createProducer(address);
       session.start();
 
@@ -164,8 +164,8 @@ public class QueueControlTest extends TestCase
       SimpleString otherAddress = randomSimpleString();
       SimpleString otherQueue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true, true);
-      session.createQueue(otherAddress, otherQueue, null, false, true, true);
+      session.createQueue(address, queue, null, false, true);
+      session.createQueue(otherAddress, otherQueue, null, false, true);
       ClientProducer producer = session.createProducer(address);
       session.start();
 
@@ -224,7 +224,7 @@ public class QueueControlTest extends TestCase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true, true);
+      session.createQueue(address, queue, null, false, true);
       ClientProducer producer = session.createProducer(address);
       session.start();
 
@@ -272,7 +272,7 @@ public class QueueControlTest extends TestCase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true, true);
+      session.createQueue(address, queue, null, false, true);
       ClientProducer producer = session.createProducer(address);
       session.start();
 
@@ -324,7 +324,7 @@ public class QueueControlTest extends TestCase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true, true);
+      session.createQueue(address, queue, null, false, true);
       ClientProducer producer = session.createProducer(address);
       session.start();
 
@@ -361,7 +361,7 @@ public class QueueControlTest extends TestCase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true, true);
+      session.createQueue(address, queue, null, false, true);
       ClientProducer producer = session.createProducer(address);
       session.start();
 

@@ -39,9 +39,9 @@ public interface Binding
    
    Queue getQueue();
    
-   boolean isFanout();
+   int getWeight();
    
-   long getRoutings();
+   void setWeight(int weight);
    
-   void incrementRoutings();
+   boolean isExclusive();
 }

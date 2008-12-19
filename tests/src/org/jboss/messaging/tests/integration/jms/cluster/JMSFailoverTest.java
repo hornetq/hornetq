@@ -148,7 +148,7 @@ public class JMSFailoverTest extends TestCase
 
       SimpleString jmsQueueName = new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + "myqueue");
 
-      coreSession.createQueue(jmsQueueName, jmsQueueName, null, false, false, true);
+      coreSession.createQueue(jmsQueueName, jmsQueueName, null, false, false);
 
       Queue queue = sess.createQueue("myqueue");
 
@@ -256,7 +256,7 @@ public class JMSFailoverTest extends TestCase
 
       SimpleString jmsQueueName = new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + "myqueue");
 
-      coreSessionLive.createQueue(jmsQueueName, jmsQueueName, null, false, false, true);
+      coreSessionLive.createQueue(jmsQueueName, jmsQueueName, null, false, false);
 
       Queue queue = sessLive.createQueue("myqueue");
 

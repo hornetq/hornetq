@@ -143,17 +143,17 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final boolean autoGroup;
 
    private final int ackBatchSize;
-   
+
    private final int consumerWindowSize;
-   
+
    private final int consumerMaxRate;
-   
+
    private final int producerMaxRate;
-   
+
    private final boolean blockOnNonPersistentSend;
-   
+
    private final boolean blockOnPersistentSend;
-   
+
    private final int minLargeMessageSize;
 
    private final Channel channel;
@@ -178,11 +178,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final boolean blockOnAcknowledge,
                             final boolean autoGroup,
                             final int ackBatchSize,
-                            final int consumerWindowSize,                            
-                            final int consumerMaxRate,                            
-                            final int producerMaxRate,                            
-                            final boolean blockOnNonPersistentSend,                            
-                            final boolean blockOnPersistentSend,                            
+                            final int consumerWindowSize,
+                            final int consumerMaxRate,
+                            final int producerMaxRate,
+                            final boolean blockOnNonPersistentSend,
+                            final boolean blockOnPersistentSend,
                             final int minLargeMessageSize,
                             final RemotingConnection remotingConnection,
                             final int version,
@@ -213,17 +213,17 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       this.version = version;
 
       this.ackBatchSize = ackBatchSize;
-      
+
       this.consumerWindowSize = consumerWindowSize;
-      
+
       this.consumerMaxRate = consumerMaxRate;
-      
+
       this.producerMaxRate = producerMaxRate;
-      
+
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
-      
+
       this.blockOnPersistentSend = blockOnPersistentSend;
-      
+
       this.minLargeMessageSize = minLargeMessageSize;
    }
 
@@ -234,17 +234,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                            final SimpleString queueName,
                            final SimpleString filterString,
                            final boolean durable,
-                           final boolean temp,
-                           final boolean fanout) throws MessagingException
+                           final boolean temp) throws MessagingException
    {
       checkClosed();
 
-      SessionCreateQueueMessage request = new SessionCreateQueueMessage(address,
-                                                                        queueName,
-                                                                        filterString,
-                                                                        durable,
-                                                                        temp,
-                                                                        fanout);
+      SessionCreateQueueMessage request = new SessionCreateQueueMessage(address, queueName, filterString, durable, temp);
 
       channel.sendBlocking(request);
    }
@@ -307,22 +301,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkClosed();
 
-      return createConsumer(queueName,
-                            filterString,
-                            consumerWindowSize,
-                            consumerMaxRate,
-                            false);
+      return createConsumer(queueName, filterString, consumerWindowSize, consumerMaxRate, false);
    }
 
    public ClientConsumer createConsumer(final SimpleString queueName,
                                         final SimpleString filterString,
                                         final boolean browseOnly) throws MessagingException
    {
-      return createConsumer(queueName,
-                            filterString,
-                            consumerWindowSize,
-                            consumerMaxRate,
-                            browseOnly);
+      return createConsumer(queueName, filterString, consumerWindowSize, consumerMaxRate, browseOnly);
    }
 
    /*
@@ -355,12 +341,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkClosed();
 
-      return createFileConsumer(directory,
-                                queueName,
-                                filterString,
-                                consumerWindowSize,
-                                consumerMaxRate,
-                                false);
+      return createFileConsumer(directory, queueName, filterString, consumerWindowSize, consumerMaxRate, false);
    }
 
    public ClientConsumer createFileConsumer(final File directory,
@@ -368,12 +349,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                             final SimpleString filterString,
                                             final boolean browseOnly) throws MessagingException
    {
-      return createFileConsumer(directory,
-                                queueName,
-                                filterString,
-                                consumerWindowSize,
-                                consumerMaxRate,
-                                browseOnly);
+      return createFileConsumer(directory, queueName, filterString, consumerWindowSize, consumerMaxRate, browseOnly);
    }
 
    /*
@@ -403,10 +379,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public ClientProducer createProducer(final SimpleString address, final int maxRate) throws MessagingException
    {
-      return createProducer(address,
-                            maxRate,
-                            blockOnNonPersistentSend,
-                            blockOnPersistentSend);
+      return createProducer(address, maxRate, blockOnNonPersistentSend, blockOnPersistentSend);
    }
 
    public ClientProducer createProducer(final SimpleString address,
@@ -641,7 +614,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          consumer.handleMessage(message.getClientMessage());
       }
    }
-   
+
    public void handleReceiveLargeMessage(final long consumerID, final SessionReceiveMessage message) throws Exception
    {
       ClientConsumerInternal consumer = consumers.get(consumerID);
@@ -649,7 +622,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       if (consumer != null)
       {
          consumer.handleLargeMessage(message);
-         
+
       }
    }
 
@@ -669,7 +642,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          return;
       }
-      
+
       try
       {
          closeChildren();
@@ -703,7 +676,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          return;
       }
-      
+
       // We lock the channel to prevent any packets to be added to the resend
       // cache during the failover process
       channel.lock();
@@ -883,7 +856,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
 
          log.error(response.getMessage() + " code " + response.getResponseCode());
-         
+
          if (response.isError())
          {
             throw new XAException(response.getResponseCode());
@@ -1027,7 +1000,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          log.error("Failed to cleanup session");
       }
-      
+
       return true;
    }
 

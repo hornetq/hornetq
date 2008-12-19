@@ -119,9 +119,9 @@ public class MessageFlowControl implements MessageFlowControlMBean
       return configuration.getTransformerClassName();
    }
 
-   public boolean isFanout()
+   public boolean isExclusive()
    {
-      return configuration.isFanout();
+      return configuration.isExclusive();
    }
 
    public boolean isStarted()

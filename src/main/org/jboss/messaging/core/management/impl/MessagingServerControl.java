@@ -103,7 +103,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    private boolean messageCounterEnabled;
 
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
 
    public MessagingServerControl(final PostOffice postOffice,
@@ -164,7 +164,6 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
    // MessagingServerControlMBean implementation --------------------
 
-
    public boolean isStarted()
    {
       return server.isStarted();
@@ -184,7 +183,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    {
       return configuration.getBackupConnectorName();
    }
-   
+
    public String getBindingsDirectory()
    {
       return configuration.getBindingsDirectory();
@@ -290,19 +289,18 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return postOffice.addDestination(new SimpleString(address), false);
    }
 
-   //TODO - do we really need this method?
+   // TODO - do we really need this method?
    public void createQueue(final String address, final String name) throws Exception
    {
       SimpleString sAddress = new SimpleString(address);
       SimpleString sName = new SimpleString(name);
       if (postOffice.getBinding(sAddress) == null)
       {
-         postOffice.addBinding(sAddress, sName, null, true, false, true);
+         postOffice.addBinding(sAddress, sName, null, true, false, false);
       }
    }
 
-   public void createQueue(final String address, final String name, final String filterStr, final boolean durable,
-                           final boolean fanout) throws Exception
+   public void createQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
    {
       SimpleString sAddress = new SimpleString(address);
       SimpleString sName = new SimpleString(name);
@@ -314,7 +312,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       }
       if (postOffice.getBinding(sAddress) == null)
       {
-         postOffice.addBinding(sAddress, sName, filter, durable, false, fanout);
+         postOffice.addBinding(sAddress, sName, filter, durable, false, false);
       }
    }
 
@@ -418,11 +416,11 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       {
          Date creation = new Date(entry.getValue());
          Xid xid = entry.getKey();
-         s[i++] = DATE_FORMAT.format(creation) + " base64: " + XidImpl.toBase64String(xid) + " "+ xid.toString();
+         s[i++] = DATE_FORMAT.format(creation) + " base64: " + XidImpl.toBase64String(xid) + " " + xid.toString();
       }
       return s;
    }
-   
+
    public boolean commitPreparedTransaction(String transactionAsBase64) throws Exception
    {
       List<Xid> xids = resourceManager.getPreparedTransactions();
@@ -438,7 +436,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       }
       return false;
    }
-   
+
    public boolean rollbackPreparedTransaction(String transactionAsBase64) throws Exception
    {
       List<Xid> xids = resourceManager.getPreparedTransactions();
@@ -447,16 +445,19 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       {
          if (XidImpl.toBase64String(xid).equals(transactionAsBase64))
          {
-            Transaction transaction = resourceManager.removeTransaction(xid);            
+            Transaction transaction = resourceManager.removeTransaction(xid);
             List<MessageReference> rolledBack = transaction.rollback(queueSettingsRepository);
-            
-            ServerSessionImpl.moveReferencesBackToHeadOfQueues(rolledBack, postOffice, storageManager, queueSettingsRepository);
+
+            ServerSessionImpl.moveReferencesBackToHeadOfQueues(rolledBack,
+                                                               postOffice,
+                                                               storageManager,
+                                                               queueSettingsRepository);
             return true;
          }
       }
       return false;
    }
-   
+
    public String[] listRemoteAddresses()
    {
       Set<RemotingConnection> connections = remotingService.getConnections();
@@ -493,14 +494,15 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
          String remoteAddress = connection.getRemoteAddress();
          if (remoteAddress.contains(ipAddress))
          {
-            connection.fail(new MessagingException(MessagingException.INTERNAL_ERROR, "connections for " + ipAddress + " closed by management"));
+            connection.fail(new MessagingException(MessagingException.INTERNAL_ERROR, "connections for " + ipAddress +
+                                                                                      " closed by management"));
             closed = true;
          }
       }
 
       return closed;
    }
-   
+
    public String[] listConnectionIDs()
    {
       Set<RemotingConnection> connections = remotingService.getConnections();
@@ -512,7 +514,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       }
       return connectionIDs;
    }
-   
+
    public String[] listSessions(final String connectionID)
    {
       List<ServerSession> sessions = server.getSessions(connectionID);
@@ -530,7 +532,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       Collection<TransportConfiguration> connectorConfigurations = configuration.getConnectorConfigurations().values();
       return TransportConfigurationInfo.toTabularData(connectorConfigurations);
    }
-   
+
    // NotificationEmitter implementation ----------------------------
 
    public void removeNotificationListener(final NotificationListener listener,

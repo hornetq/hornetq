@@ -81,7 +81,7 @@ public class XaTimeoutTest extends UnitTestCase
       //then we create a client as normal
       sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       clientSession = sessionFactory.createSession(true, false, false);
-      clientSession.createQueue(atestq, atestq, null, true, true, true);
+      clientSession.createQueue(atestq, atestq, null, true, true);
       clientProducer = clientSession.createProducer(atestq);
       clientConsumer = clientSession.createConsumer(atestq);
    }

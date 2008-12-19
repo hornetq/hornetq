@@ -140,7 +140,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       // then we create a client as normal
       ClientSessionFactory sessionFactory = createInVMFactory(); 
       ClientSession session = sessionFactory.createSession(false, true, false);
-      session.createQueue(atestq, atestq, null, true, true, true);
+      session.createQueue(atestq, atestq, null, true, true);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage message = createMessage(session, "m1");
       long time = System.currentTimeMillis();
@@ -176,8 +176,8 @@ public class ScheduledMessageTest extends ServiceTestBase
       // then we create a client as normal
       ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
-      session.createQueue(atestq, atestq, null, true, true, true);
-      session.createQueue(atestq, atestq2, null, true, true, true);
+      session.createQueue(atestq, atestq, null, true, true);
+      session.createQueue(atestq, atestq2, null, true, true);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage message = createMessage(session, "m1");
       producer.send(message);
@@ -225,8 +225,8 @@ public class ScheduledMessageTest extends ServiceTestBase
       // then we create a client as normal
       ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
-      session.createQueue(atestq, atestq, null, true, true, true);
-      session.createQueue(atestq, atestq2, null, true, true, true);
+      session.createQueue(atestq, atestq, null, true, true);
+      session.createQueue(atestq, atestq2, null, true, true);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage message = createMessage(session, "m1");
       producer.send(message);
@@ -280,7 +280,7 @@ public class ScheduledMessageTest extends ServiceTestBase
        // then we create a client as normal
       ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
-      session.createQueue(atestq, atestq, null, true, true, true);
+      session.createQueue(atestq, atestq, null, true, true);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
                                                           false,
@@ -330,7 +330,7 @@ public class ScheduledMessageTest extends ServiceTestBase
 
       ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
-      session.createQueue(atestq, atestq, null, true, true, true);
+      session.createQueue(atestq, atestq, null, true, true);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage m1 = createMessage(session, "m1");
       ClientMessage m2 = createMessage(session, "m2");
@@ -410,7 +410,7 @@ public class ScheduledMessageTest extends ServiceTestBase
 
       ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
-      session.createQueue(atestq, atestq, null, true, true, true);
+      session.createQueue(atestq, atestq, null, true, true);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage m1 = createMessage(session, "m1");
       ClientMessage m2 = createMessage(session, "m2");
@@ -491,7 +491,7 @@ public class ScheduledMessageTest extends ServiceTestBase
 
       ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
-      session.createQueue(atestq, atestq, null, true, true, true);
+      session.createQueue(atestq, atestq, null, true, true);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage m1 = createMessage(session, "m1");
       ClientMessage m2 = createMessage(session, "m2");
@@ -566,7 +566,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       
       ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(true, false, false);
-      session.createQueue(atestq, atestq, null, true, false, true);
+      session.createQueue(atestq, atestq, null, true, false);
       session.start(xid, XAResource.TMNOFLAGS);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,

@@ -32,8 +32,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  */
 public class FakeBinding implements Binding
-{
-   
+{   
    private SimpleString address;
    private Queue queue;
 
@@ -53,17 +52,19 @@ public class FakeBinding implements Binding
       return queue;
    }
    
-   public boolean isFanout()
-   {
-      return false;
-   }  
-   
-   public long getRoutings()
+   public int getWeight()
    {
       return 0;
    }
 
-   public void incrementRoutings()
-   {
+   public boolean isExclusive()
+   {      
+      return false;
    }
+
+   public void setWeight(int weight)
+   {      
+   }
+
+   
 }

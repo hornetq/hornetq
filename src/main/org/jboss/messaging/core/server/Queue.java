@@ -43,10 +43,8 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public interface Queue
+public interface Queue extends ReferenceHandler
 {     
-   HandleStatus addLast(MessageReference ref);
-   
    HandleStatus addFirst(MessageReference ref);
    
    /**
@@ -86,11 +84,9 @@ public interface Queue
    
    List<MessageReference> getScheduledMessages();
 
-   int getSizeBytes();
+   Distributor getDistributionPolicy();
    
-   DistributionPolicy getDistributionPolicy();
-   
-   void setDistributionPolicy(DistributionPolicy policy); 
+   void setDistributionPolicy(Distributor policy); 
    
    boolean isClustered();
     

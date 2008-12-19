@@ -79,8 +79,7 @@ public class JustReplicationTest extends FailoverTestBase
       
       try
       {
-
-         session.createQueue(ADDRESS, ADDRESS, null, true, false, true);
+         session.createQueue(ADDRESS, ADDRESS, null, true, false);
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
