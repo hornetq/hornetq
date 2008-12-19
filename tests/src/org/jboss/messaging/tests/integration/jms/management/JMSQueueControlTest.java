@@ -44,14 +44,14 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import java.lang.management.ManagementFactory;
-
 import javax.jms.Connection;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.management.MBeanServerInvocationHandler;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
@@ -61,6 +61,7 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
@@ -91,11 +92,13 @@ public class JMSQueueControlTest extends TestCase
 
    private Queue queue;
 
+   private MBeanServer mbeanServer;
+
    // Static --------------------------------------------------------
 
-   private static JMSQueueControlMBean createQueueControl(Queue queue) throws Exception
+   private static JMSQueueControlMBean createQueueControl(Queue queue, MBeanServer mbeanServer) throws Exception
    {
-      JMSQueueControlMBean queueControl = (JMSQueueControlMBean)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+      JMSQueueControlMBean queueControl = (JMSQueueControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
                                                                                                               JMSManagementServiceImpl.getJMSQueueObjectName(queue.getQueueName()),
                                                                                                               JMSQueueControlMBean.class,
                                                                                                               false);
@@ -108,7 +111,7 @@ public class JMSQueueControlTest extends TestCase
 
    public void testGetXXXCount() throws Exception
    {
-      JMSQueueControlMBean queueControl = createQueueControl(queue);
+      JMSQueueControlMBean queueControl = createQueueControl(queue, mbeanServer);
 
       assertEquals(0, queueControl.getMessageCount());
       assertEquals(0, queueControl.getConsumerCount());
@@ -139,7 +142,7 @@ public class JMSQueueControlTest extends TestCase
 
    public void testRemoveMessage() throws Exception
    {
-      JMSQueueControlMBean queueControl = createQueueControl(queue);
+      JMSQueueControlMBean queueControl = createQueueControl(queue, mbeanServer);
       assertEquals(0, queueControl.getMessageCount());
 
       JMSUtil.sendMessages(queue, 2);
@@ -160,7 +163,7 @@ public class JMSQueueControlTest extends TestCase
 
    public void testRemoveAllMessages() throws Exception
    {
-      JMSQueueControlMBean queueControl = createQueueControl(queue);
+      JMSQueueControlMBean queueControl = createQueueControl(queue, mbeanServer);
       assertEquals(0, queueControl.getMessageCount());
 
       JMSUtil.sendMessages(queue, 2);
@@ -177,7 +180,7 @@ public class JMSQueueControlTest extends TestCase
 
    public void testRemoveMatchingMessages() throws Exception
    {
-      JMSQueueControlMBean queueControl = createQueueControl(queue);
+      JMSQueueControlMBean queueControl = createQueueControl(queue, mbeanServer);
       assertEquals(0, queueControl.getMessageCount());
 
       JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
@@ -233,7 +236,7 @@ public class JMSQueueControlTest extends TestCase
 
    public void testChangeMessagePriority() throws Exception
    {
-      JMSQueueControlMBean queueControl = createQueueControl(queue);
+      JMSQueueControlMBean queueControl = createQueueControl(queue, mbeanServer);
 
       JMSUtil.sendMessages(queue, 1);
 
@@ -258,12 +261,12 @@ public class JMSQueueControlTest extends TestCase
 
    public void testExpireMessage() throws Exception
    {
-      JMSQueueControlMBean queueControl = createQueueControl(queue);
+      JMSQueueControlMBean queueControl = createQueueControl(queue, mbeanServer);
       String expiryQueueName = randomString();
       JBossQueue expiryQueue = new JBossQueue(expiryQueueName);
       serverManager.createQueue(expiryQueueName, expiryQueueName);
       queueControl.setExpiryAddress(expiryQueue.getAddress());
-      JMSQueueControlMBean expiryQueueControl = createQueueControl(expiryQueue);
+      JMSQueueControlMBean expiryQueueControl = createQueueControl(expiryQueue, mbeanServer);
 
       JMSUtil.sendMessages(queue, 1);
 
@@ -292,7 +295,7 @@ public class JMSQueueControlTest extends TestCase
       long matchingValue = randomLong();
       long unmatchingValue = matchingValue + 1;
 
-      JMSQueueControlMBean queueControl = createQueueControl(queue);
+      JMSQueueControlMBean queueControl = createQueueControl(queue, mbeanServer);
 
       Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -319,13 +322,13 @@ public class JMSQueueControlTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-
+      mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations()
-          .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      service = MessagingServiceImpl.newNullStorageMessagingService(conf);
+          .add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
+      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
       serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service.getServer());

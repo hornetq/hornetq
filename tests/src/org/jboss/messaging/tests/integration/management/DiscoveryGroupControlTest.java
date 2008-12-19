@@ -25,8 +25,8 @@ package org.jboss.messaging.tests.integration.management;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import java.lang.management.ManagementFactory;
-
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.management.MBeanServerInvocationHandler;
 
 import junit.framework.TestCase;
@@ -59,9 +59,9 @@ public class DiscoveryGroupControlTest extends TestCase
 
    // Static --------------------------------------------------------
 
-   private static DiscoveryGroupControlMBean createControl(String name) throws Exception
+   private static DiscoveryGroupControlMBean createControl(String name, MBeanServer mbeanServer) throws Exception
    {
-      DiscoveryGroupControlMBean control = (DiscoveryGroupControlMBean)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+      DiscoveryGroupControlMBean control = (DiscoveryGroupControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
                                                                                                                ManagementServiceImpl.getDiscoveryGroupObjectName(name),
                                                                                                                DiscoveryGroupControlMBean.class,
                                                                                                                false);
@@ -76,15 +76,16 @@ public class DiscoveryGroupControlTest extends TestCase
    {
       DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(randomString(), "231.7.7.7", 2000, randomPositiveLong());
 
+      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.setClustered(true);
       conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
-      service = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
-      DiscoveryGroupControlMBean discoveryGroupControl = createControl(discoveryGroupConfig.getName());
+      DiscoveryGroupControlMBean discoveryGroupControl = createControl(discoveryGroupConfig.getName(), mbeanServer);
 
       assertEquals(discoveryGroupConfig.getName(), discoveryGroupControl.getName());
       assertEquals(discoveryGroupConfig.getGroupAddress(), discoveryGroupControl.getGroupAddress());
@@ -96,15 +97,16 @@ public class DiscoveryGroupControlTest extends TestCase
    {
       DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(randomString(), "231.7.7.7", 2000, randomPositiveLong());
 
+      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.setClustered(true);
       conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
-      service = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
-      DiscoveryGroupControlMBean discoveryGroupControl = createControl(discoveryGroupConfig.getName());
+      DiscoveryGroupControlMBean discoveryGroupControl = createControl(discoveryGroupConfig.getName(), mbeanServer);
       // started by the service
       assertTrue(discoveryGroupControl.isStarted());
 
@@ -116,15 +118,16 @@ public class DiscoveryGroupControlTest extends TestCase
    {
       DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(randomString(), "231.7.7.7", 2000, randomPositiveLong());
 
+      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.setClustered(true);
       conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
-      service = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
-      DiscoveryGroupControlMBean discoveryGroupControl = createControl(discoveryGroupConfig.getName());
+      DiscoveryGroupControlMBean discoveryGroupControl = createControl(discoveryGroupConfig.getName(), mbeanServer);
       // started by the service
       assertTrue(discoveryGroupControl.isStarted());
 

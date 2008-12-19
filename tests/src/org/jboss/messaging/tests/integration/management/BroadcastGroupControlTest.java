@@ -26,10 +26,11 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.management.MBeanServerInvocationHandler;
 
 import junit.framework.TestCase;
@@ -65,9 +66,9 @@ public class BroadcastGroupControlTest extends TestCase
 
    // Static --------------------------------------------------------
 
-   private static BroadcastGroupControlMBean createControl(String name) throws Exception
+   private static BroadcastGroupControlMBean createControl(String name, MBeanServer mbeanServer) throws Exception
    {
-      BroadcastGroupControlMBean control = (BroadcastGroupControlMBean)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+      BroadcastGroupControlMBean control = (BroadcastGroupControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
                                                                                                                      ManagementServiceImpl.getBroadcastGroupObjectName(name),
                                                                                                                      BroadcastGroupControlMBean.class,
                                                                                                                      false);
@@ -101,16 +102,17 @@ public class BroadcastGroupControlTest extends TestCase
       connectorInfos.add(new Pair<String, String>(connectorConfiguration.getName(), null));
       BroadcastGroupConfiguration broadcastGroupConfig = randomBroadcastGroupConfiguration(connectorInfos);
 
+      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.setClustered(true);
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
-      service = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
-      BroadcastGroupControlMBean broadcastGroupControl = createControl(broadcastGroupConfig.getName());
+      BroadcastGroupControlMBean broadcastGroupControl = createControl(broadcastGroupConfig.getName(), mbeanServer);
 
       assertEquals(broadcastGroupConfig.getName(), broadcastGroupControl.getName());
       assertEquals(broadcastGroupConfig.getGroupAddress(), broadcastGroupControl.getGroupAddress());
@@ -126,16 +128,17 @@ public class BroadcastGroupControlTest extends TestCase
       connectorInfos.add(new Pair<String, String>(connectorConfiguration.getName(), null));
       BroadcastGroupConfiguration broadcastGroupConfig = randomBroadcastGroupConfiguration(connectorInfos);
 
+      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.setClustered(true);
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
-      service = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
-      BroadcastGroupControlMBean broadcastGroupControl = createControl(broadcastGroupConfig.getName());
+      BroadcastGroupControlMBean broadcastGroupControl = createControl(broadcastGroupConfig.getName(), mbeanServer);
 
       // started by the service
       assertTrue(broadcastGroupControl.isStarted());

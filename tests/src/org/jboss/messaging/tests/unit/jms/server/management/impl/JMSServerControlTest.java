@@ -30,11 +30,11 @@ import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import java.lang.management.ManagementFactory;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -365,7 +365,8 @@ public class JMSServerControlTest extends TestCase
    {
       super.setUp();
 
-      mbeanServer = ManagementFactory.getPlatformMBeanServer();
+      mbeanServer = MBeanServerFactory.createMBeanServer();
+      
       serverON = JMSManagementServiceImpl.getJMSServerObjectName();
    }
 

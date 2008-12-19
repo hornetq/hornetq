@@ -24,17 +24,16 @@ package org.jboss.messaging.tests.integration.jms.management;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import java.lang.management.ManagementFactory;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Session;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.management.MBeanServerInvocationHandler;
-import javax.naming.InitialContext;
 
 import junit.framework.TestCase;
 
@@ -54,7 +53,6 @@ import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.ConnectionFactoryControlMBean;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
-import org.jboss.messaging.tests.util.RandomUtil;
 
 /**
  * A QueueControlTest
@@ -71,20 +69,22 @@ public class JMSServerControlTest extends TestCase
 
    // Attributes ----------------------------------------------------
 
+   private MBeanServer mbeanServer;
+
    // Static --------------------------------------------------------
 
-   private static JMSServerControlMBean createJMSServerControl() throws Exception
+   private static JMSServerControlMBean createJMSServerControl(MBeanServer mbeanServer) throws Exception
    {
-      JMSServerControlMBean control = (JMSServerControlMBean)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+      JMSServerControlMBean control = (JMSServerControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
                                                                                                            JMSManagementServiceImpl.getJMSServerObjectName(),
                                                                                                            JMSServerControlMBean.class,
                                                                                                            false);
       return control;
    }
    
-   private static ConnectionFactoryControlMBean createConnectionFactoryControl(String name) throws Exception
+   private static ConnectionFactoryControlMBean createConnectionFactoryControl(String name, MBeanServer mbeanServer) throws Exception
    {
-      ConnectionFactoryControlMBean control = (ConnectionFactoryControlMBean)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+      ConnectionFactoryControlMBean control = (ConnectionFactoryControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
                                                                                                            JMSManagementServiceImpl.getConnectionFactoryObjectName(name),
                                                                                                            ConnectionFactoryControlMBean.class,
                                                                                                            false);
@@ -93,11 +93,12 @@ public class JMSServerControlTest extends TestCase
 
    private MessagingService startMessagingService(String acceptorFactory) throws Exception
    {
+      mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactory));
-      MessagingService service = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      MessagingService service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
       JMSServerManagerImpl serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service.getServer());
@@ -196,14 +197,14 @@ public class JMSServerControlTest extends TestCase
          service = startMessagingService(NettyAcceptorFactory.class.getName());
 
          try {
-            ConnectionFactoryControlMBean cfControl = createConnectionFactoryControl(cfName);
+            ConnectionFactoryControlMBean cfControl = createConnectionFactoryControl(cfName, mbeanServer);
             // invoke an operation on the proxy to check that there is no such mbean
             cfControl.getName();
             fail("no CF was created with name " + cfName);          
          } catch (Exception e)
          {
          }
-         JMSServerControlMBean control = createJMSServerControl();
+         JMSServerControlMBean control = createJMSServerControl(mbeanServer);
          control.createConnectionFactory(cfName,
                                          randomString(),
                                          "localhost",
@@ -234,7 +235,7 @@ public class JMSServerControlTest extends TestCase
                                          ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                          cfJNDIBinding);     
          
-         ConnectionFactoryControlMBean cfControl = createConnectionFactoryControl(cfName);
+         ConnectionFactoryControlMBean cfControl = createConnectionFactoryControl(cfName, mbeanServer);
          assertEquals(cfName, cfControl.getName());
       }
       finally
@@ -259,7 +260,7 @@ public class JMSServerControlTest extends TestCase
       {
          service = startMessagingService(acceptorFactory);
 
-         JMSServerControlMBean control = createJMSServerControl();
+         JMSServerControlMBean control = createJMSServerControl(mbeanServer);
 
          assertEquals(0, control.listConnectionIDs().length);
 
@@ -299,7 +300,7 @@ public class JMSServerControlTest extends TestCase
       {
          service = startMessagingService(acceptorFactory);
 
-         JMSServerControlMBean control = createJMSServerControl();
+         JMSServerControlMBean control = createJMSServerControl(mbeanServer);
 
          assertEquals(0, control.listConnectionIDs().length);
 
@@ -340,7 +341,7 @@ public class JMSServerControlTest extends TestCase
       {
          service = startMessagingService(acceptorFactory);
 
-         JMSServerControlMBean control = createJMSServerControl();
+         JMSServerControlMBean control = createJMSServerControl(mbeanServer);
 
          assertEquals(0, control.listRemoteAddresses().length);
 
@@ -379,7 +380,7 @@ public class JMSServerControlTest extends TestCase
       {
          service = startMessagingService(acceptorFactory);
 
-         JMSServerControlMBean control = createJMSServerControl();
+         JMSServerControlMBean control = createJMSServerControl(mbeanServer);
 
          assertEquals(0, service.getServer().getConnectionCount());
          assertEquals(0, control.listRemoteAddresses().length);
@@ -429,7 +430,7 @@ public class JMSServerControlTest extends TestCase
       {
          service = startMessagingService(acceptorFactory);
 
-         JMSServerControlMBean control = createJMSServerControl();
+         JMSServerControlMBean control = createJMSServerControl(mbeanServer);
 
          assertEquals(0, service.getServer().getConnectionCount());
          assertEquals(0, control.listRemoteAddresses().length);

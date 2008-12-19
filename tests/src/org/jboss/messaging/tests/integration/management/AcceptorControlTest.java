@@ -24,9 +24,10 @@ package org.jboss.messaging.tests.integration.management;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.management.MBeanServerInvocationHandler;
 
 import junit.framework.TestCase;
@@ -65,9 +66,9 @@ public class AcceptorControlTest extends TestCase
 
    // Static --------------------------------------------------------
 
-   private static AcceptorControlMBean createControl(String name) throws Exception
+   private static AcceptorControlMBean createControl(String name, MBeanServer mbeanServer) throws Exception
    {
-      AcceptorControlMBean control = (AcceptorControlMBean)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+      AcceptorControlMBean control = (AcceptorControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
                                                                                                          ManagementServiceImpl.getAcceptorObjectName(name),
                                                                                                          AcceptorControlMBean.class,
                                                                                                          false);
@@ -84,14 +85,15 @@ public class AcceptorControlTest extends TestCase
                                                                          new HashMap<String, Object>(),
                                                                          randomString());
 
+      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(acceptorConfig);
-      service = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
-      AcceptorControlMBean acceptorControl = createControl(acceptorConfig.getName());
+      AcceptorControlMBean acceptorControl = createControl(acceptorConfig.getName(), mbeanServer);
       assertEquals(acceptorConfig.getName(), acceptorControl.getName());
       assertEquals(acceptorConfig.getFactoryClassName(), acceptorControl.getFactoryClassName());
    }
@@ -101,15 +103,15 @@ public class AcceptorControlTest extends TestCase
       TransportConfiguration acceptorConfig = new TransportConfiguration(NettyAcceptorFactory.class.getName(),
                                                                          new HashMap<String, Object>(),
                                                                          randomString());
-
+      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(acceptorConfig);
-      service = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
-      AcceptorControlMBean acceptorControl = createControl(acceptorConfig.getName());
+      AcceptorControlMBean acceptorControl = createControl(acceptorConfig.getName(), mbeanServer);
       // started by the service
       assertTrue(acceptorControl.isStarted());
 

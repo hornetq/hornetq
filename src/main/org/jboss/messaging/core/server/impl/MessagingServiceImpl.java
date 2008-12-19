@@ -23,6 +23,8 @@ package org.jboss.messaging.core.server.impl;
 
 import java.lang.management.ManagementFactory;
 
+import javax.management.MBeanServer;
+
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.ManagementService;
@@ -59,6 +61,34 @@ public class MessagingServiceImpl implements MessagingService
       JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
 
       ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(),
+                                                                      config.isJMXManagementEnabled());
+      
+      remotingService.setManagementService(managementService);
+      
+      MessagingServer server = new MessagingServerImpl();
+
+      server.setConfiguration(config);
+
+      server.setStorageManager(storageManager);
+
+      server.setRemotingService(remotingService);
+
+      server.setSecurityManager(securityManager);
+
+      server.setManagementService(managementService);
+
+      return new MessagingServiceImpl(server, storageManager, remotingService);
+   }
+   
+   public static MessagingServiceImpl newNullStorageMessagingService(final Configuration config, MBeanServer mbeanServer)
+   {
+      StorageManager storageManager = new NullStorageManager();
+
+      RemotingService remotingService = new RemotingServiceImpl(config);
+
+      JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
+
+      ManagementService managementService = new ManagementServiceImpl(mbeanServer,
                                                                       config.isJMXManagementEnabled());
       
       remotingService.setManagementService(managementService);

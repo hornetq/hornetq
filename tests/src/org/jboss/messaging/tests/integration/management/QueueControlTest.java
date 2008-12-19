@@ -25,8 +25,8 @@ package org.jboss.messaging.tests.integration.management;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 
-import java.lang.management.ManagementFactory;
-
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.management.MBeanServerInvocationHandler;
 
 import junit.framework.TestCase;
@@ -65,12 +65,14 @@ public class QueueControlTest extends TestCase
    // Attributes ----------------------------------------------------
 
    private MessagingService service;
+   
+   private MBeanServer mbeanServer;
 
    // Static --------------------------------------------------------
 
-   private static QueueControlMBean createQueueControl(SimpleString address, SimpleString name) throws Exception
+   private static QueueControlMBean createQueueControl(SimpleString address, SimpleString name, MBeanServer mbeanServer) throws Exception
    {
-      QueueControlMBean queueControl = (QueueControlMBean)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+      QueueControlMBean queueControl = (QueueControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
                                                                                                         ManagementServiceImpl.getQueueObjectName(address,
                                                                                                                                                  name),
                                                                                                         QueueControlMBean.class,
@@ -114,7 +116,7 @@ public class QueueControlTest extends TestCase
 
       // wait a little bit to ensure the message is handled by the server
       Thread.sleep(100);
-      QueueControlMBean queueControl = createQueueControl(address, queue);
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
       assertEquals(1, queueControl.getMessageCount());
 
       // moved all messages to otherQueue
@@ -179,7 +181,7 @@ public class QueueControlTest extends TestCase
 
       // wait a little bit to ensure the message is handled by the server
       Thread.sleep(100);
-      QueueControlMBean queueControl = createQueueControl(address, queue);
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
       assertEquals(2, queueControl.getMessageCount());
 
       // moved matching messages to otherQueue
@@ -234,7 +236,7 @@ public class QueueControlTest extends TestCase
 
       // wait a little bit to ensure the message is handled by the server
       Thread.sleep(100);
-      QueueControlMBean queueControl = createQueueControl(address, queue);
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
       assertEquals(2, queueControl.getMessageCount());
 
       // delete all messages
@@ -286,7 +288,7 @@ public class QueueControlTest extends TestCase
 
       // wait a little bit to ensure the message is handled by the server
       Thread.sleep(100);
-      QueueControlMBean queueControl = createQueueControl(address, queue);
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
       assertEquals(2, queueControl.getMessageCount());
 
       // removed matching messages to otherQueue
@@ -339,7 +341,7 @@ public class QueueControlTest extends TestCase
 
       // wait a little bit to ensure the message is handled by the server
       Thread.sleep(100);
-      QueueControlMBean queueControl = createQueueControl(address, queue);
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
       assertEquals(3, queueControl.getMessageCount());
 
       assertEquals(2, queueControl.countMessages(key + " =" + matchingValue));
@@ -375,7 +377,7 @@ public class QueueControlTest extends TestCase
 
       // wait a little bit to ensure the message is handled by the server
       Thread.sleep(100);
-      QueueControlMBean queueControl = createQueueControl(address, queue);
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
       assertEquals(2, queueControl.getMessageCount());
 
       int expiredMessagesCount = queueControl.expireMessages(key + " =" + matchingValue);
@@ -406,12 +408,13 @@ public class QueueControlTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-
+      mbeanServer = MBeanServerFactory.createMBeanServer();
+      
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
    }
 

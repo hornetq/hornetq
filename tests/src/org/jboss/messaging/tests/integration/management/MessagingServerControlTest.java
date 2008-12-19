@@ -24,9 +24,10 @@ package org.jboss.messaging.tests.integration.management;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.management.MBeanServerInvocationHandler;
 import javax.management.openmbean.TabularData;
 
@@ -62,9 +63,9 @@ public class MessagingServerControlTest extends TestCase
 
    // Static --------------------------------------------------------
 
-   private static MessagingServerControlMBean createServerControl() throws Exception
+   private static MessagingServerControlMBean createServerControl(MBeanServer mbeanServer) throws Exception
    {
-      MessagingServerControlMBean control = (MessagingServerControlMBean)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+      MessagingServerControlMBean control = (MessagingServerControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
                                                                                                                        ManagementServiceImpl.getMessagingServerObjectName(),
                                                                                                                        MessagingServerControlMBean.class,
                                                                                                                        false);
@@ -77,6 +78,8 @@ public class MessagingServerControlTest extends TestCase
 
    public void testGetConnectors() throws Exception
    {
+      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
+      
       TransportConfiguration connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName(),
                                                                           new HashMap<String, Object>(),
                                                                           randomString());
@@ -85,10 +88,10 @@ public class MessagingServerControlTest extends TestCase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
-      service = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
-      MessagingServerControlMBean serverControl = createServerControl();
+      MessagingServerControlMBean serverControl = createServerControl(mbeanServer);
       TabularData acceptorData = serverControl.getConnectors();
       assertNotNull(acceptorData);
       assertEquals(1, acceptorData.size());

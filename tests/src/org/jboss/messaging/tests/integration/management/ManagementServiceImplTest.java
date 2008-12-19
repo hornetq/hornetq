@@ -39,6 +39,7 @@ import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 
 import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 
 import junit.framework.TestCase;
@@ -74,7 +75,8 @@ public class ManagementServiceImplTest extends TestCase
 
    public void testHandleManagementMessageWithAttribute() throws Exception
    {
-      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), false);
+      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
+      ManagementService managementService = new ManagementServiceImpl(mbeanServer, false);
       assertNotNull(managementService);
 
       SimpleString address = RandomUtil.randomSimpleString();
@@ -91,11 +93,14 @@ public class ManagementServiceImplTest extends TestCase
       SimpleString value = (SimpleString)message.getProperty(new SimpleString("Address"));
       assertNotNull(value);
       assertEquals(address, value);
+
+      managementService.stop();
    }
 
    public void testHandleManagementMessageWithOperation() throws Exception
    {
-      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), false);
+      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
+      ManagementService managementService = new ManagementServiceImpl(mbeanServer, false);
       assertNotNull(managementService);
 
       Role role = new Role(randomString(), randomBoolean(), randomBoolean(), randomBoolean());
@@ -126,11 +131,14 @@ public class ManagementServiceImplTest extends TestCase
       assertTrue(success);
 
       verify(resource);
+
+      managementService.stop();
    }
 
    public void testHandleManagementMessageWithOperationWhichFails() throws Exception
    {
-      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), false);
+      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
+      ManagementService managementService = new ManagementServiceImpl(mbeanServer, false);
       assertNotNull(managementService);
 
       Role role = new Role(randomString(), randomBoolean(), randomBoolean(), randomBoolean());
@@ -166,11 +174,13 @@ public class ManagementServiceImplTest extends TestCase
       assertEquals(exceptionMessage, exceptionMsg.toString());
 
       verify(resource);
+
+      managementService.stop();
    }
    
    public void testStop() throws Exception
    {
-      MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
+      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       
       ManagementService managementService = new ManagementServiceImpl(mbeanServer, true);
       assertNotNull(managementService);

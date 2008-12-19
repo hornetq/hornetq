@@ -34,21 +34,11 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.persistence.impl.nullpm.NullStorageManager;
-import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
-import org.jboss.messaging.core.security.JBMSecurityManager;
-import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
-import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 
 /**
@@ -91,31 +81,6 @@ public class ReplicationAwareTestBase extends TestCase
          fail("Resource exists: " + objectName);
       }
    }
-
-   protected static MessagingService createNullStorageMessagingServer(final Configuration config, MBeanServer mbeanServer)
-   {
-      StorageManager storageManager = new NullStorageManager();
-      
-      RemotingService remotingService = new RemotingServiceImpl(config);
-
-      JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
-      
-      ManagementService managementService = new ManagementServiceImpl(mbeanServer, config.isJMXManagementEnabled());
-      
-      MessagingServer server = new MessagingServerImpl();
-      
-      server.setConfiguration(config);
-      
-      server.setStorageManager(storageManager);
-      
-      server.setRemotingService(remotingService);
-      
-      server.setSecurityManager(securityManager);
-      
-      server.setManagementService(managementService);
-      
-      return new MessagingServiceImpl(server, storageManager, remotingService);
-   }
    
    // Constructors --------------------------------------------------
 
@@ -140,7 +105,7 @@ public class ReplicationAwareTestBase extends TestCase
                                                                             backupParams));
       backupConf.setBackup(true);
       backupConf.setJMXManagementEnabled(true);
-      backupService = createNullStorageMessagingServer(backupConf, backupMBeanServer);
+      backupService = MessagingServiceImpl.newNullStorageMessagingService(backupConf, backupMBeanServer);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -154,7 +119,7 @@ public class ReplicationAwareTestBase extends TestCase
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
       liveConf.setJMXManagementEnabled(true);
-      liveService = createNullStorageMessagingServer(liveConf, liveMBeanServer);
+      liveService = MessagingServiceImpl.newNullStorageMessagingService(liveConf, liveMBeanServer);
       liveService.start();
    }
 

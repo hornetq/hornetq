@@ -28,30 +28,20 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import java.lang.management.ManagementFactory;
-import java.util.HashMap;
-
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.management.MBeanServerInvocationHandler;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.management.AcceptorControlMBean;
 import org.jboss.messaging.core.management.MessageFlowControlMBean;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
-import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
-import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
-import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
-import org.jboss.messaging.tests.util.RandomUtil;
 
 /**
  * A AcceptorControlTest
@@ -73,9 +63,9 @@ public class MessageFlowControlTest extends TestCase
 
    // Static --------------------------------------------------------
 
-   private static MessageFlowControlMBean createControl(String name) throws Exception
+   private static MessageFlowControlMBean createControl(String name, MBeanServer mbeanServer) throws Exception
    {
-      MessageFlowControlMBean control = (MessageFlowControlMBean)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+      MessageFlowControlMBean control = (MessageFlowControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
                                                                                                                ManagementServiceImpl.getMessageFlowObjectName(name),
                                                                                                                MessageFlowControlMBean.class,
                                                                                                                false);
@@ -108,16 +98,17 @@ public class MessageFlowControlTest extends TestCase
       DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(randomString(), "231.7.7.7", 2000, randomPositiveLong());
       MessageFlowConfiguration messageFlowConfig = randomMessageFlowConfigurationWithDiscoveryGroup(discoveryGroupConfig.getName());
 
+      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.setClustered(true);
       conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
       conf.getMessageFlowConfigurations().add(messageFlowConfig);
-      service = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
-      MessageFlowControlMBean messageFlowControl = createControl(messageFlowConfig.getName());
+      MessageFlowControlMBean messageFlowControl = createControl(messageFlowConfig.getName(), mbeanServer);
       assertEquals(messageFlowConfig.getName(), messageFlowControl.getName());
       assertEquals(messageFlowConfig.getDiscoveryGroupName(), messageFlowControl.getDiscoveryGroupName());
    }
@@ -127,16 +118,17 @@ public class MessageFlowControlTest extends TestCase
       DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(randomString(), "231.7.7.7", 2000, randomPositiveLong());
       MessageFlowConfiguration messageFlowConfig = randomMessageFlowConfigurationWithDiscoveryGroup(discoveryGroupConfig.getName());
 
+      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.setClustered(true);
       conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
       conf.getMessageFlowConfigurations().add(messageFlowConfig);
-      service = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
-      MessageFlowControlMBean messageFlowControl = createControl(messageFlowConfig.getName());
+      MessageFlowControlMBean messageFlowControl = createControl(messageFlowConfig.getName(), mbeanServer);
       // started by the service
       assertTrue(messageFlowControl.isStarted());
 

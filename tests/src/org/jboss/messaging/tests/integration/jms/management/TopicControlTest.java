@@ -25,11 +25,11 @@ package org.jboss.messaging.tests.integration.jms.management;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import java.lang.management.ManagementFactory;
-
 import javax.jms.Connection;
 import javax.jms.Session;
 import javax.jms.Topic;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.management.MBeanServerInvocationHandler;
 
 import junit.framework.TestCase;
@@ -71,11 +71,13 @@ public class TopicControlTest extends TestCase
 
    private Topic topic;
 
+   private MBeanServer mbeanServer;
+
    // Static --------------------------------------------------------
 
-   private static TopicControlMBean createTopicControl(Topic topic) throws Exception
+   private static TopicControlMBean createTopicControl(Topic topic, MBeanServer mbeanServer) throws Exception
    {
-      TopicControlMBean topicControl = (TopicControlMBean)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+      TopicControlMBean topicControl = (TopicControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
                                                                                                         JMSManagementServiceImpl.getJMSTopicObjectName(topic.getTopicName()),
                                                                                                         TopicControlMBean.class,
                                                                                                         false);
@@ -98,7 +100,7 @@ public class TopicControlTest extends TestCase
       JMSUtil.createDurableSubscriber(topic, clientID, subscriptionName);
       JMSUtil.createDurableSubscriber(topic, clientID, subscriptionName + "2");
 
-      TopicControlMBean topicControl = createTopicControl(topic);
+      TopicControlMBean topicControl = createTopicControl(topic, mbeanServer);
       assertEquals(3, topicControl.getSubcriptionsCount());
       assertEquals(1, topicControl.getNonDurableSubcriptionsCount());
       assertEquals(2, topicControl.getDurableSubcriptionsCount());
@@ -111,7 +113,7 @@ public class TopicControlTest extends TestCase
       JMSUtil.createDurableSubscriber(topic, clientID, subscriptionName);
       JMSUtil.createDurableSubscriber(topic, clientID, subscriptionName + "2");
 
-      TopicControlMBean topicControl = createTopicControl(topic);
+      TopicControlMBean topicControl = createTopicControl(topic, mbeanServer);
 
       assertEquals(0, topicControl.getMessageCount());
       assertEquals(0, topicControl.getNonDurableMessagesCount());
@@ -131,7 +133,7 @@ public class TopicControlTest extends TestCase
       JMSUtil.createDurableSubscriber(topic, clientID, subscriptionName);
       JMSUtil.createDurableSubscriber(topic, clientID, subscriptionName + "2");
 
-      TopicControlMBean topicControl = createTopicControl(topic);
+      TopicControlMBean topicControl = createTopicControl(topic, mbeanServer);
       assertEquals(3, topicControl.listAllSubscriptionInfos().length);
       assertEquals(1, topicControl.listNonDurableSubscriptionInfos().length);
       assertEquals(2, topicControl.listDurableSubscriptionInfos().length);
@@ -153,7 +155,7 @@ public class TopicControlTest extends TestCase
       JMSUtil.sendMessageWithProperty(session, topic, key, unmatchingValue);
       JMSUtil.sendMessageWithProperty(session, topic, key, matchingValue);
       
-      TopicControlMBean topicControl = createTopicControl(topic);
+      TopicControlMBean topicControl = createTopicControl(topic, mbeanServer);
       
       // wiat a little bit to give time for the message to be handled by the server
       Thread.sleep(200);
@@ -168,7 +170,7 @@ public class TopicControlTest extends TestCase
    {
       JMSUtil.createDurableSubscriber(topic, clientID, subscriptionName);
 
-      TopicControlMBean topicControl = createTopicControl(topic);
+      TopicControlMBean topicControl = createTopicControl(topic, mbeanServer);
       assertEquals(1, topicControl.getDurableSubcriptionsCount());
 
       topicControl.dropDurableSubscription(clientID, subscriptionName);
@@ -180,7 +182,7 @@ public class TopicControlTest extends TestCase
    {
       JMSUtil.createDurableSubscriber(topic, clientID, subscriptionName);
 
-      TopicControlMBean topicControl = createTopicControl(topic);
+      TopicControlMBean topicControl = createTopicControl(topic, mbeanServer);
       assertEquals(1, topicControl.getDurableSubcriptionsCount());
 
       try
@@ -202,7 +204,7 @@ public class TopicControlTest extends TestCase
       JMSUtil.createDurableSubscriber(topic, clientID, subscriptionName);
       JMSUtil.createDurableSubscriber(topic, clientID, subscriptionName + "2");
 
-      TopicControlMBean topicControl = createTopicControl(topic);
+      TopicControlMBean topicControl = createTopicControl(topic, mbeanServer);
       assertEquals(3, topicControl.getSubcriptionsCount());
 
       topicControl.dropAllSubscriptions();
@@ -218,12 +220,13 @@ public class TopicControlTest extends TestCase
    protected void setUp() throws Exception
    {
 
+      mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      service = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
       serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service.getServer());
