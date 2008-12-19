@@ -159,7 +159,7 @@ public class PagingManagerImpl implements PagingManager
 
       if (store == null)
       {
-         throw new IllegalStateException("Store " + storeName + " not found on paging");
+         store = createPageStore(storeName);
       }
 
       return store;

@@ -38,6 +38,7 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.paging.PagingManager;
+import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.AddressManager;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -319,38 +320,30 @@ public class PostOfficeImpl implements PostOffice
 
    public List<MessageReference> route(final ServerMessage message) throws Exception
    {
-     // long size = pagingManager.addSize(message);
-      
-      //FIXME - paging
-      long size = Long.MAX_VALUE;
+      SimpleString address = message.getDestination();
 
-      if (size < 0)
+      if (checkAllowable)
       {
-         return emptyList;
+         if (!addressManager.containsDestination(address))
+         {
+            throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST,
+                                         "Cannot route to address " + address);
+         }
+      }
+
+      Bindings bindings = addressManager.getBindings(address);
+
+      if (bindings != null)
+      {
+         List<MessageReference> references = bindings.route(message);
+         
+         computePaging(address, message, references);
+         
+         return references;
       }
       else
       {
-         SimpleString address = message.getDestination();
-
-         if (checkAllowable)
-         {
-            if (!addressManager.containsDestination(address))
-            {
-               throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST,
-                                            "Cannot route to address " + address);
-            }
-         }
-
-         Bindings bindings = addressManager.getBindings(address);
-
-         if (bindings != null)
-         {
-            return bindings.route(message);
-         }
-         else
-         {
-            return emptyList;
-         }
+         return emptyList;
       }
    }
 
@@ -448,6 +441,29 @@ public class PostOfficeImpl implements PostOffice
    }
 
    // Private -----------------------------------------------------------------
+   
+   /**
+    * Add sizes on Paging
+    * @param address
+    * @param message
+    * @param references
+    * @throws Exception
+    */
+   private void computePaging(SimpleString address, final ServerMessage message, List<MessageReference> references) throws Exception
+   {
+      if (references.size() > 0)
+      {
+         PagingStore store = pagingManager.getPageStore(address);
+         
+         store.addSize(message.getMemoryEstimate());
+         
+         for (MessageReference ref: references)
+         {
+            store.addSize(ref.getMemoryEstimate());
+         }
+      }
+   }
+
 
    private Binding createBinding(final SimpleString address,
                                  final SimpleString name,
@@ -517,6 +533,9 @@ public class PostOfficeImpl implements PostOffice
          queues.put(binding.getQueue().getPersistenceID(), binding.getQueue());
       }
 
+      preInitPageDestinations();
+
+      
       Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<SimpleString, Long>>>();
 
       storageManager.loadMessageJournal(this, queues, resourceManager, duplicateIDMap);
@@ -536,6 +555,19 @@ public class PostOfficeImpl implements PostOffice
       // This is necessary as if the server was previously stopped while a depage was being executed,
       // it needs to resume the depage process on those destinations
       pagingManager.startGlobalDepage();
+   }
+
+   /**
+    * We need to pre-initialize already existent destinations on loading, or resuming Depage after restart won't work
+    * @throws Exception
+    */
+   private void preInitPageDestinations() throws Exception
+   {
+      Set<SimpleString> destinations = addressManager.getDestinations();
+      for (SimpleString destination : destinations)
+      {
+         pagingManager.createPageStore(destination);
+      }
    }
 
    private class MessageExpiryRunner extends Thread

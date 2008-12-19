@@ -258,6 +258,8 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
          
 
          
+         assertTrue(messagingService.getServer().getPostOffice().getPagingManager().isPaging(ADDRESS));
+         
          session.start();
          
          ClientSession sessionTransacted = sf.createSession(null, null, false, false, false, false, 0);
