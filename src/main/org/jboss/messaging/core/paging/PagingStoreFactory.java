@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.paging;
 
+import java.util.List;
 import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -44,8 +45,10 @@ public interface PagingStoreFactory
    void stop() throws InterruptedException;
 
    void setPagingManager(PagingManager manager);
-   
+
    void setStorageManager(StorageManager storageManager);
 
    void setPostOffice(PostOffice office);
+
+   List<SimpleString> getStoredDestinations() throws Exception;
 }

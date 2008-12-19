@@ -22,20 +22,25 @@
 
 package org.jboss.messaging.core.paging.impl;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.Base64;
 import org.jboss.messaging.util.JBMThreadFactory;
@@ -51,6 +56,7 @@ import org.jboss.messaging.util.SimpleString;
 public class PagingStoreFactoryNIO implements PagingStoreFactory
 {
    // Constants -----------------------------------------------------
+   private static final Logger log = Logger.getLogger(PagingStoreFactoryNIO.class);
 
    // Attributes ----------------------------------------------------
 
@@ -127,6 +133,41 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    public void setPostOffice(final PostOffice postOffice)
    {
       this.postOffice = postOffice;
+   }
+   
+   public List<SimpleString> getStoredDestinations() throws Exception
+   {
+      File pageDirectory = new File(directory);
+      
+      File[] files = pageDirectory.listFiles();
+      
+      if (files == null)
+      {
+         return Collections.<SimpleString>emptyList();
+
+      }
+      else
+      {
+         
+         ArrayList<SimpleString> filesReturn = new ArrayList<SimpleString>(files.length);
+         
+         for (File file: files)
+         {
+            if (file.isDirectory())
+            {
+               try
+               {
+                  filesReturn.add(new SimpleString(Base64.decode(file.getName(), Base64.URL_SAFE)));
+               }
+               catch (Exception e)
+               {
+                  log.warn("Invalid encoding on directory " + file.getCanonicalPath(), e);
+               }
+            }
+         }
+         
+         return filesReturn;
+      }
    }
 
    // Package protected ---------------------------------------------

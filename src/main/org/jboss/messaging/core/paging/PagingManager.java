@@ -165,4 +165,10 @@ public interface PagingManager extends MessagingComponent
     */
    void startGlobalDepage();
 
+   /**
+    * Reload previously created PagingStores into memory
+    * @throws Exception 
+    */
+   void reloadStores() throws Exception;
+
 }

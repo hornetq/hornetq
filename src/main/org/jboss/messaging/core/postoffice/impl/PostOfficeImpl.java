@@ -214,8 +214,6 @@ public class PostOfficeImpl implements PostOffice
 
    public synchronized boolean addDestination(final SimpleString address, final boolean durable) throws Exception
    {
-      pagingManager.createPageStore(address);
-
       boolean added = addressManager.addDestination(address);
 
       if (added)
@@ -280,8 +278,6 @@ public class PostOfficeImpl implements PostOffice
       {
          storageManager.addBinding(binding);
       }
-
-      pagingManager.createPageStore(address);
 
       return binding;
    }
@@ -533,9 +529,6 @@ public class PostOfficeImpl implements PostOffice
          queues.put(binding.getQueue().getPersistenceID(), binding.getQueue());
       }
 
-      preInitPageDestinations();
-
-      
       Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<SimpleString, Long>>>();
 
       storageManager.loadMessageJournal(this, queues, resourceManager, duplicateIDMap);
@@ -552,22 +545,11 @@ public class PostOfficeImpl implements PostOffice
          }
       }
 
+      
       // This is necessary as if the server was previously stopped while a depage was being executed,
       // it needs to resume the depage process on those destinations
+      pagingManager.reloadStores();
       pagingManager.startGlobalDepage();
-   }
-
-   /**
-    * We need to pre-initialize already existent destinations on loading, or resuming Depage after restart won't work
-    * @throws Exception
-    */
-   private void preInitPageDestinations() throws Exception
-   {
-      Set<SimpleString> destinations = addressManager.getDestinations();
-      for (SimpleString destination : destinations)
-      {
-         pagingManager.createPageStore(destination);
-      }
    }
 
    private class MessageExpiryRunner extends Thread

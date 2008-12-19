@@ -28,10 +28,9 @@ import java.util.List;
 
 import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PagedMessage;
-import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
-import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
 import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
+import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
 import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.server.ServerMessage;

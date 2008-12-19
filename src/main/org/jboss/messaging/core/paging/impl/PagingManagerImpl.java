@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.paging.impl;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -124,6 +125,19 @@ public class PagingManagerImpl implements PagingManager
    public void setGlobalPageMode(final boolean globalMode)
    {
       this.globalMode.set(globalMode);
+   }
+   
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.paging.PagingManager#reloadStores()
+    */
+   public void reloadStores() throws Exception
+   {
+      List<SimpleString> destinations = pagingSPI.getStoredDestinations();
+      for (SimpleString dest: destinations)
+      {
+         createPageStore(dest);
+      }
    }
 
    /**
