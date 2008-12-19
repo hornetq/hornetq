@@ -31,6 +31,7 @@ import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -118,6 +119,7 @@ public class ManagementServiceImpl implements ManagementService
 
    private SimpleString managementNotificationAddress;
 
+   private boolean started = false;
 
    // Static --------------------------------------------------------
 
@@ -430,6 +432,29 @@ public class ManagementServiceImpl implements ManagementService
    {
       unregisterFromRegistry(objectName);
       registry.put(objectName, managedResource);
+   }
+
+   // MessagingComponent implementation -----------------------------
+
+   public void start() throws Exception
+   {
+      started = true;
+   }
+
+   public synchronized void stop() throws Exception
+   {
+      Set<ObjectName> objectNames = new HashSet<ObjectName>(registry.keySet());
+      
+      for (ObjectName objectName : objectNames)
+      {
+         unregisterResource(objectName);
+      }
+      started = false;
+   }
+
+   public boolean isStarted()
+   {
+      return started;
    }
 
    // Package protected ---------------------------------------------

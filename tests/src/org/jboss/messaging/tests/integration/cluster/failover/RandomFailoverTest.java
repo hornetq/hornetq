@@ -1478,8 +1478,6 @@ public class RandomFailoverTest extends TestCase
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      // This will make GC easier since it won't hang references to MessageCounters and other objects. (This will make debug easier in certain situations also)
-      backupConf.setJMXManagementEnabled(false);
       backupService = MessagingServiceImpl.newNullStorageMessagingService(backupConf);
       backupService.start();
 
@@ -1489,8 +1487,6 @@ public class RandomFailoverTest extends TestCase
 
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
-      // This will make GC easier since it won't hang references to MessageCounters and other objects. (This will make debug easier in certain situations also)
-      liveConf.setJMXManagementEnabled(false);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();

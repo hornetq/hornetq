@@ -200,6 +200,8 @@ public class MessagingServerImpl implements MessagingServer
          throw new IllegalStateException("RemotingService must be started before MessagingServer is started");
       }
 
+      managementService.start();
+
       // The rest of the components are not pluggable and created and started
       // here
 
@@ -351,6 +353,7 @@ public class MessagingServerImpl implements MessagingServer
       resourceManager = null;
       serverManagement = null;
 
+      managementService.stop();
       started = false;
    }
 

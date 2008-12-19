@@ -40,6 +40,7 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
@@ -56,7 +57,7 @@ import org.jboss.messaging.util.TypedProperties;
  * @version <tt>$Revision$</tt>
  * 
  */
-public interface ManagementService
+public interface ManagementService extends MessagingComponent
 {
    MessageCounterManager getMessageCounterManager();
 

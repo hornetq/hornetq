@@ -32,11 +32,13 @@ import static org.jboss.messaging.core.security.CheckType.CREATE;
 import static org.jboss.messaging.core.security.CheckType.READ;
 import static org.jboss.messaging.core.security.CheckType.WRITE;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
+import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 
+import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import junit.framework.TestCase;
@@ -72,7 +74,7 @@ public class ManagementServiceImplTest extends TestCase
 
    public void testHandleManagementMessageWithAttribute() throws Exception
    {
-      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), true);
+      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), false);
       assertNotNull(managementService);
 
       SimpleString address = RandomUtil.randomSimpleString();
@@ -89,7 +91,6 @@ public class ManagementServiceImplTest extends TestCase
       SimpleString value = (SimpleString)message.getProperty(new SimpleString("Address"));
       assertNotNull(value);
       assertEquals(address, value);
-
    }
 
    public void testHandleManagementMessageWithOperation() throws Exception
@@ -166,9 +167,34 @@ public class ManagementServiceImplTest extends TestCase
 
       verify(resource);
    }
+   
+   public void testStop() throws Exception
+   {
+      MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
+      
+      ManagementService managementService = new ManagementServiceImpl(mbeanServer, true);
+      assertNotNull(managementService);
+
+      managementService.registerAddress(randomSimpleString());
+      
+      assertEquals(1, mbeanServer.queryMBeans(ObjectName.getInstance(ManagementServiceImpl.DOMAIN + ":*"), null).size());
+      
+      managementService.stop();
+
+      assertEquals(0, mbeanServer.queryMBeans(ObjectName.getInstance(ManagementServiceImpl.DOMAIN + ":*"), null).size());
+   }
 
    // Package protected ---------------------------------------------
+   
+   @Override
+   protected void tearDown() throws Exception
+   {
+      MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
+      assertEquals(0, mbeanServer.queryMBeans(ObjectName.getInstance(ManagementServiceImpl.DOMAIN + ":*"), null).size());
 
+      super.tearDown();
+   }
+   
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
