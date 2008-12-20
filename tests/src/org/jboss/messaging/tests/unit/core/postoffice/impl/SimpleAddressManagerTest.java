@@ -253,7 +253,7 @@ public class SimpleAddressManagerTest extends UnitTestCase
       assertEquals(sam.getBindings(address).getBindings().size(), 1);
       assertEquals(sam.getBindings(address).getBindings().get(0), b1);
       sam.removeMapping(address, qName);
-      assertTrue(sam.getBindings(address).getBindings().isEmpty());      
+      assertNull(sam.getBindings(address));      
       EasyMock.verify(q);
    }
 
@@ -446,10 +446,10 @@ public class SimpleAddressManagerTest extends UnitTestCase
       assertNotNull(sam.getBindings(address));
       assertEquals(sam.getBindings(address).getBindings().size(), 1);
       assertEquals(sam.getBindings(address).getBindings().get(0), b1);
-      assertTrue(sam.getBindings(address2).getBindings().isEmpty()); 
+      assertNull(sam.getBindings(address2)); 
       assertEquals(sam.getBindings(address3).getBindings().size(), 1);
       assertEquals(sam.getBindings(address3).getBindings().get(0), b3);
-      assertTrue(sam.getBindings(address4).getBindings().isEmpty()); 
+      assertNull(sam.getBindings(address4)); 
       assertEquals(sam.getBindings(address5).getBindings().size(), 1);
       assertEquals(sam.getBindings(address5).getBindings().get(0), b5);
       EasyMock.verify(q, q2, q3, q4, q5);

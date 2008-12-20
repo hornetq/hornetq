@@ -457,12 +457,9 @@ public class JournalStorageManager implements StorageManager
 
                messageEncoding.decode(buff);
 
-               List<MessageReference> refs = postOffice.route(largeMessage);
+               List<MessageReference> refs = postOffice.reroute(largeMessage);
 
-               for (MessageReference ref : refs)
-               {
-                  ref.getQueue().add(ref);
-               }
+               postOffice.deliver(refs);
 
                break;
             }
@@ -472,12 +469,9 @@ public class JournalStorageManager implements StorageManager
 
                message.decode(buff);
 
-               List<MessageReference> refs = postOffice.route(message);
+               List<MessageReference> refs = postOffice.reroute(message);
 
-               for (MessageReference ref : refs)
-               {
-                  ref.getQueue().add(ref);
-               }
+               postOffice.deliver(refs);
 
                break;
             }
@@ -876,7 +870,7 @@ public class JournalStorageManager implements StorageManager
 
                   message.decode(buff);
 
-                  List<MessageReference> refs = postOffice.route(message);
+                  List<MessageReference> refs = postOffice.reroute(message);
 
                   references.addAll(refs);
 
@@ -933,6 +927,7 @@ public class JournalStorageManager implements StorageManager
                      throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
                   }
 
+                  //FIXME - this involves a scan --- SLOW!!
                   for (MessageReference ref : references)
                   {
                      if (ref.getQueue().getPersistenceID() == encoding.queueID && ref.getMessage().getMessageID() == messageID)

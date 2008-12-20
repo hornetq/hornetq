@@ -2604,8 +2604,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       // check the user has write access to this address.
       doSecurity(msg);
 
-      Long scheduledDeliveryTime = (Long)msg.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
-
       SimpleString duplicateID = (SimpleString)msg.getProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
 
       DuplicateIDCache cache = null;
@@ -2635,29 +2633,17 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          startedTx = true;
       }
-
+      
       if (theTx == null)
       {
          if (!pager.page(msg))
          {
-            List<MessageReference> refs = postOffice.route(msg);
-
-            if (msg.getDurableRefCount() != 0)
-            {
-               storageManager.storeMessage(msg);
-            }
-
-            if (scheduledDeliveryTime != null)
-            {
-               postOffice.scheduleReferences(scheduledDeliveryTime, refs);
-            }
-
-            postOffice.deliver(refs);
+            postOffice.route(msg, null);
          }
       }
       else
-      {
-         theTx.addMessage(msg);
+      { 
+         postOffice.route(msg, theTx);
 
          // Add to cache in same transaction
          if (cache != null)

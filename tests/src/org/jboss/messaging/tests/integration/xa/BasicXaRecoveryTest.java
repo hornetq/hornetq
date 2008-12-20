@@ -35,6 +35,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
@@ -50,6 +51,8 @@ import org.jboss.messaging.util.UUIDGenerator;
  */
 public class BasicXaRecoveryTest extends ServiceTestBase
 {
+   private static Logger log = Logger.getLogger(BasicXaRecoveryTest.class);
+
    private final Map<String, QueueSettings> queueSettings = new HashMap<String, QueueSettings>();
 
    private MessagingService messagingService;
@@ -296,6 +299,8 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       for (int i = 0; i < 1000; i++)
       {
          ClientMessage m = pageConsumer.receive(10000);
+         
+         log.info("Got message " + i);
          assertNotNull(m);
          m.acknowledge();
          clientSession.commit();

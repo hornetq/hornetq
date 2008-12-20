@@ -37,7 +37,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
@@ -49,6 +48,8 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -115,16 +116,17 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    // Static --------------------------------------------------------
 
-   // private static final boolean isTrace = log.isTraceEnabled();
-   private static final boolean isTrace = true;
+   private static final boolean isTrace = log.isTraceEnabled();
 
    // This is just a debug tool method.
    // During debugs you could make log.trace as log.info, and change the
    // variable isTrace above
    private static void trace(final String message)
    {
-      // log.trace(message);
-      log.info(message);
+      if (isTrace)
+      {
+         log.trace(message);
+      }      
    }
 
    // Constructors --------------------------------------------------
@@ -241,6 +243,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          else
          {
             addAddressSize(size);
+            
             return true;
          }
       }
@@ -315,7 +318,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public boolean page(final PagedMessage message, final boolean sync) throws Exception
    {
-
       if (!running)
       {
          throw new IllegalStateException("PagingStore(" + getStoreName() + ") not initialized");
@@ -708,47 +710,48 @@ public class PagingStoreImpl implements TestSupportPageStore
     * 
     * If persistent messages are also used, it will update eventual PageTransactions
     */
-
-   private void onDepage(final int pageId, final SimpleString destination, final List<PagedMessage> data) throws Exception
+   
+   private void onDepage(final int pageId, final SimpleString destination, final List<PagedMessage> pagedMessages) throws Exception
    {
       trace("Depaging....");
-
+      
+      log.info("depaging " + pagedMessages.size() + " messages");
+            
       // Depage has to be done atomically, in case of failure it should be
       // back to where it was
-      final long depageTransactionID = storageManager.generateUniqueID();
 
-      LastPageRecord lastPage = getLastPageRecord();
+      Transaction depageTransaction = new TransactionImpl(storageManager, postOffice);
 
-      if (lastPage == null)
+      LastPageRecord lastPageRecord = getLastPageRecord();
+
+      if (lastPageRecord == null)
       {
-         lastPage = new LastPageRecordImpl(pageId, destination);
+         lastPageRecord = new LastPageRecordImpl(pageId, destination);
 
-         setLastPageRecord(lastPage);
+         setLastPageRecord(lastPageRecord);
       }
       else
       {
-         if (pageId <= lastPage.getLastId())
+         if (pageId <= lastPageRecord.getLastId())
          {
             log.warn("Page " + pageId + " was already processed, ignoring the page");
             return;
          }
       }
 
-      lastPage.setLastId(pageId);
+      lastPageRecord.setLastId(pageId);
 
-      storageManager.storeLastPage(depageTransactionID, lastPage);
+      storageManager.storeLastPage(depageTransaction.getID(), lastPageRecord);
 
       HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
 
-      final List<MessageReference> refsToAdd = new ArrayList<MessageReference>();
-
-      for (PagedMessage msg : data)
+      for (PagedMessage pagedMessage : pagedMessages)
       {
-         ServerMessage pagedMessage = null;
+         ServerMessage message = null;
 
-         pagedMessage = msg.getMessage(storageManager);
+         message = pagedMessage.getMessage(storageManager);
 
-         final long transactionIdDuringPaging = msg.getTransactionID();
+         final long transactionIdDuringPaging = pagedMessage.getTransactionID();
 
          if (transactionIdDuringPaging >= 0)
          {
@@ -761,7 +764,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             {
                if (isTrace)
                {
-                  trace("Transaction " + msg.getTransactionID() + " not found, ignoring message " + pagedMessage);
+                  trace("Transaction " + pagedMessage.getTransactionID() + " not found, ignoring message " + message);
                }
                continue;
             }
@@ -770,33 +773,19 @@ public class PagingStoreImpl implements TestSupportPageStore
             // before the commit arrived
             if (!pageTransactionInfo.waitCompletion())
             {
-               trace("Rollback was called after prepare, ignoring message " + pagedMessage);
+               trace("Rollback was called after prepare, ignoring message " + message);
                continue;
             }
 
             // Update information about transactions
-            if (pagedMessage.isDurable())
+            if (message.isDurable())
             {
                pageTransactionInfo.decrement();
                pageTransactionsToUpdate.add(pageTransactionInfo);
-            }
+            }                        
          }
-
-         List<MessageReference> routedReferences = postOffice.route(pagedMessage);
-
-         Long scheduledDeliveryTime = (Long)pagedMessage.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
-
-         if (scheduledDeliveryTime != null)
-         {
-            postOffice.scheduleReferences(depageTransactionID, scheduledDeliveryTime, routedReferences);
-         }
-
-         refsToAdd.addAll(routedReferences);
-
-         if (pagedMessage.getDurableRefCount() != 0)
-         {
-            storageManager.storeMessageTransactional(depageTransactionID, pagedMessage);
-         }
+         
+         depageTransaction.addMessage(message);
       }
 
       for (PageTransactionInfo pageWithTransaction : pageTransactionsToUpdate)
@@ -805,20 +794,18 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             // http://wiki.jboss.org/wiki/JBossMessaging2Paging
             // numberOfReads==numberOfWrites -> We delete the record
-            storageManager.deletePageTransactional(depageTransactionID, pageWithTransaction.getRecordID());
+            storageManager.deletePageTransactional(depageTransaction.getID(), pageWithTransaction.getRecordID());
             pagingManager.removeTransaction(pageWithTransaction.getTransactionID());
          }
          else
          {
-            storageManager.storePageTransaction(depageTransactionID, pageWithTransaction);
+            storageManager.storePageTransaction(depageTransaction.getID(), pageWithTransaction);
          }
       }
 
-      storageManager.commit(depageTransactionID);
+      depageTransaction.commit();
 
       trace("Depage committed");
-
-      postOffice.deliver(refsToAdd);
    }
 
    /**

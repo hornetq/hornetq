@@ -82,12 +82,7 @@ public  class SimpleAddressManager implements AddressManager
    public Bindings getBindings(final SimpleString address)
    {
       Bindings bindings = mappings.get(address);
-      
-      if (bindings == null)
-      {
-         bindings = new BindingsImpl();
-      }
-      
+       
       return bindings;
    }
 

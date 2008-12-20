@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.postoffice;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.jboss.messaging.core.filter.Filter;
@@ -33,6 +32,7 @@ import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -69,7 +69,11 @@ public interface PostOffice extends MessagingComponent
 
    Binding getBinding(SimpleString queueName);
 
-   List<MessageReference> route(ServerMessage message) throws Exception;
+   void route(ServerMessage message, Transaction tx) throws Exception;
+   
+   List<MessageReference> route(ServerMessage message, Transaction tx, boolean deliver) throws Exception;
+   
+   List<MessageReference> reroute(ServerMessage message) throws Exception;
 
    Set<SimpleString> listAllDestinations();
 
@@ -83,11 +87,5 @@ public interface PostOffice extends MessagingComponent
 
    int numMappings();
 
-   //TODO - why have these methods been put here????
-   
-   void scheduleReferences(long scheduledDeliveryTime, List<MessageReference> references) throws Exception;
-
-   void scheduleReferences(long transactionID, long scheduledDeliveryTime, List<MessageReference> references) throws Exception;
-   
    void deliver(final List<MessageReference> references);
 }

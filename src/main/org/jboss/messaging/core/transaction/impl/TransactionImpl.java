@@ -47,7 +47,7 @@ import org.jboss.messaging.util.SimpleString;
 public class TransactionImpl implements Transaction
 {
    private List<TransactionSynchronization> syncs;
-   
+
    private static final Logger log = Logger.getLogger(TransactionImpl.class);
 
    private final StorageManager storageManager;
@@ -63,8 +63,8 @@ public class TransactionImpl implements Transaction
    /** List of destinations in page mode.
     *  Once a destination was considered in page, it should go toward paging until commit is called, 
     *  even if the page-mode has changed, or messageOrder won't be respected */
-   private final Set<SimpleString> destinationsInPageMode = new HashSet<SimpleString>(); 
-   
+   private final Set<SimpleString> destinationsInPageMode = new HashSet<SimpleString>();
+
    // FIXME: As part of https://jira.jboss.org/jira/browse/JBMESSAGING-1313
    private final List<ServerMessage> pagedMessages = new ArrayList<ServerMessage>();
 
@@ -83,7 +83,7 @@ public class TransactionImpl implements Transaction
    private final Object timeoutLock = new Object();
 
    private final long createTime;
-      
+
    public TransactionImpl(final StorageManager storageManager, final PostOffice postOffice)
    {
       this.storageManager = storageManager;
@@ -157,12 +157,11 @@ public class TransactionImpl implements Transaction
    {
       return id;
    }
-   
-   public void addDuplicateID(final SimpleString address, final SimpleString duplID,
-                              final long recordID) throws Exception
+
+   public void addDuplicateID(final SimpleString address, final SimpleString duplID, final long recordID) throws Exception
    {
-      storageManager.storeDuplicateIDTransactional(id, address, duplID, recordID); 
-      
+      storageManager.storeDuplicateIDTransactional(id, address, duplID, recordID);
+
       containsPersistent = true;
    }
 
@@ -172,7 +171,7 @@ public class TransactionImpl implements Transaction
       {
          throw new IllegalStateException("Transaction is in invalid state " + state);
       }
-      
+
       SimpleString destination = message.getDestination();
 
       if (destinationsInPageMode.contains(destination) || pagingManager.isPaging(destination))
@@ -268,10 +267,10 @@ public class TransactionImpl implements Transaction
          storageManager.prepare(id, xid);
 
          state = State.PREPARED;
-         
+
          if (syncs != null)
          {
-            for (TransactionSynchronization sync: syncs)
+            for (TransactionSynchronization sync : syncs)
             {
                sync.afterPrepare();
             }
@@ -280,7 +279,7 @@ public class TransactionImpl implements Transaction
    }
 
    public void commit() throws Exception
-   {
+   {      
       synchronized (timeoutLock)
       {
          if (state == State.ROLLBACK_ONLY)
@@ -320,7 +319,7 @@ public class TransactionImpl implements Transaction
             storageManager.commit(id);
          }
 
-
+         log.info("delivering " + refsToAdd.size() + " refs");
          postOffice.deliver(refsToAdd);
 
          // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
@@ -339,10 +338,10 @@ public class TransactionImpl implements Transaction
          clear();
 
          state = State.COMMITTED;
-         
+
          if (syncs != null)
          {
-            for (TransactionSynchronization sync: syncs)
+            for (TransactionSynchronization sync : syncs)
             {
                sync.afterCommit();
             }
@@ -353,7 +352,7 @@ public class TransactionImpl implements Transaction
    public List<MessageReference> rollback(final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       LinkedList<MessageReference> toCancel;
-      
+
       synchronized (timeoutLock)
       {
          if (xid != null)
@@ -374,10 +373,10 @@ public class TransactionImpl implements Transaction
          toCancel = doRollback();
 
          state = State.ROLLEDBACK;
-         
+
          if (syncs != null)
          {
-            for (TransactionSynchronization sync: syncs)
+            for (TransactionSynchronization sync : syncs)
             {
                sync.afterRollback();
             }
@@ -386,8 +385,6 @@ public class TransactionImpl implements Transaction
 
       return toCancel;
    }
-
-   
 
    public int getAcknowledgementsCount()
    {
@@ -422,7 +419,6 @@ public class TransactionImpl implements Transaction
       return xid;
    }
 
-
    public boolean isContainsPersistent()
    {
       return containsPersistent;
@@ -441,7 +437,7 @@ public class TransactionImpl implements Transaction
    {
       containsPersistent = true;
       refsToAdd.addAll(messages);
-      
+
       this.acknowledgements.addAll(acknowledgements);
       this.pageTransaction = pageTransaction;
 
@@ -457,25 +453,24 @@ public class TransactionImpl implements Transaction
    {
       this.containsPersistent = containsPersistent;
    }
-   
+
    public void addSynchronization(final TransactionSynchronization sync)
    {
       checkCreateSyncs();
-      
+
       syncs.add(sync);
    }
 
    public void removeSynchronization(final TransactionSynchronization sync)
    {
       checkCreateSyncs();
-      
+
       syncs.remove(sync);
    }
 
-
    // Private
    // -------------------------------------------------------------------
-   
+
    private LinkedList<MessageReference> doRollback() throws Exception
    {
       if (containsPersistent || xid != null)
@@ -503,18 +498,17 @@ public class TransactionImpl implements Transaction
          }
          toCancel.add(ref);
       }
-      
+
       HashSet<ServerMessage> messagesAdded = new HashSet<ServerMessage>();
-      
 
       // We need to remove the sizes added on paging manager, for the messages that only exist here on the Transaction
-      for (MessageReference ref: this.refsToAdd)
+      for (MessageReference ref : this.refsToAdd)
       {
          messagesAdded.add(ref.getMessage());
          pagingManager.getPageStore(ref.getMessage().getDestination()).addSize(-ref.getMemoryEstimate());
       }
-      
-      for (ServerMessage msg: messagesAdded)
+
+      for (ServerMessage msg : messagesAdded)
       {
          pagingManager.removeSize(msg);
       }
@@ -523,7 +517,7 @@ public class TransactionImpl implements Transaction
 
       return toCancel;
    }
-   
+
    private void checkCreateSyncs()
    {
       if (syncs == null)
@@ -531,38 +525,23 @@ public class TransactionImpl implements Transaction
          syncs = new ArrayList<TransactionSynchronization>();
       }
    }
-   
 
-   private List<MessageReference> route(final ServerMessage message) throws Exception
+   private void route(final ServerMessage message) throws Exception
    {
-      Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
-
-      List<MessageReference> refs = postOffice.route(message);
-
+      List<MessageReference> refs = postOffice.route(message, this, false);
+      
+      log.info("routed to " + refs.size() + " refs");
       refsToAdd.addAll(refs);
 
       if (message.getDurableRefCount() != 0)
       {
-         storageManager.storeMessageTransactional(id, message);
-
          containsPersistent = true;
       }
-      
-      if (scheduledDeliveryTime != null)
-      {
-         postOffice.scheduleReferences(id, scheduledDeliveryTime, refs);
-      }
-
-      return refs;
    }
 
    private void pageMessages() throws Exception
    {
-      HashSet<SimpleString> pagedDestinationsToSync = new HashSet<SimpleString>();
-
-      boolean pagingPersistent = false;
-
-      if (pagedMessages.size() != 0)
+      if (!pagedMessages.isEmpty())
       {
          if (pageTransaction == null)
          {
@@ -571,36 +550,40 @@ public class TransactionImpl implements Transaction
             // pager about this transaction is being processed
             pagingManager.addTransaction(pageTransaction);
          }
-      }
 
-      for (ServerMessage message : pagedMessages)
-      {
-         // http://wiki.jboss.org/wiki/JBossMessaging2Paging
-         // Explained under Transaction On Paging. (This is the item B)
-         if (pagingManager.page(message, id))
+         boolean pagingPersistent = false;
+
+         HashSet<SimpleString> pagedDestinationsToSync = new HashSet<SimpleString>();
+
+         for (ServerMessage message : pagedMessages)
          {
-            if (message.isDurable())
+            // http://wiki.jboss.org/wiki/JBossMessaging2Paging
+            // Explained under Transaction On Paging. (This is the item B)
+            if (pagingManager.page(message, id))
             {
-               // We only create pageTransactions if using persistent messages
-               pageTransaction.increment();
-               pagingPersistent = true;
-               pagedDestinationsToSync.add(message.getDestination());
+               if (message.isDurable())
+               {
+                  // We only create pageTransactions if using persistent messages
+                  pageTransaction.increment();
+                  pagingPersistent = true;
+                  pagedDestinationsToSync.add(message.getDestination());
+               }
+            }
+            else
+            {
+               // This could happen when the PageStore left the pageState
+               route(message);
             }
          }
-         else
-         {
-            // This could happen when the PageStore left the pageState
-            route(message);
-         }
-      }
 
-      if (pagingPersistent)
-      {
-         containsPersistent = true;
-         if (pagedDestinationsToSync.size() > 0)
+         if (pagingPersistent)
          {
-            pagingManager.sync(pagedDestinationsToSync);
-            storageManager.storePageTransaction(id, pageTransaction);
+            containsPersistent = true;
+            if (pagedDestinationsToSync.size() > 0)
+            {
+               pagingManager.sync(pagedDestinationsToSync);
+               storageManager.storePageTransaction(id, pageTransaction);
+            }
          }
       }
    }

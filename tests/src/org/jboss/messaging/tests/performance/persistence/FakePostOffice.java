@@ -38,6 +38,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.SendLockImpl;
+import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.SimpleString;
@@ -50,7 +51,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  */
 public class FakePostOffice implements PostOffice
-{
+{   
    private ConcurrentHashMap<SimpleString, Binding> bindings = new ConcurrentHashMap<SimpleString, Binding>();
 
    private QueueFactory queueFactory = new FakeQueueFactory();
@@ -70,6 +71,20 @@ public class FakePostOffice implements PostOffice
       Binding binding = new FakeBinding(address, queue);
       bindings.put(address, binding);
       return binding;
+   }
+   
+   public List<MessageReference> reroute(ServerMessage message) throws Exception
+   {
+      return null;
+   }
+
+   public List<MessageReference> route(ServerMessage message, Transaction tx, boolean deliver) throws Exception
+   {
+      return null;
+   }
+
+   public void route(ServerMessage message, Transaction tx) throws Exception
+   {
    }
 
    public boolean addDestination(SimpleString address, boolean temporary) throws Exception
@@ -130,11 +145,6 @@ public class FakePostOffice implements PostOffice
    public boolean isStarted()
    {
       return started;
-   }
-
-   public List<org.jboss.messaging.core.server.MessageReference> route(ServerMessage message) throws Exception
-   {
-      return null;
    }
 
    public List<Queue> activate()

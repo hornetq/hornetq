@@ -25,6 +25,7 @@ package org.jboss.messaging.core.postoffice.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.filter.Filter;
@@ -48,7 +49,7 @@ public class BindingsImpl implements Bindings
 {   
    private static final Logger log = Logger.getLogger(BindingsImpl.class);
 
-   private final List<Binding> bindings = new ArrayList<Binding>();
+   private final List<Binding> bindings = new CopyOnWriteArrayList<Binding>();
 
    private final AtomicInteger numberExclusive = new AtomicInteger(0);
 

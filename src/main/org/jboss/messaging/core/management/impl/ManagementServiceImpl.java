@@ -147,33 +147,25 @@ public class ManagementServiceImpl implements ManagementService
                                                   quote(address.toString()),
                                                   quote(name.toString())));
    }
-   
+
    public static ObjectName getAcceptorObjectName(final String name) throws Exception
    {
-      return ObjectName.getInstance(String.format("%s:module=Core,type=Acceptor,name=%s",
-                                                  DOMAIN,
-                                                  quote(name)));
+      return ObjectName.getInstance(String.format("%s:module=Core,type=Acceptor,name=%s", DOMAIN, quote(name)));
    }
-   
+
    public static ObjectName getBroadcastGroupObjectName(final String name) throws Exception
    {
-      return ObjectName.getInstance(String.format("%s:module=Core,type=BroadcastGroup,name=%s",
-                                                  DOMAIN,
-                                                  quote(name)));
+      return ObjectName.getInstance(String.format("%s:module=Core,type=BroadcastGroup,name=%s", DOMAIN, quote(name)));
    }
-   
+
    public static ObjectName getMessageFlowObjectName(final String name) throws Exception
    {
-      return ObjectName.getInstance(String.format("%s:module=Core,type=MessageFlow,name=%s",
-                                                  DOMAIN,
-                                                  quote(name)));
+      return ObjectName.getInstance(String.format("%s:module=Core,type=MessageFlow,name=%s", DOMAIN, quote(name)));
    }
 
    public static ObjectName getDiscoveryGroupObjectName(final String name) throws Exception
    {
-      return ObjectName.getInstance(String.format("%s:module=Core,type=DiscoveryGroup,name=%s",
-                                                  DOMAIN,
-                                                  quote(name)));
+      return ObjectName.getInstance(String.format("%s:module=Core,type=DiscoveryGroup,name=%s", DOMAIN, quote(name)));
    }
 
    // Constructors --------------------------------------------------
@@ -289,7 +281,7 @@ public class ManagementServiceImpl implements ManagementService
       registerInJMX(objectName, new StandardMBean(control, AcceptorControlMBean.class));
       registerInRegistry(objectName, control);
    }
-   
+
    public void unregisterAcceptor(final String name) throws Exception
    {
       ObjectName objectName = getAcceptorObjectName(name);
@@ -303,13 +295,13 @@ public class ManagementServiceImpl implements ManagementService
       registerInJMX(objectName, new StandardMBean(control, BroadcastGroupControlMBean.class));
       registerInRegistry(objectName, control);
    }
-   
+
    public void unregisterBroadcastGroup(String name) throws Exception
    {
       ObjectName objectName = getBroadcastGroupObjectName(name);
       unregisterResource(objectName);
    }
-   
+
    public void registerDiscoveryGroup(DiscoveryGroup discoveryGroup, DiscoveryGroupConfiguration configuration) throws Exception
    {
       ObjectName objectName = getDiscoveryGroupObjectName(configuration.getName());
@@ -317,13 +309,13 @@ public class ManagementServiceImpl implements ManagementService
       registerInJMX(objectName, new StandardMBean(control, DiscoveryGroupControlMBean.class));
       registerInRegistry(objectName, control);
    }
-   
+
    public void unregisterDiscoveryGroup(String name) throws Exception
    {
       ObjectName objectName = getDiscoveryGroupObjectName(name);
       unregisterResource(objectName);
    }
-   
+
    public void registerMessageFlow(MessageFlow messageFlow, MessageFlowConfiguration configuration) throws Exception
    {
       ObjectName objectName = getMessageFlowObjectName(configuration.getName());
@@ -331,7 +323,7 @@ public class ManagementServiceImpl implements ManagementService
       registerInJMX(objectName, new StandardMBean(control, MessageFlowControlMBean.class));
       registerInRegistry(objectName, control);
    }
-   
+
    public void unregisterMessageFlow(String name) throws Exception
    {
       ObjectName objectName = getMessageFlowObjectName(name);
@@ -439,7 +431,7 @@ public class ManagementServiceImpl implements ManagementService
    public synchronized void stop() throws Exception
    {
       Set<ObjectName> objectNames = new HashSet<ObjectName>(registry.keySet());
-      
+
       for (ObjectName objectName : objectNames)
       {
          unregisterResource(objectName);
@@ -488,6 +480,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public void sendNotification(final NotificationType type, final String message, TypedProperties props) throws Exception
    {
+      // TODO - we need a parameter to determine if the notification is durable or not
       if (managedServer != null)
       {
          ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
@@ -510,12 +503,14 @@ public class ManagementServiceImpl implements ManagementService
 
          notificationMessage.putTypedProperties(notifProps);
 
-         List<MessageReference> refs = postOffice.route(notificationMessage);
+         // List<MessageReference> refs = postOffice.route(notificationMessage);
+         //
+         // for (MessageReference ref : refs)
+         // {
+         // ref.getQueue().add(ref);
+         // }
 
-         for (MessageReference ref : refs)
-         {
-            ref.getQueue().add(ref);
-         }
+         postOffice.route(notificationMessage, null);
       }
    }
 

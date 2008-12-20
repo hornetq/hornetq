@@ -22,11 +22,7 @@
 
 package org.jboss.messaging.tests.unit.core.server.impl;
 
-import static org.easymock.EasyMock.anyLong;
 import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.eq;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.isA;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
@@ -45,9 +41,7 @@ import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.impl.BindingsImpl;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.Distributor;
 import org.jboss.messaging.core.server.HandleStatus;
@@ -58,6 +52,7 @@ import org.jboss.messaging.core.server.impl.QueueImpl;
 import org.jboss.messaging.core.server.impl.RoundRobinDistributor;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeFilter;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -1392,7 +1387,7 @@ public class QueueImplTest extends UnitTestCase
       Binding toBinding = EasyMock.createMock(Binding.class);
       EasyMock.expect(toBinding.getAddress()).andStubReturn(toQueueName);
       EasyMock.expect(toBinding.getQueue()).andStubReturn(toQueue);
-      EasyMock.expect(postOffice.route(EasyMock.isA(ServerMessage.class))).andReturn(new ArrayList<MessageReference>());
+      EasyMock.expect(postOffice.route(EasyMock.isA(ServerMessage.class), EasyMock.isA(Transaction.class), EasyMock.eq(false))).andReturn(new ArrayList<MessageReference>());
       HierarchicalRepository<QueueSettings> queueSettingsRepository = EasyMock.createMock(HierarchicalRepository.class);
 
       EasyMock.replay(storageManager, postOffice, queueSettingsRepository, toBinding, pm);

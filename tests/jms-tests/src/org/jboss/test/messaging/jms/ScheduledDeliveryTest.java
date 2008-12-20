@@ -63,7 +63,6 @@ public class ScheduledDeliveryTest extends JMSTestCase
    {      
    }
    
- //Uncomment when http://jira.jboss.org/jira/browse/JBMESSAGING-1206 is complete
    public void testScheduledDeliveryTX() throws Exception
    {
    	scheduledDelivery(true);

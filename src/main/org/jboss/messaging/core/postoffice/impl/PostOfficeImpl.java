@@ -37,6 +37,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -54,6 +55,7 @@ import org.jboss.messaging.core.server.impl.SendLockImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
@@ -68,9 +70,9 @@ import org.jboss.messaging.util.SimpleString;
 public class PostOfficeImpl implements PostOffice
 {
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
-
-   private static final List<MessageReference> emptyList = Collections.<MessageReference> emptyList();
-
+   
+   private static final List<MessageReference> emptyList = Collections.<MessageReference>emptyList();
+   
    private final AddressManager addressManager;
 
    private final QueueFactory queueFactory;
@@ -298,7 +300,14 @@ public class PostOfficeImpl implements PostOffice
 
    public Bindings getBindingsForAddress(final SimpleString address)
    {
-      return addressManager.getBindings(address);
+      Bindings bindings = addressManager.getBindings(address);
+      
+      if (bindings == null)
+      {
+         bindings = new BindingsImpl();
+      }
+      
+      return bindings;
    }
 
    public Binding getBinding(final SimpleString queueName)
@@ -314,8 +323,26 @@ public class PostOfficeImpl implements PostOffice
       }
    }
 
-   public List<MessageReference> route(final ServerMessage message) throws Exception
+   public List<MessageReference> reroute(final ServerMessage message) throws Exception
    {
+      SimpleString address = message.getDestination();
+
+      Bindings bindings = addressManager.getBindings(address);
+
+      List<MessageReference> references = null;
+      
+      if (bindings != null)
+      {
+         references = bindings.route(message);
+
+         computePaging(address, message, references);
+      }
+      
+      return references;
+   }
+   
+   public List<MessageReference> route(final ServerMessage message, final Transaction tx, final boolean deliver) throws Exception
+   {      
       SimpleString address = message.getDestination();
 
       if (checkAllowable)
@@ -329,17 +356,58 @@ public class PostOfficeImpl implements PostOffice
 
       Bindings bindings = addressManager.getBindings(address);
 
+      List<MessageReference> references = null;
+      
       if (bindings != null)
       {
-         List<MessageReference> references = bindings.route(message);
-         
+         references = bindings.route(message);
+
          computePaging(address, message, references);
-         
+      }
+
+      if (message.getDurableRefCount() != 0)
+      {
+         if (tx == null)
+         {
+            storageManager.storeMessage(message);
+         }
+         else
+         {
+            storageManager.storeMessageTransactional(tx.getID(), message);
+         }
+      }
+
+      if (references != null)
+      {         
+         Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+
+         if (scheduledDeliveryTime != null)
+         {
+            scheduleReferences(scheduledDeliveryTime, references, tx);
+         }
+      
+         if (deliver)
+         {
+            deliver(references);
+         }
+                  
          return references;
       }
       else
       {
          return emptyList;
+      }
+   }
+   
+   public void route(final ServerMessage message, final Transaction tx) throws Exception
+   {
+      if (tx == null)
+      {
+         route(message, null, true);
+      }
+      else
+      {
+         tx.addMessage(message);
       }
    }
 
@@ -409,24 +477,19 @@ public class PostOfficeImpl implements PostOffice
       return addressManager.numMappings();
    }
 
-   public void scheduleReferences(final long scheduledDeliveryTime, final List<MessageReference> references) throws Exception
-   {
-      scheduleReferences(-1, scheduledDeliveryTime, references);
-   }
+   // Private -----------------------------------------------------------------
 
-   public void scheduleReferences(final long transactionID,
-                                  final long scheduledDeliveryTime,
-                                  final List<MessageReference> references) throws Exception
-   {
+   private void scheduleReferences(final long scheduledDeliveryTime, final List<MessageReference> references, final Transaction tx) throws Exception
+   {      
       for (MessageReference ref : references)
       {
          ref.setScheduledDeliveryTime(scheduledDeliveryTime);
 
          if (ref.getMessage().isDurable() && ref.getQueue().isDurable())
          {
-            if (transactionID >= 0)
+            if (tx != null)
             {
-               storageManager.updateScheduledDeliveryTimeTransactional(transactionID, ref);
+               storageManager.updateScheduledDeliveryTimeTransactional(tx.getID(), ref);
             }
             else
             {
@@ -436,7 +499,6 @@ public class PostOfficeImpl implements PostOffice
       }
    }
 
-   // Private -----------------------------------------------------------------
    
    /**
     * Add sizes on Paging
@@ -450,16 +512,15 @@ public class PostOfficeImpl implements PostOffice
       if (references.size() > 0)
       {
          PagingStore store = pagingManager.getPageStore(address);
-         
+
          store.addSize(message.getMemoryEstimate());
-         
-         for (MessageReference ref: references)
+
+         for (MessageReference ref : references)
          {
             store.addSize(ref.getMemoryEstimate());
          }
       }
    }
-
 
    private Binding createBinding(final SimpleString address,
                                  final SimpleString name,
@@ -545,7 +606,6 @@ public class PostOfficeImpl implements PostOffice
          }
       }
 
-      
       // This is necessary as if the server was previously stopped while a depage was being executed,
       // it needs to resume the depage process on those destinations
       pagingManager.reloadStores();
