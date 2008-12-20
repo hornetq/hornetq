@@ -22,6 +22,26 @@
 
 package org.jboss.messaging.tests.integration.cluster.management;
 
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
@@ -58,8 +78,6 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
    private SimpleString address;
 
-   private final long timeToSleep = 100;
-
    // Static --------------------------------------------------------
 
    private static QueueControlMBean createQueueControl(SimpleString address, SimpleString name, MBeanServer mbeanServer) throws Exception
@@ -93,9 +111,6 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       message.setPriority(oldPriority);
       producer.send(message);
       
-      // wiat a little bit to give time for the message to be handled by the server
-      Thread.sleep(timeToSleep);
-
       // check it is on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
@@ -137,9 +152,6 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(false));
       
-      // wiat a little bit to give time for the message to be handled by the server
-      Thread.sleep(timeToSleep);
-
       // check it is on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
@@ -177,9 +189,6 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       matchingMessage.putLongProperty(key, matchingValue);
       producer.send(matchingMessage);
       
-      // wiat a little bit to give time for the message to be handled by the server
-      Thread.sleep(timeToSleep);
-
       // check messages are on both live & backup nodes
       assertEquals(2, liveQueueControl.getMessageCount());
       assertEquals(2, backupQueueControl.getMessageCount());
@@ -214,9 +223,6 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       long value = randomLong();
       message.putLongProperty(key, value);
       producer.send(message);
-
-      // wait a little bit to ensure the message is handled by the server
-      Thread.sleep(timeToSleep);
 
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
@@ -260,9 +266,6 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       matchingMessage.putLongProperty(key, matchingValue);
       producer.send(matchingMessage);
 
-      // wait a little bit to ensure the message is handled by the server
-      Thread.sleep(timeToSleep);
-      
       assertEquals(2, liveQueueControl.getMessageCount());
       assertEquals(2, backupQueueControl.getMessageCount());
       assertEquals(0, liveOtherQueueControl.getMessageCount());
@@ -298,9 +301,6 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(false));
       
-      // wait a little bit to give time for the message to be handled by the server
-      Thread.sleep(timeToSleep);
-
       // check it is on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
@@ -335,9 +335,6 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(false));
 
-      // wiat a little bit to give time for the message to be handled by the server
-      Thread.sleep(timeToSleep);
-
       // check it is on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
@@ -369,9 +366,6 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       matchingMessage.putLongProperty(key, matchingValue);
       producer.send(matchingMessage);
 
-      // wait a little bit to ensure the message is handled by the server
-      Thread.sleep(timeToSleep );
-      
       assertEquals(2, liveQueueControl.getMessageCount());
       assertEquals(2, backupQueueControl.getMessageCount());
 
@@ -395,9 +389,6 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(false));
       
-      // wait a little bit to give time for the message to be handled by the server
-      Thread.sleep(timeToSleep);
-
       // check it is on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
@@ -426,9 +417,6 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(false));
       
-      // wait a little bit to give time for the message to be handled by the server
-      Thread.sleep(timeToSleep);
-
       // check it is on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
@@ -496,7 +484,27 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()),
                                                                      new TransportConfiguration(InVMConnectorFactory.class.getName(),
-                                                                                                backupParams));
+                                                                                                backupParams),
+                                                                                                DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                                                                                DEFAULT_PING_PERIOD,
+                                                                                                DEFAULT_CONNECTION_TTL,
+                                                                                                DEFAULT_CALL_TIMEOUT,
+                                                                                                DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                                                                DEFAULT_CONSUMER_MAX_RATE,
+                                                                                                DEFAULT_SEND_WINDOW_SIZE,
+                                                                                                DEFAULT_PRODUCER_MAX_RATE,
+                                                                                                DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                                                                DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                                                                                true,
+                                                                                                true,
+                                                                                                DEFAULT_AUTO_GROUP,
+                                                                                                DEFAULT_MAX_CONNECTIONS,
+                                                                                                DEFAULT_PRE_ACKNOWLEDGE,
+                                                                                                DEFAULT_ACK_BATCH_SIZE,                                 
+                                                                                                DEFAULT_RETRY_INTERVAL,
+                                                                                                DEFAULT_RETRY_INTERVAL_MULTIPLIER,                                        
+                                                                                                DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                                                                DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
 
       session = sf.createSession(false, true, true);
 

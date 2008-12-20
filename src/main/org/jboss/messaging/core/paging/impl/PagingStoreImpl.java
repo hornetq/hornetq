@@ -705,22 +705,18 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    /**
     * This method will remove files from the page system and and route them, doing it transactionally
-    * 
-    * A Transaction will be opened only if persistent messages are used.
-    * 
+    *     
     * If persistent messages are also used, it will update eventual PageTransactions
     */
    
    private void onDepage(final int pageId, final SimpleString destination, final List<PagedMessage> pagedMessages) throws Exception
    {
       trace("Depaging....");
-      
-      log.info("depaging " + pagedMessages.size() + " messages");
-            
+
       // Depage has to be done atomically, in case of failure it should be
       // back to where it was
 
-      Transaction depageTransaction = new TransactionImpl(storageManager, postOffice);
+      Transaction depageTransaction = new TransactionImpl(storageManager, postOffice, true);
 
       LastPageRecord lastPageRecord = getLastPageRecord();
 
@@ -857,6 +853,8 @@ public class PagingStoreImpl implements TestSupportPageStore
    private void openNewPage() throws Exception
    {
       currentPageLock.writeLock().lock();
+      
+   //   log.info("Opening new page");
 
       try
       {

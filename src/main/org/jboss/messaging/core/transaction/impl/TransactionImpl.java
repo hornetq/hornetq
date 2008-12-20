@@ -83,6 +83,9 @@ public class TransactionImpl implements Transaction
    private final Object timeoutLock = new Object();
 
    private final long createTime;
+   
+   //For a transaction used for depaging, we never want to immediately page the refs again
+   private final boolean depage;
 
    public TransactionImpl(final StorageManager storageManager, final PostOffice postOffice)
    {
@@ -104,6 +107,32 @@ public class TransactionImpl implements Transaction
       id = storageManager.generateUniqueID();
 
       createTime = System.currentTimeMillis();
+      
+      this.depage = false;
+   }
+   
+   public TransactionImpl(final StorageManager storageManager, final PostOffice postOffice, final boolean depage)
+   {
+      this.storageManager = storageManager;
+
+      this.postOffice = postOffice;
+
+      if (postOffice == null)
+      {
+         pagingManager = null;
+      }
+      else
+      {
+         pagingManager = postOffice.getPagingManager();
+      }
+
+      xid = null;
+
+      id = storageManager.generateUniqueID();
+
+      createTime = System.currentTimeMillis();
+      
+      this.depage = depage;
    }
 
    public TransactionImpl(final Xid xid, final StorageManager storageManager, final PostOffice postOffice)
@@ -126,6 +155,8 @@ public class TransactionImpl implements Transaction
       id = storageManager.generateUniqueID();
 
       createTime = System.currentTimeMillis();
+      
+      this.depage = false;
    }
 
    public TransactionImpl(final long id, final Xid xid, final StorageManager storageManager, final PostOffice postOffice)
@@ -148,6 +179,8 @@ public class TransactionImpl implements Transaction
       }
 
       createTime = System.currentTimeMillis();
+      
+      this.depage = false;
    }
 
    // Transaction implementation
@@ -174,7 +207,7 @@ public class TransactionImpl implements Transaction
 
       SimpleString destination = message.getDestination();
 
-      if (destinationsInPageMode.contains(destination) || pagingManager.isPaging(destination))
+      if (!depage && (destinationsInPageMode.contains(destination) || pagingManager.isPaging(destination)))
       {
          destinationsInPageMode.add(destination);
          pagedMessages.add(message);
@@ -319,7 +352,6 @@ public class TransactionImpl implements Transaction
             storageManager.commit(id);
          }
 
-         log.info("delivering " + refsToAdd.size() + " refs");
          postOffice.deliver(refsToAdd);
 
          // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
@@ -529,8 +561,7 @@ public class TransactionImpl implements Transaction
    private void route(final ServerMessage message) throws Exception
    {
       List<MessageReference> refs = postOffice.route(message, this, false);
-      
-      log.info("routed to " + refs.size() + " refs");
+            
       refsToAdd.addAll(refs);
 
       if (message.getDurableRefCount() != 0)

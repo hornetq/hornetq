@@ -91,7 +91,7 @@ public class JMSUtil
                                                              DEFAULT_PRODUCER_MAX_RATE,
                                                              DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                              DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                             DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                                             true,
                                                              true,
                                                              DEFAULT_AUTO_GROUP,
                                                              DEFAULT_MAX_CONNECTIONS,

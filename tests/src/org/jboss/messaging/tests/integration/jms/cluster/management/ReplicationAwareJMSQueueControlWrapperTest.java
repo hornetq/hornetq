@@ -32,12 +32,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerInvocationHandler;
-import javax.management.openmbean.TabularData;
 
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.management.MessageInfo;
-import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
@@ -57,8 +52,6 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   private final long timeToSleep = 100;
 
    private JMSServerManagerImpl liveServerManager;
 
@@ -103,9 +96,6 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       message.setJMSPriority(oldPriority);
       producer.send(message);
 
-      // wiat a little bit to give time for the message to be handled by the server
-      Thread.sleep(timeToSleep);
-
       // check it is on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
@@ -119,9 +109,6 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       MessageProducer producer = session.createProducer(queue);
       TextMessage message = session.createTextMessage(randomString());
       producer.send(message);
-
-      // wiat a little bit to give time for the message to be handled by the server
-      Thread.sleep(timeToSleep);
 
       // check it is on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
@@ -144,9 +131,6 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       JMSUtil.sendMessageWithProperty(session, queue, key, unmatchingValue);
       JMSUtil.sendMessageWithProperty(session, queue, key, matchingValue);
 
-      // wiat a little bit to give time for the message to be handled by the server
-      Thread.sleep(timeToSleep);
-
       // check messages are on both live & backup nodes
       assertEquals(2, liveQueueControl.getMessageCount());
       assertEquals(2, backupQueueControl.getMessageCount());
@@ -163,9 +147,6 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       // send on queue
       MessageProducer producer = session.createProducer(queue);
       producer.send(session.createMessage());
-
-      // wait a little bit to ensure the message is handled by the server
-      Thread.sleep(timeToSleep);
 
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
@@ -192,9 +173,6 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       JMSUtil.sendMessageWithProperty(session, queue, key, unmatchingValue);
       JMSUtil.sendMessageWithProperty(session, queue, key, matchingValue);
 
-      // wait a little bit to ensure the message is handled by the server
-      Thread.sleep(timeToSleep);
-      
       assertEquals(2, liveQueueControl.getMessageCount());
       assertEquals(2, backupQueueControl.getMessageCount());
       assertEquals(0, liveOtherQueueControl.getMessageCount());
@@ -217,9 +195,6 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       Message message = session.createMessage();
       producer.send(message);
       
-      // wait a little bit to give time for the message to be handled by the server
-      Thread.sleep(timeToSleep);
-
       // check it is on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
@@ -240,9 +215,6 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       // send 1 message
       MessageProducer producer = session.createProducer(queue);
       producer.send(session.createMessage());
-
-      // wiat a little bit to give time for the message to be handled by the server
-      Thread.sleep(timeToSleep);
 
       // check it is on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
@@ -267,9 +239,6 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       JMSUtil.sendMessageWithProperty(session, queue, key, unmatchingValue);
       JMSUtil.sendMessageWithProperty(session, queue, key, matchingValue);
 
-      // wait a little bit to ensure the message is handled by the server
-      Thread.sleep(timeToSleep );
-      
       assertEquals(2, liveQueueControl.getMessageCount());
       assertEquals(2, backupQueueControl.getMessageCount());
 
@@ -288,9 +257,6 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       Message message = session.createMessage();
       producer.send(message);
       
-      // wait a little bit to give time for the message to be handled by the server
-      Thread.sleep(timeToSleep);
-
       // check it is on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
@@ -309,9 +275,6 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       Message message = session.createMessage();
       producer.send(message);
       
-      // wait a little bit to give time for the message to be handled by the server
-      Thread.sleep(timeToSleep);
-
       // check it is on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
