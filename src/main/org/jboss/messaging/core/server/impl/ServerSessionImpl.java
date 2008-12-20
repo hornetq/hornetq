@@ -182,8 +182,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private final PostOffice postOffice;
 
-   private final PagingManager pager;
-
    private final SecurityStore securityStore;
 
    private final Channel channel;
@@ -246,8 +244,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       this.storageManager = storageManager;
 
       this.postOffice = postOffice;
-
-      pager = postOffice.getPagingManager();
 
       this.queueSettingsRepository = queueSettingsRepository;
 
@@ -2636,10 +2632,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       
       if (theTx == null)
       {
-         if (!pager.page(msg))
-         {
-            postOffice.route(msg, null);
-         }
+         postOffice.route(msg, null);         
       }
       else
       { 

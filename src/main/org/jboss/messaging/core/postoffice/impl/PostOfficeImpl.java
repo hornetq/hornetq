@@ -106,7 +106,7 @@ public class PostOfficeImpl implements PostOffice
    private final int idCacheSize;
 
    private final boolean persistIDCache;
-
+   
    public PostOfficeImpl(final StorageManager storageManager,
                          final PagingManager pagingManager,
                          final QueueFactory queueFactory,
@@ -383,7 +383,22 @@ public class PostOfficeImpl implements PostOffice
 
          if (scheduledDeliveryTime != null)
          {
-            scheduleReferences(scheduledDeliveryTime, references, tx);
+            for (MessageReference ref : references)
+            {
+               ref.setScheduledDeliveryTime(scheduledDeliveryTime);
+
+               if (ref.getMessage().isDurable() && ref.getQueue().isDurable())
+               {
+                  if (tx != null)
+                  {
+                     storageManager.updateScheduledDeliveryTimeTransactional(tx.getID(), ref);
+                  }
+                  else
+                  {
+                     storageManager.updateScheduledDeliveryTime(ref);
+                  }
+               }
+            }
          }
       
          if (deliver)
@@ -403,7 +418,10 @@ public class PostOfficeImpl implements PostOffice
    {
       if (tx == null)
       {
-         route(message, null, true);
+         if (!pagingManager.page(message))
+         {
+            route(message, null, true);
+         }
       }
       else
       {
@@ -478,28 +496,7 @@ public class PostOfficeImpl implements PostOffice
    }
 
    // Private -----------------------------------------------------------------
-
-   private void scheduleReferences(final long scheduledDeliveryTime, final List<MessageReference> references, final Transaction tx) throws Exception
-   {      
-      for (MessageReference ref : references)
-      {
-         ref.setScheduledDeliveryTime(scheduledDeliveryTime);
-
-         if (ref.getMessage().isDurable() && ref.getQueue().isDurable())
-         {
-            if (tx != null)
-            {
-               storageManager.updateScheduledDeliveryTimeTransactional(tx.getID(), ref);
-            }
-            else
-            {
-               storageManager.updateScheduledDeliveryTime(ref);
-            }
-         }
-      }
-   }
-
-   
+ 
    /**
     * Add sizes on Paging
     * @param address
@@ -509,7 +506,7 @@ public class PostOfficeImpl implements PostOffice
     */
    private void computePaging(SimpleString address, final ServerMessage message, List<MessageReference> references) throws Exception
    {
-      if (references.size() > 0)
+      if (!references.isEmpty())
       {
          PagingStore store = pagingManager.getPageStore(address);
 
