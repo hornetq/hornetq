@@ -23,7 +23,6 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
@@ -43,6 +42,8 @@ import org.jboss.messaging.util.SimpleString;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
+ * 
+ * TODO - this should be refactored to use transaction operations for adding, acking paging stuff etc
  */
 public class TransactionImpl implements Transaction
 {

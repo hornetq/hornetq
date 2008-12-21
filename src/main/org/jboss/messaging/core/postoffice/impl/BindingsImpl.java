@@ -35,6 +35,7 @@ import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.transaction.Transaction;
 
 /**
  * A BindingsImpl
@@ -83,7 +84,68 @@ public class BindingsImpl implements Bindings
          numberExclusive.decrementAndGet();
       }
    }
+   
+   public List<MessageReference> route(final ServerMessage message)
+   {
+      return route(message, null);
+   }
+   
+   public List<MessageReference> route(final ServerMessage message, final Transaction tx)
+   {
+      if (numberExclusive.get() > 0)
+      {
+         // We need to round robin
+         
+         List<MessageReference> refs = new ArrayList<MessageReference>(1);
 
+         Binding binding = getNext(message);
+            
+         if (binding != null)
+         {        
+            Queue queue = binding.getQueue();
+            
+            MessageReference reference = message.createReference(queue);
+   
+            refs.add(reference);             
+         }
+         
+         return refs;
+      }
+      else
+      {
+         // They all get the message
+         
+         // TODO - this can be optimised to avoid a copy
+         
+         if (!bindings.isEmpty())
+         {   
+            List<MessageReference> refs = new ArrayList<MessageReference>();
+   
+            for (Binding binding : bindings)
+            {
+               Queue queue = binding.getQueue();
+   
+               Filter filter = queue.getFilter();
+   
+               //Note we ignore any exclusive - this structure is concurrent so one could have been added
+               //since the initial check on number of exclusive
+               if (!binding.isExclusive() && (filter == null || filter.match(message)))
+               {
+                  MessageReference reference = message.createReference(queue);
+   
+                  refs.add(reference);
+               }
+            }
+            
+            return refs;
+         }
+         else
+         {
+            return Collections.<MessageReference>emptyList();
+         }
+      }
+   }
+   
    private Binding getNext(final ServerMessage message)
    {
       //It's not an exact round robin under concurrent access but that doesn't matter
@@ -160,61 +222,5 @@ public class BindingsImpl implements Bindings
       }
             
       binding = null;
-   }
-   
-   public List<MessageReference> route(final ServerMessage message)
-   {
-      if (numberExclusive.get() > 0)
-      {
-         // We need to round robin
-         
-         List<MessageReference> refs = new ArrayList<MessageReference>(1);
-
-         Binding binding = getNext(message);
-            
-         if (binding != null)
-         {        
-            Queue queue = binding.getQueue();
-            
-            MessageReference reference = message.createReference(queue);
-   
-            refs.add(reference);             
-         }
-         
-         return refs;
-      }
-      else
-      {
-         // They all get the message
-         
-         // TODO - this can be optimised to avoid a copy
-         
-         if (!bindings.isEmpty())
-         {   
-            List<MessageReference> refs = new ArrayList<MessageReference>();
-   
-            for (Binding binding : bindings)
-            {
-               Queue queue = binding.getQueue();
-   
-               Filter filter = queue.getFilter();
-   
-               //Note we ignore any exclusive - this structure is concurrent so one could have been added
-               //since the initial check on number of exclusive
-               if (!binding.isExclusive() && (filter == null || filter.match(message)))
-               {
-                  MessageReference reference = message.createReference(queue);
-   
-                  refs.add(reference);
-               }
-            }
-            
-            return refs;
-         }
-         else
-         {
-            return Collections.<MessageReference>emptyList();
-         }
-      }
    }
 }

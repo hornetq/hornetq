@@ -536,9 +536,13 @@ public class ServerConsumerImpl implements ServerConsumer
             
             ref.getQueue().referenceHandled();
          }
-
          
-         
+         if (preAcknowledge)
+         {
+            //With pre-ack, we ack *before* sending to the client
+            doAck(ref);
+         }
+                  
          // TODO: get rid of the instanceof by something like message.isLargeMessage()
          if (message instanceof ServerLargeMessage)
          {            
@@ -567,12 +571,8 @@ public class ServerConsumerImpl implements ServerConsumer
          else
          {
             sendStandardMessage(ref, message);
-            
-            if (preAcknowledge)
-            {
-               doAck(ref);
-            }
          }
+         
          return HandleStatus.HANDLED;
       }
       finally
@@ -636,15 +636,12 @@ public class ServerConsumerImpl implements ServerConsumer
 
       private final MessageReference ref;
 
-      private boolean sentFirstMessage = false;
-
-      // To avoid ACK to be called twice, as sendLargeMessage could be waiting another call because of flowControl
-      private boolean acked = false;
+      private volatile boolean sentFirstMessage = false;
 
       /** The current position on the message being processed */
-      private long positionPendingLargeMessage;
+      private volatile long positionPendingLargeMessage;
 
-      private SessionReceiveContinuationMessage readAheadChunk;
+      private volatile SessionReceiveContinuationMessage readAheadChunk;
 
       public LargeMessageSender(final ServerLargeMessage message, final MessageReference ref)
       {
@@ -673,7 +670,6 @@ public class ServerConsumerImpl implements ServerConsumer
 
             if (!sentFirstMessage)
             {
-
                sentFirstMessage = true;
 
                MessagingBuffer headerBuffer = new ByteBufferWrapper(ByteBuffer.allocate(pendingLargeMessage.getPropertiesEncodeSize()));
@@ -735,21 +731,6 @@ public class ServerConsumerImpl implements ServerConsumer
             }
 
             pendingLargeMessage.releaseResources();
-
-            if (preAcknowledge && !acked)
-            {
-               acked = true;
-               try
-               {
-                  doAck(ref);
-               }
-               catch (Exception e)
-               {
-                  // Is there anything we could do here besides logging?
-                  // The message was already sent, and this shouldn't happen
-                  log.error("Error while ACKing reference " + ref, e);
-               }
-            }
 
             largeMessageSender = null;
 

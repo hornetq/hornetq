@@ -20,13 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.postoffice;
 
 import java.util.List;
 
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.transaction.Transaction;
 
 /**
  * A Bindings
@@ -41,7 +41,9 @@ public interface Bindings
 {
    List<Binding> getBindings();
    
-   List<MessageReference> route(ServerMessage message);
+   List<MessageReference> route(final ServerMessage message);
+   
+   List<MessageReference> route(ServerMessage message, Transaction tx);
    
    void addBinding(Binding binding);
    

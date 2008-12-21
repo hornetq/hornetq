@@ -333,7 +333,7 @@ public class PostOfficeImpl implements PostOffice
       
       if (bindings != null)
       {
-         references = bindings.route(message);
+         references = bindings.route(message, null);
 
          computePaging(address, message, references);
       }
@@ -360,7 +360,7 @@ public class PostOfficeImpl implements PostOffice
       
       if (bindings != null)
       {
-         references = bindings.route(message);
+         references = bindings.route(message, tx);
 
          computePaging(address, message, references);
       }
@@ -400,6 +400,12 @@ public class PostOfficeImpl implements PostOffice
                }
             }
          }
+         
+//         TODO - bindings.route does not need to return a messagereference list, instead bindings route should actually create the refs and send them to the queues
+//         then we can get rid of the deliver call too
+//                          
+//         for a transaction bindings.route
+//          
       
          if (deliver)
          {
