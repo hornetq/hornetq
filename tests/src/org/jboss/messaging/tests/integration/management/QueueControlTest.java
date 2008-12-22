@@ -114,8 +114,6 @@ public class QueueControlTest extends TestCase
       message.putLongProperty(key, value);
       producer.send(message);
 
-      // wait a little bit to ensure the message is handled by the server
-      Thread.sleep(100);
       QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
       assertEquals(1, queueControl.getMessageCount());
 
@@ -159,6 +157,8 @@ public class QueueControlTest extends TestCase
       long unmatchingValue = matchingValue + 1;
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnPersistentSend(true);
       ClientSession session = sf.createSession(false, true, true);
 
       SimpleString address = randomSimpleString();
@@ -179,8 +179,6 @@ public class QueueControlTest extends TestCase
       unmatchingMessage.putLongProperty(key, unmatchingValue);
       producer.send(unmatchingMessage);
 
-      // wait a little bit to ensure the message is handled by the server
-      Thread.sleep(100);
       QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
       assertEquals(2, queueControl.getMessageCount());
 
@@ -234,8 +232,6 @@ public class QueueControlTest extends TestCase
       producer.send(session.createClientMessage(false));
       producer.send(session.createClientMessage(false));
 
-      // wait a little bit to ensure the message is handled by the server
-      Thread.sleep(100);
       QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
       assertEquals(2, queueControl.getMessageCount());
 
@@ -286,8 +282,6 @@ public class QueueControlTest extends TestCase
       unmatchingMessage.putLongProperty(key, unmatchingValue);
       producer.send(unmatchingMessage);
 
-      // wait a little bit to ensure the message is handled by the server
-      Thread.sleep(100);
       QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
       assertEquals(2, queueControl.getMessageCount());
 
@@ -339,8 +333,6 @@ public class QueueControlTest extends TestCase
       producer.send(unmatchingMessage);
       producer.send(matchingMessage);
 
-      // wait a little bit to ensure the message is handled by the server
-      Thread.sleep(100);
       QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
       assertEquals(3, queueControl.getMessageCount());
 
@@ -375,8 +367,6 @@ public class QueueControlTest extends TestCase
       unmatchingMessage.putLongProperty(key, unmatchingValue);
       producer.send(unmatchingMessage);
 
-      // wait a little bit to ensure the message is handled by the server
-      Thread.sleep(100);
       QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
       assertEquals(2, queueControl.getMessageCount());
 

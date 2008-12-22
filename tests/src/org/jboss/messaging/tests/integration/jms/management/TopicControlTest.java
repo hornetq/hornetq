@@ -157,9 +157,6 @@ public class TopicControlTest extends TestCase
       
       TopicControlMBean topicControl = createTopicControl(topic, mbeanServer);
       
-      // wiat a little bit to give time for the message to be handled by the server
-      Thread.sleep(200);
-
       assertEquals(3, topicControl.getMessageCount());
 
       assertEquals(2, topicControl.countMessagesForSubscription(clientID, subscriptionName, key + " =" + matchingValue));

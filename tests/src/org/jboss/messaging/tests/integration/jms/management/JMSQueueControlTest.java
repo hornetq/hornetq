@@ -122,15 +122,11 @@ public class JMSQueueControlTest extends TestCase
 
       JMSUtil.sendMessages(queue, 2);
 
-      Thread.sleep(100);
-
       assertEquals(2, queueControl.getMessageCount());
       assertEquals(2, queueControl.getMessagesAdded());
 
       assertNotNull(consumer.receive(500));
       assertNotNull(consumer.receive(500));
-
-      Thread.sleep(100);
 
       assertEquals(0, queueControl.getMessageCount());
       assertEquals(2, queueControl.getMessagesAdded());
@@ -303,9 +299,6 @@ public class JMSQueueControlTest extends TestCase
       JMSUtil.sendMessageWithProperty(session, queue, key, matchingValue);
       JMSUtil.sendMessageWithProperty(session, queue, key, unmatchingValue);
       JMSUtil.sendMessageWithProperty(session, queue, key, matchingValue);
-
-      // wiat a little bit to give time for the message to be handled by the server
-      Thread.sleep(200);
 
       assertEquals(3, queueControl.getMessageCount());
 
