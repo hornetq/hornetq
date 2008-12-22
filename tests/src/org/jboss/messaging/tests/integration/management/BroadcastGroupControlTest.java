@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.tests.integration.management;
 
+import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createBroadcastGroupControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
@@ -31,7 +32,6 @@ import java.util.List;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-import javax.management.MBeanServerInvocationHandler;
 
 import junit.framework.TestCase;
 
@@ -40,7 +40,6 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
-import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
@@ -65,15 +64,6 @@ public class BroadcastGroupControlTest extends TestCase
    private MessagingService service;
 
    // Static --------------------------------------------------------
-
-   private static BroadcastGroupControlMBean createControl(String name, MBeanServer mbeanServer) throws Exception
-   {
-      BroadcastGroupControlMBean control = (BroadcastGroupControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
-                                                                                                                     ManagementServiceImpl.getBroadcastGroupObjectName(name),
-                                                                                                                     BroadcastGroupControlMBean.class,
-                                                                                                                     false);
-      return control;
-   }
 
    public static BroadcastGroupConfiguration randomBroadcastGroupConfiguration(List<Pair<String, String>> connectorInfos)
    {
@@ -112,7 +102,7 @@ public class BroadcastGroupControlTest extends TestCase
       service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
-      BroadcastGroupControlMBean broadcastGroupControl = createControl(broadcastGroupConfig.getName(), mbeanServer);
+      BroadcastGroupControlMBean broadcastGroupControl = createBroadcastGroupControl(broadcastGroupConfig.getName(), mbeanServer);
 
       assertEquals(broadcastGroupConfig.getName(), broadcastGroupControl.getName());
       assertEquals(broadcastGroupConfig.getGroupAddress(), broadcastGroupControl.getGroupAddress());
@@ -138,7 +128,7 @@ public class BroadcastGroupControlTest extends TestCase
       service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
-      BroadcastGroupControlMBean broadcastGroupControl = createControl(broadcastGroupConfig.getName(), mbeanServer);
+      BroadcastGroupControlMBean broadcastGroupControl = createBroadcastGroupControl(broadcastGroupConfig.getName(), mbeanServer);
 
       // started by the service
       assertTrue(broadcastGroupControl.isStarted());

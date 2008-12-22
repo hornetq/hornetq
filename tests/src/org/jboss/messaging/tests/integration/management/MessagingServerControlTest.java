@@ -28,7 +28,6 @@ import java.util.HashMap;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-import javax.management.MBeanServerInvocationHandler;
 import javax.management.openmbean.TabularData;
 
 import junit.framework.TestCase;
@@ -38,7 +37,6 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.TransportConfigurationInfo;
-import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
@@ -63,15 +61,6 @@ public class MessagingServerControlTest extends TestCase
 
    // Static --------------------------------------------------------
 
-   private static MessagingServerControlMBean createServerControl(MBeanServer mbeanServer) throws Exception
-   {
-      MessagingServerControlMBean control = (MessagingServerControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
-                                                                                                                       ManagementServiceImpl.getMessagingServerObjectName(),
-                                                                                                                       MessagingServerControlMBean.class,
-                                                                                                                       false);
-      return control;
-   }
-
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
@@ -91,7 +80,8 @@ public class MessagingServerControlTest extends TestCase
       service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
-      MessagingServerControlMBean serverControl = createServerControl(mbeanServer);
+      MessagingServerControlMBean serverControl = ManagementControlHelper.createMessagingServerControl(mbeanServer);
+
       TabularData acceptorData = serverControl.getConnectors();
       assertNotNull(acceptorData);
       assertEquals(1, acceptorData.size());

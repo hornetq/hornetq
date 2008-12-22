@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.tests.integration.jms.management;
 
+import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createConnectionFactoryControl;
+import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createJMSServerControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.concurrent.CountDownLatch;
@@ -33,7 +35,6 @@ import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-import javax.management.MBeanServerInvocationHandler;
 
 import junit.framework.TestCase;
 
@@ -52,7 +53,6 @@ import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.ConnectionFactoryControlMBean;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
-import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 
 /**
  * A QueueControlTest
@@ -72,24 +72,6 @@ public class JMSServerControlTest extends TestCase
    private MBeanServer mbeanServer;
 
    // Static --------------------------------------------------------
-
-   private static JMSServerControlMBean createJMSServerControl(MBeanServer mbeanServer) throws Exception
-   {
-      JMSServerControlMBean control = (JMSServerControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
-                                                                                                           JMSManagementServiceImpl.getJMSServerObjectName(),
-                                                                                                           JMSServerControlMBean.class,
-                                                                                                           false);
-      return control;
-   }
-   
-   private static ConnectionFactoryControlMBean createConnectionFactoryControl(String name, MBeanServer mbeanServer) throws Exception
-   {
-      ConnectionFactoryControlMBean control = (ConnectionFactoryControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
-                                                                                                           JMSManagementServiceImpl.getConnectionFactoryObjectName(name),
-                                                                                                           ConnectionFactoryControlMBean.class,
-                                                                                                           false);
-      return control;
-   }
 
    private MessagingService startMessagingService(String acceptorFactory) throws Exception
    {

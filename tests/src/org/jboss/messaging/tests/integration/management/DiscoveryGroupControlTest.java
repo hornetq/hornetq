@@ -22,12 +22,12 @@
 
 package org.jboss.messaging.tests.integration.management;
 
+import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createDiscoveryGroupControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-import javax.management.MBeanServerInvocationHandler;
 
 import junit.framework.TestCase;
 
@@ -35,7 +35,6 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.DiscoveryGroupControlMBean;
-import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 
@@ -59,15 +58,6 @@ public class DiscoveryGroupControlTest extends TestCase
 
    // Static --------------------------------------------------------
 
-   private static DiscoveryGroupControlMBean createControl(String name, MBeanServer mbeanServer) throws Exception
-   {
-      DiscoveryGroupControlMBean control = (DiscoveryGroupControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
-                                                                                                               ManagementServiceImpl.getDiscoveryGroupObjectName(name),
-                                                                                                               DiscoveryGroupControlMBean.class,
-                                                                                                               false);
-      return control;
-   }
-
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
@@ -85,7 +75,7 @@ public class DiscoveryGroupControlTest extends TestCase
       service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
-      DiscoveryGroupControlMBean discoveryGroupControl = createControl(discoveryGroupConfig.getName(), mbeanServer);
+      DiscoveryGroupControlMBean discoveryGroupControl = createDiscoveryGroupControl(discoveryGroupConfig.getName(), mbeanServer);
 
       assertEquals(discoveryGroupConfig.getName(), discoveryGroupControl.getName());
       assertEquals(discoveryGroupConfig.getGroupAddress(), discoveryGroupControl.getGroupAddress());
@@ -106,7 +96,8 @@ public class DiscoveryGroupControlTest extends TestCase
       service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
-      DiscoveryGroupControlMBean discoveryGroupControl = createControl(discoveryGroupConfig.getName(), mbeanServer);
+      DiscoveryGroupControlMBean discoveryGroupControl = createDiscoveryGroupControl(discoveryGroupConfig.getName(), mbeanServer);
+
       // started by the service
       assertTrue(discoveryGroupControl.isStarted());
 
@@ -127,7 +118,8 @@ public class DiscoveryGroupControlTest extends TestCase
       service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
-      DiscoveryGroupControlMBean discoveryGroupControl = createControl(discoveryGroupConfig.getName(), mbeanServer);
+      DiscoveryGroupControlMBean discoveryGroupControl = createDiscoveryGroupControl(discoveryGroupConfig.getName(), mbeanServer);
+
       // started by the service
       assertTrue(discoveryGroupControl.isStarted());
 

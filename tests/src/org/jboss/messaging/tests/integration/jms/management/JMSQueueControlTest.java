@@ -41,6 +41,7 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
+import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createJMSQueueControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
@@ -52,7 +53,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-import javax.management.MBeanServerInvocationHandler;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
@@ -69,7 +69,6 @@ import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
-import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 
 /**
  * A QueueControlTest
@@ -96,22 +95,13 @@ public class JMSQueueControlTest extends TestCase
 
    // Static --------------------------------------------------------
 
-   private static JMSQueueControlMBean createQueueControl(Queue queue, MBeanServer mbeanServer) throws Exception
-   {
-      JMSQueueControlMBean queueControl = (JMSQueueControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
-                                                                                                              JMSManagementServiceImpl.getJMSQueueObjectName(queue.getQueueName()),
-                                                                                                              JMSQueueControlMBean.class,
-                                                                                                              false);
-      return queueControl;
-   }
-
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
 
    public void testGetXXXCount() throws Exception
    {
-      JMSQueueControlMBean queueControl = createQueueControl(queue, mbeanServer);
+      JMSQueueControlMBean queueControl = createJMSQueueControl(queue, mbeanServer);
 
       assertEquals(0, queueControl.getMessageCount());
       assertEquals(0, queueControl.getConsumerCount());
@@ -138,7 +128,8 @@ public class JMSQueueControlTest extends TestCase
 
    public void testRemoveMessage() throws Exception
    {
-      JMSQueueControlMBean queueControl = createQueueControl(queue, mbeanServer);
+      JMSQueueControlMBean queueControl = createJMSQueueControl(queue, mbeanServer);
+
       assertEquals(0, queueControl.getMessageCount());
 
       JMSUtil.sendMessages(queue, 2);
@@ -159,7 +150,8 @@ public class JMSQueueControlTest extends TestCase
 
    public void testRemoveAllMessages() throws Exception
    {
-      JMSQueueControlMBean queueControl = createQueueControl(queue, mbeanServer);
+      JMSQueueControlMBean queueControl = createJMSQueueControl(queue, mbeanServer);
+
       assertEquals(0, queueControl.getMessageCount());
 
       JMSUtil.sendMessages(queue, 2);
@@ -176,10 +168,11 @@ public class JMSQueueControlTest extends TestCase
 
    public void testRemoveMatchingMessages() throws Exception
    {
-      JMSQueueControlMBean queueControl = createQueueControl(queue, mbeanServer);
+      JMSQueueControlMBean queueControl = createJMSQueueControl(queue, mbeanServer);
+
       assertEquals(0, queueControl.getMessageCount());
 
-      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()),
                                                              null,
                                                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                              DEFAULT_PING_PERIOD,
@@ -232,7 +225,7 @@ public class JMSQueueControlTest extends TestCase
 
    public void testChangeMessagePriority() throws Exception
    {
-      JMSQueueControlMBean queueControl = createQueueControl(queue, mbeanServer);
+      JMSQueueControlMBean queueControl = createJMSQueueControl(queue, mbeanServer);
 
       JMSUtil.sendMessages(queue, 1);
 
@@ -257,12 +250,13 @@ public class JMSQueueControlTest extends TestCase
 
    public void testExpireMessage() throws Exception
    {
-      JMSQueueControlMBean queueControl = createQueueControl(queue, mbeanServer);
+      JMSQueueControlMBean queueControl = createJMSQueueControl(queue, mbeanServer);
       String expiryQueueName = randomString();
       JBossQueue expiryQueue = new JBossQueue(expiryQueueName);
       serverManager.createQueue(expiryQueueName, expiryQueueName);
       queueControl.setExpiryAddress(expiryQueue.getAddress());
-      JMSQueueControlMBean expiryQueueControl = createQueueControl(expiryQueue, mbeanServer);
+
+      JMSQueueControlMBean expiryQueueControl = createJMSQueueControl(expiryQueue, mbeanServer);
 
       JMSUtil.sendMessages(queue, 1);
 
@@ -291,7 +285,7 @@ public class JMSQueueControlTest extends TestCase
       long matchingValue = randomLong();
       long unmatchingValue = matchingValue + 1;
 
-      JMSQueueControlMBean queueControl = createQueueControl(queue, mbeanServer);
+      JMSQueueControlMBean queueControl = createJMSQueueControl(queue, mbeanServer);
 
       Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);

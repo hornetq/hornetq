@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.tests.integration.jms.cluster.management;
 
+import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createJMSQueueControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
@@ -30,14 +31,11 @@ import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerInvocationHandler;
 
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
-import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.tests.integration.cluster.management.ReplicationAwareTestBase;
 import org.jboss.messaging.tests.integration.jms.management.JMSUtil;
 import org.jboss.messaging.tests.integration.jms.management.NullInitialContext;
@@ -74,15 +72,6 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
 
    // Static --------------------------------------------------------
 
-   private static JMSQueueControlMBean createQueueControl(String name, MBeanServer mbeanServer) throws Exception
-   {
-      JMSQueueControlMBean queueControl = (JMSQueueControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
-                                                                                                              JMSManagementServiceImpl.getJMSQueueObjectName(name),
-                                                                                                              JMSQueueControlMBean.class,
-                                                                                                              false);
-      return queueControl;
-   }
-   
    // Public --------------------------------------------------------
    
    public void testChangeMessagePriority() throws Exception
@@ -342,10 +331,10 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      liveQueueControl = createQueueControl(queue.getQueueName(), liveMBeanServer);
-      backupQueueControl = createQueueControl(queue.getQueueName(), backupMBeanServer);
-      liveOtherQueueControl = createQueueControl(otherQueue.getQueueName(), liveMBeanServer);
-      backupOtherQueueControl = createQueueControl(otherQueue.getQueueName(), backupMBeanServer);
+      liveQueueControl = createJMSQueueControl(queue.getQueueName(), liveMBeanServer);
+      backupQueueControl = createJMSQueueControl(queue.getQueueName(), backupMBeanServer);
+      liveOtherQueueControl = createJMSQueueControl(otherQueue.getQueueName(), liveMBeanServer);
+      backupOtherQueueControl = createJMSQueueControl(otherQueue.getQueueName(), backupMBeanServer);
    }
 
    @Override

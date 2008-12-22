@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.tests.integration.jms.management;
 
+import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createTopicControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
@@ -30,7 +31,6 @@ import javax.jms.Session;
 import javax.jms.Topic;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-import javax.management.MBeanServerInvocationHandler;
 
 import junit.framework.TestCase;
 
@@ -43,7 +43,6 @@ import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
-import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 
 /**
  * A TopicControlTest
@@ -75,15 +74,6 @@ public class TopicControlTest extends TestCase
 
    // Static --------------------------------------------------------
 
-   private static TopicControlMBean createTopicControl(Topic topic, MBeanServer mbeanServer) throws Exception
-   {
-      TopicControlMBean topicControl = (TopicControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
-                                                                                                        JMSManagementServiceImpl.getJMSTopicObjectName(topic.getTopicName()),
-                                                                                                        TopicControlMBean.class,
-                                                                                                        false);
-      return topicControl;
-   }
-   
    // Constructors --------------------------------------------------
 
    public TopicControlTest(String name)

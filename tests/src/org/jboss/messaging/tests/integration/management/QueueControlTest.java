@@ -22,12 +22,12 @@
 
 package org.jboss.messaging.tests.integration.management;
 
+import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createQueueControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-import javax.management.MBeanServerInvocationHandler;
 
 import junit.framework.TestCase;
 
@@ -41,7 +41,6 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.QueueControlMBean;
-import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
@@ -70,16 +69,6 @@ public class QueueControlTest extends TestCase
 
    // Static --------------------------------------------------------
 
-   private static QueueControlMBean createQueueControl(SimpleString address, SimpleString name, MBeanServer mbeanServer) throws Exception
-   {
-      QueueControlMBean queueControl = (QueueControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
-                                                                                                        ManagementServiceImpl.getQueueObjectName(address,
-                                                                                                                                                 name),
-                                                                                                        QueueControlMBean.class,
-                                                                                                        false);
-      return queueControl;
-   }
-
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
@@ -95,6 +84,9 @@ public class QueueControlTest extends TestCase
    public void testMoveAllMessages() throws Exception
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnNonPersistentSend(true);
+      
       ClientSession session = sf.createSession(false, true, true);
 
       SimpleString address = randomSimpleString();
@@ -219,6 +211,8 @@ public class QueueControlTest extends TestCase
    public void testRemoveAllMessages() throws Exception
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnNonPersistentSend(true);
       ClientSession session = sf.createSession(false, true, true);
 
       SimpleString address = randomSimpleString();
@@ -265,6 +259,8 @@ public class QueueControlTest extends TestCase
       long unmatchingValue = matchingValue + 1;
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnNonPersistentSend(true);
       ClientSession session = sf.createSession(false, true, true);
 
       SimpleString address = randomSimpleString();
@@ -315,6 +311,8 @@ public class QueueControlTest extends TestCase
       long unmatchingValue = matchingValue + 1;
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnNonPersistentSend(true);
       ClientSession session = sf.createSession(false, true, true);
 
       SimpleString address = randomSimpleString();
@@ -350,6 +348,8 @@ public class QueueControlTest extends TestCase
       long unmatchingValue = matchingValue + 1;
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnNonPersistentSend(true);
       ClientSession session = sf.createSession(false, true, true);
 
       SimpleString address = randomSimpleString();

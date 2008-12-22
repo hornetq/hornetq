@@ -22,12 +22,10 @@
 
 package org.jboss.messaging.tests.integration.cluster.management;
 
+import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createAddressControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import javax.management.MBeanServer;
-import javax.management.MBeanServerInvocationHandler;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
@@ -35,7 +33,6 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.RoleInfo;
-import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.util.SimpleString;
 
@@ -56,15 +53,6 @@ public class ReplicationAwareAddressControlWrapperTest extends ReplicationAwareT
 
    // Static --------------------------------------------------------
 
-   private static AddressControlMBean createAddressControl(SimpleString address, MBeanServer mbeanServer) throws Exception
-   {
-      AddressControlMBean control = (AddressControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
-                                                                                                       ManagementServiceImpl.getAddressObjectName(address),
-                                                                                                       AddressControlMBean.class,
-                                                                                                       false);
-      return control;
-   }
-   
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------

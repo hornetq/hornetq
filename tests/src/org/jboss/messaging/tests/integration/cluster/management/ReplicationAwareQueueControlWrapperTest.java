@@ -25,8 +25,6 @@ package org.jboss.messaging.tests.integration.cluster.management;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
@@ -42,12 +40,11 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
+import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createQueueControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import javax.management.MBeanServer;
-import javax.management.MBeanServerInvocationHandler;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.client.ClientMessage;
@@ -58,7 +55,6 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.MessageInfo;
 import org.jboss.messaging.core.management.QueueControlMBean;
-import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.util.SimpleString;
@@ -79,16 +75,6 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
    private SimpleString address;
 
    // Static --------------------------------------------------------
-
-   private static QueueControlMBean createQueueControl(SimpleString address, SimpleString name, MBeanServer mbeanServer) throws Exception
-   {
-      QueueControlMBean queueControl = (QueueControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
-                                                                                                        ManagementServiceImpl.getQueueObjectName(address,
-                                                                                                                                                 name),
-                                                                                                        QueueControlMBean.class,
-                                                                                                        false);
-      return queueControl;
-   }
 
    // Constructors --------------------------------------------------
 

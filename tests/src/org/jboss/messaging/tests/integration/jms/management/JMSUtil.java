@@ -44,6 +44,7 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -54,6 +55,8 @@ import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
+import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 
 /**
@@ -187,31 +190,7 @@ public class JMSUtil
 
    public static void sendMessages(Destination destination, int messagesToSend) throws Exception
    {
-      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                             null,
-                                                             DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                             DEFAULT_PING_PERIOD,
-                                                             DEFAULT_CONNECTION_TTL,
-                                                             DEFAULT_CALL_TIMEOUT,
-                                                             null,
-                                                             DEFAULT_ACK_BATCH_SIZE,
-                                                             DEFAULT_ACK_BATCH_SIZE,
-                                                             DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                             DEFAULT_CONSUMER_MAX_RATE,
-                                                             DEFAULT_SEND_WINDOW_SIZE,
-                                                             DEFAULT_PRODUCER_MAX_RATE,
-                                                             DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                             DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                             DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                             true,
-                                                             DEFAULT_AUTO_GROUP,
-                                                             DEFAULT_MAX_CONNECTIONS,
-                                                             DEFAULT_PRE_ACKNOWLEDGE,                                                            
-                                                             DEFAULT_RETRY_INTERVAL,
-                                                             DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                             DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
-                                                             DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
-
+      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       Connection conn = cf.createConnection();
 
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -221,6 +200,23 @@ public class JMSUtil
       {
          producer.send(s.createTextMessage(randomString()));
       }
+      
+      conn.close();
+   }
+   
+   public static void sendMessages(ConnectionFactory cf, Destination destination, int messagesToSend) throws Exception
+   {
+      Connection conn = cf.createConnection();
+
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer producer = s.createProducer(destination);
+
+      for (int i = 0; i < messagesToSend; i++)
+      {
+         producer.send(s.createTextMessage(randomString()));
+      }
+      
+      conn.close();
    }
 
    public static Message sendMessageWithProperty(Session session, Destination destination, String key, long value) throws JMSException

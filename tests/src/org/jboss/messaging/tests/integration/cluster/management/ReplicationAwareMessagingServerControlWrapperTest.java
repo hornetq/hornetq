@@ -22,12 +22,12 @@
 
 package org.jboss.messaging.tests.integration.cluster.management;
 
+import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createMessagingServerControl;
+import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createQueueControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 
-import javax.management.MBeanServer;
-import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 
@@ -56,25 +56,6 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-
-   private static MessagingServerControlMBean createMessagingServerControl(MBeanServer mbeanServer) throws Exception
-   {
-      MessagingServerControlMBean serverControl = (MessagingServerControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
-                                                                                                                             ManagementServiceImpl.getMessagingServerObjectName(),
-                                                                                                                             MessagingServerControlMBean.class,
-                                                                                                                             false);
-      return serverControl;
-   }
-   
-   private static QueueControlMBean createQueueControl(SimpleString address, SimpleString name, MBeanServer mbeanServer) throws Exception
-   {
-      QueueControlMBean queueControl = (QueueControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbeanServer,
-                                                                                                        ManagementServiceImpl.getQueueObjectName(address,
-                                                                                                                                                 name),
-                                                                                                        QueueControlMBean.class,
-                                                                                                        false);
-      return queueControl;
-   }
 
    private SimpleString address;
    private ClientSession session;
