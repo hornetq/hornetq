@@ -26,6 +26,7 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -40,10 +41,11 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.ConcurrentHashSet;
-import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.ConcurrentSet;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * Implementation of a Queue TODO use Java 5 concurrent queue
@@ -97,6 +99,8 @@ public class QueueImpl implements Queue
 
    private final PagingManager pagingManager;
 
+   private final StorageManager storageManager;
+
    private volatile boolean backup;
 
    private int consumersToFailover = -1;
@@ -108,7 +112,8 @@ public class QueueImpl implements Queue
                     final boolean durable,
                     final boolean temporary,
                     final ScheduledExecutorService scheduledExecutor,
-                    final PostOffice postOffice)
+                    final PostOffice postOffice,
+                    final StorageManager storageManager)
    {
       this.persistenceID = persistenceID;
 
@@ -124,6 +129,8 @@ public class QueueImpl implements Queue
 
       this.postOffice = postOffice;
 
+      this.storageManager = storageManager;
+
       if (postOffice == null)
       {
          this.pagingManager = null;
@@ -138,8 +145,154 @@ public class QueueImpl implements Queue
       scheduledDeliveryHandler = new ScheduledDeliveryHandlerImpl(scheduledExecutor);
    }
 
-   // Queue implementation
-   // -------------------------------------------------------------------
+   // Bindable implementation -------------------------------------------------------------------------------------
+
+   public void route(final ServerMessage message, final Transaction tx) throws Exception
+   {     
+      // TODO we can avoid these lookups in the Queue since all messsages in the Queue will be for the same store
+      PagingStore store = pagingManager.getPageStore(message.getDestination());
+
+      if (tx == null)
+      {
+         // If durable, must be persisted before anything is routed
+         MessageReference ref = message.createReference(this);
+
+         if (!message.isReload())
+         {
+            if (message.getDurableRefCount() == 1)
+            {
+               storageManager.storeMessage(message);
+            }
+
+            Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+
+            if (scheduledDeliveryTime != null)
+            {
+               ref.setScheduledDeliveryTime(scheduledDeliveryTime);
+
+               if (ref.getMessage().isDurable() && durable)
+               {
+                  storageManager.updateScheduledDeliveryTime(ref);
+               }
+            }
+         }
+
+         if (message.getRefCount() == 1)
+         {
+            store.addSize(message.getMemoryEstimate());
+         }
+
+         store.addSize(ref.getMemoryEstimate());
+
+         // TODO addLast never currently returns anything other than STATUS_HANDLED
+
+         addLast(ref);
+      }
+      else
+      {
+         // TODO combine this similar logic with the non transactional case
+
+         SimpleString destination = message.getDestination();
+
+         if (!tx.isDepage() && (tx.getPagingAddresses().contains(destination) || pagingManager.isPaging(destination)))
+         {
+            tx.addPagingAddress(destination);
+
+            tx.addPagingMessage(message);
+         }
+         else
+         {
+            MessageReference ref = message.createReference(this);
+
+            boolean first = message.getDurableRefCount() == 1;
+            
+            if (first)
+            {
+               storageManager.storeMessageTransactional(tx.getID(), message);
+            }
+
+            Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+
+            boolean durableRef = ref.getMessage().isDurable() && durable;
+
+            if (scheduledDeliveryTime != null)
+            {
+               ref.setScheduledDeliveryTime(scheduledDeliveryTime);
+
+               if (durableRef)
+               {
+                  storageManager.updateScheduledDeliveryTimeTransactional(tx.getID(), ref);
+               }
+            }
+
+            if (message.getRefCount() == 1)
+            {
+               store.addSize(message.getMemoryEstimate());
+            }
+
+            store.addSize(ref.getMemoryEstimate());
+            
+            tx.addOperation(new AddMessageOperation(ref, first));
+
+            if (durableRef)
+            {
+               tx.setContainsPersistent(true);
+            }
+         }
+      }
+   }
+
+   private class AddMessageOperation implements TransactionOperation
+   {
+      private final MessageReference ref;
+      
+      private final boolean first;
+
+      AddMessageOperation(final MessageReference ref, final boolean first)
+      {
+         this.ref = ref;
+         
+         this.first = first;
+      }
+
+      public void afterCommit() throws Exception
+      {
+      }
+
+      public void afterPrepare() throws Exception
+      {
+      }
+
+      public void afterRollback() throws Exception
+      {
+      }
+
+      public void beforeCommit() throws Exception
+      {
+         addLast(ref);
+      }
+
+      public void beforePrepare() throws Exception
+      {
+      }
+
+      public void beforeRollback() throws Exception
+      {
+         ServerMessage msg = ref.getMessage();
+         
+         PagingStore store = pagingManager.getPageStore(msg.getDestination());
+         
+         store.addSize(-ref.getMemoryEstimate());
+         
+         if (first)
+         {
+            store.addSize(-msg.getMemoryEstimate());
+         }
+      }
+
+   }
+
+   // Queue implementation ----------------------------------------------------------------------------------------
 
    public boolean isClustered()
    {
@@ -161,16 +314,14 @@ public class QueueImpl implements Queue
       return name;
    }
 
-   public HandleStatus add(final MessageReference ref)
-   {
-      HandleStatus status = add(ref, false);
-
-      return status;
+   public void addLast(final MessageReference ref)
+   {      
+      add(ref, false);
    }
 
-   public HandleStatus addFirst(final MessageReference ref)
+   public void addFirst(final MessageReference ref)
    {
-      return add(ref, true);
+      add(ref, true);
    }
 
    public synchronized void addListFirst(final LinkedList<MessageReference> list)
@@ -284,7 +435,7 @@ public class QueueImpl implements Queue
    }
 
    // Remove message from queue, add it to the scheduled delivery list without affect reference counting
-   public void rescheduleDelivery(final long id, final long scheduledDeliveryTime)
+   public synchronized void rescheduleDelivery(final long id, final long scheduledDeliveryTime)
    {
       Iterator<MessageReference> iterator = messageReferences.iterator();
       while (iterator.hasNext())
@@ -323,7 +474,7 @@ public class QueueImpl implements Queue
 
       return null;
    }
-
+   
    public long getPersistenceID()
    {
       return persistenceID;
@@ -579,7 +730,7 @@ public class QueueImpl implements Queue
          if (filter == null || filter.match(ref.getMessage()))
          {
             deliveringCount.incrementAndGet();
-            ref.move(toAddress, tx, storageManager, false);
+            ref.move(toAddress, tx, storageManager, postOffice, false);
             iter.remove();
             count++;
          }
@@ -591,7 +742,7 @@ public class QueueImpl implements Queue
          if (filter == null || filter.match(ref.getMessage()))
          {
             deliveringCount.incrementAndGet();
-            ref.move(toAddress, tx, storageManager, false);
+            ref.move(toAddress, tx, storageManager, postOffice, false);
             tx.addAcknowledgement(ref);
             count++;
          }
@@ -617,8 +768,11 @@ public class QueueImpl implements Queue
             message.setPriority(newPriority);
             // delete and add the reference so that it
             // goes to the right queues for the new priority
+
+            // FIXME - why deleting the reference?? This will delete it from storage!!
+
             deleteReference(messageID, storageManager);
-            add(ref);
+            addLast(ref);
             return true;
          }
       }
@@ -793,7 +947,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   private synchronized HandleStatus add(final MessageReference ref, final boolean first)
+   private synchronized void add(final MessageReference ref, final boolean first)
    {
       if (!first)
       {
@@ -802,7 +956,7 @@ public class QueueImpl implements Queue
 
       if (scheduledDeliveryHandler.checkAndSchedule(ref, backup))
       {
-         return HandleStatus.HANDLED;
+         return;
       }
 
       boolean add = false;
@@ -862,8 +1016,6 @@ public class QueueImpl implements Queue
             deliver();
          }
       }
-
-      return HandleStatus.HANDLED;
    }
 
    private HandleStatus deliver(final MessageReference reference)

@@ -83,13 +83,18 @@ public class JMSTestCase extends JBMServerTestCase
                                                     jndiBindings);
       
       cf = (JBossConnectionFactory)getInitialContext().lookup("/testsuitecf");
+      
+      assertRemainingMessages(0);
    }
+   
 
    protected void tearDown() throws Exception
    {
       super.tearDown();
       getJmsServerManager().destroyConnectionFactory("testsuitecf");
       cf = null;
+      
+      assertRemainingMessages(0);
    }
 
    public JMSTestCase(String name)

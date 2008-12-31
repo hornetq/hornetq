@@ -69,7 +69,7 @@ public class PagingManagerImpl implements PagingManager
 
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
 
-   private final PagingStoreFactory pagingSPI;
+   private final PagingStoreFactory pagingStoreFactory;
 
    private final StorageManager storageManager;
 
@@ -103,7 +103,7 @@ public class PagingManagerImpl implements PagingManager
                             final long defaultPageSize,
                             final boolean syncNonTransactional)
    {
-      this.pagingSPI = pagingSPI;
+      this.pagingStoreFactory = pagingSPI;
       this.queueSettingsRepository = queueSettingsRepository;
       this.storageManager = storageManager;
       this.defaultPageSize = defaultPageSize;
@@ -133,7 +133,8 @@ public class PagingManagerImpl implements PagingManager
     */
    public void reloadStores() throws Exception
    {
-      List<SimpleString> destinations = pagingSPI.getStoredDestinations();
+      List<SimpleString> destinations = pagingStoreFactory.getStoredDestinations();
+      
       for (SimpleString dest: destinations)
       {
          createPageStore(dest);
@@ -184,7 +185,7 @@ public class PagingManagerImpl implements PagingManager
     *  (There is a one-to-one relationship here) */
    public void setPostOffice(final PostOffice postOffice)
    {
-      pagingSPI.setPostOffice(postOffice);
+      pagingStoreFactory.setPostOffice(postOffice);
    }
 
    public long getDefaultPageSize()
@@ -276,9 +277,9 @@ public class PagingManagerImpl implements PagingManager
          return;
       }
 
-      pagingSPI.setPagingManager(this);
+      pagingStoreFactory.setPagingManager(this);
 
-      pagingSPI.setStorageManager(storageManager);
+      pagingStoreFactory.setStorageManager(storageManager);
 
       started = true;
    }
@@ -297,7 +298,7 @@ public class PagingManagerImpl implements PagingManager
          store.stop();
       }
 
-      pagingSPI.stop();
+      pagingStoreFactory.stop();
    }
 
    public synchronized void startGlobalDepage()
@@ -305,7 +306,7 @@ public class PagingManagerImpl implements PagingManager
       setGlobalPageMode(true);
       for (PagingStore store : stores.values())
       {
-         store.startDepaging(pagingSPI.getGlobalDepagerExecutor());
+         store.startDepaging(pagingStoreFactory.getGlobalDepagerExecutor());
       }
    }
 
@@ -321,7 +322,7 @@ public class PagingManagerImpl implements PagingManager
     * @see org.jboss.messaging.core.paging.PagingManager#addGlobalSize(long)
     */
    public long addGlobalSize(final long size)
-   {
+   {      
       return globalSize.addAndGet(size);
    }
 
@@ -341,7 +342,7 @@ public class PagingManagerImpl implements PagingManager
 
    private PagingStore newStore(final SimpleString destinationName)
    {
-      return pagingSPI.newStore(destinationName, queueSettingsRepository.getMatch(destinationName.toString()));
+      return pagingStoreFactory.newStore(destinationName, queueSettingsRepository.getMatch(destinationName.toString()));
    }
 
    // Inner classes -------------------------------------------------

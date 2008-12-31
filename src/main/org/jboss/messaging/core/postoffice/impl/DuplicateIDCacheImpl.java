@@ -30,7 +30,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.core.transaction.TransactionSynchronization;
+import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
@@ -183,7 +183,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 
       // For a tx, it's important that the entry is not added to the cache until commit (or prepare)
       // since if the client fails then resends them tx we don't want it to get rejected
-      tx.addSynchronization(new Sync(duplID, recordID));      
+      tx.addOperation(new AddDuplicateIDOperation(duplID, recordID));      
    }
 
    private void addToCacheInMemory(final SimpleString duplID, final long recordID) throws Exception
@@ -221,15 +221,15 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       }
    }
 
-   private class Sync implements TransactionSynchronization
-   {
+   private class AddDuplicateIDOperation implements TransactionOperation
+   {      
       final SimpleString duplID;
 
       final long recordID;
 
       volatile boolean done;
 
-      Sync(final SimpleString duplID, final long recordID)
+      AddDuplicateIDOperation(final SimpleString duplID, final long recordID)
       {
          this.duplID = duplID;
 
@@ -244,6 +244,18 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 
             done = true;
          }
+      }
+      
+      public void beforeCommit() throws Exception
+      {
+      }
+
+      public void beforePrepare() throws Exception
+      {
+      }
+
+      public void beforeRollback() throws Exception
+      {
       }
 
       public void afterCommit() throws Exception

@@ -107,8 +107,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    }
 
    public PagingStore newStore(final SimpleString destinationName, final QueueSettings settings)
-   {
-      
+   {      
       final String destinationDirectory = directory + "/" + Base64.encodeBytes(destinationName.getData(), Base64.URL_SAFE);
 
       return new PagingStoreImpl(pagingManager,

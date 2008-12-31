@@ -22,7 +22,22 @@
 
 package org.jboss.messaging.tests.util;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
+
+import javax.transaction.xa.Xid;
+
 import junit.framework.TestCase;
+
 import org.easymock.EasyMock;
 import org.easymock.IArgumentMatcher;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -36,19 +51,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
-
-import javax.transaction.xa.Xid;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  *
@@ -565,6 +568,8 @@ public class UnitTestCase extends TestCase
       // message.setPayload(bytes);
 
       message.getBody().putString(UUID.randomUUID().toString());
+      
+      message.setDestination(new SimpleString("foo"));
 
       return message;
    }

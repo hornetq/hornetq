@@ -75,7 +75,7 @@ public class QueueImplTest extends UnitTestCase
    {
       final long id = 123;
 
-      Queue queue = new QueueImpl(id, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(id, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       assertEquals(id, queue.getPersistenceID());
 
@@ -90,29 +90,29 @@ public class QueueImplTest extends UnitTestCase
    {
       final SimpleString name = new SimpleString("oobblle");
 
-      Queue queue = new QueueImpl(1, name, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, name, null, false, true, false, scheduledExecutor, null, null);
 
       assertEquals(name, queue.getName());
    }
 
    public void testClustered()
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       assertFalse(queue.isClustered());
 
-      queue = new QueueImpl(1, queue1, null, true, true, false, scheduledExecutor, null);
+      queue = new QueueImpl(1, queue1, null, true, true, false, scheduledExecutor, null, null);
 
       assertTrue(queue.isClustered());
    }
 
    public void testDurable()
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, false, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, false, false, scheduledExecutor, null, null);
 
       assertFalse(queue.isDurable());
 
-      queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       assertTrue(queue.isDurable());
    }
@@ -125,7 +125,7 @@ public class QueueImplTest extends UnitTestCase
 
       Consumer cons3 = new FakeConsumer();
 
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       assertEquals(0, queue.getConsumerCount());
 
@@ -166,7 +166,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testGetSetDistributionPolicy()
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       assertNotNull(queue.getDistributionPolicy());
 
@@ -181,14 +181,14 @@ public class QueueImplTest extends UnitTestCase
 
    public void testGetFilter()
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       assertNull(queue.getFilter());
 
       Filter filter = createMock(Filter.class);
       replay(filter);
 
-      queue = new QueueImpl(1, queue1, filter, false, true, false, scheduledExecutor, null);
+      queue = new QueueImpl(1, queue1, filter, false, true, false, scheduledExecutor, null, null);
 
       assertEquals(filter, queue.getFilter());
       
@@ -197,7 +197,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testSimpleadd()
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       final int numMessages = 10;
 
@@ -205,7 +205,7 @@ public class QueueImplTest extends UnitTestCase
       {
          MessageReference ref = generateReference(queue, i);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
       assertEquals(numMessages, queue.getMessageCount());
@@ -216,7 +216,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testSimpleDirectDelivery()
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       FakeConsumer consumer = new FakeConsumer();
 
@@ -232,7 +232,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
       assertEquals(numMessages, queue.getMessageCount());
@@ -244,7 +244,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testSimpleNonDirectDelivery()
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       final int numMessages = 10;
 
@@ -256,7 +256,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
       assertEquals(10, queue.getMessageCount());
@@ -282,7 +282,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testBusyConsumer()
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       FakeConsumer consumer = new FakeConsumer();
 
@@ -300,7 +300,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
       assertEquals(10, queue.getMessageCount());
@@ -326,7 +326,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testBusyConsumerThenAddMoreMessages()
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       FakeConsumer consumer = new FakeConsumer();
 
@@ -344,7 +344,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
       assertEquals(10, queue.getMessageCount());
@@ -364,7 +364,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
       assertEquals(20, queue.getMessageCount());
@@ -380,7 +380,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
       queue.deliverNow();
@@ -393,7 +393,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testAddFirstadd()
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       final int numMessages = 10;
 
@@ -405,7 +405,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs1.add(ref);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
       LinkedList<MessageReference> refs2 = new LinkedList<MessageReference>();
@@ -427,7 +427,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs3.add(ref);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
       FakeConsumer consumer = new FakeConsumer();
@@ -448,7 +448,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testChangeConsumersAndDeliver() throws Exception
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, createMockPostOffice());
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, createMockPostOffice(), null);
 
       final int numMessages = 10;
 
@@ -460,7 +460,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
       assertEquals(numMessages, queue.getMessageCount());
@@ -500,7 +500,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
       assertEquals(numMessages * 2, queue.getMessageCount());
@@ -532,7 +532,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
       assertEquals(numMessages * 3, queue.getMessageCount());
@@ -562,7 +562,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
       assertEquals(numMessages * 2, queue.getMessageCount());
@@ -589,7 +589,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
       assertEquals(numMessages, queue.getMessageCount());
@@ -602,7 +602,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testConsumerReturningNull()
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       class NullConsumer implements Consumer
       {
@@ -618,7 +618,7 @@ public class QueueImplTest extends UnitTestCase
 
       try
       {
-         queue.add(ref);
+         queue.addLast(ref);
 
          fail("Should throw IllegalStateException");
       }
@@ -630,7 +630,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testRoundRobinWithQueueing()
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       assertTrue(queue.getDistributionPolicy() instanceof RoundRobinDistributor);
 
@@ -646,7 +646,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
       FakeConsumer cons1 = new FakeConsumer();
@@ -675,7 +675,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testRoundRobinDirect()
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       assertTrue(queue.getDistributionPolicy() instanceof RoundRobinDistributor);
 
@@ -699,7 +699,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
       assertEquals(numMessages / 2, cons1.getReferences().size());
@@ -718,7 +718,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testDeleteAllReferences() throws Exception
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, createMockPostOffice());
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, createMockPostOffice(), null);
 
       StorageManager storageManager = EasyMock.createStrictMock(StorageManager.class);
 
@@ -734,7 +734,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
       //Add some scheduled too
@@ -751,7 +751,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.add(ref);
+         queue.addLast(ref);
       }
 
 
@@ -802,7 +802,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testWithPriorities()
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       final int numMessages = 10;
 
@@ -816,7 +816,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         assertEquals(HandleStatus.HANDLED, queue.add(ref));
+         queue.addLast(ref);
       }
 
       FakeConsumer consumer = new FakeConsumer();
@@ -851,7 +851,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         assertEquals(HandleStatus.HANDLED, queue.add(ref));
+         queue.addLast(ref);
       }
 
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
@@ -869,7 +869,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testConsumerWithFilterAddAndRemove()
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       Filter filter = new FakeFilter("fruit", "orange");
 
@@ -878,7 +878,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testList()
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       final int numMessages = 20;
 
@@ -888,7 +888,7 @@ public class QueueImplTest extends UnitTestCase
       {
          MessageReference ref = generateReference(queue, i);
 
-         queue.add(ref);
+         queue.addLast(ref);
 
          refs.add(ref);
       }
@@ -902,7 +902,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testListWithFilter()
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
 
       final int numMessages = 20;
 
@@ -917,7 +917,7 @@ public class QueueImplTest extends UnitTestCase
             ref.getMessage().putStringProperty(new SimpleString("god"), new SimpleString("dog"));
          }
 
-         queue.add(ref);
+         queue.addLast(ref);
 
          refs.add(ref);
       }
@@ -938,7 +938,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testConsumeWithFiltersAddAndRemoveConsumer() throws Exception
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, createMockPostOffice());
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, createMockPostOffice(), null);
 
       Filter filter = new FakeFilter("fruit", "orange");
 
@@ -952,13 +952,13 @@ public class QueueImplTest extends UnitTestCase
 
       ref1.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("banana"));
 
-      assertEquals(HandleStatus.HANDLED, queue.add(ref1));
+      queue.addLast(ref1);
 
       MessageReference ref2 = generateReference(queue, 2);
 
       ref2.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("orange"));
 
-      assertEquals(HandleStatus.HANDLED, queue.add(ref2));
+      queue.addLast(ref2);
 
       refs.add(ref2);
 
@@ -988,13 +988,13 @@ public class QueueImplTest extends UnitTestCase
 
       ref3.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("banana"));
 
-      assertEquals(HandleStatus.HANDLED, queue.add(ref3));
+      queue.addLast(ref3);
 
       MessageReference ref4 = generateReference(queue, 4);
 
       ref4.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("orange"));
 
-      assertEquals(HandleStatus.HANDLED, queue.add(ref4));
+      queue.addLast(ref4);
 
       refs.add(ref4);
 
@@ -1011,7 +1011,7 @@ public class QueueImplTest extends UnitTestCase
 
    private void testConsumerWithFilters(boolean direct) throws Exception
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, createMockPostOffice());
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, createMockPostOffice(), null);
 
       Filter filter = new FakeFilter("fruit", "orange");
 
@@ -1028,19 +1028,19 @@ public class QueueImplTest extends UnitTestCase
 
       ref1.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("banana"));
 
-      assertEquals(HandleStatus.HANDLED, queue.add(ref1));
+      queue.addLast(ref1);
 
       MessageReference ref2 = generateReference(queue, 2);
 
       ref2.getMessage().putStringProperty(new SimpleString("cheese"), new SimpleString("stilton"));
 
-      assertEquals(HandleStatus.HANDLED, queue.add(ref2));
+      queue.addLast(ref2);
 
       MessageReference ref3 = generateReference(queue, 3);
 
       ref3.getMessage().putStringProperty(new SimpleString("cake"), new SimpleString("sponge"));
 
-      assertEquals(HandleStatus.HANDLED, queue.add(ref3));
+      queue.addLast(ref3);
 
       MessageReference ref4 = generateReference(queue, 4);
 
@@ -1048,13 +1048,13 @@ public class QueueImplTest extends UnitTestCase
 
       refs.add(ref4);
 
-      assertEquals(HandleStatus.HANDLED, queue.add(ref4));
+      queue.addLast(ref4);
 
       MessageReference ref5 = generateReference(queue, 5);
 
       ref5.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("apple"));
 
-      assertEquals(HandleStatus.HANDLED, queue.add(ref5));
+      queue.addLast(ref5);
 
       MessageReference ref6 = generateReference(queue, 6);
 
@@ -1062,7 +1062,7 @@ public class QueueImplTest extends UnitTestCase
 
       refs.add(ref6);
 
-      assertEquals(HandleStatus.HANDLED, queue.add(ref6));
+      queue.addLast(ref6);
 
       if (!direct)
       {
@@ -1100,12 +1100,12 @@ public class QueueImplTest extends UnitTestCase
    public void testMessageOrder() throws Exception
    {
       Consumer consumer = EasyMock.createStrictMock(Consumer.class);
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
       MessageReference messageReference = generateReference(queue, 1);
       MessageReference messageReference2 = generateReference(queue, 2);
       MessageReference messageReference3 = generateReference(queue, 3);
       queue.addFirst(messageReference);
-      queue.add(messageReference2);
+      queue.addLast(messageReference2);
       queue.addFirst(messageReference3);
       EasyMock.expect(consumer.handle(messageReference3)).andReturn(HandleStatus.HANDLED);
       EasyMock.expect(consumer.handle(messageReference)).andReturn(HandleStatus.HANDLED);
@@ -1118,20 +1118,20 @@ public class QueueImplTest extends UnitTestCase
 
    public void testMessagesAdded() throws Exception
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
       MessageReference messageReference = generateReference(queue, 1);
       MessageReference messageReference2 = generateReference(queue, 2);
       MessageReference messageReference3 = generateReference(queue, 3);
-      queue.add(messageReference);
-      queue.add(messageReference2);
-      queue.add(messageReference3);
+      queue.addLast(messageReference);
+      queue.addLast(messageReference2);
+      queue.addLast(messageReference3);
       assertEquals(queue.getMessagesAdded(), 3);
    }
 
    public void testAddListFirst() throws Exception
    {
       Consumer consumer = EasyMock.createStrictMock(Consumer.class);
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
       MessageReference messageReference = generateReference(queue, 1);
       MessageReference messageReference2 = generateReference(queue, 2);
       MessageReference messageReference3 = generateReference(queue, 3);
@@ -1152,7 +1152,7 @@ public class QueueImplTest extends UnitTestCase
    public void testRemoveReferenceWithId() throws Exception
    {
       Consumer consumer = EasyMock.createStrictMock(Consumer.class);
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
       MessageReference messageReference = generateReference(queue, 1);
       MessageReference messageReference2 = generateReference(queue, 2);
       MessageReference messageReference3 = generateReference(queue, 3);
@@ -1173,7 +1173,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testGetReference() throws Exception
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
       MessageReference messageReference = generateReference(queue, 1);
       MessageReference messageReference2 = generateReference(queue, 2);
       MessageReference messageReference3 = generateReference(queue, 3);
@@ -1186,7 +1186,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testGetNonExistentReference() throws Exception
    {
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
       MessageReference messageReference = generateReference(queue, 1);
       MessageReference messageReference2 = generateReference(queue, 2);
       MessageReference messageReference3 = generateReference(queue, 3);
@@ -1200,7 +1200,7 @@ public class QueueImplTest extends UnitTestCase
    public void testConsumerRemovedAfterException() throws Exception
    {
       Consumer consumer = EasyMock.createStrictMock(Consumer.class);
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
       MessageReference messageReference = generateReference(queue, 1);
       MessageReference messageReference2 = generateReference(queue, 2);
       MessageReference messageReference3 = generateReference(queue, 3);
@@ -1220,7 +1220,7 @@ public class QueueImplTest extends UnitTestCase
    public void testDeliveryAsync() throws Exception
    {
       Consumer consumer = EasyMock.createStrictMock(Consumer.class);
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
       MessageReference messageReference = generateReference(queue, 1);
       MessageReference messageReference2 = generateReference(queue, 2);
       MessageReference messageReference3 = generateReference(queue, 3);
@@ -1289,7 +1289,7 @@ public class QueueImplTest extends UnitTestCase
 //      assertEquals(0, queue.getMessageCount());
 //      assertEquals(0, queue.getDeliveringCount());
 //
-//      queue.add(messageReference);
+//      queue.addLast(messageReference);
 //      
 //      assertEquals(1, queue.getMessageCount());
 //      assertEquals(0, queue.getDeliveringCount());
@@ -1345,7 +1345,7 @@ public class QueueImplTest extends UnitTestCase
 //      assertEquals(0, queue.getMessageCount());
 //      assertEquals(0, queue.getDeliveringCount());
 // 
-//      queue.add(messageReference);
+//      queue.addLast(messageReference);
 //      
 //      assertEquals(1, queue.getMessageCount());
 //      assertEquals(0, queue.getDeliveringCount());
@@ -1364,7 +1364,7 @@ public class QueueImplTest extends UnitTestCase
       long newMessageID = randomLong();
       long tid = randomLong();
       final SimpleString toQueueName = new SimpleString("toQueueName");
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, createMockPostOffice());
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, createMockPostOffice(), null);
       Queue toQueue = createMock(Queue.class);
     
       MessageReference messageReference = generateReference(queue, messageID);
@@ -1386,8 +1386,8 @@ public class QueueImplTest extends UnitTestCase
       
       Binding toBinding = EasyMock.createMock(Binding.class);
       EasyMock.expect(toBinding.getAddress()).andStubReturn(toQueueName);
-      EasyMock.expect(toBinding.getQueue()).andStubReturn(toQueue);
-      EasyMock.expect(postOffice.route(EasyMock.isA(ServerMessage.class), EasyMock.isA(Transaction.class), EasyMock.eq(false))).andReturn(new ArrayList<MessageReference>());
+      EasyMock.expect(toBinding.getBindable()).andStubReturn(toQueue);
+      postOffice.route(EasyMock.isA(ServerMessage.class), EasyMock.isA(Transaction.class));
       HierarchicalRepository<QueueSettings> queueSettingsRepository = EasyMock.createMock(HierarchicalRepository.class);
 
       EasyMock.replay(storageManager, postOffice, queueSettingsRepository, toBinding, pm);
@@ -1395,7 +1395,7 @@ public class QueueImplTest extends UnitTestCase
       assertEquals(0, queue.getMessageCount());
       assertEquals(0, queue.getDeliveringCount());
 
-      queue.add(messageReference);
+      queue.addLast(messageReference);
       
       assertEquals(1, queue.getMessageCount());
       assertEquals(0, queue.getDeliveringCount());
@@ -1449,7 +1449,7 @@ public class QueueImplTest extends UnitTestCase
          }
          else
          {
-            queue.add(messageReference);
+            queue.addLast(messageReference);
          }
          added = true;
          countDownLatch.countDown();

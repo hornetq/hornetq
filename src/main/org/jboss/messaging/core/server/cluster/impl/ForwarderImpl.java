@@ -36,6 +36,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.FailureListener;
@@ -52,6 +53,7 @@ import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.Future;
 import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A ForwarderImpl
@@ -330,7 +332,7 @@ public class ForwarderImpl implements Forwarder, FailureListener
             return;
          }
          
-         // TODO - duplicate detection on sendee and if batch size = 1 then don't need tx
+         // TODO - if batch size = 1 then don't need tx
 
          while (true)
          {
@@ -349,8 +351,10 @@ public class ForwarderImpl implements Forwarder, FailureListener
             {
                message = transformer.transform(message);
             }
+          
+            SimpleString forwardingDestination = (SimpleString)message.getProperty(MessageImpl.HDR_ORIGIN_QUEUE);
 
-            producer.send(message.getDestination(), message);
+            producer.send(forwardingDestination, message);
          }
 
          session.commit();

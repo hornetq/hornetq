@@ -28,11 +28,11 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.core.server.ServerLargeMessage;
+import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 
 /**
- * A ServerLargeMessageImpl
+ * A JournalLargeServerMessage
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * 
@@ -40,12 +40,11 @@ import org.jboss.messaging.core.server.impl.ServerMessageImpl;
  *
  *
  */
-public class JournalLargeMessageImpl extends ServerMessageImpl implements ServerLargeMessage
+public class JournalLargeServerMessage extends ServerMessageImpl implements LargeServerMessage
 {
-
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(JournalLargeMessageImpl.class);
+   private static final Logger log = Logger.getLogger(JournalLargeServerMessage.class);
 
    private static boolean isTrace = log.isTraceEnabled();
 
@@ -64,7 +63,7 @@ public class JournalLargeMessageImpl extends ServerMessageImpl implements Server
 
    // Constructors --------------------------------------------------
 
-   public JournalLargeMessageImpl(final JournalStorageManager storageManager)
+   public JournalLargeServerMessage(final JournalStorageManager storageManager)
    {
       this.storageManager = storageManager;
    }
@@ -72,7 +71,7 @@ public class JournalLargeMessageImpl extends ServerMessageImpl implements Server
    // Public --------------------------------------------------------
 
    /* (non-Javadoc)
-    * @see org.jboss.messaging.core.server.ServerLargeMessage#addBytes(byte[])
+    * @see org.jboss.messaging.core.server.LargeServerMessage#addBytes(byte[])
     */
    public synchronized void addBytes(final byte[] bytes) throws Exception
    {
@@ -160,9 +159,9 @@ public class JournalLargeMessageImpl extends ServerMessageImpl implements Server
 
    @Override
    public int decrementRefCount()
-   {
+   {      
       int currentRefCount = super.decrementRefCount();
-
+      
       if (currentRefCount == 0)
       {
          if (isTrace)

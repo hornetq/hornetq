@@ -48,9 +48,9 @@ public  class SimpleAddressManager implements AddressManager
 
    private final ConcurrentMap<SimpleString, Binding> nameMap = new ConcurrentHashMap<SimpleString, Binding>();
 
-   public void addBinding(Binding binding)
+   public void addBinding(final Binding binding)
    {
-      if (nameMap.putIfAbsent(binding.getQueue().getName(), binding) != null)
+      if (nameMap.putIfAbsent(binding.getBindable().getName(), binding) != null)
       {
          throw new IllegalStateException("Binding already exists " + binding);
       }
@@ -106,9 +106,9 @@ public  class SimpleAddressManager implements AddressManager
       return destinations;
    }
 
-   public Binding getBinding(final SimpleString queueName)
+   public Binding getBinding(final SimpleString bindableName)
    {
-      return nameMap.get(queueName);
+      return nameMap.get(bindableName);
    }
 
    public Map<SimpleString, Binding> getBindings()
@@ -128,24 +128,24 @@ public  class SimpleAddressManager implements AddressManager
       return mappings.size();
    }
    
-   public Binding removeBinding(final SimpleString queueName)
+   public Binding removeBinding(final SimpleString bindableName)
    {
-      Binding binding = nameMap.remove(queueName);
+      Binding binding = nameMap.remove(bindableName);
 
       if (binding == null)
       {
-         throw new IllegalStateException("Queue is not bound " + queueName);
+         throw new IllegalStateException("Queue is not bound " + bindableName);
       }
       return binding;
    }
 
-   public boolean removeMapping(final SimpleString address, final SimpleString queueName)
+   public boolean removeMapping(final SimpleString address, final SimpleString bindableName)
    {
       Bindings bindings = mappings.get(address);
       
       if (bindings != null)
       {
-         removeMapping(queueName, bindings);
+         removeMapping(bindableName, bindings);
          
          if (bindings.getBindings().isEmpty())
          {
@@ -158,13 +158,13 @@ public  class SimpleAddressManager implements AddressManager
       return false;
    }
 
-   protected Binding removeMapping(final SimpleString queueName, final Bindings bindings)
+   protected Binding removeMapping(final SimpleString bindableName, final Bindings bindings)
    {
       Binding theBinding = null;
       
       for (Binding binding: bindings.getBindings())
       {
-         if (binding.getQueue().getName().equals(queueName))
+         if (binding.getBindable().getName().equals(bindableName))
          {
             theBinding = binding;
 
@@ -174,7 +174,7 @@ public  class SimpleAddressManager implements AddressManager
 
       if (theBinding == null)
       {
-         throw new IllegalStateException("Cannot find binding " + queueName);
+         throw new IllegalStateException("Cannot find binding " + bindableName);
       }
 
       bindings.removeBinding(theBinding);

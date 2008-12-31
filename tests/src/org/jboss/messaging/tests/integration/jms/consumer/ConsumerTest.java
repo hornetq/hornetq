@@ -52,6 +52,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -155,8 +156,8 @@ public class ConsumerTest extends TestCase
       }
       // assert that all the messages are there and none have been acked
       SimpleString queueName = new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
-      assertEquals(0, service.getServer().getPostOffice().getBinding(queueName).getQueue().getDeliveringCount());
-      assertEquals(0, service.getServer().getPostOffice().getBinding(queueName).getQueue().getMessageCount());
+      assertEquals(0, ((Queue)service.getServer().getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
+      assertEquals(0, ((Queue)service.getServer().getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
       session.close();
    }
 }

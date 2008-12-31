@@ -34,7 +34,8 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.core.transaction.TransactionSynchronization;
+import org.jboss.messaging.core.transaction.TransactionOperation;
+import org.jboss.messaging.core.transaction.Transaction.State;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -47,7 +48,7 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class TransactionImpl implements Transaction
 {
-   private List<TransactionSynchronization> syncs;
+   private List<TransactionOperation> operations;
 
    private static final Logger log = Logger.getLogger(TransactionImpl.class);
 
@@ -56,8 +57,6 @@ public class TransactionImpl implements Transaction
    private final PostOffice postOffice;
 
    private final PagingManager pagingManager;
-
-   private final List<MessageReference> refsToAdd = new ArrayList<MessageReference>();
 
    private final List<MessageReference> acknowledgements = new ArrayList<MessageReference>();
 
@@ -69,7 +68,7 @@ public class TransactionImpl implements Transaction
    // FIXME: As part of https://jira.jboss.org/jira/browse/JBMESSAGING-1313
    private final List<ServerMessage> pagedMessages = new ArrayList<ServerMessage>();
 
-   private PageTransactionInfo pageTransaction;
+   private volatile PageTransactionInfo pageTransaction;
 
    private final Xid xid;
 
@@ -134,6 +133,12 @@ public class TransactionImpl implements Transaction
       createTime = System.currentTimeMillis();
       
       this.depage = depage;
+      
+      if (depage)
+      {
+         //Need to force to true, since other last page record won't be committed
+         this.containsPersistent = true;
+      }
    }
 
    public TransactionImpl(final Xid xid, final StorageManager storageManager, final PostOffice postOffice)
@@ -199,26 +204,6 @@ public class TransactionImpl implements Transaction
       containsPersistent = true;
    }
 
-   public void addMessage(final ServerMessage message) throws Exception
-   {
-      if (state != State.ACTIVE)
-      {
-         throw new IllegalStateException("Transaction is in invalid state " + state);
-      }
-
-      SimpleString destination = message.getDestination();
-
-      if (!depage && (destinationsInPageMode.contains(destination) || pagingManager.isPaging(destination)))
-      {
-         destinationsInPageMode.add(destination);
-         pagedMessages.add(message);
-      }
-      else
-      {
-         route(message);
-      }
-   }
-
    public List<MessageReference> timeout() throws Exception
    {
       // we need to synchronize with commit and rollback just in case they get called atthesame time
@@ -281,6 +266,16 @@ public class TransactionImpl implements Transaction
          }
       }
    }
+   
+   public void addAckTempUntilNextRefactoring(final MessageReference ref)
+   {
+      this.acknowledgements.add(ref);
+      
+      if (ref.getQueue().isDurable() && ref.getMessage().isDurable())
+      {
+         containsPersistent = true;
+      }
+   }
 
    public void prepare() throws Exception
    {
@@ -295,6 +290,14 @@ public class TransactionImpl implements Transaction
          {
             throw new IllegalStateException("Cannot prepare non XA transaction");
          }
+         
+         if (operations != null)
+         {
+            for (TransactionOperation operation : operations)
+            {
+               operation.beforePrepare();
+            }
+         }
 
          pageMessages();
 
@@ -302,18 +305,19 @@ public class TransactionImpl implements Transaction
 
          state = State.PREPARED;
 
-         if (syncs != null)
+         if (operations != null)
          {
-            for (TransactionSynchronization sync : syncs)
+            for (TransactionOperation operation : operations)
             {
-               sync.afterPrepare();
+               operation.afterPrepare();
             }
          }
+                  
       }
    }
 
    public void commit() throws Exception
-   {      
+   {           
       synchronized (timeoutLock)
       {
          if (state == State.ROLLBACK_ONLY)
@@ -342,6 +346,14 @@ public class TransactionImpl implements Transaction
                throw new IllegalStateException("Transaction is in invalid state " + state);
             }
          }
+         
+         if (operations != null)
+         {
+            for (TransactionOperation operation : operations)
+            {
+               operation.beforeCommit();
+            }
+         }
 
          if (state != State.PREPARED)
          {
@@ -353,7 +365,7 @@ public class TransactionImpl implements Transaction
             storageManager.commit(id);
          }
 
-         postOffice.deliver(refsToAdd);
+         //postOffice.deliver(refsToAdd);
 
          // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
          // transaction until all the messages were added to the queue
@@ -372,13 +384,14 @@ public class TransactionImpl implements Transaction
 
          state = State.COMMITTED;
 
-         if (syncs != null)
+         if (operations != null)
          {
-            for (TransactionSynchronization sync : syncs)
+            for (TransactionOperation operation : operations)
             {
-               sync.afterCommit();
+               operation.afterCommit();
             }
          }
+                  
       }
    }
 
@@ -402,18 +415,27 @@ public class TransactionImpl implements Transaction
                throw new IllegalStateException("Transaction is in invalid state " + state);
             }
          }
+         
+         if (operations != null)
+         {
+            for (TransactionOperation operation : operations)
+            {
+               operation.beforeRollback();
+            }
+         }
 
          toCancel = doRollback();
 
          state = State.ROLLEDBACK;
 
-         if (syncs != null)
+         if (operations != null)
          {
-            for (TransactionSynchronization sync : syncs)
+            for (TransactionOperation operation : operations)
             {
-               sync.afterRollback();
+               operation.afterRollback();
             }
          }
+                  
       }
 
       return toCancel;
@@ -446,6 +468,11 @@ public class TransactionImpl implements Transaction
    {
       return state;
    }
+   
+   public void setState(final State state)
+   {
+      this.state = state;
+   }
 
    public Xid getXid()
    {
@@ -464,41 +491,48 @@ public class TransactionImpl implements Transaction
       this.messagingException = messagingException;
    }
 
-   public void replay(final List<MessageReference> messages,
-                      final List<MessageReference> acknowledgements,
-                      final PageTransactionInfo pageTransaction) throws Exception
-   {
-      containsPersistent = true;
-      refsToAdd.addAll(messages);
-
-      this.acknowledgements.addAll(acknowledgements);
-      this.pageTransaction = pageTransaction;
-
-      if (this.pageTransaction != null)
-      {
-         pagingManager.addTransaction(this.pageTransaction);
-      }
-
-      state = State.PREPARED;
-   }
-
    public void setContainsPersistent(final boolean containsPersistent)
    {
       this.containsPersistent = containsPersistent;
    }
 
-   public void addSynchronization(final TransactionSynchronization sync)
+   public void addOperation(final TransactionOperation operation)
    {
-      checkCreateSyncs();
+      checkCreateOperations();
 
-      syncs.add(sync);
+      operations.add(operation);
    }
 
-   public void removeSynchronization(final TransactionSynchronization sync)
+   public void removeOperation(final TransactionOperation operation)
    {
-      checkCreateSyncs();
+      checkCreateOperations();
 
-      syncs.remove(sync);
+      operations.remove(operation);
+   }
+   
+   public void setPageTransaction(PageTransactionInfo pageTransaction)
+   {
+      this.pageTransaction = pageTransaction;      
+   }
+   
+   public Set<SimpleString> getPagingAddresses()
+   {
+      return destinationsInPageMode;
+   }
+   
+   public void addPagingMessage(final ServerMessage message)
+   {
+      this.pagedMessages.add(message);
+   }
+   
+   public boolean isDepage()
+   {
+      return depage;
+   }
+   
+   public void addPagingAddress(final SimpleString address)
+   {
+      this.destinationsInPageMode.add(address);
    }
 
    // Private
@@ -527,23 +561,9 @@ public class TransactionImpl implements Transaction
          if (message.isDurable() && queue.isDurable())
          {
             message.incrementDurableRefCount();
-
          }
+         
          toCancel.add(ref);
-      }
-
-      HashSet<ServerMessage> messagesAdded = new HashSet<ServerMessage>();
-
-      // We need to remove the sizes added on paging manager, for the messages that only exist here on the Transaction
-      for (MessageReference ref : this.refsToAdd)
-      {
-         messagesAdded.add(ref.getMessage());
-         pagingManager.getPageStore(ref.getMessage().getDestination()).addSize(-ref.getMemoryEstimate());
-      }
-
-      for (ServerMessage msg : messagesAdded)
-      {
-         pagingManager.removeSize(msg);
       }
 
       clear();
@@ -551,23 +571,11 @@ public class TransactionImpl implements Transaction
       return toCancel;
    }
 
-   private void checkCreateSyncs()
+   private void checkCreateOperations()
    {
-      if (syncs == null)
+      if (operations == null)
       {
-         syncs = new ArrayList<TransactionSynchronization>();
-      }
-   }
-
-   private void route(final ServerMessage message) throws Exception
-   {
-      List<MessageReference> refs = postOffice.route(message, this, false);
-            
-      refsToAdd.addAll(refs);
-
-      if (message.getDurableRefCount() != 0)
-      {
-         containsPersistent = true;
+         operations = new ArrayList<TransactionOperation>();
       }
    }
 
@@ -604,14 +612,16 @@ public class TransactionImpl implements Transaction
             else
             {
                // This could happen when the PageStore left the pageState
-               route(message);
+                                  
+               //TODO is this correct - don't we lose transactionality here???
+               postOffice.route(message, null);
             }
          }
 
          if (pagingPersistent)
          {
             containsPersistent = true;
-            if (pagedDestinationsToSync.size() > 0)
+            if (!pagedDestinationsToSync.isEmpty())
             {
                pagingManager.sync(pagedDestinationsToSync);
                storageManager.storePageTransaction(id, pageTransaction);
@@ -622,8 +632,6 @@ public class TransactionImpl implements Transaction
 
    private void clear()
    {
-      refsToAdd.clear();
-
       acknowledgements.clear();
 
       pagedMessages.clear();

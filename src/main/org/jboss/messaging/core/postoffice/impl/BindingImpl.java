@@ -23,7 +23,8 @@
 package org.jboss.messaging.core.postoffice.impl;
 
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.postoffice.BindingType;
+import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -35,9 +36,11 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class BindingImpl implements Binding
 {  
+   private final BindingType type;
+   
    private final SimpleString address;
    
-   private final Queue queue;
+   private final Bindable bindable;
    
    private final boolean exclusive;
    
@@ -47,23 +50,30 @@ public class BindingImpl implements Binding
    
    private int hash;
                 
-   public BindingImpl(final SimpleString address, final Queue queue, final boolean exclusive)
+   public BindingImpl(final BindingType type, final SimpleString address, final Bindable bindable, final boolean exclusive)
    {
+      this.type = type;
+       
       this.address = address;
       
-      this.queue = queue;
+      this.bindable = bindable;
       
       this.exclusive = exclusive;
    }
    
+   public BindingType getType()
+   {
+      return type;
+   }
+    
    public SimpleString getAddress()
    {
       return address;
    }
    
-   public Queue getQueue()
+   public Bindable getBindable()
    {
-      return queue;
+      return bindable;
    }
    
    public boolean isExclusive()
@@ -87,10 +97,11 @@ public class BindingImpl implements Binding
       {
          return true;
       }
+      
       Binding bother = (Binding)other;
       
       return (this.address.equals(bother.getAddress()) &&
-              this.queue.equals(bother.getQueue()));
+              this.bindable.equals(bother.getBindable()));
    }
    
    public int hashCode()
@@ -99,7 +110,7 @@ public class BindingImpl implements Binding
       {
          hash = 17;
          hash = 37 * hash + address.hashCode();
-         hash = 37 * hash + queue.hashCode();
+         hash = 37 * hash + bindable.hashCode();
                 
          hashAssigned = true;
       }

@@ -533,7 +533,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
             else
             {
                // Durable sub
-
+               
                if (connection.getClientID() == null)
                {
                   throw new InvalidClientIDException("Cannot create durable subscription - client ID has not been set");
@@ -546,7 +546,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
                queueName = new SimpleString(JBossTopic.createQueueNameForDurableSubscription(connection.getClientID(),
                                                                                              subscriptionName));
-
+               
                SessionQueueQueryResponseMessage subResponse = session.queueQuery(queueName);
 
                if (!subResponse.isExists())
@@ -576,9 +576,9 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
                                             (oldFilterString != null && coreFilterString != null && !oldFilterString.equals(coreFilterString));
 
                   SimpleString oldTopicName = subResponse.getAddress();
-
+                  
                   boolean topicChanged = !oldTopicName.equals(dest.getSimpleAddress());
-
+                  
                   if (selectorChanged || topicChanged)
                   {
                      // Delete the old durable sub

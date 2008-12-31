@@ -37,18 +37,18 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.paging.PagingManager;
-import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.AddressManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.server.Bindable;
+import org.jboss.messaging.core.server.BindableFactory;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.SendLockImpl;
@@ -70,12 +70,12 @@ import org.jboss.messaging.util.SimpleString;
 public class PostOfficeImpl implements PostOffice
 {
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
-   
-   private static final List<MessageReference> emptyList = Collections.<MessageReference>emptyList();
-   
+
+   private static final List<MessageReference> emptyList = Collections.<MessageReference> emptyList();
+
    private final AddressManager addressManager;
 
-   private final QueueFactory queueFactory;
+   private final BindableFactory bindableFactory;
 
    private final boolean checkAllowable;
 
@@ -106,10 +106,10 @@ public class PostOfficeImpl implements PostOffice
    private final int idCacheSize;
 
    private final boolean persistIDCache;
-   
+
    public PostOfficeImpl(final StorageManager storageManager,
                          final PagingManager pagingManager,
-                         final QueueFactory queueFactory,
+                         final BindableFactory bindableFactory,
                          final ManagementService managementService,
                          final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                          final long messageExpiryScanPeriod,
@@ -123,7 +123,7 @@ public class PostOfficeImpl implements PostOffice
    {
       this.storageManager = storageManager;
 
-      this.queueFactory = queueFactory;
+      this.bindableFactory = bindableFactory;
 
       this.managementService = managementService;
 
@@ -167,7 +167,7 @@ public class PostOfficeImpl implements PostOffice
       }
 
       // Injecting the postoffice (itself) on queueFactory for paging-control
-      queueFactory.setPostOffice(this);
+      bindableFactory.setPostOffice(this);
 
       load();
 
@@ -265,14 +265,14 @@ public class PostOfficeImpl implements PostOffice
    // and post office is activated but queue remains unactivated after failover so delivery never occurs
    // even though failover is complete
    // TODO - more subtle locking could be used -this is a bit heavy handed
-   public synchronized Binding addBinding(final SimpleString address,
-                                          final SimpleString queueName,
-                                          final Filter filter,
-                                          final boolean durable,
-                                          final boolean temporary,
-                                          final boolean exclusive) throws Exception
+   public synchronized Binding addQueueBinding(final SimpleString name,
+                                               final SimpleString address,
+                                               final Filter filter,
+                                               final boolean durable,
+                                               final boolean temporary,
+                                               final boolean exclusive) throws Exception
    {
-      Binding binding = createBinding(address, queueName, filter, durable, temporary, exclusive);
+      Binding binding = createQueueBinding(name, address, filter, durable, temporary, exclusive);
 
       addBindingInMemory(binding);
 
@@ -284,16 +284,39 @@ public class PostOfficeImpl implements PostOffice
       return binding;
    }
 
-   public synchronized Binding removeBinding(final SimpleString queueName) throws Exception
+   public synchronized Binding addLinkBinding(final SimpleString name,
+                                              final SimpleString address,
+                                              final Filter filter,
+                                              final boolean durable,
+                                              final boolean temporary,
+                                              final boolean exclusive,
+                                              final SimpleString linkAddress) throws Exception
    {
-      Binding binding = removeQueueInMemory(queueName);
+      Binding binding = createLinkBinding(name, address, filter, durable, temporary, exclusive, linkAddress);
 
-      if (binding.getQueue().isDurable())
+      addBindingInMemory(binding);
+
+      if (durable)
+      {
+         storageManager.addBinding(binding);
+      }
+
+      return binding;
+   }
+
+   public synchronized Binding removeBinding(final SimpleString bindableName) throws Exception
+   {
+      Binding binding = removeBindingInMemory(bindableName);
+
+      if (binding.getBindable().isDurable())
       {
          storageManager.deleteBinding(binding);
       }
 
-      managementService.unregisterQueue(queueName, binding.getAddress());
+      if (binding.getType() == BindingType.QUEUE)
+      {
+         managementService.unregisterQueue(bindableName, binding.getAddress());
+      }
 
       return binding;
    }
@@ -301,12 +324,12 @@ public class PostOfficeImpl implements PostOffice
    public Bindings getBindingsForAddress(final SimpleString address)
    {
       Bindings bindings = addressManager.getBindings(address);
-      
+
       if (bindings == null)
       {
          bindings = new BindingsImpl();
       }
-      
+
       return bindings;
    }
 
@@ -315,34 +338,8 @@ public class PostOfficeImpl implements PostOffice
       return addressManager.getBinding(queueName);
    }
 
-   public void deliver(final List<MessageReference> references)
+   public void route(final ServerMessage message, final Transaction tx) throws Exception
    {
-      for (MessageReference ref : references)
-      {
-         ref.getQueue().add(ref);
-      }
-   }
-
-   public List<MessageReference> reroute(final ServerMessage message) throws Exception
-   {
-      SimpleString address = message.getDestination();
-
-      Bindings bindings = addressManager.getBindings(address);
-
-      List<MessageReference> references = null;
-      
-      if (bindings != null)
-      {
-         references = bindings.route(message, null);
-
-         computePaging(address, message, references);
-      }
-      
-      return references;
-   }
-   
-   public List<MessageReference> route(final ServerMessage message, final Transaction tx, final boolean deliver) throws Exception
-   {      
       SimpleString address = message.getDestination();
 
       if (checkAllowable)
@@ -356,82 +353,33 @@ public class PostOfficeImpl implements PostOffice
 
       Bindings bindings = addressManager.getBindings(address);
 
-      List<MessageReference> references = null;
-      
       if (bindings != null)
       {
-         references = bindings.route(message, tx);
-
-         computePaging(address, message, references);
-      }
-
-      if (message.getDurableRefCount() != 0)
-      {
-         if (tx == null)
-         {
-            storageManager.storeMessage(message);
-         }
-         else
-         {
-            storageManager.storeMessageTransactional(tx.getID(), message);
-         }
-      }
-
-      if (references != null)
-      {         
-         Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
-
-         if (scheduledDeliveryTime != null)
-         {
-            for (MessageReference ref : references)
-            {
-               ref.setScheduledDeliveryTime(scheduledDeliveryTime);
-
-               if (ref.getMessage().isDurable() && ref.getQueue().isDurable())
-               {
-                  if (tx != null)
-                  {
-                     storageManager.updateScheduledDeliveryTimeTransactional(tx.getID(), ref);
-                  }
-                  else
-                  {
-                     storageManager.updateScheduledDeliveryTime(ref);
-                  }
-               }
-            }
-         }
-         
-//         TODO - bindings.route does not need to return a messagereference list, instead bindings route should actually create the refs and send them to the queues
-//         then we can get rid of the deliver call too
-//                          
-//         for a transaction bindings.route
-//          
-      
-         if (deliver)
-         {
-            deliver(references);
-         }
-                  
-         return references;
-      }
-      else
-      {
-         return emptyList;
+         bindings.route(message, tx);
       }
    }
-   
-   public void route(final ServerMessage message, final Transaction tx) throws Exception
+
+   public void route(final ServerMessage message) throws Exception
    {
-      if (tx == null)
+      SimpleString address = message.getDestination();
+
+      if (checkAllowable)
       {
-         if (!pagingManager.page(message))
+         if (!addressManager.containsDestination(address))
          {
-            route(message, null, true);
+            throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST,
+                                         "Cannot route to address " + address);
          }
       }
-      else
+
+      if (!pagingManager.page(message))
       {
-         tx.addMessage(message);
+         Bindings bindings = addressManager.getBindings(address);
+
+         if (bindings != null)
+         {
+            bindings.route(message, null);
+         }
       }
    }
 
@@ -450,13 +398,16 @@ public class PostOfficeImpl implements PostOffice
 
       for (Binding binding : nameMap.values())
       {
-         Queue queue = binding.getQueue();
-
-         boolean activated = queue.activate();
-
-         if (!activated)
+         if (binding.getType() == BindingType.QUEUE)
          {
-            queues.add(queue);
+            Queue queue = (Queue)binding.getBindable();
+
+            boolean activated = queue.activate();
+
+            if (!activated)
+            {
+               queues.add(queue);
+            }
          }
       }
 
@@ -502,44 +453,39 @@ public class PostOfficeImpl implements PostOffice
    }
 
    // Private -----------------------------------------------------------------
- 
-   /**
-    * Add sizes on Paging
-    * @param address
-    * @param message
-    * @param references
-    * @throws Exception
-    */
-   private void computePaging(SimpleString address, final ServerMessage message, List<MessageReference> references) throws Exception
+
+   private Binding createQueueBinding(final SimpleString name,
+                                      final SimpleString address,
+                                      final Filter filter,
+                                      final boolean durable,
+                                      final boolean temporary,
+                                      final boolean exclusive) throws Exception
    {
-      if (!references.isEmpty())
-      {
-         PagingStore store = pagingManager.getPageStore(address);
-
-         store.addSize(message.getMemoryEstimate());
-
-         for (MessageReference ref : references)
-         {
-            store.addSize(ref.getMemoryEstimate());
-         }
-      }
-   }
-
-   private Binding createBinding(final SimpleString address,
-                                 final SimpleString name,
-                                 final Filter filter,
-                                 final boolean durable,
-                                 final boolean temporary,
-                                 final boolean exclusive) throws Exception
-   {
-      Queue queue = queueFactory.createQueue(-1, name, filter, durable, false);
+      Bindable bindable = bindableFactory.createQueue(-1, name, filter, durable, temporary);
 
       if (backup)
       {
+         Queue queue = (Queue)bindable;
+
          queue.setBackup();
       }
 
-      Binding binding = new BindingImpl(address, queue, exclusive);
+      Binding binding = new BindingImpl(BindingType.QUEUE, address, bindable, exclusive);
+
+      return binding;
+   }
+
+   private Binding createLinkBinding(final SimpleString name,
+                                     final SimpleString address,
+                                     final Filter filter,
+                                     final boolean durable,
+                                     final boolean temporary,
+                                     final boolean exclusive,
+                                     final SimpleString linkAddress) throws Exception
+   {
+      Bindable bindable = bindableFactory.createLink(-1, name, filter, durable, temporary, linkAddress);
+
+      Binding binding = new BindingImpl(BindingType.LINK, address, bindable, exclusive);
 
       return binding;
    }
@@ -547,21 +493,25 @@ public class PostOfficeImpl implements PostOffice
    private void addBindingInMemory(final Binding binding) throws Exception
    {
       boolean exists = addressManager.addMapping(binding.getAddress(), binding);
+
       if (!exists)
       {
          managementService.registerAddress(binding.getAddress());
       }
 
-      managementService.registerQueue(binding.getQueue(), binding.getAddress(), storageManager);
+      if (binding.getType() == BindingType.QUEUE)
+      {
+         managementService.registerQueue((Queue)binding.getBindable(), binding.getAddress(), storageManager);
+      }
 
       addressManager.addBinding(binding);
    }
 
-   private Binding removeQueueInMemory(final SimpleString queueName) throws Exception
+   private Binding removeBindingInMemory(final SimpleString bindingName) throws Exception
    {
-      Binding binding = addressManager.removeBinding(queueName);
+      Binding binding = addressManager.removeBinding(bindingName);
 
-      if (addressManager.removeMapping(binding.getAddress(), queueName))
+      if (addressManager.removeMapping(binding.getAddress(), bindingName))
       {
          managementService.unregisterAddress(binding.getAddress());
       }
@@ -575,7 +525,7 @@ public class PostOfficeImpl implements PostOffice
 
       List<SimpleString> dests = new ArrayList<SimpleString>();
 
-      storageManager.loadBindings(queueFactory, bindings, dests);
+      storageManager.loadBindings(bindableFactory, bindings, dests);
 
       // Destinations must be added first to ensure flow controllers exist
       // before queues are created
@@ -590,7 +540,10 @@ public class PostOfficeImpl implements PostOffice
       {
          addBindingInMemory(binding);
 
-         queues.put(binding.getQueue().getPersistenceID(), binding.getQueue());
+         if (binding.getType() == BindingType.QUEUE)
+         {
+            queues.put(binding.getBindable().getPersistenceID(), (Queue)binding.getBindable());
+         }
       }
 
       Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<SimpleString, Long>>>();
@@ -626,9 +579,14 @@ public class PostOfficeImpl implements PostOffice
 
          for (Binding binding : nameMap.values())
          {
-            Queue queue = binding.getQueue();
-            queues.add(queue);
+            if (binding.getType() == BindingType.QUEUE)
+            {
+               Queue queue = (Queue)binding.getBindable();
+
+               queues.add(queue);
+            }
          }
+
          for (Queue queue : queues)
          {
             try

@@ -20,26 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.server;
+
+package org.jboss.messaging.core.postoffice;
 
 /**
- * A LargeMessage
+ * A BindingType
  *
- * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 30-Sep-08 10:58:04 AM
+ * Created 22 Dec 2008 13:37:23
  *
  *
  */
-public interface ServerLargeMessage extends ServerMessage
+public enum BindingType
 {
-   void addBytes(byte[] bytes) throws Exception;
-
-   /** Close the files if opened */
-   void releaseResources();
-   
-   void complete() throws Exception;
-   
-   void deleteFile() throws Exception;
-
+   QUEUE, LINK;
 }

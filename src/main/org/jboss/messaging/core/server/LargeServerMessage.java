@@ -18,22 +18,27 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
-package org.jboss.messaging.core.transaction;
+package org.jboss.messaging.core.server;
 
 /**
+ * A LargeMessage
+ *
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * 
- * A TransactionSynchronization
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * Created 30-Sep-08 10:58:04 AM
+ *
  *
  */
-public interface TransactionSynchronization
+public interface LargeServerMessage extends ServerMessage
 {
-   void afterCommit() throws Exception;
+   void addBytes(byte[] bytes) throws Exception;
+
+   /** Close the files if opened */
+   void releaseResources();
    
-   void afterRollback() throws Exception;
+   void complete() throws Exception;
    
-   void afterPrepare() throws Exception;
+   void deleteFile() throws Exception;
 }

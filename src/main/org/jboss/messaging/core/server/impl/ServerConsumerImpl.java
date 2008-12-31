@@ -49,7 +49,7 @@ import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConsumer;
-import org.jboss.messaging.core.server.ServerLargeMessage;
+import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -544,7 +544,7 @@ public class ServerConsumerImpl implements ServerConsumer
          }
                   
          // TODO: get rid of the instanceof by something like message.isLargeMessage()
-         if (message instanceof ServerLargeMessage)
+         if (message instanceof LargeServerMessage)
          {            
             //FIXME - please put the replication logic in the sendLargeMessage method
             
@@ -583,7 +583,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private void sendLargeMessage(final MessageReference ref, final ServerMessage message)
    {
-      largeMessageSender = new LargeMessageSender((ServerLargeMessage)message, ref);
+      largeMessageSender = new LargeMessageSender((LargeServerMessage)message, ref);
 
       largeMessageSender.sendLargeMessage();
    }
@@ -632,7 +632,7 @@ public class ServerConsumerImpl implements ServerConsumer
       private final long sizePendingLargeMessage;
 
       /** The current message being processed */
-      private final ServerLargeMessage pendingLargeMessage;
+      private final LargeServerMessage pendingLargeMessage;
 
       private final MessageReference ref;
 
@@ -643,7 +643,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       private volatile SessionReceiveContinuationMessage readAheadChunk;
 
-      public LargeMessageSender(final ServerLargeMessage message, final MessageReference ref)
+      public LargeMessageSender(final LargeServerMessage message, final MessageReference ref)
       {
          pendingLargeMessage = message;
 

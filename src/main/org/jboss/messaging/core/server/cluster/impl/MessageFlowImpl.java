@@ -38,7 +38,9 @@ import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.cluster.Forwarder;
 import org.jboss.messaging.core.server.cluster.MessageFlow;
 import org.jboss.messaging.core.server.cluster.Transformer;
@@ -323,6 +325,8 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
             SimpleString queueName = new SimpleString("outflow." + name +
                                                       "." +
                                                       UUIDGenerator.getInstance().generateSimpleStringUUID());
+            
+            SimpleString linkName = new SimpleString("link." + queueName.toString());
 
             Binding binding = postOffice.getBinding(queueName);
 
@@ -332,10 +336,18 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
             {
                Filter filter = filterString == null ? null : new FilterImpl(filterString);
 
-               binding = postOffice.addBinding(address, queueName, filter, true, false, exclusive);
+               //Create the queue
+               
+               binding = postOffice.addQueueBinding(queueName, queueName, filter, true, false, exclusive);
+               
+               //Create the link
+               
+               postOffice.addLinkBinding(linkName, address, filter, true, false, exclusive, queueName);
             }
+            
+            Queue queue = (Queue)binding.getBindable();
 
-            Forwarder forwarder = new ForwarderImpl(binding.getQueue(),
+            Forwarder forwarder = new ForwarderImpl(queue,
                                                     connectorPair,
                                                     executorFactory.getExecutor(),
                                                     maxBatchSize,
@@ -352,7 +364,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
 
             forwarders.put(connectorPair, forwarder);
 
-            binding.getQueue().addConsumer(forwarder);
+            queue.addConsumer(forwarder);
 
             forwarder.start();
          }

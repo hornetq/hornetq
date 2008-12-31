@@ -544,13 +544,13 @@ public class TransactionImplTest extends UnitTestCase
       EasyMock.replay(pagingManager, postOffice);
       
       //Durable queue
-      Queue queue1 = new QueueImpl(12, new SimpleString("queue1"), null, false, true, false, scheduledExecutor, postOffice);
+      Queue queue1 = new QueueImpl(12, new SimpleString("queue1"), null, false, true, false, scheduledExecutor, postOffice, null);
       
       //Durable queue
-      Queue queue2 = new QueueImpl(34, new SimpleString("queue2"), null, false, true, false, scheduledExecutor, postOffice);
+      Queue queue2 = new QueueImpl(34, new SimpleString("queue2"), null, false, true, false, scheduledExecutor, postOffice, null);
       
       //Non durable queue
-      Queue queue3 = new QueueImpl(65, new SimpleString("queue3"), null, false, false, false, scheduledExecutor, postOffice);
+      Queue queue3 = new QueueImpl(65, new SimpleString("queue3"), null, false, false, false, scheduledExecutor, postOffice, null);
       
       //Some refs to ack
       
@@ -631,10 +631,10 @@ public class TransactionImplTest extends UnitTestCase
       
       //Expect:
       
-      postOffice.deliver((List<MessageReference>)EasyMock.anyObject());
-      
-      EasyMock.expectLastCall().anyTimes();
-      
+//      postOffice.deliver((List<MessageReference>)EasyMock.anyObject());
+//      
+//      EasyMock.expectLastCall().anyTimes();
+//      
       sm.commit(txID);
 
       EasyMock.expect(pagingManager.getPageStore((SimpleString)EasyMock.anyObject())).andStubReturn(pagingStore);
@@ -671,9 +671,9 @@ public class TransactionImplTest extends UnitTestCase
       
       EasyMock.reset(po);
       
-      po.deliver((List<MessageReference>)EasyMock.anyObject());
-      
-      EasyMock.expectLastCall().anyTimes();
+//      po.deliver((List<MessageReference>)EasyMock.anyObject());
+//      
+//      EasyMock.expectLastCall().anyTimes();
       
       EasyMock.replay(po);
       

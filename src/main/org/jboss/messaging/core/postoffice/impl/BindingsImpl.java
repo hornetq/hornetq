@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.postoffice.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,8 +31,8 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
+import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.Transaction;
 
@@ -85,31 +84,25 @@ public class BindingsImpl implements Bindings
       }
    }
    
-   public List<MessageReference> route(final ServerMessage message)
+   public void route(final ServerMessage message) throws Exception
    {
-      return route(message, null);
+      route(message, null);
    }
    
-   public List<MessageReference> route(final ServerMessage message, final Transaction tx)
+   public void route(final ServerMessage message, final Transaction tx) throws Exception
    {
       if (numberExclusive.get() > 0)
       {
          // We need to round robin
          
-         List<MessageReference> refs = new ArrayList<MessageReference>(1);
-
          Binding binding = getNext(message);
             
          if (binding != null)
          {        
-            Queue queue = binding.getQueue();
-            
-            MessageReference reference = message.createReference(queue);
-   
-            refs.add(reference);             
-         }
-         
-         return refs;
+            Bindable bindable = binding.getBindable();
+                 
+            bindable.route(message, tx);
+         }         
       }
       else
       {
@@ -119,29 +112,19 @@ public class BindingsImpl implements Bindings
          
          if (!bindings.isEmpty())
          {   
-            List<MessageReference> refs = new ArrayList<MessageReference>();
-   
             for (Binding binding : bindings)
             {
-               Queue queue = binding.getQueue();
+               Bindable bindable = binding.getBindable();
    
-               Filter filter = queue.getFilter();
+               Filter filter = bindable.getFilter();
    
                //Note we ignore any exclusive - this structure is concurrent so one could have been added
                //since the initial check on number of exclusive
                if (!binding.isExclusive() && (filter == null || filter.match(message)))
                {
-                  MessageReference reference = message.createReference(queue);
-   
-                  refs.add(reference);
+                  bindable.route(message, tx);
                }
             }
-            
-            return refs;
-         }
-         else
-         {
-            return Collections.<MessageReference>emptyList();
          }
       }
    }
@@ -169,7 +152,7 @@ public class BindingsImpl implements Bindings
                weightCount.set(binding.getWeight());
             }
             
-            Filter filter = binding.getQueue().getFilter();
+            Filter filter = binding.getBindable().getFilter();
             
             if ((filter != null && !filter.match(message)) || weightCount.get() == 0)
             {

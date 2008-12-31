@@ -41,7 +41,7 @@ import org.jboss.messaging.core.postoffice.impl.BindingImpl;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.core.server.BindableFactory;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
@@ -57,14 +57,14 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class PostOfficeImplTest extends UnitTestCase
 {
-   private final QueueFactory queueFactory = new FakeQueueFactory();
+   private final BindableFactory queueFactory = new FakeQueueFactory();
 
    protected boolean wildCardRoutingEnabled;
 //
 //   public void testPostOfficeStart() throws Exception
 //   {
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //
@@ -85,7 +85,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //   public void testPostOfficeStartAndStop() throws Exception
 //   {
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //
@@ -112,7 +112,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //
 //      SimpleString address1 = new SimpleString("testAddress1");
 //      EasyMock.expect(binding.getAddress()).andStubReturn(address1);
@@ -169,7 +169,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //      }
 //
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //      EasyMock.expect(pgm.isGlobalPageMode()).andStubReturn(true);
@@ -207,7 +207,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //      bindingArrayList.add(binding2);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //
 //      SimpleString address1 = new SimpleString("testAddress1");
@@ -266,7 +266,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //      }
 //
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
@@ -304,7 +304,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //      List<SimpleString> dests = new ArrayList<SimpleString>();
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //
 //      SimpleString address1 = new SimpleString("testAddress1");
@@ -349,7 +349,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //   {
 //
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
@@ -415,7 +415,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //   {
 //
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //      PagingStore pgstore = EasyMock.createNiceMock(PagingStore.class);
@@ -476,7 +476,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //   {
 //
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //      PagingStore pgstore = EasyMock.createNiceMock(PagingStore.class);
@@ -533,7 +533,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //   {
 //
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //      PagingStore pgstore = EasyMock.createNiceMock(PagingStore.class);
@@ -593,7 +593,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //   public void testAddQueue() throws Exception
 //   {
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //
@@ -635,7 +635,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //   public void testRemoveQueue() throws Exception
 //   {
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //
@@ -688,7 +688,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //   public void testAddRemoveMultipleWithDifferentConditions() throws Exception
 //   {
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = new FakeQueueFactory();
+//      BindableFactory qf = new FakeQueueFactory();
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //
@@ -779,7 +779,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //   {
 //      SimpleString address = new SimpleString("testAddress");
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //
@@ -806,7 +806,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //      SimpleString address2 = new SimpleString("testAddress2");
 //      SimpleString address3 = new SimpleString("testAddress3");
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //      EasyMock.expect(pgm.createPageStore(EasyMock.isA(SimpleString.class))).andStubReturn(null);
@@ -839,7 +839,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //
 //      SimpleString address = new SimpleString("testAddress");
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //
@@ -869,7 +869,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //      SimpleString address2 = new SimpleString("testAddress2");
 //      SimpleString address3 = new SimpleString("testAddress3");
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //
@@ -908,7 +908,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //   {
 //      SimpleString queueName = new SimpleString("testQueueName");
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createMock(BindableFactory.class);
 //      Filter filter = EasyMock.createStrictMock(Filter.class);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
@@ -939,7 +939,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //      SimpleString queueName2 = new SimpleString("testQueueName2");
 //      SimpleString queueName3 = new SimpleString("testQueueName3");
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      Filter filter = EasyMock.createStrictMock(Filter.class);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      Queue queue2 = EasyMock.createStrictMock(Queue.class);
@@ -983,7 +983,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //   {
 //      SimpleString queueName = new SimpleString("testQueueName");
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      Filter filter = EasyMock.createStrictMock(Filter.class);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
@@ -1013,7 +1013,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //      SimpleString queueName2 = new SimpleString("testQueueName2");
 //      SimpleString queueName3 = new SimpleString("testQueueName3");
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      Filter filter = EasyMock.createStrictMock(Filter.class);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      Queue queue2 = EasyMock.createStrictMock(Queue.class);
@@ -1054,7 +1054,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //   {
 //      SimpleString queueName = new SimpleString("testQueueName");
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      Filter filter = EasyMock.createStrictMock(Filter.class);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
@@ -1093,7 +1093,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //   {
 //      SimpleString queueName = new SimpleString("testQueueName");
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      Filter filter = EasyMock.createStrictMock(Filter.class);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
@@ -1127,7 +1127,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //      SimpleString queueName2 = new SimpleString("testQueueName2");
 //      SimpleString queueName3 = new SimpleString("testQueueName3");
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      Filter filter = EasyMock.createStrictMock(Filter.class);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      Queue queue2 = EasyMock.createStrictMock(Queue.class);
@@ -1178,7 +1178,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //   {
 //      SimpleString queueName = new SimpleString("testQueueName");
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      Filter filter = EasyMock.createStrictMock(Filter.class);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
@@ -1210,7 +1210,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //      SimpleString queueName2 = new SimpleString("testQueueName2");
 //      SimpleString queueName3 = new SimpleString("testQueueName3");
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      Filter filter = EasyMock.createStrictMock(Filter.class);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      Queue queue2 = EasyMock.createStrictMock(Queue.class);
@@ -1257,7 +1257,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //   {
 //      SimpleString queueName = new SimpleString("testQueueName");
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
@@ -1292,7 +1292,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //   {
 //      ServerMessage message = EasyMock.createStrictMock(ServerMessage.class);
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //
@@ -1325,7 +1325,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //   {
 //      ServerMessage message = EasyMock.createStrictMock(ServerMessage.class);
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //
@@ -1354,7 +1354,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //      MessageReference messageReference = EasyMock.createStrictMock(MessageReference.class);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //
@@ -1397,7 +1397,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //
@@ -1445,7 +1445,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //      MessageReference messageReference = EasyMock.createStrictMock(MessageReference.class);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //
@@ -1486,7 +1486,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //      MessageReference messageReference = EasyMock.createStrictMock(MessageReference.class);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //
@@ -1530,7 +1530,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //      Queue queue2 = EasyMock.createStrictMock(Queue.class);
 //      Queue queue3 = EasyMock.createStrictMock(Queue.class);
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //
@@ -1588,7 +1588,7 @@ public class PostOfficeImplTest extends UnitTestCase
 //      Queue queue2 = EasyMock.createStrictMock(Queue.class);
 //      Queue queue3 = EasyMock.createStrictMock(Queue.class);
 //      StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-//      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+//      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
 //      ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
 //      PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 //

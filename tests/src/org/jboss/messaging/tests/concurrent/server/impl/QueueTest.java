@@ -29,7 +29,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.core.server.BindableFactory;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
@@ -48,9 +48,8 @@ import org.jboss.messaging.util.SimpleString;
 public class QueueTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(QueueTest.class);
-
    
-   private QueueFactory queueFactory = new FakeQueueFactory();
+   private BindableFactory queueFactory = new FakeQueueFactory();
    
    /*
     * Concurrent set consumer not busy, busy then, call deliver while messages are being added and consumed
@@ -140,7 +139,7 @@ public class QueueTest extends UnitTestCase
             
             MessageReference ref = message.createReference(queue);
             
-            queue.add(ref);
+            queue.addLast(ref);
             
             refs.add(ref);
             

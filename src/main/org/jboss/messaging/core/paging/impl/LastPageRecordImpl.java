@@ -24,6 +24,7 @@ package org.jboss.messaging.core.paging.impl;
 
 import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
@@ -37,6 +38,9 @@ public class LastPageRecordImpl implements LastPageRecord
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(LastPageRecordImpl.class);
+
+   
    // Attributes ----------------------------------------------------
 
    private volatile long recordId = 0;
@@ -67,7 +71,7 @@ public class LastPageRecordImpl implements LastPageRecord
    }
 
    public void setRecordId(final long recordId)
-   {
+   {      
       this.recordId = recordId;
    }
 

@@ -169,7 +169,7 @@ public class ResourceManagerImpl implements ResourceManager, MessagingComponent
    }
 
    public List<Xid> getPreparedTransactions()
-   {
+   {           
       List<Xid> xids = new ArrayList<Xid>();
 
       for (Xid xid : transactions.keySet())

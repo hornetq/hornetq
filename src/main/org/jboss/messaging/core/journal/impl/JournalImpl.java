@@ -436,7 +436,7 @@ public class JournalImpl implements TestableJournal
       {
          throw new IllegalStateException("Journal must be loaded first");
       }
-
+      
       int recordLength = record.getEncodeSize();
 
       int size = SIZE_ADD_RECORD_TX + recordLength;

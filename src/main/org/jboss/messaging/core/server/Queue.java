@@ -43,9 +43,11 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public interface Queue extends ReferenceHandler
+public interface Queue extends Bindable
 {     
-   HandleStatus addFirst(MessageReference ref);
+   void addLast(MessageReference ref);
+   
+   void addFirst(MessageReference ref);
    
    /**
     * This method is used to add a List of MessageReferences atomically at the head of the list.
@@ -63,12 +65,6 @@ public interface Queue extends ReferenceHandler
    int getConsumerCount();
    
    List<MessageReference> list(Filter filter);
-   
-   long getPersistenceID();
-   
-   void setPersistenceID(long id);
-   
-   Filter getFilter();
    
    int getMessageCount();
    

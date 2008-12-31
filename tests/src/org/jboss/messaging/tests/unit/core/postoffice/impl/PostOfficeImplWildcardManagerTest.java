@@ -33,7 +33,7 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.core.server.BindableFactory;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
@@ -63,7 +63,7 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       SimpleString address3 = new SimpleString("test.testAddress3");
       Queue queue = EasyMock.createStrictMock(Queue.class);
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
       EasyMock.expect(pgm.isGlobalPageMode()).andStubReturn(true);
@@ -122,7 +122,7 @@ public class PostOfficeImplWildcardManagerTest extends PostOfficeImplTest
       Queue queue = EasyMock.createStrictMock(Queue.class);
       Queue queue2 = EasyMock.createStrictMock(Queue.class);
       StorageManager pm = EasyMock.createStrictMock(StorageManager.class);
-      QueueFactory qf = EasyMock.createStrictMock(QueueFactory.class);
+      BindableFactory qf = EasyMock.createStrictMock(BindableFactory.class);
       ManagementService ms = EasyMock.createNiceMock(ManagementService.class);
       PagingManager pgm = EasyMock.createNiceMock(PagingManager.class);
 

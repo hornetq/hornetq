@@ -54,7 +54,7 @@ import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.core.server.BindableFactory;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.server.cluster.ClusterManager;
 import org.jboss.messaging.core.server.cluster.impl.ClusterManagerImpl;
@@ -101,7 +101,7 @@ public class MessagingServerImpl implements MessagingServer
 
    private ScheduledExecutorService scheduledExecutor;
 
-   private QueueFactory queueFactory;
+   private BindableFactory queueFactory;
 
    private PagingManager pagingManager;
 
@@ -210,7 +210,7 @@ public class MessagingServerImpl implements MessagingServer
       queueSettingsRepository.setDefault(new QueueSettings());
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
                                                           new JBMThreadFactory("JBM-scheduled-threads"));
-      queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);
+      queueFactory = new BindableFactoryImpl(scheduledExecutor, queueSettingsRepository, storageManager);
 
       pagingManager = new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(),
                                                                       configuration.getPagingMaxThreads()),

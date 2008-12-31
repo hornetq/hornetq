@@ -26,11 +26,11 @@ import java.nio.ByteBuffer;
 
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.core.server.ServerLargeMessage;
+import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 
 /**
- * A NullStorageLargeMessageImpl
+ * A NullStorageLargeServerMessage
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * 
@@ -38,7 +38,7 @@ import org.jboss.messaging.core.server.impl.ServerMessageImpl;
  *
  *
  */
-public class NullStorageLargeMessageImpl extends ServerMessageImpl implements ServerLargeMessage
+public class NullStorageLargeServerMessage extends ServerMessageImpl implements LargeServerMessage
 {
 
    // Constants -----------------------------------------------------
@@ -51,20 +51,20 @@ public class NullStorageLargeMessageImpl extends ServerMessageImpl implements Se
 
    // Public --------------------------------------------------------
 
-   public NullStorageLargeMessageImpl()
+   public NullStorageLargeServerMessage()
    {
       super();
    }
 
    /* (non-Javadoc)
-    * @see org.jboss.messaging.core.server.ServerLargeMessage#release()
+    * @see org.jboss.messaging.core.server.LargeServerMessage#release()
     */
    public void releaseResources()
    {
    }
 
    /* (non-Javadoc)
-    * @see org.jboss.messaging.core.server.ServerLargeMessage#addBytes(byte[])
+    * @see org.jboss.messaging.core.server.LargeServerMessage#addBytes(byte[])
     */
    public synchronized void addBytes(final byte[] bytes)
    {
@@ -87,7 +87,7 @@ public class NullStorageLargeMessageImpl extends ServerMessageImpl implements Se
    }
 
    /* (non-Javadoc)
-    * @see org.jboss.messaging.core.server.ServerLargeMessage#deleteFile()
+    * @see org.jboss.messaging.core.server.LargeServerMessage#deleteFile()
     */
    public void deleteFile() throws Exception
    {
@@ -95,7 +95,7 @@ public class NullStorageLargeMessageImpl extends ServerMessageImpl implements Se
    }
 
    /* (non-Javadoc)
-    * @see org.jboss.messaging.core.server.ServerLargeMessage#complete()
+    * @see org.jboss.messaging.core.server.LargeServerMessage#complete()
     */
    public void complete() throws Exception
    {

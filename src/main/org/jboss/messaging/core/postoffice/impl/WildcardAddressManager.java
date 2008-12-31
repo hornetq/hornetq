@@ -87,7 +87,7 @@ public class WildcardAddressManager extends SimpleAddressManager
       {
          for (Address destination : add.getLinkedAddresses())
          {
-            BindingImpl binding1 = new BindingImpl(destination.getAddress(), binding.getQueue(), binding.isExclusive());
+            BindingImpl binding1 = new BindingImpl(binding.getType(), destination.getAddress(), binding.getBindable(), binding.isExclusive());
             super.addMapping(destination.getAddress(), binding1);
          }
          return super.addMapping(address, binding);
@@ -99,15 +99,15 @@ public class WildcardAddressManager extends SimpleAddressManager
     * otherwise it will be removed as normal.
     *
     * @param address   the address to remove the binding from
-    * @param queueName the name of the queue for the binding to remove
+    * @param bindableName the name of the queue for the binding to remove
     * @return true if this was the last mapping for a specific address
     */
-   public boolean removeMapping(final SimpleString address, final SimpleString queueName)
+   public boolean removeMapping(final SimpleString address, final SimpleString bindableName)
    {
       Address add = removeAndUpdateAddressMap(address);
       if (!add.containsWildCard())
       {
-         boolean removed = super.removeMapping(address, queueName);
+         boolean removed = super.removeMapping(address, bindableName);
          for (Address destination : add.getLinkedAddresses())
          {
             Bindings bindings = getBindings(destination.getAddress());
@@ -115,7 +115,7 @@ public class WildcardAddressManager extends SimpleAddressManager
             {
                for (Binding b : bindings.getBindings())
                {
-                  super.removeMapping(address, b.getQueue().getName());
+                  super.removeMapping(address, b.getBindable().getName());
                }
             }
          }
@@ -125,9 +125,9 @@ public class WildcardAddressManager extends SimpleAddressManager
       {
          for (Address destination : add.getLinkedAddresses())
          {
-            super.removeMapping(destination.getAddress(), queueName);
+            super.removeMapping(destination.getAddress(), bindableName);
          }
-         return super.removeMapping(address, queueName);
+         return super.removeMapping(address, bindableName);
       }
    }
 

@@ -61,16 +61,19 @@ import org.jboss.messaging.core.paging.impl.LastPageRecordImpl;
 import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.BindingImpl;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.XidCodecSupport;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.core.server.Bindable;
+import org.jboss.messaging.core.server.BindableFactory;
 import org.jboss.messaging.core.server.JournalType;
+import org.jboss.messaging.core.server.Link;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.QueueFactory;
-import org.jboss.messaging.core.server.ServerLargeMessage;
+import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.transaction.ResourceManager;
@@ -227,9 +230,9 @@ public class JournalStorageManager implements StorageManager
       return idGenerator.generateID();
    }
 
-   public ServerLargeMessage createLargeMessage()
+   public LargeServerMessage createLargeMessage()
    {
-      return new JournalLargeMessageImpl(this);
+      return new JournalLargeServerMessage(this);
    }
 
    // Non transactional operations
@@ -241,11 +244,11 @@ public class JournalStorageManager implements StorageManager
          throw new MessagingException(MessagingException.ILLEGAL_STATE, "MessageId was not assigned to Message");
       }
 
-      if (message instanceof ServerLargeMessage)
+      if (message instanceof LargeServerMessage)
       {
          messageJournal.appendAddRecord(message.getMessageID(),
                                         ADD_LARGE_MESSAGE,
-                                        new LargeMessageEncoding((ServerLargeMessage)message));
+                                        new LargeMessageEncoding((LargeServerMessage)message));
       }
       else
       {
@@ -284,7 +287,7 @@ public class JournalStorageManager implements StorageManager
 
       messageJournal.appendUpdateRecord(recordID, DUPLICATE_ID, encoding);
    }
-   
+
    public void deleteDuplicateID(long recordID) throws Exception
    {
       messageJournal.appendDeleteRecord(recordID);
@@ -299,12 +302,12 @@ public class JournalStorageManager implements StorageManager
          throw new MessagingException(MessagingException.ILLEGAL_STATE, "MessageId was not assigned to Message");
       }
 
-      if (message instanceof ServerLargeMessage)
+      if (message instanceof LargeServerMessage)
       {
          messageJournal.appendAddRecordTransactional(txID,
                                                      message.getMessageID(),
                                                      ADD_LARGE_MESSAGE,
-                                                     new LargeMessageEncoding(((ServerLargeMessage)message)));
+                                                     new LargeMessageEncoding(((LargeServerMessage)message)));
       }
       else
       {
@@ -331,7 +334,7 @@ public class JournalStorageManager implements StorageManager
    }
 
    public void storeLastPage(final long txID, final LastPageRecord lastPage) throws Exception
-   {
+   {      
       if (lastPage.getRecordId() != 0)
       {
          // To avoid linked list effect on reclaiming, we delete and add a new
@@ -343,12 +346,11 @@ public class JournalStorageManager implements StorageManager
 
       messageJournal.appendAddRecordTransactional(txID, lastPage.getRecordId(), LAST_PAGE, lastPage);
    }
-   
+
    public void deleteLastPage(final long recordID) throws Exception
    {
       messageJournal.appendDeleteRecord(recordID);
    }
-   
 
    public void storeAcknowledgeTransactional(final long txID, final long queueID, final long messageID) throws Exception
    {
@@ -382,7 +384,7 @@ public class JournalStorageManager implements StorageManager
    }
 
    public void commit(final long txID) throws Exception
-   {    
+   {
       messageJournal.appendCommitRecord(txID);
    }
 
@@ -410,7 +412,7 @@ public class JournalStorageManager implements StorageManager
 
       messageJournal.appendUpdateRecordTransactional(txID, recordID, DUPLICATE_ID, encoding);
    }
-   
+
    public void deleteDuplicateIDTransactional(long txID, long recordID) throws Exception
    {
       messageJournal.appendDeleteRecordTransactional(txID, recordID);
@@ -451,15 +453,15 @@ public class JournalStorageManager implements StorageManager
          {
             case ADD_LARGE_MESSAGE:
             {
-               ServerLargeMessage largeMessage = this.createLargeMessage();
+               LargeServerMessage largeMessage = createLargeMessage();
 
                LargeMessageEncoding messageEncoding = new LargeMessageEncoding(largeMessage);
 
                messageEncoding.decode(buff);
 
-               List<MessageReference> refs = postOffice.reroute(largeMessage);
+               largeMessage.setReload();
 
-               postOffice.deliver(refs);
+               postOffice.route(largeMessage, null);
 
                break;
             }
@@ -469,9 +471,9 @@ public class JournalStorageManager implements StorageManager
 
                message.decode(buff);
 
-               List<MessageReference> refs = postOffice.reroute(message);
-
-               postOffice.deliver(refs);
+               message.setReload();
+               
+               postOffice.route(message, null);
 
                break;
             }
@@ -583,12 +585,12 @@ public class JournalStorageManager implements StorageManager
                if (ids == null)
                {
                   ids = new ArrayList<Pair<SimpleString, Long>>();
-                  
+
                   duplicateIDMap.put(encoding.address, ids);
                }
 
                ids.add(new Pair<SimpleString, Long>(encoding.duplID, record.id));
-               
+
                break;
             }
             default:
@@ -605,17 +607,17 @@ public class JournalStorageManager implements StorageManager
 
    public void addBinding(final Binding binding) throws Exception
    {
-      Queue queue = binding.getQueue();
-
       // We generate the queue id here
 
-      long queueID = idGenerator.generateID();
+      Bindable bindable = binding.getBindable();
 
-      queue.setPersistenceID(queueID);
+      long bindingID = idGenerator.generateID();
+
+      bindable.setPersistenceID(bindingID);
 
       final SimpleString filterString;
 
-      final Filter filter = queue.getFilter();
+      final Filter filter = bindable.getFilter();
 
       if (filter != null)
       {
@@ -626,21 +628,34 @@ public class JournalStorageManager implements StorageManager
          filterString = null;
       }
 
-      BindingEncoding bindingEncoding = new BindingEncoding(binding.getQueue().getName(),
+      SimpleString linkAddress;
+
+      if (binding.getType() == BindingType.LINK)
+      {
+         linkAddress = ((Link)bindable).getLinkAddress();
+      }
+      else
+      {
+         linkAddress = null;
+      }
+
+      BindingEncoding bindingEncoding = new BindingEncoding(binding.getType(),
+                                                            bindable.getName(),
                                                             binding.getAddress(),
                                                             filterString,
-                                                            binding.isExclusive());
+                                                            binding.isExclusive(),
+                                                            linkAddress);
 
-      bindingsJournal.appendAddRecord(queueID, BINDING_RECORD, bindingEncoding);
+      bindingsJournal.appendAddRecord(bindingID, BINDING_RECORD, bindingEncoding);
    }
 
    public void deleteBinding(final Binding binding) throws Exception
    {
-      long id = binding.getQueue().getPersistenceID();
+      long id = binding.getBindable().getPersistenceID();
 
       if (id == -1)
       {
-         throw new IllegalArgumentException("Cannot delete binding, id is " + id);
+         throw new IllegalArgumentException("Cannot delete binding, id is -1");
       }
 
       bindingsJournal.appendDeleteRecord(id);
@@ -681,7 +696,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   public void loadBindings(final QueueFactory queueFactory,
+   public void loadBindings(final BindableFactory bindableFactory,
                             final List<Binding> bindings,
                             final List<SimpleString> destinations) throws Exception
    {
@@ -701,32 +716,50 @@ public class JournalStorageManager implements StorageManager
 
          if (rec == BINDING_RECORD)
          {
-            BindingEncoding encodeBinding = new BindingEncoding();
+            BindingEncoding bindingEncoding = new BindingEncoding();
 
-            encodeBinding.decode(buffer);
+            bindingEncoding.decode(buffer);
 
             Filter filter = null;
 
-            if (encodeBinding.filter != null)
+            if (bindingEncoding.filter != null)
             {
-               filter = new FilterImpl(encodeBinding.filter);
+               filter = new FilterImpl(bindingEncoding.filter);
             }
 
-            Queue queue = queueFactory.createQueue(id, encodeBinding.queueName, filter, true, false);
+            Bindable bindable;
 
-            Binding binding = new BindingImpl(encodeBinding.address, queue, encodeBinding.exclusive);
+            if (bindingEncoding.type == BindingType.QUEUE)
+            {
+
+               bindable = bindableFactory.createQueue(id, bindingEncoding.name, filter, true, false);
+            }
+            else
+            {
+               bindable = bindableFactory.createLink(id,
+                                                     bindingEncoding.name,
+                                                     filter,
+                                                     true,
+                                                     false,
+                                                     bindingEncoding.linkAddress);
+            }
+
+            Binding binding = new BindingImpl(bindingEncoding.type,
+                                              bindingEncoding.address,
+                                              bindable,
+                                              bindingEncoding.exclusive);
 
             bindings.add(binding);
          }
          else if (rec == DESTINATION_RECORD)
          {
-            DestinationEncoding destEnc = new DestinationEncoding();
+            DestinationEncoding destinationEncoding = new DestinationEncoding();
 
-            destEnc.decode(buffer);
+            destinationEncoding.decode(buffer);
 
-            destinationIDMap.put(destEnc.destination, id);
+            destinationIDMap.put(destinationEncoding.destination, id);
 
-            destinations.add(destEnc.destination);
+            destinations.add(destinationEncoding.destination);
          }
          else
          {
@@ -845,11 +878,7 @@ public class JournalStorageManager implements StorageManager
 
          Transaction tx = new TransactionImpl(preparedTransaction.id, xid, this, postOffice);
 
-         List<MessageReference> references = new ArrayList<MessageReference>();
-
          List<MessageReference> referencesToAck = new ArrayList<MessageReference>();
-
-         PageTransactionInfoImpl pageTransactionInfo = null;
 
          // first get any sent messages for this tx and recreate
          for (RecordInfo record : preparedTransaction.records)
@@ -870,9 +899,9 @@ public class JournalStorageManager implements StorageManager
 
                   message.decode(buff);
 
-                  List<MessageReference> refs = postOffice.reroute(message);
+                  message.setReload();
 
-                  references.addAll(refs);
+                  postOffice.route(message, tx);
 
                   break;
                }
@@ -899,63 +928,46 @@ public class JournalStorageManager implements StorageManager
                   {
                      throw new IllegalStateException("Failed to remove reference for " + messageID);
                   }
-
+                  
                   break;
                }
                case PAGE_TRANSACTION:
                {
-                  pageTransactionInfo = new PageTransactionInfoImpl();
+                  PageTransactionInfo pageTransactionInfo = new PageTransactionInfoImpl();
 
                   pageTransactionInfo.decode(buff);
 
                   pageTransactionInfo.markIncomplete();
+                  
+                  tx.setPageTransaction(pageTransactionInfo);
 
                   break;
                }
                case SET_SCHEDULED_DELIVERY_TIME:
-               {
-                  long messageID = record.id;
-
-                  ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding();
-
-                  encoding.decode(buff);
-
-                  Queue queue = queues.get(encoding.queueID);
-
-                  if (queue == null)
-                  {
-                     throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
-                  }
-
-                  //FIXME - this involves a scan --- SLOW!!
-                  for (MessageReference ref : references)
-                  {
-                     if (ref.getQueue().getPersistenceID() == encoding.queueID && ref.getMessage().getMessageID() == messageID)
-                     {
-                        ref.setScheduledDeliveryTime(encoding.scheduledDeliveryTime);
-                     }
-                  }
-
+               {                  
+                  //Do nothing - for prepared txs, the set scheduled delivery time will only occur in a send in which
+                  //case the message will already have the header for the scheduled delivery time, so no need to do anything.
+               
                   break;
                }
                case DUPLICATE_ID:
                {
-                  //We need load the duplicate ids at prepare time too
+                  // We need load the duplicate ids at prepare time too
                   DuplicateIDEncoding encoding = new DuplicateIDEncoding();
-                  
+
                   encoding.decode(buff);
-                  
+
                   List<Pair<SimpleString, Long>> ids = duplicateIDMap.get(encoding.address);
 
                   if (ids == null)
                   {
                      ids = new ArrayList<Pair<SimpleString, Long>>();
-                     
+
                      duplicateIDMap.put(encoding.address, ids);
                   }
 
                   ids.add(new Pair<SimpleString, Long>(encoding.duplID, record.id));
-                  
+
                   break;
                }
                default:
@@ -997,9 +1009,13 @@ public class JournalStorageManager implements StorageManager
             }
          }
 
-         // now we recreate the state of the tx and add to the resource manager
-         tx.replay(references, referencesToAck, pageTransactionInfo);
-
+         for (MessageReference ack: referencesToAck)
+         {
+            tx.addAckTempUntilNextRefactoring(ack);
+         }
+                  
+         tx.setState(Transaction.State.PREPARED);
+         
          resourceManager.putTransaction(xid, tx);
       }
    }
@@ -1045,7 +1061,7 @@ public class JournalStorageManager implements StorageManager
          for (String tmpFile : tmpFiles)
          {
             SequentialFile file = largeMessagesFactory.createSequentialFile(tmpFile, -1);
-            log.info("cleaning up file " + file);
+            log.info("Deleting file " + file);
             file.delete();
          }
       }
@@ -1086,7 +1102,9 @@ public class JournalStorageManager implements StorageManager
 
    private static class BindingEncoding implements EncodingSupport
    {
-      SimpleString queueName;
+      BindingType type;
+
+      SimpleString name;
 
       SimpleString address;
 
@@ -1094,43 +1112,80 @@ public class JournalStorageManager implements StorageManager
 
       boolean exclusive;
 
+      SimpleString linkAddress;
+
       public BindingEncoding()
       {
       }
 
-      public BindingEncoding(final SimpleString queueName,
+      public BindingEncoding(final BindingType type,
+                             final SimpleString name,
                              final SimpleString address,
                              final SimpleString filter,
-                             final boolean exclusive)
+                             final boolean exclusive,
+                             final SimpleString linkAddress)
       {
          super();
-         this.queueName = queueName;
+         this.type = type;
+         this.name = name;
          this.address = address;
          this.filter = filter;
          this.exclusive = exclusive;
+         this.linkAddress = linkAddress;
       }
 
       public void decode(final MessagingBuffer buffer)
       {
-         queueName = buffer.getSimpleString();
+         int itype = buffer.getInt();
+         switch (itype)
+         {
+            case 0:
+            {
+               type = BindingType.LINK;
+               break;
+            }
+            case 1:
+            {
+               type = BindingType.QUEUE;
+               break;
+            }
+            default:
+            {
+               throw new IllegalArgumentException("Invalid binding type " + itype);
+            }
+         }
+         name = buffer.getSimpleString();
          address = buffer.getSimpleString();
          filter = buffer.getNullableSimpleString();
          exclusive = buffer.getBoolean();
+         linkAddress = buffer.getNullableSimpleString();
       }
 
       public void encode(final MessagingBuffer buffer)
       {
-         buffer.putSimpleString(queueName);
+         if (type == BindingType.LINK)
+         {
+            buffer.putInt(0);
+         }
+         else
+         {
+            buffer.putInt(1);
+         }
+         buffer.putSimpleString(name);
          buffer.putSimpleString(address);
          buffer.putNullableSimpleString(filter);
          buffer.putBoolean(exclusive);
+         buffer.putNullableSimpleString(linkAddress);
       }
-
+      
       public int getEncodeSize()
       {
-         return SimpleString.sizeofString(queueName) + SimpleString.sizeofString(address) + 1 + // HasFilter?
-                ((filter != null) ? SimpleString.sizeofString(filter) : 0) +
-                SIZE_BOOLEAN;
+         return SIZE_INT +
+                SimpleString.sizeofString(name) +
+                SimpleString.sizeofString(address) +
+                SimpleString.sizeofNullableString(filter) + 
+                SIZE_BOOLEAN +
+                SimpleString.sizeofNullableString(linkAddress);
       }
    }
 
@@ -1166,9 +1221,9 @@ public class JournalStorageManager implements StorageManager
 
    private static class LargeMessageEncoding implements EncodingSupport
    {
-      private final ServerLargeMessage message;
+      private final LargeServerMessage message;
 
-      public LargeMessageEncoding(ServerLargeMessage message)
+      public LargeMessageEncoding(LargeServerMessage message)
       {
          this.message = message;
       }

@@ -42,6 +42,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.JBossQueue;
@@ -154,7 +155,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       }
       Binding binding = postOffice.getBinding(jBossQueue.getSimpleAddress());
       managementService.registerQueue(jBossQueue,
-                                      binding.getQueue(),
+                                      (Queue)binding.getBindable(),
                                       jndiBinding,
                                       postOffice,
                                       storageManager,

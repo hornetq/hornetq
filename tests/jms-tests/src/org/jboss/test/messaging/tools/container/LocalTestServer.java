@@ -53,8 +53,10 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.integration.bootstrap.JBMBootstrapServer;
 import org.jboss.messaging.jms.JBossDestination;
@@ -713,9 +715,9 @@ public class LocalTestServer implements Server, Runnable
    public void removeAllMessages(JBossDestination destination) throws Exception
    {
       Binding binding = getMessagingServer().getPostOffice().getBinding(destination.getSimpleAddress());
-      if (binding != null)
+      if (binding != null && binding.getType() == BindingType.QUEUE)
       {
-         binding.getQueue().deleteAllReferences(getMessagingServer().getStorageManager());
+         ((Queue)binding.getBindable()).deleteAllReferences(getMessagingServer().getStorageManager());
       }
    }
 

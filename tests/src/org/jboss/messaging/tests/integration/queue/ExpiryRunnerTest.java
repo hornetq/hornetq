@@ -23,6 +23,7 @@ package org.jboss.messaging.tests.integration.queue;
 
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
@@ -76,8 +77,8 @@ public class ExpiryRunnerTest extends UnitTestCase
          producer.send(m);
       }
       Thread.sleep(1600);
-      assertEquals(0, messagingService.getServer().getPostOffice().getBinding(qName).getQueue().getMessageCount());
-      assertEquals(0, messagingService.getServer().getPostOffice().getBinding(qName).getQueue().getDeliveringCount());
+      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
 
       ClientConsumer consumer = clientSession.createConsumer(expiryQueue);
       clientSession.start();
@@ -110,8 +111,8 @@ public class ExpiryRunnerTest extends UnitTestCase
          producer2.send(m);
       }
       Thread.sleep(1600);
-      assertEquals(0, messagingService.getServer().getPostOffice().getBinding(qName).getQueue().getMessageCount());
-      assertEquals(0, messagingService.getServer().getPostOffice().getBinding(qName).getQueue().getDeliveringCount());
+      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
 
       ClientConsumer consumer = clientSession.createConsumer(expiryQueue);
       clientSession.start();
@@ -139,8 +140,8 @@ public class ExpiryRunnerTest extends UnitTestCase
          producer.send(m);
       }
       Thread.sleep(1600);
-      assertEquals(50, messagingService.getServer().getPostOffice().getBinding(qName).getQueue().getMessageCount());
-      assertEquals(0, messagingService.getServer().getPostOffice().getBinding(qName).getQueue().getDeliveringCount());
+      assertEquals(numMessages / 2, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
 
       ClientConsumer consumer = clientSession.createConsumer(expiryQueue);
       clientSession.start();
@@ -175,8 +176,8 @@ public class ExpiryRunnerTest extends UnitTestCase
       }
       consumer.close();
       Thread.sleep(2100);
-      assertEquals(0, messagingService.getServer().getPostOffice().getBinding(qName).getQueue().getMessageCount());
-      assertEquals(0, messagingService.getServer().getPostOffice().getBinding(qName).getQueue().getDeliveringCount());
+      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
 
       consumer = clientSession.createConsumer(expiryQueue);
       clientSession.start();
@@ -205,8 +206,8 @@ public class ExpiryRunnerTest extends UnitTestCase
          producer.send(m);
       }
       Thread.sleep(1600);
-      assertEquals(0, messagingService.getServer().getPostOffice().getBinding(qName).getQueue().getMessageCount());
-      assertEquals(0, messagingService.getServer().getPostOffice().getBinding(qName).getQueue().getDeliveringCount());
+      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
 
       ClientConsumer consumer = clientSession.createConsumer(expiryQueue);
       clientSession.start();

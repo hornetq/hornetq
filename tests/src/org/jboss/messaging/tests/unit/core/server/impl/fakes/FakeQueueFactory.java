@@ -27,8 +27,10 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.server.BindableFactory;
+import org.jboss.messaging.core.server.Link;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.core.server.impl.LinkImpl;
 import org.jboss.messaging.core.server.impl.QueueImpl;
 import org.jboss.messaging.util.SimpleString;
 
@@ -39,7 +41,7 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class FakeQueueFactory implements QueueFactory
+public class FakeQueueFactory implements BindableFactory
 {
 	private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 	
@@ -48,8 +50,18 @@ public class FakeQueueFactory implements QueueFactory
 	public Queue createQueue(long persistenceID, SimpleString name, Filter filter,
 			                   boolean durable, boolean temporary)
 	{
-		return new QueueImpl(persistenceID, name, filter, false, durable, temporary, scheduledExecutor, postOffice);
+		return new QueueImpl(persistenceID, name, filter, false, durable, temporary, scheduledExecutor, postOffice, null);
 	}
+	
+	public Link createLink(long persistenceID, SimpleString name, Filter filter,
+                            boolean durable, boolean temporary, SimpleString linkAddress)
+   {
+      Link link =  new LinkImpl(name, durable, filter, linkAddress, postOffice, null);
+      
+      link.setPersistenceID(persistenceID);
+      
+      return link;
+   }
 
    public void setPostOffice(PostOffice postOffice)
    {

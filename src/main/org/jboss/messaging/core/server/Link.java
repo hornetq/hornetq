@@ -18,32 +18,23 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
+
 
 package org.jboss.messaging.core.server;
 
-import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- * 
- * A QueueFactory
- * 
- * Implementations of this class know how to create queues with the correct attribute values
- * based on default and overrides
- * 
+ * A Link
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * Created 24 Dec 2008 09:58:04
+ *
  *
  */
-public interface QueueFactory
+public interface Link extends Bindable
 {
-   Queue createQueue(long persistenceID, SimpleString name, Filter filter,
-                     boolean durable, boolean temporary);
-   
-   /**
-    * This is required for delete-all-reference to work correctly with paging
-    * @param postOffice
-    */
-   void setPostOffice(PostOffice postOffice);
+   SimpleString getLinkAddress();
 }

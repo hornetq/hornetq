@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.paging.impl;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -45,7 +44,6 @@ import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
@@ -126,7 +124,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       if (isTrace)
       {
          log.trace(message);
-      }      
+      }
    }
 
    // Constructors --------------------------------------------------
@@ -243,7 +241,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          else
          {
             addAddressSize(size);
-            
+
             return true;
          }
       }
@@ -427,7 +425,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    }
 
    public boolean startDepaging(final Executor executor)
-   {
+   {     
       currentPageLock.readLock().lock();
       try
       {
@@ -504,7 +502,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    }
 
    public void start() throws Exception
-   {
+   {      
       writeLock.lock();
 
       try
@@ -708,7 +706,7 @@ public class PagingStoreImpl implements TestSupportPageStore
     *     
     * If persistent messages are also used, it will update eventual PageTransactions
     */
-   
+
    private void onDepage(final int pageId, final SimpleString destination, final List<PagedMessage> pagedMessages) throws Exception
    {
       trace("Depaging....");
@@ -740,13 +738,13 @@ public class PagingStoreImpl implements TestSupportPageStore
       storageManager.storeLastPage(depageTransaction.getID(), lastPageRecord);
 
       HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
-
+            
       for (PagedMessage pagedMessage : pagedMessages)
       {
          ServerMessage message = null;
 
          message = pagedMessage.getMessage(storageManager);
-
+         
          final long transactionIdDuringPaging = pagedMessage.getTransactionID();
 
          if (transactionIdDuringPaging >= 0)
@@ -778,10 +776,10 @@ public class PagingStoreImpl implements TestSupportPageStore
             {
                pageTransactionInfo.decrement();
                pageTransactionsToUpdate.add(pageTransactionInfo);
-            }                        
+            }
          }
          
-         depageTransaction.addMessage(message);
+         postOffice.route(message, depageTransaction);
       }
 
       for (PageTransactionInfo pageWithTransaction : pageTransactionsToUpdate)
@@ -800,7 +798,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
 
       depageTransaction.commit();
-
+      
       trace("Depage committed");
    }
 
@@ -853,8 +851,6 @@ public class PagingStoreImpl implements TestSupportPageStore
    private void openNewPage() throws Exception
    {
       currentPageLock.writeLock().lock();
-      
-   //   log.info("Opening new page");
 
       try
       {
@@ -886,8 +882,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public void clearLastPageRecord(final LastPageRecord lastRecord) throws Exception
    {
-      trace("Clearing lastRecord information " + lastRecord.getLastId());
-
       storageManager.deleteLastPage(lastRecord.getRecordId());
    }
 
@@ -938,7 +932,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    private void readPage() throws Exception
    {
       Page page = depage();
-
+      
       if (page == null)
       {
          if (lastPageRecord != null)

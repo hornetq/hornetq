@@ -18,32 +18,35 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
-package org.jboss.messaging.core.postoffice;
 
-import org.jboss.messaging.core.server.Bindable;
+package org.jboss.messaging.core.server;
+
+import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.util.SimpleString;
 
-
 /**
- * 
- * A Binding
- * 
+ * A Bindable
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * Created 21 Dec 2008 09:10:18
+ *
  *
  */
-public interface Binding
+public interface Bindable
 {
-   BindingType getType();
+   Filter getFilter();
    
-   SimpleString getAddress();
+   SimpleString getName();
    
-   Bindable getBindable();
+   long getPersistenceID();
    
-   int getWeight();
+   void setPersistenceID(long id);
    
-   void setWeight(int weight);
+   void route(ServerMessage message, Transaction tx) throws Exception;
    
-   boolean isExclusive();
+   boolean isDurable();
 }

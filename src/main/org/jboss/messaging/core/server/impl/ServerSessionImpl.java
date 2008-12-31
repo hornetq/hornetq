@@ -34,9 +34,9 @@ import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -86,7 +86,7 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerConsumer;
-import org.jboss.messaging.core.server.ServerLargeMessage;
+import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -200,7 +200,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private final SimpleString managementAddress;
 
-   private volatile ServerLargeMessage largeMessage;
+   private volatile LargeServerMessage largeMessage;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -311,7 +311,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void close() throws Exception
    {
-      rollback();
+      if (tx != null && tx.getXid() == null)
+      {
+         //We only rollback local txs on close, not XA tx branches
+         
+         rollback();
+      }
 
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
 
@@ -357,7 +362,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          Binding binding = postOffice.getBinding(queueName);
 
-         if (binding == null)
+         if (binding == null || binding.getType() != BindingType.QUEUE)
          {
             throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
          }
@@ -377,19 +382,19 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             // We consume a copy of the queue - TODO - this is a temporary measure
             // and will disappear once we can provide a proper iterator on the queue
 
-            theQueue = new QueueImpl(-1, queueName, filter, false, false, false, null, postOffice);
+            theQueue = new QueueImpl(-1, queueName, filter, false, false, false, null, postOffice, storageManager);
 
             // There's no need for any special locking since the list method is synchronized
-            List<MessageReference> refs = binding.getQueue().list(filter);
+            List<MessageReference> refs = ((Queue)binding.getBindable()).list(filter);
 
             for (MessageReference ref : refs)
             {
-               theQueue.add(ref);
+               theQueue.addLast(ref);
             }
          }
          else
          {
-            theQueue = binding.getQueue();
+            theQueue = (Queue)binding.getBindable();
          }
 
          ServerConsumer consumer = new ServerConsumerImpl(idGenerator.generateID(),
@@ -484,7 +489,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             filter = new FilterImpl(filterString);
          }
 
-         binding = postOffice.addBinding(address, queueName, filter, durable, temporary, false);
+         binding = postOffice.addQueueBinding(queueName, address, filter, durable, temporary, false);
 
          if (temporary)
          {
@@ -494,7 +499,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             // session is closed.
             // It is up to the user to delete the queue when finished with it
 
-            final Queue queue = binding.getQueue();
+            final Queue queue = (Queue)binding.getBindable();
 
             failureRunners.add(new Runnable()
             {
@@ -615,12 +620,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          Binding binding = postOffice.removeBinding(queueName);
 
-         if (binding == null)
+         if (binding == null || binding.getType() != BindingType.QUEUE)
          {
             throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
          }
 
-         Queue queue = binding.getQueue();
+         Queue queue = (Queue)binding.getBindable();
 
          if (queue.getConsumerCount() != 0)
          {
@@ -629,7 +634,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          if (queue.isDurable())
          {
-            binding.getQueue().deleteAllReferences(storageManager);
+            queue.deleteAllReferences(storageManager);
          }
 
          response = new NullResponseMessage();
@@ -689,9 +694,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          Binding binding = postOffice.getBinding(queueName);
 
-         if (binding != null)
+         if (binding != null && binding.getType() == BindingType.QUEUE)
          {
-            Queue queue = binding.getQueue();
+            Queue queue = (Queue)binding.getBindable();
 
             Filter filter = queue.getFilter();
 
@@ -771,7 +776,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
             for (Binding binding : bindings.getBindings())
             {
-               queueNames.add(binding.getQueue().getName());
+               if (binding.getType() == BindingType.QUEUE)
+               {
+                  queueNames.add(binding.getBindable().getName());
+               }
             }
          }
 
@@ -1597,7 +1605,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void handleXAPrepare(final SessionXAPrepareMessage packet)
    {
-      log.info("handling xa prepare");
       DelayedResult result = channel.replicatePacket(packet);
 
       if (result == null)
@@ -2480,7 +2487,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          if (!packet.isContinues())
          {
-            final ServerLargeMessage message = largeMessage;
+            final LargeServerMessage message = largeMessage;
 
             largeMessage = null;
 
@@ -2533,9 +2540,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   private ServerLargeMessage createLargeMessageStorage(final long messageID, final byte[] header) throws Exception
+   private LargeServerMessage createLargeMessageStorage(final long messageID, final byte[] header) throws Exception
    {
-      ServerLargeMessage largeMessage = storageManager.createLargeMessage();
+      LargeServerMessage largeMessage = storageManager.createLargeMessage();
 
       MessagingBuffer headerBuffer = new ByteBufferWrapper(ByteBuffer.wrap(header));
 

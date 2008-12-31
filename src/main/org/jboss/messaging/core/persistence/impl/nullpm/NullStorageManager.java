@@ -34,8 +34,8 @@ import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.QueueFactory;
-import org.jboss.messaging.core.server.ServerLargeMessage;
+import org.jboss.messaging.core.server.BindableFactory;
+import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.IDGenerator;
@@ -79,7 +79,7 @@ public class NullStorageManager implements StorageManager
       return true;
    }
 
-   public void loadBindings(final QueueFactory queueFactory,
+   public void loadBindings(final BindableFactory queueFactory,
                             final List<Binding> bindings,
                             final List<SimpleString> destinations) throws Exception
    {
@@ -166,9 +166,9 @@ public class NullStorageManager implements StorageManager
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.persistence.StorageManager#createLargeMessageStorage(long, int, int)
     */
-   public ServerLargeMessage createLargeMessage()
+   public LargeServerMessage createLargeMessage()
    {
-      return new NullStorageLargeMessageImpl();
+      return new NullStorageLargeServerMessage();
    }
 
    public long generateUniqueID()

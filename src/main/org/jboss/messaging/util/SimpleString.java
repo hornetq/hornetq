@@ -291,12 +291,20 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
 
    public static int sizeofString(final SimpleString str)
 	{
-	   if (str == null)
-	   {
-	      return SIZE_INT;
-	   }
 		return SIZE_INT + str.data.length;
 	}
+   
+   public static int sizeofNullableString(final SimpleString str)
+   {
+      if (str == null)
+      {
+         return 1;
+      }
+      else
+      {
+         return 1 + sizeofString(str);
+      }
+   }
 
    public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {
       if (srcBegin < 0) {

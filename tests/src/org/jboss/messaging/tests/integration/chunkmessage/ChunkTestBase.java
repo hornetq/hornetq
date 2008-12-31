@@ -30,17 +30,18 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.util.DataConstants;
 import org.jboss.messaging.util.SimpleString;
@@ -61,9 +62,8 @@ public class ChunkTestBase extends ServiceTestBase
    private static final Logger log = Logger.getLogger(ChunkTestBase.class);
 
    protected final SimpleString ADDRESS = new SimpleString("SimpleAddress");
-   
-   protected MessagingService messagingService;
 
+   protected MessagingService messagingService;
 
    // Attributes ----------------------------------------------------
 
@@ -131,7 +131,7 @@ public class ChunkTestBase extends ServiceTestBase
             sf.setBlockOnPersistentSend(true);
             sf.setBlockOnAcknowledge(true);
          }
-         
+
          if (producerWindow > 0)
          {
             sf.setSendWindowSize(producerWindow);
@@ -185,7 +185,7 @@ public class ChunkTestBase extends ServiceTestBase
                   long time = System.currentTimeMillis();
                   message.putLongProperty(new SimpleString("original-time"), time);
                   message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time + delayDelivery);
-                  
+
                   producer.send(message);
                }
                else
@@ -233,10 +233,10 @@ public class ChunkTestBase extends ServiceTestBase
             ClientMessage message = consumer.receive(waitOnConsumer + delayDelivery);
 
             assertNotNull(message);
-            
+
             if (realFiles)
             {
-               assertTrue (message instanceof ClientFileMessage);
+               assertTrue(message instanceof ClientFileMessage);
             }
 
             if (testTime)
@@ -260,7 +260,9 @@ public class ChunkTestBase extends ServiceTestBase
             assertNotNull(message);
 
             if (delayDelivery <= 0)
-            { // right now there is no guarantee of ordered delivered on multiple scheduledMessages
+            {
+               // right now there is no guarantee of ordered delivered on multiple scheduledMessages with the same
+               // scheduled delivery time
                assertEquals(i, ((Integer)message.getProperty(new SimpleString("counter-message"))).intValue());
             }
 
@@ -287,11 +289,12 @@ public class ChunkTestBase extends ServiceTestBase
 
          long globalSize = messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize();
          assertEquals(0l, globalSize);
-         assertEquals(0, messagingService.getServer().getPostOffice().getBinding(ADDRESS).getQueue().getDeliveringCount());
-         assertEquals(0, messagingService.getServer().getPostOffice().getBinding(ADDRESS).getQueue().getMessageCount());
+         assertEquals(0,
+                      ((Queue)messagingService.getServer().getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
+         assertEquals(0,
+                      ((Queue)messagingService.getServer().getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
          validateNoFilesOnLargeDir();
-         
 
       }
       finally
@@ -396,28 +399,27 @@ public class ChunkTestBase extends ServiceTestBase
       ClientMessage clientMessage = consumer.receive(5000);
 
       assertNotNull(clientMessage);
-      
+
       if (!(clientMessage instanceof ClientFileMessage))
       {
          System.out.println("Size = " + clientMessage.getBodySize());
       }
 
-      
       if (clientMessage instanceof ClientFileMessage)
       {
          assertTrue(clientMessage instanceof ClientFileMessage);
-   
+
          ClientFileMessage fileClientMessage = (ClientFileMessage)clientMessage;
-   
+
          assertNotNull(fileClientMessage);
          File receivedFile = fileClientMessage.getFile();
-   
+
          checkFileRead(receivedFile, numberOfIntegers);
 
       }
-      
+
       clientMessage.acknowledge();
-      
+
       session.commit();
 
       consumer.close();

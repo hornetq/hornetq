@@ -30,8 +30,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
+import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
@@ -82,7 +84,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testScheduledNoConsumer() throws Exception
    {
-      Queue queue = new QueueImpl(1, new SimpleString("queue1"), null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, new SimpleString("queue1"), null, false, true, false, scheduledExecutor, null, null);
 
       //Send one scheduled
 
@@ -90,35 +92,35 @@ public class QueueImplTest extends UnitTestCase
 
       MessageReference ref1 = generateReference(queue, 1);
       ref1.setScheduledDeliveryTime(now + 7000);
-      queue.add(ref1);
+      queue.addLast(ref1);
 
       //Send some non scheduled messages
 
       MessageReference ref2 = generateReference(queue, 2);
-      queue.add(ref2);
+      queue.addLast(ref2);
       MessageReference ref3 = generateReference(queue, 3);
-      queue.add(ref3);
+      queue.addLast(ref3);
       MessageReference ref4 = generateReference(queue, 4);
-      queue.add(ref4);
+      queue.addLast(ref4);
 
 
       //Now send some more scheduled messages
 
       MessageReference ref5 = generateReference(queue, 5);
       ref5.setScheduledDeliveryTime(now + 5000);
-      queue.add(ref5);
+      queue.addLast(ref5);
 
       MessageReference ref6 = generateReference(queue, 6);
       ref6.setScheduledDeliveryTime(now + 4000);
-      queue.add(ref6);
+      queue.addLast(ref6);
 
       MessageReference ref7 = generateReference(queue, 7);
       ref7.setScheduledDeliveryTime(now + 3000);
-      queue.add(ref7);
+      queue.addLast(ref7);
 
       MessageReference ref8 = generateReference(queue, 8);
       ref8.setScheduledDeliveryTime(now + 6000);
-      queue.add(ref8);
+      queue.addLast(ref8);
 
       List<MessageReference> refs = new ArrayList<MessageReference>();
 
@@ -148,7 +150,7 @@ public class QueueImplTest extends UnitTestCase
 
    private void testScheduled(boolean direct)
    {
-      Queue queue = new QueueImpl(1, new SimpleString("queue1"), null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, new SimpleString("queue1"), null, false, true, false, scheduledExecutor, null, null);
 
       FakeConsumer consumer = null;
 
@@ -165,35 +167,35 @@ public class QueueImplTest extends UnitTestCase
 
       MessageReference ref1 = generateReference(queue, 1);
       ref1.setScheduledDeliveryTime(now + 7000);
-      queue.add(ref1);
+      queue.addLast(ref1);
 
       //Send some non scheduled messages
 
       MessageReference ref2 = generateReference(queue, 2);
-      queue.add(ref2);
+      queue.addLast(ref2);
       MessageReference ref3 = generateReference(queue, 3);
-      queue.add(ref3);
+      queue.addLast(ref3);
       MessageReference ref4 = generateReference(queue, 4);
-      queue.add(ref4);
+      queue.addLast(ref4);
 
 
       //Now send some more scheduled messages
 
       MessageReference ref5 = generateReference(queue, 5);
       ref5.setScheduledDeliveryTime(now + 5000);
-      queue.add(ref5);
+      queue.addLast(ref5);
 
       MessageReference ref6 = generateReference(queue, 6);
       ref6.setScheduledDeliveryTime(now + 4000);
-      queue.add(ref6);
+      queue.addLast(ref6);
 
       MessageReference ref7 = generateReference(queue, 7);
       ref7.setScheduledDeliveryTime(now + 3000);
-      queue.add(ref7);
+      queue.addLast(ref7);
 
       MessageReference ref8 = generateReference(queue, 8);
       ref8.setScheduledDeliveryTime(now + 6000);
-      queue.add(ref8);
+      queue.addLast(ref8);
 
       if (!direct)
       {
@@ -246,7 +248,7 @@ public class QueueImplTest extends UnitTestCase
    public void testDeliveryScheduled() throws Exception
    {
       Consumer consumer = EasyMock.createStrictMock(Consumer.class);
-      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null);
+      Queue queue = new QueueImpl(1, queue1, null, false, true, false, scheduledExecutor, null, null);
       MessageReference messageReference = generateReference(queue, 1);
       final CountDownLatch countDownLatch = new CountDownLatch(1);
       EasyMock.expect(consumer.handle(messageReference)).andAnswer(new IAnswer<HandleStatus>()

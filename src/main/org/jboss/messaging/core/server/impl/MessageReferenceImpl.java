@@ -67,8 +67,6 @@ public class MessageReferenceImpl implements MessageReference
    
    // Static --------------------------------------------------------
    
-
-
    // Constructors --------------------------------------------------
 
    public MessageReferenceImpl(final MessageReferenceImpl other, final Queue queue)
@@ -100,6 +98,8 @@ public class MessageReferenceImpl implements MessageReference
       // from few tests I have done, deliveryCount and scheduledDelivery will use  two longs (because of alignment)
       // and each of the references (messages and queue) will use the equivalent to two longs (because of long pointers).
       // Anyway.. this is just an estimate
+      
+      //TODO - doesn't the object itself have an overhead? - I thought was usually one Long per Object?
       return DataConstants.SIZE_LONG * 4;
    }
    
@@ -251,7 +251,7 @@ public class MessageReferenceImpl implements MessageReference
          }
          else
          {
-            move(expiryAddress, tx, storageManager, true);
+            move(expiryAddress, tx, storageManager, postOffice, true);
          }
       }
       else
@@ -267,13 +267,13 @@ public class MessageReferenceImpl implements MessageReference
       move(toAddress, persistenceManager, postOffice, false);
    }
    
-   public void move(final SimpleString toAddress, final Transaction tx, final StorageManager persistenceManager, final boolean expiry) throws Exception
+   public void move(final SimpleString toAddress, final Transaction tx, final StorageManager persistenceManager, final PostOffice postOffice, final boolean expiry) throws Exception
    {
       ServerMessage copyMessage = makeCopy(expiry, persistenceManager);
 
       copyMessage.setDestination(toAddress);
 
-      tx.addMessage(copyMessage);
+      postOffice.route(copyMessage, tx);
 
       tx.addAcknowledgement(this);
    }
@@ -305,7 +305,9 @@ public class MessageReferenceImpl implements MessageReference
 
       copyMessage.setDestination(address);
 
-      tx.addMessage(copyMessage);
+      //tx.addMessage(copyMessage);
+      
+      postOffice.route(copyMessage, tx);
 
       tx.addAcknowledgement(this);
 

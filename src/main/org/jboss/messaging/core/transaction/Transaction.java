@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.transaction;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.transaction.xa.Xid;
 
@@ -50,9 +51,19 @@ public interface Transaction
 
    void addDuplicateID(SimpleString address, SimpleString duplID, long recordID) throws Exception;
 
-   void addMessage(ServerMessage message) throws Exception;
+   Set<SimpleString> getPagingAddresses();
+   
+   void addPagingAddress(SimpleString address);
+   
+   void addPagingMessage(ServerMessage message);
 
    void addAcknowledgement(MessageReference acknowledgement) throws Exception;
+   
+   void addAckTempUntilNextRefactoring(MessageReference ref);
+   
+   boolean isDepage();
+   
+   void setContainsPersistent(boolean containsPersistent);
 
    int getAcknowledgementsCount();
 
@@ -65,22 +76,22 @@ public interface Transaction
    void resume();
 
    State getState();
+   
+   void setState(State state);
 
    boolean isContainsPersistent();
 
    void markAsRollbackOnly(MessagingException messagingException);
 
-   void replay(List<MessageReference> messages,
-               List<MessageReference> acknowledgements,
-               PageTransactionInfo pageTransaction) throws Exception;
+   void setPageTransaction(PageTransactionInfo pageTransaction);
 
    List<MessageReference> timeout() throws Exception;
 
    long getCreateTime();
 
-   void addSynchronization(TransactionSynchronization sync);
+   void addOperation(TransactionOperation sync);
 
-   void removeSynchronization(TransactionSynchronization sync);
+   void removeOperation(TransactionOperation sync);
 
    static enum State
    {

@@ -231,13 +231,21 @@ public class SimpleStringTest extends TestCase
    }
 	
 	public void testSizeofString() throws Exception
-   {
-	   assertEquals(DataConstants.SIZE_INT, SimpleString.sizeofString(null));
+   {	   
       assertEquals(DataConstants.SIZE_INT, SimpleString.sizeofString(new SimpleString("")));
 
 	   SimpleString str = new SimpleString(randomString());
 	   assertEquals(DataConstants.SIZE_INT + str.getData().length, SimpleString.sizeofString(str));
+   }
+	
+	public void testSizeofNullableString() throws Exception
+   {     
+      assertEquals(1, SimpleString.sizeofNullableString(null));
       
+      assertEquals(1 + DataConstants.SIZE_INT, SimpleString.sizeofNullableString(new SimpleString("")));
+
+      SimpleString str = new SimpleString(randomString());
+      assertEquals(1 + DataConstants.SIZE_INT + str.getData().length, SimpleString.sizeofNullableString(str));
    }
 
    public void testSplitNoDelimeter() throws Exception

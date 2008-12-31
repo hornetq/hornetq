@@ -24,7 +24,6 @@ package org.jboss.messaging.core.postoffice;
 
 import java.util.List;
 
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.Transaction;
 
@@ -41,9 +40,9 @@ public interface Bindings
 {
    List<Binding> getBindings();
    
-   List<MessageReference> route(final ServerMessage message);
+   void route(final ServerMessage message) throws Exception;
    
-   List<MessageReference> route(ServerMessage message, Transaction tx);
+   void route(ServerMessage message, Transaction tx) throws Exception;
    
    void addBinding(Binding binding);
    

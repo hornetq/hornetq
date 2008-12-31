@@ -18,23 +18,28 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
+ */ 
 
-
-package org.jboss.messaging.core.server;
+package org.jboss.messaging.core.transaction;
 
 /**
- * A ReferenceHandler
- *
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 10 Dec 2008 19:14:20
- *
+ * A TransactionOperation
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-
-//TODO - can this be combined with consumer??
-public interface ReferenceHandler
+public interface TransactionOperation
 {
-   HandleStatus add(MessageReference ref);   
+   void beforePrepare() throws Exception;
+   
+   void beforeCommit() throws Exception;
+   
+   void beforeRollback() throws Exception;
+   
+   void afterPrepare() throws Exception;
+      
+   void afterCommit() throws Exception;
+   
+   void afterRollback() throws Exception;   
 }

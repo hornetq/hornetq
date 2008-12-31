@@ -46,6 +46,8 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    /** Global reference counts for paging control */
    private final AtomicInteger refCount = new AtomicInteger(0);
 
+   private volatile boolean reload;
+
    /*
     * Constructor for when reading from network
     */
@@ -92,10 +94,15 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       {
          durableRefCount.incrementAndGet();
       }
-
-      refCount.incrementAndGet();
       
+      refCount.incrementAndGet();
+    
       return ref;
+   }
+
+   public int getRefCount()
+   {
+      return refCount.get();
    }
 
    public int getDurableRefCount()
@@ -112,7 +119,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       return durableRefCount.incrementAndGet();
    }
-   
+
    public int decrementRefCount()
    {
       return refCount.decrementAndGet();
@@ -123,8 +130,17 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       // This is just an estimate...
       // due to memory alignments and JVM implementation this could be very
       // different from reality
-      return getEncodeSize() + (16 + 4) * 2;
+      return getEncodeSize() + (16 + 4) * 2 + 1;
+   }
 
+   public boolean isReload()
+   {
+      return reload;
+   }
+
+   public void setReload()
+   {
+      this.reload = true;
    }
 
    public ServerMessage copy()

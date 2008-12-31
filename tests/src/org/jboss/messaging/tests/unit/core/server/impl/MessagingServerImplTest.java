@@ -178,7 +178,7 @@ public class MessagingServerImplTest extends UnitTestCase
 //      EasyMock.expect(rs.getDispatcher()).andReturn(pd);
 //      EasyMock.expect(sm.isStarted()).andStubReturn(true);
 //      EasyMock.expect(rs.isStarted()).andStubReturn(true);
-//      sm.loadBindings(EasyMock.isA(QueueFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
+//      sm.loadBindings(EasyMock.isA(BindableFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
 //      sm.loadMessages(EasyMock.isA(PostOfficeImpl.class), EasyMock.isA(Map.class));
 //            
 //      pd.register(EasyMock.isA(MessagingServerPacketHandler.class));
@@ -283,7 +283,7 @@ public class MessagingServerImplTest extends UnitTestCase
 //      EasyMock.expect(rs.getDispatcher()).andReturn(pd);
 //      EasyMock.expect(sm.isStarted()).andStubReturn(true);
 //      EasyMock.expect(rs.isStarted()).andStubReturn(true);
-//      sm.loadBindings(EasyMock.isA(QueueFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
+//      sm.loadBindings(EasyMock.isA(BindableFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
 //      sm.loadMessages(EasyMock.isA(PostOfficeImpl.class), EasyMock.isA(Map.class));
 //            
 //      pd.register(EasyMock.isA(MessagingServerPacketHandler.class));
@@ -369,7 +369,7 @@ public class MessagingServerImplTest extends UnitTestCase
 //      PacketDispatcher pd = EasyMock.createMock(PacketDispatcher.class);
 //      EasyMock.expect(rs.getDispatcher()).andReturn(pd);
 //      
-//      sm.loadBindings(EasyMock.isA(QueueFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
+//      sm.loadBindings(EasyMock.isA(BindableFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
 //      sm.loadMessages(EasyMock.isA(PostOfficeImpl.class), EasyMock.isA(Map.class));
 //
 //      pd.register(EasyMock.isA(MessagingServerPacketHandler.class));      
@@ -427,7 +427,7 @@ public class MessagingServerImplTest extends UnitTestCase
 //      PacketDispatcher pd = EasyMock.createMock(PacketDispatcher.class);
 //      EasyMock.expect(rs.getDispatcher()).andReturn(pd);
 //      
-//      sm.loadBindings(EasyMock.isA(QueueFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
+//      sm.loadBindings(EasyMock.isA(BindableFactoryImpl.class), EasyMock.isA(ArrayList.class), EasyMock.isA(ArrayList.class));
 //      sm.loadMessages(EasyMock.isA(PostOfficeImpl.class), EasyMock.isA(Map.class));
 //      
 //      pd.register(EasyMock.isA(MessagingServerPacketHandler.class));      

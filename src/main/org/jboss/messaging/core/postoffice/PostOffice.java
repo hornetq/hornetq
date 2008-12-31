@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.paging.PagingManager;
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.SendLock;
@@ -61,19 +60,28 @@ public interface PostOffice extends MessagingComponent
 
    boolean containsDestination(SimpleString address);
 
-   Binding addBinding(SimpleString address, SimpleString queueName, Filter filter, boolean durable, boolean temporary, boolean exclusive) throws Exception;
+   Binding addLinkBinding(SimpleString name,
+                          SimpleString address,
+                          Filter filter,
+                          boolean durable,
+                          boolean temporary,
+                          boolean exclusive,
+                          SimpleString linkAddress) throws Exception;
 
-   Binding removeBinding(SimpleString queueName) throws Exception;
+   Binding addQueueBinding(SimpleString name,
+                           SimpleString address,
+                           Filter filter,
+                           boolean durable,
+                           boolean temporary,
+                           boolean exclusive) throws Exception;
+
+   Binding removeBinding(SimpleString name) throws Exception;
 
    Bindings getBindingsForAddress(SimpleString address) throws Exception;
 
-   Binding getBinding(SimpleString queueName);
+   Binding getBinding(SimpleString name);
 
    void route(ServerMessage message, Transaction tx) throws Exception;
-   
-   List<MessageReference> route(ServerMessage message, Transaction tx, boolean deliver) throws Exception;
-   
-   List<MessageReference> reroute(ServerMessage message) throws Exception;
 
    Set<SimpleString> listAllDestinations();
 
@@ -86,6 +94,4 @@ public interface PostOffice extends MessagingComponent
    DuplicateIDCache getDuplicateIDCache(SimpleString address);
 
    int numMappings();
-
-   void deliver(final List<MessageReference> references);
 }

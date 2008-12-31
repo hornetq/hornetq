@@ -53,6 +53,7 @@ import org.jboss.messaging.core.management.TransportConfigurationInfo;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
@@ -145,16 +146,16 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       postOffice.removeDestination(simpleAddress, false);
    }
 
-   public Queue getQueue(final String address) throws Exception
+   public Queue getQueue(final String name) throws Exception
    {
-      SimpleString sAddress = new SimpleString(address);
-      Binding binding = postOffice.getBinding(sAddress);
-      if (binding == null)
+      SimpleString sName = new SimpleString(name);
+      Binding binding = postOffice.getBinding(sName);
+      if (binding == null || binding.getType() != BindingType.QUEUE)
       {
-         throw new IllegalArgumentException("No queue with name " + sAddress);
+         throw new IllegalArgumentException("No queue with name " + sName);
       }
 
-      return binding.getQueue();
+      return (Queue)binding.getBindable();
    }
 
    public Configuration getConfiguration()
@@ -290,13 +291,14 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    }
 
    // TODO - do we really need this method?
+     
    public void createQueue(final String address, final String name) throws Exception
    {
       SimpleString sAddress = new SimpleString(address);
       SimpleString sName = new SimpleString(name);
-      if (postOffice.getBinding(sAddress) == null)
+      if (postOffice.getBinding(sName) == null)
       {
-         postOffice.addBinding(sAddress, sName, null, true, false, false);
+         postOffice.addQueueBinding(sName, sAddress, null, true, false, false);
       }
    }
 
@@ -310,9 +312,9 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       {
          filter = new FilterImpl(sFilter);
       }
-      if (postOffice.getBinding(sAddress) == null)
+      if (postOffice.getBinding(sName) == null)
       {
-         postOffice.addBinding(sAddress, sName, filter, durable, false, false);
+         postOffice.addQueueBinding(sName, sAddress, filter, durable, false, false);
       }
    }
 
@@ -323,11 +325,14 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
       if (binding != null)
       {
-         Queue queue = binding.getQueue();
+         if (binding.getType() == BindingType.QUEUE)
+         {
+            Queue queue = (Queue)binding.getBindable();
+   
+            queue.deleteAllReferences(storageManager);
+         }
 
-         queue.deleteAllReferences(storageManager);
-
-         postOffice.removeBinding(queue.getName());
+         postOffice.removeBinding(sName);
       }
    }
 

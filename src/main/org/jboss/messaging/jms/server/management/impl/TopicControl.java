@@ -33,6 +33,7 @@ import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
@@ -168,11 +169,11 @@ public class TopicControl implements TopicControlMBean
    {
       SimpleString sAddress = new SimpleString(queueName);
       Binding binding = postOffice.getBinding(sAddress);
-      if (binding == null)
+      if (binding == null || binding.getType() != BindingType.QUEUE)
       {
          throw new IllegalArgumentException("No queue with name " + sAddress);
       }
-      Queue queue = binding.getQueue();
+      Queue queue = (Queue)binding.getBindable();
       List<MessageReference> messageRefs = queue.list(null);
       List<JMSMessageInfo> infos = new ArrayList<JMSMessageInfo>(messageRefs.size());
 
@@ -184,17 +185,17 @@ public class TopicControl implements TopicControlMBean
       }
       return JMSMessageInfo.toTabularData(infos);
    }
-   
+
    public int countMessagesForSubscription(final String clientID, final String subscriptionName, final String filterStr) throws Exception
    {
       String queueName = JBossTopic.createQueueNameForDurableSubscription(clientID, subscriptionName);
       SimpleString sAddress = new SimpleString(queueName);
       Binding binding = postOffice.getBinding(sAddress);
-      if (binding == null)
+      if (binding == null || binding.getType() != BindingType.QUEUE)
       {
          throw new IllegalArgumentException("No queue with name " + sAddress);
       }
-      Queue queue = binding.getQueue();
+      Queue queue = (Queue)binding.getBindable();
       Filter filter = FilterImpl.createFilter(filterStr);
       List<MessageReference> messageRefs = queue.list(filter);
       return messageRefs.size();
@@ -207,8 +208,11 @@ public class TopicControl implements TopicControlMBean
 
       for (Binding binding : bindings.getBindings())
       {
-         Queue queue = binding.getQueue();
-         count += queue.deleteAllReferences(storageManager);
+         if (binding.getType() == BindingType.QUEUE)
+         {
+            Queue queue = (Queue)binding.getBindable();
+            count += queue.deleteAllReferences(storageManager);
+         }
       }
 
       return count;
@@ -219,14 +223,14 @@ public class TopicControl implements TopicControlMBean
       String queueName = JBossTopic.createQueueNameForDurableSubscription(clientID, subscriptionName);
       Binding binding = postOffice.getBinding(new SimpleString(queueName));
 
-      if (binding == null)
+      if (binding == null || binding.getType() != BindingType.QUEUE)
       {
          throw new IllegalArgumentException("No durable subscription for clientID=" + clientID +
                                             ", subcription=" +
                                             subscriptionName);
       }
 
-      Queue queue = binding.getQueue();
+      Queue queue = (Queue)binding.getBindable();
 
       queue.deleteAllReferences(storageManager);
 
@@ -239,9 +243,12 @@ public class TopicControl implements TopicControlMBean
 
       for (Binding binding : bindings.getBindings())
       {
-         Queue queue = binding.getQueue();
-         queue.deleteAllReferences(storageManager);
-         postOffice.removeBinding(queue.getName());
+         if (binding.getType() == BindingType.QUEUE)
+         {
+            Queue queue = (Queue)binding.getBindable();
+            queue.deleteAllReferences(storageManager);
+            postOffice.removeBinding(queue.getName());
+         }
       }
    }
 
@@ -300,11 +307,14 @@ public class TopicControl implements TopicControlMBean
 
          for (Binding binding : bindings.getBindings())
          {
-            Queue queue = binding.getQueue();
-            if (durability == DurabilityType.ALL || (durability == DurabilityType.DURABLE && queue.isDurable()) ||
-                (durability == DurabilityType.NON_DURABLE && !queue.isDurable()))
+            if (binding.getType() == BindingType.QUEUE)
             {
-               matchingQueues.add(queue);
+               Queue queue = (Queue)binding.getBindable();
+               if (durability == DurabilityType.ALL || (durability == DurabilityType.DURABLE && queue.isDurable()) ||
+                   (durability == DurabilityType.NON_DURABLE && !queue.isDurable()))
+               {
+                  matchingQueues.add(queue);
+               }
             }
          }
          return matchingQueues;

@@ -81,7 +81,7 @@ public interface MessageReference
 
    void move(SimpleString toAddress, StorageManager persistenceManager, PostOffice postOffice) throws Exception;
 
-   void move(SimpleString toAddress, Transaction tx, StorageManager persistenceManager, boolean expiry) throws Exception;
+   void move(SimpleString toAddress, Transaction tx, StorageManager persistenceManager, PostOffice postOffice, boolean expiry) throws Exception;
 
 }
 

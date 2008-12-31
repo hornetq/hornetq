@@ -38,6 +38,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
@@ -201,8 +202,8 @@ public class DeadLetterAddressTest extends UnitTestCase
          clientSession.end(xid, XAResource.TMSUCCESS);
          clientSession.rollback(xid);
       }
-
-      assertEquals(messagingService.getServer().getPostOffice().getBinding(qName).getQueue().getMessageCount(), 0);
+      
+      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getMessageCount());
       ClientMessage m = clientConsumer.receive(1000);
       assertNull(m);
       //All the messages should now be in the DLQ

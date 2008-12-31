@@ -31,11 +31,11 @@ import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.server.BindableFactory;
+import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.QueueFactory;
-import org.jboss.messaging.core.server.ServerLargeMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.Pair;
@@ -85,7 +85,7 @@ public interface StorageManager extends MessagingComponent
    
    void deleteDuplicateIDTransactional(long txID, long recordID) throws Exception;
 
-   ServerLargeMessage createLargeMessage();
+   LargeServerMessage createLargeMessage();
 
    void prepare(long txID, Xid xid) throws Exception;
 
@@ -116,5 +116,5 @@ public interface StorageManager extends MessagingComponent
 
    boolean deleteDestination(SimpleString destination) throws Exception;
 
-   void loadBindings(QueueFactory queueFactory, List<Binding> bindings, List<SimpleString> destinations) throws Exception;
+   void loadBindings(BindableFactory queueFactory, List<Binding> bindings, List<SimpleString> destinations) throws Exception;
 }

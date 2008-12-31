@@ -18,12 +18,13 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.performance.persistence;
 
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.postoffice.BindingType;
+import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -32,14 +33,25 @@ import org.jboss.messaging.util.SimpleString;
  *
  */
 public class FakeBinding implements Binding
-{   
+{
    private SimpleString address;
-   private Queue queue;
 
-   public FakeBinding(final SimpleString address, final Queue queue)
+   private Bindable bindable;
+
+   public FakeBinding(final SimpleString address, final Bindable bindable)
    {
       this.address = address;
-      this.queue = queue;
+      this.bindable = bindable;
+   }
+
+   public Bindable getBindable()
+   {
+      return bindable;
+   }
+
+   public BindingType getType()
+   {
+      return BindingType.QUEUE;
    }
 
    public SimpleString getAddress()
@@ -47,24 +59,18 @@ public class FakeBinding implements Binding
       return address;
    }
 
-   public Queue getQueue()
-   {
-      return queue;
-   }
-   
    public int getWeight()
    {
       return 0;
    }
 
    public boolean isExclusive()
-   {      
+   {
       return false;
    }
 
    public void setWeight(int weight)
-   {      
+   {
    }
 
-   
 }

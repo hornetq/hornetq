@@ -25,8 +25,9 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.impl.QueueFactoryImpl;
+import org.jboss.messaging.core.server.impl.BindableFactoryImpl;
 import org.jboss.messaging.core.server.impl.RoundRobinDistributor;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -42,6 +43,7 @@ public class QueueFactoryImplTest extends UnitTestCase
    {
       ScheduledExecutorService scheduledExecutor = EasyMock.createStrictMock(ScheduledExecutorService.class);
       HierarchicalRepository<QueueSettings> queueSettingsRepository = EasyMock.createStrictMock(HierarchicalRepository.class);
+      StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
       Filter filter = EasyMock.createStrictMock(Filter.class);
       QueueSettings queueSettings = new QueueSettings();
       queueSettings.setClustered(true);
@@ -49,7 +51,7 @@ public class QueueFactoryImplTest extends UnitTestCase
       queueSettings.setDistributionPolicyClass("org.jboss.messaging.core.server.impl.RoundRobinDistributor");
       EasyMock.expect(queueSettingsRepository.getMatch("testQ")).andReturn(queueSettings);
       EasyMock.replay(scheduledExecutor, queueSettingsRepository);
-      QueueFactoryImpl queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);
+      BindableFactoryImpl queueFactory = new BindableFactoryImpl(scheduledExecutor, queueSettingsRepository, sm);
       SimpleString qName = new SimpleString("testQ");
       Queue queue = queueFactory.createQueue(123, qName, filter, true, false);
       EasyMock.verify(scheduledExecutor, queueSettingsRepository);
@@ -66,13 +68,14 @@ public class QueueFactoryImplTest extends UnitTestCase
    {
       ScheduledExecutorService scheduledExecutor = EasyMock.createStrictMock(ScheduledExecutorService.class);
       HierarchicalRepository<QueueSettings> queueSettingsRepository = EasyMock.createStrictMock(HierarchicalRepository.class);
+      StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
       QueueSettings queueSettings = new QueueSettings();
       queueSettings.setClustered(false);
       queueSettings.setMaxSizeBytes(8888);
       queueSettings.setDistributionPolicyClass(null);
       EasyMock.expect(queueSettingsRepository.getMatch("testQ2")).andReturn(queueSettings);
       EasyMock.replay(scheduledExecutor, queueSettingsRepository);
-      QueueFactoryImpl queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository);
+      BindableFactoryImpl queueFactory = new BindableFactoryImpl(scheduledExecutor, queueSettingsRepository, sm);
       SimpleString qName = new SimpleString("testQ2");
       Queue queue = queueFactory.createQueue(456, qName, null, false, false);
       EasyMock.verify(scheduledExecutor, queueSettingsRepository);

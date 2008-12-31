@@ -32,7 +32,7 @@ import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.core.server.ServerLargeMessage;
+import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 
@@ -127,7 +127,7 @@ public class PagedMessageImpl implements PagedMessage
    {
       buffer.putLong(transactionID);
       
-      buffer.putBoolean(message instanceof ServerLargeMessage);
+      buffer.putBoolean(message instanceof LargeServerMessage);
       
       buffer.putInt(message.getEncodeSize());
       
