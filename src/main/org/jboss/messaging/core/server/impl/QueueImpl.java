@@ -241,7 +241,7 @@ public class QueueImpl implements Queue
 
          SimpleString destination = message.getDestination();
 
-         if (!tx.isDepage() && (tx.getPagingAddresses().contains(destination) || pagingManager.isPaging(destination)))
+         if (!tx.isDepage() && !message.isReload() && (tx.getPagingAddresses().contains(destination) || pagingManager.isPaging(destination)))
          {
             tx.addPagingAddress(destination);
 
@@ -253,7 +253,7 @@ public class QueueImpl implements Queue
 
             boolean first = message.getRefCount() == 1;
             
-            if (message.getRefCount() == 1)
+            if (!message.isReload() &&  message.getRefCount() == 1)
             {
                if (durableRef)
                {
@@ -272,7 +272,7 @@ public class QueueImpl implements Queue
             {
                ref.setScheduledDeliveryTime(scheduledDeliveryTime);
 
-               if (durableRef)
+               if (durableRef && !message.isReload())
                {
                   storageManager.updateScheduledDeliveryTimeTransactional(tx.getID(), ref);
                }

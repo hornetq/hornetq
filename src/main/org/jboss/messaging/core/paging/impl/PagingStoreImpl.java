@@ -351,6 +351,23 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             return false;
          }
+         
+         if (duplicateDetection)
+         {
+            //We set the duplicate detection header to prevent the message being depaged more than once in case of failure during depage
+            
+            byte[] bytes = new byte[8];
+            
+            ByteBuffer buff = ByteBuffer.wrap(bytes);
+            
+            ServerMessage msg = message.getMessage(storageManager);
+            
+            buff.putLong(msg.getMessageID());
+            
+            SimpleString duplID = new SimpleString(bytes);
+               
+            message.getMessage(storageManager).putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, duplID);
+         }
 
          int bytesToWrite = fileFactory.calculateBlockSize(message.getEncodeSize() + PageImpl.SIZE_RECORD);
 
@@ -377,22 +394,6 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             if (currentPage != null)
             {               
-               if (duplicateDetection)
-               {
-                  //We set the duplicate detection header to prevent the message being depaged more than once in case of failure during depage
-                  
-                  byte[] bytes = new byte[8];
-                  
-                  ByteBuffer buff = ByteBuffer.wrap(bytes);
-                  
-                  ServerMessage msg = message.getMessage(storageManager);
-                  
-                  buff.putLong(msg.getMessageID());
-                  
-                  SimpleString duplID = new SimpleString(bytes);
-                     
-                  message.getMessage(storageManager).putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, duplID);
-               }
                
                currentPage.write(message);
                
@@ -717,7 +718,10 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private void onDepage(final int pageId, final SimpleString destination, final List<PagedMessage> pagedMessages) throws Exception
    {
-      trace("Depaging....");
+      if (isTrace)
+      {
+         trace("Depaging....");
+      }
 
       // Depage has to be done atomically, in case of failure it should be
       // back to where it was
@@ -743,10 +747,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             // section
             if (pageTransactionInfo == null)
             {
-               if (isTrace)
-               {
-                  trace("Transaction " + pagedMessage.getTransactionID() + " not found, ignoring message " + message);
-               }
+               log.warn("Transaction " + pagedMessage.getTransactionID() + " used during paging not found, ignoring message " + message);
                continue;
             }
 
@@ -754,7 +755,10 @@ public class PagingStoreImpl implements TestSupportPageStore
             // before the commit arrived
             if (!pageTransactionInfo.waitCompletion())
             {
-               trace("Rollback was called after prepare, ignoring message " + message);
+               if (isTrace)
+               {
+                  trace("Rollback was called after prepare, ignoring message " + message);
+               }
                continue;
             }
 

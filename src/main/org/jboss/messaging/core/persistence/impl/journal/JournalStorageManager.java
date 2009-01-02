@@ -834,6 +834,8 @@ public class JournalStorageManager implements StorageManager
                                          final List<PreparedTransactionInfo> preparedTransactions,
                                          final Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap) throws Exception
    {
+      final PagingManager pagingManager = postOffice.getPagingManager();
+      
       // recover prepared transactions
       for (PreparedTransactionInfo preparedTransaction : preparedTransactions)
       {
@@ -905,6 +907,8 @@ public class JournalStorageManager implements StorageManager
                   pageTransactionInfo.markIncomplete();
 
                   tx.setPageTransaction(pageTransactionInfo);
+                  
+                  pagingManager.addTransaction(pageTransactionInfo);
 
                   break;
                }

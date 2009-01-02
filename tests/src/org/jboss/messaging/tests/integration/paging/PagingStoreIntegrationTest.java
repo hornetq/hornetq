@@ -44,20 +44,15 @@ public class PagingStoreIntegrationTest extends PagingStoreTestBase
 
    // Public --------------------------------------------------------
 
-   public void testFoo()
-   {      
+   public void testPageWithNIO() throws Exception
+   {
+      // This integration test could fail 1 in 100 due to race conditions.
+      for (int i = 0; i < 100; i++)
+      {
+         recreateDirectory();
+         testConcurrentPaging(new NIOSequentialFileFactory(getTestDir()), 1);
+      }
    }
-   
-//   public void testPageWithNIO() throws Exception
-//   {
-//      // This integration test could fail 1 in 100 due to race conditions.
-//      for (int i = 0; i < 100; i++)
-//      {
-//         recreateDirectory();
-//         System.out.println("Test " + i);
-//         testConcurrentPaging(new NIOSequentialFileFactory(getTestDir()), 1);
-//      }
-//   }
 
    // Package protected ---------------------------------------------
 

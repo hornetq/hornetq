@@ -310,12 +310,12 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
    }
 
-//   public void testConcurrentDepage() throws Exception
-//   {
-//      SequentialFileFactory factory = new FakeSequentialFileFactory(1, false);
-//
-//      testConcurrentPaging(factory, 10);
-//   }
+   public void testConcurrentDepage() throws Exception
+   {
+      SequentialFileFactory factory = new FakeSequentialFileFactory(1, false);
+
+      testConcurrentPaging(factory, 10);
+   }
 
    public void testFoo()
    {

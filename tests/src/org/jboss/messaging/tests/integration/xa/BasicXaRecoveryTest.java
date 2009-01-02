@@ -230,11 +230,10 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       testMultipleTxReceiveWithRollback(true);
    }
 
-// Uncomment when https://jira.jboss.org/jira/browse/JBMESSAGING-1473 is complete   
-//   public void testPagingServerRestarted() throws Exception
-//   {
-//      testPaging(true);
-//   }
+   public void testPagingServerRestarted() throws Exception
+   {
+      testPaging(true);
+   }
 
    public void testPaging() throws Exception
    {
