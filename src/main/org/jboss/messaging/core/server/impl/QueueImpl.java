@@ -257,6 +257,7 @@ public class QueueImpl implements Queue
 
       public void afterCommit() throws Exception
       {
+         addLast(ref);
       }
 
       public void afterPrepare() throws Exception
@@ -268,8 +269,7 @@ public class QueueImpl implements Queue
       }
 
       public void beforeCommit() throws Exception
-      {
-         addLast(ref);
+      {         
       }
 
       public void beforePrepare() throws Exception
