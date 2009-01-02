@@ -44,6 +44,10 @@ public class PagingStoreIntegrationTest extends PagingStoreTestBase
 
    // Public --------------------------------------------------------
 
+   public void testFoo()
+   {      
+   }
+   
 //   public void testPageWithNIO() throws Exception
 //   {
 //      // This integration test could fail 1 in 100 due to race conditions.
