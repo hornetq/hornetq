@@ -605,7 +605,7 @@ public class JournalStorageManager implements StorageManager
 
    // Bindings operations
 
-   public void addBinding(final Binding binding) throws Exception
+   public void addBinding(final Binding binding, final boolean duplicateDetection) throws Exception
    {
       // We generate the queue id here
 
@@ -644,7 +644,8 @@ public class JournalStorageManager implements StorageManager
                                                             binding.getAddress(),
                                                             filterString,
                                                             binding.isExclusive(),
-                                                            linkAddress);
+                                                            linkAddress,
+                                                            duplicateDetection);
 
       bindingsJournal.appendAddRecord(bindingID, BINDING_RECORD, bindingEncoding);
    }
@@ -741,7 +742,8 @@ public class JournalStorageManager implements StorageManager
                                                      filter,
                                                      true,
                                                      false,
-                                                     bindingEncoding.linkAddress);
+                                                     bindingEncoding.linkAddress,
+                                                     bindingEncoding.duplicateDetection);
             }
 
             Binding binding = new BindingImpl(bindingEncoding.type,
@@ -1113,6 +1115,8 @@ public class JournalStorageManager implements StorageManager
       boolean exclusive;
 
       SimpleString linkAddress;
+      
+      boolean duplicateDetection;
 
       public BindingEncoding()
       {
@@ -1123,7 +1127,8 @@ public class JournalStorageManager implements StorageManager
                              final SimpleString address,
                              final SimpleString filter,
                              final boolean exclusive,
-                             final SimpleString linkAddress)
+                             final SimpleString linkAddress,
+                             final boolean duplicateDetection)
       {
          super();
          this.type = type;
@@ -1132,6 +1137,7 @@ public class JournalStorageManager implements StorageManager
          this.filter = filter;
          this.exclusive = exclusive;
          this.linkAddress = linkAddress;
+         this.duplicateDetection = duplicateDetection;
       }
 
       public void decode(final MessagingBuffer buffer)
@@ -1159,6 +1165,7 @@ public class JournalStorageManager implements StorageManager
          filter = buffer.getNullableSimpleString();
          exclusive = buffer.getBoolean();
          linkAddress = buffer.getNullableSimpleString();
+         duplicateDetection = buffer.getBoolean();
       }
 
       public void encode(final MessagingBuffer buffer)
@@ -1176,6 +1183,7 @@ public class JournalStorageManager implements StorageManager
          buffer.putNullableSimpleString(filter);
          buffer.putBoolean(exclusive);
          buffer.putNullableSimpleString(linkAddress);
+         buffer.putBoolean(duplicateDetection);
       }
       
       public int getEncodeSize()
@@ -1185,7 +1193,8 @@ public class JournalStorageManager implements StorageManager
                 SimpleString.sizeofString(address) +
                 SimpleString.sizeofNullableString(filter) + 
                 SIZE_BOOLEAN +
-                SimpleString.sizeofNullableString(linkAddress);
+                SimpleString.sizeofNullableString(linkAddress) +
+                SIZE_BOOLEAN;
       }
    }
 

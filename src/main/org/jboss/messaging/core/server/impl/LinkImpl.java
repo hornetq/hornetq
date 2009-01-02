@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_DUPLICATE_DETECTION_ID;
 import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIGIN_QUEUE;
 
 import org.jboss.messaging.core.filter.Filter;
@@ -52,6 +53,8 @@ public class LinkImpl implements Link
    private final PostOffice postOffice;
 
    private final SimpleString address;
+   
+   private final boolean duplicateDetection;
 
    private final StorageManager storageManager;
 
@@ -67,6 +70,7 @@ public class LinkImpl implements Link
                    final boolean durable,
                    final Filter filter,
                    final SimpleString address,
+                   final boolean useDuplicateDetection,
                    final PostOffice postOffice,
                    final StorageManager storageManager)
    {
@@ -77,6 +81,8 @@ public class LinkImpl implements Link
       this.filter = filter;
 
       this.address = address;
+      
+      this.duplicateDetection = useDuplicateDetection;
 
       this.postOffice = postOffice;
 
@@ -94,6 +100,13 @@ public class LinkImpl implements Link
       copy.setDestination(address);
       
       copy.putStringProperty(HDR_ORIGIN_QUEUE, originalDestination);
+      
+      if (duplicateDetection)
+      {
+         SimpleString duplID = new SimpleString(String.valueOf(copy.getMessageID())).concat(name);
+         
+         copy.putStringProperty(HDR_DUPLICATE_DETECTION_ID, duplID);
+      }
       
       postOffice.route(copy, tx);
    }

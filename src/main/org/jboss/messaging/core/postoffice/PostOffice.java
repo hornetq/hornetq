@@ -66,7 +66,8 @@ public interface PostOffice extends MessagingComponent
                           boolean durable,
                           boolean temporary,
                           boolean exclusive,
-                          SimpleString linkAddress) throws Exception;
+                          SimpleString linkAddress,
+                          boolean duplicateDetection) throws Exception;
 
    Binding addQueueBinding(SimpleString name,
                            SimpleString address,

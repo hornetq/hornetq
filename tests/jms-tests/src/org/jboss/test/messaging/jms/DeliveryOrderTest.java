@@ -146,9 +146,19 @@ public class DeliveryOrderTest extends JMSTestCase
             
             c++;
             
+            //log.info("Got message " + c);
+            
             if (c == num)
             {
                latch.countDown();
+               
+               try
+               {
+                  Thread.sleep(2000);
+               }
+               catch (Exception e)
+               {                  
+               }
             }
          }
          catch (JMSException e)

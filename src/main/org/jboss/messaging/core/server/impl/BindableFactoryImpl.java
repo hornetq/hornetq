@@ -99,10 +99,11 @@ public class BindableFactoryImpl implements BindableFactory
                           final Filter filter,
                           final boolean durable,
                           final boolean temporary,
-                          final SimpleString linkAddress)
+                          final SimpleString linkAddress,
+                          final boolean duplicateDetection)
    {
 
-      Link link = new LinkImpl(name, durable, filter, linkAddress, postOffice, storageManager);
+      Link link = new LinkImpl(name, durable, filter, linkAddress, duplicateDetection, postOffice, storageManager);
 
       link.setPersistenceID(persistenceID);
 

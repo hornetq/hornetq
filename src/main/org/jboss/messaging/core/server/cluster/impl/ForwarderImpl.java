@@ -205,7 +205,10 @@ public class ForwarderImpl implements Forwarder, FailureListener
          log.warn("Timed out waiting for batch to be sent");
       }
 
-      session.close();
+      if (session != null)
+      {
+         session.close();
+      }
 
       started = false;
    }
@@ -225,6 +228,7 @@ public class ForwarderImpl implements Forwarder, FailureListener
 
    public HandleStatus handle(final MessageReference reference) throws Exception
    {
+      log.info("Got message, busy: " + busy);
       if (busy)
       {
          return HandleStatus.BUSY;
@@ -236,7 +240,9 @@ public class ForwarderImpl implements Forwarder, FailureListener
          {
             return HandleStatus.BUSY;
          }
+         
          reference.getQueue().referenceHandled();
+         
          refs.add(reference);
 
          if (maxBatchTime != -1)

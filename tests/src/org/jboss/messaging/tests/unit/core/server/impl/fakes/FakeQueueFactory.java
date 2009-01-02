@@ -54,9 +54,9 @@ public class FakeQueueFactory implements BindableFactory
 	}
 	
 	public Link createLink(long persistenceID, SimpleString name, Filter filter,
-                            boolean durable, boolean temporary, SimpleString linkAddress)
+                            boolean durable, boolean temporary, SimpleString linkAddress, boolean duplicateDetection)
    {
-      Link link =  new LinkImpl(name, durable, filter, linkAddress, postOffice, null);
+      Link link =  new LinkImpl(name, durable, filter, linkAddress, duplicateDetection, postOffice, null);
       
       link.setPersistenceID(persistenceID);
       

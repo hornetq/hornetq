@@ -342,7 +342,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
                
                //Create the link
                
-               postOffice.addLinkBinding(linkName, address, filter, true, false, exclusive, queueName);
+               postOffice.addLinkBinding(linkName, address, filter, true, false, exclusive, queueName, useDuplicateDetection);
             }
             
             Queue queue = (Queue)binding.getBindable();

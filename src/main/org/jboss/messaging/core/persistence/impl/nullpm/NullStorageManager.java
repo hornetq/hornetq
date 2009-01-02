@@ -57,7 +57,7 @@ public class NullStorageManager implements StorageManager
 
    private volatile boolean started;
 
-   public void addBinding(final Binding binding) throws Exception
+   public void addBinding(final Binding binding, final boolean duplicateDetection) throws Exception
    {
    }
 

@@ -45,7 +45,8 @@ public interface BindableFactory
                    Filter filter,
                    boolean durable,
                    boolean temporary,
-                   SimpleString linkAddress);
+                   SimpleString linkAddress,
+                   boolean duplicateDetection);
 
    // TODO - these injectors should not be here!!
 

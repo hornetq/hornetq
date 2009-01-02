@@ -80,9 +80,10 @@ public class FakePostOffice implements PostOffice
                                  boolean durable,
                                  boolean temporary,
                                  boolean exclusive,
-                                 SimpleString linkAddress) throws Exception
+                                 SimpleString linkAddress,
+                                 boolean duplicateDetection) throws Exception
    {
-      Link link = queueFactory.createLink(-1, queueName, filter, durable, false, linkAddress);
+      Link link = queueFactory.createLink(-1, queueName, filter, durable, false, linkAddress, duplicateDetection);
       Binding binding = new FakeBinding(address, link);
       bindings.put(address, binding);
       return binding;

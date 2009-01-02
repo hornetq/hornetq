@@ -30,6 +30,7 @@ import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.Distributor;
@@ -147,8 +148,37 @@ public class QueueImpl implements Queue
 
    // Bindable implementation -------------------------------------------------------------------------------------
 
-   public void route(final ServerMessage message, final Transaction tx) throws Exception
+   public void route(final ServerMessage message, Transaction tx) throws Exception
    {     
+      SimpleString duplicateID = (SimpleString)message.getProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
+
+      DuplicateIDCache cache = null;
+
+      if (duplicateID != null)
+      {
+         cache = postOffice.getDuplicateIDCache(message.getDestination());
+
+         if (cache.contains(duplicateID))
+         {
+            log.warn("Duplicate message detected - message will not be routed");
+
+            return;
+         }
+      }
+      
+      boolean durableRef = message.isDurable() && durable;
+      
+      boolean startedTx = false;
+      
+      if (cache != null && tx == null && durableRef)
+      {
+         //We need to store the duplicate id atomically with the message storage, so we need to create a tx for this
+         
+         tx = new TransactionImpl(storageManager, postOffice);
+         
+         startedTx = true;
+      }
+      
       // TODO we can avoid these lookups in the Queue since all messsages in the Queue will be for the same store
       PagingStore store = pagingManager.getPageStore(message.getDestination());
 
@@ -159,9 +189,17 @@ public class QueueImpl implements Queue
 
          if (!message.isReload())
          {
-            if (message.getDurableRefCount() == 1)
+            if (message.getRefCount() == 1)
             {
-               storageManager.storeMessage(message);
+               if (durableRef)
+               {
+                  storageManager.storeMessage(message);
+               }
+               
+               if (cache != null)
+               {
+                  cache.addToCache(duplicateID);
+               }
             }
 
             Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
@@ -170,7 +208,7 @@ public class QueueImpl implements Queue
             {
                ref.setScheduledDeliveryTime(scheduledDeliveryTime);
 
-               if (ref.getMessage().isDurable() && durable)
+               if (durableRef)
                {
                   storageManager.updateScheduledDeliveryTime(ref);
                }
@@ -204,17 +242,23 @@ public class QueueImpl implements Queue
          {
             MessageReference ref = message.createReference(this);
 
-            boolean first = message.getDurableRefCount() == 1;
+            boolean first = message.getRefCount() == 1;
             
-            if (first)
+            if (message.getRefCount() == 1)
             {
-               storageManager.storeMessageTransactional(tx.getID(), message);
+               if (durableRef)
+               {
+                  storageManager.storeMessageTransactional(tx.getID(), message);
+               }
+               
+               if (cache != null)
+               {
+                  cache.addToCache(duplicateID, tx);
+               }
             }
 
             Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
-
-            boolean durableRef = ref.getMessage().isDurable() && durable;
-
+           
             if (scheduledDeliveryTime != null)
             {
                ref.setScheduledDeliveryTime(scheduledDeliveryTime);
@@ -239,6 +283,11 @@ public class QueueImpl implements Queue
                tx.setContainsPersistent(true);
             }
          }
+      }
+      
+      if (startedTx)
+      {
+         tx.commit();
       }
    }
 

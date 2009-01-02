@@ -278,7 +278,7 @@ public class PostOfficeImpl implements PostOffice
 
       if (durable)
       {
-         storageManager.addBinding(binding);
+         storageManager.addBinding(binding, false);
       }
 
       return binding;
@@ -290,15 +290,16 @@ public class PostOfficeImpl implements PostOffice
                                               final boolean durable,
                                               final boolean temporary,
                                               final boolean exclusive,
-                                              final SimpleString linkAddress) throws Exception
+                                              final SimpleString linkAddress,
+                                              final boolean duplicateDetection) throws Exception
    {
-      Binding binding = createLinkBinding(name, address, filter, durable, temporary, exclusive, linkAddress);
+      Binding binding = createLinkBinding(name, address, filter, durable, temporary, exclusive, linkAddress, duplicateDetection);
 
       addBindingInMemory(binding);
 
       if (durable)
       {
-         storageManager.addBinding(binding);
+         storageManager.addBinding(binding, duplicateDetection);
       }
 
       return binding;
@@ -481,9 +482,10 @@ public class PostOfficeImpl implements PostOffice
                                      final boolean durable,
                                      final boolean temporary,
                                      final boolean exclusive,
-                                     final SimpleString linkAddress) throws Exception
+                                     final SimpleString linkAddress,
+                                     final boolean duplicateDetection) throws Exception
    {
-      Bindable bindable = bindableFactory.createLink(-1, name, filter, durable, temporary, linkAddress);
+      Bindable bindable = bindableFactory.createLink(-1, name, filter, durable, temporary, linkAddress, duplicateDetection);
 
       Binding binding = new BindingImpl(BindingType.LINK, address, bindable, exclusive);
 

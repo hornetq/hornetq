@@ -365,8 +365,6 @@ public class TransactionImpl implements Transaction
             storageManager.commit(id);
          }
 
-         //postOffice.deliver(refsToAdd);
-
          // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
          // transaction until all the messages were added to the queue
          // or else we could deliver the messages out of order
@@ -390,8 +388,7 @@ public class TransactionImpl implements Transaction
             {
                operation.afterCommit();
             }
-         }
-                  
+         }                  
       }
    }
 

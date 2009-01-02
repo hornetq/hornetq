@@ -108,7 +108,7 @@ public interface StorageManager extends MessagingComponent
 
    // Bindings related operations
 
-   void addBinding(Binding binding) throws Exception;
+   void addBinding(Binding binding, boolean duplicateDetection) throws Exception;
 
    void deleteBinding(Binding binding) throws Exception;
 
