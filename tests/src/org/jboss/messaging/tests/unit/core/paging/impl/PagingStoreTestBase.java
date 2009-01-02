@@ -88,244 +88,245 @@ public abstract class PagingStoreTestBase extends UnitTestCase
       executor.shutdown();
    }
 
-   protected void testConcurrentPaging(final SequentialFileFactory factory, final int numberOfThreads) throws Exception,
-                                                                                                      InterruptedException
-   {
-
-      final int MAX_SIZE = 1024 * 10;
-
-      final AtomicLong messageIdGenerator = new AtomicLong(0);
-
-      final AtomicInteger aliveProducers = new AtomicInteger(numberOfThreads);
-
-      final CountDownLatch latchStart = new CountDownLatch(numberOfThreads);
-
-      final ConcurrentHashMap<Long, PagedMessageImpl> buffers = new ConcurrentHashMap<Long, PagedMessageImpl>();
-
-      final ArrayList<Page> readPages = new ArrayList<Page>();
-
-      QueueSettings settings = new QueueSettings();
-      settings.setPageSizeBytes(MAX_SIZE);
-
-      final TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),
-                                                                 createStorageManagerMock(),
-                                                                 createPostOfficeMock(),
-                                                                 factory,
-                                                                 new SimpleString("test"),
-                                                                 settings,
-                                                                 executor);
-
-      storeImpl.start();
-
-      assertEquals(0, storeImpl.getNumberOfPages());
-
-      storeImpl.startPaging();
-
-      assertEquals(1, storeImpl.getNumberOfPages());
-
-      final SimpleString destination = new SimpleString("test");
-
-      class ProducerThread extends Thread
-      {
-
-         Exception e;
-
-         @Override
-         public void run()
-         {
-
-            try
-            {
-               boolean firstTime = true;
-               while (true)
-               {
-                  long id = messageIdGenerator.incrementAndGet();
-                  PagedMessageImpl msg = createMessage(destination, createRandomBuffer(id, 5));
-                  if (storeImpl.page(msg, false))
-                  {
-                     buffers.put(id, msg);
-                  }
-                  else
-                  {
-                     break;
-                  }
-
-                  if (firstTime)
-                  {
-                     latchStart.countDown();
-                     firstTime = false;
-                  }
-               }
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
-               this.e = e;
-            }
-            finally
-            {
-               aliveProducers.decrementAndGet();
-            }
-         }
-      }
-
-      class ConsumerThread extends Thread
-      {
-         Exception e;
-
-         @Override
-         public void run()
-         {
-            try
-            {
-               // Wait every producer to produce at least one message
-               latchStart.await();
-               while (aliveProducers.get() > 0)
-               {
-                  Page page = storeImpl.depage();
-                  if (page != null)
-                  {
-                     readPages.add(page);
-                  }
-               }
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
-               this.e = e;
-            }
-         }
-      }
-
-      ProducerThread producerThread[] = new ProducerThread[numberOfThreads];
-
-      for (int i = 0; i < numberOfThreads; i++)
-      {
-         producerThread[i] = new ProducerThread();
-         producerThread[i].start();
-      }
-
-      ConsumerThread consumer = new ConsumerThread();
-      consumer.start();
-
-      for (int i = 0; i < numberOfThreads; i++)
-      {
-         producerThread[i].join();
-         if (producerThread[i].e != null)
-         {
-            throw producerThread[i].e;
-         }
-      }
-
-      consumer.join();
-
-      if (consumer.e != null)
-      {
-         throw consumer.e;
-      }
-
-      System.out.println("Reading " + buffers.size() + " messages, " + readPages.size() + " pages");
-
-      final ConcurrentHashMap<Long, PagedMessage> buffers2 = new ConcurrentHashMap<Long, PagedMessage>();
-
-      for (Page page : readPages)
-      {
-         page.open();
-         List<PagedMessage> msgs = page.read();
-         page.close();
-
-         for (PagedMessage msg : msgs)
-         {
-            (msg.getMessage(null)).getBody().rewind();
-            long id = (msg.getMessage(null)).getBody().getLong();
-            (msg.getMessage(null)).getBody().rewind();
-
-            PagedMessageImpl msgWritten = buffers.remove(id);
-            buffers2.put(id, msg);
-            assertNotNull(msgWritten);
-            assertEquals((msg.getMessage(null)).getDestination(), (msgWritten.getMessage(null)).getDestination());
-            assertEqualsByteArrays((msgWritten.getMessage(null)).getBody().array(), (msg.getMessage(null)).getBody()
-                                                                                                          .array());
-         }
-      }
-
-      assertEquals(0, buffers.size());
-
-      List<String> files = factory.listFiles("page");
-
-      assertTrue(files.size() != 0);
-
-      for (String file : files)
-      {
-         SequentialFile fileTmp = factory.createSequentialFile(file, 1);
-         fileTmp.open();
-         assertTrue(fileTmp.size() + " <= " + MAX_SIZE, fileTmp.size() <= MAX_SIZE);
-         fileTmp.close();
-      }
-
-      TestSupportPageStore storeImpl2 = new PagingStoreImpl(createMockManager(), createStorageManagerMock(), createPostOfficeMock(), factory, new SimpleString("test"), settings, executor);
-      storeImpl2.start();
-
-      int numberOfPages = storeImpl2.getNumberOfPages();
-      assertTrue(numberOfPages != 0);
-
-      storeImpl2.startPaging();
-
-      storeImpl2.startPaging();
-
-      assertEquals(numberOfPages, storeImpl2.getNumberOfPages());
-
-      long lastMessageId = messageIdGenerator.incrementAndGet();
-      PagedMessage lastMsg = createMessage(destination, createRandomBuffer(lastMessageId, 5));
-
-      storeImpl2.page(lastMsg, false);
-      buffers2.put(lastMessageId, lastMsg);
-
-      Page lastPage = null;
-      while (true)
-      {
-         Page page = storeImpl2.depage();
-         if (page == null)
-         {
-            break;
-         }
-
-         lastPage = page;
-
-         page.open();
-
-         List<PagedMessage> msgs = page.read();
-
-         page.close();
-
-         for (PagedMessage msg : msgs)
-         {
-
-            (msg.getMessage(null)).getBody().rewind();
-            long id = (msg.getMessage(null)).getBody().getLong();
-            PagedMessage msgWritten = buffers2.remove(id);
-            assertNotNull(msgWritten);
-            assertEquals((msg.getMessage(null)).getDestination(), (msgWritten.getMessage(null)).getDestination());
-            assertEqualsByteArrays((msgWritten.getMessage(null)).getBody().array(), (msg.getMessage(null)).getBody()
-                                                                                                          .array());
-         }
-      }
-
-      lastPage.open();
-      List<PagedMessage> lastMessages = lastPage.read();
-      lastPage.close();
-      assertEquals(1, lastMessages.size());
-
-      (lastMessages.get(0).getMessage(null)).getBody().rewind();
-      assertEquals((lastMessages.get(0).getMessage(null)).getBody().getLong(), lastMessageId);
-      assertEqualsByteArrays((lastMessages.get(0).getMessage(null)).getBody().array(), (lastMsg.getMessage(null)).getBody()
-                                                                                                             .array());
-
-      assertEquals(0, buffers2.size());
-      
-      assertEquals(0, storeImpl.getAddressSize());
-
-   }
+   // Uncomment when https://jira.jboss.org/jira/browse/JBMESSAGING-1474 is complete
+//   protected void testConcurrentPaging(final SequentialFileFactory factory, final int numberOfThreads) throws Exception,
+//                                                                                                      InterruptedException
+//   {
+//
+//      final int MAX_SIZE = 1024 * 10;
+//
+//      final AtomicLong messageIdGenerator = new AtomicLong(0);
+//
+//      final AtomicInteger aliveProducers = new AtomicInteger(numberOfThreads);
+//
+//      final CountDownLatch latchStart = new CountDownLatch(numberOfThreads);
+//
+//      final ConcurrentHashMap<Long, PagedMessageImpl> buffers = new ConcurrentHashMap<Long, PagedMessageImpl>();
+//
+//      final ArrayList<Page> readPages = new ArrayList<Page>();
+//
+//      QueueSettings settings = new QueueSettings();
+//      settings.setPageSizeBytes(MAX_SIZE);
+//
+//      final TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),
+//                                                                 createStorageManagerMock(),
+//                                                                 createPostOfficeMock(),
+//                                                                 factory,
+//                                                                 new SimpleString("test"),
+//                                                                 settings,
+//                                                                 executor);
+//
+//      storeImpl.start();
+//
+//      assertEquals(0, storeImpl.getNumberOfPages());
+//
+//      storeImpl.startPaging();
+//
+//      assertEquals(1, storeImpl.getNumberOfPages());
+//
+//      final SimpleString destination = new SimpleString("test");
+//
+//      class ProducerThread extends Thread
+//      {
+//
+//         Exception e;
+//
+//         @Override
+//         public void run()
+//         {
+//
+//            try
+//            {
+//               boolean firstTime = true;
+//               while (true)
+//               {
+//                  long id = messageIdGenerator.incrementAndGet();
+//                  PagedMessageImpl msg = createMessage(destination, createRandomBuffer(id, 5));
+//                  if (storeImpl.page(msg, false, true))
+//                  {
+//                     buffers.put(id, msg);
+//                  }
+//                  else
+//                  {
+//                     break;
+//                  }
+//
+//                  if (firstTime)
+//                  {
+//                     latchStart.countDown();
+//                     firstTime = false;
+//                  }
+//               }
+//            }
+//            catch (Exception e)
+//            {
+//               e.printStackTrace();
+//               this.e = e;
+//            }
+//            finally
+//            {
+//               aliveProducers.decrementAndGet();
+//            }
+//         }
+//      }
+//
+//      class ConsumerThread extends Thread
+//      {
+//         Exception e;
+//
+//         @Override
+//         public void run()
+//         {
+//            try
+//            {
+//               // Wait every producer to produce at least one message
+//               latchStart.await();
+//               while (aliveProducers.get() > 0)
+//               {
+//                  Page page = storeImpl.depage();
+//                  if (page != null)
+//                  {
+//                     readPages.add(page);
+//                  }
+//               }
+//            }
+//            catch (Exception e)
+//            {
+//               e.printStackTrace();
+//               this.e = e;
+//            }
+//         }
+//      }
+//
+//      ProducerThread producerThread[] = new ProducerThread[numberOfThreads];
+//
+//      for (int i = 0; i < numberOfThreads; i++)
+//      {
+//         producerThread[i] = new ProducerThread();
+//         producerThread[i].start();
+//      }
+//
+//      ConsumerThread consumer = new ConsumerThread();
+//      consumer.start();
+//
+//      for (int i = 0; i < numberOfThreads; i++)
+//      {
+//         producerThread[i].join();
+//         if (producerThread[i].e != null)
+//         {
+//            throw producerThread[i].e;
+//         }
+//      }
+//
+//      consumer.join();
+//
+//      if (consumer.e != null)
+//      {
+//         throw consumer.e;
+//      }
+//
+//      System.out.println("Reading " + buffers.size() + " messages, " + readPages.size() + " pages");
+//
+//      final ConcurrentHashMap<Long, PagedMessage> buffers2 = new ConcurrentHashMap<Long, PagedMessage>();
+//
+//      for (Page page : readPages)
+//      {
+//         page.open();
+//         List<PagedMessage> msgs = page.read();
+//         page.close();
+//
+//         for (PagedMessage msg : msgs)
+//         {
+//            (msg.getMessage(null)).getBody().rewind();
+//            long id = (msg.getMessage(null)).getBody().getLong();
+//            (msg.getMessage(null)).getBody().rewind();
+//
+//            PagedMessageImpl msgWritten = buffers.remove(id);
+//            buffers2.put(id, msg);
+//            assertNotNull(msgWritten);
+//            assertEquals((msg.getMessage(null)).getDestination(), (msgWritten.getMessage(null)).getDestination());
+//            assertEqualsByteArrays((msgWritten.getMessage(null)).getBody().array(), (msg.getMessage(null)).getBody()
+//                                                                                                          .array());
+//         }
+//      }
+//
+//      assertEquals(0, buffers.size());
+//
+//      List<String> files = factory.listFiles("page");
+//
+//      assertTrue(files.size() != 0);
+//
+//      for (String file : files)
+//      {
+//         SequentialFile fileTmp = factory.createSequentialFile(file, 1);
+//         fileTmp.open();
+//         assertTrue(fileTmp.size() + " <= " + MAX_SIZE, fileTmp.size() <= MAX_SIZE);
+//         fileTmp.close();
+//      }
+//
+//      TestSupportPageStore storeImpl2 = new PagingStoreImpl(createMockManager(), createStorageManagerMock(), createPostOfficeMock(), factory, new SimpleString("test"), settings, executor);
+//      storeImpl2.start();
+//
+//      int numberOfPages = storeImpl2.getNumberOfPages();
+//      assertTrue(numberOfPages != 0);
+//
+//      storeImpl2.startPaging();
+//
+//      storeImpl2.startPaging();
+//
+//      assertEquals(numberOfPages, storeImpl2.getNumberOfPages());
+//
+//      long lastMessageId = messageIdGenerator.incrementAndGet();
+//      PagedMessage lastMsg = createMessage(destination, createRandomBuffer(lastMessageId, 5));
+//
+//      storeImpl2.page(lastMsg, false, true);
+//      buffers2.put(lastMessageId, lastMsg);
+//
+//      Page lastPage = null;
+//      while (true)
+//      {
+//         Page page = storeImpl2.depage();
+//         if (page == null)
+//         {
+//            break;
+//         }
+//
+//         lastPage = page;
+//
+//         page.open();
+//
+//         List<PagedMessage> msgs = page.read();
+//
+//         page.close();
+//
+//         for (PagedMessage msg : msgs)
+//         {
+//
+//            (msg.getMessage(null)).getBody().rewind();
+//            long id = (msg.getMessage(null)).getBody().getLong();
+//            PagedMessage msgWritten = buffers2.remove(id);
+//            assertNotNull(msgWritten);
+//            assertEquals((msg.getMessage(null)).getDestination(), (msgWritten.getMessage(null)).getDestination());
+//            assertEqualsByteArrays((msgWritten.getMessage(null)).getBody().array(), (msg.getMessage(null)).getBody()
+//                                                                                                          .array());
+//         }
+//      }
+//
+//      lastPage.open();
+//      List<PagedMessage> lastMessages = lastPage.read();
+//      lastPage.close();
+//      assertEquals(1, lastMessages.size());
+//
+//      (lastMessages.get(0).getMessage(null)).getBody().rewind();
+//      assertEquals((lastMessages.get(0).getMessage(null)).getBody().getLong(), lastMessageId);
+//      assertEqualsByteArrays((lastMessages.get(0).getMessage(null)).getBody().array(), (lastMsg.getMessage(null)).getBody()
+//                                                                                                             .array());
+//
+//      assertEquals(0, buffers2.size());
+//      
+//      assertEquals(0, storeImpl.getAddressSize());
+//
+//   }
 
    protected PagedMessageImpl createMessage(final SimpleString destination, final ByteBuffer buffer)
    {

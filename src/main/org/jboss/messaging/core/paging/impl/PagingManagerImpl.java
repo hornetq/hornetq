@@ -125,7 +125,6 @@ public class PagingManagerImpl implements PagingManager
    {
       this.globalMode.set(globalMode);
    }
-   
 
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.paging.PagingManager#reloadStores()
@@ -133,8 +132,8 @@ public class PagingManagerImpl implements PagingManager
    public void reloadStores() throws Exception
    {
       List<SimpleString> destinations = pagingStoreFactory.getStoredDestinations();
-      
-      for (SimpleString dest: destinations)
+
+      for (SimpleString dest : destinations)
       {
          createPageStore(dest);
       }
@@ -217,18 +216,21 @@ public class PagingManagerImpl implements PagingManager
       getPageStore(reference.getMessage().getDestination()).addSize(-reference.getMemoryEstimate());
    }
 
-   public boolean page(final ServerMessage message, final long transactionId) throws Exception
+   public boolean page(final ServerMessage message, final long transactionId, final boolean duplicateDetection) throws Exception
    {
       // The sync on transactions is done on commit only
-      return getPageStore(message.getDestination()).page(new PagedMessageImpl(message, transactionId), false);
+      return getPageStore(message.getDestination()).page(new PagedMessageImpl(message, transactionId),
+                                                         false,
+                                                         duplicateDetection);
    }
 
-   public boolean page(final ServerMessage message) throws Exception
+   public boolean page(final ServerMessage message, final boolean duplicateDetection) throws Exception
    {
       // If non Durable, there is no need to sync as there is no requirement for persistence for those messages in case
       // of crash
       return getPageStore(message.getDestination()).page(new PagedMessageImpl(message),
-                                                         syncNonTransactional && message.isDurable());
+                                                         syncNonTransactional && message.isDurable(),
+                                                         duplicateDetection);
    }
 
    public void addTransaction(final PageTransactionInfo pageTransaction)
@@ -314,7 +316,7 @@ public class PagingManagerImpl implements PagingManager
     * @see org.jboss.messaging.core.paging.PagingManager#addGlobalSize(long)
     */
    public long addGlobalSize(final long size)
-   {      
+   {
       return globalSize.addAndGet(size);
    }
 

@@ -373,7 +373,7 @@ public class PostOfficeImpl implements PostOffice
          }
       }
 
-      if (!pagingManager.page(message))
+      if (!pagingManager.page(message, true))
       {
          Bindings bindings = addressManager.getBindings(address);
 

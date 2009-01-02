@@ -91,14 +91,22 @@ public interface PagingManager extends MessagingComponent
     * @param sync - Sync should be called right after the write
     * @return false if destination is not on page mode
     */
-   boolean page(ServerMessage message) throws Exception;
+   
+   
+   //FIXME - why are these methods still on PagingManager???
+   //The current code is doing  a lookup every time through this class just to call page store!!
+   boolean page(ServerMessage message, boolean duplicateDetection) throws Exception;
 
    /**
     * Page, only if destination is in page mode.
     * @param message
     * @return false if destination is not on page mode
     */
-   boolean page(ServerMessage message, long transactionId) throws Exception;
+   
+
+   //FIXME - why are these methods still on PagingManager???
+   //The current code is doing  a lookup every time through this class just to call page store!!
+   boolean page(ServerMessage message, long transactionId, boolean duplicateDetection) throws Exception;
 
    /**
     * Point to inform/restoring Transactions used when the messages were added into paging

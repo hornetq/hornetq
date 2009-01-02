@@ -78,11 +78,11 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(10));
 
-      assertFalse(store.page(new PagedMessageImpl(msg), true));
+      assertFalse(store.page(new PagedMessageImpl(msg), true, true));
 
       store.startPaging();
 
-      assertTrue(store.page(new PagedMessageImpl(msg), true));
+      assertTrue(store.page(new PagedMessageImpl(msg), true, true));
 
       Page page = store.depage();
 
@@ -100,7 +100,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
       assertNull(store.depage());
 
-      assertFalse(store.page(new PagedMessageImpl(msg), true));
+      assertFalse(store.page(new PagedMessageImpl(msg), true, true));
    }
 
 

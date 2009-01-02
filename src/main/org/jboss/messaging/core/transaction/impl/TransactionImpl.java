@@ -596,11 +596,13 @@ public class TransactionImpl implements Transaction
 
          HashSet<SimpleString> pagedDestinationsToSync = new HashSet<SimpleString>();
 
+         // We only need to add the dupl id header once per transaction
+         boolean first = true;
          for (ServerMessage message : pagedMessages)
          {
             // http://wiki.jboss.org/wiki/JBossMessaging2Paging
             // Explained under Transaction On Paging. (This is the item B)
-            if (pagingManager.page(message, id))
+            if (pagingManager.page(message, id, first))
             {
                if (message.isDurable())
                {
@@ -617,6 +619,7 @@ public class TransactionImpl implements Transaction
                //TODO is this correct - don't we lose transactionality here???
                postOffice.route(message, null);
             }
+            first = false;
          }
 
          if (pagingPersistent)

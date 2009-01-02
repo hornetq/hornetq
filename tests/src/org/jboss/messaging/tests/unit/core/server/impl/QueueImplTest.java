@@ -1377,7 +1377,7 @@ public class QueueImplTest extends UnitTestCase
       PostOffice postOffice = EasyMock.createNiceMock(PostOffice.class);      
 
       PagingManager pm = EasyMock.createNiceMock(PagingManager.class);
-      EasyMock.expect(pm.page(EasyMock.isA(ServerMessage.class))).andStubReturn(false);
+      EasyMock.expect(pm.page(EasyMock.isA(ServerMessage.class), EasyMock.eq(true))).andStubReturn(false);
       EasyMock.expect(postOffice.getPagingManager()).andStubReturn(pm);
       EasyMock.expect(pm.isPaging(EasyMock.isA(SimpleString.class))).andStubReturn(false);
       pm.messageDone(EasyMock.isA(ServerMessage.class));

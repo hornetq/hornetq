@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.paging.impl;
 
+import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +37,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.paging.PagedMessage;
@@ -311,7 +313,8 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
 
-   public boolean page(final PagedMessage message, final boolean sync) throws Exception
+   //TODO all of this can be simplified
+   public boolean page(final PagedMessage message, final boolean sync, final boolean duplicateDetection) throws Exception
    {
       if (!running)
       {
@@ -373,8 +376,26 @@ public class PagingStoreImpl implements TestSupportPageStore
          try
          {
             if (currentPage != null)
-            {
+            {               
+               if (duplicateDetection)
+               {
+                  //We set the duplicate detection header to prevent the message being depaged more than once in case of failure during depage
+                  
+                  byte[] bytes = new byte[8];
+                  
+                  ByteBuffer buff = ByteBuffer.wrap(bytes);
+                  
+                  ServerMessage msg = message.getMessage(storageManager);
+                  
+                  buff.putLong(msg.getMessageID());
+                  
+                  SimpleString duplID = new SimpleString(bytes);
+                     
+                  message.getMessage(storageManager).putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, duplID);
+               }
+               
                currentPage.write(message);
+               
                if (sync)
                {
                   currentPage.sync();
