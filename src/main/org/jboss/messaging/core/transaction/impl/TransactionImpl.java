@@ -35,7 +35,6 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionOperation;
-import org.jboss.messaging.core.transaction.Transaction.State;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -281,7 +280,12 @@ public class TransactionImpl implements Transaction
    {
       synchronized (timeoutLock)
       {
-         if (state != State.ACTIVE)
+         if (state == State.ROLLBACK_ONLY)
+         {
+            //Do nothing
+            return;
+         }            
+         else if (state != State.ACTIVE)
          {
             throw new IllegalStateException("Transaction is in invalid state " + state);
          }
@@ -328,7 +332,8 @@ public class TransactionImpl implements Transaction
             }
             else
             {
-               throw new IllegalStateException("Transaction is in invalid state " + state);
+               //Do nothing
+               return;
             }
 
          }
@@ -431,8 +436,7 @@ public class TransactionImpl implements Transaction
             {
                operation.afterRollback();
             }
-         }
-                  
+         }                  
       }
 
       return toCancel;

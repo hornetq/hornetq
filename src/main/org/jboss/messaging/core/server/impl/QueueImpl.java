@@ -160,7 +160,16 @@ public class QueueImpl implements Queue
 
          if (cache.contains(duplicateID))
          {
-            log.warn("Duplicate message detected - message will not be routed");
+            if (tx == null)
+            {
+               log.warn("Duplicate message detected - message will not be routed");
+            }
+            else
+            {
+               log.warn("Duplicate message detected - transaction will be rejected");
+               
+               tx.markAsRollbackOnly(null);
+            }
 
             return;
          }

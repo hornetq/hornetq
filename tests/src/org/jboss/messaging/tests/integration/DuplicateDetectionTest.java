@@ -429,6 +429,67 @@ public class DuplicateDetectionTest extends ServiceTestBase
       sf.close();
    }
    
+   /*
+    * Entire transaction should be rejected on duplicate detection
+    * Even if not all entries have dupl id header
+    */
+   public void testEntireTransactionRejected() throws Exception
+   {
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      ClientSession session = sf.createSession(false, false, false);
+
+      session.start();
+
+      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
+
+      session.createQueue(queueName, queueName, null, false, false);
+
+      ClientProducer producer = session.createProducer(queueName);
+
+      ClientMessage message = createMessage(session, 0);
+      SimpleString dupID = new SimpleString("abcdefg");
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+            
+      session.commit();
+
+      session.close();
+
+      session = sf.createSession(false, false, false);
+
+      session.start();
+
+      producer = session.createProducer(queueName);
+
+      message = createMessage(session, 1);
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+      
+      message = createMessage(session, 2);
+      producer.send(message);
+      
+      message = createMessage(session, 3);
+      producer.send(message);
+      
+      message = createMessage(session, 4);
+      producer.send(message);
+      
+      session.commit();
+      
+      ClientConsumer consumer = session.createConsumer(queueName);
+
+      message = consumer.receive(250);
+      assertEquals(0, message.getProperty(propKey));
+
+      message = consumer.receive(250);
+      assertNull(message);
+
+      session.close();
+
+      sf.close();
+   }
+   
    public void testXADuplicateDetection1() throws Exception
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
