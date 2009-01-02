@@ -54,10 +54,8 @@ import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.paging.PagingManager;
-import org.jboss.messaging.core.paging.impl.LastPageRecordImpl;
 import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -70,10 +68,10 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.BindableFactory;
 import org.jboss.messaging.core.server.JournalType;
+import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.Link;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.transaction.ResourceManager;
@@ -118,8 +116,6 @@ public class JournalStorageManager implements StorageManager
    public static final byte UPDATE_DELIVERY_COUNT = 33;
 
    public static final byte PAGE_TRANSACTION = 34;
-
-   public static final byte LAST_PAGE = 35;
 
    public static final byte SET_SCHEDULED_DELIVERY_TIME = 36;
 
@@ -333,25 +329,6 @@ public class JournalStorageManager implements StorageManager
                                                   pageTransaction);
    }
 
-   public void storeLastPage(final long txID, final LastPageRecord lastPage) throws Exception
-   {      
-      if (lastPage.getRecordId() != 0)
-      {
-         // To avoid linked list effect on reclaiming, we delete and add a new
-         // record, instead of simply updating it
-         messageJournal.appendDeleteRecordTransactional(txID, lastPage.getRecordId());
-      }
-
-      lastPage.setRecordId(generateUniqueID());
-
-      messageJournal.appendAddRecordTransactional(txID, lastPage.getRecordId(), LAST_PAGE, lastPage);
-   }
-
-   public void deleteLastPage(final long recordID) throws Exception
-   {
-      messageJournal.appendDeleteRecord(recordID);
-   }
-
    public void storeAcknowledgeTransactional(final long txID, final long queueID, final long messageID) throws Exception
    {
       messageJournal.appendUpdateRecordTransactional(txID, messageID, ACKNOWLEDGE_REF, new ACKEncoding(queueID));
@@ -472,7 +449,7 @@ public class JournalStorageManager implements StorageManager
                message.decode(buff);
 
                message.setReload();
-               
+
                postOffice.route(message, null);
 
                break;
@@ -538,20 +515,6 @@ public class JournalStorageManager implements StorageManager
                PagingManager pagingManager = postOffice.getPagingManager();
 
                pagingManager.addTransaction(pageTransactionInfo);
-
-               break;
-            }
-            case LAST_PAGE:
-            {
-               LastPageRecordImpl recordImpl = new LastPageRecordImpl();
-
-               recordImpl.setRecordId(record.id);
-
-               recordImpl.decode(buff);
-
-               PagingManager pagingManager = postOffice.getPagingManager();
-
-               pagingManager.setLastPageRecord(recordImpl);
 
                break;
             }
@@ -930,7 +893,7 @@ public class JournalStorageManager implements StorageManager
                   {
                      throw new IllegalStateException("Failed to remove reference for " + messageID);
                   }
-                  
+
                   break;
                }
                case PAGE_TRANSACTION:
@@ -940,16 +903,17 @@ public class JournalStorageManager implements StorageManager
                   pageTransactionInfo.decode(buff);
 
                   pageTransactionInfo.markIncomplete();
-                  
+
                   tx.setPageTransaction(pageTransactionInfo);
 
                   break;
                }
                case SET_SCHEDULED_DELIVERY_TIME:
-               {                  
-                  //Do nothing - for prepared txs, the set scheduled delivery time will only occur in a send in which
-                  //case the message will already have the header for the scheduled delivery time, so no need to do anything.
-               
+               {
+                  // Do nothing - for prepared txs, the set scheduled delivery time will only occur in a send in which
+                  // case the message will already have the header for the scheduled delivery time, so no need to do
+                  // anything.
+
                   break;
                }
                case DUPLICATE_ID:
@@ -1011,13 +975,13 @@ public class JournalStorageManager implements StorageManager
             }
          }
 
-         for (MessageReference ack: referencesToAck)
+         for (MessageReference ack : referencesToAck)
          {
             tx.addAckTempUntilNextRefactoring(ack);
          }
-                  
+
          tx.setState(Transaction.State.PREPARED);
-         
+
          resourceManager.putTransaction(xid, tx);
       }
    }
@@ -1115,7 +1079,7 @@ public class JournalStorageManager implements StorageManager
       boolean exclusive;
 
       SimpleString linkAddress;
-      
+
       boolean duplicateDetection;
 
       public BindingEncoding()
@@ -1185,13 +1149,12 @@ public class JournalStorageManager implements StorageManager
          buffer.putNullableSimpleString(linkAddress);
          buffer.putBoolean(duplicateDetection);
       }
-      
+
       public int getEncodeSize()
       {
-         return SIZE_INT +
-                SimpleString.sizeofString(name) +
+         return SIZE_INT + SimpleString.sizeofString(name) +
                 SimpleString.sizeofString(address) +
-                SimpleString.sizeofNullableString(filter) + 
+                SimpleString.sizeofNullableString(filter) +
                 SIZE_BOOLEAN +
                 SimpleString.sizeofNullableString(linkAddress) +
                 SIZE_BOOLEAN;

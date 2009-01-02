@@ -62,20 +62,16 @@ public interface PagingStore extends MessagingComponent
    void sync() throws Exception;
 
    boolean page(PagedMessage message, boolean sync) throws Exception;
-   
+
    /**
     * 
     * @return false if a thread was already started, or if not in page mode
     * @throws Exception 
     */
    boolean startDepaging();
-   
+
    /** When start depaging from a global perspective, we don't want all the stores depaging at once what could saturate the servers */
    boolean startDepaging(Executor executor);
-
-   LastPageRecord getLastPageRecord();
-
-   void setLastPageRecord(LastPageRecord record);
 
    /**
     * @param memoryEstimate

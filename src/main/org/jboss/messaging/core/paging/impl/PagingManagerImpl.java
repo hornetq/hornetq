@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
@@ -191,13 +190,6 @@ public class PagingManagerImpl implements PagingManager
    public long getDefaultPageSize()
    {
       return defaultPageSize;
-   }
-
-   public void setLastPageRecord(final LastPageRecord lastPage) throws Exception
-   {
-      trace("LastPage loaded was " + lastPage.getLastId() + " recordID = " + lastPage.getRecordId());
-
-      getPageStore(lastPage.getDestination()).setLastPageRecord(lastPage);
    }
 
    public boolean isPaging(final SimpleString destination) throws Exception

@@ -27,15 +27,14 @@ import java.util.Map;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.BindableFactory;
 import org.jboss.messaging.core.server.LargeServerMessage;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.IDGenerator;
@@ -199,14 +198,6 @@ public class NullStorageManager implements StorageManager
    public synchronized boolean isStarted()
    {
       return started;
-   }
-
-   public void storeLastPage(final long txID, final LastPageRecord pageTransaction) throws Exception
-   {
-   }
-
-   public void deleteLastPage(final long recordID) throws Exception
-   {
    }
 
    public void deleteMessageTransactional(final long txID, final long messageID, final long queueID) throws Exception

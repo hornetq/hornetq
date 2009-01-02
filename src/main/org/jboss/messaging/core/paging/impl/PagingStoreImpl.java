@@ -36,7 +36,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.paging.LastPageRecord;
 import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.paging.PagedMessage;
@@ -109,8 +108,6 @@ public class PagingStoreImpl implements TestSupportPageStore
    private final ReadWriteLock currentPageLock = new ReentrantReadWriteLock();
 
    private volatile boolean running = false;
-
-   private volatile LastPageRecord lastPageRecord;
 
    // Static --------------------------------------------------------
 
@@ -460,16 +457,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
 
-   public LastPageRecord getLastPageRecord()
-   {
-      return lastPageRecord;
-   }
-
-   public void setLastPageRecord(final LastPageRecord record)
-   {
-      lastPageRecord = record;
-   }
-
    // MessagingComponent implementation
 
    public synchronized boolean isStarted()
@@ -716,27 +703,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       Transaction depageTransaction = new TransactionImpl(storageManager, postOffice, true);
 
-      LastPageRecord lastPageRecord = getLastPageRecord();
-
-      if (lastPageRecord == null)
-      {
-         lastPageRecord = new LastPageRecordImpl(pageId, destination);
-
-         setLastPageRecord(lastPageRecord);
-      }
-      else
-      {
-         if (pageId <= lastPageRecord.getLastId())
-         {
-            log.warn("Page " + pageId + " was already processed, ignoring the page");
-            return;
-         }
-      }
-
-      lastPageRecord.setLastId(pageId);
-
-      storageManager.storeLastPage(depageTransaction.getID(), lastPageRecord);
-
       HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
             
       for (PagedMessage pagedMessage : pagedMessages)
@@ -880,11 +846,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
 
-   public void clearLastPageRecord(final LastPageRecord lastRecord) throws Exception
-   {
-      storageManager.deleteLastPage(lastRecord.getRecordId());
-   }
-
    private Page createPage(final int page) throws Exception
    {
       String fileName = createFileName(page);
@@ -934,14 +895,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       Page page = depage();
       
       if (page == null)
-      {
-         if (lastPageRecord != null)
-         {
-            clearLastPageRecord(lastPageRecord);
-         }
-
-         lastPageRecord = null;
-
+      {        
          return;
       }
 

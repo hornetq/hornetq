@@ -110,12 +110,6 @@ public interface PagingManager extends MessagingComponent
     * */
    PageTransactionInfo getTransaction(long transactionID);
 
-   /**
-    * 
-    * Duplication detection for paging processing
-    *  */
-   void setLastPageRecord(LastPageRecord lastPage) throws Exception;
-
    /** 
     * 
     * To be called when there are no more references to the message
