@@ -13,9 +13,7 @@
 package org.jboss.messaging.core.transaction.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -29,10 +27,7 @@ import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.util.SimpleString;
@@ -50,14 +45,16 @@ public class TransactionImpl implements Transaction
    private List<TransactionOperation> operations;
 
    private static final Logger log = Logger.getLogger(TransactionImpl.class);
-
+   
+   private static final int INITIAL_NUM_PROPERTIES = 10;
+      
+   private Object[] properties = new Object[INITIAL_NUM_PROPERTIES];
+      
    private final StorageManager storageManager;
 
    private final PostOffice postOffice;
 
    private final PagingManager pagingManager;
-
-   private final List<MessageReference> acknowledgements = new ArrayList<MessageReference>();
 
    /** List of destinations in page mode.
     *  Once a destination was considered in page, it should go toward paging until commit is called, 
@@ -203,21 +200,6 @@ public class TransactionImpl implements Transaction
       containsPersistent = true;
    }
 
-   public List<MessageReference> timeout() throws Exception
-   {
-      // we need to synchronize with commit and rollback just in case they get called atthesame time
-      synchronized (timeoutLock)
-      {
-         // if we've already rolled back or committed we don't need to do anything
-         if (state == State.COMMITTED || state == State.ROLLBACK_ONLY || state == State.PREPARED)
-         {
-            return Collections.emptyList();
-         }
-
-         return doRollback();
-      }
-   }
-
    public long getCreateTime()
    {
       return createTime;
@@ -230,50 +212,6 @@ public class TransactionImpl implements Transaction
          throw new IllegalStateException("Transaction is in invalid state " + state);
       }
 
-      acknowledgements.add(acknowledgement);
-
-      ServerMessage message = acknowledgement.getMessage();
-
-      if (message.isDurable())
-      {
-         Queue queue = acknowledgement.getQueue();
-
-         if (queue.isDurable())
-         {
-            // Need to lock on the message to prevent a race where the ack and
-            // delete
-            // records get recorded in the log in the wrong order
-
-            // TODO For now - we just use synchronized - can probably do better
-            // locking
-
-            synchronized (message)
-            {
-               int count = message.decrementDurableRefCount();
-
-               if (count == 0)
-               {
-                  storageManager.deleteMessageTransactional(id, queue.getPersistenceID(), message.getMessageID());
-               }
-               else
-               {
-                  storageManager.storeAcknowledgeTransactional(id, queue.getPersistenceID(), message.getMessageID());
-               }
-
-               containsPersistent = true;
-            }
-         }
-      }
-   }
-   
-   public void addAckTempUntilNextRefactoring(final MessageReference ref)
-   {
-      this.acknowledgements.add(ref);
-      
-      if (ref.getQueue().isDurable() && ref.getMessage().isDurable())
-      {
-         containsPersistent = true;
-      }
    }
 
    public void prepare() throws Exception
@@ -299,7 +237,7 @@ public class TransactionImpl implements Transaction
          {
             for (TransactionOperation operation : operations)
             {
-               operation.beforePrepare();
+               operation.beforePrepare(this);
             }
          }
 
@@ -313,10 +251,9 @@ public class TransactionImpl implements Transaction
          {
             for (TransactionOperation operation : operations)
             {
-               operation.afterPrepare();
+               operation.afterPrepare(this);
             }
-         }
-                  
+         }                 
       }
    }
 
@@ -356,7 +293,7 @@ public class TransactionImpl implements Transaction
          {
             for (TransactionOperation operation : operations)
             {
-               operation.beforeCommit();
+               operation.beforeCommit(this);
             }
          }
 
@@ -378,11 +315,6 @@ public class TransactionImpl implements Transaction
             pageTransaction.commit();
          }
 
-         for (MessageReference reference : acknowledgements)
-         {
-            reference.getQueue().referenceAcknowledged(reference);
-         }
-
          clear();
 
          state = State.COMMITTED;
@@ -391,16 +323,14 @@ public class TransactionImpl implements Transaction
          {
             for (TransactionOperation operation : operations)
             {
-               operation.afterCommit();
+               operation.afterCommit(this);
             }
          }                  
       }
    }
 
-   public List<MessageReference> rollback(final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   public void rollback() throws Exception
    {
-      LinkedList<MessageReference> toCancel;
-
       synchronized (timeoutLock)
       {
          if (xid != null)
@@ -422,11 +352,11 @@ public class TransactionImpl implements Transaction
          {
             for (TransactionOperation operation : operations)
             {
-               operation.beforeRollback();
+               operation.beforeRollback(this);
             }
          }
 
-         toCancel = doRollback();
+         doRollback();
 
          state = State.ROLLEDBACK;
 
@@ -434,17 +364,10 @@ public class TransactionImpl implements Transaction
          {
             for (TransactionOperation operation : operations)
             {
-               operation.afterRollback();
+               operation.afterRollback(this);
             }
          }                  
       }
-
-      return toCancel;
-   }
-
-   public int getAcknowledgementsCount()
-   {
-      return acknowledgements.size();
    }
 
    public void suspend()
@@ -535,11 +458,35 @@ public class TransactionImpl implements Transaction
    {
       this.destinationsInPageMode.add(address);
    }
+   
+   public int getOperationsCount()
+   {
+      return operations.size();
+   }
 
+   public void putProperty(final int index, final Object property)
+   {
+      if (index >= properties.length)
+      {
+         Object[] newProperties = new Object[index];
+         
+         System.arraycopy(properties, 0, newProperties, 0, properties.length);
+         
+         properties = newProperties;
+      }
+      
+      properties[index] = property;      
+   }
+   
+   public Object getProperty(int index)
+   {
+      return properties[index];
+   }
+   
    // Private
    // -------------------------------------------------------------------
 
-   private LinkedList<MessageReference> doRollback() throws Exception
+   private void doRollback() throws Exception
    {
       if (containsPersistent || xid != null)
       {
@@ -551,25 +498,7 @@ public class TransactionImpl implements Transaction
          pageTransaction.rollback();
       }
 
-      LinkedList<MessageReference> toCancel = new LinkedList<MessageReference>();
-
-      for (MessageReference ref : acknowledgements)
-      {
-         Queue queue = ref.getQueue();
-
-         ServerMessage message = ref.getMessage();
-
-         if (message.isDurable() && queue.isDurable())
-         {
-            message.incrementDurableRefCount();
-         }
-         
-         toCancel.add(ref);
-      }
-
       clear();
-
-      return toCancel;
    }
 
    private void checkCreateOperations()
@@ -636,8 +565,6 @@ public class TransactionImpl implements Transaction
 
    private void clear()
    {
-      acknowledgements.clear();
-
       pagedMessages.clear();
    }
 }

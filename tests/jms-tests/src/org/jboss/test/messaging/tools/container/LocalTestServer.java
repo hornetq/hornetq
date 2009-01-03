@@ -717,7 +717,8 @@ public class LocalTestServer implements Server, Runnable
       Binding binding = getMessagingServer().getPostOffice().getBinding(destination.getSimpleAddress());
       if (binding != null && binding.getType() == BindingType.QUEUE)
       {
-         ((Queue)binding.getBindable()).deleteAllReferences(getMessagingServer().getStorageManager());
+         ((Queue)binding.getBindable()).deleteAllReferences(getMessagingServer().getStorageManager(), getMessagingServer().getPostOffice(),
+                                                            getMessagingServer().getQueueSettingsRepository());
       }
    }
 

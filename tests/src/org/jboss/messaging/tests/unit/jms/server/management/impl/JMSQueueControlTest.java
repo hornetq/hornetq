@@ -69,12 +69,19 @@ import org.jboss.messaging.util.SimpleString;
 public class JMSQueueControlTest extends TestCase
 {
    private String jndiBinding;
+
    private String name;
+
    private JBossQueue queue;
+
    private Queue coreQueue;
+
    private PostOffice postOffice;
+
    private StorageManager storageManager;
-   private HierarchicalRepository queueSettingsRepository;
+
+   private HierarchicalRepository<QueueSettings> queueSettingsRepository;
+
    private MessageCounter counter;
 
    // Constants -----------------------------------------------------
@@ -249,8 +256,7 @@ public class JMSQueueControlTest extends TestCase
          @Override
          public SimpleString getExpiryAddress()
          {
-            return new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX
-                  + expiryQueue);
+            return new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + expiryQueue);
          }
       };
       expect(queueSettingsRepository.getMatch(name)).andReturn(settings);
@@ -275,8 +281,7 @@ public class JMSQueueControlTest extends TestCase
       expect(ref.getMessage()).andReturn(message);
       refs.add(ref);
       expect(coreQueue.list(EasyMock.isA(Filter.class))).andReturn(refs);
-      expect(coreQueue.deleteReference(messageID, storageManager)).andReturn(
-            true);
+      expect(coreQueue.deleteReference(messageID, storageManager, postOffice, queueSettingsRepository)).andReturn(true);
 
       replayMockedAttributes();
       replay(ref, message);
@@ -291,7 +296,7 @@ public class JMSQueueControlTest extends TestCase
    public void testRemoveAllMessages() throws Exception
    {
       int removedMessagesCount = randomPositiveInt();
-     expect(coreQueue.deleteAllReferences(storageManager)).andReturn(removedMessagesCount);
+      expect(coreQueue.deleteAllReferences(storageManager, postOffice, queueSettingsRepository)).andReturn(removedMessagesCount);
 
       replayMockedAttributes();
 
@@ -307,20 +312,15 @@ public class JMSQueueControlTest extends TestCase
       List<MessageReference> refs = new ArrayList<MessageReference>();
       MessageReference ref = createMock(MessageReference.class);
       ServerMessage message = createMock(ServerMessage.class);
-      expect(message.getProperty(new SimpleString("JMSMessageID")))
-            .andStubReturn(randomSimpleString());
-      expect(message.getProperty(new SimpleString("JMSCorrelationID")))
-            .andStubReturn(randomSimpleString());
-      expect(message.getProperty(new SimpleString("JMSType"))).andStubReturn(
-            randomSimpleString());
+      expect(message.getProperty(new SimpleString("JMSMessageID"))).andStubReturn(randomSimpleString());
+      expect(message.getProperty(new SimpleString("JMSCorrelationID"))).andStubReturn(randomSimpleString());
+      expect(message.getProperty(new SimpleString("JMSType"))).andStubReturn(randomSimpleString());
       expect(message.isDurable()).andStubReturn(randomBoolean());
       expect(message.getPriority()).andStubReturn(randomByte());
-      expect(message.getProperty(new SimpleString("JMSReplyTo")))
-            .andStubReturn(randomSimpleString());
+      expect(message.getProperty(new SimpleString("JMSReplyTo"))).andStubReturn(randomSimpleString());
       expect(message.getTimestamp()).andStubReturn(randomLong());
       expect(message.getExpiration()).andStubReturn(randomLong());
-      expect(message.getPropertyNames()).andStubReturn(
-            new HashSet<SimpleString>());
+      expect(message.getPropertyNames()).andStubReturn(new HashSet<SimpleString>());
       expect(ref.getMessage()).andReturn(message);
       refs.add(ref);
       expect(coreQueue.list(isA(Filter.class))).andReturn(refs);
@@ -331,8 +331,7 @@ public class JMSQueueControlTest extends TestCase
       JMSQueueControl control = createControl();
       TabularData data = control.listMessages(filterStr);
       assertEquals(1, data.size());
-      CompositeData info = data.get(new Object[] { message.getProperty(
-            new SimpleString("JMSMessageID")).toString() });
+      CompositeData info = data.get(new Object[] { message.getProperty(new SimpleString("JMSMessageID")).toString() });
       assertNotNull(info);
 
       verifyMockedAttributes();
@@ -350,7 +349,8 @@ public class JMSQueueControlTest extends TestCase
       {
          control.listMessages(invalidFilterStr);
          fail("IllegalStateException");
-      } catch (IllegalStateException e)
+      }
+      catch (IllegalStateException e)
       {
 
       }
@@ -370,9 +370,7 @@ public class JMSQueueControlTest extends TestCase
       expect(ref.getMessage()).andReturn(serverMessage);
       refs.add(ref);
       expect(coreQueue.list(EasyMock.isA(Filter.class))).andReturn(refs);
-      expect(
-            coreQueue.expireMessage(messageID, storageManager, postOffice,
-                  queueSettingsRepository)).andReturn(true);
+      expect(coreQueue.expireMessage(messageID, storageManager, postOffice, queueSettingsRepository)).andReturn(true);
 
       replayMockedAttributes();
       replay(ref, serverMessage);
@@ -388,8 +386,7 @@ public class JMSQueueControlTest extends TestCase
    {
       String jmsMessageID = randomString();
 
-      expect(coreQueue.list(isA(Filter.class))).andReturn(
-            new ArrayList<MessageReference>());
+      expect(coreQueue.list(isA(Filter.class))).andReturn(new ArrayList<MessageReference>());
 
       replayMockedAttributes();
 
@@ -398,7 +395,8 @@ public class JMSQueueControlTest extends TestCase
       {
          control.expireMessage(jmsMessageID);
          fail("IllegalArgumentException");
-      } catch (IllegalArgumentException e)
+      }
+      catch (IllegalArgumentException e)
       {
       }
 
@@ -408,10 +406,11 @@ public class JMSQueueControlTest extends TestCase
    public void testExpireMessages() throws Exception
    {
       int expiredMessages = randomInt();
-      
-      expect(
-            coreQueue.expireMessages(isA(Filter.class), eq(storageManager), eq(postOffice),
-                  eq(queueSettingsRepository))).andReturn(expiredMessages);
+
+      expect(coreQueue.expireMessages(isA(Filter.class),
+                                      eq(storageManager),
+                                      eq(postOffice),
+                                      eq(queueSettingsRepository))).andReturn(expiredMessages);
 
       replayMockedAttributes();
 
@@ -433,9 +432,7 @@ public class JMSQueueControlTest extends TestCase
       expect(ref.getMessage()).andReturn(serverMessage);
       refs.add(ref);
       expect(coreQueue.list(isA(Filter.class))).andReturn(refs);
-      expect(
-            coreQueue.sendMessageToDeadLetterAddress(messageID, storageManager, postOffice,
-                  queueSettingsRepository)).andReturn(true);
+      expect(coreQueue.sendMessageToDeadLetterAddress(messageID, storageManager, postOffice, queueSettingsRepository)).andReturn(true);
 
       replayMockedAttributes();
       replay(ref, serverMessage);
@@ -451,8 +448,7 @@ public class JMSQueueControlTest extends TestCase
    {
       String jmsMessageID = randomString();
 
-      expect(coreQueue.list(isA(Filter.class))).andReturn(
-            new ArrayList<MessageReference>());
+      expect(coreQueue.list(isA(Filter.class))).andReturn(new ArrayList<MessageReference>());
       replayMockedAttributes();
 
       JMSQueueControl control = createControl();
@@ -460,7 +456,8 @@ public class JMSQueueControlTest extends TestCase
       {
          control.sendMessageToDLQ(jmsMessageID);
          fail("IllegalArgumentException");
-      } catch (IllegalArgumentException e)
+      }
+      catch (IllegalArgumentException e)
       {
       }
 
@@ -480,10 +477,11 @@ public class JMSQueueControlTest extends TestCase
       expect(ref.getMessage()).andReturn(serverMessage);
       refs.add(ref);
       expect(coreQueue.list(isA(Filter.class))).andReturn(refs);
-      expect(
-            coreQueue.changeMessagePriority(messageID, newPriority,
-                  storageManager, postOffice, queueSettingsRepository))
-            .andReturn(true);
+      expect(coreQueue.changeMessagePriority(messageID,
+                                             newPriority,
+                                             storageManager,
+                                             postOffice,
+                                             queueSettingsRepository)).andReturn(true);
 
       replayMockedAttributes();
       replay(ref, serverMessage);
@@ -495,8 +493,7 @@ public class JMSQueueControlTest extends TestCase
       verify(ref, serverMessage);
    }
 
-   public void testChangeMessagePriorityWithInvalidPriorityValues()
-         throws Exception
+   public void testChangeMessagePriorityWithInvalidPriorityValues() throws Exception
    {
       String jmsMessageID = randomString();
 
@@ -507,7 +504,8 @@ public class JMSQueueControlTest extends TestCase
       {
          control.changeMessagePriority(jmsMessageID, -1);
          fail("IllegalArgumentException");
-      } catch (IllegalArgumentException e)
+      }
+      catch (IllegalArgumentException e)
       {
       }
 
@@ -515,7 +513,8 @@ public class JMSQueueControlTest extends TestCase
       {
          control.changeMessagePriority(jmsMessageID, 10);
          fail("IllegalArgumentException");
-      } catch (IllegalArgumentException e)
+      }
+      catch (IllegalArgumentException e)
       {
       }
 
@@ -527,8 +526,7 @@ public class JMSQueueControlTest extends TestCase
       byte newPriority = 5;
       String jmsMessageID = randomString();
 
-      expect(coreQueue.list(isA(Filter.class))).andReturn(
-            new ArrayList<MessageReference>());
+      expect(coreQueue.list(isA(Filter.class))).andReturn(new ArrayList<MessageReference>());
 
       replayMockedAttributes();
 
@@ -537,7 +535,8 @@ public class JMSQueueControlTest extends TestCase
       {
          control.changeMessagePriority(jmsMessageID, newPriority);
          fail("IllegalArgumentException");
-      } catch (IllegalArgumentException e)
+      }
+      catch (IllegalArgumentException e)
       {
       }
 
@@ -583,8 +582,13 @@ public class JMSQueueControlTest extends TestCase
 
    private JMSQueueControl createControl() throws NotCompliantMBeanException
    {
-      return new JMSQueueControl(queue, coreQueue, jndiBinding, postOffice,
-            storageManager, queueSettingsRepository, counter);
+      return new JMSQueueControl(queue,
+                                 coreQueue,
+                                 jndiBinding,
+                                 postOffice,
+                                 storageManager,
+                                 queueSettingsRepository,
+                                 counter);
    }
 
    private void replayMockedAttributes()

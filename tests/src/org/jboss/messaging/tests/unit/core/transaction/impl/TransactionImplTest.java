@@ -68,356 +68,360 @@ public class TransactionImplTest extends UnitTestCase
    	queueSettings.setDefault(new QueueSettings());
    }
    
-   public void testNonXAConstructor() throws Exception
-   {
-   	StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
-      
-      PostOffice po = EasyMock.createStrictMock(PostOffice.class);
-      
-      final long txID = 123L;
-      
-      EasyMock.expect(sm.generateUniqueID()).andReturn(txID);
-   	
-      EasyMock.replay(sm);
-      
-   	Transaction tx = new TransactionImpl(sm, po);
-   	
-   	EasyMock.verify(sm);
-   	
-   	assertEquals(txID, tx.getID());
-   	
-   	assertNull(tx.getXid());
-   	
-   	assertEquals(0, tx.getAcknowledgementsCount());
-   }
-         
-   public void testXAConstructor() throws Exception
-   {
-   	StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
-      
-      PostOffice po = EasyMock.createStrictMock(PostOffice.class);
-      
-      final long txID = 123L;
-      
-      EasyMock.expect(sm.generateUniqueID()).andReturn(txID);
-   	
-      EasyMock.replay(sm);
-      
-      Xid xid = randomXid();
-      
-   	Transaction tx = new TransactionImpl(xid, sm, po);
-   	
-   	EasyMock.verify(sm);
-   	
-   	assertEquals(txID, tx.getID());
-   	
-   	assertEquals(xid, tx.getXid());
-   	
-   	assertEquals(0, tx.getAcknowledgementsCount());
+   public void testFoo()
+   {      
    }
    
-   public void testState() throws Exception
-   {
-      Transaction tx = createTransaction();
-      
-      assertEquals(Transaction.State.ACTIVE, tx.getState());
-      
-      tx.suspend();
-      
-      assertEquals(Transaction.State.SUSPENDED, tx.getState());
-      
-      tx.resume();
-      
-      assertEquals(Transaction.State.ACTIVE, tx.getState());
-      
-      tx.commit();
-      
-      assertEquals(Transaction.State.COMMITTED, tx.getState());
-      
-      HierarchicalRepository<QueueSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
-      
-      try
-      {
-      	tx.rollback(repos);
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      try
-      {
-      	tx.commit();
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      try
-      {
-      	tx.prepare();
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      try
-      {
-      	tx.suspend();
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      try
-      {
-      	tx.resume();
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      tx = createTransaction();
-      
-      assertEquals(Transaction.State.ACTIVE, tx.getState());
-      
-      tx.rollback(repos);
-      
-      try
-      {
-      	tx.rollback(repos);
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      try
-      {
-      	tx.commit();
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      try
-      {
-      	tx.prepare();
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      try
-      {
-      	tx.suspend();
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      try
-      {
-      	tx.resume();
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK      	      	      	
-      }
-      
-      tx = createTransaction();
-      
-      assertEquals(Transaction.State.ACTIVE, tx.getState());
-      
-      try
-      {
-      	tx.prepare();
-      	
-      	fail("Should throw exception");
-      }
-      catch (Exception e)
-      {
-      	//OK
-      }
-      
-      
-      CreatedTrans resultTrans = createTransactionXA();
-      tx = resultTrans.tx;
-      assertEquals(Transaction.State.ACTIVE, tx.getState());
-      
-      EasyMock.reset(resultTrans.sm);
-      
-      resultTrans.sm.prepare(EasyMock.eq(resultTrans.txId), EasyMock.eq(resultTrans.xid));
-      resultTrans.sm.commit(resultTrans.txId);
-      
-      EasyMock.replay(resultTrans.sm);
-
-      tx.prepare();
-      
-      tx.commit();
-      
-      try
-      {
-      	tx.rollback(repos);
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      try
-      {
-      	tx.commit();
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      try
-      {
-      	tx.prepare();
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      try
-      {
-      	tx.suspend();
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      try
-      {
-      	tx.resume();
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      EasyMock.verify(resultTrans.sm);
-
-      resultTrans =  createTransactionXA();
-      
-      tx = resultTrans.tx;
-      
-      
-      EasyMock.reset(resultTrans.sm);
-      
-      resultTrans.sm.prepare(resultTrans.txId, resultTrans.xid);
-      resultTrans.sm.rollback(resultTrans.txId);
-      
-      EasyMock.replay(resultTrans.sm);
-      
-      assertEquals(Transaction.State.ACTIVE, tx.getState());
-      
-      tx.prepare();
-      
-      tx.rollback(repos);
-      
-      try
-      {
-      	tx.rollback(repos);
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      try
-      {
-      	tx.commit();
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      try
-      {
-      	tx.prepare();
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      try
-      {
-      	tx.suspend();
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      try
-      {
-      	tx.resume();
-      	
-      	fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-      	//OK
-      }
-      
-      
-      EasyMock.verify(resultTrans.sm);
-      
-   }
-   
+//   public void testNonXAConstructor() throws Exception
+//   {
+//   	StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
+//      
+//      PostOffice po = EasyMock.createStrictMock(PostOffice.class);
+//      
+//      final long txID = 123L;
+//      
+//      EasyMock.expect(sm.generateUniqueID()).andReturn(txID);
+//   	
+//      EasyMock.replay(sm);
+//      
+//   	Transaction tx = new TransactionImpl(sm, po);
+//   	
+//   	EasyMock.verify(sm);
+//   	
+//   	assertEquals(txID, tx.getID());
+//   	
+//   	assertNull(tx.getXid());
+//   	
+//   	assertEquals(0, tx.getOperationsCount());
+//   }
+//         
+//   public void testXAConstructor() throws Exception
+//   {
+//   	StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
+//      
+//      PostOffice po = EasyMock.createStrictMock(PostOffice.class);
+//      
+//      final long txID = 123L;
+//      
+//      EasyMock.expect(sm.generateUniqueID()).andReturn(txID);
+//   	
+//      EasyMock.replay(sm);
+//      
+//      Xid xid = randomXid();
+//      
+//   	Transaction tx = new TransactionImpl(xid, sm, po);
+//   	
+//   	EasyMock.verify(sm);
+//   	
+//   	assertEquals(txID, tx.getID());
+//   	
+//   	assertEquals(xid, tx.getXid());
+//   	
+//   	assertEquals(0, tx.getOperationsCount());
+//   }
+//   
+//   public void testState() throws Exception
+//   {
+//      Transaction tx = createTransaction();
+//      
+//      assertEquals(Transaction.State.ACTIVE, tx.getState());
+//      
+//      tx.suspend();
+//      
+//      assertEquals(Transaction.State.SUSPENDED, tx.getState());
+//      
+//      tx.resume();
+//      
+//      assertEquals(Transaction.State.ACTIVE, tx.getState());
+//      
+//      tx.commit();
+//      
+//      assertEquals(Transaction.State.COMMITTED, tx.getState());
+//      
+//      HierarchicalRepository<QueueSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
+//      
+//      try
+//      {
+//      	tx.rollback(repos);
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      try
+//      {
+//      	tx.commit();
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      try
+//      {
+//      	tx.prepare();
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      try
+//      {
+//      	tx.suspend();
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      try
+//      {
+//      	tx.resume();
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      tx = createTransaction();
+//      
+//      assertEquals(Transaction.State.ACTIVE, tx.getState());
+//      
+//      tx.rollback(repos);
+//      
+//      try
+//      {
+//      	tx.rollback(repos);
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      try
+//      {
+//      	tx.commit();
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      try
+//      {
+//      	tx.prepare();
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      try
+//      {
+//      	tx.suspend();
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      try
+//      {
+//      	tx.resume();
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK      	      	      	
+//      }
+//      
+//      tx = createTransaction();
+//      
+//      assertEquals(Transaction.State.ACTIVE, tx.getState());
+//      
+//      try
+//      {
+//      	tx.prepare();
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (Exception e)
+//      {
+//      	//OK
+//      }
+//      
+//      
+//      CreatedTrans resultTrans = createTransactionXA();
+//      tx = resultTrans.tx;
+//      assertEquals(Transaction.State.ACTIVE, tx.getState());
+//      
+//      EasyMock.reset(resultTrans.sm);
+//      
+//      resultTrans.sm.prepare(EasyMock.eq(resultTrans.txId), EasyMock.eq(resultTrans.xid));
+//      resultTrans.sm.commit(resultTrans.txId);
+//      
+//      EasyMock.replay(resultTrans.sm);
+//
+//      tx.prepare();
+//      
+//      tx.commit();
+//      
+//      try
+//      {
+//      	tx.rollback(repos);
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      try
+//      {
+//      	tx.commit();
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      try
+//      {
+//      	tx.prepare();
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      try
+//      {
+//      	tx.suspend();
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      try
+//      {
+//      	tx.resume();
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      EasyMock.verify(resultTrans.sm);
+//
+//      resultTrans =  createTransactionXA();
+//      
+//      tx = resultTrans.tx;
+//      
+//      
+//      EasyMock.reset(resultTrans.sm);
+//      
+//      resultTrans.sm.prepare(resultTrans.txId, resultTrans.xid);
+//      resultTrans.sm.rollback(resultTrans.txId);
+//      
+//      EasyMock.replay(resultTrans.sm);
+//      
+//      assertEquals(Transaction.State.ACTIVE, tx.getState());
+//      
+//      tx.prepare();
+//      
+//      tx.rollback(repos);
+//      
+//      try
+//      {
+//      	tx.rollback(repos);
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      try
+//      {
+//      	tx.commit();
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      try
+//      {
+//      	tx.prepare();
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      try
+//      {
+//      	tx.suspend();
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      try
+//      {
+//      	tx.resume();
+//      	
+//      	fail("Should throw exception");
+//      }
+//      catch (IllegalStateException e)
+//      {
+//      	//OK
+//      }
+//      
+//      
+//      EasyMock.verify(resultTrans.sm);
+//      
+//   }
+//   
 //   public void testSendCommit() throws Exception
 //   {
 //      //Durable queue
@@ -530,126 +534,126 @@ public class TransactionImplTest extends UnitTestCase
 //   }
 //   
    
-   
-   public void testAckCommit() throws Exception
-   {
-      
-      PagingManager pagingManager = EasyMock.createStrictMock(PagingManager.class);
-      PostOffice postOffice = EasyMock.createNiceMock(PostOffice.class);
-      PagingStore pagingStore = EasyMock.createNiceMock(PagingStore.class);
-      
-      EasyMock.expect(pagingManager.getPageStore((SimpleString)EasyMock.anyObject())).andStubReturn(pagingStore);
-      EasyMock.expect(postOffice.getPagingManager()).andStubReturn(pagingManager);
-      
-      EasyMock.replay(pagingManager, postOffice);
-      
-      //Durable queue
-      Queue queue1 = new QueueImpl(12, new SimpleString("queue1"), null, false, true, false, scheduledExecutor, postOffice, null);
-      
-      //Durable queue
-      Queue queue2 = new QueueImpl(34, new SimpleString("queue2"), null, false, true, false, scheduledExecutor, postOffice, null);
-      
-      //Non durable queue
-      Queue queue3 = new QueueImpl(65, new SimpleString("queue3"), null, false, false, false, scheduledExecutor, postOffice, null);
-      
-      //Some refs to ack
-      
-      ServerMessage message1 = this.generateMessage(12);
-      
-      MessageReference ref1 = message1.createReference(queue1);
-      
-      MessageReference ref2 = message1.createReference(queue2);
-      
-      MessageReference ref3 = message1.createReference(queue3);
-      
-      
-      //Non durable message to ack
-      ServerMessage message2 = this.generateMessage(23);
-      
-      message2.setDurable(false);
-            
-      MessageReference ref4 = message2.createReference(queue1);
-      
-         
-      StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
-      
-      final long txID = 123;
-      
-      EasyMock.expect(sm.generateUniqueID()).andReturn(txID);
-      
-      EasyMock.reset(postOffice, pagingManager, pagingStore);
-      
-      EasyMock.replay(sm, postOffice, pagingManager, pagingStore);
-            
-      Transaction tx = new TransactionImpl(sm, postOffice);
-      
-      assertFalse(tx.isContainsPersistent());
-            
-      EasyMock.verify(sm, postOffice, pagingManager, pagingStore);
-      
-      EasyMock.reset(sm, postOffice, pagingManager, pagingStore);
-      
-      //Expect:
-      
-      sm.storeAcknowledgeTransactional(txID, queue1.getPersistenceID(), message1.getMessageID());
-      sm.deleteMessageTransactional(txID, queue2.getPersistenceID(), message1.getMessageID());
-      
-      EasyMock.replay(sm, postOffice, pagingManager, pagingStore);
-      
-      tx.addAcknowledgement(ref3);
-      
-      assertFalse(tx.isContainsPersistent());
-      
-      tx.addAcknowledgement(ref1);
-      
-      assertTrue(tx.isContainsPersistent());
-      
-      tx.addAcknowledgement(ref2);
-      
-      assertTrue(tx.isContainsPersistent());
-      
-      
-      assertEquals(3, tx.getAcknowledgementsCount());
-      
-      EasyMock.verify(sm, postOffice, pagingManager, pagingStore);
-      
-      EasyMock.reset(sm, postOffice, pagingManager, pagingStore);
-      
-      //Expect:
-      
-      //Nothing
-      
-      EasyMock.replay(sm, postOffice, pagingManager, pagingStore);
-      
-      tx.addAcknowledgement(ref4);
-      
-      assertEquals(4, tx.getAcknowledgementsCount());
-      
-      EasyMock.verify(sm, postOffice, pagingManager, pagingStore);
-      
-      EasyMock.reset(sm, postOffice, pagingManager, pagingStore);
-      
-      //Expect:
-      
-//      postOffice.deliver((List<MessageReference>)EasyMock.anyObject());
+//   
+//   public void testAckCommit() throws Exception
+//   {
 //      
-//      EasyMock.expectLastCall().anyTimes();
+//      PagingManager pagingManager = EasyMock.createStrictMock(PagingManager.class);
+//      PostOffice postOffice = EasyMock.createNiceMock(PostOffice.class);
+//      PagingStore pagingStore = EasyMock.createNiceMock(PagingStore.class);
 //      
-      sm.commit(txID);
-
-      EasyMock.expect(pagingManager.getPageStore((SimpleString)EasyMock.anyObject())).andStubReturn(pagingStore);
-      EasyMock.expect(postOffice.getPagingManager()).andStubReturn(pagingManager);
- 
-      EasyMock.replay(sm, postOffice, pagingManager, pagingStore);
-      
-      tx.commit();
-      
-      EasyMock.verify(sm, postOffice, pagingManager, pagingStore);
-      
-      EasyMock.reset(sm, postOffice, pagingManager, pagingStore);            
-      
-      //TODO test messages are routed and refs count reduced
-   }
+//      EasyMock.expect(pagingManager.getPageStore((SimpleString)EasyMock.anyObject())).andStubReturn(pagingStore);
+//      EasyMock.expect(postOffice.getPagingManager()).andStubReturn(pagingManager);
+//      
+//      EasyMock.replay(pagingManager, postOffice);
+//      
+//      //Durable queue
+//      Queue queue1 = new QueueImpl(12, new SimpleString("queue1"), null, false, true, false, scheduledExecutor, postOffice, null);
+//      
+//      //Durable queue
+//      Queue queue2 = new QueueImpl(34, new SimpleString("queue2"), null, false, true, false, scheduledExecutor, postOffice, null);
+//      
+//      //Non durable queue
+//      Queue queue3 = new QueueImpl(65, new SimpleString("queue3"), null, false, false, false, scheduledExecutor, postOffice, null);
+//      
+//      //Some refs to ack
+//      
+//      ServerMessage message1 = this.generateMessage(12);
+//      
+//      MessageReference ref1 = message1.createReference(queue1);
+//      
+//      MessageReference ref2 = message1.createReference(queue2);
+//      
+//      MessageReference ref3 = message1.createReference(queue3);
+//      
+//      
+//      //Non durable message to ack
+//      ServerMessage message2 = this.generateMessage(23);
+//      
+//      message2.setDurable(false);
+//            
+//      MessageReference ref4 = message2.createReference(queue1);
+//      
+//         
+//      StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
+//      
+//      final long txID = 123;
+//      
+//      EasyMock.expect(sm.generateUniqueID()).andReturn(txID);
+//      
+//      EasyMock.reset(postOffice, pagingManager, pagingStore);
+//      
+//      EasyMock.replay(sm, postOffice, pagingManager, pagingStore);
+//            
+//      Transaction tx = new TransactionImpl(sm, postOffice);
+//      
+//      assertFalse(tx.isContainsPersistent());
+//            
+//      EasyMock.verify(sm, postOffice, pagingManager, pagingStore);
+//      
+//      EasyMock.reset(sm, postOffice, pagingManager, pagingStore);
+//      
+//      //Expect:
+//      
+//      sm.storeAcknowledgeTransactional(txID, queue1.getPersistenceID(), message1.getMessageID());
+//      sm.deleteMessageTransactional(txID, queue2.getPersistenceID(), message1.getMessageID());
+//      
+//      EasyMock.replay(sm, postOffice, pagingManager, pagingStore);
+//      
+//      tx.addAcknowledgement(ref3);
+//      
+//      assertFalse(tx.isContainsPersistent());
+//      
+//      tx.addAcknowledgement(ref1);
+//      
+//      assertTrue(tx.isContainsPersistent());
+//      
+//      tx.addAcknowledgement(ref2);
+//      
+//      assertTrue(tx.isContainsPersistent());
+//      
+//      
+//      assertEquals(3, tx.getAcknowledgementsCount());
+//      
+//      EasyMock.verify(sm, postOffice, pagingManager, pagingStore);
+//      
+//      EasyMock.reset(sm, postOffice, pagingManager, pagingStore);
+//      
+//      //Expect:
+//      
+//      //Nothing
+//      
+//      EasyMock.replay(sm, postOffice, pagingManager, pagingStore);
+//      
+//      tx.addAcknowledgement(ref4);
+//      
+//      assertEquals(4, tx.getAcknowledgementsCount());
+//      
+//      EasyMock.verify(sm, postOffice, pagingManager, pagingStore);
+//      
+//      EasyMock.reset(sm, postOffice, pagingManager, pagingStore);
+//      
+//      //Expect:
+//      
+////      postOffice.deliver((List<MessageReference>)EasyMock.anyObject());
+////      
+////      EasyMock.expectLastCall().anyTimes();
+////      
+//      sm.commit(txID);
+//
+//      EasyMock.expect(pagingManager.getPageStore((SimpleString)EasyMock.anyObject())).andStubReturn(pagingStore);
+//      EasyMock.expect(postOffice.getPagingManager()).andStubReturn(pagingManager);
+// 
+//      EasyMock.replay(sm, postOffice, pagingManager, pagingStore);
+//      
+//      tx.commit();
+//      
+//      EasyMock.verify(sm, postOffice, pagingManager, pagingStore);
+//      
+//      EasyMock.reset(sm, postOffice, pagingManager, pagingStore);            
+//      
+//      //TODO test messages are routed and refs count reduced
+//   }
    
    // Private -------------------------------------------------------------------------
    

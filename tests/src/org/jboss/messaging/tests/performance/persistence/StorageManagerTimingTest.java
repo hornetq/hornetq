@@ -133,7 +133,7 @@ public class StorageManagerTimingTest extends UnitTestCase
 
       HashMap<Long, Queue> queues = new HashMap<Long, Queue>();
 
-      journal.loadMessageJournal(office, queues, null, null);
+      journal.loadMessageJournal(office, null, null, queues, null, null);
 
       final byte[] bytes = new byte[900];
 

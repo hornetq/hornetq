@@ -102,6 +102,10 @@ public class FakePostOffice implements PostOffice
    public void route(ServerMessage message, Transaction tx) throws Exception
    {
    }
+   
+   public void route(ServerMessage message) throws Exception
+   {
+   }
 
    public boolean addDestination(SimpleString address, boolean temporary) throws Exception
    {

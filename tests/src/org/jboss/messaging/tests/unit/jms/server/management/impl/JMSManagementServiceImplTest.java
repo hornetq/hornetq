@@ -129,6 +129,7 @@ public class JMSManagementServiceImplTest extends TestCase
       JBossTopic topic = new JBossTopic(name);
       PostOffice postOffice = createMock(PostOffice.class);
       StorageManager storageManager = createMock(StorageManager.class);
+      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
 
       ManagementService managementService = createMock(ManagementService.class);
       managementService.registerInJMX(eq(objectName), isA(StandardMBean.class));
@@ -137,7 +138,7 @@ public class JMSManagementServiceImplTest extends TestCase
       replay(managementService, postOffice, storageManager);
 
       JMSManagementService service = new JMSManagementServiceImpl(managementService);
-      service.registerTopic(topic, jndiBinding, postOffice, storageManager);
+      service.registerTopic(topic, jndiBinding, postOffice, storageManager, queueSettingsRepository);
       
       verify(managementService, postOffice, storageManager);
    }

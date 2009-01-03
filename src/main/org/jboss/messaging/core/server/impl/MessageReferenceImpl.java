@@ -26,11 +26,15 @@ import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ACTUAL_EXPIR
 import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIGIN_QUEUE;
 import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIG_MESSAGE_ID;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
@@ -39,6 +43,8 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.TransactionOperation;
+import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.DataConstants;
 import org.jboss.messaging.util.SimpleString;
@@ -64,9 +70,9 @@ public class MessageReferenceImpl implements MessageReference
    private ServerMessage message;
 
    private Queue queue;
-   
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
 
    public MessageReferenceImpl(final MessageReferenceImpl other, final Queue queue)
@@ -95,14 +101,15 @@ public class MessageReferenceImpl implements MessageReference
 
    public int getMemoryEstimate()
    {
-      // from few tests I have done, deliveryCount and scheduledDelivery will use  two longs (because of alignment)
-      // and each of the references (messages and queue) will use the equivalent to two longs (because of long pointers).
+      // from few tests I have done, deliveryCount and scheduledDelivery will use two longs (because of alignment)
+      // and each of the references (messages and queue) will use the equivalent to two longs (because of long
+      // pointers).
       // Anyway.. this is just an estimate
-      
-      //TODO - doesn't the object itself have an overhead? - I thought was usually one Long per Object?
+
+      // TODO - doesn't the object itself have an overhead? - I thought was usually one Long per Object?
       return DataConstants.SIZE_LONG * 4;
    }
-   
+
    public int getDeliveryCount()
    {
       return deliveryCount;
@@ -138,21 +145,23 @@ public class MessageReferenceImpl implements MessageReference
       return queue;
    }
 
-   public boolean cancel(final StorageManager storageManager,
-                         final PostOffice postOffice,
-                         final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   private boolean cancel(final StorageManager storageManager,
+                          final PostOffice postOffice,
+                          final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       if (message.isDurable() && queue.isDurable())
-      {
+      {         
          storageManager.updateDeliveryCount(this);
       }
 
       QueueSettings queueSettings = queueSettingsRepository.getMatch(queue.getName().toString());
+
       int maxDeliveries = queueSettings.getMaxDeliveryAttempts();
 
       if (maxDeliveries > 0 && deliveryCount >= maxDeliveries)
       {
          log.warn("Message has reached maximum delivery attempts, sending it to Dead Letter Address");
+
          sendToDeadLetterAddress(storageManager, postOffice, queueSettingsRepository);
 
          return false;
@@ -167,13 +176,14 @@ public class MessageReferenceImpl implements MessageReference
 
             storageManager.updateScheduledDeliveryTime(this);
          }
+
          queue.referenceCancelled();
 
          return true;
       }
    }
 
-   public void sendToDeadLetterAddress(final StorageManager persistenceManager,
+   public void sendToDeadLetterAddress(final StorageManager storageManager,
                                        final PostOffice postOffice,
                                        final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
@@ -182,7 +192,7 @@ public class MessageReferenceImpl implements MessageReference
       if (deadLetterAddress != null)
       {
          Bindings bindingList = postOffice.getBindingsForAddress(deadLetterAddress);
-         
+
          if (bindingList.getBindings().isEmpty())
          {
             log.warn("Message has exceeded max delivery attempts. No bindings for Dead Letter Address " + deadLetterAddress +
@@ -190,7 +200,7 @@ public class MessageReferenceImpl implements MessageReference
          }
          else
          {
-            move(deadLetterAddress, persistenceManager, postOffice, false);
+            move(deadLetterAddress, storageManager, postOffice, queueSettingsRepository, false);
          }
       }
       else
@@ -198,13 +208,15 @@ public class MessageReferenceImpl implements MessageReference
          log.warn("Message has exceeded max delivery attempts. No Dead Letter Address configured for queue " + queue.getName() +
                   " so dropping it");
 
-         Transaction tx = new TransactionImpl(persistenceManager, postOffice);
-         tx.addAcknowledgement(this);
+         Transaction tx = new TransactionImpl(storageManager, postOffice);
+
+         acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
+
          tx.commit();
       }
    }
 
-   public void expire(final StorageManager persistenceManager,
+   public void expire(final StorageManager storageManager,
                       final PostOffice postOffice,
                       final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
@@ -213,27 +225,29 @@ public class MessageReferenceImpl implements MessageReference
       if (expiryAddress != null)
       {
          Bindings bindingList = postOffice.getBindingsForAddress(expiryAddress);
-         
+
          if (bindingList.getBindings().isEmpty())
          {
             log.warn("Message has expired. No bindings for Expiry Address " + expiryAddress + " so dropping it");
          }
          else
          {
-            move(expiryAddress, persistenceManager, postOffice, true);
+            move(expiryAddress, storageManager, postOffice, queueSettingsRepository, true);
          }
       }
       else
       {
          log.warn("Message has expired. No expiry queue configured for queue " + queue.getName() + " so dropping it");
 
-         Transaction tx = new TransactionImpl(persistenceManager, postOffice);
-         tx.addAcknowledgement(this);
+         Transaction tx = new TransactionImpl(storageManager, postOffice);
+
+         acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
+
          tx.commit();
       }
 
    }
-   
+
    public void expire(final Transaction tx,
                       final StorageManager storageManager,
                       final PostOffice postOffice,
@@ -244,38 +258,105 @@ public class MessageReferenceImpl implements MessageReference
       if (expiryAddress != null)
       {
          Bindings bindingList = postOffice.getBindingsForAddress(expiryAddress);
-         
+
          if (bindingList.getBindings().isEmpty())
          {
             log.warn("Message has expired. No bindings for Expiry Address " + expiryAddress + " so dropping it");
          }
          else
          {
-            move(expiryAddress, tx, storageManager, postOffice, true);
+            move(expiryAddress, tx, storageManager, postOffice, queueSettingsRepository, true);
          }
       }
       else
       {
          log.warn("Message has expired. No expiry queue configured for queue " + queue.getName() + " so dropping it");
 
-         tx.addAcknowledgement(this);
+         acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
       }
    }
 
-   public void move(final SimpleString toAddress, final StorageManager persistenceManager, final PostOffice postOffice) throws Exception
+   public void move(final SimpleString toAddress,
+                    final StorageManager storageManager,
+                    final PostOffice postOffice,
+                    final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
-      move(toAddress, persistenceManager, postOffice, false);
+      move(toAddress, storageManager, postOffice, queueSettingsRepository, false);
    }
-   
-   public void move(final SimpleString toAddress, final Transaction tx, final StorageManager persistenceManager, final PostOffice postOffice, final boolean expiry) throws Exception
+
+   public void move(final SimpleString toAddress,
+                    final Transaction tx,
+                    final StorageManager storageManager,
+                    final PostOffice postOffice,
+                    final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                    final boolean expiry) throws Exception
    {
-      ServerMessage copyMessage = makeCopy(expiry, persistenceManager);
+      ServerMessage copyMessage = makeCopy(expiry, storageManager);
 
       copyMessage.setDestination(toAddress);
 
       postOffice.route(copyMessage, tx);
 
-      tx.addAcknowledgement(this);
+      acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
+   }
+
+   public void acknowledge(final Transaction tx,
+                           final StorageManager storageManager,
+                           final PostOffice postOffice,
+                           final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   {
+      if (message.isDurable() && queue.isDurable())
+      {
+         // Need to lock on the message to prevent a race where the ack and
+         // delete
+         // records get recorded in the log in the wrong order
+
+         // TODO For now - we just use synchronized - can probably do better
+         // locking
+
+         synchronized (message)
+         {
+            int count = message.decrementDurableRefCount();
+            
+            if (count == 0)
+            {
+               storageManager.deleteMessageTransactional(tx.getID(), queue.getPersistenceID(), message.getMessageID());
+            }
+            else
+            {
+               storageManager.storeAcknowledgeTransactional(tx.getID(),
+                                                            queue.getPersistenceID(),
+                                                            message.getMessageID());
+            }
+
+            tx.setContainsPersistent(true);
+         }
+      }
+
+      tx.addOperation(new AcknowledgeOperation(storageManager, postOffice, queueSettingsRepository));
+   }
+
+   public void cancel(final Transaction tx,
+                      final StorageManager storageManager,
+                      final PostOffice postOffice,
+                      final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   { 
+      message.decrementDurableRefCount();
+      
+      tx.addOperation(new AcknowledgeOperation(storageManager, postOffice, queueSettingsRepository));
+   }
+
+   public void reacknowledge(final Transaction tx,
+                             final StorageManager storageManager,
+                             final PostOffice postOffice,
+                             final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   {
+      if (message.isDurable() && queue.isDurable())
+      {
+         tx.setContainsPersistent(true);
+      }
+
+      tx.addOperation(new AcknowledgeOperation(storageManager, postOffice, queueSettingsRepository));
    }
 
    // Public --------------------------------------------------------
@@ -294,22 +375,21 @@ public class MessageReferenceImpl implements MessageReference
    // Private -------------------------------------------------------
 
    private void move(final SimpleString address,
-                     final StorageManager persistenceManager,
+                     final StorageManager storageManager,
                      final PostOffice postOffice,
+                     final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                      final boolean expiry) throws Exception
    {
-      Transaction tx = new TransactionImpl(persistenceManager, postOffice);
+      Transaction tx = new TransactionImpl(storageManager, postOffice);
 
       // FIXME: JBMESSAGING-1468
-      ServerMessage copyMessage = makeCopy(expiry, persistenceManager);
+      ServerMessage copyMessage = makeCopy(expiry, storageManager);
 
       copyMessage.setDestination(address);
 
-      //tx.addMessage(copyMessage);
-      
       postOffice.route(copyMessage, tx);
 
-      tx.addAcknowledgement(this);
+      acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
 
       tx.commit();
    }
@@ -351,5 +431,102 @@ public class MessageReferenceImpl implements MessageReference
    }
 
    // Inner classes -------------------------------------------------
+
+   private class AcknowledgeOperation implements TransactionOperation
+   {
+      final StorageManager storageManager;
+
+      final PostOffice postOffice;
+
+      final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+
+      AcknowledgeOperation(final StorageManager storageManager,
+                           final PostOffice postOffice,
+                           final HierarchicalRepository<QueueSettings> queueSettingsRepository)
+      {
+         this.storageManager = storageManager;
+
+         this.postOffice = postOffice;
+
+         this.queueSettingsRepository = queueSettingsRepository;
+      }
+
+      public void afterCommit(final Transaction tx) throws Exception
+      {
+      }
+
+      public void afterPrepare(final Transaction tx) throws Exception
+      {
+      }
+
+      public void afterRollback(final Transaction tx) throws Exception
+      {         
+         if (message.isDurable() && queue.isDurable())
+         {
+            message.incrementDurableRefCount();
+         }
+
+         if (cancel(storageManager, postOffice, queueSettingsRepository))
+         {
+            Map<Queue, LinkedList<MessageReference>> queueMap = (Map<Queue, LinkedList<MessageReference>>)tx.getProperty(TransactionPropertyIndexes.QUEUE_MAP_INDEX);
+
+            if (queueMap == null)
+            {
+               queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
+
+               tx.putProperty(TransactionPropertyIndexes.QUEUE_MAP_INDEX, queueMap);
+            }
+
+            Queue queue = MessageReferenceImpl.this.getQueue();
+
+            LinkedList<MessageReference> toCancel = queueMap.get(queue);
+
+            if (toCancel == null)
+            {
+               toCancel = new LinkedList<MessageReference>();
+
+               queueMap.put(queue, toCancel);
+            }
+
+            toCancel.add(MessageReferenceImpl.this);
+
+            AtomicInteger rollbackCount = (AtomicInteger)tx.getProperty(TransactionPropertyIndexes.ROLLBACK_COUNTER_INDEX);
+
+            if (rollbackCount.decrementAndGet() == 0)
+            {
+               for (Map.Entry<Queue, LinkedList<MessageReference>> entry : queueMap.entrySet())
+               {
+                  LinkedList<MessageReference> refs = entry.getValue();
+                 
+                  entry.getKey().addListFirst(refs);
+               }
+            }
+         }
+      }
+
+      public void beforeCommit(final Transaction tx) throws Exception
+      {
+         queue.referenceAcknowledged(MessageReferenceImpl.this);
+      }
+
+      public void beforePrepare(final Transaction tx) throws Exception
+      {
+      }
+
+      public void beforeRollback(final Transaction tx) throws Exception
+      {
+         AtomicInteger rollbackCount = (AtomicInteger)tx.getProperty(TransactionPropertyIndexes.ROLLBACK_COUNTER_INDEX);
+
+         if (rollbackCount == null)
+         {
+            rollbackCount = new AtomicInteger(0);
+
+            tx.putProperty(TransactionPropertyIndexes.ROLLBACK_COUNTER_INDEX, rollbackCount);
+         }
+
+         rollbackCount.incrementAndGet();
+      }
+
+   }
 
 }

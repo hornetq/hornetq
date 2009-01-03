@@ -329,7 +329,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
          {
             Queue queue = (Queue)binding.getBindable();
    
-            queue.deleteAllReferences(storageManager);
+            queue.deleteAllReferences(storageManager, postOffice, queueSettingsRepository);
          }
 
          postOffice.removeBinding(sName);
@@ -451,12 +451,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
          if (XidImpl.toBase64String(xid).equals(transactionAsBase64))
          {
             Transaction transaction = resourceManager.removeTransaction(xid);
-            List<MessageReference> rolledBack = transaction.rollback(queueSettingsRepository);
-
-            ServerSessionImpl.moveReferencesBackToHeadOfQueues(rolledBack,
-                                                               postOffice,
-                                                               storageManager,
-                                                               queueSettingsRepository);
+            transaction.rollback();
             return true;
          }
       }

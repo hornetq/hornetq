@@ -227,8 +227,7 @@ public class ForwarderImpl implements Forwarder, FailureListener
    // Consumer implementation ---------------------------------------
 
    public HandleStatus handle(final MessageReference reference) throws Exception
-   {
-      log.info("Got message, busy: " + busy);
+   {      
       if (busy)
       {
          return HandleStatus.BUSY;
@@ -349,8 +348,8 @@ public class ForwarderImpl implements Forwarder, FailureListener
                break;
             }
 
-            tx.addAcknowledgement(ref);
-
+            ref.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
+            
             ServerMessage message = ref.getMessage();
 
             if (transformer != null)
@@ -381,7 +380,7 @@ public class ForwarderImpl implements Forwarder, FailureListener
 
          try
          {
-            tx.rollback(queueSettingsRepository);
+            tx.rollback();
          }
          catch (Exception e2)
          {

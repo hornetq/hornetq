@@ -36,6 +36,8 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
@@ -63,13 +65,13 @@ public interface StorageManager extends MessagingComponent
    void updateDeliveryCount(MessageReference ref) throws Exception;
 
    void updateScheduledDeliveryTime(MessageReference ref) throws Exception;
-     
+
    void storeDuplicateID(SimpleString address, SimpleString duplID, long recordID) throws Exception;
 
    void updateDuplicateID(SimpleString address, SimpleString duplID, long recordID) throws Exception;
-   
+
    void deleteDuplicateID(long recordID) throws Exception;
-     
+
    void storeMessageTransactional(long txID, ServerMessage message) throws Exception;
 
    void storeAcknowledgeTransactional(long txID, long queueID, long messageID) throws Exception;
@@ -81,7 +83,7 @@ public interface StorageManager extends MessagingComponent
    void storeDuplicateIDTransactional(long txID, SimpleString address, SimpleString duplID, long recordID) throws Exception;
 
    void updateDuplicateIDTransactional(long txID, SimpleString address, SimpleString duplID, long recordID) throws Exception;
-   
+
    void deleteDuplicateIDTransactional(long txID, long recordID) throws Exception;
 
    LargeServerMessage createLargeMessage();
@@ -97,6 +99,8 @@ public interface StorageManager extends MessagingComponent
    void deletePageTransactional(long txID, long recordID) throws Exception;
 
    void loadMessageJournal(PostOffice postOffice,
+                           StorageManager storageManager,
+                           HierarchicalRepository<QueueSettings> queueSettingsRepository,
                            Map<Long, Queue> queues,
                            ResourceManager resourceManager,
                            Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap) throws Exception;

@@ -313,28 +313,28 @@ public class QueueImpl implements Queue
          this.first = first;
       }
 
-      public void afterCommit() throws Exception
+      public void afterCommit(final Transaction tx) throws Exception
       {
          addLast(ref);
       }
 
-      public void afterPrepare() throws Exception
+      public void afterPrepare(final Transaction tx) throws Exception
       {
       }
 
-      public void afterRollback() throws Exception
+      public void afterRollback(final Transaction tx) throws Exception
       {
       }
 
-      public void beforeCommit() throws Exception
+      public void beforeCommit(final Transaction tx) throws Exception
       {         
       }
 
-      public void beforePrepare() throws Exception
+      public void beforePrepare(final Transaction tx) throws Exception
       {
       }
 
-      public void beforeRollback() throws Exception
+      public void beforeRollback(final Transaction tx) throws Exception
       {
          ServerMessage msg = ref.getMessage();
          
@@ -539,7 +539,7 @@ public class QueueImpl implements Queue
    }
 
    public void setPersistenceID(final long id)
-   {
+   {      
       this.persistenceID = id;
    }
 
@@ -598,12 +598,16 @@ public class QueueImpl implements Queue
       return messagesAdded.get();
    }
 
-   public synchronized int deleteAllReferences(final StorageManager storageManager) throws Exception
-   {
-      return deleteMatchingReferences(null, storageManager);
+   public synchronized int deleteAllReferences(final StorageManager storageManager,
+                                               final PostOffice postOffice,
+                                               final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   {      
+      return deleteMatchingReferences(null, storageManager, postOffice, queueSettingsRepository);
    }
 
-   public synchronized int deleteMatchingReferences(final Filter filter, final StorageManager storageManager) throws Exception
+   public synchronized int deleteMatchingReferences(final Filter filter, final StorageManager storageManager,
+                                                    final PostOffice postOffice,
+                                                    final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       int count = 0;
 
@@ -618,7 +622,7 @@ public class QueueImpl implements Queue
          if (filter == null || filter.match(ref.getMessage()))
          {
             deliveringCount.incrementAndGet();
-            tx.addAcknowledgement(ref);
+            ref.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
             iter.remove();
             count++;
          }
@@ -630,7 +634,7 @@ public class QueueImpl implements Queue
          if (filter == null || filter.match(messageReference.getMessage()))
          {
             deliveringCount.incrementAndGet();
-            tx.addAcknowledgement(messageReference);
+            messageReference.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
             count++;
          }
       }
@@ -640,7 +644,9 @@ public class QueueImpl implements Queue
       return count;
    }
 
-   public synchronized boolean deleteReference(final long messageID, final StorageManager storageManager) throws Exception
+   public synchronized boolean deleteReference(final long messageID, final StorageManager storageManager,
+                                               final PostOffice postOffice,
+                                               final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       boolean deleted = false;
 
@@ -654,7 +660,7 @@ public class QueueImpl implements Queue
          if (ref.getMessage().getMessageID() == messageID)
          {
             deliveringCount.incrementAndGet();
-            tx.addAcknowledgement(ref);
+            ref.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
             iter.remove();
             deleted = true;
             break;
@@ -754,7 +760,8 @@ public class QueueImpl implements Queue
    public boolean moveMessage(final long messageID,
                               final SimpleString toAddress,
                               final StorageManager storageManager,
-                              final PostOffice postOffice) throws Exception
+                              final PostOffice postOffice,
+                              final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -764,7 +771,7 @@ public class QueueImpl implements Queue
          if (ref.getMessage().getMessageID() == messageID)
          {
             deliveringCount.incrementAndGet();
-            ref.move(toAddress, storageManager, postOffice);
+            ref.move(toAddress, storageManager, postOffice, queueSettingsRepository);
             iter.remove();
             return true;
          }
@@ -775,7 +782,8 @@ public class QueueImpl implements Queue
    public synchronized int moveMessages(final Filter filter,
                                         final SimpleString toAddress,
                                         final StorageManager storageManager,
-                                        final PostOffice postOffice) throws Exception
+                                        final PostOffice postOffice,
+                                        final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       Transaction tx = new TransactionImpl(storageManager, postOffice);
 
@@ -788,7 +796,7 @@ public class QueueImpl implements Queue
          if (filter == null || filter.match(ref.getMessage()))
          {
             deliveringCount.incrementAndGet();
-            ref.move(toAddress, tx, storageManager, postOffice, false);
+            ref.move(toAddress, tx, storageManager, postOffice, queueSettingsRepository, false);
             iter.remove();
             count++;
          }
@@ -800,8 +808,8 @@ public class QueueImpl implements Queue
          if (filter == null || filter.match(ref.getMessage()))
          {
             deliveringCount.incrementAndGet();
-            ref.move(toAddress, tx, storageManager, postOffice, false);
-            tx.addAcknowledgement(ref);
+            ref.move(toAddress, tx, storageManager, postOffice, queueSettingsRepository, false);
+            ref.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
             count++;
          }
       }
@@ -829,7 +837,7 @@ public class QueueImpl implements Queue
 
             // FIXME - why deleting the reference?? This will delete it from storage!!
 
-            deleteReference(messageID, storageManager);
+            deleteReference(messageID, storageManager, postOffice, queueSettingsRepository);
             addLast(ref);
             return true;
          }

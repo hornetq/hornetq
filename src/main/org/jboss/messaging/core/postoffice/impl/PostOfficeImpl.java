@@ -550,7 +550,7 @@ public class PostOfficeImpl implements PostOffice
 
       Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<SimpleString, Long>>>();
 
-      storageManager.loadMessageJournal(this, queues, resourceManager, duplicateIDMap);
+      storageManager.loadMessageJournal(this, storageManager, queueSettingsRepository, queues, resourceManager, duplicateIDMap);
 
       for (Map.Entry<SimpleString, List<Pair<SimpleString, Long>>> entry : duplicateIDMap.entrySet())
       {

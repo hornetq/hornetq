@@ -47,7 +47,9 @@ public interface Transaction
 
    void commit() throws Exception;
 
-   List<MessageReference> rollback(HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+   //List<MessageReference> rollback(HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+   
+   void rollback() throws Exception;
 
    void addDuplicateID(SimpleString address, SimpleString duplID, long recordID) throws Exception;
 
@@ -57,15 +59,17 @@ public interface Transaction
    
    void addPagingMessage(ServerMessage message);
 
-   void addAcknowledgement(MessageReference acknowledgement) throws Exception;
+  // void addAcknowledgement(MessageReference acknowledgement) throws Exception;
    
-   void addAckTempUntilNextRefactoring(MessageReference ref);
+  // void addAckTempUntilNextRefactoring(MessageReference ref);
    
    boolean isDepage();
    
    void setContainsPersistent(boolean containsPersistent);
 
-   int getAcknowledgementsCount();
+  // int getAcknowledgementsCount();
+   
+   int getOperationsCount();
 
    long getID();
 
@@ -85,13 +89,17 @@ public interface Transaction
 
    void setPageTransaction(PageTransactionInfo pageTransaction);
 
-   List<MessageReference> timeout() throws Exception;
+//   List<MessageReference> timeout() throws Exception;
 
    long getCreateTime();
 
    void addOperation(TransactionOperation sync);
 
    void removeOperation(TransactionOperation sync);
+   
+   void putProperty(int index, Object property);
+   
+   Object getProperty(int index);
 
    static enum State
    {

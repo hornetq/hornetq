@@ -172,7 +172,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       {
          addToDestinationBindings(topicName, jndiBinding);
       }
-      managementService.registerTopic(jBossTopic, jndiBinding, postOffice, storageManager);
+      managementService.registerTopic(jBossTopic, jndiBinding, postOffice, storageManager, queueSettingsRepository);
       return added;
    }
 

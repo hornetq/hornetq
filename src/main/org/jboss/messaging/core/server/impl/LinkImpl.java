@@ -25,6 +25,8 @@ package org.jboss.messaging.core.server.impl;
 import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_DUPLICATE_DETECTION_ID;
 import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIGIN_QUEUE;
 
+import java.nio.ByteBuffer;
+
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
@@ -48,7 +50,6 @@ import org.jboss.messaging.util.SimpleString;
 public class LinkImpl implements Link
 {
    private static final Logger log = Logger.getLogger(LinkImpl.class);
-
    
    private final PostOffice postOffice;
 
@@ -103,7 +104,15 @@ public class LinkImpl implements Link
       
       if (duplicateDetection)
       {
-         SimpleString duplID = new SimpleString(String.valueOf(copy.getMessageID())).concat(name);
+         //We put the duplicate detection id in
+         
+         byte[] bytes = new byte[8];
+         
+         ByteBuffer bb = ByteBuffer.wrap(bytes);
+         
+         bb.putLong(copy.getMessageID());
+         
+         SimpleString duplID = new SimpleString(bytes).concat(name);
          
          copy.putStringProperty(HDR_DUPLICATE_DETECTION_ID, duplID);
       }

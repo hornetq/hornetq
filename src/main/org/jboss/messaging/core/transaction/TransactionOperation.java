@@ -31,15 +31,15 @@ package org.jboss.messaging.core.transaction;
  */
 public interface TransactionOperation
 {
-   void beforePrepare() throws Exception;
+   void beforePrepare(Transaction tx) throws Exception;
    
-   void beforeCommit() throws Exception;
+   void beforeCommit(Transaction tx) throws Exception;
    
-   void beforeRollback() throws Exception;
+   void beforeRollback(Transaction tx) throws Exception;
    
-   void afterPrepare() throws Exception;
+   void afterPrepare(Transaction tx) throws Exception;
       
-   void afterCommit() throws Exception;
+   void afterCommit(Transaction tx) throws Exception;
    
-   void afterRollback() throws Exception;   
+   void afterRollback(Transaction tx) throws Exception;   
 }

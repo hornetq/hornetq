@@ -264,7 +264,7 @@ public class QueueControl implements QueueControlMBean
    {
       try
       {
-         return queue.deleteAllReferences(storageManager);
+         return queue.deleteAllReferences(storageManager, postOffice, queueSettingsRepository);
       } catch (MessagingException e)
       {
          throw new IllegalStateException(e.getMessage());
@@ -275,7 +275,7 @@ public class QueueControl implements QueueControlMBean
    {
       try
       {
-         return queue.deleteReference(messageID, storageManager);
+         return queue.deleteReference(messageID, storageManager, postOffice, queueSettingsRepository);
       } catch (MessagingException e)
       {
          throw new IllegalStateException(e.getMessage());
@@ -285,7 +285,7 @@ public class QueueControl implements QueueControlMBean
    public int removeMatchingMessages(String filterStr) throws Exception
    {
       Filter filter = FilterImpl.createFilter(filterStr);
-      return queue.deleteMatchingReferences(filter, storageManager);
+      return queue.deleteMatchingReferences(filter, storageManager, postOffice, queueSettingsRepository);
    }
 
    public boolean expireMessage(final long messageID) throws Exception
@@ -316,7 +316,7 @@ public class QueueControl implements QueueControlMBean
                + otherQueueName);
       }
 
-      return queue.moveMessage(messageID, binding.getAddress(), storageManager, postOffice);
+      return queue.moveMessage(messageID, binding.getAddress(), storageManager, postOffice, queueSettingsRepository);
    }
    
    public int moveMatchingMessages(String filterStr, String otherQueueName) throws Exception
@@ -329,7 +329,7 @@ public class QueueControl implements QueueControlMBean
                + otherQueueName);
       }
 
-      return queue.moveMessages(filter, binding.getAddress(), storageManager, postOffice);
+      return queue.moveMessages(filter, binding.getAddress(), storageManager, postOffice, queueSettingsRepository);
    }
    
    public int moveAllMessages(String otherQueueName) throws Exception

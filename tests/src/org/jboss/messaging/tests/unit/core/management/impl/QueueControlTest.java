@@ -74,10 +74,15 @@ public class QueueControlTest extends TestCase
    // Attributes ----------------------------------------------------
 
    private Queue queue;
+
    private StorageManager storageManager;
+
    private PostOffice postOffice;
+
    private HierarchicalRepository<QueueSettings> repository;
+
    private MessageCounter messageCounter;
+
    private SimpleString queueName;
 
    // Static --------------------------------------------------------
@@ -270,8 +275,7 @@ public class QueueControlTest extends TestCase
             return new SimpleString(dlqName);
          }
       };
-      expect(repository.getMatch(queueName.toString()))
-            .andReturn(queueSettings);
+      expect(repository.getMatch(queueName.toString())).andReturn(queueSettings);
 
       replayMockedAttributes();
 
@@ -294,8 +298,7 @@ public class QueueControlTest extends TestCase
             return new SimpleString(expiryQueueName);
          }
       };
-      expect(repository.getMatch(queueName.toString()))
-            .andReturn(queueSettings);
+      expect(repository.getMatch(queueName.toString())).andReturn(queueSettings);
 
       replayMockedAttributes();
 
@@ -308,19 +311,19 @@ public class QueueControlTest extends TestCase
    public void testRemoveAllMessages() throws Exception
    {
       int messageRemoved = randomPositiveInt();
-      expect(queue.deleteAllReferences(storageManager)).andReturn(messageRemoved);
+      expect(queue.deleteAllReferences(storageManager, postOffice, repository)).andReturn(messageRemoved);
 
       replayMockedAttributes();
 
       QueueControlMBean control = createControl();
-      assertEquals(messageRemoved,control.removeAllMessages());
+      assertEquals(messageRemoved, control.removeAllMessages());
 
       verifyMockedAttributes();
    }
 
    public void testRemoveAllMessagesThrowsException() throws Exception
    {
-      queue.deleteAllReferences(storageManager);
+      queue.deleteAllReferences(storageManager, postOffice, repository);
       expectLastCall().andThrow(new MessagingException());
 
       replayMockedAttributes();
@@ -330,7 +333,8 @@ public class QueueControlTest extends TestCase
       {
          control.removeAllMessages();
          fail("IllegalStateException");
-      } catch (IllegalStateException e)
+      }
+      catch (IllegalStateException e)
       {
 
       }
@@ -342,8 +346,7 @@ public class QueueControlTest extends TestCase
    {
       long messageID = randomLong();
       boolean deleted = randomBoolean();
-      expect(queue.deleteReference(messageID, storageManager)).andReturn(
-            deleted);
+      expect(queue.deleteReference(messageID, storageManager, postOffice, repository)).andReturn(deleted);
 
       replayMockedAttributes();
 
@@ -356,8 +359,7 @@ public class QueueControlTest extends TestCase
    public void testRemoveMessageThrowsException() throws Exception
    {
       long messageID = randomLong();
-      expect(queue.deleteReference(messageID, storageManager)).andThrow(
-            new MessagingException());
+      expect(queue.deleteReference(messageID, storageManager, postOffice, repository)).andThrow(new MessagingException());
 
       replayMockedAttributes();
 
@@ -366,7 +368,8 @@ public class QueueControlTest extends TestCase
       {
          control.removeMessage(messageID);
          fail("IllegalStateException");
-      } catch (IllegalStateException e)
+      }
+      catch (IllegalStateException e)
       {
 
       }
@@ -420,9 +423,7 @@ public class QueueControlTest extends TestCase
    public void testExpireMessageWithMessageID() throws Exception
    {
       long messageID = randomLong();
-      expect(
-            queue.expireMessage(messageID, storageManager, postOffice,
-                  repository)).andReturn(true);
+      expect(queue.expireMessage(messageID, storageManager, postOffice, repository)).andReturn(true);
 
       replayMockedAttributes();
 
@@ -435,9 +436,7 @@ public class QueueControlTest extends TestCase
    public void testExpireMessageWithNoMatch() throws Exception
    {
       long messageID = randomLong();
-      expect(
-            queue.expireMessage(messageID, storageManager, postOffice,
-                  repository)).andReturn(false);
+      expect(queue.expireMessage(messageID, storageManager, postOffice, repository)).andReturn(false);
       replayMockedAttributes();
 
       QueueControlMBean control = createControl();
@@ -467,9 +466,7 @@ public class QueueControlTest extends TestCase
       Binding otherBinding = createMock(Binding.class);
       expect(otherBinding.getAddress()).andReturn(otherAddress);
       expect(postOffice.getBinding(otherQueueName)).andReturn(otherBinding);
-      expect(
-            queue.moveMessage(messageID, otherAddress, storageManager,
-                  postOffice)).andReturn(true);
+      expect(queue.moveMessage(messageID, otherAddress, storageManager, postOffice, repository)).andReturn(true);
 
       replayMockedAttributes();
       replay(otherBinding);
@@ -494,7 +491,8 @@ public class QueueControlTest extends TestCase
       {
          control.moveMessage(messageID, otherQueueName.toString());
          fail("IllegalArgumentException");
-      } catch (IllegalArgumentException e)
+      }
+      catch (IllegalArgumentException e)
       {
 
       }
@@ -509,9 +507,7 @@ public class QueueControlTest extends TestCase
       Binding otherBinding = createMock(Binding.class);
       expect(otherBinding.getAddress()).andReturn(otherAddress);
       expect(postOffice.getBinding(otherQueueName)).andReturn(otherBinding);
-      expect(
-            queue.moveMessage(messageID, otherAddress, storageManager,
-                  postOffice)).andReturn(false);
+      expect(queue.moveMessage(messageID, otherAddress, storageManager, postOffice, repository)).andReturn(false);
 
       replayMockedAttributes();
       replay(otherBinding);
@@ -530,9 +526,7 @@ public class QueueControlTest extends TestCase
       List<MessageReference> refs = new ArrayList<MessageReference>();
       MessageReference ref = createMock(MessageReference.class);
       refs.add(ref);
-      expect(
-            queue.changeMessagePriority(messageID, newPriority, storageManager,
-                  postOffice, repository)).andReturn(true);
+      expect(queue.changeMessagePriority(messageID, newPriority, storageManager, postOffice, repository)).andReturn(true);
 
       replayMockedAttributes();
       replay(ref);
@@ -544,8 +538,7 @@ public class QueueControlTest extends TestCase
       verify(ref);
    }
 
-   public void testChangeMessagePriorityWithInvalidPriorityValues()
-         throws Exception
+   public void testChangeMessagePriorityWithInvalidPriorityValues() throws Exception
    {
       long messageID = randomLong();
 
@@ -557,7 +550,8 @@ public class QueueControlTest extends TestCase
       {
          control.changeMessagePriority(messageID, -1);
          fail("IllegalArgumentException");
-      } catch (IllegalArgumentException e)
+      }
+      catch (IllegalArgumentException e)
       {
       }
 
@@ -565,7 +559,8 @@ public class QueueControlTest extends TestCase
       {
          control.changeMessagePriority(messageID, 10);
          fail("IllegalArgumentException");
-      } catch (IllegalArgumentException e)
+      }
+      catch (IllegalArgumentException e)
       {
       }
 
@@ -576,9 +571,7 @@ public class QueueControlTest extends TestCase
    {
       long messageID = randomLong();
       byte newPriority = 5;
-      expect(
-            queue.changeMessagePriority(messageID, newPriority, storageManager,
-                  postOffice, repository)).andReturn(false);
+      expect(queue.changeMessagePriority(messageID, newPriority, storageManager, postOffice, repository)).andReturn(false);
 
       replayMockedAttributes();
 
@@ -591,9 +584,7 @@ public class QueueControlTest extends TestCase
    public void testSendMessageToDeadLetterAddress() throws Exception
    {
       long messageID = randomLong();
-      expect(
-            queue.sendMessageToDeadLetterAddress(messageID, storageManager, postOffice,
-                  repository)).andReturn(true);
+      expect(queue.sendMessageToDeadLetterAddress(messageID, storageManager, postOffice, repository)).andReturn(true);
 
       replayMockedAttributes();
 
@@ -606,9 +597,7 @@ public class QueueControlTest extends TestCase
    public void testSendMessageToDeadLetterAddressWithNoMessageID() throws Exception
    {
       long messageID = randomLong();
-      expect(
-            queue.sendMessageToDeadLetterAddress(messageID, storageManager, postOffice,
-                  repository)).andReturn(false);
+      expect(queue.sendMessageToDeadLetterAddress(messageID, storageManager, postOffice, repository)).andReturn(false);
 
       replayMockedAttributes();
 
@@ -632,8 +621,7 @@ public class QueueControlTest extends TestCase
       storageManager = createMock(StorageManager.class);
       postOffice = createMock(PostOffice.class);
       repository = createMock(HierarchicalRepository.class);
-      messageCounter = new MessageCounter(queueName.toString(), null, queue,
-            false, false, 10);
+      messageCounter = new MessageCounter(queueName.toString(), null, queue, false, false, 10);
    }
 
    @Override
@@ -662,8 +650,7 @@ public class QueueControlTest extends TestCase
 
    private QueueControl createControl() throws Exception
    {
-      return new QueueControl(queue, storageManager, postOffice, repository,
-            messageCounter);
+      return new QueueControl(queue, storageManager, postOffice, repository, messageCounter);
    }
 
    // Inner classes -------------------------------------------------

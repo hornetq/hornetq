@@ -82,6 +82,8 @@ public interface PostOffice extends MessagingComponent
 
    Binding getBinding(SimpleString name);
 
+   void route(ServerMessage message) throws Exception;
+   
    void route(ServerMessage message, Transaction tx) throws Exception;
 
    Set<SimpleString> listAllDestinations();

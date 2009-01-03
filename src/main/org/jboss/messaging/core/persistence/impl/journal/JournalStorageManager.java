@@ -74,6 +74,8 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
@@ -406,6 +408,8 @@ public class JournalStorageManager implements StorageManager
    }
 
    public void loadMessageJournal(final PostOffice postOffice,
+                                  final StorageManager storageManager,
+                                  final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                                   final Map<Long, Queue> queues,
                                   final ResourceManager resourceManager,
                                   final Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap) throws Exception
@@ -563,7 +567,7 @@ public class JournalStorageManager implements StorageManager
          }
       }
 
-      loadPreparedTransactions(postOffice, queues, resourceManager, preparedTransactions, duplicateIDMap);
+      loadPreparedTransactions(postOffice, storageManager, queueSettingsRepository, queues, resourceManager, preparedTransactions, duplicateIDMap);
    }
 
    // Bindings operations
@@ -829,6 +833,8 @@ public class JournalStorageManager implements StorageManager
    // Private ----------------------------------------------------------------------------------
 
    private void loadPreparedTransactions(final PostOffice postOffice,
+                                         final StorageManager storageManager,
+                                         final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                                          final Map<Long, Queue> queues,
                                          final ResourceManager resourceManager,
                                          final List<PreparedTransactionInfo> preparedTransactions,
@@ -981,7 +987,7 @@ public class JournalStorageManager implements StorageManager
 
          for (MessageReference ack : referencesToAck)
          {
-            tx.addAckTempUntilNextRefactoring(ack);
+            ack.reacknowledge(tx, storageManager, postOffice, queueSettingsRepository);
          }
 
          tx.setState(Transaction.State.PREPARED);

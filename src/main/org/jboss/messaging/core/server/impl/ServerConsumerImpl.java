@@ -46,15 +46,16 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.HandleStatus;
+import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConsumer;
-import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 
 /**
  * Concrete implementation of a ClientConsumer.
@@ -247,21 +248,17 @@ public class ServerConsumerImpl implements ServerConsumer
       Iterator<MessageReference> iter = refs.iterator();
 
       closed = true;
+      
+      Transaction tx = new TransactionImpl(storageManager, postOffice);
 
       while (iter.hasNext())
       {
          MessageReference ref = iter.next();
-
-         if (!ref.cancel(storageManager, postOffice, queueSettingsRepository))
-         {
-            iter.remove();
-         }
+         
+         ref.cancel(tx, storageManager, postOffice, queueSettingsRepository);         
       }
-
-      if (!refs.isEmpty())
-      {
-         messageQueue.addListFirst(refs);
-      }
+      
+      tx.rollback();
    }
 
    public LinkedList<MessageReference> cancelRefs() throws Exception
@@ -355,7 +352,7 @@ public class ServerConsumerImpl implements ServerConsumer
          }
          else
          {
-            tx.addAcknowledgement(ref);
+            ref.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
 
             // Del count is not actually updated in storage unless it's
             // cancelled

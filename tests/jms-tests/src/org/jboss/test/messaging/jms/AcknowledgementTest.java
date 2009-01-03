@@ -30,6 +30,8 @@ import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
+import org.jboss.messaging.jms.client.JBossTextMessage;
+
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> <p/> $Id: AcknowledgementTest.java 3173 2007-10-05 12:48:16Z
  *         timfox $
@@ -142,6 +144,7 @@ public class AcknowledgementTest extends JMSTestCase
          assertNotNull(m2);
          assertEquals("testing123", m2.getText());
 
+         log.info("rolling back");
          sess.rollback();
 
          m2 = (TextMessage)cons.receive(3000);
@@ -261,6 +264,7 @@ public class AcknowledgementTest extends JMSTestCase
 
          assertEquals(count, NUM_MESSAGES);
 
+         log.info("*** rolling back");
          consumerSess.rollback();
 
          assertRemainingMessages(NUM_MESSAGES);
@@ -1360,7 +1364,7 @@ public class AcknowledgementTest extends JMSTestCase
 
             TextMessage tm = (TextMessage)m;
 
-            log.info("Got message " + tm.getText());
+            log.info("Got message " + tm.getText() + " message id: " + ((JBossTextMessage)tm).getCoreMessage().getMessageID());
 
             if (count == 1)
             {

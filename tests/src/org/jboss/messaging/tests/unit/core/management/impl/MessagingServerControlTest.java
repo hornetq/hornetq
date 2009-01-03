@@ -582,7 +582,7 @@ public class MessagingServerControlTest extends TestCase
 
       expect(resourceManager.getPreparedTransactions()).andReturn(Arrays.asList(xid));
       expect(resourceManager.removeTransaction(xid)).andReturn(tx);
-      expect(tx.rollback(queueSettingsRepository)).andStubReturn(Collections.emptyList());
+      tx.rollback();
 
       replayMockedAttributes();
       replay(tx);

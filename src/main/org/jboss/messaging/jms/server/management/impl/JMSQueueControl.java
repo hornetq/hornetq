@@ -227,7 +227,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       {
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
-      return coreQueue.deleteReference(refs.get(0).getMessage().getMessageID(), storageManager);
+      return coreQueue.deleteReference(refs.get(0).getMessage().getMessageID(), storageManager, postOffice, queueSettingsRepository);
    }
 
    public int removeMatchingMessages(String filterStr) throws Exception
@@ -235,7 +235,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       try
       {
          Filter filter = createFilterFromJMSSelector(filterStr);
-         return coreQueue.deleteMatchingReferences(filter, storageManager);
+         return coreQueue.deleteMatchingReferences(filter, storageManager, postOffice, queueSettingsRepository);
       }
       catch (MessagingException e)
       {
@@ -245,7 +245,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
 
    public int removeAllMessages() throws Exception
    {
-      return coreQueue.deleteAllReferences(storageManager);
+      return coreQueue.deleteAllReferences(storageManager, postOffice, queueSettingsRepository);
    }
 
    public TabularData listAllMessages() throws Exception
@@ -357,7 +357,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
 
-      return coreQueue.moveMessage(refs.get(0).getMessage().getMessageID(), binding.getAddress(), storageManager, postOffice);
+      return coreQueue.moveMessage(refs.get(0).getMessage().getMessageID(), binding.getAddress(), storageManager, postOffice, queueSettingsRepository);
    }
 
    public int moveMatchingMessages(String filterStr, String otherQueueName) throws Exception
@@ -369,7 +369,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       }
 
       Filter filter = createFilterFromJMSSelector(filterStr);
-      return coreQueue.moveMessages(filter, otherBinding.getAddress(), storageManager, postOffice);
+      return coreQueue.moveMessages(filter, otherBinding.getAddress(), storageManager, postOffice, queueSettingsRepository);
    }
 
    public int moveAllMessages(String otherQueueName) throws Exception

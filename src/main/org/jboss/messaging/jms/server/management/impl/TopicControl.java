@@ -39,6 +39,8 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.management.JMSMessageInfo;
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;
@@ -68,6 +70,8 @@ public class TopicControl implements TopicControlMBean
 
    private final StorageManager storageManager;
 
+   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -75,12 +79,14 @@ public class TopicControl implements TopicControlMBean
    public TopicControl(final JBossTopic topic,
                        final String jndiBinding,
                        final PostOffice postOffice,
-                       final StorageManager storageManager)
+                       final StorageManager storageManager,
+                       final HierarchicalRepository<QueueSettings> queueSettingsRepository)
    {
       this.managedTopic = topic;
       this.binding = jndiBinding;
       this.postOffice = postOffice;
       this.storageManager = storageManager;
+      this.queueSettingsRepository = queueSettingsRepository;
    }
 
    // TopicControlMBean implementation ------------------------------
@@ -211,7 +217,7 @@ public class TopicControl implements TopicControlMBean
          if (binding.getType() == BindingType.QUEUE)
          {
             Queue queue = (Queue)binding.getBindable();
-            count += queue.deleteAllReferences(storageManager);
+            count += queue.deleteAllReferences(storageManager, postOffice, queueSettingsRepository);
          }
       }
 
@@ -232,7 +238,7 @@ public class TopicControl implements TopicControlMBean
 
       Queue queue = (Queue)binding.getBindable();
 
-      queue.deleteAllReferences(storageManager);
+      queue.deleteAllReferences(storageManager, postOffice, queueSettingsRepository);
 
       postOffice.removeBinding(queue.getName());
    }
@@ -246,7 +252,7 @@ public class TopicControl implements TopicControlMBean
          if (binding.getType() == BindingType.QUEUE)
          {
             Queue queue = (Queue)binding.getBindable();
-            queue.deleteAllReferences(storageManager);
+            queue.deleteAllReferences(storageManager, postOffice, queueSettingsRepository);
             postOffice.removeBinding(queue.getName());
          }
       }

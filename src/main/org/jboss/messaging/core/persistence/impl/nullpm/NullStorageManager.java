@@ -36,6 +36,8 @@ import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.Pair;
@@ -205,6 +207,8 @@ public class NullStorageManager implements StorageManager
    }
 
    public void loadMessageJournal(final PostOffice postOffice,
+                                  final StorageManager storageManager,
+                                  final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                                   final Map<Long, Queue> queues,
                                   final ResourceManager resourceManager,
                                   final Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap) throws Exception

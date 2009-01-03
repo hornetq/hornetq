@@ -46,21 +46,24 @@ public interface JMSManagementService
 
    void unregisterJMSServer() throws Exception;
 
-   void registerQueue(JBossQueue queue, Queue coreQueue, String jndiBinding,
-         PostOffice postOffice, StorageManager storageManager,
-         HierarchicalRepository<QueueSettings> queueSettingsRepository)
-         throws Exception;
+   void registerQueue(JBossQueue queue,
+                      Queue coreQueue,
+                      String jndiBinding,
+                      PostOffice postOffice,
+                      StorageManager storageManager,
+                      HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
 
    void unregisterQueue(String name) throws Exception;
 
-   void registerTopic(JBossTopic topic, String jndiBinding,
-         PostOffice postOffice, StorageManager storageManager) throws Exception;
+   void registerTopic(JBossTopic topic,
+                      String jndiBinding,
+                      PostOffice postOffice,
+                      StorageManager storageManager,
+                      HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
 
    void unregisterTopic(String name) throws Exception;
 
-   void registerConnectionFactory(String name,
-         JBossConnectionFactory connectionFactory, List<String> bindings)
-         throws Exception;
+   void registerConnectionFactory(String name, JBossConnectionFactory connectionFactory, List<String> bindings) throws Exception;
 
    void unregisterConnectionFactory(String name) throws Exception;
 }

@@ -149,10 +149,11 @@ public class JMSManagementServiceImpl implements JMSManagementService
    public void registerTopic(final JBossTopic topic,
                              final String jndiBinding,
                              final PostOffice postOffice,
-                             final StorageManager storageManager) throws Exception
+                             final StorageManager storageManager,
+                             final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       ObjectName objectName = getJMSTopicObjectName(topic.getTopicName());
-      TopicControl control = new TopicControl(topic, jndiBinding, postOffice, storageManager);
+      TopicControl control = new TopicControl(topic, jndiBinding, postOffice, storageManager, queueSettingsRepository);
       managementService.registerInJMX(objectName, new ReplicationAwareTopicControlWrapper(objectName, control));
       managementService.registerInRegistry(objectName, control);
    }

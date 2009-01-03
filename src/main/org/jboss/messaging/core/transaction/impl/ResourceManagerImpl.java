@@ -25,7 +25,6 @@ package org.jboss.messaging.core.transaction.impl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,9 +38,7 @@ import javax.transaction.xa.Xid;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
@@ -49,8 +46,7 @@ import org.jboss.messaging.core.transaction.Transaction;
 
 /**
  * A ResourceManagerImpl
- * <p/>
- * TODO - implement timeouts
+ *
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
@@ -64,12 +60,6 @@ public class ResourceManagerImpl implements ResourceManager, MessagingComponent
 
    private volatile int timeoutSeconds;
 
-   private final StorageManager storageManager;
-
-   private final PostOffice postOffice;
-
-   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
-
    private boolean started = false;
 
    private Timer timer;
@@ -78,18 +68,11 @@ public class ResourceManagerImpl implements ResourceManager, MessagingComponent
 
    private final long txTimeoutScanPeriod;
 
-   public ResourceManagerImpl(final int defaultTimeoutSeconds,
-                              final long txTimeoutScanPeriod,
-                              final StorageManager storageManager,
-                              final PostOffice postOffice,
-                              final HierarchicalRepository<QueueSettings> queueSettingsRepository)
+   public ResourceManagerImpl(final int defaultTimeoutSeconds, final long txTimeoutScanPeriod)
    {
       this.defaultTimeoutSeconds = defaultTimeoutSeconds;
       this.timeoutSeconds = defaultTimeoutSeconds;
       this.txTimeoutScanPeriod = txTimeoutScanPeriod;
-      this.storageManager = storageManager;
-      this.postOffice = postOffice;
-      this.queueSettingsRepository = queueSettingsRepository;
    }
 
    // MessagingComponent implementation
@@ -157,7 +140,7 @@ public class ResourceManagerImpl implements ResourceManager, MessagingComponent
    {
       if (timeoutSeconds == 0)
       {
-         //reset to default
+         // reset to default
          this.timeoutSeconds = defaultTimeoutSeconds;
       }
       else
@@ -169,7 +152,7 @@ public class ResourceManagerImpl implements ResourceManager, MessagingComponent
    }
 
    public List<Xid> getPreparedTransactions()
-   {           
+   {
       List<Xid> xids = new ArrayList<Xid>();
 
       for (Xid xid : transactions.keySet())
@@ -181,7 +164,7 @@ public class ResourceManagerImpl implements ResourceManager, MessagingComponent
       }
       return xids;
    }
-   
+
    public Map<Xid, Long> getPreparedTransactionsWithCreationTime()
    {
       List<Xid> xids = getPreparedTransactions();
@@ -191,7 +174,7 @@ public class ResourceManagerImpl implements ResourceManager, MessagingComponent
       {
          xidsWithCreationTime.put(xid, transactions.get(xid).getCreateTime());
       }
-      return xidsWithCreationTime;      
+      return xidsWithCreationTime;
    }
 
    class TxTimeoutHandler extends TimerTask
@@ -216,34 +199,7 @@ public class ResourceManagerImpl implements ResourceManager, MessagingComponent
          {
             try
             {
-               List<MessageReference> rolledBack = failedTransaction.timeout();
-               Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
-
-               for (MessageReference ref : rolledBack)
-               {
-                  if (ref.cancel(storageManager, postOffice, queueSettingsRepository))
-                  {
-                     Queue queue = ref.getQueue();
-
-                     LinkedList<MessageReference> list = queueMap.get(queue);
-
-                     if (list == null)
-                     {
-                        list = new LinkedList<MessageReference>();
-
-                        queueMap.put(queue, list);
-                     }
-
-                     list.add(ref);
-                  }
-               }
-
-               for (Map.Entry<Queue, LinkedList<MessageReference>> entry : queueMap.entrySet())
-               {
-                  LinkedList<MessageReference> refs = entry.getValue();
-
-                  entry.getKey().addListFirst(refs);
-               }
+               failedTransaction.rollback();
             }
             catch (Exception e)
             {

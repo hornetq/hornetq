@@ -246,29 +246,29 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          }
       }
       
-      public void beforeCommit() throws Exception
+      public void beforeCommit(final Transaction tx) throws Exception
       {
       }
 
-      public void beforePrepare() throws Exception
+      public void beforePrepare(final Transaction tx) throws Exception
       {
       }
 
-      public void beforeRollback() throws Exception
+      public void beforeRollback(final Transaction tx) throws Exception
       {
       }
 
-      public void afterCommit() throws Exception
-      {
-         process();
-      }
-
-      public void afterPrepare() throws Exception
+      public void afterCommit(final Transaction tx) throws Exception
       {
          process();
       }
 
-      public void afterRollback() throws Exception
+      public void afterPrepare(final Transaction tx) throws Exception
+      {
+         process();
+      }
+
+      public void afterRollback(final Transaction tx) throws Exception
       {
       }
 

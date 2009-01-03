@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.server;
 
@@ -41,48 +41,72 @@ import org.jboss.messaging.util.SimpleString;
  * $Id: MessageReference.java 3020 2007-08-21 15:46:38Z timfox $
  */
 public interface MessageReference
-{      
+{
    ServerMessage getMessage();
-   
+
    MessageReference copy(Queue queue);
-   
+
+   void acknowledge(final Transaction tx,
+                    final StorageManager storageManager,
+                    final PostOffice postOffice,
+                    final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+
+   void reacknowledge(final Transaction tx,
+                      final StorageManager storageManager,
+                      final PostOffice postOffice,
+                      final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+
    /**
     * 
     * @return The time in the future that delivery will be delayed until, or zero if
     * no scheduled delivery will occur
     */
    long getScheduledDeliveryTime();
-   
+
    void setScheduledDeliveryTime(long scheduledDeliveryTime);
-   
+
    int getMemoryEstimate();
 
    int getDeliveryCount();
-   
-   void setDeliveryCount(int deliveryCount);        
-   
+
+   void setDeliveryCount(int deliveryCount);
+
    void incrementDeliveryCount();
-   
+
    Queue getQueue();
-   
-   boolean cancel(StorageManager storageManager, PostOffice postOffice,
-   		         HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;  
-   
-   void sendToDeadLetterAddress(StorageManager storageManager, PostOffice postOffice,
-                  HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
-   
-   void expire(StorageManager storageManager, PostOffice postOffice,
-         HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+
+   void cancel(Transaction tx,
+               StorageManager storageManager,
+               PostOffice postOffice,
+               HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+
+   // boolean cancel(StorageManager storageManager,
+   // PostOffice postOffice,
+   // HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+
+   void sendToDeadLetterAddress(StorageManager storageManager,
+                                PostOffice postOffice,
+                                HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+
+   void expire(StorageManager storageManager,
+               PostOffice postOffice,
+               HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
 
    void expire(Transaction tx,
                StorageManager storageManager,
                PostOffice postOffice,
                HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
 
-   void move(SimpleString toAddress, StorageManager persistenceManager, PostOffice postOffice) throws Exception;
+   void move(SimpleString toAddress,
+             StorageManager persistenceManager,
+             PostOffice postOffice,
+             HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
 
-   void move(SimpleString toAddress, Transaction tx, StorageManager persistenceManager, PostOffice postOffice, boolean expiry) throws Exception;
+   void move(SimpleString toAddress,
+             Transaction tx,
+             StorageManager persistenceManager,
+             PostOffice postOffice,
+             HierarchicalRepository<QueueSettings> queueSettingsRepository,
+             boolean expiry) throws Exception;
 
 }
-
-

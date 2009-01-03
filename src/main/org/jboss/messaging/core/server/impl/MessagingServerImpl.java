@@ -222,10 +222,7 @@ public class MessagingServerImpl implements MessagingServer
       pagingManager.start();
 
       resourceManager = new ResourceManagerImpl((int)configuration.getTransactionTimeout() / 1000,
-                                                configuration.getTransactionTimeoutScanPeriod(),
-                                                storageManager,
-                                                postOffice,
-                                                queueSettingsRepository);
+                                                configuration.getTransactionTimeoutScanPeriod());
       postOffice = new PostOfficeImpl(storageManager,
                                       pagingManager,
                                       queueFactory,

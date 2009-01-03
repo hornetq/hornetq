@@ -14,9 +14,7 @@ package org.jboss.messaging.core.server.impl;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,12 +31,10 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.Bindings;
-import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.DelayedResult;
@@ -81,18 +77,19 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
+import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerConsumer;
-import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.SimpleIDGenerator;
@@ -112,45 +109,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private static final Logger log = Logger.getLogger(ServerSessionImpl.class);
 
+   private static final boolean trace = log.isTraceEnabled();
+
    // Static -------------------------------------------------------------------------------
 
-   public static void moveReferencesBackToHeadOfQueues(final List<MessageReference> references,
-                                                       final PostOffice postOffice,
-                                                       final StorageManager storageManager,
-                                                       final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
-   {
-      Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
-
-      for (MessageReference ref : references)
-      {
-         if (ref.cancel(storageManager, postOffice, queueSettingsRepository))
-         {
-            Queue queue = ref.getQueue();
-
-            LinkedList<MessageReference> list = queueMap.get(queue);
-
-            if (list == null)
-            {
-               list = new LinkedList<MessageReference>();
-
-               queueMap.put(queue, list);
-            }
-
-            list.add(ref);
-         }
-      }
-
-      for (Map.Entry<Queue, LinkedList<MessageReference>> entry : queueMap.entrySet())
-      {
-         LinkedList<MessageReference> refs = entry.getValue();
-
-         entry.getKey().addListFirst(refs);
-      }
-   }
-
    // Attributes ----------------------------------------------------------------------------
-
-   private final boolean trace = log.isTraceEnabled();
 
    private final long id;
 
@@ -408,6 +371,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void handleDeleteQueue(final SessionDeleteQueueMessage packet)
    {
       final SendLock lock;
+      
       if (channel.getReplicatingChannel() != null)
       {
          Binding binding = postOffice.getBinding(packet.getQueueName());
@@ -1469,10 +1433,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             throw new MessagingException(MessagingException.ILLEGAL_STATE, "Cannot delete queue - it has consumers");
          }
-
+         
          if (queue.isDurable())
          {
-            queue.deleteAllReferences(storageManager);
+            queue.deleteAllReferences(storageManager, postOffice, queueSettingsRepository);
          }
 
          response = new NullResponseMessage();
@@ -2569,9 +2533,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          toCancel.addAll(consumer.cancelRefs());
       }
 
-      List<MessageReference> rolledBack = theTx.rollback(queueSettingsRepository);
+      for (MessageReference ref : toCancel)
+      {
+         ref.cancel(tx, storageManager, postOffice, queueSettingsRepository);
+      }
 
-      rolledBack.addAll(toCancel);
+      theTx.rollback();
 
       if (wasStarted)
       {
@@ -2580,11 +2547,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             consumer.setStarted(true);
          }
       }
-
-      // Now cancel the refs back to the queue(s), we sort into queues and cancel back atomically to
-      // preserve order
-
-      moveReferencesBackToHeadOfQueues(rolledBack, postOffice, storageManager, queueSettingsRepository);
    }
 
    private void rollback() throws Exception
@@ -2608,7 +2570,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (tx == null || autoCommitSends)
       {
-         postOffice.route(msg, null);
+         postOffice.route(msg);
       }
       else
       {
@@ -2631,4 +2593,35 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          throw e;
       }
    }
+
+   // private void moveReferencesBackToHeadOfQueues(final List<MessageReference> references) throws Exception
+   // {
+   // Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
+   //
+   // for (MessageReference ref : references)
+   // {
+   // if (ref.cancel(storageManager, postOffice, queueSettingsRepository))
+   // {
+   // Queue queue = ref.getQueue();
+   //
+   // LinkedList<MessageReference> list = queueMap.get(queue);
+   //
+   // if (list == null)
+   // {
+   // list = new LinkedList<MessageReference>();
+   //
+   // queueMap.put(queue, list);
+   // }
+   //
+   // list.add(ref);
+   // }
+   // }
+   //
+   // for (Map.Entry<Queue, LinkedList<MessageReference>> entry : queueMap.entrySet())
+   // {
+   // LinkedList<MessageReference> refs = entry.getValue();
+   //
+   // entry.getKey().addListFirst(refs);
+   // }
+   // }
 }
