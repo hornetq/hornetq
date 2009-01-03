@@ -15,7 +15,6 @@ package org.jboss.messaging.core.transaction.impl;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.transaction.xa.Xid;
 
@@ -26,10 +25,10 @@ import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionOperation;
+import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -59,15 +58,13 @@ public class TransactionImpl implements Transaction
    // FIXME: As part of https://jira.jboss.org/jira/browse/JBMESSAGING-1313
    private final List<ServerMessage> pagedMessages = new ArrayList<ServerMessage>();
 
-   private volatile PageTransactionInfo pageTransaction;
+   //private volatile PageTransactionInfo pageTransaction;
 
    private final Xid xid;
 
    private final long id;
 
    private volatile State state = State.ACTIVE;
-
-   private volatile boolean containsPersistent;
 
    private MessagingException messagingException;
 
@@ -155,15 +152,6 @@ public class TransactionImpl implements Transaction
    public long getCreateTime()
    {
       return createTime;
-   }
-
-   public void addAcknowledgement(final MessageReference acknowledgement) throws Exception
-   {
-      if (state != State.ACTIVE)
-      {
-         throw new IllegalStateException("Transaction is in invalid state " + state);
-      }
-
    }
 
    public void prepare() throws Exception
@@ -254,7 +242,7 @@ public class TransactionImpl implements Transaction
             pageMessages();
          }
 
-         if (containsPersistent || xid != null)
+         if ((getProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT) != null) || xid != null)
          {
             storageManager.commit(id);
          }
@@ -262,6 +250,9 @@ public class TransactionImpl implements Transaction
          // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
          // transaction until all the messages were added to the queue
          // or else we could deliver the messages out of order
+         
+         PageTransactionInfo pageTransaction = (PageTransactionInfo)getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
+         
          if (pageTransaction != null)
          {
             pageTransaction.commit();
@@ -355,21 +346,11 @@ public class TransactionImpl implements Transaction
       return xid;
    }
 
-   public boolean isContainsPersistent()
-   {
-      return containsPersistent;
-   }
-
    public void markAsRollbackOnly(final MessagingException messagingException)
    {
       state = State.ROLLBACK_ONLY;
 
       this.messagingException = messagingException;
-   }
-
-   public void setContainsPersistent(final boolean containsPersistent)
-   {
-      this.containsPersistent = containsPersistent;
    }
 
    public void addOperation(final TransactionOperation operation)
@@ -386,10 +367,10 @@ public class TransactionImpl implements Transaction
       operations.remove(operation);
    }
    
-   public void setPageTransaction(PageTransactionInfo pageTransaction)
-   {
-      this.pageTransaction = pageTransaction;      
-   }
+//   public void setPageTransaction(PageTransactionInfo pageTransaction)
+//   {
+//      this.pageTransaction = pageTransaction;      
+//   }
    
    public void addPagingMessage(final ServerMessage message)
    {
@@ -425,10 +406,12 @@ public class TransactionImpl implements Transaction
 
    private void doRollback() throws Exception
    {
-      if (containsPersistent || xid != null)
+      if ((getProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT) != null) || xid != null)
       {
          storageManager.rollback(id);
       }
+      
+      PageTransactionInfo pageTransaction = (PageTransactionInfo)getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
 
       if (state == State.PREPARED && pageTransaction != null)
       {
@@ -450,9 +433,14 @@ public class TransactionImpl implements Transaction
    {
       if (!pagedMessages.isEmpty())
       {
+         PageTransactionInfo pageTransaction = (PageTransactionInfo)getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
+         
          if (pageTransaction == null)
          {
             pageTransaction = new PageTransactionInfoImpl(id);
+            
+            putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pageTransaction);
+            
             // To avoid a race condition where depage happens before the transaction is completed, we need to inform the
             // pager about this transaction is being processed
             pagingManager.addTransaction(pageTransaction);
@@ -490,7 +478,8 @@ public class TransactionImpl implements Transaction
 
          if (pagingPersistent)
          {
-            containsPersistent = true;
+            putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
+            
             if (!pagedDestinationsToSync.isEmpty())
             {
                pagingManager.sync(pagedDestinationsToSync);

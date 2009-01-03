@@ -78,6 +78,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.JBMThreadFactory;
@@ -912,7 +913,7 @@ public class JournalStorageManager implements StorageManager
 
                   pageTransactionInfo.markIncomplete();
 
-                  tx.setPageTransaction(pageTransactionInfo);
+                  tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pageTransactionInfo);                  
                   
                   pagingManager.addTransaction(pageTransactionInfo);
 

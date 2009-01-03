@@ -31,6 +31,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionOperation;
+import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
@@ -180,7 +181,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       {
          storageManager.storeDuplicateIDTransactional(tx.getID(), address, duplID, recordID);
 
-         tx.setContainsPersistent(true);
+         tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
       }
 
       // For a tx, it's important that the entry is not added to the cache until commit (or prepare)

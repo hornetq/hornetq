@@ -303,8 +303,8 @@ public class QueueImpl implements Queue
             tx.addOperation(new AddMessageOperation(ref, first));
 
             if (durableRef)
-            {
-               tx.setContainsPersistent(true);
+            {               
+               tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
             }
          }
       }

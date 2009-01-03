@@ -22,18 +22,11 @@
 
 package org.jboss.messaging.core.transaction;
 
-import java.util.List;
-import java.util.Set;
-
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * A JBoss Messaging internal transaction
@@ -51,8 +44,6 @@ public interface Transaction
 
    void addPagingMessage(ServerMessage message);
 
-   void setContainsPersistent(boolean containsPersistent);
-
    int getOperationsCount();
 
    long getID();
@@ -67,11 +58,9 @@ public interface Transaction
    
    void setState(State state);
 
-   boolean isContainsPersistent();
-
    void markAsRollbackOnly(MessagingException messagingException);
 
-   void setPageTransaction(PageTransactionInfo pageTransaction);
+   //void setPageTransaction(PageTransactionInfo pageTransaction);
 
    long getCreateTime();
 

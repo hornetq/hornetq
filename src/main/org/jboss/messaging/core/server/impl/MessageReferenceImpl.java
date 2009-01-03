@@ -328,8 +328,8 @@ public class MessageReferenceImpl implements MessageReference
                                                             queue.getPersistenceID(),
                                                             message.getMessageID());
             }
-
-            tx.setContainsPersistent(true);
+            
+            tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
          }
       }
 
@@ -353,7 +353,7 @@ public class MessageReferenceImpl implements MessageReference
    {
       if (message.isDurable() && queue.isDurable())
       {
-         tx.setContainsPersistent(true);
+         tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
       }
 
       tx.addOperation(new AcknowledgeOperation(storageManager, postOffice, queueSettingsRepository));

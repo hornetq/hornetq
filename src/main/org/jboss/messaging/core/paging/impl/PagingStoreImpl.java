@@ -736,7 +736,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       
       Transaction depageTransaction = new TransactionImpl(storageManager, postOffice);
       
-      depageTransaction.setContainsPersistent(true);
+      depageTransaction.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
       
       depageTransaction.putProperty(TransactionPropertyIndexes.IS_DEPAGE, Boolean.valueOf(true));
 
