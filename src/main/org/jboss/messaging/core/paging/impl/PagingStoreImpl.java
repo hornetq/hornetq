@@ -723,9 +723,16 @@ public class PagingStoreImpl implements TestSupportPageStore
          trace("Depaging....");
       }
 
+      if (pagedMessages.size() == 0)
+      {
+         // nothing to be done on this case.
+         return;
+      }
+
+
       // Depage has to be done atomically, in case of failure it should be
       // back to where it was
-
+      
       Transaction depageTransaction = new TransactionImpl(storageManager, postOffice, true);
 
       HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
