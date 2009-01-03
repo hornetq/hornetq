@@ -178,7 +178,9 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 
       if (persist)
       {
-         tx.addDuplicateID(address, duplID, recordID);
+         storageManager.storeDuplicateIDTransactional(tx.getID(), address, duplID, recordID);
+
+         tx.setContainsPersistent(true);
       }
 
       // For a tx, it's important that the entry is not added to the cache until commit (or prepare)

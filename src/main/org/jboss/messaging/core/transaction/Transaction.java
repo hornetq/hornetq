@@ -47,28 +47,12 @@ public interface Transaction
 
    void commit() throws Exception;
 
-   //List<MessageReference> rollback(HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
-   
    void rollback() throws Exception;
 
-   void addDuplicateID(SimpleString address, SimpleString duplID, long recordID) throws Exception;
-
-   Set<SimpleString> getPagingAddresses();
-   
-   void addPagingAddress(SimpleString address);
-   
    void addPagingMessage(ServerMessage message);
 
-  // void addAcknowledgement(MessageReference acknowledgement) throws Exception;
-   
-  // void addAckTempUntilNextRefactoring(MessageReference ref);
-   
-   boolean isDepage();
-   
    void setContainsPersistent(boolean containsPersistent);
 
-  // int getAcknowledgementsCount();
-   
    int getOperationsCount();
 
    long getID();
@@ -88,8 +72,6 @@ public interface Transaction
    void markAsRollbackOnly(MessagingException messagingException);
 
    void setPageTransaction(PageTransactionInfo pageTransaction);
-
-//   List<MessageReference> timeout() throws Exception;
 
    long getCreateTime();
 

@@ -13,10 +13,12 @@
 package org.jboss.messaging.core.server.impl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,6 +45,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionOperation;
+import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.ConcurrentSet;
@@ -241,9 +244,21 @@ public class QueueImpl implements Queue
 
          SimpleString destination = message.getDestination();
 
-         if (!tx.isDepage() && !message.isReload() && (tx.getPagingAddresses().contains(destination) || pagingManager.isPaging(destination)))
+         //TODO - this can all be optimised
+         Set<SimpleString> pagingAddresses = (Set<SimpleString>)tx.getProperty(TransactionPropertyIndexes.DESTINATIONS_IN_PAGE_MODE);
+         
+         if (pagingAddresses == null)
          {
-            tx.addPagingAddress(destination);
+            pagingAddresses = new HashSet<SimpleString>();
+            
+            tx.putProperty(TransactionPropertyIndexes.DESTINATIONS_IN_PAGE_MODE, pagingAddresses);
+         }
+         
+         boolean depage = tx.getProperty(TransactionPropertyIndexes.IS_DEPAGE) != null;
+         
+         if (!depage && !message.isReload() && (pagingAddresses.contains(destination) || pagingManager.isPaging(destination)))
+         {
+            pagingAddresses.add(destination);
 
             tx.addPagingMessage(message);
          }

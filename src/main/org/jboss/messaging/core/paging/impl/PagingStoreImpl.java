@@ -48,6 +48,7 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.SimpleString;
 
@@ -733,7 +734,11 @@ public class PagingStoreImpl implements TestSupportPageStore
       // Depage has to be done atomically, in case of failure it should be
       // back to where it was
       
-      Transaction depageTransaction = new TransactionImpl(storageManager, postOffice, true);
+      Transaction depageTransaction = new TransactionImpl(storageManager, postOffice);
+      
+      depageTransaction.setContainsPersistent(true);
+      
+      depageTransaction.putProperty(TransactionPropertyIndexes.IS_DEPAGE, Boolean.valueOf(true));
 
       HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
             

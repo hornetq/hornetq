@@ -56,11 +56,6 @@ public class TransactionImpl implements Transaction
 
    private final PagingManager pagingManager;
 
-   /** List of destinations in page mode.
-    *  Once a destination was considered in page, it should go toward paging until commit is called, 
-    *  even if the page-mode has changed, or messageOrder won't be respected */
-   private final Set<SimpleString> destinationsInPageMode = new HashSet<SimpleString>();
-
    // FIXME: As part of https://jira.jboss.org/jira/browse/JBMESSAGING-1313
    private final List<ServerMessage> pagedMessages = new ArrayList<ServerMessage>();
 
@@ -81,7 +76,7 @@ public class TransactionImpl implements Transaction
    private final long createTime;
    
    //For a transaction used for depaging, we never want to immediately page the refs again
-   private final boolean depage;
+   //private final boolean depage;
 
    public TransactionImpl(final StorageManager storageManager, final PostOffice postOffice)
    {
@@ -103,38 +98,6 @@ public class TransactionImpl implements Transaction
       id = storageManager.generateUniqueID();
 
       createTime = System.currentTimeMillis();
-      
-      this.depage = false;
-   }
-   
-   public TransactionImpl(final StorageManager storageManager, final PostOffice postOffice, final boolean depage)
-   {
-      this.storageManager = storageManager;
-
-      this.postOffice = postOffice;
-
-      if (postOffice == null)
-      {
-         pagingManager = null;
-      }
-      else
-      {
-         pagingManager = postOffice.getPagingManager();
-      }
-
-      xid = null;
-
-      id = storageManager.generateUniqueID();
-
-      createTime = System.currentTimeMillis();
-      
-      this.depage = depage;
-      
-      if (depage)
-      {
-         //Need to force to true, since other last page record won't be committed
-         this.containsPersistent = true;
-      }
    }
 
    public TransactionImpl(final Xid xid, final StorageManager storageManager, final PostOffice postOffice)
@@ -157,8 +120,6 @@ public class TransactionImpl implements Transaction
       id = storageManager.generateUniqueID();
 
       createTime = System.currentTimeMillis();
-      
-      this.depage = false;
    }
 
    public TransactionImpl(final long id, final Xid xid, final StorageManager storageManager, final PostOffice postOffice)
@@ -181,8 +142,6 @@ public class TransactionImpl implements Transaction
       }
 
       createTime = System.currentTimeMillis();
-      
-      this.depage = false;
    }
 
    // Transaction implementation
@@ -191,13 +150,6 @@ public class TransactionImpl implements Transaction
    public long getID()
    {
       return id;
-   }
-
-   public void addDuplicateID(final SimpleString address, final SimpleString duplID, final long recordID) throws Exception
-   {
-      storageManager.storeDuplicateIDTransactional(id, address, duplID, recordID);
-
-      containsPersistent = true;
    }
 
    public long getCreateTime()
@@ -439,24 +391,9 @@ public class TransactionImpl implements Transaction
       this.pageTransaction = pageTransaction;      
    }
    
-   public Set<SimpleString> getPagingAddresses()
-   {
-      return destinationsInPageMode;
-   }
-   
    public void addPagingMessage(final ServerMessage message)
    {
       this.pagedMessages.add(message);
-   }
-   
-   public boolean isDepage()
-   {
-      return depage;
-   }
-   
-   public void addPagingAddress(final SimpleString address)
-   {
-      this.destinationsInPageMode.add(address);
    }
    
    public int getOperationsCount()
