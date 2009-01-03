@@ -249,7 +249,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       closed = true;
       
-      Transaction tx = new TransactionImpl(storageManager, postOffice);
+      Transaction tx = new TransactionImpl(storageManager);
 
       while (iter.hasNext())
       {

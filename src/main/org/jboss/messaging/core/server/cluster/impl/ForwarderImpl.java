@@ -391,7 +391,7 @@ public class ForwarderImpl implements Forwarder, FailureListener
 
    private void createTx()
    {
-      tx = new TransactionImpl(storageManager, postOffice);
+      tx = new TransactionImpl(storageManager);
    }
 
    // Inner classes -------------------------------------------------

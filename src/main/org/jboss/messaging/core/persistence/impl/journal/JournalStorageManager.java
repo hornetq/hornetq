@@ -850,7 +850,7 @@ public class JournalStorageManager implements StorageManager
 
          Xid xid = encodingXid.xid;
 
-         Transaction tx = new TransactionImpl(preparedTransaction.id, xid, this, postOffice);
+         Transaction tx = new TransactionImpl(preparedTransaction.id, xid, this);
 
          List<MessageReference> referencesToAck = new ArrayList<MessageReference>();
 

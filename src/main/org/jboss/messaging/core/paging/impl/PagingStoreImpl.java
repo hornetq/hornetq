@@ -734,7 +734,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       // Depage has to be done atomically, in case of failure it should be
       // back to where it was
       
-      Transaction depageTransaction = new TransactionImpl(storageManager, postOffice);
+      Transaction depageTransaction = new TransactionImpl(storageManager);
       
       depageTransaction.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
       

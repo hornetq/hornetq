@@ -669,7 +669,7 @@ public class TransactionImplTest extends UnitTestCase
    	
       EasyMock.replay(sm, po);
       
-      Transaction tx = new TransactionImpl(sm, po);
+      Transaction tx = new TransactionImpl(sm);
       
       EasyMock.verify(sm, po);
       

@@ -218,7 +218,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (!xa)
       {
-         tx = new TransactionImpl(storageManager, postOffice);
+         tx = new TransactionImpl(storageManager);
       }
 
       this.channel = channel;
@@ -1649,7 +1649,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
       finally
       {
-         tx = new TransactionImpl(storageManager, postOffice);
+         tx = new TransactionImpl(storageManager);
       }
 
       channel.confirm(packet);
@@ -2555,12 +2555,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          // Might be null if XA
 
-         tx = new TransactionImpl(storageManager, postOffice);
+         tx = new TransactionImpl(storageManager);
       }
 
       doRollback(tx);
 
-      tx = new TransactionImpl(storageManager, postOffice);
+      tx = new TransactionImpl(storageManager);
    }
 
    private void send(final ServerMessage msg) throws Exception

@@ -45,4 +45,6 @@ public class TransactionPropertyIndexes
    public static final int CONTAINS_PERSISTENT = 4;
    
    public static final int PAGE_TRANSACTION = 5;
+   
+   public static final int PAGED_MESSAGES = 6;
 }

@@ -25,8 +25,6 @@ package org.jboss.messaging.core.transaction;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.paging.PageTransactionInfo;
-import org.jboss.messaging.core.server.ServerMessage;
 
 /**
  * A JBoss Messaging internal transaction
@@ -41,8 +39,6 @@ public interface Transaction
    void commit() throws Exception;
 
    void rollback() throws Exception;
-
-   void addPagingMessage(ServerMessage message);
 
    int getOperationsCount();
 
@@ -59,8 +55,6 @@ public interface Transaction
    void setState(State state);
 
    void markAsRollbackOnly(MessagingException messagingException);
-
-   //void setPageTransaction(PageTransactionInfo pageTransaction);
 
    long getCreateTime();
 

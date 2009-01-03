@@ -29,8 +29,10 @@ import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
+import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -186,7 +188,7 @@ public class QueueImpl implements Queue
       {
          //We need to store the duplicate id atomically with the message storage, so we need to create a tx for this
          
-         tx = new TransactionImpl(storageManager, postOffice);
+         tx = new TransactionImpl(storageManager);
          
          startedTx = true;
       }
@@ -259,8 +261,19 @@ public class QueueImpl implements Queue
          if (!depage && !message.isReload() && (pagingAddresses.contains(destination) || pagingManager.isPaging(destination)))
          {
             pagingAddresses.add(destination);
-
-            tx.addPagingMessage(message);
+                        
+            List<ServerMessage> messages = (List<ServerMessage>)tx.getProperty(TransactionPropertyIndexes.PAGED_MESSAGES);
+            
+            if (messages == null)
+            {
+               messages = new ArrayList<ServerMessage>();
+               
+               tx.putProperty(TransactionPropertyIndexes.PAGED_MESSAGES, messages);
+               
+               tx.addOperation(new PageMessageOperation());
+            }
+            
+            messages.add(message);
          }
          else
          {
@@ -314,57 +327,8 @@ public class QueueImpl implements Queue
          tx.commit();
       }
    }
-
-   private class AddMessageOperation implements TransactionOperation
-   {
-      private final MessageReference ref;
-      
-      private final boolean first;
-
-      AddMessageOperation(final MessageReference ref, final boolean first)
-      {
-         this.ref = ref;
-         
-         this.first = first;
-      }
-
-      public void afterCommit(final Transaction tx) throws Exception
-      {
-         addLast(ref);
-      }
-
-      public void afterPrepare(final Transaction tx) throws Exception
-      {
-      }
-
-      public void afterRollback(final Transaction tx) throws Exception
-      {
-      }
-
-      public void beforeCommit(final Transaction tx) throws Exception
-      {         
-      }
-
-      public void beforePrepare(final Transaction tx) throws Exception
-      {
-      }
-
-      public void beforeRollback(final Transaction tx) throws Exception
-      {
-         ServerMessage msg = ref.getMessage();
-         
-         PagingStore store = pagingManager.getPageStore(msg.getDestination());
-         
-         store.addSize(-ref.getMemoryEstimate());
-         
-         if (first)
-         {
-            store.addSize(-msg.getMemoryEstimate());
-         }
-      }
-
-   }
-
+   
+   
    // Queue implementation ----------------------------------------------------------------------------------------
 
    public boolean isClustered()
@@ -626,7 +590,7 @@ public class QueueImpl implements Queue
    {
       int count = 0;
 
-      Transaction tx = new TransactionImpl(storageManager, postOffice);
+      Transaction tx = new TransactionImpl(storageManager);
 
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -665,7 +629,7 @@ public class QueueImpl implements Queue
    {
       boolean deleted = false;
 
-      Transaction tx = new TransactionImpl(storageManager, postOffice);
+      Transaction tx = new TransactionImpl(storageManager);
 
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -713,7 +677,7 @@ public class QueueImpl implements Queue
                              final PostOffice postOffice,
                              final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
-      Transaction tx = new TransactionImpl(storageManager, postOffice);
+      Transaction tx = new TransactionImpl(storageManager);
 
       int count = 0;
       Iterator<MessageReference> iter = messageReferences.iterator();
@@ -800,7 +764,7 @@ public class QueueImpl implements Queue
                                         final PostOffice postOffice,
                                         final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
-      Transaction tx = new TransactionImpl(storageManager, postOffice);
+      Transaction tx = new TransactionImpl(storageManager);
 
       int count = 0;
       Iterator<MessageReference> iter = messageReferences.iterator();
@@ -1160,5 +1124,154 @@ public class QueueImpl implements Queue
          }
       }
    }
+   
+   //TODO - this can be further optimised to have one PageMessageOperation per message, NOT one which uses a shared list
+   private class PageMessageOperation implements TransactionOperation
+   {
+      public void afterCommit(final Transaction tx) throws Exception
+      { 
+      }
+
+      public void afterPrepare(final Transaction tx) throws Exception
+      {  
+      }
+
+      public void afterRollback(final Transaction tx) throws Exception
+      {
+      }
+
+      public void beforeCommit(final Transaction tx) throws Exception
+      { 
+         if (tx.getState() != Transaction.State.PREPARED)
+         {
+            pageMessages(tx);
+         }
+      }
+
+      public void beforePrepare(final Transaction tx) throws Exception
+      { 
+         pageMessages(tx);
+      }
+
+      public void beforeRollback(final Transaction tx) throws Exception
+      {
+      }
+      
+      private void pageMessages(final Transaction tx) throws Exception
+      {
+         List<ServerMessage> messages = (List<ServerMessage>)tx.getProperty(TransactionPropertyIndexes.PAGED_MESSAGES);
+         
+         if (messages != null && !messages.isEmpty())
+         {
+            PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
+            
+            if (pageTransaction == null)
+            {
+               pageTransaction = new PageTransactionInfoImpl(tx.getID());
+               
+               tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pageTransaction);
+               
+               // To avoid a race condition where depage happens before the transaction is completed, we need to inform the
+               // pager about this transaction is being processed
+               pagingManager.addTransaction(pageTransaction);
+            }
+   
+            boolean pagingPersistent = false;
+   
+            HashSet<SimpleString> pagedDestinationsToSync = new HashSet<SimpleString>();
+   
+            // We only need to add the dupl id header once per transaction
+            boolean first = true;
+            for (ServerMessage message : messages)
+            {
+               // http://wiki.jboss.org/wiki/JBossMessaging2Paging
+               // Explained under Transaction On Paging. (This is the item B)
+               if (pagingManager.page(message, tx.getID(), first))
+               {
+                  if (message.isDurable())
+                  {
+                     // We only create pageTransactions if using persistent messages
+                     pageTransaction.increment();
+                     pagingPersistent = true;
+                     pagedDestinationsToSync.add(message.getDestination());
+                  }
+               }
+               else
+               {
+                  // This could happen when the PageStore left the pageState
+                                     
+                  //TODO is this correct - don't we lose transactionality here???
+                  postOffice.route(message, null);
+               }
+               first = false;
+            }
+   
+            if (pagingPersistent)
+            {
+               tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
+               
+               if (!pagedDestinationsToSync.isEmpty())
+               {
+                  pagingManager.sync(pagedDestinationsToSync);
+                  storageManager.storePageTransaction(tx.getID(), pageTransaction);
+               }
+            }
+            
+            messages.clear();
+         }
+      }
+      
+   }
+
+   private class AddMessageOperation implements TransactionOperation
+   {
+      private final MessageReference ref;
+      
+      private final boolean first;
+
+      AddMessageOperation(final MessageReference ref, final boolean first)
+      {
+         this.ref = ref;
+         
+         this.first = first;
+      }
+
+      public void afterCommit(final Transaction tx) throws Exception
+      {
+         addLast(ref);
+      }
+
+      public void afterPrepare(final Transaction tx) throws Exception
+      {
+      }
+
+      public void afterRollback(final Transaction tx) throws Exception
+      {
+      }
+
+      public void beforeCommit(final Transaction tx) throws Exception
+      {         
+      }
+
+      public void beforePrepare(final Transaction tx) throws Exception
+      {
+      }
+
+      public void beforeRollback(final Transaction tx) throws Exception
+      {
+         ServerMessage msg = ref.getMessage();
+         
+         PagingStore store = pagingManager.getPageStore(msg.getDestination());
+         
+         store.addSize(-ref.getMemoryEstimate());
+         
+         if (first)
+         {
+            store.addSize(-msg.getMemoryEstimate());
+         }
+      }
+
+   }
+
 
 }

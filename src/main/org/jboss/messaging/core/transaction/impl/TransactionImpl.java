@@ -13,7 +13,6 @@
 package org.jboss.messaging.core.transaction.impl;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import javax.transaction.xa.Xid;
@@ -21,15 +20,11 @@ import javax.transaction.xa.Xid;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
-import org.jboss.messaging.core.paging.PagingManager;
-import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * A TransactionImpl
@@ -51,15 +46,6 @@ public class TransactionImpl implements Transaction
       
    private final StorageManager storageManager;
 
-   private final PostOffice postOffice;
-
-   private final PagingManager pagingManager;
-
-   // FIXME: As part of https://jira.jboss.org/jira/browse/JBMESSAGING-1313
-   private final List<ServerMessage> pagedMessages = new ArrayList<ServerMessage>();
-
-   //private volatile PageTransactionInfo pageTransaction;
-
    private final Xid xid;
 
    private final long id;
@@ -72,23 +58,9 @@ public class TransactionImpl implements Transaction
 
    private final long createTime;
    
-   //For a transaction used for depaging, we never want to immediately page the refs again
-   //private final boolean depage;
-
-   public TransactionImpl(final StorageManager storageManager, final PostOffice postOffice)
+   public TransactionImpl(final StorageManager storageManager)
    {
       this.storageManager = storageManager;
-
-      this.postOffice = postOffice;
-
-      if (postOffice == null)
-      {
-         pagingManager = null;
-      }
-      else
-      {
-         pagingManager = postOffice.getPagingManager();
-      }
 
       xid = null;
 
@@ -101,17 +73,6 @@ public class TransactionImpl implements Transaction
    {
       this.storageManager = storageManager;
 
-      this.postOffice = postOffice;
-
-      if (postOffice == null)
-      {
-         pagingManager = null;
-      }
-      else
-      {
-         pagingManager = postOffice.getPagingManager();
-      }
-
       this.xid = xid;
 
       id = storageManager.generateUniqueID();
@@ -119,24 +80,13 @@ public class TransactionImpl implements Transaction
       createTime = System.currentTimeMillis();
    }
 
-   public TransactionImpl(final long id, final Xid xid, final StorageManager storageManager, final PostOffice postOffice)
+   public TransactionImpl(final long id, final Xid xid, final StorageManager storageManager)
    {
       this.storageManager = storageManager;
-
-      this.postOffice = postOffice;
 
       this.xid = xid;
 
       this.id = id;
-
-      if (postOffice == null)
-      {
-         pagingManager = null;
-      }
-      else
-      {
-         pagingManager = postOffice.getPagingManager();
-      }
 
       createTime = System.currentTimeMillis();
    }
@@ -180,8 +130,6 @@ public class TransactionImpl implements Transaction
                operation.beforePrepare(this);
             }
          }
-
-         pageMessages();
 
          storageManager.prepare(id, xid);
 
@@ -237,11 +185,6 @@ public class TransactionImpl implements Transaction
             }
          }
 
-         if (state != State.PREPARED)
-         {
-            pageMessages();
-         }
-
          if ((getProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT) != null) || xid != null)
          {
             storageManager.commit(id);
@@ -257,8 +200,6 @@ public class TransactionImpl implements Transaction
          {
             pageTransaction.commit();
          }
-
-         clear();
 
          state = State.COMMITTED;
 
@@ -367,16 +308,6 @@ public class TransactionImpl implements Transaction
       operations.remove(operation);
    }
    
-//   public void setPageTransaction(PageTransactionInfo pageTransaction)
-//   {
-//      this.pageTransaction = pageTransaction;      
-//   }
-   
-   public void addPagingMessage(final ServerMessage message)
-   {
-      this.pagedMessages.add(message);
-   }
-   
    public int getOperationsCount()
    {
       return operations.size();
@@ -417,8 +348,6 @@ public class TransactionImpl implements Transaction
       {
          pageTransaction.rollback();
       }
-
-      clear();
    }
 
    private void checkCreateOperations()
@@ -429,68 +358,4 @@ public class TransactionImpl implements Transaction
       }
    }
 
-   private void pageMessages() throws Exception
-   {
-      if (!pagedMessages.isEmpty())
-      {
-         PageTransactionInfo pageTransaction = (PageTransactionInfo)getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
-         
-         if (pageTransaction == null)
-         {
-            pageTransaction = new PageTransactionInfoImpl(id);
-            
-            putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pageTransaction);
-            
-            // To avoid a race condition where depage happens before the transaction is completed, we need to inform the
-            // pager about this transaction is being processed
-            pagingManager.addTransaction(pageTransaction);
-         }
-
-         boolean pagingPersistent = false;
-
-         HashSet<SimpleString> pagedDestinationsToSync = new HashSet<SimpleString>();
-
-         // We only need to add the dupl id header once per transaction
-         boolean first = true;
-         for (ServerMessage message : pagedMessages)
-         {
-            // http://wiki.jboss.org/wiki/JBossMessaging2Paging
-            // Explained under Transaction On Paging. (This is the item B)
-            if (pagingManager.page(message, id, first))
-            {
-               if (message.isDurable())
-               {
-                  // We only create pageTransactions if using persistent messages
-                  pageTransaction.increment();
-                  pagingPersistent = true;
-                  pagedDestinationsToSync.add(message.getDestination());
-               }
-            }
-            else
-            {
-               // This could happen when the PageStore left the pageState
-                                  
-               //TODO is this correct - don't we lose transactionality here???
-               postOffice.route(message, null);
-            }
-            first = false;
-         }
-
-         if (pagingPersistent)
-         {
-            putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
-            
-            if (!pagedDestinationsToSync.isEmpty())
-            {
-               pagingManager.sync(pagedDestinationsToSync);
-               storageManager.storePageTransaction(id, pageTransaction);
-            }
-         }
-      }
-   }
-
-   private void clear()
-   {
-      pagedMessages.clear();
-   }
 }

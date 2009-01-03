@@ -208,7 +208,7 @@ public class MessageReferenceImpl implements MessageReference
          log.warn("Message has exceeded max delivery attempts. No Dead Letter Address configured for queue " + queue.getName() +
                   " so dropping it");
 
-         Transaction tx = new TransactionImpl(storageManager, postOffice);
+         Transaction tx = new TransactionImpl(storageManager);
 
          acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
 
@@ -239,7 +239,7 @@ public class MessageReferenceImpl implements MessageReference
       {
          log.warn("Message has expired. No expiry queue configured for queue " + queue.getName() + " so dropping it");
 
-         Transaction tx = new TransactionImpl(storageManager, postOffice);
+         Transaction tx = new TransactionImpl(storageManager);
 
          acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
 
@@ -380,7 +380,7 @@ public class MessageReferenceImpl implements MessageReference
                      final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                      final boolean expiry) throws Exception
    {
-      Transaction tx = new TransactionImpl(storageManager, postOffice);
+      Transaction tx = new TransactionImpl(storageManager);
 
       // FIXME: JBMESSAGING-1468
       ServerMessage copyMessage = makeCopy(expiry, storageManager);
