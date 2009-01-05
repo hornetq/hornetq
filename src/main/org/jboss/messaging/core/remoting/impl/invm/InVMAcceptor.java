@@ -116,7 +116,7 @@ public class InVMAcceptor implements Acceptor
          throw new IllegalStateException("Acceptor is not started");
       }
       
-      new InVMConnection(connectionID, remoteHandler, new Listener(connector));               
+      new InVMConnection(id, connectionID, remoteHandler, new Listener(connector));               
    }
    
    public void disconnect(final String connectionID)

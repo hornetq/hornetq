@@ -324,7 +324,7 @@ public class FileConfiguration extends ConfigurationImpl
    private TransportConfiguration parseTransportConfiguration(final Node node)
    {
       Node nameNode = node.getAttributes().getNamedItem("name");
-
+      
       String name = nameNode != null ? nameNode.getNodeValue() : null;
 
       NodeList children = node.getChildNodes();

@@ -13,6 +13,7 @@
 package org.jboss.messaging.core.client.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.LinkedList;
@@ -694,7 +695,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          if (!directory.exists())
          {
-            directory.mkdirs();
+            boolean ok = directory.mkdirs();
+            
+            if (!ok)
+            {
+               throw new IOException("Failed to create directory " + directory.getCanonicalPath());
+            }
          }
 
          ClientFileMessageImpl message = new ClientFileMessageImpl();

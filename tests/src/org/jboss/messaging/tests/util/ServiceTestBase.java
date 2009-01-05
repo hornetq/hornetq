@@ -135,7 +135,12 @@ public class ServiceTestBase extends UnitTestCase
    {
       return createService(realFiles, configuration, new HashMap<String, QueueSettings>());
    }
-
+   
+   protected MessagingService createClusteredServiceWithParams(final boolean realFiles, final Map<String, Object> params)
+   {
+      return createService(realFiles, createClusteredDefaultConfig(params, INVM_ACCEPTOR_FACTORY), new HashMap<String, QueueSettings>());
+   }
+   
    protected Configuration createDefaultConfig()
    {
       return createDefaultConfig(false);
@@ -145,16 +150,24 @@ public class ServiceTestBase extends UnitTestCase
    {
       if (netty)
       {
-         return createDefaultConfig(INVM_ACCEPTOR_FACTORY, NETTY_ACCEPTOR_FACTORY);
+         return createDefaultConfig(new HashMap<String, Object>(), INVM_ACCEPTOR_FACTORY, NETTY_ACCEPTOR_FACTORY);
       }
       else
       {
-         return createDefaultConfig(INVM_ACCEPTOR_FACTORY);
-      }
+         return createDefaultConfig(new HashMap<String, Object>(), INVM_ACCEPTOR_FACTORY);
+      }      
+   }
+   
+   protected Configuration createClusteredDefaultConfig(final Map<String, Object> params, final String... acceptors)
+   {
+      Configuration config = createDefaultConfig(params, acceptors);
       
+      config.setClustered(true);
+      
+      return config;
    }
 
-   protected Configuration createDefaultConfig(final String... acceptors)
+   protected Configuration createDefaultConfig(final Map<String, Object> params, final String... acceptors)
    {
       Configuration configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
@@ -169,7 +182,7 @@ public class ServiceTestBase extends UnitTestCase
 
       for (String acceptor : acceptors)
       {
-         TransportConfiguration transportConfig = new TransportConfiguration(acceptor);
+         TransportConfiguration transportConfig = new TransportConfiguration(acceptor, params);
          configuration.getAcceptorConfigurations().add(transportConfig);
       }
 

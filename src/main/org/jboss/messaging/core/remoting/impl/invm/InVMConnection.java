@@ -53,19 +53,23 @@ public class InVMConnection implements Connection
    private final String id;
 
    private boolean closed;
+   
+   private final int serverID;
 
    private static final ExecutorFactory factory =
       new OrderedExecutorFactory(Executors.newCachedThreadPool(new JBMThreadFactory("JBM-InVM-Transport-Threads")));
 
    private final Executor executor;
 
-   public InVMConnection(final BufferHandler handler, final ConnectionLifeCycleListener listener)
-   {
-      this(UUIDGenerator.getInstance().generateSimpleStringUUID().toString(), handler, listener);
+   public InVMConnection(final int serverID, final BufferHandler handler, final ConnectionLifeCycleListener listener)
+   {      
+      this(serverID, UUIDGenerator.getInstance().generateSimpleStringUUID().toString(), handler, listener);
    }
 
-   public InVMConnection(final String id, final BufferHandler handler, final ConnectionLifeCycleListener listener)
+   public InVMConnection(final int serverID, final String id, final BufferHandler handler, final ConnectionLifeCycleListener listener)
    {
+      this.serverID = serverID;
+      
       this.handler = handler;
 
       this.listener = listener;
@@ -134,6 +138,6 @@ public class InVMConnection implements Connection
 
    public String getRemoteAddress()
    {
-      return "invm";
+      return "invm:" + serverID;
    }
 }

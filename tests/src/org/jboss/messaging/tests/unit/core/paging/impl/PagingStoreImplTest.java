@@ -67,7 +67,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
                                                   factory,
                                                   destinationTestName,
                                                   new QueueSettings(),
-                                                  executor);
+                                                  executor, true);
 
       storeImpl.start();
 
@@ -90,7 +90,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
                                                   factory,
                                                   destinationTestName,
                                                   new QueueSettings(),
-                                                  executor);
+                                                  executor, true);
 
       storeImpl.start();
 
@@ -123,7 +123,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
                                       factory,
                                       destinationTestName,
                                       new QueueSettings(),
-                                      executor);
+                                      executor, true);
 
       storeImpl.start();
 
@@ -141,7 +141,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
                                                   factory,
                                                   destinationTestName,
                                                   new QueueSettings(),
-                                                  executor);
+                                                  executor, true);
 
       storeImpl.start();
 
@@ -202,7 +202,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
                                                            factory,
                                                            destinationTestName,
                                                            new QueueSettings(),
-                                                           executor);
+                                                           executor, true);
 
       storeImpl.start();
 

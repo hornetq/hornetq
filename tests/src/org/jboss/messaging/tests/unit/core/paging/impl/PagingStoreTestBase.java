@@ -113,7 +113,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
                                                                  factory,
                                                                  new SimpleString("test"),
                                                                  settings,
-                                                                 executor);
+                                                                 executor, true);
 
       storeImpl.start();
 
@@ -268,7 +268,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
                                                             factory,
                                                             new SimpleString("test"),
                                                             settings,
-                                                            executor);
+                                                            executor, true);
       storeImpl2.start();
 
       int numberOfPages = storeImpl2.getNumberOfPages();

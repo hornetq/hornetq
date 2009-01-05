@@ -135,7 +135,7 @@ public class PagingManagerImpl implements PagingManager
 
       for (SimpleString dest : destinations)
       {
-         createPageStore(dest);
+         createPageStore(dest, false);
       }
    }
 
@@ -143,13 +143,13 @@ public class PagingManagerImpl implements PagingManager
     * @param destination
     * @return
     */
-   public synchronized PagingStore createPageStore(final SimpleString storeName) throws Exception
+   public synchronized PagingStore createPageStore(final SimpleString storeName, final boolean createDir) throws Exception
    {
       PagingStore store = stores.get(storeName);
 
       if (store == null)
       {
-         store = newStore(storeName);
+         store = newStore(storeName, createDir);
 
          PagingStore oldStore = stores.putIfAbsent(storeName, store);
 
@@ -172,7 +172,7 @@ public class PagingManagerImpl implements PagingManager
 
       if (store == null)
       {
-         store = createPageStore(storeName);
+         store = createPageStore(storeName, true);
       }
 
       return store;
@@ -334,9 +334,9 @@ public class PagingManagerImpl implements PagingManager
 
    // Private -------------------------------------------------------
 
-   private PagingStore newStore(final SimpleString destinationName)
+   private PagingStore newStore(final SimpleString destinationName, final boolean createDir)
    {
-      return pagingStoreFactory.newStore(destinationName, queueSettingsRepository.getMatch(destinationName.toString()));
+      return pagingStoreFactory.newStore(destinationName, queueSettingsRepository.getMatch(destinationName.toString()), createDir);
    }
 
    // Inner classes -------------------------------------------------

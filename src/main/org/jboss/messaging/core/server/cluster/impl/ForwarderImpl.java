@@ -166,23 +166,26 @@ public class ForwarderImpl implements Forwarder, FailureListener
    }
 
    public synchronized void start() throws Exception
-   {
+   {      
       if (started)
       {
          return;
       }
+      
+      queue.addConsumer(this);
 
       createTx();
 
-      createObjects();
-
-      queue.addConsumer(this);
-
-      started = true;
+      if (createObjects())
+      {         
+         started = true;
+         
+         queue.deliverAsync(executor);
+      }
    }
 
    public synchronized void stop() throws Exception
-   {
+   {      
       started = false;
 
       queue.removeConsumer(this);
@@ -239,7 +242,7 @@ public class ForwarderImpl implements Forwarder, FailureListener
          {
             return HandleStatus.BUSY;
          }
-         
+          
          reference.getQueue().referenceHandled();
          
          refs.add(reference);
@@ -290,7 +293,7 @@ public class ForwarderImpl implements Forwarder, FailureListener
 
    // Private -------------------------------------------------------
 
-   private void createObjects() throws Exception
+   private boolean createObjects() throws Exception
    {
       try
       {
@@ -302,12 +305,14 @@ public class ForwarderImpl implements Forwarder, FailureListener
          
          stop();
          
-         return;
+         return false;
       }
 
       session.addFailureListener(this);
 
       producer = session.createProducer(null);      
+      
+      return true;
    }
 
    private synchronized void timeoutBatch()
@@ -359,13 +364,13 @@ public class ForwarderImpl implements Forwarder, FailureListener
           
             SimpleString forwardingDestination = (SimpleString)message.getProperty(MessageImpl.HDR_ORIGIN_QUEUE);
 
-            producer.send(forwardingDestination, message);
-         }
+            producer.send(forwardingDestination, message);                       
+         }                 
 
          session.commit();
 
          tx.commit();
-
+         
          createTx();
 
          busy = false;

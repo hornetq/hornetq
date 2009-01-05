@@ -111,6 +111,8 @@ public class PagingStoreImpl implements TestSupportPageStore
    private final ReadWriteLock currentPageLock = new ReentrantReadWriteLock();
 
    private volatile boolean running = false;
+   
+   private final boolean createDir;
 
    // Static --------------------------------------------------------
 
@@ -135,7 +137,8 @@ public class PagingStoreImpl implements TestSupportPageStore
                           final SequentialFileFactory fileFactory,
                           final SimpleString storeName,
                           final QueueSettings queueSettings,
-                          final Executor executor)
+                          final Executor executor,
+                          final boolean createDir)
    {
       if (pagingManager == null)
       {
@@ -166,6 +169,8 @@ public class PagingStoreImpl implements TestSupportPageStore
       this.executor = executor;
 
       this.pagingManager = pagingManager;
+      
+      this.createDir = createDir;
    }
 
    // Public --------------------------------------------------------
@@ -531,7 +536,10 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             currentPageLock.writeLock().lock();
 
-            fileFactory.createDirs();
+            if (createDir)
+            {               
+               fileFactory.createDirs();
+            }
 
             firstPageId = Integer.MAX_VALUE;
             currentPageId = 0;

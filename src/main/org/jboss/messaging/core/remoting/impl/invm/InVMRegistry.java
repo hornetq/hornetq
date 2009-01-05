@@ -35,20 +35,19 @@ import org.jboss.messaging.core.logging.Logger;
 public class InVMRegistry
 {
    private static final Logger log = Logger.getLogger(InVMRegistry.class);
-   
+
    public static final InVMRegistry instance = new InVMRegistry();
-   
-   private ConcurrentMap<Integer, InVMAcceptor> acceptors =
-      new ConcurrentHashMap<Integer, InVMAcceptor>();
-   
+
+   private ConcurrentMap<Integer, InVMAcceptor> acceptors = new ConcurrentHashMap<Integer, InVMAcceptor>();
+
    public void registerAcceptor(final int id, final InVMAcceptor acceptor)
-   {      
+   {     
       if (acceptors.putIfAbsent(id, acceptor) != null)
       {
          throw new IllegalArgumentException("Acceptor with id " + id + " already registered");
       }
    }
-   
+
    public void unregisterAcceptor(final int id)
    {      
       if (acceptors.remove(id) == null)
@@ -56,17 +55,17 @@ public class InVMRegistry
          throw new IllegalArgumentException("Acceptor with id " + id + " not registered");
       }
    }
-    
+
    public InVMAcceptor getAcceptor(final int id)
    {
       return acceptors.get(id);
    }
-   
+
    public void clear()
    {
       this.acceptors.clear();
    }
-   
+
    public int size()
    {
       return this.acceptors.size();

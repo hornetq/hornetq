@@ -159,7 +159,7 @@ public class QueueImpl implements Queue
 
       DuplicateIDCache cache = null;
 
-      if (duplicateID != null)
+      if (!message.isReload() && duplicateID != null)
       {
          cache = postOffice.getDuplicateIDCache(message.getDestination());
 
@@ -352,7 +352,7 @@ public class QueueImpl implements Queue
    }
 
    public void addLast(final MessageReference ref)
-   {      
+   {          
       add(ref, false);
    }
 

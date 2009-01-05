@@ -106,17 +106,18 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
       parentExecutor.awaitTermination(30, TimeUnit.SECONDS);
    }
 
-   public PagingStore newStore(final SimpleString destinationName, final QueueSettings settings)
+   public PagingStore newStore(final SimpleString destinationName, final QueueSettings settings, final boolean createDir)
    {      
       final String destinationDirectory = directory + "/" + Base64.encodeBytes(destinationName.getData(), Base64.URL_SAFE);
-
+      
       return new PagingStoreImpl(pagingManager,
                                  storageManager,
                                  postOffice,
                                  newFileFactory(destinationDirectory),
                                  destinationName,
                                  settings,
-                                 executorFactory.getExecutor());
+                                 executorFactory.getExecutor(),
+                                 createDir);
    }
 
    public void setPagingManager(final PagingManager pagingManager)
@@ -146,8 +147,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
       }
       else
-      {
-         
+      {         
          ArrayList<SimpleString> filesReturn = new ArrayList<SimpleString>(files.length);
          
          for (File file: files)

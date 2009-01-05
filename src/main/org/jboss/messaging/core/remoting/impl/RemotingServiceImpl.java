@@ -210,6 +210,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          acceptor.stop();
       }
+      
+      acceptors.clear();
+      
+      connections.clear();
 
       started = false;
    }

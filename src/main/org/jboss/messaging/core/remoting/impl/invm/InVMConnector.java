@@ -62,7 +62,7 @@ public class InVMConnector implements Connector
       }
    }
 
-   private final int id;
+   protected final int id;
    
    private final BufferHandler handler;
    
@@ -156,11 +156,10 @@ public class InVMConnector implements Connector
       }
    }
 
-
    // This may be an injection point for mocks on tests
    protected Connection internalCreateConnection(final BufferHandler handler, final ConnectionLifeCycleListener listener)
    {
-      return new InVMConnection(handler, listener);
+      return new InVMConnection(id, handler, listener);
    }
       
    private class Listener implements ConnectionLifeCycleListener

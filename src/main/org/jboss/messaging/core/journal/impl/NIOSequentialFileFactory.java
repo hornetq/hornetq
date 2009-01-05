@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * 
@@ -37,6 +38,8 @@ import org.jboss.messaging.core.journal.SequentialFileFactory;
  */
 public class NIOSequentialFileFactory extends AbstractSequentialFactory implements SequentialFileFactory
 {
+   private static final Logger log = Logger.getLogger(NIOSequentialFileFactory.class);
+   
    public NIOSequentialFileFactory(final String journalDir)
    {
       super(journalDir);

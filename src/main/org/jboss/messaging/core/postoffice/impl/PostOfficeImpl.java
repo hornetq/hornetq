@@ -548,6 +548,8 @@ public class PostOfficeImpl implements PostOffice
          }
       }
 
+      pagingManager.reloadStores();
+      
       Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<SimpleString, Long>>>();
 
       storageManager.loadMessageJournal(this, storageManager, queueSettingsRepository, queues, resourceManager, duplicateIDMap);
@@ -565,8 +567,7 @@ public class PostOfficeImpl implements PostOffice
       }
 
       // This is necessary as if the server was previously stopped while a depage was being executed,
-      // it needs to resume the depage process on those destinations
-      pagingManager.reloadStores();
+      // it needs to resume the depage process on those destinations      
       pagingManager.startGlobalDepage();
    }
 

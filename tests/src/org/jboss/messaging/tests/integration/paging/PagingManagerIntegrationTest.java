@@ -74,7 +74,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
       managerImpl.start();
 
-      TestSupportPageStore store = (TestSupportPageStore)managerImpl.createPageStore(new SimpleString("simple-test"));
+      TestSupportPageStore store = (TestSupportPageStore)managerImpl.createPageStore(new SimpleString("simple-test"), true);
 
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(10));
 
@@ -123,7 +123,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
                                                             false);
       managerImpl.start();
 
-      managerImpl.createPageStore(new SimpleString("simple-test"));
+      managerImpl.createPageStore(new SimpleString("simple-test"), true);
 
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(100));
 

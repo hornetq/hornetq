@@ -107,9 +107,9 @@ public class MessagingServerImpl implements MessagingServer
 
    private PostOffice postOffice;
 
-   private final ExecutorService asyncDeliveryPool = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-async-session-delivery-threads"));
+   private ExecutorService asyncDeliveryPool;
 
-   private final ExecutorFactory executorFactory = new OrderedExecutorFactory(asyncDeliveryPool);
+   private ExecutorFactory executorFactory;
 
    private HierarchicalRepository<Set<Role>> securityRepository;
 
@@ -156,6 +156,10 @@ public class MessagingServerImpl implements MessagingServer
       {
          return;
       }
+      
+      asyncDeliveryPool = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-async-session-delivery-threads"));
+
+      executorFactory = new OrderedExecutorFactory(asyncDeliveryPool);
 
       /*
        * The following components are pluggable on the messaging server: Configuration, StorageManager, RemotingService,

@@ -45,6 +45,22 @@ import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
  */
 public abstract class MessageFlowTestBase extends TestCase
 {
+   
+   protected MessagingService createMessagingServiceNIO(final int id, final Map<String, Object> params)
+   {
+      Configuration serviceConf = new ConfigurationImpl();
+      serviceConf.setClustered(true);
+      serviceConf.setSecurityEnabled(false); 
+      serviceConf.setJournalMinFiles(2);
+      serviceConf.setJournalFileSize(100 * 1024);
+      params.put(TransportConstants.SERVER_ID_PROP_NAME, id);
+      serviceConf.getAcceptorConfigurations()
+                  .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
+                                                  params));
+      MessagingService service = MessagingServiceImpl.newMessagingService(serviceConf);
+      return service;
+   }
+   
    protected MessagingService createMessagingService(final int id, final Map<String, Object> params)
    {
       Configuration serviceConf = new ConfigurationImpl();

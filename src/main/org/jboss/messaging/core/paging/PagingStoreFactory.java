@@ -38,7 +38,7 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface PagingStoreFactory
 {
-   PagingStore newStore(SimpleString destinationName, QueueSettings queueSettings);
+   PagingStore newStore(SimpleString destinationName, QueueSettings queueSettings, boolean createDir);
 
    Executor getGlobalDepagerExecutor();
 

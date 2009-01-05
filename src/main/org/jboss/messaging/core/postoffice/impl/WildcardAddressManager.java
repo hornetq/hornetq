@@ -138,7 +138,7 @@ public class WildcardAddressManager extends SimpleAddressManager
    }
 
    private synchronized Address addAndUpdateAddressMap(SimpleString address)
-   {
+   {     
       Address add = addresses.get(address);
       if (add == null)
       {
@@ -191,7 +191,7 @@ public class WildcardAddressManager extends SimpleAddressManager
    }
 
    private List<SimpleString> getAddresses(final Address address)
-   {
+   {      
       List<SimpleString> addresses = new ArrayList<SimpleString>();
       SimpleString[] parts = address.getAddressParts();
 
@@ -199,18 +199,20 @@ public class WildcardAddressManager extends SimpleAddressManager
       addresses.add(SINGLE_WORD_SIMPLESTRING);
       addresses.add(ANY_WORDS_SIMPLESTRING);
       if (address.getAddressParts().length > 1)
-      {
+      {         
          addresses = addPart(addresses, address, 1);
+               
       }
       addresses.remove(address.getAddress());
+                 
       return addresses;
    }
 
    private List<SimpleString> addPart(final List<SimpleString> addresses, final Address address, final int pos)
-   {
+   {      
       List<SimpleString> newAddresses = new ArrayList<SimpleString>();
       for (SimpleString add : addresses)
-      {
+      {         
          newAddresses.add(add.concat(DELIM).concat(SINGLE_WORD));
          newAddresses.add(add.concat(DELIM).concat(ANY_WORDS));
          newAddresses.add(add.concat(DELIM).concat(address.getAddressParts()[pos]));

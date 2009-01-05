@@ -32,7 +32,6 @@ import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  * 
- * TODO - this should be refactored to use transaction operations for adding, acking paging stuff etc
  */
 public class TransactionImpl implements Transaction
 {

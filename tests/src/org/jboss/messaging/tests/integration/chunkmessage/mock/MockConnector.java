@@ -74,7 +74,7 @@ public class MockConnector extends InVMConnector
    @Override
    protected Connection internalCreateConnection(final BufferHandler handler, final ConnectionLifeCycleListener listener)
    {
-      return new MockConnection(handler, listener);
+      return new MockConnection(id, handler, listener);
    }
 
    // Private -------------------------------------------------------
@@ -93,9 +93,9 @@ public class MockConnector extends InVMConnector
        * @param handler
        * @param listener
        */
-      public MockConnection(final BufferHandler handler, final ConnectionLifeCycleListener listener)
+      public MockConnection(final int serverID, final BufferHandler handler, final ConnectionLifeCycleListener listener)
       {
-         super(handler, listener);
+         super(serverID, handler, listener);
       }
 
       @Override

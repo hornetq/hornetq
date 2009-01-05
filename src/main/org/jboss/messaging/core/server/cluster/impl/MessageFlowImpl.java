@@ -39,7 +39,9 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.BindingType;
+import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.server.Link;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.cluster.Forwarder;
 import org.jboss.messaging.core.server.cluster.MessageFlow;
@@ -101,7 +103,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
    private final int maxRetriesBeforeFailover;
 
    private final int maxRetriesAfterFailover;
-   
+
    private final boolean useDuplicateDetection;
 
    /*
@@ -159,7 +161,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
       this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
 
       this.maxRetriesAfterFailover = maxRetriesAfterFailover;
-      
+
       this.useDuplicateDetection = useDuplicateDetection;
 
       this.updateConnectors(connectors);
@@ -220,7 +222,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
       this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
 
       this.maxRetriesAfterFailover = maxRetriesAfterFailover;
-      
+
       this.useDuplicateDetection = useDuplicateDetection;
    }
 
@@ -265,15 +267,15 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
    {
       return started;
    }
-   
+
    // MessageFlow implementation ------------------------------------
-   
+
    public SimpleString getName()
    {
       return name;
    }
-   
-   //For testing only
+
+   // For testing only
    public Set<Forwarder> getForwarders()
    {
       return new HashSet<Forwarder>(forwarders.values());
@@ -322,31 +324,66 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
       {
          if (!forwarders.containsKey(connectorPair))
          {
-            SimpleString queueName = new SimpleString("outflow." + name +
-                                                      "." +
-                                                      UUIDGenerator.getInstance().generateSimpleStringUUID());
             
-            SimpleString linkName = new SimpleString("link." + queueName.toString());
-
-            Binding binding = postOffice.getBinding(queueName);
-
-            // TODO need to delete store and forward queues that are no longer in the config
-            // and also allow ability to change filterstring etc. while keeping the same name
-            if (binding == null)
+            SimpleString linkName = new SimpleString("link." + name + "." +
+                                                     generateConnectorString(connectorPair.a) + "-" +
+                                                     (connectorPair.b == null ? "null" : generateConnectorString(connectorPair.b)));
+            
+            Queue queue = null;
+            
+            Bindings bindings = postOffice.getBindingsForAddress(address);
+              
+            for (Binding binding: bindings.getBindings())
             {
-               Filter filter = filterString == null ? null : new FilterImpl(filterString);
-
-               //Create the queue
-               
-               binding = postOffice.addQueueBinding(queueName, queueName, filter, true, false, exclusive);
-               
-               //Create the link
-               
-               postOffice.addLinkBinding(linkName, address, filter, true, false, exclusive, queueName, useDuplicateDetection);
+               if (binding.getType() == BindingType.LINK)
+               {
+                  Link link = (Link)binding.getBindable();
+                  
+                  if (link.getName().equals(linkName))
+                  {
+                     //Found the link
+                     
+                     SimpleString queueName = link.getLinkAddress();
+                     
+                     Binding queueBinding = postOffice.getBinding(queueName);
+                     
+                     if (queueBinding == null)
+                     {
+                        throw new IllegalStateException("Cannot find queue with name " + queueName);
+                     }
+                     
+                     queue = (Queue)queueBinding.getBindable();
+                  }
+               }
             }
             
-            Queue queue = (Queue)binding.getBindable();
+            if (queue == null)
+            {               
+               SimpleString queueName = new SimpleString("outflow." + name +
+                                                         "." +
+                                                         UUIDGenerator.getInstance().generateSimpleStringUUID());
+               
+               Filter filter = filterString == null ? null : new FilterImpl(filterString);
 
+               // Create the queue
+
+               Binding binding = postOffice.addQueueBinding(queueName, queueName, filter, true, false, exclusive);
+               
+               queue = (Queue)binding.getBindable();
+
+               // Create the link
+
+               postOffice.addLinkBinding(linkName,
+                                         address,
+                                         filter,
+                                         true,
+                                         false,
+                                         exclusive,
+                                         queueName,
+                                         useDuplicateDetection);
+            }
+
+    
             Forwarder forwarder = new ForwarderImpl(queue,
                                                     connectorPair,
                                                     executorFactory.getExecutor(),
@@ -369,6 +406,40 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
             forwarder.start();
          }
       }
+   }
+   
+   private String replaceWildcardChars(final String str)
+   {
+      return str.replace('.', '-');
+   }
+   
+   private SimpleString generateConnectorString(final TransportConfiguration config) throws Exception
+   {      
+      StringBuilder str = new StringBuilder(replaceWildcardChars(config.getFactoryClassName()));
+      
+      if (!config.getParams().isEmpty())
+      {
+         str.append("?");
+      }
+      
+      boolean first = true;
+      for (Map.Entry<String, Object> entry: config.getParams().entrySet())
+      {
+         if (!first)
+         {
+            str.append("&");
+         }
+         String encodedKey = replaceWildcardChars(entry.getKey());
+         
+         String val = entry.getValue().toString();
+         String encodedVal = replaceWildcardChars(val);
+         
+         str.append(encodedKey).append('=').append(encodedVal);
+         
+         first = false;
+      }
+
+      return new SimpleString(str.toString());
    }
 
 }
