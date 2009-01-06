@@ -10,19 +10,7 @@
 
    <!--this is just here to satisfy a demand in the main beans file-->
    <bean name="jboss.jca:name=DefaultDS,service=DataSourceBinding" class="java.beans.Beans"/>
-   <!--
-   <bean class="org.jgroups.JChannelFactory" name="JChannelFactory">
-   -->
-      <!--mbean code="org.jgroups.JChannelFactory" name="jgroups.mux:name=Multiplexer" xmbean-dd="resource:META-INF/multiplexer-xmbean.xml" -->
-      <!-- <property name="domain">jgroups.mux</property>
-      <property name="multiplexerConfig">multiplexer-stacks.xml</property>
-      <property name="exposeChannels">false</property>
-      <property name="exposeProtocols">false</property>
-      -->
 
-      <!-- The address used to determine the node name  -->
-      <!-- <attribute name="NodeAddress">${jboss.bind.address}</attribute> -->
-   <!--
-   </bean> -->
+   <bean name="JBossSecurityJNDIContextEstablishment" class="java.beans.Beans"/>
 
 </deployment>

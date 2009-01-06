@@ -4,14 +4,16 @@
 
    <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"/>
 
-   <bean name="DeploymentManager" class="org.jboss.messaging.core.deployers.impl.FileDeploymentManager">
+   <bean name="JBMDeploymentManager" class="org.jboss.messaging.core.deployers.impl.FileDeploymentManager">
       <constructor>
          <!-- The scan time in milliseconds -->
          <parameter>5000</parameter>
       </constructor>
    </bean>
    
-   <bean name="JBMSecurityManager" class="org.jboss.messaging.integration.security.JBossASSecurityManager"/>
+   <bean name="JBMSecurityManager" class="org.jboss.messaging.integration.security.JBossASSecurityManager">
+      <depends>JBossSecurityJNDIContextEstablishment</depends>
+   </bean>
 
    <!-- <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl">
       <constructor>
@@ -29,6 +31,7 @@
    </bean>-->
 
    <bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
+      <depends>QueueSettingsDeployer</depends>
       <property name="storageManager">
          <inject bean="StorageManager"/>
       </property>
@@ -88,10 +91,10 @@
    <bean name="JMSServerDeployer" class="org.jboss.messaging.jms.server.impl.JMSServerDeployer">
       <constructor>
          <parameter>
-            <inject bean="DeploymentManager"/>
+            <inject bean="JBMDeploymentManager"/>
          </parameter>
          <parameter>
-            <inject bean="MessagingServer" property="configuration"/>
+            <inject bean="Configuration"/>
          </parameter>
       </constructor>
       <property name="jmsServerManager">
@@ -102,7 +105,7 @@
    <bean name="QueueSettingsDeployer" class="org.jboss.messaging.core.deployers.impl.QueueSettingsDeployer">
       <constructor>
          <parameter>
-            <inject bean="DeploymentManager"/>
+            <inject bean="JBMDeploymentManager"/>
          </parameter>
          <parameter>
             <inject bean="MessagingServer" property="queueSettingsRepository" state="Configured"/>
@@ -113,7 +116,7 @@
    <bean name="SecurityDeployer" class="org.jboss.messaging.core.deployers.impl.SecurityDeployer">
       <constructor>
          <parameter>
-            <inject bean="DeploymentManager"/>
+            <inject bean="JBMDeploymentManager"/>
          </parameter>
          <parameter>
             <inject bean="MessagingServer" property="securityRepository"/>

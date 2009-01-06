@@ -69,6 +69,10 @@
 
    <!--source and build dirs-->
    <property name="build.dir" value="build"/>
+   <property name="sar.name" value="messaging.sar"/>
+   <property name="war.name" value="messaging.war"/>
+   <property name="build.sar.dir" value="${build.dir}/${sar.name}"/>
+   <property name="build.war.dir" value="${build.sar.dir}/${war.name}"/>
    <property name="build.classes.dir" value="${build.dir}/classes"/>
    <property name="build.core.classes.dir" value="${build.dir}/classes/core"/>
    <property name="build.jms.classes.dir" value="${build.dir}/classes/jms"/>
@@ -188,8 +192,14 @@
       <path refid="jboss.integration.classpath"/>
    </path>
 
+   <path id="servlet.compilation.classpath">
+      <path location="${build.core.classes.dir}"/>
+      <path refid="jboss.jboss.javaee.classpath"/>
+   </path>
+
    <path id="transports.compilation.classpath">
       <path location="${build.core.classes.dir}"/>
+      <path refid="jboss.jboss.javaee.classpath"/>
       <path refid="apache.mina.classpath"/>
       <path refid="netty.netty.classpath"/>
    </path>
@@ -623,6 +633,90 @@
    <!-- Distro Tasks                                                                           -->
    <!-- ======================================================================================== -->
 
+   <target name="deploy-jboss" depends="isJbossHomeSet, build.sar">
+      <mkdir dir="${JBOSS_HOME}/server/messaging" />
+      <copy todir="${JBOSS_HOME}/server/messaging">
+         <fileset dir="${JBOSS_HOME}/server/default">
+            <exclude name="**/messaging/**"/>
+            <exclude name="**/jboss-messaging.jar"/>
+            <exclude name="**/jboss-messaging-client.jar"/>
+         </fileset>
+      </copy>
+      <delete file="${JBOSS_HOME}/common/lib/jboss-messaging.jar"/>
+      <delete file="${JBOSS_HOME}/client/lib/jboss-messaging-client.jar"/>
+      <copy todir="${JBOSS_HOME}/server/messaging/deploy">
+         <fileset dir="${build.dir}">
+            <include name="${sar.name}/**/*"/>
+         </fileset>
+      </copy>
+      <copy todir="${JBOSS_HOME}/server/messaging/conf" overwrite="yes">
+         <fileset dir="${src.config.dir}">
+            <include name="**/*login-config.xml"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="deploy" depends="isJbossHomeSet, build.sar">
+      <copy todir="${JBOSS_HOME}/server/messaging/deploy">
+         <fileset dir="${build.dir}">
+            <include name="${sar.name}/**/*"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="isJbossHomeSet" unless="JBOSS_HOME">
+      <fail message="please set JBOSS_HOME"/>
+   </target>
+
+   <target name="build.sar" depends="jar">
+      <mkdir dir="${build.sar.dir}"/>
+      <mkdir dir="${build.war.dir}"/>
+
+       <copy todir="${build.sar.dir}">
+         <fileset dir="${src.config.dir}">
+            <include name="jbm-*"/>
+            <include name="queues.xml"/>
+            <exclude name="jbm-standalone*"/>
+            <exclude name="jbm-cluster*"/>
+         </fileset>
+      </copy>
+      <copy todir="${build.sar.dir}">
+         <fileset dir="${build.jars.dir}">
+            <include name="*.jar"/>
+         </fileset>
+         <fileset dir="${apache.mina.lib}">
+            <include name="*.jar"/>
+            <exclude name="*sources.jar"/>
+         </fileset>
+         <fileset dir="${netty.netty.lib}">
+            <include name="*.jar"/>
+            <exclude name="*sources.jar"/>
+         </fileset>
+      </copy>
+      <copy todir="${build.war.dir}">
+         <fileset dir="${src.dir}">
+            <include name="WEB-INF/*"/>
+         </fileset>
+      </copy>
+      <mkdir dir="${build.war.dir}/WEB-INF/classes"/>
+      <javac destdir="${build.war.dir}/WEB-INF/classes"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="**/messaging/servlet/*.java"/>
+         <classpath refid="servlet.compilation.classpath"/>
+      </javac>
+   </target>
 
    <target name="distro" depends="jar, jar-client">
 

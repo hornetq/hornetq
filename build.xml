@@ -143,7 +143,17 @@
    <!-- ======================================================================================== -->
    <!-- Distro Tasks                                                                           -->
    <!-- ======================================================================================== -->
+   <target name="deploy-jboss" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="deploy-jboss"/>
+   </target>
 
+   <target name="deploy" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="deploy"/>
+   </target>
+
+    <target name="build.sar" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="build.sar"/>
+   </target>
 
    <target name="distro" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="distro"/>

@@ -314,7 +314,7 @@ public class JBMServerTestCase extends JBMBaseTestCase
 
    public String[] getContainerConfig()
    {
-         return new String[]{ "invm-beans.xml", "jbm-beans.xml"};
+         return new String[]{ "invm-beans.xml", "jbm-jboss-beans.xml"};
    }
 
    protected MessagingServer getJmsServer() throws Exception
