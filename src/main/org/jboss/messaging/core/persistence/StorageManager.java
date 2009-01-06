@@ -27,7 +27,6 @@ import java.util.Map;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -116,12 +115,5 @@ public interface StorageManager extends MessagingComponent
 
    boolean deleteDestination(SimpleString destination) throws Exception;
 
-   long addPageDirDestination(SimpleString pageAddress) throws Exception;
-
-   void deletePageDirDestination(long pageAddressID) throws Exception;
-
-   void loadBindings(BindableFactory queueFactory,
-                     List<Binding> bindings,
-                     List<SimpleString> destinations,
-                     Map<SimpleString, Long> pageDestinationDirectory) throws Exception;
+   void loadBindings(BindableFactory queueFactory, List<Binding> bindings, List<SimpleString> destinations) throws Exception;
 }

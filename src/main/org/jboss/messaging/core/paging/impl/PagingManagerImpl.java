@@ -24,7 +24,6 @@ package org.jboss.messaging.core.paging.impl;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -84,6 +83,15 @@ public class PagingManagerImpl implements PagingManager
 
    private static final Logger log = Logger.getLogger(PagingManagerImpl.class);
 
+   // This is just a debug tool method.
+   // During debugs you could make log.trace as log.info, and change the
+   // variable isTrace above
+   private static void trace(final String message)
+   {
+      // log.trace(message);
+      log.info(message);
+   }
+
    // Constructors
    // --------------------------------------------------------------------------------------------------------------------
 
@@ -121,16 +129,14 @@ public class PagingManagerImpl implements PagingManager
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.paging.PagingManager#reloadStores()
     */
-   public void reloadStores(Map<SimpleString, Long> pageDestinations) throws Exception
+   public void reloadStores() throws Exception
    {
-      List<PagingStore> destinations = pagingStoreFactory.reloadStores(pageDestinations, queueSettingsRepository);
+      List<SimpleString> destinations = pagingStoreFactory.getStoredDestinations();
 
-      for (PagingStore store: destinations)
+      for (SimpleString dest : destinations)
       {
-         stores.put(store.getStoreName(), store);
-         store.start();
+         createPageStore(dest, false);
       }
-
    }
 
    /**
@@ -143,7 +149,7 @@ public class PagingManagerImpl implements PagingManager
 
       if (store == null)
       {
-         store = newStore(storeName);
+         store = newStore(storeName, createDir);
 
          PagingStore oldStore = stores.putIfAbsent(storeName, store);
 
@@ -328,9 +334,9 @@ public class PagingManagerImpl implements PagingManager
 
    // Private -------------------------------------------------------
 
-   private PagingStore newStore(final SimpleString destinationName) throws Exception
+   private PagingStore newStore(final SimpleString destinationName, final boolean createDir)
    {
-      return pagingStoreFactory.newStore(destinationName, queueSettingsRepository.getMatch(destinationName.toString()));
+      return pagingStoreFactory.newStore(destinationName, queueSettingsRepository.getMatch(destinationName.toString()), createDir);
    }
 
    // Inner classes -------------------------------------------------

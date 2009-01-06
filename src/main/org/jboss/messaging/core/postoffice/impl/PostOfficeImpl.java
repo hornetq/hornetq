@@ -526,10 +526,8 @@ public class PostOfficeImpl implements PostOffice
       List<Binding> bindings = new ArrayList<Binding>();
 
       List<SimpleString> dests = new ArrayList<SimpleString>();
-      
-      Map<SimpleString, Long> pageDestinations = new HashMap<SimpleString, Long>();
 
-      storageManager.loadBindings(bindableFactory, bindings, dests, pageDestinations);
+      storageManager.loadBindings(bindableFactory, bindings, dests);
 
       // Destinations must be added first to ensure flow controllers exist
       // before queues are created
@@ -550,7 +548,7 @@ public class PostOfficeImpl implements PostOffice
          }
       }
 
-      pagingManager.reloadStores(pageDestinations);
+      pagingManager.reloadStores();
       
       Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<SimpleString, Long>>>();
 

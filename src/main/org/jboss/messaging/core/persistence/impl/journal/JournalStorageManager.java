@@ -104,8 +104,6 @@ public class JournalStorageManager implements StorageManager
    public static final byte BINDING_RECORD = 21;
 
    public static final byte DESTINATION_RECORD = 22;
-   
-   public static final byte PAGE_DESTINATION_DIR_RECORD = 23;
 
    // type + expiration + timestamp + priority
    public static final int SIZE_FIELDS = SIZE_INT + SIZE_LONG + SIZE_LONG + SIZE_BYTE;
@@ -632,24 +630,6 @@ public class JournalStorageManager implements StorageManager
       bindingsJournal.appendDeleteRecord(id);
    }
 
-
-   
-   public long addPageDirDestination(final SimpleString pageAddress) throws Exception
-   {
-      long destinationID = idGenerator.generateID();
-
-      DestinationEncoding destinationEnc = new DestinationEncoding(pageAddress);
-
-      bindingsJournal.appendAddRecord(destinationID, PAGE_DESTINATION_DIR_RECORD, destinationEnc);
-
-      return destinationID;
-   }
-
-   public void deletePageDirDestination(final long pageAddressID) throws Exception
-   {
-      bindingsJournal.appendDeleteRecord(pageAddressID);
-   }
-   
    public boolean addDestination(final SimpleString destination) throws Exception
    {
       long destinationID = idGenerator.generateID();
@@ -687,8 +667,7 @@ public class JournalStorageManager implements StorageManager
 
    public void loadBindings(final BindableFactory bindableFactory,
                             final List<Binding> bindings,
-                            final List<SimpleString> destinations,
-                            final Map<SimpleString, Long> pageDestinationDirectory) throws Exception
+                            final List<SimpleString> destinations) throws Exception
    {
       List<RecordInfo> records = new ArrayList<RecordInfo>();
 
@@ -751,14 +730,6 @@ public class JournalStorageManager implements StorageManager
             destinationIDMap.put(destinationEncoding.destination, id);
 
             destinations.add(destinationEncoding.destination);
-         }
-         else if (rec == PAGE_DESTINATION_DIR_RECORD)
-         {
-            DestinationEncoding destinationEncoding = new DestinationEncoding();
-
-            destinationEncoding.decode(buffer);
-            
-            pageDestinationDirectory.put(destinationEncoding.destination, id);
          }
          else
          {

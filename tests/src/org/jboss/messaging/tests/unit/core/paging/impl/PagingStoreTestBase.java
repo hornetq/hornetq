@@ -39,7 +39,6 @@ import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.paging.PagingManager;
-import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreImpl;
 import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
@@ -92,10 +91,6 @@ public abstract class PagingStoreTestBase extends UnitTestCase
    protected void testConcurrentPaging(final SequentialFileFactory factory, final int numberOfThreads) throws Exception,
                                                                                                       InterruptedException
    {
-      
-      PagingStoreFactory storeFactory = EasyMock.createNiceMock(PagingStoreFactory.class);
-      
-      EasyMock.replay(storeFactory);
 
       final int MAX_SIZE = 1024 * 10;
 
@@ -116,10 +111,9 @@ public abstract class PagingStoreTestBase extends UnitTestCase
                                                                  createStorageManagerMock(),
                                                                  createPostOfficeMock(),
                                                                  factory,
-                                                                 storeFactory,
                                                                  new SimpleString("test"),
                                                                  settings,
-                                                                 executor);
+                                                                 executor, true);
 
       storeImpl.start();
 
@@ -272,10 +266,9 @@ public abstract class PagingStoreTestBase extends UnitTestCase
                                                             createStorageManagerMock(),
                                                             createPostOfficeMock(),
                                                             factory,
-                                                            storeFactory,
                                                             new SimpleString("test"),
                                                             settings,
-                                                            executor);
+                                                            executor, true);
       storeImpl2.start();
 
       int numberOfPages = storeImpl2.getNumberOfPages();

@@ -43,7 +43,6 @@ import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
-import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -77,10 +76,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private final SimpleString storeName;
 
-   // The FileFactory is created lazily as soon as the first write is attempted
-   private volatile SequentialFileFactory fileFactory;
-
-   private final PagingStoreFactory storeFactory;
+   private final SequentialFileFactory fileFactory;
 
    private final long maxSize;
 
@@ -115,6 +111,8 @@ public class PagingStoreImpl implements TestSupportPageStore
    private final ReadWriteLock currentPageLock = new ReentrantReadWriteLock();
 
    private volatile boolean running = false;
+   
+   private final boolean createDir;
 
    // Static --------------------------------------------------------
 
@@ -137,10 +135,10 @@ public class PagingStoreImpl implements TestSupportPageStore
                           final StorageManager storageManager,
                           final PostOffice postOffice,
                           final SequentialFileFactory fileFactory,
-                          final PagingStoreFactory storeFactory,
                           final SimpleString storeName,
                           final QueueSettings queueSettings,
-                          final Executor executor)
+                          final Executor executor,
+                          final boolean createDir)
    {
       if (pagingManager == null)
       {
@@ -150,6 +148,8 @@ public class PagingStoreImpl implements TestSupportPageStore
       this.storageManager = storageManager;
 
       this.postOffice = postOffice;
+
+      this.fileFactory = fileFactory;
 
       this.storeName = storeName;
 
@@ -169,10 +169,8 @@ public class PagingStoreImpl implements TestSupportPageStore
       this.executor = executor;
 
       this.pagingManager = pagingManager;
-
-      this.fileFactory = fileFactory;
-
-      this.storeFactory = storeFactory;
+      
+      this.createDir = createDir;
    }
 
    // Public --------------------------------------------------------
@@ -321,7 +319,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
 
-   // TODO all of this can be simplified
+   //TODO all of this can be simplified
    public boolean page(final PagedMessage message, final boolean sync, final boolean duplicateDetection) throws Exception
    {
       if (!running)
@@ -359,26 +357,25 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             return false;
          }
-
+         
          if (duplicateDetection)
          {
-            // We set the duplicate detection header to prevent the message being depaged more than once in case of
-            // failure during depage
-
+            //We set the duplicate detection header to prevent the message being depaged more than once in case of failure during depage
+            
             byte[] bytes = new byte[8];
-
+            
             ByteBuffer buff = ByteBuffer.wrap(bytes);
-
+            
             ServerMessage msg = message.getMessage(storageManager);
-
+            
             buff.putLong(msg.getMessageID());
-
+            
             SimpleString duplID = new SimpleString(bytes);
-
+               
             message.getMessage(storageManager).putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, duplID);
          }
 
-         int bytesToWrite = message.getEncodeSize() + PageImpl.SIZE_RECORD;
+         int bytesToWrite = fileFactory.calculateBlockSize(message.getEncodeSize() + PageImpl.SIZE_RECORD);
 
          if (currentPageSize.addAndGet(bytesToWrite) > pageSize && currentPage.getNumberOfMessages() > 0)
          {
@@ -402,10 +399,10 @@ public class PagingStoreImpl implements TestSupportPageStore
          try
          {
             if (currentPage != null)
-            {
-
+            {               
+               
                currentPage.write(message);
-
+               
                if (sync)
                {
                   currentPage.sync();
@@ -453,7 +450,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    }
 
    public boolean startDepaging(final Executor executor)
-   {
+   {     
       currentPageLock.readLock().lock();
       try
       {
@@ -520,7 +517,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    }
 
    public void start() throws Exception
-   {
+   {      
       writeLock.lock();
 
       try
@@ -539,41 +536,41 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             currentPageLock.writeLock().lock();
 
+            if (createDir)
+            {               
+               fileFactory.createDirs();
+            }
+
+            firstPageId = Integer.MAX_VALUE;
+            currentPageId = 0;
+            currentPage = null;
+
             try
             {
-               running = true;
-               firstPageId = Integer.MAX_VALUE;
+               List<String> files = fileFactory.listFiles("page");
 
-               // There are no files yet on this Storage. We will just return it empty
-               if (fileFactory != null)
+               numberOfPages = files.size();
+
+               for (String fileName : files)
                {
+                  final int fileId = getPageIdFromFileName(fileName);
 
-                  currentPageId = 0;
-                  currentPage = null;
-
-                  List<String> files = fileFactory.listFiles("page");
-
-                  numberOfPages = files.size();
-
-                  for (String fileName : files)
+                  if (fileId > currentPageId)
                   {
-                     final int fileId = getPageIdFromFileName(fileName);
-
-                     if (fileId > currentPageId)
-                     {
-                        currentPageId = fileId;
-                     }
-
-                     if (fileId < firstPageId)
-                     {
-                        firstPageId = fileId;
-                     }
+                     currentPageId = fileId;
                   }
 
-                  if (numberOfPages != 0)
+                  if (fileId < firstPageId)
                   {
-                     startPaging();
+                     firstPageId = fileId;
                   }
+               }
+
+               running = true;
+
+               if (numberOfPages != 0)
+               {
+                  startPaging();
                }
             }
             finally
@@ -581,7 +578,6 @@ public class PagingStoreImpl implements TestSupportPageStore
                currentPageLock.writeLock().unlock();
             }
          }
-
       }
       finally
       {
@@ -655,14 +651,12 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       try
       {
-
          if (numberOfPages == 0)
          {
             return null;
          }
          else
          {
-
             numberOfPages--;
 
             final Page returnPage;
@@ -691,8 +685,6 @@ public class PagingStoreImpl implements TestSupportPageStore
                   returnPage.open();
                   returnPage.delete();
 
-                  cleanupDirectory();
-
                   // This will trigger this Destination to exit the page mode,
                   // and this will make JBM start using the journal again
                   return null;
@@ -709,6 +701,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             {
                returnPage = createPage(firstPageId++);
             }
+
             return returnPage;
          }
       }
@@ -745,23 +738,24 @@ public class PagingStoreImpl implements TestSupportPageStore
          return;
       }
 
+
       // Depage has to be done atomically, in case of failure it should be
       // back to where it was
-
+      
       Transaction depageTransaction = new TransactionImpl(storageManager);
-
+      
       depageTransaction.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
-
+      
       depageTransaction.putProperty(TransactionPropertyIndexes.IS_DEPAGE, Boolean.valueOf(true));
 
       HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
-
+            
       for (PagedMessage pagedMessage : pagedMessages)
       {
          ServerMessage message = null;
 
          message = pagedMessage.getMessage(storageManager);
-
+         
          final long transactionIdDuringPaging = pagedMessage.getTransactionID();
 
          if (transactionIdDuringPaging >= 0)
@@ -773,9 +767,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             // section
             if (pageTransactionInfo == null)
             {
-               log.warn("Transaction " + pagedMessage.getTransactionID() +
-                        " used during paging not found, ignoring message " +
-                        message);
+               log.warn("Transaction " + pagedMessage.getTransactionID() + " used during paging not found, ignoring message " + message);
                continue;
             }
 
@@ -797,7 +789,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                pageTransactionsToUpdate.add(pageTransactionInfo);
             }
          }
-
+         
          postOffice.route(message, depageTransaction);
       }
 
@@ -817,7 +809,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
 
       depageTransaction.commit();
-
+      
       trace("Depage committed");
    }
 
@@ -852,7 +844,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       final boolean pageFull = isFull(getPageSizeBytes());
       final boolean globalFull = isGlobalFull(getPageSizeBytes());
-      if (pageFull || globalFull || !isPaging())
+      if (pageFull || globalFull)
       {
          depaging.set(false);
          if (!globalFull)
@@ -903,11 +895,6 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       String fileName = createFileName(page);
 
-      if (fileFactory == null)
-      {
-         fileFactory = storeFactory.newFileFactory(this.getStoreName());
-      }
-
       SequentialFile file = fileFactory.createSequentialFile(fileName, 1000);
 
       file.open();
@@ -951,9 +938,9 @@ public class PagingStoreImpl implements TestSupportPageStore
    private void readPage() throws Exception
    {
       Page page = depage();
-
+      
       if (page == null)
-      {
+      {        
          return;
       }
 
@@ -964,20 +951,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       onDepage(page.getPageId(), storeName, messages);
 
       page.delete();
-
-   }
-
-   /**
-    * @throws Exception
-    */
-   private void cleanupDirectory() throws Exception
-   {
-      if (fileFactory != null && numberOfPages == 0)
-      {
-         // No more files.. delete page directory
-         storeFactory.deleteFileFactory(storeName);
-         fileFactory = null;
-      }
    }
 
    // Inner classes -------------------------------------------------

@@ -26,12 +26,10 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.paging.PagingStore;
 
 /**
  * 
@@ -44,26 +42,28 @@ import org.jboss.messaging.core.paging.PagingStore;
 public abstract class AbstractSequentialFactory implements SequentialFileFactory
 {
    private static final Logger log = Logger.getLogger(AbstractSequentialFactory.class);
-
+   
    protected final String journalDir;
 
    public AbstractSequentialFactory(final String journalDir)
    {
       this.journalDir = journalDir;
    }
-
+   
    /** 
     * Create the directory if it doesn't exist yet
     */
    public void createDirs() throws Exception
-   {
+   {      
       File file = new File(journalDir);
       boolean ok = file.mkdirs();
-      if (!ok)
-      {
-         throw new IOException("Failed to create directory " + journalDir);
-      }
+//FIXME - uncomment when https://jira.jboss.org/jira/browse/JBMESSAGING-1477 is complete      
+//      if (!ok)
+//      {
+//         throw new IOException("Failed to create directory " + journalDir);
+//      }
    }
+   
 
    public List<String> listFiles(final String extension) throws Exception
    {

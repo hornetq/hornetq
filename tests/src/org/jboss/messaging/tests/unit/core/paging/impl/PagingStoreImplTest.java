@@ -26,12 +26,10 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.easymock.classextension.EasyMock;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.paging.PagingStore;
-import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreImpl;
 import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
@@ -67,10 +65,9 @@ public class PagingStoreImplTest extends PagingStoreTestBase
                                                   createStorageManagerMock(),
                                                   createPostOfficeMock(),
                                                   factory,
-                                                  null,
                                                   destinationTestName,
                                                   new QueueSettings(),
-                                                  executor);
+                                                  executor, true);
 
       storeImpl.start();
 
@@ -86,19 +83,14 @@ public class PagingStoreImplTest extends PagingStoreTestBase
    public void testStore() throws Exception
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();
-      
-      PagingStoreFactory storeFactory = EasyMock.createNiceMock(PagingStoreFactory.class);
-      
-      EasyMock.replay(storeFactory);
 
       PagingStore storeImpl = new PagingStoreImpl(createMockManager(),
                                                   createStorageManagerMock(),
                                                   createPostOfficeMock(),
                                                   factory,
-                                                  storeFactory,
                                                   destinationTestName,
                                                   new QueueSettings(),
-                                                  executor);
+                                                  executor, true);
 
       storeImpl.start();
 
@@ -129,10 +121,9 @@ public class PagingStoreImplTest extends PagingStoreTestBase
                                       createStorageManagerMock(),
                                       createPostOfficeMock(),
                                       factory,
-                                      null,
                                       destinationTestName,
                                       new QueueSettings(),
-                                      executor);
+                                      executor, true);
 
       storeImpl.start();
 
@@ -144,22 +135,13 @@ public class PagingStoreImplTest extends PagingStoreTestBase
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();
 
-      SimpleString destination = new SimpleString("test");
-      
-      PagingStoreFactory storeFactory = EasyMock.createMock(PagingStoreFactory.class);
-      
-      storeFactory.deleteFileFactory(destination);
-      
-      EasyMock.replay(storeFactory);
-
       TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),
                                                   createStorageManagerMock(),
                                                   createPostOfficeMock(),
                                                   factory,
-                                                  storeFactory,
                                                   destinationTestName,
                                                   new QueueSettings(),
-                                                  executor);
+                                                  executor, true);
 
       storeImpl.start();
 
@@ -168,6 +150,8 @@ public class PagingStoreImplTest extends PagingStoreTestBase
       storeImpl.startPaging();
 
       List<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
+
+      SimpleString destination = new SimpleString("test");
 
       for (int i = 0; i < 10; i++)
       {
@@ -205,32 +189,20 @@ public class PagingStoreImplTest extends PagingStoreTestBase
          assertEquals(0, (msg.get(i).getMessage(null)).getMessageID());
          assertEqualsByteArrays(buffers.get(i).array(), (msg.get(i).getMessage(null)).getBody().array());
       }
-      
-      EasyMock.verify(storeFactory);
 
    }
 
    public void testDepageMultiplePages() throws Exception
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();
-      SimpleString destination = new SimpleString("test");
-      
-      PagingStoreFactory storeFactory = EasyMock.createNiceMock(PagingStoreFactory.class);
-      
-      EasyMock.expect(storeFactory.newFileFactory(destination)).andReturn(factory);
-      
-      storeFactory.deleteFileFactory(destination);
-      
-      EasyMock.replay(storeFactory);
 
       TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),
                                                            createStorageManagerMock(),
                                                            createPostOfficeMock(),
                                                            factory,
-                                                           storeFactory,
                                                            destinationTestName,
                                                            new QueueSettings(),
-                                                           executor);
+                                                           executor, true);
 
       storeImpl.start();
 
@@ -241,6 +213,8 @@ public class PagingStoreImplTest extends PagingStoreTestBase
       assertEquals(1, storeImpl.getNumberOfPages());
 
       List<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
+
+      SimpleString destination = new SimpleString("test");
 
       for (int i = 0; i < 10; i++)
       {
@@ -333,8 +307,6 @@ public class PagingStoreImplTest extends PagingStoreTestBase
       assertEquals(0, storeImpl.getNumberOfPages());
 
       page.open();
-      
-      EasyMock.verify(storeFactory);
 
    }
 
