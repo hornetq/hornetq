@@ -82,7 +82,8 @@ public class NullStorageManager implements StorageManager
 
    public void loadBindings(final BindableFactory queueFactory,
                             final List<Binding> bindings,
-                            final List<SimpleString> destinations) throws Exception
+                            final List<SimpleString> destinations,
+                            Map<SimpleString, Long> pageDestinationDirectory) throws Exception
    {
    }
 
@@ -220,6 +221,15 @@ public class NullStorageManager implements StorageManager
    }
 
    public void deleteDuplicateID(final long recordID) throws Exception
+   {
+   }
+
+   public long addPageDirDestination(SimpleString pageAddress) throws Exception
+   {
+      return idGenerator.generateID();
+   }
+
+   public void deletePageDirDestination(long pageAddressID) throws Exception
    {
    }
 

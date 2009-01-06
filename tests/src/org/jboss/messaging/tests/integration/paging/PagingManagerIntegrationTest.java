@@ -32,6 +32,7 @@ import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
 import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
 import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
+import org.jboss.messaging.core.persistence.impl.nullpm.NullStorageManager;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
@@ -66,7 +67,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
       queueSettings.setDefault(new QueueSettings());
 
       PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(getPageDir(), 10),
-                                                            null,
+                                                            new NullStorageManager(),
                                                             queueSettings,
                                                             -1,
                                                             1024 * 1024,

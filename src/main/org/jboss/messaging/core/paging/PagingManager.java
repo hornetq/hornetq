@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.paging;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -171,6 +172,6 @@ public interface PagingManager extends MessagingComponent
     * Reload previously created PagingStores into memory
     * @throws Exception 
     */
-   void reloadStores() throws Exception;
+   void reloadStores(Map<SimpleString, Long> pageDestinations) throws Exception;
 
 }
