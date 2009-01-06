@@ -83,15 +83,6 @@ public class PagingManagerImpl implements PagingManager
 
    private static final Logger log = Logger.getLogger(PagingManagerImpl.class);
 
-   // This is just a debug tool method.
-   // During debugs you could make log.trace as log.info, and change the
-   // variable isTrace above
-   private static void trace(final String message)
-   {
-      // log.trace(message);
-      log.info(message);
-   }
-
    // Constructors
    // --------------------------------------------------------------------------------------------------------------------
 
@@ -131,12 +122,14 @@ public class PagingManagerImpl implements PagingManager
     */
    public void reloadStores() throws Exception
    {
-      List<SimpleString> destinations = pagingStoreFactory.getStoredDestinations();
+      List<PagingStore> destinations = pagingStoreFactory.reloadStores(queueSettingsRepository);
 
-      for (SimpleString dest : destinations)
+      for (PagingStore store: destinations)
       {
-         createPageStore(dest, false);
+         stores.put(store.getStoreName(), store);
+         store.start();
       }
+
    }
 
    /**
@@ -149,7 +142,7 @@ public class PagingManagerImpl implements PagingManager
 
       if (store == null)
       {
-         store = newStore(storeName, createDir);
+         store = newStore(storeName);
 
          PagingStore oldStore = stores.putIfAbsent(storeName, store);
 
@@ -334,9 +327,9 @@ public class PagingManagerImpl implements PagingManager
 
    // Private -------------------------------------------------------
 
-   private PagingStore newStore(final SimpleString destinationName, final boolean createDir)
+   private PagingStore newStore(final SimpleString destinationName) throws Exception
    {
-      return pagingStoreFactory.newStore(destinationName, queueSettingsRepository.getMatch(destinationName.toString()), createDir);
+      return pagingStoreFactory.newStore(destinationName, queueSettingsRepository.getMatch(destinationName.toString()));
    }
 
    // Inner classes -------------------------------------------------

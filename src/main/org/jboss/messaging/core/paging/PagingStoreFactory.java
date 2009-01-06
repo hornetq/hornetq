@@ -23,10 +23,13 @@
 package org.jboss.messaging.core.paging;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
+import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
 
@@ -38,7 +41,7 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface PagingStoreFactory
 {
-   PagingStore newStore(SimpleString destinationName, QueueSettings queueSettings, boolean createDir);
+   PagingStore newStore(SimpleString destinationName, QueueSettings queueSettings) throws Exception;
 
    Executor getGlobalDepagerExecutor();
 
@@ -50,5 +53,12 @@ public interface PagingStoreFactory
 
    void setPostOffice(PostOffice office);
 
-   List<SimpleString> getStoredDestinations() throws Exception;
+   List<PagingStore> reloadStores(HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+
+   /**
+    * @param storeName
+    * @return
+    */
+   SequentialFileFactory newFileFactory(SimpleString destinationName) throws Exception;
+
 }

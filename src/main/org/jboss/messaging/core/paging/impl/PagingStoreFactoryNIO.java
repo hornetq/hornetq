@@ -22,7 +22,16 @@
 
 package org.jboss.messaging.core.paging.impl;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,12 +49,12 @@ import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
-import org.jboss.messaging.util.Base64;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * 
@@ -60,18 +69,20 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    // Attributes ----------------------------------------------------
 
+   private final DecimalFormat format = new DecimalFormat("000000000");
+
    private final String directory;
 
    private final ExecutorService parentExecutor;
-   
+
    private final OrderedExecutorFactory executorFactory;
-   
+
    private final Executor globalDepagerExecutor;
 
    private PagingManager pagingManager;
-   
+
    private StorageManager storageManager;
-   
+
    private PostOffice postOffice;
 
    // Static --------------------------------------------------------
@@ -82,13 +93,15 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    {
       this.directory = directory;
 
-      parentExecutor = new ThreadPoolExecutor(0, maxThreads,
-                             60L, TimeUnit.SECONDS,
-                             new SynchronousQueue<Runnable>(),
-                             new JBMThreadFactory("JBM-depaging-threads"));
-      
+      parentExecutor = new ThreadPoolExecutor(0,
+                                              maxThreads,
+                                              60L,
+                                              TimeUnit.SECONDS,
+                                              new SynchronousQueue<Runnable>(),
+                                              new JBMThreadFactory("JBM-depaging-threads"));
+
       executorFactory = new OrderedExecutorFactory(parentExecutor);
-      
+
       globalDepagerExecutor = executorFactory.getExecutor();
    }
 
@@ -106,66 +119,122 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
       parentExecutor.awaitTermination(30, TimeUnit.SECONDS);
    }
 
-   public PagingStore newStore(final SimpleString destinationName, final QueueSettings settings, final boolean createDir)
-   {      
-      final String destinationDirectory = directory + "/" + Base64.encodeBytes(destinationName.getData(), Base64.URL_SAFE);
-      
+   public synchronized PagingStore newStore(final SimpleString destinationName, final QueueSettings settings) throws Exception
+   {
+
       return new PagingStoreImpl(pagingManager,
                                  storageManager,
                                  postOffice,
-                                 newFileFactory(destinationDirectory),
+                                 null,
+                                 this,
                                  destinationName,
                                  settings,
-                                 executorFactory.getExecutor(),
-                                 createDir);
+                                 executorFactory.getExecutor());
+   }
+   
+   /**
+    * @param storeName
+    * @return
+    */
+   public synchronized SequentialFileFactory newFileFactory(SimpleString destinationName) throws Exception
+   {
+      
+      String guid = UUIDGenerator.getInstance().generateStringUUID();
+      
+      File fileWithID = new File(directory + File.separatorChar +  guid + ".pg");
+      
+      OutputStream dataOut = new FileOutputStream(fileWithID);
+      
+      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(dataOut));
+      
+      writer.write(destinationName.toString());
+      writer.newLine();
+      writer.write(guid);
+      writer.newLine();
+      
+      writer.close();
+      
+      SequentialFileFactory factory = newFileFactory(guid);
+      
+      factory.createDirs();
+      
+      return factory;
    }
 
    public void setPagingManager(final PagingManager pagingManager)
    {
       this.pagingManager = pagingManager;
    }
-   
+
    public void setStorageManager(final StorageManager storageManager)
    {
-      this.storageManager = storageManager; 
+      this.storageManager = storageManager;
    }
-   
+
    public void setPostOffice(final PostOffice postOffice)
    {
       this.postOffice = postOffice;
    }
-   
-   public List<SimpleString> getStoredDestinations() throws Exception
+
+   public List<PagingStore> reloadStores(final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       File pageDirectory = new File(directory);
-      
-      File[] files = pageDirectory.listFiles();
-      
+
+
+      FilenameFilter fnf = new FilenameFilter()
+      {
+         public boolean accept(File file, String name)
+         {
+            return name.endsWith(".pg");
+         }
+      };
+
+      File[] files = pageDirectory.listFiles(fnf);
+
       if (files == null)
       {
-         return Collections.<SimpleString>emptyList();
+         return Collections.<PagingStore> emptyList();
 
       }
       else
-      {         
-         ArrayList<SimpleString> filesReturn = new ArrayList<SimpleString>(files.length);
+      {
+         ArrayList<PagingStore> storesReturn = new ArrayList<PagingStore>(files.length);
          
          for (File file: files)
          {
-            if (file.isDirectory())
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+            
+            String destination = reader.readLine();
+            String guid = reader.readLine();
+            
+            reader.close();
+            
+            if (destination == null || guid == null)
             {
-               try
-               {
-                  filesReturn.add(new SimpleString(Base64.decode(file.getName(), Base64.URL_SAFE)));
-               }
-               catch (Exception e)
-               {
-                  log.warn("Invalid encoding on directory " + file.getCanonicalPath(), e);
-               }
+               log.warn("File " + file.toString() + " is missing properties");
+               continue;
             }
+            
+            SimpleString destinationName = new SimpleString(destination);
+            
+            SequentialFileFactory factory = newFileFactory(guid);
+            
+            QueueSettings settings = queueSettingsRepository.getMatch(destinationName.toString());
+
+            PagingStore store = new PagingStoreImpl(pagingManager,
+                                                    storageManager,
+                                                    postOffice,
+                                                    factory,
+                                                    this,
+                                                    destinationName,
+                                                    settings,
+                                                    executorFactory.getExecutor());
+            
+            storesReturn.add(store);
          }
-         
-         return filesReturn;
+
+         return storesReturn;
       }
    }
 
@@ -173,9 +242,9 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    // Protected -----------------------------------------------------
 
-   protected SequentialFileFactory newFileFactory(final String destinationDirectory)
+   protected SequentialFileFactory newFileFactory(final String directoryName)
    {
-      return new NIOSequentialFileFactory(destinationDirectory);
+      return new NIOSequentialFileFactory(directory + File.separatorChar + directoryName);
    }
 
    // Private -------------------------------------------------------

@@ -32,6 +32,7 @@ import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
 import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
 import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
+import org.jboss.messaging.core.persistence.impl.nullpm.NullStorageManager;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
@@ -62,11 +63,12 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
    public void testPagingManager() throws Exception
    {
+      
       HierarchicalRepository<QueueSettings> queueSettings = new HierarchicalObjectRepository<QueueSettings>();
       queueSettings.setDefault(new QueueSettings());
-
+      
       PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(getPageDir(), 10),
-                                                            null,
+                                                            new NullStorageManager(),
                                                             queueSettings,
                                                             -1,
                                                             1024 * 1024,
@@ -187,7 +189,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
       super.tearDown();
       // deleteDirectory(new File(journalDir));
    }
-
+   
    // Private -------------------------------------------------------
 
    private void recreateDirectory()
@@ -195,6 +197,10 @@ public class PagingManagerIntegrationTest extends UnitTestCase
       File fileJournalDir = new File(getJournalDir());
       deleteDirectory(fileJournalDir);
       fileJournalDir.mkdirs();
+
+      File pageDirDir = new File(getPageDir());
+      deleteDirectory(pageDirDir);
+      pageDirDir.mkdirs();
    }
 
    // Inner classes -------------------------------------------------
