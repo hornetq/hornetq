@@ -27,11 +27,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -68,8 +66,6 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    // Attributes ----------------------------------------------------
 
-   private final DecimalFormat format = new DecimalFormat("000000000");
-
    private final String directory;
 
    private final ExecutorService parentExecutor;
@@ -93,7 +89,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
       this.directory = directory;
 
       parentExecutor = Executors.newFixedThreadPool(maxThreads, new JBMThreadFactory("JBM-depaging-threads"));
-   
+
       executorFactory = new OrderedExecutorFactory(parentExecutor);
 
       globalDepagerExecutor = executorFactory.getExecutor();
@@ -125,33 +121,31 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
                                  settings,
                                  executorFactory.getExecutor());
    }
-   
+
    /**
     * @param storeName
     * @return
     */
-   public synchronized SequentialFileFactory newFileFactory(SimpleString destinationName) throws Exception
+   public synchronized SequentialFileFactory newFileFactory(final SimpleString destinationName) throws Exception
    {
-      
+
       String guid = UUIDGenerator.getInstance().generateStringUUID();
-      
-      File fileWithID = new File(directory + File.separatorChar +  guid + ".pg");
-      
+
+      SequentialFileFactory factory = newFileFactory(guid);
+
+      factory.createDirs();
+
+      File fileWithID = new File(directory + File.separatorChar + guid + File.separatorChar + "Address.txt");
+
       OutputStream dataOut = new FileOutputStream(fileWithID);
-      
+
       BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(dataOut));
-      
+
       writer.write(destinationName.toString());
       writer.newLine();
-      writer.write(guid);
-      writer.newLine();
-      
+
       writer.close();
-      
-      SequentialFileFactory factory = newFileFactory(guid);
-      
-      factory.createDirs();
-      
+
       return factory;
    }
 
@@ -174,16 +168,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    {
       File pageDirectory = new File(directory);
 
-
-      FilenameFilter fnf = new FilenameFilter()
-      {
-         public boolean accept(File file, String name)
-         {
-            return name.endsWith(".pg");
-         }
-      };
-
-      File[] files = pageDirectory.listFiles(fnf);
+      File[] files = pageDirectory.listFiles();
 
       if (files == null)
       {
@@ -193,27 +178,30 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
       else
       {
          ArrayList<PagingStore> storesReturn = new ArrayList<PagingStore>(files.length);
-         
-         for (File file: files)
+
+         for (File file : files)
          {
+
+            final String guid = file.getName();
             
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-            
-            String destination = reader.readLine();
-            String guid = reader.readLine();
-            
-            reader.close();
-            
-            if (destination == null || guid == null)
+            final File addressFile = new File(file, "Address.txt");
+
+            if (!addressFile.exists())
             {
-               log.warn("File " + file.toString() + " is missing properties");
+               log.warn("File " + file.toString() + " is missing Address.txt");
                continue;
             }
-            
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(addressFile)));
+
+            String destination = reader.readLine();
+
+            reader.close();
+
             SimpleString destinationName = new SimpleString(destination);
-            
+
             SequentialFileFactory factory = newFileFactory(guid);
-            
+
             QueueSettings settings = queueSettingsRepository.getMatch(destinationName.toString());
 
             PagingStore store = new PagingStoreImpl(pagingManager,
@@ -224,7 +212,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
                                                     destinationName,
                                                     settings,
                                                     executorFactory.getExecutor());
-            
+
             storesReturn.add(store);
          }
 
