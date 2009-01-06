@@ -61,8 +61,11 @@ import org.jboss.messaging.util.UUIDGenerator;
  */
 public class PagingStoreFactoryNIO implements PagingStoreFactory
 {
+
    // Constants -----------------------------------------------------
    private static final Logger log = Logger.getLogger(PagingStoreFactoryNIO.class);
+
+   private static final String ADDRESS_FILE = "address.txt";
 
    // Attributes ----------------------------------------------------
 
@@ -135,16 +138,19 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
       factory.createDirs();
 
-      File fileWithID = new File(directory + File.separatorChar + guid + File.separatorChar + "Address.txt");
+      File fileWithID = new File(directory + File.separatorChar + guid + File.separatorChar + ADDRESS_FILE);
 
-      OutputStream dataOut = new FileOutputStream(fileWithID);
+      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileWithID)));
 
-      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(dataOut));
-
-      writer.write(destinationName.toString());
-      writer.newLine();
-
-      writer.close();
+      try
+      {
+         writer.write(destinationName.toString());
+         writer.newLine();
+      }
+      finally
+      {
+         writer.close();
+      }
 
       return factory;
    }
@@ -184,19 +190,27 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
             final String guid = file.getName();
             
-            final File addressFile = new File(file, "Address.txt");
+            final File addressFile = new File(file, ADDRESS_FILE);
 
             if (!addressFile.exists())
             {
-               log.warn("File " + file.toString() + " is missing Address.txt");
+               log.warn("Directory " + file.toString() + " didn't have an identification file " + ADDRESS_FILE);
                continue;
             }
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(addressFile)));
 
-            String destination = reader.readLine();
-
-            reader.close();
+            String destination;
+            
+            try
+            {
+               destination = reader.readLine();
+               reader.close();
+            }
+            finally
+            {
+               reader.close();
+            }
 
             SimpleString destinationName = new SimpleString(destination);
 
