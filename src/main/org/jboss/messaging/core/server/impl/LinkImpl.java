@@ -90,10 +90,29 @@ public class LinkImpl implements Link
       this.storageManager = storageManager;
    }
 
-   public void route(final ServerMessage message, final Transaction tx) throws Exception
+   public boolean route(final ServerMessage message, final Transaction tx) throws Exception
    {     
+      if (filter != null && !filter.match(message))
+      {
+         return false;
+      }
+      
+      Integer iMaxHops = (Integer)message.getProperty(MessageImpl.HDR_MAX_HOPS);
+      
+     // log.info("IN LinkIMpl::route imaxhops is " + iMaxHops);
+      
+      if (iMaxHops != null)
+      {
+         int maxHops = iMaxHops.intValue();
+         
+         if (maxHops <= 0)
+         {
+            return false;
+         }
+      }
+      
       ServerMessage copy = message.copy();
-
+      
       copy.setMessageID(storageManager.generateUniqueID());
 
       SimpleString originalDestination = copy.getDestination();
@@ -118,6 +137,8 @@ public class LinkImpl implements Link
       }
       
       postOffice.route(copy, tx);
+      
+      return true;
    }
 
    public Filter getFilter()

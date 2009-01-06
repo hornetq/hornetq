@@ -26,6 +26,7 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MAX_HOPS;
 import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_USE_DUPLICATE_DETECTION;
 
 import java.util.ArrayList;
@@ -138,6 +139,7 @@ public class StaticFlowTest extends MessageFlowTestBase
                                                                        DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
                                                                        DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                                        DEFAULT_USE_DUPLICATE_DETECTION,
+                                                                       DEFAULT_MAX_HOPS,
                                                                        connectorNames);
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
       ofconfigs.add(ofconfig);
@@ -304,6 +306,7 @@ public class StaticFlowTest extends MessageFlowTestBase
                                                                        DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
                                                                        DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                                        DEFAULT_USE_DUPLICATE_DETECTION,
+                                                                       DEFAULT_MAX_HOPS,
                                                                        connectorNames);
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
       ofconfigs.add(ofconfig);
@@ -485,6 +488,7 @@ public class StaticFlowTest extends MessageFlowTestBase
                                                                         DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
                                                                         DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                                         DEFAULT_USE_DUPLICATE_DETECTION,
+                                                                        DEFAULT_MAX_HOPS,
                                                                         connectorNames1);
       MessageFlowConfiguration ofconfig2 = new MessageFlowConfiguration("flow2",
                                                                         testAddress.toString(),
@@ -498,6 +502,7 @@ public class StaticFlowTest extends MessageFlowTestBase
                                                                         DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
                                                                         DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                                         DEFAULT_USE_DUPLICATE_DETECTION,
+                                                                        DEFAULT_MAX_HOPS,
                                                                         connectorNames2);
       MessageFlowConfiguration ofconfig3 = new MessageFlowConfiguration("flow3",
                                                                         testAddress.toString(),
@@ -511,6 +516,7 @@ public class StaticFlowTest extends MessageFlowTestBase
                                                                         DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
                                                                         DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                                         DEFAULT_USE_DUPLICATE_DETECTION,
+                                                                        DEFAULT_MAX_HOPS,
                                                                         connectorNames3);
       MessageFlowConfiguration ofconfig4 = new MessageFlowConfiguration("flow4",
                                                                         testAddress.toString(),
@@ -524,6 +530,7 @@ public class StaticFlowTest extends MessageFlowTestBase
                                                                         DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
                                                                         DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                                         DEFAULT_USE_DUPLICATE_DETECTION,
+                                                                        DEFAULT_MAX_HOPS,
                                                                         connectorNames4);
 
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();

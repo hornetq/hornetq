@@ -116,6 +116,8 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_PERSIST_ID_CACHE = true;
    
    public static final boolean DEFAULT_USE_DUPLICATE_DETECTION = true;
+   
+   public static final int DEFAULT_MAX_HOPS = 1;
 
 
    // Attributes -----------------------------------------------------------------------------

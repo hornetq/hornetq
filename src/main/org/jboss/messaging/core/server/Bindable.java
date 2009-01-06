@@ -46,7 +46,7 @@ public interface Bindable
    
    void setPersistenceID(long id);
    
-   void route(ServerMessage message, Transaction tx) throws Exception;
+   boolean route(ServerMessage message, Transaction tx) throws Exception;
    
    boolean isDurable();
 }

@@ -108,6 +108,8 @@ public class ForwarderImpl implements Forwarder, FailureListener
 
    private final ScheduledFuture<?> future;
 
+   private final int maxHops;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -127,7 +129,8 @@ public class ForwarderImpl implements Forwarder, FailureListener
                         final long retryInterval,
                         final double retryIntervalMultiplier,
                         final int maxRetriesBeforeFailover,
-                        final int maxRetriesAfterFailover)
+                        final int maxRetriesAfterFailover,
+                        final int maxHops)
    {
       this.queue = queue;
 
@@ -144,6 +147,8 @@ public class ForwarderImpl implements Forwarder, FailureListener
       this.queueSettingsRepository = queueSettingsRepository;
 
       this.transformer = transformer;
+
+      this.maxHops = maxHops;
 
       this.csf = new ClientSessionFactoryImpl(connectorPair.a,
                                               connectorPair.b,
@@ -166,26 +171,28 @@ public class ForwarderImpl implements Forwarder, FailureListener
    }
 
    public synchronized void start() throws Exception
-   {      
+   {
       if (started)
       {
          return;
       }
       
+      //log.info("starting forwarder");
+
       queue.addConsumer(this);
 
       createTx();
 
       if (createObjects())
-      {         
+      {
          started = true;
-         
+
          queue.deliverAsync(executor);
       }
    }
 
    public synchronized void stop() throws Exception
-   {      
+   {
       started = false;
 
       queue.removeConsumer(this);
@@ -220,8 +227,8 @@ public class ForwarderImpl implements Forwarder, FailureListener
    {
       return started;
    }
-   
-   //For testing only
+
+   // For testing only
    public RemotingConnection getForwardingConnection()
    {
       return ((ClientSessionImpl)session).getConnection();
@@ -230,7 +237,7 @@ public class ForwarderImpl implements Forwarder, FailureListener
    // Consumer implementation ---------------------------------------
 
    public HandleStatus handle(final MessageReference reference) throws Exception
-   {      
+   {
       if (busy)
       {
          return HandleStatus.BUSY;
@@ -242,9 +249,9 @@ public class ForwarderImpl implements Forwarder, FailureListener
          {
             return HandleStatus.BUSY;
          }
-          
+
          reference.getQueue().referenceHandled();
-         
+
          refs.add(reference);
 
          if (maxBatchTime != -1)
@@ -268,21 +275,21 @@ public class ForwarderImpl implements Forwarder, FailureListener
    // FailureListener implementation --------------------------------
 
    public synchronized boolean connectionFailed(final MessagingException me)
-   {      
-      //By the time this is called
+   {
+      // By the time this is called
       synchronized (this)
-      {      
+      {
          try
          {
             session.close();
-   
+
             createObjects();
          }
          catch (Exception e)
          {
             log.error("Failed to reconnect", e);
          }
-   
+
          return true;
       }
    }
@@ -302,16 +309,16 @@ public class ForwarderImpl implements Forwarder, FailureListener
       catch (MessagingException me)
       {
          log.warn("Unable to connect. Message flow is now disabled.");
-         
+
          stop();
-         
+
          return false;
       }
 
       session.addFailureListener(this);
 
-      producer = session.createProducer(null);      
-      
+      producer = session.createProducer(null);
+
       return true;
    }
 
@@ -341,7 +348,7 @@ public class ForwarderImpl implements Forwarder, FailureListener
          {
             return;
          }
-         
+
          // TODO - if batch size = 1 then don't need tx
 
          while (true)
@@ -354,29 +361,47 @@ public class ForwarderImpl implements Forwarder, FailureListener
             }
 
             ref.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
-            
+
             ServerMessage message = ref.getMessage();
 
             if (transformer != null)
             {
                message = transformer.transform(message);
             }
-          
+
             SimpleString forwardingDestination = (SimpleString)message.getProperty(MessageImpl.HDR_ORIGIN_QUEUE);
 
-            producer.send(forwardingDestination, message);                       
-         }                 
+            if (maxHops != -1)
+            {
+               Integer iMaxHops = (Integer)message.getProperty(MessageImpl.HDR_MAX_HOPS);
+
+               if (iMaxHops == null)
+               {                 
+                  message.putIntProperty(MessageImpl.HDR_MAX_HOPS, maxHops - 1);
+                  
+                 // log.info("In forwarder, putting maxhops " + (maxHops - 1));
+               }
+               else
+               {                 
+                  message.putIntProperty(MessageImpl.HDR_MAX_HOPS, iMaxHops - 1);
+                  
+                 // log.info("In forwarder, putting maxhops " + (iMaxHops - 1));
+               }
+            }
+
+            producer.send(forwardingDestination, message);
+         }
 
          session.commit();
 
          tx.commit();
-         
+
          createTx();
 
          busy = false;
 
          count = 0;
-         
+
          queue.deliverAsync(executor);
       }
       catch (Exception e)

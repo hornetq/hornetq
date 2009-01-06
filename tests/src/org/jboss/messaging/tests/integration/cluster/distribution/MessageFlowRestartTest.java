@@ -24,6 +24,7 @@ package org.jboss.messaging.tests.integration.cluster.distribution;
 
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MAX_HOPS;
 import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_USE_DUPLICATE_DETECTION;
 
 import java.util.ArrayList;
@@ -41,7 +42,6 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
@@ -77,11 +77,11 @@ public class MessageFlowRestartTest extends ServiceTestBase
    public void testRestartOutflow() throws Exception
    {
       Map<String, Object> service0Params = new HashMap<String, Object>();
-      MessagingService service0 = createClusteredServiceWithParams(true, service0Params);
+      MessagingService service0 = createClusteredServiceWithParams(0, true, service0Params);
 
       Map<String, Object> service1Params = new HashMap<String, Object>();
       service1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-      MessagingService service1 = createClusteredServiceWithParams(true, service1Params);
+      MessagingService service1 = createClusteredServiceWithParams(1, true, service1Params);
       
       //We don't start server 1 at this point
       
@@ -111,6 +111,7 @@ public class MessageFlowRestartTest extends ServiceTestBase
                                                                        0,
                                                                        0,
                                                                        DEFAULT_USE_DUPLICATE_DETECTION,
+                                                                       DEFAULT_MAX_HOPS,
                                                                        connectorNames);
       
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();

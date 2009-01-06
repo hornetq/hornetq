@@ -66,6 +66,8 @@ public abstract class MessageImpl implements Message
    public static final SimpleString HDR_SCHEDULED_DELIVERY_TIME = new SimpleString("JBM_SCHED_DELIVERY");
    
    public static final SimpleString HDR_DUPLICATE_DETECTION_ID = new SimpleString("JBM_DUPL_ID");
+   
+   public static final SimpleString HDR_MAX_HOPS = new SimpleString("JBM_MAX_HOPS");
 
    // Attributes ----------------------------------------------------
 

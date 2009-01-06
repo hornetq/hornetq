@@ -153,8 +153,13 @@ public class QueueImpl implements Queue
 
    // Bindable implementation -------------------------------------------------------------------------------------
 
-   public void route(final ServerMessage message, Transaction tx) throws Exception
+   public boolean route(final ServerMessage message, Transaction tx) throws Exception
    {     
+      if (filter != null && !filter.match(message))
+      {
+         return false;
+      }
+      
       SimpleString duplicateID = (SimpleString)message.getProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
 
       DuplicateIDCache cache = null;
@@ -176,7 +181,7 @@ public class QueueImpl implements Queue
                tx.markAsRollbackOnly(null);
             }
 
-            return;
+            return true;
          }
       }
       
@@ -326,6 +331,8 @@ public class QueueImpl implements Queue
       {
          tx.commit();
       }
+      
+      return true;
    }
    
    

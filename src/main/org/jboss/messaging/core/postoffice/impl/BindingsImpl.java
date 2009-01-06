@@ -95,14 +95,7 @@ public class BindingsImpl implements Bindings
       {
          // We need to round robin
          
-         Binding binding = getNext(message);
-            
-         if (binding != null)
-         {        
-            Bindable bindable = binding.getBindable();
-                 
-            bindable.route(message, tx);
-         }         
+         routeRoundRobin(message, tx);                
       }
       else
       {
@@ -129,14 +122,12 @@ public class BindingsImpl implements Bindings
       }
    }
    
-   private Binding getNext(final ServerMessage message)
+   private void routeRoundRobin(final ServerMessage message, final Transaction tx) throws Exception
    {
       //It's not an exact round robin under concurrent access but that doesn't matter
       
       int startPos = -1;
-      
-      Binding ret = binding;
-      
+
       while (true)
       {                          
          try
@@ -147,36 +138,34 @@ public class BindingsImpl implements Bindings
             {
                binding = bindings.get(thePos);
                
-               ret = binding;
-               
                weightCount.set(binding.getWeight());
             }
             
-            Filter filter = binding.getBindable().getFilter();
-            
-            if ((filter != null && !filter.match(message)) || weightCount.get() == 0)
+            if (weightCount.get() != 0)
             {
-               if (thePos == startPos)
+               if (binding.getBindable().route(message, tx))
                {
-                  //Tried them all
-                  return null;
+                  if (weightCount.decrementAndGet() <= 0)
+                  {
+                     advance();
+                  }
+                  
+                  return;
                }
-               
-               if (startPos == -1)
-               {                  
-                  startPos = thePos;
-               }
-               
-               advance();  
-               
-               continue;
             }
-            else if (weightCount.decrementAndGet() <= 0)
+            
+            if (thePos == startPos)
             {
-               advance();
+               //Tried them all
+               return;
             }
-                     
-            break;            
+            
+            if (startPos == -1)
+            {                  
+               startPos = thePos;
+            }
+            
+            advance();                                  
          }
          catch (IndexOutOfBoundsException e)
          {
@@ -184,7 +173,7 @@ public class BindingsImpl implements Bindings
             
             if (bindings.isEmpty())
             {
-               return null;
+               return;
             }
             else
             {
@@ -194,7 +183,6 @@ public class BindingsImpl implements Bindings
             }
          }                  
       }
-      return ret;
    }
    
    private void advance()

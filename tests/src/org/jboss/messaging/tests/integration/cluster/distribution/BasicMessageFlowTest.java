@@ -26,6 +26,7 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MAX_HOPS;
 import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_USE_DUPLICATE_DETECTION;
 
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.server.MessagingService;
@@ -109,6 +111,7 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
                                                                         DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
                                                                         DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                                         DEFAULT_USE_DUPLICATE_DETECTION,
+                                                                        DEFAULT_MAX_HOPS,
                                                                         connectorNames);
       MessageFlowConfiguration ofconfig2 = new MessageFlowConfiguration("flow1",
                                                                         address1.toString(),
@@ -122,6 +125,7 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
                                                                         DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
                                                                         DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                                         DEFAULT_USE_DUPLICATE_DETECTION,
+                                                                        DEFAULT_MAX_HOPS,
                                                                         connectorNames);
 
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
@@ -214,6 +218,7 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
                                                                         DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
                                                                         DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                                         DEFAULT_USE_DUPLICATE_DETECTION,
+                                                                        DEFAULT_MAX_HOPS,
                                                                         connectorNames);
 
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
@@ -293,6 +298,7 @@ public class BasicMessageFlowTest extends MessageFlowTestBase
                                                                         DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
                                                                         DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                                         DEFAULT_USE_DUPLICATE_DETECTION,
+                                                                        DEFAULT_MAX_HOPS,
                                                                         connectorNames);
 
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();

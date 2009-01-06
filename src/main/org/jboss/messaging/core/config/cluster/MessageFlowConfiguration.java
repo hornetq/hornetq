@@ -67,6 +67,8 @@ public class MessageFlowConfiguration implements Serializable
    private final int maxRetriesAfterFailover;
    
    private final boolean useDuplicateDetection;
+   
+   private final int maxHops;
 
    public MessageFlowConfiguration(final String name,
                                    final String address,
@@ -80,6 +82,7 @@ public class MessageFlowConfiguration implements Serializable
                                    final int maxRetriesBeforeFailover,
                                    final int maxRetriesAfterFailover,
                                    final boolean useDuplicateDetection,
+                                   final int maxHops,
                                    final List<Pair<String, String>> staticConnectorNamePairs)
    {
       this.name = name;
@@ -94,6 +97,7 @@ public class MessageFlowConfiguration implements Serializable
       this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
       this.maxRetriesAfterFailover = maxRetriesAfterFailover;
       this.useDuplicateDetection = useDuplicateDetection;
+      this.maxHops = maxHops;
       this.staticConnectorNamePairs = staticConnectorNamePairs;
       this.discoveryGroupName = null;
    }
@@ -110,6 +114,7 @@ public class MessageFlowConfiguration implements Serializable
                                    final int maxRetriesBeforeFailover,
                                    final int maxRetriesAfterFailover,
                                    final boolean useDuplicateDetection,
+                                   final int maxHops,
                                    final String discoveryGroupName)
    {
       this.name = name;
@@ -124,6 +129,7 @@ public class MessageFlowConfiguration implements Serializable
       this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
       this.maxRetriesAfterFailover = maxRetriesAfterFailover;
       this.useDuplicateDetection = useDuplicateDetection;
+      this.maxHops = maxHops;
       this.staticConnectorNamePairs = null;
       this.discoveryGroupName = discoveryGroupName;
    }
@@ -196,5 +202,10 @@ public class MessageFlowConfiguration implements Serializable
    public boolean isUseDuplicateDetection()
    {
       return useDuplicateDetection;
+   }
+   
+   public int getMaxHops()
+   {
+      return maxHops;
    }
 }

@@ -76,6 +76,7 @@ public class MessageFlowControlTest extends TestCase
                                           randomPositiveInt(),
                                           randomPositiveInt(),
                                           randomBoolean(),
+                                          randomPositiveInt(),
                                           discoveryGroupName);
    }
 

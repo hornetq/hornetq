@@ -26,6 +26,7 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MAX_HOPS;
 import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_USE_DUPLICATE_DETECTION;
 
 import java.util.ArrayList;
@@ -108,6 +109,7 @@ public class MessageFlowWithFilterTest extends MessageFlowTestBase
                                                                        DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
                                                                        DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                                                        DEFAULT_USE_DUPLICATE_DETECTION,
+                                                                       DEFAULT_MAX_HOPS,
                                                                        connectorNames);
       Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
       ofconfigs.add(ofconfig);

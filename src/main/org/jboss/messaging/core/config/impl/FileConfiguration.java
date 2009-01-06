@@ -535,6 +535,8 @@ public class FileConfiguration extends ConfigurationImpl
       int maxRetriesAfterFailover = DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
       
       boolean useDuplicateDetection = DEFAULT_USE_DUPLICATE_DETECTION;
+      
+      int maxHops = DEFAULT_MAX_HOPS;
 
       NodeList children = bgNode.getChildNodes();
 
@@ -590,6 +592,10 @@ public class FileConfiguration extends ConfigurationImpl
          {
             useDuplicateDetection = XMLUtil.parseBoolean(child);
          }
+         else if (child.getNodeName().equals("max-hops"))
+         {
+            maxHops = XMLUtil.parseInt(child);
+         }
          else if (child.getNodeName().equals("connector-ref"))
          {
             String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
@@ -623,6 +629,7 @@ public class FileConfiguration extends ConfigurationImpl
                                                maxRetriesBeforeFailover,
                                                maxRetriesAfterFailover,
                                                useDuplicateDetection,
+                                               maxHops,
                                                staticConnectorNames);
       }
       else
@@ -639,6 +646,7 @@ public class FileConfiguration extends ConfigurationImpl
                                                maxRetriesBeforeFailover,
                                                maxRetriesAfterFailover,       
                                                useDuplicateDetection,
+                                               maxHops,
                                                discoveryGroupName);
       }
 

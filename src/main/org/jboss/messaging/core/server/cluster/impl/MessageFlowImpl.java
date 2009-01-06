@@ -105,6 +105,8 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
    private final int maxRetriesAfterFailover;
 
    private final boolean useDuplicateDetection;
+   
+   private final int maxHops;
 
    /*
     * Constructor using static list of connectors
@@ -126,6 +128,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
                           final int maxRetriesBeforeFailover,
                           final int maxRetriesAfterFailover,
                           final boolean useDuplicateDetection,
+                          final int maxHops,
                           final List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception
    {
       this.name = name;
@@ -163,6 +166,8 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
       this.maxRetriesAfterFailover = maxRetriesAfterFailover;
 
       this.useDuplicateDetection = useDuplicateDetection;
+      
+      this.maxHops = maxHops;
 
       this.updateConnectors(connectors);
    }
@@ -187,6 +192,7 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
                           final int maxRetriesBeforeFailover,
                           final int maxRetriesAfterFailover,
                           final boolean useDuplicateDetection,
+                          final int maxHops,
                           final DiscoveryGroup discoveryGroup) throws Exception
    {
       this.name = name;
@@ -224,6 +230,8 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
       this.maxRetriesAfterFailover = maxRetriesAfterFailover;
 
       this.useDuplicateDetection = useDuplicateDetection;
+      
+      this.maxHops = maxHops;
    }
 
    public synchronized void start() throws Exception
@@ -397,7 +405,8 @@ public class MessageFlowImpl implements DiscoveryListener, MessageFlow
                                                     retryInterval,
                                                     retryIntervalMultiplier,
                                                     maxRetriesBeforeFailover,
-                                                    maxRetriesAfterFailover);
+                                                    maxRetriesAfterFailover,
+                                                    maxHops);
 
             forwarders.put(connectorPair, forwarder);
 

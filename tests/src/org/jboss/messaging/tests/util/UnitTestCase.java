@@ -207,6 +207,11 @@ public class UnitTestCase extends TestCase
    {
       return testDir + "/journal";
    }
+   
+   protected String getJournalDir(int index)
+   {
+      return getJournalDir(testDir) + index;
+   }
 
    /**
     * @return the bindingsDir
@@ -215,13 +220,21 @@ public class UnitTestCase extends TestCase
    {
       return getBindingsDir(testDir);
    }
-
+   
    /**
     * @return the bindingsDir
     */
    protected String getBindingsDir(String testDir)
    {
       return testDir + "/bindings";
+   }
+
+   /**
+    * @return the bindingsDir
+    */
+   protected String getBindingsDir(int index)
+   {
+      return getBindingsDir(testDir) + index;
    }
 
    /**
@@ -239,6 +252,11 @@ public class UnitTestCase extends TestCase
    {
       return testDir + "/page";
    }
+   
+   protected String getPageDir(int index)
+   {
+      return getPageDir(testDir) + index;
+   }
 
    /**
     * @return the largeMessagesDir
@@ -254,6 +272,11 @@ public class UnitTestCase extends TestCase
    protected String getLargeMessagesDir(String testDir)
    {
       return testDir + "/large-msg";
+   }
+   
+   protected String getLargeMessagesDir(int index)
+   {
+      return getLargeMessagesDir(testDir) + index;
    }
 
    /**

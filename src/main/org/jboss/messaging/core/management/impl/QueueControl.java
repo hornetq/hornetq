@@ -96,6 +96,7 @@ public class QueueControl implements QueueControlMBean
    public String getFilter()
    {
       Filter filter = queue.getFilter();
+      
       return (filter != null) ? filter.getFilterString().toString() : null;
    }
 

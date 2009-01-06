@@ -136,9 +136,9 @@ public class ServiceTestBase extends UnitTestCase
       return createService(realFiles, configuration, new HashMap<String, QueueSettings>());
    }
    
-   protected MessagingService createClusteredServiceWithParams(final boolean realFiles, final Map<String, Object> params)
+   protected MessagingService createClusteredServiceWithParams(final int index, final boolean realFiles, final Map<String, Object> params)
    {
-      return createService(realFiles, createClusteredDefaultConfig(params, INVM_ACCEPTOR_FACTORY), new HashMap<String, QueueSettings>());
+      return createService(realFiles, createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY), new HashMap<String, QueueSettings>());
    }
    
    protected Configuration createDefaultConfig()
@@ -158,13 +158,35 @@ public class ServiceTestBase extends UnitTestCase
       }      
    }
    
-   protected Configuration createClusteredDefaultConfig(final Map<String, Object> params, final String... acceptors)
+   protected Configuration createClusteredDefaultConfig(final int index, final Map<String, Object> params, final String... acceptors)
    {
-      Configuration config = createDefaultConfig(params, acceptors);
+      Configuration config = createDefaultConfig(index, params, acceptors);
       
       config.setClustered(true);
       
       return config;
+   }
+   
+   protected Configuration createDefaultConfig(int index, final Map<String, Object> params, final String... acceptors)
+   {
+      Configuration configuration = new ConfigurationImpl();
+      configuration.setSecurityEnabled(false);
+      configuration.setBindingsDirectory(getBindingsDir(index));
+      configuration.setJournalMinFiles(2);
+      configuration.setJournalDirectory(getJournalDir(index));
+      configuration.setJournalFileSize(100 * 1024);
+      configuration.setPagingDirectory(getPageDir(index));
+      configuration.setLargeMessagesDirectory(getLargeMessagesDir(index));
+
+      configuration.getAcceptorConfigurations().clear();
+
+      for (String acceptor : acceptors)
+      {
+         TransportConfiguration transportConfig = new TransportConfiguration(acceptor, params);
+         configuration.getAcceptorConfigurations().add(transportConfig);
+      }
+
+      return configuration;
    }
 
    protected Configuration createDefaultConfig(final Map<String, Object> params, final String... acceptors)
