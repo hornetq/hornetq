@@ -26,12 +26,10 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.paging.PagingStore;
 
 /**
  * 
@@ -71,7 +69,7 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
 
       FilenameFilter fnf = new FilenameFilter()
       {
-         public boolean accept(File file, String name)
+         public boolean accept(final File file, final String name)
          {
             return name.endsWith("." + extension);
          }
