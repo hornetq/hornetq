@@ -37,8 +37,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.journal.SequentialFileFactory;
@@ -93,13 +92,8 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    {
       this.directory = directory;
 
-      parentExecutor = new ThreadPoolExecutor(0,
-                                              maxThreads,
-                                              60L,
-                                              TimeUnit.SECONDS,
-                                              new SynchronousQueue<Runnable>(),
-                                              new JBMThreadFactory("JBM-depaging-threads"));
-
+      parentExecutor = Executors.newFixedThreadPool(maxThreads, new JBMThreadFactory("JBM-depaging-threads"));
+   
       executorFactory = new OrderedExecutorFactory(parentExecutor);
 
       globalDepagerExecutor = executorFactory.getExecutor();
