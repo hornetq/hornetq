@@ -21,9 +21,9 @@
  */
 package org.jboss.messaging.core.postoffice;
 
-import java.util.List;
-
 import org.jboss.messaging.util.SimpleString;
+
+import java.util.List;
 
 /**
  * USed to hold a hierarchichal style address, delimited by a '.'.
@@ -42,7 +42,9 @@ public interface Address
 
    void addLinkedAddress(Address address);
 
-   void removLinkedAddress(Address actualAddress);
+   void removeLinkedAddress(Address actualAddress);
 
    void removeAddressPart(int pos);
+
+   boolean matches(Address add);
 }

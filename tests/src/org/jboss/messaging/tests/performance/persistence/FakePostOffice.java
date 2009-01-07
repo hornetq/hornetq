@@ -22,11 +22,6 @@
 
 package org.jboss.messaging.tests.performance.persistence;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -44,10 +39,15 @@ import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.SimpleString;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
- * 
+ *
  * A FakePostOffice
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -102,7 +102,7 @@ public class FakePostOffice implements PostOffice
    public void route(ServerMessage message, Transaction tx) throws Exception
    {
    }
-   
+
    public void route(ServerMessage message) throws Exception
    {
    }
@@ -185,11 +185,6 @@ public class FakePostOffice implements PostOffice
    public DuplicateIDCache getDuplicateIDCache(SimpleString address)
    {
       return null;
-   }
-
-   public int numMappings()
-   {
-      return 0;
    }
 
    /* (non-Javadoc)

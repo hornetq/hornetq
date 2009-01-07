@@ -21,14 +21,14 @@
  */
 package org.jboss.messaging.core.postoffice;
 
+import org.jboss.messaging.util.SimpleString;
+
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.messaging.util.SimpleString;
-
 /**
  * Used to maintain addresses and Bindings.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -58,6 +58,4 @@ public interface AddressManager
    Binding getBinding(SimpleString queueName);
 
    Map<SimpleString, Binding> getBindings();
-   
-   int numMappings();
 }

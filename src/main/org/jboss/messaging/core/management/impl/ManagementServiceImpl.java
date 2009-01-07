@@ -24,23 +24,6 @@
 
 package org.jboss.messaging.core.management.impl;
 
-import static javax.management.ObjectName.quote;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.management.MBeanServer;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.ObjectName;
-import javax.management.StandardMBean;
-
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.config.Configuration;
@@ -69,7 +52,6 @@ import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -81,6 +63,21 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TypedProperties;
+
+import javax.management.MBeanServer;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.ObjectName;
+import static javax.management.ObjectName.quote;
+import javax.management.StandardMBean;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -120,6 +117,8 @@ public class ManagementServiceImpl implements ManagementService
    private SimpleString managementNotificationAddress;
 
    private boolean started = false;
+
+   private boolean noticationsEnabled;
 
    // Static --------------------------------------------------------
 
@@ -176,6 +175,7 @@ public class ManagementServiceImpl implements ManagementService
       this.jmxManagementEnabled = jmxManagementEnabled;
       registry = new HashMap<ObjectName, Object>();
       broadcaster = new NotificationBroadcasterSupport();
+      noticationsEnabled = true;
    }
 
    // Public --------------------------------------------------------
@@ -481,7 +481,7 @@ public class ManagementServiceImpl implements ManagementService
    public void sendNotification(final NotificationType type, final String message, TypedProperties props) throws Exception
    {
       // TODO - we need a parameter to determine if the notification is durable or not
-      if (managedServer != null)
+      if (managedServer != null && noticationsEnabled)
       {
          ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
          notificationMessage.setDestination(managementNotificationAddress);
@@ -512,6 +512,11 @@ public class ManagementServiceImpl implements ManagementService
 
          postOffice.route(notificationMessage, null);
       }
+   }
+
+   public void enableNotifications(boolean enabled)
+   {
+      noticationsEnabled = enabled;
    }
 
    public Object getAttribute(final String objectNameStr, final String attribute)

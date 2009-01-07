@@ -22,10 +22,6 @@
 
 package org.jboss.messaging.core.management;
 
-import java.util.Set;
-
-import javax.management.ObjectName;
-
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.config.Configuration;
@@ -50,6 +46,9 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TypedProperties;
+
+import javax.management.ObjectName;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -124,4 +123,5 @@ public interface ManagementService extends MessagingComponent
     */
    void sendNotification(NotificationType type, String message, TypedProperties props) throws Exception;
 
+   void enableNotifications(boolean enable);
 }

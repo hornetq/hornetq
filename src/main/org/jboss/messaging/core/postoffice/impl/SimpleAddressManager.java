@@ -21,17 +21,17 @@
  */
 package org.jboss.messaging.core.postoffice.impl;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import org.jboss.messaging.core.postoffice.AddressManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.ConcurrentSet;
 import org.jboss.messaging.util.SimpleString;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * A simple address manager that maintains the addresses and bindings.
@@ -59,31 +59,29 @@ public  class SimpleAddressManager implements AddressManager
    public boolean addMapping(final SimpleString address, final Binding binding)
    {
       Bindings bindings = mappings.get(address);
-      
+
       Bindings prevBindings = null;
-      
+
       if (bindings == null)
       {
          bindings = new BindingsImpl();
-         
+
          prevBindings = mappings.putIfAbsent(address, bindings);
-         
+
          if (prevBindings != null)
          {
             bindings = prevBindings;
          }
       }
-      
+
       bindings.addBinding(binding);
-      
+
       return prevBindings != null;
    }
-   
+
    public Bindings getBindings(final SimpleString address)
    {
-      Bindings bindings = mappings.get(address);
-       
-      return bindings;
+      return mappings.get(address);
    }
 
    public boolean addDestination(final SimpleString address)
@@ -123,11 +121,6 @@ public  class SimpleAddressManager implements AddressManager
       mappings.clear();
    }
 
-   public int numMappings()
-   {
-      return mappings.size();
-   }
-   
    public Binding removeBinding(final SimpleString bindableName)
    {
       Binding binding = nameMap.remove(bindableName);
@@ -142,26 +135,26 @@ public  class SimpleAddressManager implements AddressManager
    public boolean removeMapping(final SimpleString address, final SimpleString bindableName)
    {
       Bindings bindings = mappings.get(address);
-      
+
       if (bindings != null)
       {
          removeMapping(bindableName, bindings);
-         
+
          if (bindings.getBindings().isEmpty())
          {
             mappings.remove(address);
          }
-         
+
          return true;
-      }  
-      
+      }
+
       return false;
    }
 
    protected Binding removeMapping(final SimpleString bindableName, final Bindings bindings)
    {
       Binding theBinding = null;
-      
+
       for (Binding binding: bindings.getBindings())
       {
          if (binding.getBindable().getName().equals(bindableName))
@@ -178,7 +171,7 @@ public  class SimpleAddressManager implements AddressManager
       }
 
       bindings.removeBinding(theBinding);
-      
+
       return theBinding;
    }
 }

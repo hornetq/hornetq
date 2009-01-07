@@ -614,6 +614,7 @@
             <include name="org/jboss/messaging/core/version/**/*.class"/>
             <include name="org/jboss/messaging/core/management/**/*.class"/>
             <!-- FIXME - why are these classes in the client jar ??? -->
+            <include name="org/jboss/messaging/core/server/MessagingComponent.class"/>
             <include name="org/jboss/messaging/core/server/JournalType.class"/>
             <include name="org/jboss/messaging/core/journal/EncodingSupport.class"/>
             <include name="org/jboss/messaging/core/server/ServerMessage.class"/>
@@ -1015,6 +1016,8 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${test.classes.dir}">
                <include name="${tests.param}"/>
+               <exclude name="**/**/MultiThreadRandomFailoverTest.class"/>
+                <exclude name="**/**/RandomFailoverTest.class"/>
             </fileset>
          </batchtest>
       </junit>

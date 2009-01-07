@@ -22,17 +22,6 @@
 
 package org.jboss.messaging.core.postoffice.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
@@ -59,6 +48,17 @@ import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A PostOfficeImpl
@@ -446,11 +446,6 @@ public class PostOfficeImpl implements PostOffice
       }
 
       return cache;
-   }
-
-   public int numMappings()
-   {
-      return addressManager.numMappings();
    }
 
    // Private -----------------------------------------------------------------

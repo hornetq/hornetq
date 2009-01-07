@@ -21,19 +21,18 @@
  */
 package org.jboss.messaging.core.postoffice.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.Address;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.util.SimpleString;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
- * extends the simple manager to allow wilcard addresses to be used.
+ * extends the simple manager to allow wildcard addresses to be used.
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
@@ -52,10 +51,39 @@ public class WildcardAddressManager extends SimpleAddressManager
    static final SimpleString ANY_WORDS_SIMPLESTRING = new SimpleString("#");
 
    /**
-    * This is all the addresses, we use this so we can link back from the actual address to its linked wilcard addresses
+    * These are all the addresses, we use this so we can link back from the actual address to its linked wilcard addresses
     * or vice versa
     */
    private final Map<SimpleString, Address> addresses = new HashMap<SimpleString, Address>();
+
+   private final Map<SimpleString, Address> wildCardAddresses = new HashMap<SimpleString, Address>();
+
+   public Bindings getBindings(final SimpleString address)
+   {
+      Bindings bindings = super.getBindings(address);
+      //this should only happen if we're routing to an address that has no mappings when we're running checkAllowable
+      if (bindings == null && !wildCardAddresses.isEmpty())
+      {
+         Address add = addAndUpdateAddressMap(address);
+         if (!add.containsWildCard())
+         {
+            for (Address destAdd : add.getLinkedAddresses())
+            {
+               Bindings b = super.getBindings(destAdd.getAddress());
+               if (b != null)
+               {
+                  List<Binding> theBindings = b.getBindings();
+                  for (Binding theBinding : theBindings)
+                  {
+                     super.addMapping(address, theBinding);
+                  }
+               }
+            }
+         }
+         bindings = super.getBindings(address);
+      }
+      return bindings;
+   }
 
    /**
     * If the address to add the binding to contains a wildcard then a copy of the binding (with the same underlying queue)
@@ -67,67 +95,83 @@ public class WildcardAddressManager extends SimpleAddressManager
     */
    public boolean addMapping(final SimpleString address, final Binding binding)
    {
-      Address add = addAndUpdateAddressMap(address);
-      if (!add.containsWildCard())
+      boolean exists = super.addMapping(address, binding);
+      if (!exists)
       {
-         for (Address destination : add.getLinkedAddresses())
+         Address add = addAndUpdateAddressMap(address);
+         if (add.containsWildCard())
          {
-            Bindings bindings = getBindings(destination.getAddress());
-            if (bindings != null)
+            for (Address destAdd : add.getLinkedAddresses())
             {
+               super.addMapping(destAdd.getAddress(), binding);
+            }
+         }
+         else
+         {
+            for (Address destAdd : add.getLinkedAddresses())
+            {
+               Bindings bindings = super.getBindings(destAdd.getAddress());
                for (Binding b : bindings.getBindings())
                {
                   super.addMapping(address, b);
                }
             }
          }
-         return super.addMapping(address, binding);
       }
-      else
-      {
-         for (Address destination : add.getLinkedAddresses())
-         {
-            BindingImpl binding1 = new BindingImpl(binding.getType(), destination.getAddress(), binding.getBindable(), binding.isExclusive());
-            super.addMapping(destination.getAddress(), binding1);
-         }
-         return super.addMapping(address, binding);
-      }
+      return exists;
    }
+
 
    /**
     * If the address is a wild card then the binding will be removed from the actual mappings for any linked address.
     * otherwise it will be removed as normal.
     *
-    * @param address   the address to remove the binding from
+    * @param address      the address to remove the binding from
     * @param bindableName the name of the queue for the binding to remove
     * @return true if this was the last mapping for a specific address
     */
    public boolean removeMapping(final SimpleString address, final SimpleString bindableName)
    {
-      Address add = removeAndUpdateAddressMap(address);
-      if (!add.containsWildCard())
+      boolean removed = super.removeMapping(address, bindableName);
+      if (removed)
       {
-         boolean removed = super.removeMapping(address, bindableName);
-         for (Address destination : add.getLinkedAddresses())
+         Address add = getAddress(address);
+         if (!add.containsWildCard())
          {
-            Bindings bindings = getBindings(destination.getAddress());
-            if (bindings != null)
+            for (Address destination : add.getLinkedAddresses())
             {
-               for (Binding b : bindings.getBindings())
+               Bindings bindings = super.getBindings(destination.getAddress());
+               if (bindings != null)
                {
-                  super.removeMapping(address, b.getBindable().getName());
+                  for (Binding b : bindings.getBindings())
+                  {
+                     super.removeMapping(address, b.getBindable().getName());
+                  }
                }
             }
          }
-         return removed;
+         else
+         {
+            for (Address destination : add.getLinkedAddresses())
+            {
+               super.removeMapping(destination.getAddress(), bindableName);
+            }
+         }
+         removeAndUpdateAddressMap(add);
+      }
+      return removed;
+   }
+
+   public boolean containsDestination(final SimpleString address)
+   {
+      Address add = new AddressImpl(address);
+      if (add.containsWildCard())
+      {
+         return true;
       }
       else
       {
-         for (Address destination : add.getLinkedAddresses())
-         {
-            super.removeMapping(destination.getAddress(), bindableName);
-         }
-         return super.removeMapping(address, bindableName);
+         return super.containsDestination(address);
       }
    }
 
@@ -135,152 +179,108 @@ public class WildcardAddressManager extends SimpleAddressManager
    {
       super.clear();
       addresses.clear();
+      wildCardAddresses.clear();
    }
 
-   private synchronized Address addAndUpdateAddressMap(SimpleString address)
-   {     
-      Address add = addresses.get(address);
-      if (add == null)
-      {
-         add = new AddressImpl(address);
-         addresses.put(address, add);
-      }
-      if (!add.containsWildCard())
-      {
-         List<SimpleString> adds = getAddresses(add);
-         for (SimpleString simpleString : adds)
-         {
-            Address addressToAdd = addresses.get(simpleString);
-            if (addressToAdd == null)
-            {
-               addressToAdd = new AddressImpl(simpleString);
-               addresses.put(simpleString, addressToAdd);
-            }
-            addressToAdd.addLinkedAddress(add);
-            add.addLinkedAddress(addressToAdd);
-         }
-      }
-      return add;
-   }
-
-   private synchronized Address removeAndUpdateAddressMap(SimpleString address)
+   private Address getAddress(final SimpleString address)
    {
-      Address add = addresses.get(address);
-      if (add == null)
+      Address add = new AddressImpl(address);
+      Address actualAddress;
+      if (add.containsWildCard())
       {
-         return new AddressImpl(address);
-      }
-      if (!add.containsWildCard())
-      {
-         Bindings bindings1 = getBindings(address);
-         if (bindings1 == null || bindings1.getBindings().size() == 0)
-         {
-            add = addresses.remove(address);
-         }
-         List<Address> addresses = add.getLinkedAddresses();
-         for (Address address1 : addresses)
-         {
-            address1.removLinkedAddress(add);
-            if (address1.getLinkedAddresses().size() == 0)
-            {
-               this.addresses.remove(address1.getAddress());
-            }
-         }
-      }
-      return add;
-   }
-
-   private List<SimpleString> getAddresses(final Address address)
-   {      
-      List<SimpleString> addresses = new ArrayList<SimpleString>();
-      SimpleString[] parts = address.getAddressParts();
-
-      addresses.add(parts[0]);
-      addresses.add(SINGLE_WORD_SIMPLESTRING);
-      addresses.add(ANY_WORDS_SIMPLESTRING);
-      if (address.getAddressParts().length > 1)
-      {         
-         addresses = addPart(addresses, address, 1);
-               
-      }
-      addresses.remove(address.getAddress());
-                 
-      return addresses;
-   }
-
-   private List<SimpleString> addPart(final List<SimpleString> addresses, final Address address, final int pos)
-   {      
-      List<SimpleString> newAddresses = new ArrayList<SimpleString>();
-      for (SimpleString add : addresses)
-      {         
-         newAddresses.add(add.concat(DELIM).concat(SINGLE_WORD));
-         newAddresses.add(add.concat(DELIM).concat(ANY_WORDS));
-         newAddresses.add(add.concat(DELIM).concat(address.getAddressParts()[pos]));
-      }
-      if (pos + 1 < address.getAddressParts().length)
-      {
-         return addPart(newAddresses, address, pos + 1);
+         actualAddress = wildCardAddresses.get(address);
       }
       else
       {
-         return mergeAddresses(newAddresses);
+         actualAddress = addresses.get(address);
+      }
+      return actualAddress != null ? actualAddress : add;
+   }
+
+   private synchronized Address addAndUpdateAddressMap(final SimpleString address)
+   {
+      Address add = new AddressImpl(address);
+      Address actualAddress;
+      if (add.containsWildCard())
+      {
+         actualAddress = wildCardAddresses.get(address);
+      }
+      else
+      {
+         actualAddress = addresses.get(address);
+      }
+      if (actualAddress == null)
+      {
+         actualAddress = add;
+         addAddress(address, actualAddress);
+      }
+      if (actualAddress.containsWildCard())
+      {
+         for (Address destAdd : addresses.values())
+         {
+            if (destAdd.matches(actualAddress))
+            {
+               destAdd.addLinkedAddress(actualAddress);
+               actualAddress.addLinkedAddress(destAdd);
+            }
+         }
+      }
+      else
+      {
+         for (Address destAdd : wildCardAddresses.values())
+         {
+            if (actualAddress.matches(destAdd))
+            {
+               destAdd.addLinkedAddress(actualAddress);
+               actualAddress.addLinkedAddress(destAdd);
+
+            }
+         }
+      }
+      return actualAddress;
+   }
+
+   private void addAddress(final SimpleString address, final Address actualAddress)
+   {
+      if (actualAddress.containsWildCard())
+      {
+         wildCardAddresses.put(address, actualAddress);
+      }
+      else
+      {
+         addresses.put(address, actualAddress);
       }
    }
 
-   private List<SimpleString> mergeAddresses(final List<SimpleString> adds)
+   private synchronized void removeAndUpdateAddressMap(final Address address)
    {
-      List<SimpleString> newAddresses = new ArrayList<SimpleString>();
-      for (int j = 0; j < adds.size(); j++)
+      //we only remove if there are no bindings left
+      Bindings bindings = super.getBindings(address.getAddress());
+      if (bindings == null || bindings.getBindings().size() == 0)
       {
-         SimpleString add = adds.get(j);
-         Address address = new AddressImpl(add);
-         SimpleString prev = null;
-         SimpleString next;
-         for (int i = 0; i < address.getAddressParts().length; i++)
+         List<Address> addresses = address.getLinkedAddresses();
+         for (Address address1 : addresses)
          {
-            SimpleString current = address.getAddressParts()[i];
-            if (i < address.getAddressParts().length - 1)
+            address1.removeLinkedAddress(address);
+            Bindings linkedBindings = super.getBindings(address1.getAddress());
+            if (linkedBindings == null || linkedBindings.getBindings().size() == 0)
             {
-               next = address.getAddressParts()[i + 1];
-            }
-            else
-            {
-               next = null;
-            }
-            if (current.equals(SINGLE_WORD_SIMPLESTRING) && (ANY_WORDS_SIMPLESTRING.equals(next)))
-            {
-               address.removeAddressPart(i);
-               prev = null;
-               i = -1;
-            }
-            else if (current.equals(ANY_WORDS_SIMPLESTRING) && (ANY_WORDS_SIMPLESTRING.equals(next)))
-            {
-               address.removeAddressPart(i);
-               prev = null;
-               i = -1;
-            }
-            else if (current.equals(ANY_WORDS_SIMPLESTRING) && (SINGLE_WORD_SIMPLESTRING.equals(next)))
-            {
-               address.removeAddressPart(i + 1);
-               prev = null;
-               i = -1;
-            }
-            else if (current.equals(ANY_WORDS_SIMPLESTRING) && (ANY_WORDS_SIMPLESTRING.equals(prev)))
-            {
-               address.removeAddressPart(i + 1);
-               prev = null;
-               i = -1;
-            }
-            else
-            {
-               prev = current;
+               removeAddress(address1);
             }
          }
-         if (!newAddresses.contains(address.getAddress()))
-         {
-            newAddresses.add(address.getAddress());
-         }
+         removeAddress(address);
       }
-      return newAddresses;
+   }
+
+   private void removeAddress(final Address add)
+   {
+      if (add.containsWildCard())
+      {
+         wildCardAddresses.remove(add.getAddress());
+      }
+      else
+      {
+         addresses.remove(add.getAddress());
+      }
    }
 }

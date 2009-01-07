@@ -21,18 +21,18 @@
  */
 package org.jboss.messaging.tests.integration.wildcard;
 
-import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -71,6 +71,76 @@ public class WildCardRoutingTest extends UnitTestCase
       m.acknowledge();
       m = clientConsumer.receive(500);
       assertNull(m);
+   }
+
+   public void testBasicWildcardRoutingQueuesDontExist() throws Exception
+   {
+      SimpleString addressAB = new SimpleString("a.b");
+      SimpleString addressAC = new SimpleString("a.c");
+      SimpleString address = new SimpleString("a.*");
+      SimpleString queueName = new SimpleString("Q");
+      clientSession.createQueue(address, queueName, null, false, false);
+      ClientProducer producer = clientSession.createProducer(addressAB);
+      ClientProducer producer2 = clientSession.createProducer(addressAC);
+      ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
+      clientSession.start();
+      producer.send(createTextMessage("m1", clientSession));
+      producer2.send(createTextMessage("m2", clientSession));
+      ClientMessage m = clientConsumer.receive(500);
+      assertNotNull(m);
+      assertEquals("m1", m.getBody().getString());
+      m.acknowledge();
+      m = clientConsumer.receive(500);
+      assertNotNull(m);
+      assertEquals("m2", m.getBody().getString());
+      m.acknowledge();
+      m = clientConsumer.receive(500);
+      assertNull(m);
+      clientConsumer.close();
+      clientSession.deleteQueue(queueName);
+
+      assertEquals(0, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
+      assertEquals(0, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
+      assertEquals(0, messagingService.getServer().getPostOffice().getBindingsForAddress(address).getBindings().size());
+   }
+
+   public void testBasicWildcardRoutingQueuesDontExist2() throws Exception
+   {
+      SimpleString addressAB = new SimpleString("a.b");
+      SimpleString addressAC = new SimpleString("a.c");
+      SimpleString address = new SimpleString("a.*");
+      SimpleString queueName = new SimpleString("Q");
+      SimpleString queueName2 = new SimpleString("Q2");
+      clientSession.createQueue(address, queueName, null, false, false);
+      clientSession.createQueue(address, queueName2, null, false, false);
+      ClientProducer producer = clientSession.createProducer(addressAB);
+      ClientProducer producer2 = clientSession.createProducer(addressAC);
+      ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
+      clientSession.start();
+      producer.send(createTextMessage("m1", clientSession));
+      producer2.send(createTextMessage("m2", clientSession));
+      ClientMessage m = clientConsumer.receive(500);
+      assertNotNull(m);
+      assertEquals("m1", m.getBody().getString());
+      m.acknowledge();
+      m = clientConsumer.receive(500);
+      assertNotNull(m);
+      assertEquals("m2", m.getBody().getString());
+      m.acknowledge();
+      m = clientConsumer.receive(500);
+      assertNull(m);
+      clientConsumer.close();
+      clientSession.deleteQueue(queueName);
+
+      assertEquals(1, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
+      assertEquals(1, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
+      assertEquals(1, messagingService.getServer().getPostOffice().getBindingsForAddress(address).getBindings().size());
+
+      clientSession.deleteQueue(queueName2);
+
+      assertEquals(0, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
+      assertEquals(0, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
+      assertEquals(0, messagingService.getServer().getPostOffice().getBindingsForAddress(address).getBindings().size());
    }
 
    public void testBasicWildcardRoutingWithHash() throws Exception
@@ -178,15 +248,21 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
       clientSession.deleteQueue(queueName1);
-      assertEquals(messagingService.getServer().getPostOffice().getBindingsForAddress(addressAB).getBindings().size(), 0);
+      //the wildcard binding should still exist
+      assertEquals(messagingService.getServer().getPostOffice().getBindingsForAddress(addressAB).getBindings().size(), 1);
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
       assertNotNull(m);
-      assertEquals("m2", m.getBody().getString());
+      assertEquals("m1", m.getBody().getString());
       m.acknowledge();
       m = clientConsumer.receive(500);
-      assertNull(m);
+      assertNotNull(m);
+      assertEquals("m2", m.getBody().getString());
+      m.acknowledge();
+      clientConsumer.close();
+      clientSession.deleteQueue(queueName);
+      assertEquals(messagingService.getServer().getPostOffice().getBindingsForAddress(addressAB).getBindings().size(), 0);
    }
 
    public void testWildcardRoutingLotsOfQueuesAddedThenDeleted() throws Exception
@@ -282,11 +358,8 @@ public class WildCardRoutingTest extends UnitTestCase
       clientSession.deleteQueue(queueName7);
       clientSession.deleteQueue(queueName8);
       clientSession.deleteQueue(queueName9);
-      //there should only be the wilcard binding left
-      assertEquals(messagingService.getServer().getPostOffice().numMappings(), 1);
       clientConsumer.close();
       clientSession.deleteQueue(queueName);
-      assertEquals(messagingService.getServer().getPostOffice().numMappings(), 0);
    }
 
    public void testWildcardRoutingLotsOfQueuesAddedThenDeletedHash() throws Exception
@@ -382,11 +455,8 @@ public class WildCardRoutingTest extends UnitTestCase
       clientSession.deleteQueue(queueName7);
       clientSession.deleteQueue(queueName8);
       clientSession.deleteQueue(queueName9);
-      //there should only be the wilcard binding left
-      assertEquals(messagingService.getServer().getPostOffice().numMappings(), 1);
       clientConsumer.close();
       clientSession.deleteQueue(queueName);
-      assertEquals(messagingService.getServer().getPostOffice().numMappings(), 0);
    }
 
 
@@ -395,6 +465,65 @@ public class WildCardRoutingTest extends UnitTestCase
       SimpleString addressAB = new SimpleString("a.b");
       SimpleString addressAC = new SimpleString("a.c");
       SimpleString address = new SimpleString("#");
+      SimpleString queueName1 = new SimpleString("Q1");
+      SimpleString queueName2 = new SimpleString("Q2");
+      SimpleString queueName = new SimpleString("Q");
+      clientSession.createQueue(addressAB, queueName1, null, false, false);
+      clientSession.createQueue(addressAC, queueName2, null, false, false);
+      clientSession.createQueue(address, queueName, null, false, false);
+      ClientProducer producer = clientSession.createProducer(addressAB);
+      ClientProducer producer2 = clientSession.createProducer(addressAC);
+      ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
+      clientSession.start();
+      producer.send(createTextMessage("m1", clientSession));
+      producer2.send(createTextMessage("m2", clientSession));
+      ClientMessage m = clientConsumer.receive(500);
+      assertNotNull(m);
+      assertEquals("m1", m.getBody().getString());
+      m.acknowledge();
+      m = clientConsumer.receive(500);
+      assertNotNull(m);
+      assertEquals("m2", m.getBody().getString());
+      m.acknowledge();
+      m = clientConsumer.receive(500);
+      assertNull(m);
+   }
+
+   public void testWildcardRoutingWithHash() throws Exception
+   {
+      SimpleString addressAB = new SimpleString("a.b.f");
+      SimpleString addressAC = new SimpleString("a.c.f");
+      SimpleString address = new SimpleString("a.#.f");
+      SimpleString queueName1 = new SimpleString("Q1");
+      SimpleString queueName2 = new SimpleString("Q2");
+      SimpleString queueName = new SimpleString("Q");
+      clientSession.createQueue(addressAB, queueName1, null, false, false);
+      clientSession.createQueue(addressAC, queueName2, null, false, false);
+      clientSession.createQueue(address, queueName, null, false, false);
+      ClientProducer producer = clientSession.createProducer(addressAB);
+      ClientProducer producer2 = clientSession.createProducer(addressAC);
+      ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
+      clientSession.start();
+      producer.send(createTextMessage("m1", clientSession));
+      producer2.send(createTextMessage("m2", clientSession));
+      ClientMessage m = clientConsumer.receive(500);
+      assertNotNull(m);
+      assertEquals("m1", m.getBody().getString());
+      m.acknowledge();
+      m = clientConsumer.receive(500);
+      assertNotNull(m);
+      assertEquals("m2", m.getBody().getString());
+      m.acknowledge();
+      m = clientConsumer.receive(500);
+      assertNull(m);
+   }
+
+   public void testWildcardRoutingWithHashMultiLengthAddresses() throws Exception
+   {
+      SimpleString addressAB = new SimpleString("a.b.c.f");
+      SimpleString addressAC = new SimpleString("a.c.f");
+      SimpleString addressAD = new SimpleString("a.d");
+      SimpleString address = new SimpleString("a.#.f");
       SimpleString queueName1 = new SimpleString("Q1");
       SimpleString queueName2 = new SimpleString("Q2");
       SimpleString queueName = new SimpleString("Q");
@@ -625,6 +754,42 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNull(m);
    }
 
+   public void testLargeWildcardRouting() throws Exception
+   {
+      SimpleString addressAB = new SimpleString("a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t.u.v.w.x.y.z");
+      SimpleString addressAC = new SimpleString("a.c");
+      SimpleString address = new SimpleString("a.#");
+      SimpleString queueName1 = new SimpleString("Q1");
+      SimpleString queueName2 = new SimpleString("Q2");
+      SimpleString queueName = new SimpleString("Q");
+      clientSession.createQueue(addressAB, queueName1, null, false, false);
+      clientSession.createQueue(addressAC, queueName2, null, false, false);
+      clientSession.createQueue(address, queueName, null, false, false);
+      assertEquals(2, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
+      assertEquals(2, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
+      assertEquals(1, messagingService.getServer().getPostOffice().getBindingsForAddress(address).getBindings().size());
+      ClientProducer producer = clientSession.createProducer(addressAB);
+      ClientProducer producer2 = clientSession.createProducer(addressAC);
+      ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
+      clientSession.start();
+      producer.send(createTextMessage("m1", clientSession));
+      producer2.send(createTextMessage("m2", clientSession));
+      ClientMessage m = clientConsumer.receive(500);
+      assertNotNull(m);
+      assertEquals("m1", m.getBody().getString());
+      m.acknowledge();
+      m = clientConsumer.receive(500);
+      assertNotNull(m);
+      assertEquals("m2", m.getBody().getString());
+      m.acknowledge();
+      m = clientConsumer.receive(500);
+      assertNull(m);
+      clientConsumer.close();
+      clientSession.deleteQueue(queueName);
+      assertEquals(1, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
+      assertEquals(1, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
+      assertEquals(0, messagingService.getServer().getPostOffice().getBindingsForAddress(address).getBindings().size());
+   }
 
    @Override
    protected void setUp() throws Exception
@@ -638,6 +803,7 @@ public class WildCardRoutingTest extends UnitTestCase
       messagingService = MessagingServiceImpl.newNullStorageMessagingService(configuration);
       //start the server
       messagingService.start();
+      messagingService.getServer().getManagementService().enableNotifications(false);
       //then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       clientSession = sessionFactory.createSession(false, true, true);

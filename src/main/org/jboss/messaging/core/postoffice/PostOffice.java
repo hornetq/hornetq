@@ -22,9 +22,6 @@
 
 package org.jboss.messaging.core.postoffice;
 
-import java.util.List;
-import java.util.Set;
-
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.server.MessagingComponent;
@@ -33,6 +30,9 @@ import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.util.SimpleString;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * 
@@ -95,6 +95,4 @@ public interface PostOffice extends MessagingComponent
    SendLock getAddressLock(SimpleString address);
 
    DuplicateIDCache getDuplicateIDCache(SimpleString address);
-
-   int numMappings();
 }
