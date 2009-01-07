@@ -378,14 +378,10 @@ public class ForwarderImpl implements Forwarder, FailureListener
                if (iMaxHops == null)
                {                 
                   message.putIntProperty(MessageImpl.HDR_MAX_HOPS, maxHops - 1);
-                  
-                 // log.info("In forwarder, putting maxhops " + (maxHops - 1));
                }
                else
                {                 
                   message.putIntProperty(MessageImpl.HDR_MAX_HOPS, iMaxHops - 1);
-                  
-                 // log.info("In forwarder, putting maxhops " + (iMaxHops - 1));
                }
             }
 

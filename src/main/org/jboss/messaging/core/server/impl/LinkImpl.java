@@ -98,9 +98,7 @@ public class LinkImpl implements Link
       }
       
       Integer iMaxHops = (Integer)message.getProperty(MessageImpl.HDR_MAX_HOPS);
-      
-     // log.info("IN LinkIMpl::route imaxhops is " + iMaxHops);
-      
+
       if (iMaxHops != null)
       {
          int maxHops = iMaxHops.intValue();
