@@ -140,7 +140,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
          assertEquals(currentSize, managerImpl.getPageStore(new SimpleString("simple-test")).getAddressSize());
       }
 
-      managerImpl.messageDone(msg);
+      managerImpl.getPageStore(msg.getDestination()).addSize(-msg.getMemoryEstimate());
 
       assertTrue(managerImpl.addSize(msg));
 

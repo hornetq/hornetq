@@ -118,13 +118,6 @@ public interface PagingManager extends MessagingComponent
     * */
    PageTransactionInfo getTransaction(long transactionID);
 
-   /** 
-    * 
-    * To be called when there are no more references to the message
-    * @param message
-    */
-   void messageDone(ServerMessage message) throws Exception;
-
    /** To be called when an message is being added to the address.
     *  @return false is the address is full */
    boolean addSize(ServerMessage message) throws Exception;

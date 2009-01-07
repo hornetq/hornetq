@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.paging;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.journal.SequentialFileFactory;

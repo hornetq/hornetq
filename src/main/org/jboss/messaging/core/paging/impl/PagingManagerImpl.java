@@ -189,11 +189,6 @@ public class PagingManagerImpl implements PagingManager
       return getPageStore(destination).isPaging();
    }
 
-   public void messageDone(final ServerMessage message) throws Exception
-   {
-      getPageStore(message.getDestination()).addSize(-message.getMemoryEstimate());
-   }
-
    public boolean addSize(final ServerMessage message) throws Exception
    {
       return getPageStore(message.getDestination()).addSize(message.getMemoryEstimate());
