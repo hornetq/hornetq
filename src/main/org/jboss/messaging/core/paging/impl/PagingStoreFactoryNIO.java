@@ -205,7 +205,6 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
             try
             {
                destination = reader.readLine();
-               reader.close();
             }
             finally
             {
