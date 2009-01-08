@@ -63,7 +63,7 @@ public class PageCrashTest extends ServiceTestBase
 
       Process process = SpawnedVMSupport.spawnVM(RemotePageCrashExecution.class.getCanonicalName());
       process.waitFor();
-      assertEquals(1, process.exitValue());
+      assertEquals("The remote process failed, test is invalid", RemotePageCrashExecution.OK, process.exitValue());
 
       File pageDir = new File(getPageDir());
 

@@ -75,11 +75,15 @@ public class RemotePageCrashExecution extends ServiceTestBase
 
    // Constants -----------------------------------------------------
 
+   public static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
+
+   public static final int OK = 123;
+
+   public static final int NOT_OK = 255;
+   
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-
-   public static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
 
    private static final Logger log = Logger.getLogger(RemotePageCrashExecution.class);
 
@@ -89,10 +93,12 @@ public class RemotePageCrashExecution extends ServiceTestBase
       {
          RemotePageCrashExecution execution = new RemotePageCrashExecution();
          execution.pageAndFail();
+         System.exit(OK);
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          log.warn(e.getMessage(), e);
+         System.exit(NOT_OK);
       }
 
    }
@@ -343,10 +349,7 @@ public class RemotePageCrashExecution extends ServiceTestBase
           */
          public void delete() throws Exception
          {
-            // We want the system to fail
-            System.out.println("Crash");
-            System.out.flush(); // System.exit may not let the System.out to be seen if flush is not called
-            System.exit(1);
+            // This will let the file stay, simulating a system failure
          }
 
          /**
