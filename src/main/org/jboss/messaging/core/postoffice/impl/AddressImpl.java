@@ -110,7 +110,7 @@ public class AddressImpl implements Address
    {
       if (containsWildCard == add.containsWildCard())
       {
-         return false;
+         return address.equals(add.getAddress());
       }
       int pos = 0;
       int matchPos = 0;
@@ -118,6 +118,10 @@ public class AddressImpl implements Address
       SimpleString nextToMatch;
       for (; matchPos < add.getAddressParts().length;)
       {
+         if(pos >= addressParts.length)
+         {
+            return false;
+         }
          SimpleString curr = addressParts[pos];
          SimpleString next = addressParts.length > pos + 1 ? addressParts[pos + 1] : null;
          SimpleString currMatch = add.getAddressParts()[matchPos];
