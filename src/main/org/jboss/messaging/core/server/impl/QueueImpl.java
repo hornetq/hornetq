@@ -198,7 +198,8 @@ public class QueueImpl implements Queue
          startedTx = true;
       }
       
-      // TODO we can avoid these lookups in the Queue since all messsages in the Queue will be for the same store
+      // There is no way to cache the Store, since a Queue may belong to multiple addresses,
+      // so we aways need this lookup
       PagingStore store = pagingManager.getPageStore(message.getDestination());
 
       if (tx == null)

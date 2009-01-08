@@ -216,13 +216,8 @@ public class MessagingServerImpl implements MessagingServer
                                                           new JBMThreadFactory("JBM-scheduled-threads"));
       queueFactory = new BindableFactoryImpl(scheduledExecutor, queueSettingsRepository, storageManager);
 
-      pagingManager = new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(),
-                                                                      configuration.getPagingMaxThreads()),
-                                            storageManager,
-                                            queueSettingsRepository,
-                                            configuration.getPagingMaxGlobalSizeBytes(),
-                                            configuration.getPagingDefaultSize(),
-                                            configuration.isJournalSyncNonTransactional());
+      pagingManager = createPagingManager();
+      
       pagingManager.start();
 
       resourceManager = new ResourceManagerImpl((int)configuration.getTransactionTimeout() / 1000,
@@ -670,6 +665,21 @@ public class MessagingServerImpl implements MessagingServer
 
    // Protected
    // ------------------------------------------------------------------------------------
+   
+   /**
+    * Method could be replaced for test purposes 
+    */
+   protected PagingManager createPagingManager()
+   {
+      return new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(),
+                                                                      configuration.getPagingMaxThreads()),
+                                            storageManager,
+                                            queueSettingsRepository,
+                                            configuration.getPagingMaxGlobalSizeBytes(),
+                                            configuration.getPagingDefaultSize(),
+                                            configuration.isJournalSyncNonTransactional());
+   }
+
 
    // Private
    // --------------------------------------------------------------------------------------
