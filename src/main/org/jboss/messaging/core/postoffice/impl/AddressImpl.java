@@ -120,7 +120,8 @@ public class AddressImpl implements Address
       {
          if(pos >= addressParts.length)
          {
-            return false;
+            //test for # as last address part
+            return pos + 1 == add.getAddressParts().length && add.getAddressParts()[pos].equals(ANY_WORDS_SIMPLESTRING);
          }
          SimpleString curr = addressParts[pos];
          SimpleString next = addressParts.length > pos + 1 ? addressParts[pos + 1] : null;

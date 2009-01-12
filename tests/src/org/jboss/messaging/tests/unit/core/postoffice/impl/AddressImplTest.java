@@ -189,4 +189,95 @@ public class AddressImplTest  extends UnitTestCase
       assertTrue(a1.matches(w));
       assertFalse(a2.matches(w));
    }
+
+   public void testM()
+   {
+      SimpleString s1 = new SimpleString("a.b.c");
+      SimpleString s2 = new SimpleString("a.b.x.e");
+      SimpleString s3 = new SimpleString("a.b.c.#");
+      Address a1 = new AddressImpl(s1);
+      Address a2 = new AddressImpl(s2);
+      Address w = new AddressImpl(s3);
+      assertTrue(a1.matches(w));
+      assertFalse(a2.matches(w));
+   }
+
+   public void testN()
+   {
+      SimpleString s1 = new SimpleString("usd.stock");
+      SimpleString s2 = new SimpleString("a.b.x.e");
+      SimpleString s3 = new SimpleString("*.stock.#");
+      Address a1 = new AddressImpl(s1);
+      Address a2 = new AddressImpl(s2);
+      Address w = new AddressImpl(s3);
+      assertTrue(a1.matches(w));
+      assertFalse(a2.matches(w));
+   }
+
+   public void testO()
+   {
+      SimpleString s1 = new SimpleString("a.b.c.d");
+      SimpleString s2 = new SimpleString("a.b.x.e");
+      SimpleString s3 = new SimpleString("a.b.c.*");
+      Address a1 = new AddressImpl(s1);
+      Address a2 = new AddressImpl(s2);
+      Address w = new AddressImpl(s3);
+      assertTrue(a1.matches(w));
+      assertFalse(a2.matches(w));
+   }
+
+   public void testP()
+   {
+      SimpleString s1 = new SimpleString("a.b.c.d");
+      SimpleString s3 = new SimpleString("a.b.c#");
+      Address a1 = new AddressImpl(s1);
+      Address w = new AddressImpl(s3);
+      assertFalse(a1.matches(w));
+   }
+
+   public void testQ()
+   {
+      SimpleString s1 = new SimpleString("a.b.c.d");
+      SimpleString s3 = new SimpleString("#a.b.c");
+      Address a1 = new AddressImpl(s1);
+      Address w = new AddressImpl(s3);
+      assertFalse(a1.matches(w));
+   }
+
+    public void testR()
+   {
+      SimpleString s1 = new SimpleString("a.b.c.d");
+      SimpleString s3 = new SimpleString("#*a.b.c");
+      Address a1 = new AddressImpl(s1);
+      Address w = new AddressImpl(s3);
+      assertFalse(a1.matches(w));
+   }
+
+   public void testS()
+   {
+      SimpleString s1 = new SimpleString("a.b.c.d");
+      SimpleString s3 = new SimpleString("a.b.c*");
+      Address a1 = new AddressImpl(s1);
+      Address w = new AddressImpl(s3);
+      assertFalse(a1.matches(w));
+   }
+
+   public void testT()
+   {
+      SimpleString s1 = new SimpleString("a.b.c.d");
+      SimpleString s3 = new SimpleString("*a.b.c");
+      Address a1 = new AddressImpl(s1);
+      Address w = new AddressImpl(s3);
+      assertFalse(a1.matches(w));
+   }
+
+   public void testU()
+   {
+      SimpleString s1 = new SimpleString("a.b.c.d");
+      SimpleString s3 = new SimpleString("*a.b.c");
+      Address a1 = new AddressImpl(s1);
+      Address w = new AddressImpl(s3);
+      assertFalse(a1.matches(w));
+   }
+
 }
