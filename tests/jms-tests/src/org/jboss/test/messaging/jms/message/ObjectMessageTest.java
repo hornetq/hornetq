@@ -32,6 +32,8 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
 
+import org.jboss.messaging.jms.client.JBossObjectMessage;
+
 /**
  * A test that sends/receives object messages to the JMS provider and verifies their integrity.
  *
@@ -127,7 +129,72 @@ public class ObjectMessageTest extends MessageTestBase
 
       assertEquals(vectorOnMessage.get(0), v2.get(0));
    }
-
+   
+   public void testObjectIsolation() throws Exception
+   {
+      ObjectMessage msgTest = session.createObjectMessage();
+      ArrayList list = new ArrayList();
+      list.add("hello");
+      msgTest.setObject(list);
+      
+      list.clear();
+      
+      list = (ArrayList) msgTest.getObject();
+      
+      assertEquals(1, list.size());
+      assertEquals("hello", list.get(0));
+      
+      list.add("hello2");
+      
+      msgTest.setObject(list);
+      
+      list.clear();
+      
+      list = (ArrayList) msgTest.getObject();
+      
+      assertEquals(2, list.size());
+      assertEquals("hello", list.get(0));
+      assertEquals("hello2", list.get(1));
+      
+      msgTest.setObject(list);
+      list.add("hello3");
+      msgTest.setObject(list);
+      
+      list = (ArrayList) msgTest.getObject();
+      assertEquals(3, list.size());
+      assertEquals("hello", list.get(0));
+      assertEquals("hello2", list.get(1));
+      assertEquals("hello3", list.get(2));
+      
+      list = (ArrayList) msgTest.getObject();
+      
+      list.clear();
+      
+      queueProd.send(msgTest);
+      
+      msgTest = (ObjectMessage) queueCons.receive(5000);
+      
+      list = (ArrayList) msgTest.getObject();
+      
+      assertEquals(3, list.size());
+      assertEquals("hello", list.get(0));
+      assertEquals("hello2", list.get(1));
+      assertEquals("hello3", list.get(2));
+      
+   }
+   
+   public void testReadOnEmptyObjectMessage() throws Exception
+   {
+      ObjectMessage obm = (ObjectMessage) message;
+      assertNull(obm.getObject());
+      
+      queueProd.send(message);
+      ObjectMessage r = (ObjectMessage) queueCons.receive();
+      
+      assertNull(r.getObject());
+      
+   }
+   
    // Protected ------------------------------------------------------------------------------------
 
    protected void prepareMessage(Message m) throws JMSException

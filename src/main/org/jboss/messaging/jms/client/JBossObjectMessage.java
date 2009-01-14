@@ -33,7 +33,6 @@ import javax.jms.ObjectMessage;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.ObjectInputStreamWithClassLoader;
 
 /**
@@ -59,7 +58,8 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 
    // Attributes ----------------------------------------------------
    
-   private Serializable object;
+   // keep a snapshot of the Serializable Object as a byte[] to provide Object isolation
+   private byte[] data;
 
    // Static --------------------------------------------------------
 
@@ -102,18 +102,8 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    
    public void doBeforeSend() throws Exception
    {
-      if (object != null)
+      if (data != null)
       {
-         ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-         
-         ObjectOutputStream oos = new ObjectOutputStream(baos);
-         
-         oos.writeObject(object);
-         
-         oos.flush();
-         
-         byte[] data = baos.toByteArray();
-         
          getBody().putInt(data.length);
          getBody().putBytes(data);
       }
@@ -127,39 +117,72 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    public void setObject(Serializable object) throws JMSException
    {  
       checkWrite();
-      
-      this.object = object;
+
+      if (object != null)
+      {
+         try 
+         {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+
+            oos.writeObject(object);
+
+            oos.flush();
+
+            data = baos.toByteArray();
+         }
+         catch (Exception e)
+         {
+            JMSException je = new JMSException("Failed to serialize object");
+            je.setLinkedException(e);
+            throw je;
+         }
+      }
    }
 
    // lazy deserialize the Object the first time the client requests it
    public Serializable getObject() throws JMSException
    {
-      if (object == null)
+      if (data == null)
       {
          try
          {
             int len = getBody().getInt();
-            byte[] data = new byte[len];
+            data = new byte[len];
             getBody().getBytes(data);
-            ByteArrayInputStream bais = new ByteArrayInputStream(data);
-            ObjectInputStream ois = new ObjectInputStreamWithClassLoader(bais);
-            object = (Serializable)ois.readObject();
-         }
+         } 
          catch (Exception e)
          {
-            JMSException je = new JMSException("Failed to deserialize object");
-            je.setLinkedException(e);
+            return null;
          }
       }
       
-      return object;
+      if (data.length == 0)
+      {
+         return null;
+      }
+
+      try
+      {
+         ByteArrayInputStream bais = new ByteArrayInputStream(data);
+         ObjectInputStream ois = new ObjectInputStreamWithClassLoader(bais);
+         Serializable object = (Serializable)ois.readObject();
+         return object;
+      }
+      catch (Exception e)
+      {
+         JMSException je = new JMSException("Failed to deserialize object");
+         je.setLinkedException(e);
+         throw je;
+      }
    }
 
    public void clearBody() throws JMSException
    {
       super.clearBody();
       
-      object = null;
+      data = null;
    }
    
    
