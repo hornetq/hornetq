@@ -57,6 +57,22 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
 	//Cache the string
 	private transient String str;
 	
+   // Static
+	// ----------------------------------------------------------------------
+	
+	/**
+	 * Returns a SimpleString constructed from the <code>string</code> parameter.
+	 * If <code>string</code> is <code>null</code>, the return value will be <code>null</code> too.
+	 */
+	public static SimpleString toSimpleString(final String string)
+	{
+	   if (string == null)
+	   {
+	      return null;
+	   }
+	   return new SimpleString(string);
+	}
+
 	// Constructors
 	// ----------------------------------------------------------------------
 		

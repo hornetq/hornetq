@@ -39,6 +39,8 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * 
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
+ * 
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public interface ClientSession extends XAResource
 {
@@ -47,38 +49,45 @@ public interface ClientSession extends XAResource
                     SimpleString filterString,
                     boolean durable,
                     boolean temporary) throws MessagingException;
+   void createQueue(String address,
+                    String queueName,
+                    String filterString,
+                    boolean durable,
+                    boolean temporary) throws MessagingException;
 
    void deleteQueue(SimpleString queueName) throws MessagingException;
+   void deleteQueue(String queueName) throws MessagingException;
 
    void addDestination(SimpleString address, boolean durable, boolean temporary) throws MessagingException;
+   void addDestination(String address, boolean durable, boolean temporary) throws MessagingException;
 
    void removeDestination(SimpleString address, boolean durable) throws MessagingException;
-
-   SessionQueueQueryResponseMessage queueQuery(SimpleString queueName) throws MessagingException;
-
-   SessionBindingQueryResponseMessage bindingQuery(SimpleString address) throws MessagingException;
+   void removeDestination(String address, boolean durable) throws MessagingException;
 
    ClientConsumer createConsumer(SimpleString queueName) throws MessagingException;
-
    ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString) throws MessagingException;
-
    ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean browseOnly) throws MessagingException;
-
    ClientConsumer createConsumer(SimpleString queueName,
                                  SimpleString filterString,
                                  int windowSize,
                                  int maxRate,
                                  boolean browseOnly) throws MessagingException;
 
+   ClientConsumer createConsumer(String queueName) throws MessagingException;
+   ClientConsumer createConsumer(String queueName, String filterString) throws MessagingException;
+   ClientConsumer createConsumer(String queueName, String filterString, boolean browseOnly) throws MessagingException;
+   ClientConsumer createConsumer(String queueName,
+                                 String filterString,
+                                 int windowSize,
+                                 int maxRate,
+                                 boolean browseOnly) throws MessagingException;
+
    ClientConsumer createFileConsumer(File directory, SimpleString queueName) throws MessagingException;
-
    ClientConsumer createFileConsumer(File directory, SimpleString queueName, SimpleString filterString) throws MessagingException;
-
    ClientConsumer createFileConsumer(File directory,
                                      SimpleString queueName,
                                      SimpleString filterString,
                                      boolean browseOnly) throws MessagingException;
-
    ClientConsumer createFileConsumer(File directory,
                                      SimpleString queueName,
                                      SimpleString filterString,
@@ -86,14 +95,43 @@ public interface ClientSession extends XAResource
                                      int maxRate,
                                      boolean browseOnly) throws MessagingException;
 
-   ClientProducer createProducer(SimpleString address) throws MessagingException;
+   ClientConsumer createFileConsumer(File directory, String queueName) throws MessagingException;
+   ClientConsumer createFileConsumer(File directory, String queueName, String filterString) throws MessagingException;
+   ClientConsumer createFileConsumer(File directory,
+                                     String queueName,
+                                     String filterString,
+                                     boolean browseOnly) throws MessagingException;
+   ClientConsumer createFileConsumer(File directory,
+                                     String queueName,
+                                     String filterString,
+                                     int windowSize,
+                                     int maxRate,
+                                     boolean browseOnly) throws MessagingException;
 
+   /**
+    * Create a producer with no default address.
+    * Address must be specified everytime a message is sent
+    * 
+    * @see ClientProducer#send(SimpleString, org.jboss.messaging.core.message.Message)
+    */
+   ClientProducer createProducer() throws MessagingException;
+   ClientProducer createProducer(SimpleString address) throws MessagingException;
+   ClientProducer createProducer(SimpleString address, int rate) throws MessagingException;
    ClientProducer createProducer(SimpleString address,
                                  int maxRate,
                                  boolean blockOnNonPersistentSend,
                                  boolean blockOnPersistentSend) throws MessagingException;
 
-   ClientProducer createProducer(SimpleString address, int rate) throws MessagingException;
+   ClientProducer createProducer(String address) throws MessagingException;
+   ClientProducer createProducer(String address, int rate) throws MessagingException;
+   ClientProducer createProducer(String address,
+                                 int maxRate,
+                                 boolean blockOnNonPersistentSend,
+                                 boolean blockOnPersistentSend) throws MessagingException;
+
+   SessionQueueQueryResponseMessage queueQuery(SimpleString queueName) throws MessagingException;
+
+   SessionBindingQueryResponseMessage bindingQuery(SimpleString address) throws MessagingException;
 
    XAResource getXAResource();
 

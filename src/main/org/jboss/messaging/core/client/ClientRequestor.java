@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.core.client;
 
+import static org.jboss.messaging.util.SimpleString.toSimpleString;
+
 import java.util.UUID;
 
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
@@ -50,6 +52,11 @@ public class ClientRequestor
       queueSession.addDestination(replyQueue, false, true);
       queueSession.createQueue(replyQueue, replyQueue, null, false, true);
       replyConsumer = queueSession.createConsumer(replyQueue);
+   }
+
+   public ClientRequestor(final ClientSession session, final String requestAddress) throws Exception
+   {
+      this(session, toSimpleString(requestAddress));
    }
 
    public ClientMessage request(final ClientMessage request) throws Exception

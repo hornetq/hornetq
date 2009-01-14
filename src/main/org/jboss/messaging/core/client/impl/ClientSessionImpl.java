@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.core.client.impl;
 
+import static org.jboss.messaging.util.SimpleString.toSimpleString;
+
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
@@ -242,12 +244,26 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       channel.sendBlocking(request);
    }
+   
+   public void createQueue(final String address, 
+                           final String queueName, 
+                           final String filterString, 
+                           final boolean durable, 
+                           final boolean temporary) throws MessagingException
+   {
+      createQueue(toSimpleString(address), toSimpleString(queueName), toSimpleString(filterString), durable, temporary);
+   }
 
    public void deleteQueue(final SimpleString queueName) throws MessagingException
    {
       checkClosed();
 
       channel.sendBlocking(new SessionDeleteQueueMessage(queueName));
+   }
+   
+   public void deleteQueue(final String queueName) throws MessagingException
+   {
+      deleteQueue(toSimpleString(queueName));
    }
 
    public SessionQueueQueryResponseMessage queueQuery(final SimpleString queueName) throws MessagingException
@@ -260,7 +276,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       return response;
    }
-
+   
    public SessionBindingQueryResponseMessage bindingQuery(final SimpleString address) throws MessagingException
    {
       checkClosed();
@@ -280,6 +296,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       channel.sendBlocking(request);
    }
+   
+   public void addDestination(final String address, final boolean durable, final boolean temporary) throws MessagingException
+   {
+      addDestination(toSimpleString(address), durable, temporary);
+   }
 
    public void removeDestination(final SimpleString address, final boolean durable) throws MessagingException
    {
@@ -289,19 +310,30 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       channel.sendBlocking(request);
    }
+   
+   public void removeDestination(final String address, final boolean durable) throws MessagingException
+   {
+      removeDestination(toSimpleString(address), durable);
+   }
 
    public ClientConsumer createConsumer(final SimpleString queueName) throws MessagingException
    {
-      checkClosed();
-
       return createConsumer(queueName, null, false);
+   }
+
+   public ClientConsumer createConsumer(final String queueName) throws MessagingException
+   {
+      return createConsumer(toSimpleString(queueName));
    }
 
    public ClientConsumer createConsumer(final SimpleString queueName, final SimpleString filterString) throws MessagingException
    {
-      checkClosed();
-
       return createConsumer(queueName, filterString, consumerWindowSize, consumerMaxRate, false);
+   }
+   
+   public ClientConsumer createConsumer(final String queueName, final String filterString) throws MessagingException
+   {
+      return createConsumer(toSimpleString(queueName), toSimpleString(filterString));
    }
 
    public ClientConsumer createConsumer(final SimpleString queueName,
@@ -309,6 +341,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                         final boolean browseOnly) throws MessagingException
    {
       return createConsumer(queueName, filterString, consumerWindowSize, consumerMaxRate, browseOnly);
+   }
+   
+   public ClientConsumer createConsumer(final String queueName, 
+                                        final String filterString,
+                                        final boolean browseOnly) throws MessagingException
+   {
+      return createConsumer(toSimpleString(queueName), toSimpleString(filterString), browseOnly);
    }
 
    /*
@@ -327,21 +366,38 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return internalCreateConsumer(queueName, filterString, windowSize, browseOnly, null);
    }
+   
+   public ClientConsumer createConsumer(final String queueName,
+                                        final String filterString,
+                                        final int windowSize,
+                                        final int maxRate,
+                                        final boolean browseOnly) throws MessagingException
+   {
+      return createConsumer(toSimpleString(queueName), toSimpleString(filterString), windowSize, maxRate, browseOnly);
+   }
 
    public ClientConsumer createFileConsumer(final File directory, final SimpleString queueName) throws MessagingException
    {
-      checkClosed();
-
       return createFileConsumer(directory, queueName, null, false);
+   }
+   
+   public ClientConsumer createFileConsumer(final File directory, final String queueName) throws MessagingException
+   {
+      return createFileConsumer(directory, toSimpleString(queueName));
    }
 
    public ClientConsumer createFileConsumer(final File directory,
                                             final SimpleString queueName,
                                             final SimpleString filterString) throws MessagingException
    {
-      checkClosed();
-
       return createFileConsumer(directory, queueName, filterString, consumerWindowSize, consumerMaxRate, false);
+   }
+   
+   public ClientConsumer createFileConsumer(final File directory, 
+                                            final String queueName, 
+                                            final String filterString) throws MessagingException
+   {
+      return createFileConsumer(directory, toSimpleString(queueName), toSimpleString(filterString));
    }
 
    public ClientConsumer createFileConsumer(final File directory,
@@ -352,6 +408,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return createFileConsumer(directory, queueName, filterString, consumerWindowSize, consumerMaxRate, browseOnly);
    }
 
+   public ClientConsumer createFileConsumer(final File directory, 
+                                            final String queueName, 
+                                            final String filterString, 
+                                            final boolean browseOnly) throws MessagingException
+   {
+      return createFileConsumer(directory, toSimpleString(queueName), toSimpleString(filterString), browseOnly);
+   }
+   
    /*
     * Note, we DO NOT currently support direct consumers (i.e. consumers we're delivery occurs on the remoting thread.
     * Direct consumers have issues with blocking and failover.
@@ -369,17 +433,40 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return internalCreateConsumer(queueName, filterString, windowSize, browseOnly, directory);
    }
+   
+   public ClientConsumer createFileConsumer(final File directory,
+                                            final String queueName,
+                                            final String filterString,
+                                            final int windowSize,
+                                            final int maxRate,
+                                            final boolean browseOnly) throws MessagingException
+   {
+      return createFileConsumer(directory, toSimpleString(queueName), toSimpleString(filterString), windowSize, maxRate, browseOnly);
+   }
 
+   public ClientProducer createProducer() throws MessagingException
+   {
+      return createProducer((SimpleString)null);
+   }
+   
    public ClientProducer createProducer(final SimpleString address) throws MessagingException
    {
-      checkClosed();
-
       return createProducer(address, producerMaxRate);
+   }
+   
+   public ClientProducer createProducer(final String address) throws MessagingException
+   {
+      return createProducer(toSimpleString(address));
    }
 
    public ClientProducer createProducer(final SimpleString address, final int maxRate) throws MessagingException
    {
       return createProducer(address, maxRate, blockOnNonPersistentSend, blockOnPersistentSend);
+   }
+   
+   public ClientProducer createProducer(final String address, final int rate) throws MessagingException
+   {
+      return createProducer(toSimpleString(address), rate);
    }
 
    public ClientProducer createProducer(final SimpleString address,
@@ -387,21 +474,15 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                         final boolean blockOnNonPersistentSend,
                                         final boolean blockOnPersistentSend) throws MessagingException
    {
-      checkClosed();
+      return internalCreateProducer(address, maxRate, blockOnNonPersistentSend, blockOnPersistentSend);
+   }
 
-      ClientProducerInternal producer = new ClientProducerImpl(this,
-                                                               address,
-                                                               maxRate == -1 ? null
-                                                                            : new TokenBucketLimiterImpl(maxRate, false),
-                                                               autoCommitSends && blockOnNonPersistentSend,
-                                                               autoCommitSends && blockOnPersistentSend,
-                                                               autoGroup,
-                                                               minLargeMessageSize,
-                                                               channel);
-
-      addProducer(producer);
-
-      return producer;
+   public ClientProducer createProducer(final String address,
+                                        final int maxRate,
+                                        final boolean blockOnNonPersistentSend,
+                                        final boolean blockOnPersistentSend) throws MessagingException
+   {
+      return createProducer(toSimpleString(address), maxRate, blockOnNonPersistentSend, blockOnPersistentSend);
    }
 
    public XAResource getXAResource()
@@ -1093,6 +1174,28 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return consumer;
    }
 
+   private ClientProducer internalCreateProducer(final SimpleString address,
+                                                 final int maxRate,
+                                                 final boolean blockOnNonPersistentSend,
+                                                 final boolean blockOnPersistentSend) throws MessagingException
+   {
+      checkClosed();
+
+      ClientProducerInternal producer = new ClientProducerImpl(this,
+                                                               address,
+                                                               maxRate == -1 ? null
+                                                                            : new TokenBucketLimiterImpl(maxRate, false),
+                                                               autoCommitSends && blockOnNonPersistentSend,
+                                                               autoCommitSends && blockOnPersistentSend,
+                                                               autoGroup,
+                                                               minLargeMessageSize,
+                                                               channel);
+
+      addProducer(producer);
+
+      return producer;
+   }
+   
    private void checkXA() throws XAException
    {
       if (!xa)

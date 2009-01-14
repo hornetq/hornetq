@@ -317,7 +317,7 @@ public class ForwarderImpl implements Forwarder, FailureListener
 
       session.addFailureListener(this);
 
-      producer = session.createProducer(null);
+      producer = session.createProducer();
 
       return true;
    }

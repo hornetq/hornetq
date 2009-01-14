@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.client.impl;
 
+import static org.jboss.messaging.util.SimpleString.toSimpleString;
+
 import java.nio.ByteBuffer;
 
 import org.jboss.messaging.core.client.AcknowledgementHandler;
@@ -132,6 +134,11 @@ public class ClientProducerImpl implements ClientProducerInternal
       checkClosed();
 
       doSend(address, msg);
+   }
+   
+   public void send(String address, Message message) throws MessagingException
+   {
+      send(toSimpleString(address), message);
    }
 
    public void registerAcknowledgementHandler(final AcknowledgementHandler handler)

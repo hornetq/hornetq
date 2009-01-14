@@ -297,7 +297,7 @@ public class WildCardRoutingTest extends UnitTestCase
       clientSession.createQueue(addressAJ, queueName8, null, false, false);
       clientSession.createQueue(addressAK, queueName9, null, false, false);
       clientSession.createQueue(address, queueName, null, false, false);
-      ClientProducer producer = clientSession.createProducer(null);
+      ClientProducer producer = clientSession.createProducer();
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
       producer.send(addressAB, createTextMessage("m1", clientSession));
@@ -394,7 +394,7 @@ public class WildCardRoutingTest extends UnitTestCase
       clientSession.createQueue(addressAJ, queueName8, null, false, false);
       clientSession.createQueue(addressAK, queueName9, null, false, false);
       clientSession.createQueue(address, queueName, null, false, false);
-      ClientProducer producer = clientSession.createProducer(null);
+      ClientProducer producer = clientSession.createProducer();
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
       producer.send(addressAB, createTextMessage("m1", clientSession));

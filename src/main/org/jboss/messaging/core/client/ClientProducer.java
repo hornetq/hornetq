@@ -38,6 +38,8 @@ public interface ClientProducer
 	
    void send(SimpleString address, Message message) throws MessagingException;
    
+   void send(String address, Message message) throws MessagingException;
+
    void registerAcknowledgementHandler(AcknowledgementHandler handler);
    
    void unregisterAcknowledgementHandler(AcknowledgementHandler handler);
