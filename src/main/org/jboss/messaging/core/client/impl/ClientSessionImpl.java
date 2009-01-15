@@ -232,6 +232,36 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    // ClientSession implementation
    // -----------------------------------------------------------------
 
+   public void createQueue(final SimpleString address, 
+                           final SimpleString queueName, 
+                           final boolean durable) throws MessagingException
+   {
+      createQueue(address, queueName, durable, false);
+   }
+
+   public void createQueue(final String address,
+                           final String queueName,
+                           final boolean durable) throws MessagingException
+   {
+      createQueue(toSimpleString(address), toSimpleString(queueName), durable);
+   }
+   
+   public void createQueue(final SimpleString address, 
+                           final SimpleString queueName, 
+                           final boolean durable, 
+                           final boolean temporary) throws MessagingException
+   {
+      createQueue(address, queueName, null, durable, temporary);
+   }
+
+   public void createQueue(final String address,
+                           final String queueName,
+                           final boolean durable,
+                           final boolean temporary) throws MessagingException
+   {
+      createQueue(toSimpleString(address), toSimpleString(queueName), durable, temporary);
+   }
+
    public void createQueue(final SimpleString address,
                            final SimpleString queueName,
                            final SimpleString filterString,

@@ -44,6 +44,28 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface ClientSession extends XAResource
 {
+   /**
+    * Queues created by this method are <em>not</em> temporary
+    */
+   void createQueue(SimpleString address,
+                    SimpleString queueName,
+                    boolean durable) throws MessagingException;
+   /**
+    * Queues created by this method are <em>not</em> temporary
+    */
+   void createQueue(String address,
+                    String queueName,
+                    boolean durable) throws MessagingException;
+
+   void createQueue(SimpleString address,
+                    SimpleString queueName,
+                    boolean durable,
+                    boolean temporary) throws MessagingException;
+   void createQueue(String address,
+                    String queueName,
+                    boolean durable,
+                    boolean temporary) throws MessagingException;
+
    void createQueue(SimpleString address,
                     SimpleString queueName,
                     SimpleString filterString,
@@ -110,7 +132,7 @@ public interface ClientSession extends XAResource
 
    /**
     * Create a producer with no default address.
-    * Address must be specified everytime a message is sent
+    * Address must be specified every time a message is sent
     * 
     * @see ClientProducer#send(SimpleString, org.jboss.messaging.core.message.Message)
     */
