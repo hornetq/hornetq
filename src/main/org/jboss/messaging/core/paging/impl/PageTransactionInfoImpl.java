@@ -26,6 +26,7 @@ import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.paging.PageTransactionInfo;
@@ -48,7 +49,8 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 
    private CountDownLatch countDownCompleted;
 
-   private volatile boolean complete;
+   private volatile boolean committed;
+   private volatile boolean rolledback;
 
    private final AtomicInteger numberOfMessages = new AtomicInteger(0);
 
@@ -113,7 +115,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       numberOfMessages.set(buffer.getInt());
       countDownCompleted = null; // if it is being readed, probably it was
       // committed
-      complete = true; // Unless it is a incomplete prepare, which is marked by
+      committed = true; // Unless it is a incomplete prepare, which is marked by
       // markIcomplete
    }
 
@@ -130,36 +132,41 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 
    public void commit()
    {
-      complete = true;
+      committed = true;
       /** 
        * this is to avoid a race condition where the transaction still being committed while another thread is depaging messages
        */
       countDownCompleted.countDown();
    }
-
-   /** 
-    * this is to avoid a race condition where the transaction still being committed while another thread is depaging messages
-    */
-   public boolean waitCompletion() throws InterruptedException
+   
+   
+   public boolean waitCompletion(int timeoutMilliseconds) throws InterruptedException
    {
-      if (countDownCompleted != null)
-      {
-         countDownCompleted.await();
-      }
-
-      return complete;
+      return countDownCompleted.await(timeoutMilliseconds, TimeUnit.MILLISECONDS);
    }
-
+   
+   
+   public boolean isCommit()
+   {
+      return committed;
+   }
+   
+   public boolean isRollback()
+   {
+      return rolledback;
+   }
+   
    public void rollback()
    {
-      complete = false;
-
+      rolledback = true;
+      committed = false;
       countDownCompleted.countDown();
    }
 
    public void markIncomplete()
    {
-      complete = false;
+      committed = false;
+      rolledback = false;
       
       countDownCompleted = new CountDownLatch(1);
    }

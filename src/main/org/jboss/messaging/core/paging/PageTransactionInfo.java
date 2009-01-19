@@ -33,8 +33,12 @@ import org.jboss.messaging.core.journal.EncodingSupport;
  */
 public interface PageTransactionInfo extends EncodingSupport
 {
-   boolean waitCompletion() throws Exception;
+   boolean waitCompletion(int timeoutMilliSeconds) throws Exception;
 
+   boolean isCommit();
+   
+   boolean isRollback();
+   
    void commit();
 
    void rollback();

@@ -761,7 +761,7 @@ public class PagingStoreImpl implements TestSupportPageStore
     * If persistent messages are also used, it will update eventual PageTransactions
     */
 
-   private void onDepage(final int pageId, final SimpleString destination, final List<PagedMessage> pagedMessages) throws Exception
+   private boolean onDepage(final int pageId, final SimpleString destination, final List<PagedMessage> pagedMessages) throws Exception
    {
       if (isTrace)
       {
@@ -771,7 +771,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       if (pagedMessages.size() == 0)
       {
          // nothing to be done on this case.
-         return;
+         return true;
       }
 
       // Depage has to be done atomically, in case of failure it should be
@@ -779,12 +779,10 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       Transaction depageTransaction = new TransactionImpl(storageManager);
 
-      depageTransaction.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
-
       depageTransaction.putProperty(TransactionPropertyIndexes.IS_DEPAGE, Boolean.valueOf(true));
 
       HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
-
+      
       for (PagedMessage pagedMessage : pagedMessages)
       {
          ServerMessage message = null;
@@ -811,7 +809,23 @@ public class PagingStoreImpl implements TestSupportPageStore
 
             // This is to avoid a race condition where messages are depaged
             // before the commit arrived
-            if (!pageTransactionInfo.waitCompletion())
+            
+            while (running && !pageTransactionInfo.waitCompletion(500))
+            {
+               // This is just to give us a chance to interrupt the process..
+               // if we start a shutdown in the middle of transactions, the commit/rollback may never come, delaying the shutdown of the server
+               if (isTrace)
+               {
+                  trace("Waiting pageTransaction to complete");
+               }
+            }
+            
+            if (!running)
+            {
+               break;
+            }
+            
+            if (!pageTransactionInfo.isCommit())
             {
                if (isTrace)
                {
@@ -830,9 +844,18 @@ public class PagingStoreImpl implements TestSupportPageStore
 
          postOffice.route(message, depageTransaction);
       }
+      
+      if (!running)
+      {
+         depageTransaction.rollback();
+         return false;
+      }
 
       for (PageTransactionInfo pageWithTransaction : pageTransactionsToUpdate)
       {
+         // This will set the journal transaction to commit;
+         depageTransaction.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
+
          if (pageWithTransaction.getNumberOfMessages() == 0)
          {
             // http://wiki.jboss.org/wiki/JBossMessaging2Paging
@@ -852,6 +875,8 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          trace("Depage committed, running = " + running);
       }
+      
+      return true;
    }
 
    /**
@@ -967,9 +992,10 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       List<PagedMessage> messages = page.read();
 
-      onDepage(page.getPageId(), storeName, messages);
-
-      page.delete();
+      if (onDepage(page.getPageId(), storeName, messages))
+      {
+         page.delete();
+      }
    }
 
    // Inner classes -------------------------------------------------
@@ -996,10 +1022,14 @@ public class PagingStoreImpl implements TestSupportPageStore
 
                // Note: clearDepage is an atomic operation, it needs to be done even if readPage was not executed
                // because the page was full
-               if (!clearDepage())
+               if (running && !clearDepage())
                {
                   followingExecutor.execute(this);
                }
+            }
+            else
+            {
+               System.out.println("Not running, giving up");
             }
          }
          catch (Exception e)
