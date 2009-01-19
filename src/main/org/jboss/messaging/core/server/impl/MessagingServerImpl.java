@@ -295,6 +295,9 @@ public class MessagingServerImpl implements MessagingServer
 
       Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<SimpleString, Long>>>();
 
+      
+      pagingManager.reloadStores();
+
       storageManager.loadMessageJournal(postOffice,
                                         storageManager,
                                         queueSettingsRepository,
@@ -313,8 +316,6 @@ public class MessagingServerImpl implements MessagingServer
             cache.load(entry.getValue());
          }
       }
-
-      pagingManager.reloadStores();
 
       resourceManager.start();
 
@@ -383,6 +384,12 @@ public class MessagingServerImpl implements MessagingServer
                                                           remotingService,
                                                           this,
                                                           queueFactory);
+      
+      
+      
+      // We need to startDepage when we restart the server to eventually resume destinations that were in depage mode during last stop
+      // This is the last thing done at the start, after everything else is up and running
+      pagingManager.startGlobalDepage();
 
       log.info("Started messaging server");
 
