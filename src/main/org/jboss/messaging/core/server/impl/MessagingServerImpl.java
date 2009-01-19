@@ -234,8 +234,6 @@ public class MessagingServerImpl implements MessagingServer
 
       pagingManager = createPagingManager();
 
-      pagingManager.start();
-
       resourceManager = new ResourceManagerImpl((int)configuration.getTransactionTimeout() / 1000,
                                                 configuration.getTransactionTimeoutScanPeriod());
       postOffice = new PostOfficeImpl(storageManager,
@@ -256,6 +254,8 @@ public class MessagingServerImpl implements MessagingServer
       securityStore.setSecurityManager(securityManager);
 
       postOffice.start();
+      
+      pagingManager.start();
 
       List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
       List<SimpleString> destinations = new ArrayList<SimpleString>();
@@ -295,8 +295,6 @@ public class MessagingServerImpl implements MessagingServer
 
       Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<SimpleString, Long>>>();
 
-      
-      pagingManager.reloadStores();
 
       storageManager.loadMessageJournal(postOffice,
                                         storageManager,
@@ -422,6 +420,8 @@ public class MessagingServerImpl implements MessagingServer
          // Ignore
       }
 
+      pagingManager.stop();
+      pagingManager = null;
       securityStore = null;
       resourceManager.stop();
       resourceManager = null;

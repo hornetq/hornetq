@@ -51,6 +51,7 @@ import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
+import org.jboss.messaging.util.Future;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -125,10 +126,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    // variable isTrace above
    private static void trace(final String message)
    {
-      if (isTrace)
-      {
-         log.trace(message);
-      }
+      log.trace(message);
    }
 
    // Constructors --------------------------------------------------
@@ -497,25 +495,23 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       if (running)
       {
-         writeLock.lock();
-         currentPageLock.writeLock().lock();
+         running = false;
 
-         try
+         Future future = new Future();
+
+         executor.execute(future);
+
+         boolean ok = future.await(10000);
+
+         if (!ok)
          {
-            running = false;
-
-            // FIXME -!! using a volatile to control execution is ugly.
-            // The runnable could remain running after paging store is stopped
-
-            if (currentPage != null)
-            {
-               currentPage.close();
-            }
+            log.warn("Timed out waiting for depage executor to stop");
          }
-         finally
+
+         if (currentPage != null)
          {
-            writeLock.unlock();
-            currentPageLock.writeLock().unlock();
+            currentPage.close();
+            currentPage = null;
          }
       }
    }
@@ -657,6 +653,11 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       try
       {
+         if (!running)
+         {
+            return null;
+         }
+
          if (numberOfPages == 0)
          {
             return null;
@@ -791,7 +792,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          message = pagedMessage.getMessage(storageManager);
 
          final long transactionIdDuringPaging = pagedMessage.getTransactionID();
-
+         
          if (transactionIdDuringPaging >= 0)
          {
             final PageTransactionInfo pageTransactionInfo = pagingManager.getTransaction(transactionIdDuringPaging);
@@ -804,7 +805,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                log.warn("Transaction " + pagedMessage.getTransactionID() +
                         " used during paging not found, ignoring message " +
                         message);
-               
+
                continue;
             }
 
@@ -847,7 +848,10 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       depageTransaction.commit();
 
-      trace("Depage committed");
+      if (isTrace)
+      {
+         trace("Depage committed, running = " + running);
+      }
    }
 
    /**

@@ -30,6 +30,7 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,7 +76,9 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
+import org.jboss.messaging.core.transaction.Transaction.State;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.JBMThreadFactory;
@@ -770,6 +773,8 @@ public class JournalStorageManager implements StorageManager
                   tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pageTransactionInfo);
 
                   pagingManager.addTransaction(pageTransactionInfo);
+                  
+                  tx.addOperation(new FinishPageMessageOperation());
 
                   break;
                }
@@ -1427,5 +1432,55 @@ public class JournalStorageManager implements StorageManager
          return SimpleString.sizeofString(address) + SimpleString.sizeofString(duplID);
       }
    }
+   
+   private class FinishPageMessageOperation implements TransactionOperation
+   {
+
+      public void afterCommit(final Transaction tx) throws Exception
+      {
+         // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
+         // transaction until all the messages were added to the queue
+         // or else we could deliver the messages out of order
+         
+         PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
+         
+         if (pageTransaction != null)
+         {
+            pageTransaction.commit();
+         }
+      }
+
+      public void afterPrepare(final Transaction tx) throws Exception
+      {
+      }
+
+      public void afterRollback(final Transaction tx) throws Exception
+      {
+         PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
+
+         if (tx.getState() == State.PREPARED && pageTransaction != null)
+         {
+            pageTransaction.rollback();
+         }
+      }
+
+      public void beforeCommit(final Transaction tx) throws Exception
+      {
+      }
+
+      public void beforePrepare(final Transaction tx) throws Exception
+      {
+      }
+
+      public void beforeRollback(final Transaction tx) throws Exception
+      {
+      }
+
+      private void pageMessages(final Transaction tx) throws Exception
+      {
+      }
+
+   }
+   
 
 }

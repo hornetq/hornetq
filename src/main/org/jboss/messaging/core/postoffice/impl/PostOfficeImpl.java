@@ -153,8 +153,6 @@ public class PostOfficeImpl implements PostOffice
       if (pagingManager != null)
       {
          pagingManager.setPostOffice(this);
-
-         pagingManager.start();
       }
 
       // Injecting the postoffice (itself) on queueFactory for paging-control
@@ -181,7 +179,6 @@ public class PostOfficeImpl implements PostOffice
          messageExpiryExecutor.shutdown();
       }
 
-      pagingManager.stop();
 
       addressManager.clear();
 

@@ -247,6 +247,8 @@ public class PagingManagerImpl implements PagingManager
       pagingStoreFactory.setPagingManager(this);
 
       pagingStoreFactory.setStorageManager(storageManager);
+      
+      reloadStores();
 
       started = true;
    }
