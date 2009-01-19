@@ -129,12 +129,12 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(100));
 
-      assertTrue(managerImpl.addSize(msg));
+      assertTrue(managerImpl.getPageStore(msg.getDestination()).addSize(msg.getMemoryEstimate()));
 
       for (int i = 0; i < 10; i++)
       {
          long currentSize = managerImpl.getPageStore(new SimpleString("simple-test")).getAddressSize();
-         assertFalse(managerImpl.addSize(msg));
+         assertFalse(managerImpl.getPageStore(msg.getDestination()).addSize(msg.getMemoryEstimate()));
 
          // should be unchanged
          assertEquals(currentSize, managerImpl.getPageStore(new SimpleString("simple-test")).getAddressSize());
@@ -142,7 +142,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
 
       managerImpl.getPageStore(msg.getDestination()).addSize(-msg.getMemoryEstimate());
 
-      assertTrue(managerImpl.addSize(msg));
+      assertTrue(managerImpl.getPageStore(msg.getDestination()).addSize(msg.getMemoryEstimate()));
 
       managerImpl.stop();
    }

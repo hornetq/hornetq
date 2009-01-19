@@ -24,19 +24,36 @@
 
 package org.jboss.messaging.core.management.impl;
 
+import static javax.management.ObjectName.quote;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.management.MBeanServer;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.ObjectName;
+import javax.management.StandardMBean;
+
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
-import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.AcceptorControlMBean;
+import org.jboss.messaging.core.management.BridgeControlMBean;
 import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
 import org.jboss.messaging.core.management.DiscoveryGroupControlMBean;
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.management.MessageFlowControlMBean;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareAddressControlWrapper;
@@ -54,30 +71,16 @@ import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
-import org.jboss.messaging.core.server.cluster.MessageFlow;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TypedProperties;
-
-import javax.management.MBeanServer;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.ObjectName;
-import static javax.management.ObjectName.quote;
-import javax.management.StandardMBean;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -109,7 +112,7 @@ public class ManagementServiceImpl implements ManagementService
    private HierarchicalRepository<Set<Role>> securityRepository;
 
    private HierarchicalRepository<QueueSettings> queueSettingsRepository;
-
+   
    private MessagingServerControl managedServer;
 
    private final MessageCounterManager messageCounterManager = new MessageCounterManagerImpl(10000);
@@ -157,9 +160,9 @@ public class ManagementServiceImpl implements ManagementService
       return ObjectName.getInstance(String.format("%s:module=Core,type=BroadcastGroup,name=%s", DOMAIN, quote(name)));
    }
 
-   public static ObjectName getMessageFlowObjectName(final String name) throws Exception
+   public static ObjectName getBridgeObjectName(final String name) throws Exception
    {
-      return ObjectName.getInstance(String.format("%s:module=Core,type=MessageFlow,name=%s", DOMAIN, quote(name)));
+      return ObjectName.getInstance(String.format("%s:module=Core,type=Bridge,name=%s", DOMAIN, quote(name)));
    }
 
    public static ObjectName getDiscoveryGroupObjectName(final String name) throws Exception
@@ -194,7 +197,8 @@ public class ManagementServiceImpl implements ManagementService
                                                      final HierarchicalRepository<Set<Role>> securityRepository,
                                                      final ResourceManager resourceManager,
                                                      final RemotingService remotingService,
-                                                     final MessagingServer messagingServer) throws Exception
+                                                     final MessagingServer messagingServer,
+                                                     final QueueFactory queueFactory) throws Exception
    {
       this.postOffice = postOffice;
       this.queueSettingsRepository = queueSettingsRepository;
@@ -203,13 +207,13 @@ public class ManagementServiceImpl implements ManagementService
       this.managementNotificationAddress = configuration.getManagementNotificationAddress();
       managedServer = new MessagingServerControl(postOffice,
                                                  storageManager,
-                                                 configuration,
-                                                 queueSettingsRepository,
+                                                 configuration,                                                 
                                                  resourceManager,
                                                  remotingService,
                                                  messagingServer,
                                                  messageCounterManager,
-                                                 broadcaster);
+                                                 broadcaster,
+                                                 queueFactory);
       ObjectName objectName = getMessagingServerObjectName();
       registerInJMX(objectName, new ReplicationAwareMessagingServerControlWrapper(objectName, managedServer));
       registerInRegistry(objectName, managedServer);
@@ -316,17 +320,17 @@ public class ManagementServiceImpl implements ManagementService
       unregisterResource(objectName);
    }
 
-   public void registerMessageFlow(MessageFlow messageFlow, MessageFlowConfiguration configuration) throws Exception
+   public void registerBridge(Bridge bridge, BridgeConfiguration configuration) throws Exception
    {
-      ObjectName objectName = getMessageFlowObjectName(configuration.getName());
-      MessageFlowControlMBean control = new MessageFlowControl(messageFlow, configuration);
-      registerInJMX(objectName, new StandardMBean(control, MessageFlowControlMBean.class));
-      registerInRegistry(objectName, control);
+      ObjectName objectName = getBridgeObjectName(configuration.getName());
+      BridgeControlMBean control = new BridgeControl(bridge, configuration);
+      registerInJMX(objectName, new StandardMBean(control, BridgeControlMBean.class));
+      registerInRegistry(objectName, control);           
    }
 
-   public void unregisterMessageFlow(String name) throws Exception
+   public void unregisterBridge(String name) throws Exception
    {
-      ObjectName objectName = getMessageFlowObjectName(name);
+      ObjectName objectName = getBridgeObjectName(name);
       unregisterResource(objectName);
    }
 

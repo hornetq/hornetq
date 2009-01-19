@@ -28,9 +28,8 @@ import java.util.Map;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.paging.PageTransactionInfo;
-import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.BindableFactory;
+import org.jboss.messaging.core.postoffice.QueueBinding;
 import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingComponent;
@@ -57,6 +56,8 @@ public interface StorageManager extends MessagingComponent
    long generateUniqueID();
 
    void storeMessage(ServerMessage message) throws Exception;
+   
+   void storeReference(long queueID, long messageID) throws Exception;
 
    void deleteMessage(long messageID) throws Exception;
 
@@ -73,6 +74,8 @@ public interface StorageManager extends MessagingComponent
    void deleteDuplicateID(long recordID) throws Exception;
 
    void storeMessageTransactional(long txID, ServerMessage message) throws Exception;
+   
+   void storeReferenceTransactional(long txID, long queueID, long messageID) throws Exception;
 
    void storeAcknowledgeTransactional(long txID, long queueID, long messageID) throws Exception;
 
@@ -107,13 +110,14 @@ public interface StorageManager extends MessagingComponent
 
    // Bindings related operations
 
-   void addBinding(Binding binding, boolean duplicateDetection) throws Exception;
-
-   void deleteBinding(Binding binding) throws Exception;
-
+   void addQueueBinding(QueueBinding binding) throws Exception;
+   
+   void deleteQueueBinding(long queueBindingID) throws Exception;
+   
    boolean addDestination(SimpleString destination) throws Exception;
 
    boolean deleteDestination(SimpleString destination) throws Exception;
 
-   void loadBindings(BindableFactory queueFactory, List<Binding> bindings, List<SimpleString> destinations) throws Exception;
+   void loadBindingJournal(List<QueueBindingInfo> queueBindingInfos,                           
+                           List<SimpleString> destinations) throws Exception;
 }

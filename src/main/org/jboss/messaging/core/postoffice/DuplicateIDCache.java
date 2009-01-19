@@ -41,8 +41,6 @@ public interface DuplicateIDCache
 {
    boolean contains(SimpleString duplicateID);
    
-   void addToCache(SimpleString duplicateID) throws Exception; 
-   
    void addToCache(SimpleString duplicateID, Transaction tx) throws Exception;  
    
    void load(List<Pair<SimpleString, Long>> theIds) throws Exception;

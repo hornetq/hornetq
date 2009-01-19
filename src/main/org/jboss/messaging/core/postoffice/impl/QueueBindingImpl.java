@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2005-2009, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -21,21 +21,52 @@
  */
 
 
-package org.jboss.messaging.core.server.cluster;
+package org.jboss.messaging.core.postoffice.impl;
 
-import org.jboss.messaging.core.server.Consumer;
-import org.jboss.messaging.core.server.MessagingComponent;
-
+import org.jboss.messaging.core.postoffice.QueueBinding;
+import org.jboss.messaging.core.server.Bindable;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.util.SimpleString;
 
 /**
- * A Forwarder
+ * A QueueBindingImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 15 Nov 2008 09:42:31
+ * Created 9 Jan 2009 15:45:09
  *
  *
  */
-public interface Forwarder extends Consumer, MessagingComponent
+public class QueueBindingImpl implements QueueBinding
 {
+   private SimpleString address;
+   
+   private Queue queue;
+   
+   public QueueBindingImpl(final SimpleString address, final Queue queue)
+   {
+      this.address = address;
+      
+      this.queue = queue;      
+   }
+        
+   public SimpleString getAddress()
+   {
+      return address;
+   }
+
+   public Bindable getBindable()
+   {      
+      return queue;
+   }
+   
+   public Queue getQueue()
+   {
+      return queue;
+   }
+
+   public boolean isQueueBinding()
+   {
+      return true;
+   }
 }

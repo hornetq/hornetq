@@ -23,7 +23,6 @@
 package org.jboss.messaging.tests.performance.persistence;
 
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.util.SimpleString;
 
@@ -43,34 +42,19 @@ public class FakeBinding implements Binding
       this.address = address;
       this.bindable = bindable;
    }
+   
+   public SimpleString getAddress()
+   {
+      return address;
+   }
 
    public Bindable getBindable()
    {
       return bindable;
    }
 
-   public BindingType getType()
+   public boolean isQueueBinding()
    {
-      return BindingType.QUEUE;
+      return true;
    }
-
-   public SimpleString getAddress()
-   {
-      return address;
-   }
-
-   public int getWeight()
-   {
-      return 0;
-   }
-
-   public boolean isExclusive()
-   {
-      return false;
-   }
-
-   public void setWeight(int weight)
-   {
-   }
-
 }

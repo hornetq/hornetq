@@ -63,19 +63,24 @@ public class QueueControl implements QueueControlMBean
    // Attributes ----------------------------------------------------
 
    private final Queue queue;
+
    private final StorageManager storageManager;
+
    private final PostOffice postOffice;
+
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+
    private final MessageCounter counter;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public QueueControl(final Queue queue, final StorageManager storageManager,
-         final PostOffice postOffice,
-         final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-         final MessageCounter counter)
+   public QueueControl(final Queue queue,
+                       final StorageManager storageManager,
+                       final PostOffice postOffice,
+                       final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                       final MessageCounter counter)
    {
       this.queue = queue;
       this.storageManager = storageManager;
@@ -96,13 +101,8 @@ public class QueueControl implements QueueControlMBean
    public String getFilter()
    {
       Filter filter = queue.getFilter();
-      
-      return (filter != null) ? filter.getFilterString().toString() : null;
-   }
 
-   public boolean isClustered()
-   {
-      return queue.isClustered();
+      return (filter != null) ? filter.getFilterString().toString() : null;
    }
 
    public boolean isDurable()
@@ -156,7 +156,8 @@ public class QueueControl implements QueueControlMBean
       if (queueSettings != null && queueSettings.getDeadLetterAddress() != null)
       {
          return queueSettings.getDeadLetterAddress().toString();
-      } else
+      }
+      else
       {
          return null;
       }
@@ -169,21 +170,22 @@ public class QueueControl implements QueueControlMBean
       if (deadLetterAddress != null)
       {
          queueSettings.setDeadLetterAddress(new SimpleString(deadLetterAddress));
-      }   
+      }
    }
-   
+
    public String getExpiryAddress()
    {
       QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
-      if (queueSettings != null  && queueSettings.getExpiryAddress() != null)
+      if (queueSettings != null && queueSettings.getExpiryAddress() != null)
       {
          return queueSettings.getExpiryAddress().toString();
-      } else
+      }
+      else
       {
          return null;
       }
    }
-   
+
    public void setExpiryAddress(String expiryAddres) throws Exception
    {
       QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
@@ -191,7 +193,7 @@ public class QueueControl implements QueueControlMBean
       if (expiryAddres != null)
       {
          queueSettings.setExpiryAddress(new SimpleString(expiryAddres));
-      }   
+      }
    }
 
    public TabularData listAllMessages() throws Exception
@@ -207,11 +209,15 @@ public class QueueControl implements QueueControlMBean
       {
          MessageReference ref = refs.get(i);
          ServerMessage message = ref.getMessage();
-         MessageInfo info = new MessageInfo(message.getMessageID(), message
-                                            .getDestination().toString(), message.isDurable(), message
-                                            .getTimestamp(), message.getType(), message.getEncodeSize(),
-                                            message.getPriority(), message.isExpired(), message
-                                            .getExpiration());
+         MessageInfo info = new MessageInfo(message.getMessageID(),
+                                            message.getDestination().toString(),
+                                            message.isDurable(),
+                                            message.getTimestamp(),
+                                            message.getType(),
+                                            message.getEncodeSize(),
+                                            message.getPriority(),
+                                            message.isExpired(),
+                                            message.getExpiration());
          for (SimpleString key : message.getPropertyNames())
          {
             Object value = message.getProperty(key);
@@ -222,7 +228,7 @@ public class QueueControl implements QueueControlMBean
       }
       return MessageInfo.toTabularData(infos);
    }
-   
+
    public TabularData listMessages(final String filterStr) throws Exception
    {
       try
@@ -234,11 +240,15 @@ public class QueueControl implements QueueControlMBean
          {
             MessageReference ref = refs.get(i);
             ServerMessage message = ref.getMessage();
-            MessageInfo info = new MessageInfo(message.getMessageID(), message
-                  .getDestination().toString(), message.isDurable(), message
-                  .getTimestamp(), message.getType(), message.getEncodeSize(),
-                  message.getPriority(), message.isExpired(), message
-                        .getExpiration());
+            MessageInfo info = new MessageInfo(message.getMessageID(),
+                                               message.getDestination().toString(),
+                                               message.isDurable(),
+                                               message.getTimestamp(),
+                                               message.getType(),
+                                               message.getEncodeSize(),
+                                               message.getPriority(),
+                                               message.isExpired(),
+                                               message.getExpiration());
             for (SimpleString key : message.getPropertyNames())
             {
                Object value = message.getProperty(key);
@@ -248,25 +258,27 @@ public class QueueControl implements QueueControlMBean
             infos[i] = info;
          }
          return MessageInfo.toTabularData(infos);
-      } catch (MessagingException e)
+      }
+      catch (MessagingException e)
       {
          throw new IllegalStateException(e.getMessage());
       }
    }
 
-
-   public int countMessages(final String filterStr) throws Exception {
+   public int countMessages(final String filterStr) throws Exception
+   {
       Filter filter = FilterImpl.createFilter(filterStr);
       List<MessageReference> refs = queue.list(filter);
       return refs.size();
    }
-   
+
    public int removeAllMessages() throws Exception
    {
       try
       {
-         return queue.deleteAllReferences(storageManager, postOffice, queueSettingsRepository);
-      } catch (MessagingException e)
+         return queue.deleteAllReferences();
+      }
+      catch (MessagingException e)
       {
          throw new IllegalStateException(e.getMessage());
       }
@@ -276,23 +288,23 @@ public class QueueControl implements QueueControlMBean
    {
       try
       {
-         return queue.deleteReference(messageID, storageManager, postOffice, queueSettingsRepository);
-      } catch (MessagingException e)
+         return queue.deleteReference(messageID);
+      }
+      catch (MessagingException e)
       {
          throw new IllegalStateException(e.getMessage());
       }
    }
-   
+
    public int removeMatchingMessages(String filterStr) throws Exception
    {
       Filter filter = FilterImpl.createFilter(filterStr);
-      return queue.deleteMatchingReferences(filter, storageManager, postOffice, queueSettingsRepository);
+      return queue.deleteMatchingReferences(filter);
    }
 
    public boolean expireMessage(final long messageID) throws Exception
    {
-      return queue.expireMessage(messageID, storageManager, postOffice,
-            queueSettingsRepository);
+      return queue.expireMessage(messageID);
    }
 
    public int expireMessages(final String filterStr) throws Exception
@@ -300,39 +312,37 @@ public class QueueControl implements QueueControlMBean
       try
       {
          Filter filter = FilterImpl.createFilter(filterStr);
-         return queue.expireMessages(filter, storageManager, postOffice, queueSettingsRepository);
-      } catch (MessagingException e)
+         return queue.expireMessages(filter);
+      }
+      catch (MessagingException e)
       {
          throw new IllegalStateException(e.getMessage());
       }
    }
 
-   public boolean moveMessage(final long messageID, final String otherQueueName)
-         throws Exception
+   public boolean moveMessage(final long messageID, final String otherQueueName) throws Exception
    {
       Binding binding = postOffice.getBinding(new SimpleString(otherQueueName));
       if (binding == null)
       {
-         throw new IllegalArgumentException("No queue found for "
-               + otherQueueName);
+         throw new IllegalArgumentException("No queue found for " + otherQueueName);
       }
 
-      return queue.moveMessage(messageID, binding.getAddress(), storageManager, postOffice, queueSettingsRepository);
+      return queue.moveMessage(messageID, binding.getAddress());
    }
-   
+
    public int moveMatchingMessages(String filterStr, String otherQueueName) throws Exception
    {
       Filter filter = FilterImpl.createFilter(filterStr);
       Binding binding = postOffice.getBinding(new SimpleString(otherQueueName));
       if (binding == null)
       {
-         throw new IllegalArgumentException("No queue found for "
-               + otherQueueName);
+         throw new IllegalArgumentException("No queue found for " + otherQueueName);
       }
 
-      return queue.moveMessages(filter, binding.getAddress(), storageManager, postOffice, queueSettingsRepository);
+      return queue.moveMessages(filter, binding.getAddress());
    }
-   
+
    public int moveAllMessages(String otherQueueName) throws Exception
    {
       return moveMatchingMessages(null, otherQueueName);
@@ -340,20 +350,17 @@ public class QueueControl implements QueueControlMBean
 
    public boolean sendMessageToDeadLetterAddress(final long messageID) throws Exception
    {
-      return queue.sendMessageToDeadLetterAddress(messageID, storageManager, postOffice,
-            queueSettingsRepository);
+      return queue.sendMessageToDeadLetterAddress(messageID);
    }
 
-   public boolean changeMessagePriority(final long messageID,
-         final int newPriority) throws Exception
+   public boolean changeMessagePriority(final long messageID, final int newPriority) throws Exception
    {
       if (newPriority < 0 || newPriority > 9)
       {
-         throw new IllegalArgumentException("invalid newPriority value: "
-               + newPriority + ". It must be between 0 and 9 (both included)");
+         throw new IllegalArgumentException("invalid newPriority value: " + newPriority +
+                                            ". It must be between 0 and 9 (both included)");
       }
-      return queue.changeMessagePriority(messageID, (byte) newPriority,
-            storageManager, postOffice, queueSettingsRepository);
+      return queue.changeMessagePriority(messageID, (byte)newPriority);
    }
 
    public CompositeData listMessageCounter()
@@ -368,7 +375,8 @@ public class QueueControl implements QueueControlMBean
 
    public TabularData listMessageCounterHistory() throws Exception
    {
-      try {
+      try
+      {
          List<DayCounter> history = counter.getHistory();
          DayCounterInfo[] infos = new DayCounterInfo[history.size()];
          for (int i = 0; i < infos.length; i++)
@@ -382,13 +390,14 @@ public class QueueControl implements QueueControlMBean
             infos[i] = new DayCounterInfo(strData, counters);
          }
          return DayCounterInfo.toTabularData(infos);
-      } catch (Throwable t)
+      }
+      catch (Throwable t)
       {
          t.printStackTrace();
          return null;
       }
    }
-   
+
    public String listMessageCounterHistoryAsHTML()
    {
       return MessageCounterHelper.listMessageCounterHistoryAsHTML(new MessageCounter[] { counter });

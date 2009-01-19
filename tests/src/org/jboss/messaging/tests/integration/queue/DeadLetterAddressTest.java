@@ -221,7 +221,7 @@ public class DeadLetterAddressTest extends UnitTestCase
 
          // Check the headers
          SimpleString origDest =
-               (SimpleString) tm.getProperty(MessageImpl.HDR_ORIGIN_QUEUE);
+               (SimpleString) tm.getProperty(MessageImpl.HDR_ORIGINAL_DESTINATION);
 
          Long origMessageId =
                (Long) tm.getProperty(MessageImpl.HDR_ORIG_MESSAGE_ID);

@@ -19,7 +19,6 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.transaction.Transaction;
@@ -111,7 +110,7 @@ public class TransactionImpl implements Transaction
          {
             //Do nothing
             return;
-         }            
+         }                     
          else if (state != State.ACTIVE)
          {
             throw new IllegalStateException("Transaction is in invalid state " + state);
@@ -159,8 +158,8 @@ public class TransactionImpl implements Transaction
                //Do nothing
                return;
             }
-
          }
+         
          if (xid != null)
          {
             if (state != State.PREPARED)
@@ -187,17 +186,6 @@ public class TransactionImpl implements Transaction
          if ((getProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT) != null) || xid != null)
          {
             storageManager.commit(id);
-         }
-
-         // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
-         // transaction until all the messages were added to the queue
-         // or else we could deliver the messages out of order
-         
-         PageTransactionInfo pageTransaction = (PageTransactionInfo)getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
-         
-         if (pageTransaction != null)
-         {
-            pageTransaction.commit();
          }
 
          state = State.COMMITTED;
@@ -339,13 +327,6 @@ public class TransactionImpl implements Transaction
       if ((getProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT) != null) || xid != null)
       {
          storageManager.rollback(id);
-      }
-      
-      PageTransactionInfo pageTransaction = (PageTransactionInfo)getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
-
-      if (state == State.PREPARED && pageTransaction != null)
-      {
-         pageTransaction.rollback();
       }
    }
 

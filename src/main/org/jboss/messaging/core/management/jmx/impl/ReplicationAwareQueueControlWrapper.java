@@ -124,11 +124,6 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return localQueueControl.isBackup();
    }
 
-   public boolean isClustered()
-   {
-      return localQueueControl.isClustered();
-   }
-
    public boolean isDurable()
    {
       return localQueueControl.isDurable();

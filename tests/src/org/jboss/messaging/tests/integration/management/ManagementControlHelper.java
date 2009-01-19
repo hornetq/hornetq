@@ -32,7 +32,7 @@ import org.jboss.messaging.core.management.AcceptorControlMBean;
 import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
 import org.jboss.messaging.core.management.DiscoveryGroupControlMBean;
-import org.jboss.messaging.core.management.MessageFlowControlMBean;
+import org.jboss.messaging.core.management.BridgeControlMBean;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
@@ -79,10 +79,10 @@ public class ManagementControlHelper
                                                      mbeanServer);
    }
 
-   public static MessageFlowControlMBean createMessageFlowControl(String name, MBeanServer mbeanServer) throws Exception
+   public static BridgeControlMBean createBridgeControl(String name, MBeanServer mbeanServer) throws Exception
    {
-      return (MessageFlowControlMBean)createProxy(ManagementServiceImpl.getMessageFlowObjectName(name),
-                                                  MessageFlowControlMBean.class,
+      return (BridgeControlMBean)createProxy(ManagementServiceImpl.getBridgeObjectName(name),
+                                                  BridgeControlMBean.class,
                                                   mbeanServer);
    }
 

@@ -156,22 +156,22 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ClientSessionFactoryImpl(final String discoveryGroupName, final int discoveryGroupPort) throws Exception
+   public ClientSessionFactoryImpl(final String discoveryGroupAddress, final int discoveryGroupPort) throws Exception
    {
-      this(discoveryGroupName,
+      this(discoveryGroupAddress,
            discoveryGroupPort,
            ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
            DEFAULT_DISCOVERY_INITIAL_WAIT);
    }
 
-   public ClientSessionFactoryImpl(final String discoveryGroupName,
+   public ClientSessionFactoryImpl(final String discoveryGroupAddress,
                                    final int discoveryGroupPort,
                                    final long discoveryRefreshTimeout,
                                    final long initialWaitTimeout) throws Exception
    {
-      InetAddress groupAddress = InetAddress.getByName(discoveryGroupName);
+      InetAddress groupAddress = InetAddress.getByName(discoveryGroupAddress);
 
-      discoveryGroup = new DiscoveryGroupImpl(discoveryGroupName, groupAddress, discoveryGroupPort, discoveryRefreshTimeout);
+      discoveryGroup = new DiscoveryGroupImpl(discoveryGroupAddress, groupAddress, discoveryGroupPort, discoveryRefreshTimeout);
 
       discoveryGroup.registerListener(this);
 
@@ -200,7 +200,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.maxRetriesAfterFailover = DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
    }
 
-   public ClientSessionFactoryImpl(final String discoveryGroupName,
+   public ClientSessionFactoryImpl(final String discoveryGroupAddress,
                                    final int discoveryGroupPort,
                                    final long discoveryRefreshTimeout,
                                    final long initialWaitTimeout,
@@ -227,9 +227,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       try
       {
-         InetAddress groupAddress = InetAddress.getByName(discoveryGroupName);
+         InetAddress groupAddress = InetAddress.getByName(discoveryGroupAddress);
    
-         discoveryGroup = new DiscoveryGroupImpl(discoveryGroupName, groupAddress, discoveryGroupPort, discoveryRefreshTimeout);
+         discoveryGroup = new DiscoveryGroupImpl(discoveryGroupAddress, groupAddress, discoveryGroupPort, discoveryRefreshTimeout);
    
          discoveryGroup.registerListener(this);
    

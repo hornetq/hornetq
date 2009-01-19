@@ -113,4 +113,6 @@ public interface MessagingServer extends MessagingComponent
    List<ServerSession> getSessions(String connectionID);
    
    ClusterManager getClusterManager();
+   
+   QueueFactory getQueueFactory();
 }

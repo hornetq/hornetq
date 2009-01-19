@@ -90,13 +90,13 @@ public class JMSServerManagerImpl implements JMSServerManager
    {
       MessagingServerControlMBean control = new MessagingServerControl(server.getPostOffice(),
                                                                        server.getStorageManager(),
-                                                                       server.getConfiguration(),
-                                                                       server.getQueueSettingsRepository(),
+                                                                       server.getConfiguration(),                                                                    
                                                                        server.getResourceManager(),
                                                                        server.getRemotingService(),
                                                                        server,
                                                                        new MessageCounterManagerImpl(1000),
-                                                                       new NotificationBroadcasterSupport());
+                                                                       new NotificationBroadcasterSupport(),
+                                                                       server.getQueueFactory());
       JMSManagementService jmsManagementService = new JMSManagementServiceImpl(server.getManagementService());
       return new JMSServerManagerImpl(control,
                                       server.getPostOffice(),

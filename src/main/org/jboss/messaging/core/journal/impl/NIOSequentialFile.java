@@ -178,7 +178,7 @@ public class NIOSequentialFile implements SequentialFile
       int bytesRead = channel.write(bytes);
 
       if (sync)
-      {
+      {         
          sync();
       }
 

@@ -31,16 +31,12 @@ import javax.management.openmbean.TabularData;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.management.JMSMessageInfo;
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;
@@ -68,25 +64,17 @@ public class TopicControl implements TopicControlMBean
 
    private final PostOffice postOffice;
 
-   private final StorageManager storageManager;
-
-   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public TopicControl(final JBossTopic topic,
                        final String jndiBinding,
-                       final PostOffice postOffice,
-                       final StorageManager storageManager,
-                       final HierarchicalRepository<QueueSettings> queueSettingsRepository)
+                       final PostOffice postOffice)
    {
       this.managedTopic = topic;
       this.binding = jndiBinding;
       this.postOffice = postOffice;
-      this.storageManager = storageManager;
-      this.queueSettingsRepository = queueSettingsRepository;
    }
 
    // TopicControlMBean implementation ------------------------------
@@ -175,7 +163,7 @@ public class TopicControl implements TopicControlMBean
    {
       SimpleString sAddress = new SimpleString(queueName);
       Binding binding = postOffice.getBinding(sAddress);
-      if (binding == null || binding.getType() != BindingType.QUEUE)
+      if (binding == null || !binding.isQueueBinding())
       {
          throw new IllegalArgumentException("No queue with name " + sAddress);
       }
@@ -197,7 +185,7 @@ public class TopicControl implements TopicControlMBean
       String queueName = JBossTopic.createQueueNameForDurableSubscription(clientID, subscriptionName);
       SimpleString sAddress = new SimpleString(queueName);
       Binding binding = postOffice.getBinding(sAddress);
-      if (binding == null || binding.getType() != BindingType.QUEUE)
+      if (binding == null || !binding.isQueueBinding())
       {
          throw new IllegalArgumentException("No queue with name " + sAddress);
       }
@@ -214,10 +202,10 @@ public class TopicControl implements TopicControlMBean
 
       for (Binding binding : bindings.getBindings())
       {
-         if (binding.getType() == BindingType.QUEUE)
+         if (binding.isQueueBinding())
          {
             Queue queue = (Queue)binding.getBindable();
-            count += queue.deleteAllReferences(storageManager, postOffice, queueSettingsRepository);
+            count += queue.deleteAllReferences();
          }
       }
 
@@ -229,7 +217,7 @@ public class TopicControl implements TopicControlMBean
       String queueName = JBossTopic.createQueueNameForDurableSubscription(clientID, subscriptionName);
       Binding binding = postOffice.getBinding(new SimpleString(queueName));
 
-      if (binding == null || binding.getType() != BindingType.QUEUE)
+      if (binding == null || !binding.isQueueBinding())
       {
          throw new IllegalArgumentException("No durable subscription for clientID=" + clientID +
                                             ", subcription=" +
@@ -238,7 +226,7 @@ public class TopicControl implements TopicControlMBean
 
       Queue queue = (Queue)binding.getBindable();
 
-      queue.deleteAllReferences(storageManager, postOffice, queueSettingsRepository);
+      queue.deleteAllReferences();
 
       postOffice.removeBinding(queue.getName());
    }
@@ -249,10 +237,10 @@ public class TopicControl implements TopicControlMBean
 
       for (Binding binding : bindings.getBindings())
       {
-         if (binding.getType() == BindingType.QUEUE)
+         if (binding.isQueueBinding())
          {
             Queue queue = (Queue)binding.getBindable();
-            queue.deleteAllReferences(storageManager, postOffice, queueSettingsRepository);
+            queue.deleteAllReferences();
             postOffice.removeBinding(queue.getName());
          }
       }
@@ -313,7 +301,7 @@ public class TopicControl implements TopicControlMBean
 
          for (Binding binding : bindings.getBindings())
          {
-            if (binding.getType() == BindingType.QUEUE)
+            if (binding.isQueueBinding())
             {
                Queue queue = (Queue)binding.getBindable();
                if (durability == DurabilityType.ALL || (durability == DurabilityType.DURABLE && queue.isDurable()) ||

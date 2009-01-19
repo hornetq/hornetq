@@ -131,8 +131,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
       JMSQueueControl control = new JMSQueueControl(queue,
                                                     coreQueue,
                                                     jndiBinding,
-                                                    postOffice,
-                                                    storageManager,
+                                                    postOffice,                                                
                                                     queueSettingsRepository,
                                                     counter);
       managementService.registerInJMX(objectName,
@@ -153,7 +152,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
                              final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
    {
       ObjectName objectName = getJMSTopicObjectName(topic.getTopicName());
-      TopicControl control = new TopicControl(topic, jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      TopicControl control = new TopicControl(topic, jndiBinding, postOffice);
       managementService.registerInJMX(objectName, new ReplicationAwareTopicControlWrapper(objectName, control));
       managementService.registerInRegistry(objectName, control);
    }

@@ -35,15 +35,9 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface Binding
 {
-   BindingType getType();
-   
    SimpleString getAddress();
+         
+   Bindable getBindable();    
    
-   Bindable getBindable();
-   
-   int getWeight();
-   
-   void setWeight(int weight);
-   
-   boolean isExclusive();
+   boolean isQueueBinding();
 }

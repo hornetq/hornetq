@@ -42,8 +42,6 @@ public interface QueueControlMBean
 
    long getPersistenceID();
 
-   boolean isClustered();
-
    boolean isTemporary();
 
    boolean isDurable();

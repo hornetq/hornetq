@@ -118,14 +118,6 @@ public interface PagingManager extends MessagingComponent
     * */
    PageTransactionInfo getTransaction(long transactionID);
 
-   /** To be called when an message is being added to the address.
-    *  @return false is the address is full */
-   boolean addSize(ServerMessage message) throws Exception;
-
-   void removeSize(ServerMessage message) throws Exception;
-
-   void removeSize(MessageReference reference) throws Exception;
-
    /** Sync current-pages on disk for these destinations */
    void sync(Collection<SimpleString> destinationsToSync) throws Exception;
 

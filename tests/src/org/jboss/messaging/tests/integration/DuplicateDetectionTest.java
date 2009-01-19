@@ -1805,8 +1805,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       messagingService2.stop();
    }
-      
-//   TODO - how does dup ids work with paging? on depaging need to check again? 
+
    @Override
    protected void setUp() throws Exception
    {

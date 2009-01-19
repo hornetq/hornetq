@@ -93,6 +93,7 @@ public class PersistenceTest extends JMSTestCase
 	      for (int i = 0; i < 10; i++)
 	      {
 	         TextMessage tm = (TextMessage)cons.receive(3000);
+	         log.info("Got message " + tm);
 	         
 	         assertNotNull(tm);
 	         if (tm == null)

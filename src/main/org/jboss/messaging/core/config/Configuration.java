@@ -27,9 +27,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.ClusterConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
-import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
+import org.jboss.messaging.core.config.cluster.DivertConfiguration;
+import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.util.SimpleString;
 
@@ -55,7 +58,6 @@ public interface Configuration extends Serializable
    long getQueueActivationTimeout();
    
    void setQueueActivationTimeout(long timeout);
-
    
    int getScheduledThreadPoolMaxSize();
 
@@ -101,17 +103,29 @@ public interface Configuration extends Serializable
 
    void setBackupConnectorName(String name);
    
-   Set<BroadcastGroupConfiguration> getBroadcastGroupConfigurations();
+   List<BroadcastGroupConfiguration> getBroadcastGroupConfigurations();
    
-   void setBroadcastGroupConfigurations(Set<BroadcastGroupConfiguration> configs);
+   void setBroadcastGroupConfigurations(List<BroadcastGroupConfiguration> configs);
    
    Map<String, DiscoveryGroupConfiguration> getDiscoveryGroupConfigurations();
    
    void setDiscoveryGroupConfigurations(Map<String, DiscoveryGroupConfiguration> configs);
    
-   Set<MessageFlowConfiguration> getMessageFlowConfigurations();
+   List<BridgeConfiguration> getBridgeConfigurations();
 
-   void setMessageFlowConfigurations(final Set<MessageFlowConfiguration> configs);
+   void setBridgeConfigurations(final List<BridgeConfiguration> configs);
+   
+   List<DivertConfiguration> getDivertConfigurations();
+
+   void setDivertConfigurations(final List<DivertConfiguration> configs);
+   
+   List<ClusterConfiguration> getClusterConfigurations();
+
+   void setClusterConfigurations(final List<ClusterConfiguration> configs);
+   
+   List<QueueConfiguration> getQueueConfigurations();
+
+   void setQueueConfigurations(final List<QueueConfiguration> configs);
    
    SimpleString getManagementAddress();
    

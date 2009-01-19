@@ -715,10 +715,9 @@ public class LocalTestServer implements Server, Runnable
    public void removeAllMessages(JBossDestination destination) throws Exception
    {
       Binding binding = getMessagingServer().getPostOffice().getBinding(destination.getSimpleAddress());
-      if (binding != null && binding.getType() == BindingType.QUEUE)
+      if (binding != null && binding.isQueueBinding())
       {
-         ((Queue)binding.getBindable()).deleteAllReferences(getMessagingServer().getStorageManager(), getMessagingServer().getPostOffice(),
-                                                            getMessagingServer().getQueueSettingsRepository());
+         ((Queue)binding.getBindable()).deleteAllReferences();
       }
    }
 

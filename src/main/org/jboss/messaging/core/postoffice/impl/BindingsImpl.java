@@ -22,19 +22,22 @@
 
 package org.jboss.messaging.core.postoffice.impl;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.server.Bindable;
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A BindingsImpl
@@ -49,149 +52,167 @@ public class BindingsImpl implements Bindings
 {   
    private static final Logger log = Logger.getLogger(BindingsImpl.class);
 
-   private final List<Binding> bindings = new CopyOnWriteArrayList<Binding>();
-
-   private final AtomicInteger numberExclusive = new AtomicInteger(0);
-
-   private final AtomicInteger pos = new AtomicInteger(0);
+   private final ConcurrentMap<SimpleString, List<Binding>> routingNameBindingMap = new ConcurrentHashMap<SimpleString, List<Binding>>();
    
-   private AtomicInteger weightCount = new AtomicInteger(0);
+   private final Map<SimpleString, Integer> routingNamePositions = new ConcurrentHashMap<SimpleString, Integer>();
    
-   private volatile Binding binding;
+   private final List<Binding> bindingsList = new CopyOnWriteArrayList<Binding>();
    
-   public void addBinding(final Binding binding)
-   {
-      bindings.add(binding);
-
-      if (binding.isExclusive())
-      {
-         numberExclusive.incrementAndGet();
-      }
-   }
-
+   private final List<Binding> exclusiveBindings = new CopyOnWriteArrayList<Binding>();
+   
    public List<Binding> getBindings()
    {
-      return new ArrayList<Binding>(bindings);
+      return bindingsList;
    }
 
-   public void removeBinding(final Binding binding)
+   public void addBinding(final Binding binding)
    {
-      bindings.remove(binding);
-
-      if (binding.isExclusive())
+      if (binding.getBindable().isExclusive())
       {
-         numberExclusive.decrementAndGet();
+         exclusiveBindings.add(binding);
       }
+      else
+      {
+         SimpleString routingName = binding.getBindable().getRoutingName();
+         
+         List<Binding> bindings = routingNameBindingMap.get(routingName);
+         
+         if (bindings == null)
+         {
+            bindings = new CopyOnWriteArrayList<Binding>();
+            
+            List<Binding> oldBindings = routingNameBindingMap.putIfAbsent(routingName, bindings);
+            
+            if (oldBindings != null)
+            {
+               bindings = oldBindings;
+            }
+         }
+         
+         bindings.add(binding);
+      }
+      
+      bindingsList.add(binding);
    }
    
-   public void route(final ServerMessage message) throws Exception
+   public void removeBinding(final Binding binding)
+   {
+      if (binding.getBindable().isExclusive())
+      {
+         exclusiveBindings.remove(binding);
+      }
+      else
+      {
+         SimpleString routingName = binding.getBindable().getRoutingName();
+         
+         List<Binding> bindings = routingNameBindingMap.get(routingName);
+         
+         if (bindings != null)
+         {
+            bindings.remove(binding);
+            
+            if (bindings.isEmpty())
+            {
+               routingNameBindingMap.remove(routingName);
+            }
+         }
+      }
+      
+      bindingsList.remove(binding);
+   }
+   
+   public void route(ServerMessage message) throws Exception
    {
       route(message, null);
    }
    
-   public void route(final ServerMessage message, final Transaction tx) throws Exception
+   public void route(ServerMessage message, Transaction tx) throws Exception
    {
-      if (numberExclusive.get() > 0)
+      if (!exclusiveBindings.isEmpty())
       {
-         // We need to round robin
-         
-         routeRoundRobin(message, tx);                
+         for (Binding binding: exclusiveBindings)
+         {
+            binding.getBindable().route(message, tx);
+         }
       }
       else
       {
-         // They all get the message
-         
-         // TODO - this can be optimised to avoid a copy
-         
-         if (!bindings.isEmpty())
-         {   
-            for (Binding binding : bindings)
-            {
-               Bindable bindable = binding.getBindable();
-   
-               Filter filter = bindable.getFilter();
-   
-               //Note we ignore any exclusive - this structure is concurrent so one could have been added
-               //since the initial check on number of exclusive
-               if (!binding.isExclusive() && (filter == null || filter.match(message)))
-               {
-                  bindable.route(message, tx);
-               }
-            }
-         }
-      }
-   }
-   
-   private void routeRoundRobin(final ServerMessage message, final Transaction tx) throws Exception
-   {
-      //It's not an exact round robin under concurrent access but that doesn't matter
-      
-      int startPos = -1;
-
-      while (true)
-      {                          
-         try
-         {                     
-            int thePos = pos.get();
-            
-            if (binding == null)
-            {
-               binding = bindings.get(thePos);
-               
-               weightCount.set(binding.getWeight());
-            }
-            
-            if (weightCount.get() != 0)
-            {
-               if (binding.getBindable().route(message, tx))
-               {
-                  if (weightCount.decrementAndGet() <= 0)
-                  {
-                     advance();
-                  }
-                  
-                  return;
-               }
-            }
-            
-            if (thePos == startPos)
-            {
-               //Tried them all
-               return;
-            }
-            
-            if (startPos == -1)
-            {                  
-               startPos = thePos;
-            }
-            
-            advance();                                  
-         }
-         catch (IndexOutOfBoundsException e)
+         Set<Bindable> chosen = new HashSet<Bindable>();
+          
+         for (Map.Entry<SimpleString, List<Binding>> entry: routingNameBindingMap.entrySet())
          {
-            //Under concurrent access you might get IndexOutOfBoundsException so need to deal with this
+            SimpleString routingName = entry.getKey();
             
-            if (bindings.isEmpty())
+            List<Binding> bindings = entry.getValue();
+            
+            if (bindings == null)
             {
-               return;
+               //The value can become null if it's concurrently removed while we're iterating - this is expected ConcurrentHashMap behaviour!
+               continue;
             }
-            else
-            {
-               pos.set(0);
                
-               startPos = -1;
+            Integer ipos = routingNamePositions.get(routingName);
+            
+            int pos = ipos != null ? ipos.intValue() : 0;
+              
+            int startPos = pos;
+            
+            int length = bindings.size();
+              
+            do
+            {               
+               Binding binding;
+               
+               try
+               {
+                  binding = bindings.get(pos);
+               }
+               catch (IndexOutOfBoundsException e)
+               {
+                  //This can occur if binding is removed while in route
+                  if (!bindings.isEmpty())
+                  {
+                     pos = 0;
+                     
+                     continue;
+                  }
+                  else
+                  {
+                     break;
+                  }
+               }
+               
+               pos++;
+               
+               if (pos == length)
+               {
+                  pos = 0;
+               }
+               
+               if (binding.getBindable().accept(message))
+               {
+                  chosen.add(binding.getBindable());
+                  
+                  SimpleString headerName = MessageImpl.HDR_ROUTE_TO_PREFIX.concat(binding.getBindable().getRoutingName());
+                  
+                  message.putBooleanProperty(headerName, Boolean.valueOf(true)); 
+                  
+                  break;
+               }
             }
-         }                  
-      }
+            while (startPos != pos);
+            
+            if (pos != startPos)
+            {
+               routingNamePositions.put(routingName, pos);
+            }
+         }
+                     
+         for (Bindable bindable: chosen)
+         {
+            bindable.route(message, tx);
+         }
+      }      
    }
    
-   private void advance()
-   {
-      if (pos.incrementAndGet() >= bindings.size())
-      {
-         pos.set(0);
-      }
-            
-      binding = null;
-   }
 }

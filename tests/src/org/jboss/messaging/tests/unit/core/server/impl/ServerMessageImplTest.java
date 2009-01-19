@@ -103,81 +103,81 @@ public class ServerMessageImplTest extends MessageImplTestBase
       assertEquals(id, msg.getMessageID());
    }
    
-   public void testCreateReferencesDurable()
-   {
-      ServerMessage msg = new ServerMessageImpl();
-      msg.setDurable(true);
-      
-      Queue queue1 = EasyMock.createStrictMock(Queue.class);
-      Queue queue2 = EasyMock.createStrictMock(Queue.class);
-      Queue queue3 = EasyMock.createStrictMock(Queue.class);
-      
-      EasyMock.expect(queue1.isDurable()).andReturn(true);
-      EasyMock.expect(queue2.isDurable()).andReturn(true);
-      EasyMock.expect(queue3.isDurable()).andReturn(false);
-      
-      EasyMock.replay(queue1, queue2, queue3);
-      
-      MessageReference ref1 = msg.createReference(queue1);
-      MessageReference ref2 = msg.createReference(queue2);
-      MessageReference ref3 = msg.createReference(queue3);
-      
-      assertEquals(msg, ref1.getMessage());
-      assertEquals(msg, ref2.getMessage());
-      assertEquals(msg, ref3.getMessage());
-      
-      assertEquals(queue1, ref1.getQueue());
-      assertEquals(queue2, ref2.getQueue());
-      assertEquals(queue3, ref3.getQueue());
-      
-      EasyMock.verify(queue1, queue2, queue3);
-      
-      assertEquals(2, msg.getDurableRefCount());
-      
-      msg.incrementDurableRefCount();
-      assertEquals(3, msg.getDurableRefCount());
-      
-      msg.incrementDurableRefCount();
-      assertEquals(4, msg.getDurableRefCount());
-      
-      msg.decrementDurableRefCount();
-      assertEquals(3, msg.getDurableRefCount());
-      
-      msg.decrementDurableRefCount();
-      assertEquals(2, msg.getDurableRefCount());
-      
-      msg.decrementDurableRefCount();      
-      msg.decrementDurableRefCount();
-      assertEquals(0, msg.getDurableRefCount());
-   }
+//   public void testCreateReferencesDurable()
+//   {
+//      ServerMessage msg = new ServerMessageImpl();
+//      msg.setDurable(true);
+//      
+//      Queue queue1 = EasyMock.createStrictMock(Queue.class);
+//      Queue queue2 = EasyMock.createStrictMock(Queue.class);
+//      Queue queue3 = EasyMock.createStrictMock(Queue.class);
+//      
+//      EasyMock.expect(queue1.isDurable()).andReturn(true);
+//      EasyMock.expect(queue2.isDurable()).andReturn(true);
+//      EasyMock.expect(queue3.isDurable()).andReturn(false);
+//      
+//      EasyMock.replay(queue1, queue2, queue3);
+//      
+//      MessageReference ref1 = msg.createReference(queue1);
+//      MessageReference ref2 = msg.createReference(queue2);
+//      MessageReference ref3 = msg.createReference(queue3);
+//      
+//      assertEquals(msg, ref1.getMessage());
+//      assertEquals(msg, ref2.getMessage());
+//      assertEquals(msg, ref3.getMessage());
+//      
+//      assertEquals(queue1, ref1.getQueue());
+//      assertEquals(queue2, ref2.getQueue());
+//      assertEquals(queue3, ref3.getQueue());
+//      
+//      EasyMock.verify(queue1, queue2, queue3);
+//      
+//      assertEquals(2, msg.getDurableRefCount());
+//      
+//      msg.incrementDurableRefCount();
+//      assertEquals(3, msg.getDurableRefCount());
+//      
+//      msg.incrementDurableRefCount();
+//      assertEquals(4, msg.getDurableRefCount());
+//      
+//      msg.decrementDurableRefCount();
+//      assertEquals(3, msg.getDurableRefCount());
+//      
+//      msg.decrementDurableRefCount();
+//      assertEquals(2, msg.getDurableRefCount());
+//      
+//      msg.decrementDurableRefCount();      
+//      msg.decrementDurableRefCount();
+//      assertEquals(0, msg.getDurableRefCount());
+//   }
    
-   public void testCreateReferencesNonDurable()
-   {
-      ServerMessage msg = new ServerMessageImpl();
-      msg.setDurable(false);
-      
-      Queue queue1 = EasyMock.createStrictMock(Queue.class);
-      Queue queue2 = EasyMock.createStrictMock(Queue.class);
-      Queue queue3 = EasyMock.createStrictMock(Queue.class);
-      
-      EasyMock.replay(queue1, queue2, queue3);
-      
-      MessageReference ref1 = msg.createReference(queue1);
-      MessageReference ref2 = msg.createReference(queue2);
-      MessageReference ref3 = msg.createReference(queue3);
-      
-      assertEquals(msg, ref1.getMessage());
-      assertEquals(msg, ref2.getMessage());
-      assertEquals(msg, ref3.getMessage());
-      
-      assertEquals(queue1, ref1.getQueue());
-      assertEquals(queue2, ref2.getQueue());
-      assertEquals(queue3, ref3.getQueue());
-      
-      EasyMock.verify(queue1, queue2, queue3);
-      
-      assertEquals(0, msg.getDurableRefCount());      
-   }
+//   public void testCreateReferencesNonDurable()
+//   {
+//      ServerMessage msg = new ServerMessageImpl();
+//      msg.setDurable(false);
+//      
+//      Queue queue1 = EasyMock.createStrictMock(Queue.class);
+//      Queue queue2 = EasyMock.createStrictMock(Queue.class);
+//      Queue queue3 = EasyMock.createStrictMock(Queue.class);
+//      
+//      EasyMock.replay(queue1, queue2, queue3);
+//      
+//      MessageReference ref1 = msg.createReference(queue1);
+//      MessageReference ref2 = msg.createReference(queue2);
+//      MessageReference ref3 = msg.createReference(queue3);
+//      
+//      assertEquals(msg, ref1.getMessage());
+//      assertEquals(msg, ref2.getMessage());
+//      assertEquals(msg, ref3.getMessage());
+//      
+//      assertEquals(queue1, ref1.getQueue());
+//      assertEquals(queue2, ref2.getQueue());
+//      assertEquals(queue3, ref3.getQueue());
+//      
+//      EasyMock.verify(queue1, queue2, queue3);
+//      
+//      assertEquals(0, msg.getDurableRefCount());      
+//   }
    
    // Protected -----------------------------------------------------------------------------------
    

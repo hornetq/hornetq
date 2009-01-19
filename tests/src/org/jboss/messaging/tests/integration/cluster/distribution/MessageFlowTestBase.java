@@ -45,6 +45,10 @@ import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
  */
 public abstract class MessageFlowTestBase extends TestCase
 {
+   public void testFoo()
+   {      
+   }
+   
    
    protected MessagingService createMessagingServiceNIO(final int id, final Map<String, Object> params)
    {

@@ -53,8 +53,6 @@ public interface JMSQueueControlMBean extends DestinationControlMBean
 
    int getMessagesAdded();
 
-   boolean isClustered();
-
    boolean isTemporary();
 
    boolean isDurable();

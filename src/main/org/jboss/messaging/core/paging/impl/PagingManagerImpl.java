@@ -189,21 +189,6 @@ public class PagingManagerImpl implements PagingManager
       return getPageStore(destination).isPaging();
    }
 
-   public boolean addSize(final ServerMessage message) throws Exception
-   {
-      return getPageStore(message.getDestination()).addSize(message.getMemoryEstimate());
-   }
-
-   public void removeSize(final ServerMessage message) throws Exception
-   {
-      getPageStore(message.getDestination()).addSize(-message.getMemoryEstimate());
-   }
-
-   public void removeSize(final MessageReference reference) throws Exception
-   {
-      getPageStore(reference.getMessage().getDestination()).addSize(-reference.getMemoryEstimate());
-   }
-
    public boolean page(final ServerMessage message, final long transactionId, final boolean duplicateDetection) throws Exception
    {
       // The sync on transactions is done on commit only
@@ -279,8 +264,14 @@ public class PagingManagerImpl implements PagingManager
       {
          store.stop();
       }
+      
+      stores.clear();
 
       pagingStoreFactory.stop();
+      
+      globalSize.set(0);
+      
+      globalMode.set(false);
    }
 
    public synchronized void startGlobalDepage()

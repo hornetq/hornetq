@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2005-2009, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -20,49 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.management;
 
-import javax.management.openmbean.TabularData;
+package org.jboss.messaging.core.postoffice;
+
+import org.jboss.messaging.core.server.Divert;
 
 /**
- * A AcceptorMBean
+ * A DivertBinding
  *
- * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * Created 9 Jan 2009 18:28:42
+ *
  *
  */
-public interface MessageFlowControlMBean
+public interface DivertBinding extends Binding
 {
-   boolean isStarted();
-
-   String getName();
-
-   void start() throws Exception;
-
-   void stop() throws Exception;
-
-   String getAddress();
-
-   String getFilterString();
-
-   boolean isExclusive();
-
-   int getMaxBatchSize();
-
-   long getMaxBatchTime();
-
-   String getTransformerClassName();
-
-   TabularData getConnectorNamePairs();
-
-   String getDiscoveryGroupName();
-
-   long getRetryInterval();
-
-   double getRetryIntervalMultiplier();
-
-   int getMaxRetriesBeforeFailover();
-
-   int getMaxRetriesAfterFailover();
-
-   boolean isUseDuplicateDetection();
+   public Divert getDivert();
 }

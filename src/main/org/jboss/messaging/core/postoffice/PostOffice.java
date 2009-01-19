@@ -22,7 +22,9 @@
 
 package org.jboss.messaging.core.postoffice;
 
-import org.jboss.messaging.core.filter.Filter;
+import java.util.List;
+import java.util.Set;
+
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.Queue;
@@ -30,9 +32,6 @@ import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * 
@@ -60,27 +59,13 @@ public interface PostOffice extends MessagingComponent
 
    boolean containsDestination(SimpleString address);
 
-   Binding addLinkBinding(SimpleString name,
-                          SimpleString address,
-                          Filter filter,
-                          boolean durable,
-                          boolean temporary,
-                          boolean exclusive,
-                          SimpleString linkAddress,
-                          boolean duplicateDetection) throws Exception;
+   void addBinding(Binding binding) throws Exception;
 
-   Binding addQueueBinding(SimpleString name,
-                           SimpleString address,
-                           Filter filter,
-                           boolean durable,
-                           boolean temporary,
-                           boolean exclusive) throws Exception;
-
-   Binding removeBinding(SimpleString name) throws Exception;
+   Binding removeBinding(SimpleString uniqueName) throws Exception;
 
    Bindings getBindingsForAddress(SimpleString address) throws Exception;
 
-   Binding getBinding(SimpleString name);
+   Binding getBinding(SimpleString uniqueName);
 
    void route(ServerMessage message) throws Exception;
    

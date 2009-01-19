@@ -46,8 +46,12 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    /** Global reference counts for paging control */
    private final AtomicInteger refCount = new AtomicInteger(0);
 
-   private volatile boolean reload;
+   private volatile boolean stored;
+   
+   //We cache this
+   private volatile int memoryEstimate = -1;
 
+   
    /*
     * Constructor for when reading from network
     */
@@ -99,15 +103,15 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
     
       return ref;
    }
-
-   public int getRefCount()
+   
+   public boolean isStored()
    {
-      return refCount.get();
+      return stored;
    }
-
-   public int getDurableRefCount()
+   
+   public void setStored()
    {
-      return durableRefCount.get();
+      stored = true;
    }
 
    public int decrementDurableRefCount()
@@ -115,32 +119,22 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return durableRefCount.decrementAndGet();
    }
 
-   public int incrementDurableRefCount()
-   {
-      return durableRefCount.incrementAndGet();
-   }
-
    public int decrementRefCount()
    {
       return refCount.decrementAndGet();
    }
-
+   
    public int getMemoryEstimate()
    {
-      // This is just an estimate...
-      // due to memory alignments and JVM implementation this could be very
-      // different from reality
-      return getEncodeSize() + (16 + 4) * 2 + 1;
-   }
-
-   public boolean isReload()
-   {
-      return reload;
-   }
-
-   public void setReload()
-   {
-      this.reload = true;
+      if (memoryEstimate == -1)
+      {
+         // This is just an estimate...
+         // due to memory alignments and JVM implementation this could be very
+         // different from reality
+         memoryEstimate = getEncodeSize() + (16 + 4) * 2 + 1;
+      }
+      
+      return memoryEstimate;
    }
 
    public ServerMessage copy()

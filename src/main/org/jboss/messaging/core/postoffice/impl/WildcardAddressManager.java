@@ -145,7 +145,7 @@ public class WildcardAddressManager extends SimpleAddressManager
                {
                   for (Binding b : bindings.getBindings())
                   {
-                     super.removeMapping(address, b.getBindable().getName());
+                     super.removeMapping(address, b.getBindable().getUniqueName());
                   }
                }
             }

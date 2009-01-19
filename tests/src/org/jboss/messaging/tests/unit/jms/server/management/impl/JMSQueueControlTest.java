@@ -134,19 +134,6 @@ public class JMSQueueControlTest extends TestCase
       verifyMockedAttributes();
    }
 
-   public void testIsClustered() throws Exception
-   {
-      boolean clustered = randomBoolean();
-
-      expect(coreQueue.isClustered()).andReturn(clustered);
-      replayMockedAttributes();
-
-      JMSQueueControl control = createControl();
-      assertEquals(clustered, control.isClustered());
-
-      verifyMockedAttributes();
-   }
-
    public void testIsDurabled() throws Exception
    {
       boolean durable = randomBoolean();
@@ -281,7 +268,7 @@ public class JMSQueueControlTest extends TestCase
       expect(ref.getMessage()).andReturn(message);
       refs.add(ref);
       expect(coreQueue.list(EasyMock.isA(Filter.class))).andReturn(refs);
-      expect(coreQueue.deleteReference(messageID, storageManager, postOffice, queueSettingsRepository)).andReturn(true);
+      expect(coreQueue.deleteReference(messageID)).andReturn(true);
 
       replayMockedAttributes();
       replay(ref, message);
@@ -296,7 +283,7 @@ public class JMSQueueControlTest extends TestCase
    public void testRemoveAllMessages() throws Exception
    {
       int removedMessagesCount = randomPositiveInt();
-      expect(coreQueue.deleteAllReferences(storageManager, postOffice, queueSettingsRepository)).andReturn(removedMessagesCount);
+      expect(coreQueue.deleteAllReferences()).andReturn(removedMessagesCount);
 
       replayMockedAttributes();
 
@@ -370,7 +357,7 @@ public class JMSQueueControlTest extends TestCase
       expect(ref.getMessage()).andReturn(serverMessage);
       refs.add(ref);
       expect(coreQueue.list(EasyMock.isA(Filter.class))).andReturn(refs);
-      expect(coreQueue.expireMessage(messageID, storageManager, postOffice, queueSettingsRepository)).andReturn(true);
+      expect(coreQueue.expireMessage(messageID)).andReturn(true);
 
       replayMockedAttributes();
       replay(ref, serverMessage);
@@ -407,10 +394,7 @@ public class JMSQueueControlTest extends TestCase
    {
       int expiredMessages = randomInt();
 
-      expect(coreQueue.expireMessages(isA(Filter.class),
-                                      eq(storageManager),
-                                      eq(postOffice),
-                                      eq(queueSettingsRepository))).andReturn(expiredMessages);
+      expect(coreQueue.expireMessages(isA(Filter.class))).andReturn(expiredMessages);
 
       replayMockedAttributes();
 
@@ -432,7 +416,7 @@ public class JMSQueueControlTest extends TestCase
       expect(ref.getMessage()).andReturn(serverMessage);
       refs.add(ref);
       expect(coreQueue.list(isA(Filter.class))).andReturn(refs);
-      expect(coreQueue.sendMessageToDeadLetterAddress(messageID, storageManager, postOffice, queueSettingsRepository)).andReturn(true);
+      expect(coreQueue.sendMessageToDeadLetterAddress(messageID)).andReturn(true);
 
       replayMockedAttributes();
       replay(ref, serverMessage);
@@ -478,10 +462,7 @@ public class JMSQueueControlTest extends TestCase
       refs.add(ref);
       expect(coreQueue.list(isA(Filter.class))).andReturn(refs);
       expect(coreQueue.changeMessagePriority(messageID,
-                                             newPriority,
-                                             storageManager,
-                                             postOffice,
-                                             queueSettingsRepository)).andReturn(true);
+                                             newPriority)).andReturn(true);
 
       replayMockedAttributes();
       replay(ref, serverMessage);
@@ -585,8 +566,7 @@ public class JMSQueueControlTest extends TestCase
       return new JMSQueueControl(queue,
                                  coreQueue,
                                  jndiBinding,
-                                 postOffice,
-                                 storageManager,
+                                 postOffice,                               
                                  queueSettingsRepository,
                                  counter);
    }

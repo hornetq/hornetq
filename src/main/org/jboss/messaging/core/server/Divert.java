@@ -21,25 +21,19 @@
  */
 
 
-package org.jboss.messaging.core.server.cluster;
+package org.jboss.messaging.core.server;
 
-import java.util.Set;
-
-import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.util.SimpleString;
 
 /**
- * A MessageFlow
+ * A Divert
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 18 Nov 2008 09:41:01
+ * Created 24 Dec 2008 09:58:04
  *
  *
  */
-public interface MessageFlow extends MessagingComponent
-{   
-   SimpleString getName();
-   
-   Set<Forwarder> getForwarders();
+public interface Divert extends Bindable
+{
+   boolean isExclusive();
 }

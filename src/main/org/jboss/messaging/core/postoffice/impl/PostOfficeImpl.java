@@ -22,36 +22,10 @@
 
 package org.jboss.messaging.core.postoffice.impl;
 
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.paging.PagingManager;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.AddressManager;
-import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.BindingType;
-import org.jboss.messaging.core.postoffice.Bindings;
-import org.jboss.messaging.core.postoffice.DuplicateIDCache;
-import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.Bindable;
-import org.jboss.messaging.core.server.BindableFactory;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.SendLock;
-import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.server.impl.SendLockImpl;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
-import org.jboss.messaging.core.transaction.ResourceManager;
-import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.util.JBMThreadFactory;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.SimpleString;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,6 +33,33 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.paging.PageTransactionInfo;
+import org.jboss.messaging.core.paging.PagingManager;
+import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.AddressManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.Bindings;
+import org.jboss.messaging.core.postoffice.DuplicateIDCache;
+import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.core.server.SendLock;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.impl.SendLockImpl;
+import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.TransactionOperation;
+import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
+import org.jboss.messaging.core.transaction.Transaction.State;
+import org.jboss.messaging.core.transaction.impl.TransactionImpl;
+import org.jboss.messaging.util.JBMThreadFactory;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A PostOfficeImpl
@@ -75,7 +76,7 @@ public class PostOfficeImpl implements PostOffice
 
    private final AddressManager addressManager;
 
-   private final BindableFactory bindableFactory;
+   private final QueueFactory queueFactory;
 
    private final boolean checkAllowable;
 
@@ -89,13 +90,9 @@ public class PostOfficeImpl implements PostOffice
 
    private final ManagementService managementService;
 
-   private final ResourceManager resourceManager;
-
    private final Map<SimpleString, SendLock> addressLocks = new HashMap<SimpleString, SendLock>();
 
    private ScheduledThreadPoolExecutor messageExpiryExecutor;
-
-   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
 
    private final long messageExpiryScanPeriod;
 
@@ -109,13 +106,11 @@ public class PostOfficeImpl implements PostOffice
 
    public PostOfficeImpl(final StorageManager storageManager,
                          final PagingManager pagingManager,
-                         final BindableFactory bindableFactory,
+                         final QueueFactory bindableFactory,
                          final ManagementService managementService,
-                         final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                          final long messageExpiryScanPeriod,
                          final int messageExpiryThreadPriority,
                          final boolean checkAllowable,
-                         final ResourceManager resourceManager,
                          final boolean enableWildCardRouting,
                          final boolean backup,
                          final int idCacheSize,
@@ -123,17 +118,13 @@ public class PostOfficeImpl implements PostOffice
    {
       this.storageManager = storageManager;
 
-      this.bindableFactory = bindableFactory;
+      this.queueFactory = bindableFactory;
 
       this.managementService = managementService;
 
       this.checkAllowable = checkAllowable;
 
       this.pagingManager = pagingManager;
-
-      this.resourceManager = resourceManager;
-
-      this.queueSettingsRepository = queueSettingsRepository;
 
       this.messageExpiryScanPeriod = messageExpiryScanPeriod;
 
@@ -167,14 +158,12 @@ public class PostOfficeImpl implements PostOffice
       }
 
       // Injecting the postoffice (itself) on queueFactory for paging-control
-      bindableFactory.setPostOffice(this);
-
-      load();
+      queueFactory.setPostOffice(this);
 
       if (messageExpiryScanPeriod > 0)
       {
          MessageExpiryRunner messageExpiryRunner = new MessageExpiryRunner();
-         messageExpiryRunner.setPriority(3);
+
          messageExpiryExecutor = new ScheduledThreadPoolExecutor(1, new JBMThreadFactory("JBM-scheduled-threads",
                                                                                          messageExpiryThreadPriority));
          messageExpiryExecutor.scheduleAtFixedRate(messageExpiryRunner,
@@ -264,59 +253,18 @@ public class PostOfficeImpl implements PostOffice
    // Otherwise can have situation where createQueue comes in before failover, then failover occurs
    // and post office is activated but queue remains unactivated after failover so delivery never occurs
    // even though failover is complete
-   // TODO - more subtle locking could be used -this is a bit heavy handed
-   public synchronized Binding addQueueBinding(final SimpleString name,
-                                               final SimpleString address,
-                                               final Filter filter,
-                                               final boolean durable,
-                                               final boolean temporary,
-                                               final boolean exclusive) throws Exception
+   public synchronized void addBinding(final Binding binding) throws Exception
    {
-      Binding binding = createQueueBinding(name, address, filter, durable, temporary, exclusive);
-
       addBindingInMemory(binding);
-
-      if (durable)
-      {
-         storageManager.addBinding(binding, false);
-      }
-
-      return binding;
    }
 
-   public synchronized Binding addLinkBinding(final SimpleString name,
-                                              final SimpleString address,
-                                              final Filter filter,
-                                              final boolean durable,
-                                              final boolean temporary,
-                                              final boolean exclusive,
-                                              final SimpleString linkAddress,
-                                              final boolean duplicateDetection) throws Exception
+   public synchronized Binding removeBinding(final SimpleString uniqueName) throws Exception
    {
-      Binding binding = createLinkBinding(name, address, filter, durable, temporary, exclusive, linkAddress, duplicateDetection);
+      Binding binding = removeBindingInMemory(uniqueName);
 
-      addBindingInMemory(binding);
-
-      if (durable)
+      if (binding.isQueueBinding())
       {
-         storageManager.addBinding(binding, duplicateDetection);
-      }
-
-      return binding;
-   }
-
-   public synchronized Binding removeBinding(final SimpleString bindableName) throws Exception
-   {
-      Binding binding = removeBindingInMemory(bindableName);
-
-      if (binding.getBindable().isDurable())
-      {
-         storageManager.deleteBinding(binding);
-      }
-
-      if (binding.getType() == BindingType.QUEUE)
-      {
-         managementService.unregisterQueue(bindableName, binding.getAddress());
+         managementService.unregisterQueue(uniqueName, binding.getAddress());
       }
 
       return binding;
@@ -334,12 +282,12 @@ public class PostOfficeImpl implements PostOffice
       return bindings;
    }
 
-   public Binding getBinding(final SimpleString queueName)
+   public Binding getBinding(final SimpleString name)
    {
-      return addressManager.getBinding(queueName);
+      return addressManager.getBinding(name);
    }
 
-   public void route(final ServerMessage message, final Transaction tx) throws Exception
+   public void route(final ServerMessage message, Transaction tx) throws Exception
    {
       SimpleString address = message.getDestination();
 
@@ -349,6 +297,68 @@ public class PostOfficeImpl implements PostOffice
          {
             throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST,
                                          "Cannot route to address " + address);
+         }
+      }
+
+      SimpleString duplicateID = (SimpleString)message.getProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
+
+      DuplicateIDCache cache = null;
+
+      if (duplicateID != null)
+      {
+         cache = getDuplicateIDCache(message.getDestination());
+
+         if (cache.contains(duplicateID))
+         {
+            if (tx == null)
+            {
+               log.warn("Duplicate message detected - message will not be routed");
+            }
+            else
+            {
+               log.warn("Duplicate message detected - transaction will be rejected");
+
+               tx.markAsRollbackOnly(null);
+            }
+
+            return;
+         }
+      }
+
+      boolean startedTx = false;
+
+      if (cache != null)
+      {
+         cache.addToCache(duplicateID, tx);
+
+         if (tx == null)
+         {
+            // We need to store the duplicate id atomically with the message storage, so we need to create a tx for this
+
+            tx = new TransactionImpl(storageManager);
+
+            startedTx = true;
+         }
+      }
+      
+      if (tx == null)
+      {
+         if (pagingManager.page(message, true))
+         {
+            return;
+         }
+      }
+      else
+      {
+         SimpleString destination = message.getDestination();
+         
+         boolean depage = tx.getProperty(TransactionPropertyIndexes.IS_DEPAGE) != null;
+         
+         if (!depage && pagingManager.isPaging(destination))
+         {
+            getPageOperation(tx).addMessageToPage(message);
+            
+            return;
          }
       }
 
@@ -358,30 +368,16 @@ public class PostOfficeImpl implements PostOffice
       {
          bindings.route(message, tx);
       }
+
+      if (startedTx)
+      {
+         tx.commit();
+      }
    }
 
    public void route(final ServerMessage message) throws Exception
    {
-      SimpleString address = message.getDestination();
-
-      if (checkAllowable)
-      {
-         if (!addressManager.containsDestination(address))
-         {
-            throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST,
-                                         "Cannot route to address " + address);
-         }
-      }
-
-      if (!pagingManager.page(message, true))
-      {
-         Bindings bindings = addressManager.getBindings(address);
-
-         if (bindings != null)
-         {
-            bindings.route(message, null);
-         }
-      }
+      route(message, null);
    }
 
    public PagingManager getPagingManager()
@@ -399,7 +395,7 @@ public class PostOfficeImpl implements PostOffice
 
       for (Binding binding : nameMap.values())
       {
-         if (binding.getType() == BindingType.QUEUE)
+         if (binding.isQueueBinding())
          {
             Queue queue = (Queue)binding.getBindable();
 
@@ -449,42 +445,21 @@ public class PostOfficeImpl implements PostOffice
    }
 
    // Private -----------------------------------------------------------------
-
-   private Binding createQueueBinding(final SimpleString name,
-                                      final SimpleString address,
-                                      final Filter filter,
-                                      final boolean durable,
-                                      final boolean temporary,
-                                      final boolean exclusive) throws Exception
+   
+   private final PageMessageOperation getPageOperation(final Transaction tx)
    {
-      Bindable bindable = bindableFactory.createQueue(-1, name, filter, durable, temporary);
-
-      if (backup)
-      {
-         Queue queue = (Queue)bindable;
-
-         queue.setBackup();
+      PageMessageOperation oper = (PageMessageOperation)tx.getProperty(TransactionPropertyIndexes.PAGE_MESSAGES_OPERATION);
+      
+      if (oper == null)
+      {         
+         oper = new PageMessageOperation();
+         
+         tx.putProperty(TransactionPropertyIndexes.PAGE_MESSAGES_OPERATION, oper);
+         
+         tx.addOperation(oper);
       }
-
-      Binding binding = new BindingImpl(BindingType.QUEUE, address, bindable, exclusive);
-
-      return binding;
-   }
-
-   private Binding createLinkBinding(final SimpleString name,
-                                     final SimpleString address,
-                                     final Filter filter,
-                                     final boolean durable,
-                                     final boolean temporary,
-                                     final boolean exclusive,
-                                     final SimpleString linkAddress,
-                                     final boolean duplicateDetection) throws Exception
-   {
-      Bindable bindable = bindableFactory.createLink(-1, name, filter, durable, temporary, linkAddress, duplicateDetection);
-
-      Binding binding = new BindingImpl(BindingType.LINK, address, bindable, exclusive);
-
-      return binding;
+      
+      return oper;
    }
 
    private void addBindingInMemory(final Binding binding) throws Exception
@@ -496,9 +471,16 @@ public class PostOfficeImpl implements PostOffice
          managementService.registerAddress(binding.getAddress());
       }
 
-      if (binding.getType() == BindingType.QUEUE)
+      if (binding.isQueueBinding())
       {
-         managementService.registerQueue((Queue)binding.getBindable(), binding.getAddress(), storageManager);
+         Queue queue = (Queue)binding.getBindable();
+
+         if (backup)
+         {
+            queue.setBackup();
+         }
+
+         managementService.registerQueue(queue, binding.getAddress(), storageManager);
       }
 
       addressManager.addBinding(binding);
@@ -516,59 +498,8 @@ public class PostOfficeImpl implements PostOffice
       return binding;
    }
 
-   private void load() throws Exception
+   private class MessageExpiryRunner implements Runnable
    {
-      List<Binding> bindings = new ArrayList<Binding>();
-
-      List<SimpleString> dests = new ArrayList<SimpleString>();
-
-      storageManager.loadBindings(bindableFactory, bindings, dests);
-
-      // Destinations must be added first to ensure flow controllers exist
-      // before queues are created
-      for (SimpleString destination : dests)
-      {
-         addDestination(destination, true);
-      }
-
-      Map<Long, Queue> queues = new HashMap<Long, Queue>();
-
-      for (Binding binding : bindings)
-      {
-         addBindingInMemory(binding);
-
-         if (binding.getType() == BindingType.QUEUE)
-         {
-            queues.put(binding.getBindable().getPersistenceID(), (Queue)binding.getBindable());
-         }
-      }
-
-      pagingManager.reloadStores();
-      
-      Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<SimpleString, Long>>>();
-
-      storageManager.loadMessageJournal(this, storageManager, queueSettingsRepository, queues, resourceManager, duplicateIDMap);
-
-      for (Map.Entry<SimpleString, List<Pair<SimpleString, Long>>> entry : duplicateIDMap.entrySet())
-      {
-         SimpleString address = entry.getKey();
-
-         DuplicateIDCache cache = getDuplicateIDCache(address);
-
-         if (persistIDCache)
-         {
-            cache.load(entry.getValue());
-         }
-      }
-
-      // This is necessary as if the server was previously stopped while a depage was being executed,
-      // it needs to resume the depage process on those destinations      
-      pagingManager.startGlobalDepage();
-   }
-
-   private class MessageExpiryRunner extends Thread
-   {
-      @Override
       public void run()
       {
          Map<SimpleString, Binding> nameMap = addressManager.getBindings();
@@ -577,7 +508,7 @@ public class PostOfficeImpl implements PostOffice
 
          for (Binding binding : nameMap.values())
          {
-            if (binding.getType() == BindingType.QUEUE)
+            if (binding.isQueueBinding())
             {
                Queue queue = (Queue)binding.getBindable();
 
@@ -589,7 +520,7 @@ public class PostOfficeImpl implements PostOffice
          {
             try
             {
-               queue.expireMessages(storageManager, PostOfficeImpl.this, queueSettingsRepository);
+               queue.expireMessages();
             }
             catch (Exception e)
             {
@@ -598,4 +529,121 @@ public class PostOfficeImpl implements PostOffice
          }
       }
    }
+
+   private class PageMessageOperation implements TransactionOperation
+   {
+      private final List<ServerMessage> messagesToPage = new ArrayList<ServerMessage>();
+      
+      void addMessageToPage(final ServerMessage message)
+      {
+         messagesToPage.add(message);
+      }
+
+      public void afterCommit(final Transaction tx) throws Exception
+      {
+         // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
+         // transaction until all the messages were added to the queue
+         // or else we could deliver the messages out of order
+         
+         PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
+         
+         if (pageTransaction != null)
+         {
+            pageTransaction.commit();
+         }
+      }
+
+      public void afterPrepare(final Transaction tx) throws Exception
+      {
+      }
+
+      public void afterRollback(final Transaction tx) throws Exception
+      {
+         PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
+
+         if (tx.getState() == State.PREPARED && pageTransaction != null)
+         {
+            pageTransaction.rollback();
+         }
+      }
+
+      public void beforeCommit(final Transaction tx) throws Exception
+      {
+         if (tx.getState() != Transaction.State.PREPARED)
+         {
+            pageMessages(tx);
+         }                
+      }
+
+      public void beforePrepare(final Transaction tx) throws Exception
+      {
+         pageMessages(tx);
+      }
+
+      public void beforeRollback(final Transaction tx) throws Exception
+      {
+      }
+
+      private void pageMessages(final Transaction tx) throws Exception
+      {
+         if (!messagesToPage.isEmpty())
+         {
+            PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
+
+            if (pageTransaction == null)
+            {
+               pageTransaction = new PageTransactionInfoImpl(tx.getID());
+
+               tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pageTransaction);
+
+               // To avoid a race condition where depage happens before the transaction is completed, we need to inform
+               // the pager about this transaction is being processed
+               pagingManager.addTransaction(pageTransaction);
+            }
+
+            boolean pagingPersistent = false;
+
+            HashSet<SimpleString> pagedDestinationsToSync = new HashSet<SimpleString>();
+
+            // We only need to add the dupl id header once per transaction
+            boolean first = true;
+            for (ServerMessage message : messagesToPage)
+            {
+               // http://wiki.jboss.org/wiki/JBossMessaging2Paging
+               // Explained under Transaction On Paging. (This is the item B)
+               if (pagingManager.page(message, tx.getID(), first))
+               {
+                  if (message.isDurable())
+                  {
+                     // We only create pageTransactions if using persistent messages
+                     pageTransaction.increment();
+                     pagingPersistent = true;
+                     pagedDestinationsToSync.add(message.getDestination());
+                  }
+               }
+               else
+               {
+                  // This could happen when the PageStore left the pageState
+
+                  // TODO is this correct - don't we lose transactionality here???
+                  route(message, null);
+               }
+               first = false;
+            }
+
+            if (pagingPersistent)
+            {
+               tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
+
+               if (!pagedDestinationsToSync.isEmpty())
+               {
+                  pagingManager.sync(pagedDestinationsToSync);
+                  storageManager.storePageTransaction(tx.getID(), pageTransaction);
+               }
+            }
+         }
+      }
+
+   }
+
 }

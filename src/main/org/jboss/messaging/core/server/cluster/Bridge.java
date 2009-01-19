@@ -20,39 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.server;
 
-import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.postoffice.PostOffice;
+package org.jboss.messaging.core.server.cluster;
+
+import org.jboss.messaging.core.server.Consumer;
+import org.jboss.messaging.core.server.MessagingComponent;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.util.SimpleString;
 
+
 /**
- * 
- * A BindableFactory
- * 
- * Implementations of this class know how to create queues with the correct attribute values
- * based on default and overrides
- * 
+ * A Bridge
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * Created 15 Nov 2008 09:42:31
+ *
  *
  */
-public interface BindableFactory
+public interface Bridge extends Consumer, MessagingComponent
 {
-   Queue createQueue(long persistenceID, SimpleString name, Filter filter, boolean durable, boolean temporary);
+   SimpleString getName();
 
-   Link createLink(long persistenceID,
-                   SimpleString name,
-                   Filter filter,
-                   boolean durable,
-                   boolean temporary,
-                   SimpleString linkAddress,
-                   boolean duplicateDetection);
+   Queue getQueue();
 
-   // TODO - these injectors should not be here!!
+   int getMaxBatchSize();
 
-   /**
-    * This is required for delete-all-reference to work correctly with paging
-    * @param postOffice
-    */
-   void setPostOffice(PostOffice postOffice);
+   long getMaxBatchTime();
+
+   SimpleString getFilterString();
+
+   SimpleString getForwardingAddress();
+
+   Transformer getTransformer();
+
+   int getMaxHops();
+
+   boolean isUseDuplicateDetection();   
 }

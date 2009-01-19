@@ -45,7 +45,7 @@ import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.server.cluster.Forwarder;
+import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -56,7 +56,7 @@ import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- * A ForwarderImpl
+ * A BridgeImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
@@ -64,37 +64,39 @@ import org.jboss.messaging.util.SimpleString;
  *
  *
  */
-public class ForwarderImpl implements Forwarder, FailureListener
+public class BridgeImpl implements Bridge, FailureListener
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ForwarderImpl.class);
+   private static final Logger log = Logger.getLogger(BridgeImpl.class);
 
    // Attributes ----------------------------------------------------
 
+   private final SimpleString name;
+   
    private final Queue queue;
 
-   private Executor executor;
+   private final Executor executor;
 
    private volatile boolean busy;
 
-   private int maxBatchSize;
+   private final int maxBatchSize;
 
-   private long maxBatchTime;
+   private final long maxBatchTime;
+   
+   private final SimpleString filterString;
+
+   private final SimpleString forwardingAddress;
 
    private int count;
 
-   private java.util.Queue<MessageReference> refs = new LinkedList<MessageReference>();
+   private final java.util.Queue<MessageReference> refs = new LinkedList<MessageReference>();
 
    private Transaction tx;
 
    private long lastReceivedTime = -1;
 
    private final StorageManager storageManager;
-
-   private final PostOffice postOffice;
-
-   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
 
    private final Transformer transformer;
 
@@ -109,6 +111,8 @@ public class ForwarderImpl implements Forwarder, FailureListener
    private final ScheduledFuture<?> future;
 
    private final int maxHops;
+   
+   private final boolean useDuplicateDetection;
 
    // Static --------------------------------------------------------
 
@@ -116,22 +120,26 @@ public class ForwarderImpl implements Forwarder, FailureListener
 
    // Public --------------------------------------------------------
 
-   public ForwarderImpl(final Queue queue,
-                        final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                        final Executor executor,
-                        final int maxBatchSize,
-                        final long maxBatchTime,
-                        final StorageManager storageManager,
-                        final PostOffice postOffice,
-                        final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-                        final ScheduledExecutorService scheduledExecutor,
-                        final Transformer transformer,
-                        final long retryInterval,
-                        final double retryIntervalMultiplier,
-                        final int maxRetriesBeforeFailover,
-                        final int maxRetriesAfterFailover,
-                        final int maxHops)
+   public BridgeImpl(final SimpleString name,
+                     final Queue queue,
+                     final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                     final Executor executor,
+                     final int maxBatchSize,
+                     final long maxBatchTime,
+                     final SimpleString filterString,
+                     final SimpleString forwardingAddress,
+                     final StorageManager storageManager,
+                     final ScheduledExecutorService scheduledExecutor,
+                     final Transformer transformer,
+                     final long retryInterval,
+                     final double retryIntervalMultiplier,
+                     final int maxRetriesBeforeFailover,
+                     final int maxRetriesAfterFailover,
+                     final int maxHops,
+                     final boolean useDuplicateDetection)
    {
+      this.name = name;
+      
       this.queue = queue;
 
       this.executor = executor;
@@ -139,16 +147,18 @@ public class ForwarderImpl implements Forwarder, FailureListener
       this.maxBatchSize = maxBatchSize;
 
       this.maxBatchTime = maxBatchTime;
+      
+      this.filterString = filterString;
+
+      this.forwardingAddress = forwardingAddress;
 
       this.storageManager = storageManager;
-
-      this.postOffice = postOffice;
-
-      this.queueSettingsRepository = queueSettingsRepository;
 
       this.transformer = transformer;
 
       this.maxHops = maxHops;
+      
+      this.useDuplicateDetection = useDuplicateDetection;
 
       this.csf = new ClientSessionFactoryImpl(connectorPair.a,
                                               connectorPair.b,
@@ -169,6 +179,8 @@ public class ForwarderImpl implements Forwarder, FailureListener
          future = null;
       }
    }
+   
+   
 
    public synchronized void start() throws Exception
    {
@@ -176,8 +188,6 @@ public class ForwarderImpl implements Forwarder, FailureListener
       {
          return;
       }
-      
-      //log.info("starting forwarder");
 
       queue.addConsumer(this);
 
@@ -360,7 +370,7 @@ public class ForwarderImpl implements Forwarder, FailureListener
                break;
             }
 
-            ref.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
+            ref.getQueue().acknowledge(tx, ref);
 
             ServerMessage message = ref.getMessage();
 
@@ -369,23 +379,32 @@ public class ForwarderImpl implements Forwarder, FailureListener
                message = transformer.transform(message);
             }
 
-            SimpleString forwardingDestination = (SimpleString)message.getProperty(MessageImpl.HDR_ORIGIN_QUEUE);
-
             if (maxHops != -1)
             {
                Integer iMaxHops = (Integer)message.getProperty(MessageImpl.HDR_MAX_HOPS);
 
                if (iMaxHops == null)
-               {                 
+               {
                   message.putIntProperty(MessageImpl.HDR_MAX_HOPS, maxHops - 1);
                }
                else
-               {                 
+               {
                   message.putIntProperty(MessageImpl.HDR_MAX_HOPS, iMaxHops - 1);
                }
             }
 
-            producer.send(forwardingDestination, message);
+            SimpleString dest;
+
+            if (forwardingAddress != null)
+            {
+               dest = forwardingAddress;
+            }
+            else
+            {
+               dest = (SimpleString)message.getProperty(MessageImpl.HDR_ORIGINAL_DESTINATION);
+            }
+
+            producer.send(dest, message);
          }
 
          session.commit();
@@ -436,6 +455,51 @@ public class ForwarderImpl implements Forwarder, FailureListener
       {
          timeoutBatch();
       }
+   }
+
+   public SimpleString getName()
+   {
+      return name;
+   }
+
+   public Queue getQueue()
+   {
+      return queue;
+   }
+
+   public int getMaxBatchSize()
+   {
+      return maxBatchSize;
+   }
+
+   public long getMaxBatchTime()
+   {
+      return maxBatchTime;
+   }
+
+   public SimpleString getFilterString()
+   {
+      return filterString;
+   }
+
+   public SimpleString getForwardingAddress()
+   {
+      return forwardingAddress;
+   }
+
+   public Transformer getTransformer()
+   {
+      return transformer;
+   }
+
+   public int getMaxHops()
+   {
+      return maxHops;
+   }
+
+   public boolean isUseDuplicateDetection()
+   {
+      return useDuplicateDetection;
    }
 
 }

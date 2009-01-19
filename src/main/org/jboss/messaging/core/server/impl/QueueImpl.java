@@ -12,12 +12,17 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ACTUAL_EXPIRY_TIME;
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIGINAL_DESTINATION;
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIG_MESSAGE_ID;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -29,12 +34,10 @@ import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
-import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.DuplicateIDCache;
+import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.Distributor;
@@ -75,8 +78,6 @@ public class QueueImpl implements Queue
 
    private volatile Filter filter;
 
-   private final boolean clustered;
-
    private final boolean durable;
 
    private final boolean temporary;
@@ -107,6 +108,8 @@ public class QueueImpl implements Queue
 
    private final StorageManager storageManager;
 
+   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+
    private volatile boolean backup;
 
    private int consumersToFailover = -1;
@@ -114,20 +117,18 @@ public class QueueImpl implements Queue
    public QueueImpl(final long persistenceID,
                     final SimpleString name,
                     final Filter filter,
-                    final boolean clustered,
                     final boolean durable,
                     final boolean temporary,
                     final ScheduledExecutorService scheduledExecutor,
                     final PostOffice postOffice,
-                    final StorageManager storageManager)
+                    final StorageManager storageManager,
+                    final HierarchicalRepository<QueueSettings> queueSettingsRepository)
    {
       this.persistenceID = persistenceID;
 
       this.name = name;
 
       this.filter = filter;
-
-      this.clustered = clustered;
 
       this.durable = durable;
 
@@ -136,6 +137,8 @@ public class QueueImpl implements Queue
       this.postOffice = postOffice;
 
       this.storageManager = storageManager;
+
+      this.queueSettingsRepository = queueSettingsRepository;
 
       if (postOffice == null)
       {
@@ -153,196 +156,129 @@ public class QueueImpl implements Queue
 
    // Bindable implementation -------------------------------------------------------------------------------------
 
-   public boolean route(final ServerMessage message, Transaction tx) throws Exception
-   {     
+   public boolean accept(final ServerMessage message)
+   {
       if (filter != null && !filter.match(message))
       {
          return false;
       }
-      
-      SimpleString duplicateID = (SimpleString)message.getProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
-
-      DuplicateIDCache cache = null;
-
-      if (!message.isReload() && duplicateID != null)
+      else
       {
-         cache = postOffice.getDuplicateIDCache(message.getDestination());
-
-         if (cache.contains(duplicateID))
-         {
-            if (tx == null)
-            {
-               log.warn("Duplicate message detected - message will not be routed");
-            }
-            else
-            {
-               log.warn("Duplicate message detected - transaction will be rejected");
-               
-               tx.markAsRollbackOnly(null);
-            }
-
-            return true;
-         }
+         return true;
       }
-      
+   }
+
+   public SimpleString getRoutingName()
+   {
+      return name;
+   }
+
+   public SimpleString getUniqueName()
+   {
+      return name;
+   }
+
+   public boolean isExclusive()
+   {
+      return false;
+   }
+   
+   public void route(final ServerMessage message, final Transaction tx) throws Exception
+   {
+      // Temp
+      SimpleString routeToHeader = MessageImpl.HDR_ROUTE_TO_PREFIX.concat(name);
+      message.removeProperty(routeToHeader);
+
       boolean durableRef = message.isDurable() && durable;
+
+      // If durable, must be persisted before anything is routed
+      MessageReference ref = message.createReference(this);
       
-      boolean startedTx = false;
+      addSizeToPaging(ref);
       
-      if (cache != null && tx == null && durableRef)
+      Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+      
+      if (scheduledDeliveryTime != null)
       {
-         //We need to store the duplicate id atomically with the message storage, so we need to create a tx for this
-         
-         tx = new TransactionImpl(storageManager);
-         
-         startedTx = true;
+         ref.setScheduledDeliveryTime(scheduledDeliveryTime);
       }
       
-      // There is no way to cache the Store, since a Queue may belong to multiple addresses,
-      // so we aways need this lookup
-      PagingStore store = pagingManager.getPageStore(message.getDestination());
-
       if (tx == null)
-      {
-         // If durable, must be persisted before anything is routed
-         MessageReference ref = message.createReference(this);
-
-         if (!message.isReload())
+      {         
+         if (durableRef)
          {
-            if (message.getRefCount() == 1)
+            if (!message.isStored())
             {
-               if (durableRef)
-               {
-                  storageManager.storeMessage(message);
-               }
-               
-               if (cache != null)
-               {
-                  cache.addToCache(duplicateID);
-               }
+               storageManager.storeMessage(message);
             }
-
-            Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
-
-            if (scheduledDeliveryTime != null)
-            {
-               ref.setScheduledDeliveryTime(scheduledDeliveryTime);
-
-               if (durableRef)
-               {
-                  storageManager.updateScheduledDeliveryTime(ref);
-               }
-            }
+            
+            storageManager.storeReference(ref.getQueue().getPersistenceID(), message.getMessageID());
          }
-
-         if (message.getRefCount() == 1)
+                  
+         if (scheduledDeliveryTime != null && durableRef)
          {
-            store.addSize(message.getMemoryEstimate());
-         }
-
-         store.addSize(ref.getMemoryEstimate());
-
-         // TODO addLast never currently returns anything other than STATUS_HANDLED
+            storageManager.updateScheduledDeliveryTime(ref);            
+         }         
 
          addLast(ref);
       }
       else
       {
-         // TODO combine this similar logic with the non transactional case
-
-         SimpleString destination = message.getDestination();
-
-         //TODO - this can all be optimised
-         Set<SimpleString> pagingAddresses = (Set<SimpleString>)tx.getProperty(TransactionPropertyIndexes.DESTINATIONS_IN_PAGE_MODE);
-         
-         if (pagingAddresses == null)
+         if (durableRef)
          {
-            pagingAddresses = new HashSet<SimpleString>();
+            if (!message.isStored())
+            {                  
+               storageManager.storeMessageTransactional(tx.getID(), message);                                               
+            }
             
-            tx.putProperty(TransactionPropertyIndexes.DESTINATIONS_IN_PAGE_MODE, pagingAddresses);
-         }
-         
-         boolean depage = tx.getProperty(TransactionPropertyIndexes.IS_DEPAGE) != null;
-         
-         if (!depage && !message.isReload() && (pagingAddresses.contains(destination) || pagingManager.isPaging(destination)))
+            tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);        
+            
+            storageManager.storeReferenceTransactional(tx.getID(), ref.getQueue().getPersistenceID(), message.getMessageID());
+         }            
+
+         if (scheduledDeliveryTime != null && durableRef)
          {
-            pagingAddresses.add(destination);
-                        
-            List<ServerMessage> messages = (List<ServerMessage>)tx.getProperty(TransactionPropertyIndexes.PAGED_MESSAGES);
-            
-            if (messages == null)
-            {
-               messages = new ArrayList<ServerMessage>();
-               
-               tx.putProperty(TransactionPropertyIndexes.PAGED_MESSAGES, messages);
-               
-               tx.addOperation(new PageMessageOperation());
-            }
-            
-            messages.add(message);
-         }
-         else
-         {
-            MessageReference ref = message.createReference(this);
+            storageManager.updateScheduledDeliveryTimeTransactional(tx.getID(), ref);            
+         }         
 
-            boolean first = message.getRefCount() == 1;
-            
-            if (!message.isReload() &&  message.getRefCount() == 1)
-            {
-               if (durableRef)
-               {
-                  storageManager.storeMessageTransactional(tx.getID(), message);
-               }
-               
-               if (cache != null)
-               {
-                  cache.addToCache(duplicateID, tx);
-               }
-            }
-
-            Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
-           
-            if (scheduledDeliveryTime != null)
-            {
-               ref.setScheduledDeliveryTime(scheduledDeliveryTime);
-
-               if (durableRef && !message.isReload())
-               {
-                  storageManager.updateScheduledDeliveryTimeTransactional(tx.getID(), ref);
-               }
-            }
-
-            if (message.getRefCount() == 1)
-            {
-               store.addSize(message.getMemoryEstimate());
-            }
-
-            store.addSize(ref.getMemoryEstimate());
-            
-            tx.addOperation(new AddMessageOperation(ref, first));
-
-            if (durableRef)
-            {               
-               tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
-            }
-         }
+         getRefsOperation(tx).addRef(ref);
       }
-      
-      if (startedTx)
-      {
-         tx.commit();
-      }
-      
-      return true;
+
+      message.setStored();
    }
    
-   
-   // Queue implementation ----------------------------------------------------------------------------------------
-
-   public boolean isClustered()
+   public MessageReference reroute(final ServerMessage message, final Transaction tx) throws Exception
    {
-      return clustered;
+      // Temp
+      SimpleString routeToHeader = MessageImpl.HDR_ROUTE_TO_PREFIX.concat(name);
+      message.removeProperty(routeToHeader);
+   
+      MessageReference ref = message.createReference(this);
+      
+      Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+      
+      if (scheduledDeliveryTime != null)
+      {
+         ref.setScheduledDeliveryTime(scheduledDeliveryTime);
+      }
+      
+      addSizeToPaging(ref);
+      
+      if (tx == null)
+      {
+         addLast(ref);
+      }
+      else
+      {
+         getRefsOperation(tx).addRef(ref);
+      }      
+
+      message.setStored();
+      
+      return ref;
    }
+
+   // Queue implementation ----------------------------------------------------------------------------------------
 
    public boolean isDurable()
    {
@@ -359,33 +295,29 @@ public class QueueImpl implements Queue
       return name;
    }
 
+   public long getPersistenceID()
+   {
+      return persistenceID;
+   }
+
+   public void setPersistenceID(final long id)
+   {
+      this.persistenceID = id;
+   }
+
+   public Filter getFilter()
+   {
+      return filter;
+   }
+
    public void addLast(final MessageReference ref)
-   {          
+   {
       add(ref, false);
    }
 
    public void addFirst(final MessageReference ref)
    {
       add(ref, true);
-   }
-
-   public synchronized void addListFirst(final LinkedList<MessageReference> list)
-   {
-      ListIterator<MessageReference> iter = list.listIterator(list.size());
-
-      while (iter.hasPrevious())
-      {
-         MessageReference ref = iter.previous();
-
-         ServerMessage msg = ref.getMessage();
-
-         if (!scheduledDeliveryHandler.checkAndSchedule(ref, backup))
-         {
-            messageReferences.addFirst(ref, msg.getPriority());
-         }
-      }
-
-      deliver();
    }
 
    public void deliverAsync(final Executor executor)
@@ -464,7 +396,7 @@ public class QueueImpl implements Queue
 
             removed = ref;
 
-            referenceRemoved(removed);
+            removeExpiringReference(removed);
 
             break;
          }
@@ -477,30 +409,6 @@ public class QueueImpl implements Queue
       }
 
       return removed;
-   }
-
-   // Remove message from queue, add it to the scheduled delivery list without affect reference counting
-   public synchronized void rescheduleDelivery(final long id, final long scheduledDeliveryTime)
-   {
-      Iterator<MessageReference> iterator = messageReferences.iterator();
-      while (iterator.hasNext())
-      {
-         MessageReference ref = iterator.next();
-
-         if (ref.getMessage().getMessageID() == id)
-         {
-            iterator.remove();
-
-            ref.setScheduledDeliveryTime(scheduledDeliveryTime);
-
-            if (!scheduledDeliveryHandler.checkAndSchedule(ref, backup))
-            {
-               messageReferences.addFirst(ref, ref.getMessage().getPriority());
-            }
-
-            break;
-         }
-      }
    }
 
    public synchronized MessageReference getReference(final long id)
@@ -519,25 +427,15 @@ public class QueueImpl implements Queue
 
       return null;
    }
-   
-   public long getPersistenceID()
-   {
-      return persistenceID;
-   }
-
-   public void setPersistenceID(final long id)
-   {      
-      this.persistenceID = id;
-   }
-
-   public Filter getFilter()
-   {
-      return filter;
-   }
 
    public synchronized int getMessageCount()
    {
-      return messageReferences.size() + getScheduledCount() + getDeliveringCount();
+      int count = messageReferences.size() + getScheduledCount() + getDeliveringCount();
+
+      // log.info(System.identityHashCode(this) + " message count is " + count + " ( mr:" + messageReferences.size() + "
+      // sc:" + getScheduledCount() + " dc:" + getDeliveringCount() + ")");
+
+      return count;
    }
 
    public synchronized int getScheduledCount()
@@ -555,14 +453,92 @@ public class QueueImpl implements Queue
       return deliveringCount.get();
    }
 
-   public void referenceAcknowledged(final MessageReference ref) throws Exception
+   public void acknowledge(final MessageReference ref) throws Exception
    {
-      referenceRemoved(ref);
+      ServerMessage message = ref.getMessage();
+
+      boolean durableRef = message.isDurable() && durable;
+
+      if (durableRef)
+      {
+         storageManager.storeAcknowledge(persistenceID, message.getMessageID());
+      }
+
+      postAcknowledge(ref);
    }
 
-   public void referenceCancelled()
+   public void acknowledge(final Transaction tx, final MessageReference ref) throws Exception
    {
-      deliveringCount.decrementAndGet();
+      ServerMessage message = ref.getMessage();
+
+      boolean durableRef = message.isDurable() && durable;
+
+      if (durableRef)
+      {
+         storageManager.storeAcknowledgeTransactional(tx.getID(), persistenceID, message.getMessageID());
+
+         tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
+      }
+
+      getRefsOperation(tx).addAck(ref);
+   }
+
+   public void reacknowledge(final Transaction tx, final MessageReference ref) throws Exception
+   {
+      ServerMessage message = ref.getMessage();
+
+      if (message.isDurable() && durable)
+      {
+         tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
+      }
+
+      getRefsOperation(tx).addAck(ref);
+   }
+
+   private final RefsOperation getRefsOperation(final Transaction tx)
+   {
+      RefsOperation oper = (RefsOperation)tx.getProperty(TransactionPropertyIndexes.REFS_OPERATION);
+
+      if (oper == null)
+      {
+         oper = new RefsOperation();
+
+         tx.putProperty(TransactionPropertyIndexes.REFS_OPERATION, oper);
+
+         tx.addOperation(oper);
+      }
+
+      return oper;
+   }
+
+   public void cancel(final Transaction tx, final MessageReference reference) throws Exception
+   {
+      getRefsOperation(tx).addAck(reference);
+   }
+
+   public void expire(final MessageReference ref) throws Exception
+   {
+      SimpleString expiryAddress = queueSettingsRepository.getMatch(name.toString()).getExpiryAddress();
+
+      if (expiryAddress != null)
+      {
+         Bindings bindingList = postOffice.getBindingsForAddress(expiryAddress);
+
+         if (bindingList.getBindings().isEmpty())
+         {
+            log.warn("Message has expired. No bindings for Expiry Address " + expiryAddress + " so dropping it");
+         }
+         else
+         {
+            move(expiryAddress, ref, true);
+         }
+      }
+      else
+      {
+         log.warn("Message has expired. No expiry queue configured for queue " + name + " so dropping it");
+
+         acknowledge(ref);
+      }
    }
 
    public void referenceHandled()
@@ -585,16 +561,12 @@ public class QueueImpl implements Queue
       return messagesAdded.get();
    }
 
-   public synchronized int deleteAllReferences(final StorageManager storageManager,
-                                               final PostOffice postOffice,
-                                               final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
-   {      
-      return deleteMatchingReferences(null, storageManager, postOffice, queueSettingsRepository);
+   public int deleteAllReferences() throws Exception
+   {
+      return deleteMatchingReferences(null);
    }
 
-   public synchronized int deleteMatchingReferences(final Filter filter, final StorageManager storageManager,
-                                                    final PostOffice postOffice,
-                                                    final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   public synchronized int deleteMatchingReferences(final Filter filter) throws Exception
    {
       int count = 0;
 
@@ -609,7 +581,7 @@ public class QueueImpl implements Queue
          if (filter == null || filter.match(ref.getMessage()))
          {
             deliveringCount.incrementAndGet();
-            ref.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
+            acknowledge(tx, ref);
             iter.remove();
             count++;
          }
@@ -621,7 +593,7 @@ public class QueueImpl implements Queue
          if (filter == null || filter.match(messageReference.getMessage()))
          {
             deliveringCount.incrementAndGet();
-            messageReference.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
+            acknowledge(tx, messageReference);
             count++;
          }
       }
@@ -631,9 +603,7 @@ public class QueueImpl implements Queue
       return count;
    }
 
-   public synchronized boolean deleteReference(final long messageID, final StorageManager storageManager,
-                                               final PostOffice postOffice,
-                                               final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   public synchronized boolean deleteReference(final long messageID) throws Exception
    {
       boolean deleted = false;
 
@@ -647,7 +617,7 @@ public class QueueImpl implements Queue
          if (ref.getMessage().getMessageID() == messageID)
          {
             deliveringCount.incrementAndGet();
-            ref.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
+            acknowledge(tx, ref);
             iter.remove();
             deleted = true;
             break;
@@ -659,10 +629,7 @@ public class QueueImpl implements Queue
       return deleted;
    }
 
-   public synchronized boolean expireMessage(final long messageID,
-                                             final StorageManager storageManager,
-                                             final PostOffice postOffice,
-                                             final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   public synchronized boolean expireMessage(final long messageID) throws Exception
    {
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -672,7 +639,7 @@ public class QueueImpl implements Queue
          if (ref.getMessage().getMessageID() == messageID)
          {
             deliveringCount.incrementAndGet();
-            ref.expire(storageManager, postOffice, queueSettingsRepository);
+            expire(ref);
             iter.remove();
             return true;
          }
@@ -680,10 +647,7 @@ public class QueueImpl implements Queue
       return false;
    }
 
-   public int expireMessages(final Filter filter,
-                             final StorageManager storageManager,
-                             final PostOffice postOffice,
-                             final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   public synchronized int expireMessages(final Filter filter) throws Exception
    {
       Transaction tx = new TransactionImpl(storageManager);
 
@@ -696,7 +660,7 @@ public class QueueImpl implements Queue
          if (filter == null || filter.match(ref.getMessage()))
          {
             deliveringCount.incrementAndGet();
-            ref.expire(tx, storageManager, postOffice, queueSettingsRepository);
+            expire(tx, ref);
             iter.remove();
             count++;
          }
@@ -707,26 +671,18 @@ public class QueueImpl implements Queue
       return count;
    }
 
-   public void expireMessages(final StorageManager storageManager,
-                              final PostOffice postOffice,
-                              final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   public synchronized void expireMessages() throws Exception
    {
       for (MessageReference expiringMessageReference : expiringMessageReferences)
       {
          if (expiringMessageReference.getMessage().isExpired())
          {
-            expireMessage(expiringMessageReference.getMessage().getMessageID(),
-                          storageManager,
-                          postOffice,
-                          queueSettingsRepository);
+            expireMessage(expiringMessageReference.getMessage().getMessageID());
          }
       }
    }
 
-   public boolean sendMessageToDeadLetterAddress(final long messageID,
-                                                 final StorageManager storageManager,
-                                                 final PostOffice postOffice,
-                                                 final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   public synchronized boolean sendMessageToDeadLetterAddress(final long messageID) throws Exception
    {
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -736,7 +692,7 @@ public class QueueImpl implements Queue
          if (ref.getMessage().getMessageID() == messageID)
          {
             deliveringCount.incrementAndGet();
-            ref.sendToDeadLetterAddress(storageManager, postOffice, queueSettingsRepository);
+            sendToDeadLetterAddress(ref);
             iter.remove();
             return true;
          }
@@ -744,11 +700,7 @@ public class QueueImpl implements Queue
       return false;
    }
 
-   public boolean moveMessage(final long messageID,
-                              final SimpleString toAddress,
-                              final StorageManager storageManager,
-                              final PostOffice postOffice,
-                              final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   public synchronized boolean moveMessage(final long messageID, final SimpleString toAddress) throws Exception
    {
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -757,20 +709,16 @@ public class QueueImpl implements Queue
          MessageReference ref = iter.next();
          if (ref.getMessage().getMessageID() == messageID)
          {
-            deliveringCount.incrementAndGet();
-            ref.move(toAddress, storageManager, postOffice, queueSettingsRepository);
             iter.remove();
+            deliveringCount.incrementAndGet();
+            move(toAddress, ref);
             return true;
          }
       }
       return false;
    }
 
-   public synchronized int moveMessages(final Filter filter,
-                                        final SimpleString toAddress,
-                                        final StorageManager storageManager,
-                                        final PostOffice postOffice,
-                                        final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   public synchronized int moveMessages(final Filter filter, final SimpleString toAddress) throws Exception
    {
       Transaction tx = new TransactionImpl(storageManager);
 
@@ -783,7 +731,7 @@ public class QueueImpl implements Queue
          if (filter == null || filter.match(ref.getMessage()))
          {
             deliveringCount.incrementAndGet();
-            ref.move(toAddress, tx, storageManager, postOffice, queueSettingsRepository, false);
+            move(toAddress, tx, ref, false);
             iter.remove();
             count++;
          }
@@ -795,8 +743,9 @@ public class QueueImpl implements Queue
          if (filter == null || filter.match(ref.getMessage()))
          {
             deliveringCount.incrementAndGet();
-            ref.move(toAddress, tx, storageManager, postOffice, queueSettingsRepository, false);
-            ref.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
+            move(toAddress, tx, ref, false);
+            // ref.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
+            acknowledge(tx, ref);
             count++;
          }
       }
@@ -806,11 +755,7 @@ public class QueueImpl implements Queue
       return count;
    }
 
-   public boolean changeMessagePriority(final long messageID,
-                                        final byte newPriority,
-                                        final StorageManager storageManager,
-                                        final PostOffice postOffice,
-                                        final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   public synchronized boolean changeMessagePriority(final long messageID, final byte newPriority) throws Exception
    {
       List<MessageReference> refs = list(null);
       for (MessageReference ref : refs)
@@ -824,7 +769,7 @@ public class QueueImpl implements Queue
 
             // FIXME - why deleting the reference?? This will delete it from storage!!
 
-            deleteReference(messageID, storageManager, postOffice, queueSettingsRepository);
+            deleteReference(messageID);
             addLast(ref);
             return true;
          }
@@ -842,11 +787,6 @@ public class QueueImpl implements Queue
       this.backup = true;
 
       this.direct = false;
-   }
-
-   public MessageReference removeFirst()
-   {
-      return messageReferences.removeFirst();
    }
 
    public synchronized boolean activate()
@@ -922,6 +862,181 @@ public class QueueImpl implements Queue
 
    // Private
    // ------------------------------------------------------------------------------
+
+   private void addSizeToPaging(final MessageReference ref) throws Exception
+   {
+      ServerMessage message = ref.getMessage();
+      
+      PagingStore store = pagingManager.getPageStore(message.getDestination());
+      
+      if (!message.isStored())
+      {
+         store.addSize(message.getMemoryEstimate());
+      }
+
+      store.addSize(ref.getMemoryEstimate());
+   }
+     
+   private void move(final SimpleString toAddress, final MessageReference ref) throws Exception
+   {
+      move(toAddress, ref, false);
+   }
+
+   private void move(final SimpleString toAddress,
+                     final Transaction tx,
+                     final MessageReference ref,
+                     final boolean expiry) throws Exception
+   {
+      ServerMessage copyMessage = makeCopy(ref, expiry);
+
+      copyMessage.setDestination(toAddress);
+
+      postOffice.route(copyMessage, tx);
+
+      acknowledge(tx, ref);
+   }
+
+   private ServerMessage makeCopy(final MessageReference ref, final boolean expiry) throws Exception
+   {
+      ServerMessage message = ref.getMessage();
+      /*
+       We copy the message and send that to the dla/expiry queue - this is
+       because otherwise we may end up with a ref with the same message id in the
+       queue more than once which would barf - this might happen if the same message had been
+       expire from multiple subscriptions of a topic for example
+       We set headers that hold the original message destination, expiry time
+       and original message id
+      */
+
+      ServerMessage copy = message.copy();
+
+      // (JBMESSAGING-1468)
+      // FIXME - this won't work with replication!!!!!!!!!!!
+      // FIXME - this won't work with LargeMessages also!!!!
+      long newMessageId = storageManager.generateUniqueID();
+
+      copy.setMessageID(newMessageId);
+
+      SimpleString originalQueue = copy.getDestination();
+      copy.putStringProperty(HDR_ORIGINAL_DESTINATION, originalQueue);
+      copy.putLongProperty(HDR_ORIG_MESSAGE_ID, message.getMessageID());
+
+      // reset expiry
+      copy.setExpiration(0);
+      if (expiry)
+      {
+         long actualExpiryTime = System.currentTimeMillis();
+
+         copy.putLongProperty(HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
+      }
+
+      return copy;
+   }
+
+   private void expire(final Transaction tx, final MessageReference ref) throws Exception
+   {
+      SimpleString expiryAddress = queueSettingsRepository.getMatch(name.toString()).getExpiryAddress();
+
+      if (expiryAddress != null)
+      {
+         Bindings bindingList = postOffice.getBindingsForAddress(expiryAddress);
+
+         if (bindingList.getBindings().isEmpty())
+         {
+            log.warn("Message has expired. No bindings for Expiry Address " + expiryAddress + " so dropping it");
+         }
+         else
+         {
+            move(expiryAddress, tx, ref, true);
+         }
+      }
+      else
+      {
+         log.warn("Message has expired. No expiry queue configured for queue " + name + " so dropping it");
+
+         acknowledge(tx, ref);
+      }
+   }
+
+   private void sendToDeadLetterAddress(final MessageReference ref) throws Exception
+   {
+      SimpleString deadLetterAddress = queueSettingsRepository.getMatch(name.toString()).getDeadLetterAddress();
+      if (deadLetterAddress != null)
+      {
+         Bindings bindingList = postOffice.getBindingsForAddress(deadLetterAddress);
+
+         if (bindingList.getBindings().isEmpty())
+         {
+            log.warn("Message has exceeded max delivery attempts. No bindings for Dead Letter Address " + deadLetterAddress +
+                     " so dropping it");
+         }
+         else
+         {
+            move(deadLetterAddress, ref, false);
+         }
+      }
+      else
+      {
+         log.warn("Message has exceeded max delivery attempts. No Dead Letter Address configured for queue " + name +
+                  " so dropping it");
+
+         acknowledge(ref);
+      }
+   }
+
+   private void move(final SimpleString address, final MessageReference ref, final boolean expiry) throws Exception
+   {
+      Transaction tx = new TransactionImpl(storageManager);
+
+      // FIXME: JBMESSAGING-1468
+      ServerMessage copyMessage = makeCopy(ref, expiry);
+
+      copyMessage.setDestination(address);
+
+      postOffice.route(copyMessage, tx);
+
+      acknowledge(tx, ref);
+
+      tx.commit();
+   }
+
+   private boolean cancel(final MessageReference reference) throws Exception
+   {
+      ServerMessage message = reference.getMessage();
+
+      if (message.isDurable() && durable)
+      {
+         storageManager.updateDeliveryCount(reference);
+      }
+
+      QueueSettings queueSettings = queueSettingsRepository.getMatch(name.toString());
+
+      int maxDeliveries = queueSettings.getMaxDeliveryAttempts();
+
+      if (maxDeliveries > 0 && reference.getDeliveryCount() >= maxDeliveries)
+      {
+         log.warn("Message has reached maximum delivery attempts, sending it to Dead Letter Address");
+
+         sendToDeadLetterAddress(reference);
+
+         return false;
+      }
+      else
+      {
+         long redeliveryDelay = queueSettings.getRedeliveryDelay();
+
+         if (redeliveryDelay > 0)
+         {
+            reference.setScheduledDeliveryTime(System.currentTimeMillis() + redeliveryDelay);
+
+            storageManager.updateScheduledDeliveryTime(reference);
+         }
+
+         deliveringCount.decrementAndGet();
+
+         return true;
+      }
+   }
 
    /*
     * Attempt to deliver all the messages in the queue
@@ -1049,6 +1164,7 @@ public class QueueImpl implements Queue
          {
             expiringMessageReferences.addIfAbsent(ref);
          }
+
          if (first)
          {
             messageReferences.addFirst(ref, ref.getMessage().getPriority());
@@ -1083,31 +1199,56 @@ public class QueueImpl implements Queue
       return status;
    }
 
-   /**
-    * To be called when a reference is removed from the queue.
-    * @param ref
-    * @throws Exception
-    */
-   private void referenceRemoved(final MessageReference ref) throws Exception
+   private void removeExpiringReference(final MessageReference ref) throws Exception
    {
       if (ref.getMessage().getExpiration() > 0)
       {
          expiringMessageReferences.remove(ref);
       }
+   }
 
-      deliveringCount.decrementAndGet();
+   private void postAcknowledge(final MessageReference ref) throws Exception
+   {
+      ServerMessage message = ref.getMessage();
+
+      QueueImpl queue = (QueueImpl)ref.getQueue();
+
+      boolean durableRef = message.isDurable() && queue.durable;
+
+      if (durableRef)
+      {
+         int count = message.decrementDurableRefCount();
+
+         if (count == 0)
+         {
+            // Note - we MUST store the delete after the preceeding ack has been committed to storage, we cannot combine
+            // the last ack and delete into a single delete.
+            // This is because otherwise we could have a situation where the same message is being acked concurrently
+            // from two different queues on different sessions.
+            // One decrements the ref count, then the other stores a delete, the delete gets committed, but the first
+            // ack isn't committed, then the server crashes and on
+            // recovery the message is deleted even though the other ack never committed
+            storageManager.deleteMessage(message.getMessageID());
+         }
+      }
+
+      queue.removeExpiringReference(ref);
+
+      queue.deliveringCount.decrementAndGet();
 
       // TODO: We could optimize this by storing the paging-store for the address on the Queue. We would need to know
       // the Address for the Queue
       PagingStore store = null;
 
+      // FIXME - this shouldn't be called when references are expired etc
       if (pagingManager != null)
       {
          store = pagingManager.getPageStore(ref.getMessage().getDestination());
+
          store.addSize(-ref.getMemoryEstimate());
       }
 
-      if (ref.getMessage().decrementRefCount() == 0)
+      if (message.decrementRefCount() == 0)
       {
          if (store != null)
          {
@@ -1132,133 +1273,86 @@ public class QueueImpl implements Queue
          }
       }
    }
-   
-   //TODO - this can be further optimised to have one PageMessageOperation per message, NOT one which uses a shared list
-   private class PageMessageOperation implements TransactionOperation
+
+   private class RefsOperation implements TransactionOperation
    {
-      public void afterCommit(final Transaction tx) throws Exception
-      { 
+      List<MessageReference> refsToAdd = new ArrayList<MessageReference>();
+
+      List<MessageReference> refsToAck = new ArrayList<MessageReference>();
+
+      void addRef(final MessageReference ref)
+      {
+         refsToAdd.add(ref);
+      }
+
+      void addAck(final MessageReference ref)
+      {
+         refsToAck.add(ref);
+      }
+
+      public void beforeCommit(final Transaction tx) throws Exception
+      {
       }
 
       public void afterPrepare(final Transaction tx) throws Exception
-      {  
+      {
       }
 
       public void afterRollback(final Transaction tx) throws Exception
       {
-      }
+         Map<QueueImpl, LinkedList<MessageReference>> queueMap = new HashMap<QueueImpl, LinkedList<MessageReference>>();
 
-      public void beforeCommit(final Transaction tx) throws Exception
-      { 
-         if (tx.getState() != Transaction.State.PREPARED)
+         for (MessageReference ref : refsToAck)
          {
-            pageMessages(tx);
-         }
-      }
-
-      public void beforePrepare(final Transaction tx) throws Exception
-      { 
-         pageMessages(tx);
-      }
-
-      public void beforeRollback(final Transaction tx) throws Exception
-      {
-      }
-      
-      private void pageMessages(final Transaction tx) throws Exception
-      {
-         List<ServerMessage> messages = (List<ServerMessage>)tx.getProperty(TransactionPropertyIndexes.PAGED_MESSAGES);
-         
-         if (messages != null && !messages.isEmpty())
-         {
-            PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
-            
-            if (pageTransaction == null)
+            if (cancel(ref))
             {
-               pageTransaction = new PageTransactionInfoImpl(tx.getID());
-               
-               tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pageTransaction);
-               
-               // To avoid a race condition where depage happens before the transaction is completed, we need to inform the
-               // pager about this transaction is being processed
-               pagingManager.addTransaction(pageTransaction);
-            }
-   
-            boolean pagingPersistent = false;
-   
-            HashSet<SimpleString> pagedDestinationsToSync = new HashSet<SimpleString>();
-   
-            // We only need to add the dupl id header once per transaction
-            boolean first = true;
-            for (ServerMessage message : messages)
-            {
-               // http://wiki.jboss.org/wiki/JBossMessaging2Paging
-               // Explained under Transaction On Paging. (This is the item B)
-               if (pagingManager.page(message, tx.getID(), first))
+               LinkedList<MessageReference> toCancel = queueMap.get(ref.getQueue());
+
+               if (toCancel == null)
                {
-                  if (message.isDurable())
+                  toCancel = new LinkedList<MessageReference>();
+
+                  queueMap.put((QueueImpl)ref.getQueue(), toCancel);
+               }
+
+               toCancel.addFirst(ref);
+            }
+         }
+
+         for (Map.Entry<QueueImpl, LinkedList<MessageReference>> entry : queueMap.entrySet())
+         {
+            LinkedList<MessageReference> refs = entry.getValue();
+
+            QueueImpl queue = entry.getKey();
+
+            synchronized (queue)
+            {
+               for (MessageReference ref : refs)
+               {
+                  ServerMessage msg = ref.getMessage();
+
+                  if (!scheduledDeliveryHandler.checkAndSchedule(ref, backup))
                   {
-                     // We only create pageTransactions if using persistent messages
-                     pageTransaction.increment();
-                     pagingPersistent = true;
-                     pagedDestinationsToSync.add(message.getDestination());
+                     queue.messageReferences.addFirst(ref, msg.getPriority());
                   }
                }
-               else
-               {
-                  // This could happen when the PageStore left the pageState
-                                     
-                  //TODO is this correct - don't we lose transactionality here???
-                  postOffice.route(message, null);
-               }
-               first = false;
+
+               queue.deliver();
             }
-   
-            if (pagingPersistent)
-            {
-               tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
-               
-               if (!pagedDestinationsToSync.isEmpty())
-               {
-                  pagingManager.sync(pagedDestinationsToSync);
-                  storageManager.storePageTransaction(tx.getID(), pageTransaction);
-               }
-            }
-            
-            messages.clear();
          }
-      }
-      
-   }
-
-   private class AddMessageOperation implements TransactionOperation
-   {
-      private final MessageReference ref;
-      
-      private final boolean first;
-
-      AddMessageOperation(final MessageReference ref, final boolean first)
-      {
-         this.ref = ref;
-         
-         this.first = first;
       }
 
       public void afterCommit(final Transaction tx) throws Exception
       {
-         addLast(ref);
-      }
+         for (MessageReference ref : refsToAdd)
+         {
+            ref.getQueue().addLast(ref);
+         }
 
-      public void afterPrepare(final Transaction tx) throws Exception
-      {
-      }
-
-      public void afterRollback(final Transaction tx) throws Exception
-      {
-      }
-
-      public void beforeCommit(final Transaction tx) throws Exception
-      {         
+         for (MessageReference ref : refsToAck)
+         {
+            postAcknowledge(ref);
+         }
       }
 
       public void beforePrepare(final Transaction tx) throws Exception
@@ -1267,19 +1361,24 @@ public class QueueImpl implements Queue
 
       public void beforeRollback(final Transaction tx) throws Exception
       {
-         ServerMessage msg = ref.getMessage();
-         
-         PagingStore store = pagingManager.getPageStore(msg.getDestination());
-         
-         store.addSize(-ref.getMemoryEstimate());
-         
-         if (first)
+         Set<ServerMessage> msgs = new HashSet<ServerMessage>();
+
+         for (MessageReference ref : refsToAdd)
          {
-            store.addSize(-msg.getMemoryEstimate());
+            ServerMessage msg = ref.getMessage();
+
+            // Optimise this
+            PagingStore store = pagingManager.getPageStore(msg.getDestination());
+
+            store.addSize(-ref.getMemoryEstimate());
+
+            if (!msgs.contains(msg))
+            {
+               store.addSize(-msg.getMemoryEstimate());
+            }
+
+            msgs.add(msg);
          }
       }
-
    }
-
-
 }

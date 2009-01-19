@@ -136,6 +136,8 @@ public class ExpiryAddressTest extends UnitTestCase
       assertEquals(m.getBody().getString(), "heyho!");
       
       clientConsumer.close();
+      
+      clientSession.commit();
 
       // PageGlobalSize should be untouched as the message expired
       assertEquals(0, messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());

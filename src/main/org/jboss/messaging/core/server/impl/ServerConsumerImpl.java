@@ -106,10 +106,6 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final StorageManager storageManager;
 
-   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
-
-   private final PostOffice postOffice;
-
    private final java.util.Queue<MessageReference> deliveringRefs = new ConcurrentLinkedQueue<MessageReference>();
 
    private final Channel channel;
@@ -128,8 +124,6 @@ public class ServerConsumerImpl implements ServerConsumer
                              final boolean started,
                              final boolean browseOnly,
                              final StorageManager storageManager,
-                             final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-                             final PostOffice postOffice,
                              final Channel channel,
                              final boolean preAcknowledge)
    {
@@ -146,10 +140,6 @@ public class ServerConsumerImpl implements ServerConsumer
       this.browseOnly = browseOnly;
 
       this.storageManager = storageManager;
-
-      this.queueSettingsRepository = queueSettingsRepository;
-
-      this.postOffice = postOffice;
 
       this.channel = channel;
 
@@ -255,7 +245,8 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          MessageReference ref = iter.next();
          
-         ref.cancel(tx, storageManager, postOffice, queueSettingsRepository);         
+         //ref.cancel(tx, storageManager, postOffice, queueSettingsRepository);  
+         ref.getQueue().cancel(tx, ref);
       }
       
       tx.rollback();
@@ -348,11 +339,12 @@ public class ServerConsumerImpl implements ServerConsumer
 
          if (autoCommitAcks)
          {
-            doAck(ref);
+            ref.getQueue().acknowledge(ref);
          }
          else
          {
-            ref.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
+            ref.getQueue().acknowledge(tx, ref);
+            //ref.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
 
             // Del count is not actually updated in storage unless it's
             // cancelled
@@ -360,7 +352,6 @@ public class ServerConsumerImpl implements ServerConsumer
          }
       }
       while (ref.getMessage().getMessageID() != messageID);
-
    }
 
    public MessageReference getExpired(final long messageID) throws Exception
@@ -452,29 +443,6 @@ public class ServerConsumerImpl implements ServerConsumer
    // Private
    // --------------------------------------------------------------------------------------
 
-   private void doAck(final MessageReference ref) throws Exception
-   {
-      ServerMessage message = ref.getMessage();
-
-      Queue queue = ref.getQueue();
-
-      if (message.isDurable() && queue.isDurable())
-      {
-         int count = message.decrementDurableRefCount();
-
-         if (count == 0)
-         {
-            storageManager.deleteMessage(message.getMessageID());
-         }
-         else
-         {
-            storageManager.storeAcknowledge(queue.getPersistenceID(), message.getMessageID());
-         }
-      }
-
-      queue.referenceAcknowledged(ref);
-   }
-
    private void promptDelivery()
    {
       if (largeMessageSender != null)
@@ -497,7 +465,7 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          return HandleStatus.BUSY;
       }
-
+      
       lock.lock();
 
       try
@@ -537,7 +505,7 @@ public class ServerConsumerImpl implements ServerConsumer
          if (preAcknowledge)
          {
             //With pre-ack, we ack *before* sending to the client
-            doAck(ref);
+            ref.getQueue().acknowledge(ref);
          }
                   
          // TODO: get rid of the instanceof by something like message.isLargeMessage()

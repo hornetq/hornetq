@@ -22,12 +22,6 @@
 
 package org.jboss.messaging.core.server;
 
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
-import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * A reference to a message.
@@ -45,17 +39,7 @@ public interface MessageReference
    ServerMessage getMessage();
 
    MessageReference copy(Queue queue);
-
-   void acknowledge(final Transaction tx,
-                    final StorageManager storageManager,
-                    final PostOffice postOffice,
-                    final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
-
-   void reacknowledge(final Transaction tx,
-                      final StorageManager storageManager,
-                      final PostOffice postOffice,
-                      final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
-
+   
    /**
     * 
     * @return The time in the future that delivery will be delayed until, or zero if
@@ -74,39 +58,4 @@ public interface MessageReference
    void incrementDeliveryCount();
 
    Queue getQueue();
-
-   void cancel(Transaction tx,
-               StorageManager storageManager,
-               PostOffice postOffice,
-               HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
-
-   // boolean cancel(StorageManager storageManager,
-   // PostOffice postOffice,
-   // HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
-
-   void sendToDeadLetterAddress(StorageManager storageManager,
-                                PostOffice postOffice,
-                                HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
-
-   void expire(StorageManager storageManager,
-               PostOffice postOffice,
-               HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
-
-   void expire(Transaction tx,
-               StorageManager storageManager,
-               PostOffice postOffice,
-               HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
-
-   void move(SimpleString toAddress,
-             StorageManager persistenceManager,
-             PostOffice postOffice,
-             HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
-
-   void move(SimpleString toAddress,
-             Transaction tx,
-             StorageManager persistenceManager,
-             PostOffice postOffice,
-             HierarchicalRepository<QueueSettings> queueSettingsRepository,
-             boolean expiry) throws Exception;
-
 }

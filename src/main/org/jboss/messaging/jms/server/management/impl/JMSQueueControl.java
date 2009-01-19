@@ -39,7 +39,6 @@ import org.jboss.messaging.core.management.MessageCounterInfo;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounter.DayCounter;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterHelper;
-import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
@@ -76,8 +75,6 @@ public class JMSQueueControl implements JMSQueueControlMBean
 
    private final PostOffice postOffice;
 
-   private final StorageManager storageManager;
-
    private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
 
    private final MessageCounter counter;
@@ -100,8 +97,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
    public JMSQueueControl(final JBossQueue queue,
                           final Queue coreQueue,
                           final String jndiBinding,
-                          final PostOffice postOffice,
-                          final StorageManager storageManager,
+                          final PostOffice postOffice,                          
                           final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                           final MessageCounter counter)
    {
@@ -109,7 +105,6 @@ public class JMSQueueControl implements JMSQueueControlMBean
       this.coreQueue = coreQueue;
       this.binding = jndiBinding;
       this.postOffice = postOffice;
-      this.storageManager = storageManager;
       this.queueSettingsRepository = queueSettingsRepository;
       this.counter = counter;
    }
@@ -158,11 +153,6 @@ public class JMSQueueControl implements JMSQueueControlMBean
       return coreQueue.getScheduledCount();
    }
 
-   public boolean isClustered()
-   {
-      return coreQueue.isClustered();
-   }
-
    public boolean isDurable()
    {
       return coreQueue.isDurable();
@@ -185,7 +175,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
          return null;
       }
    }
-   
+
    public void setDeadLetterAddress(String deadLetterAddress) throws Exception
    {
       QueueSettings queueSettings = queueSettingsRepository.getMatch(getName());
@@ -227,7 +217,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       {
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
-      return coreQueue.deleteReference(refs.get(0).getMessage().getMessageID(), storageManager, postOffice, queueSettingsRepository);
+      return coreQueue.deleteReference(refs.get(0).getMessage().getMessageID());
    }
 
    public int removeMatchingMessages(String filterStr) throws Exception
@@ -235,7 +225,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       try
       {
          Filter filter = createFilterFromJMSSelector(filterStr);
-         return coreQueue.deleteMatchingReferences(filter, storageManager, postOffice, queueSettingsRepository);
+         return coreQueue.deleteMatchingReferences(filter);
       }
       catch (MessagingException e)
       {
@@ -245,7 +235,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
 
    public int removeAllMessages() throws Exception
    {
-      return coreQueue.deleteAllReferences(storageManager, postOffice, queueSettingsRepository);
+      return coreQueue.deleteAllReferences();
    }
 
    public TabularData listAllMessages() throws Exception
@@ -281,7 +271,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       List<MessageReference> messageRefs = coreQueue.list(filter);
       return messageRefs.size();
    }
-   
+
    public boolean expireMessage(final String messageID) throws Exception
    {
       Filter filter = createFilterForJMSMessageID(messageID);
@@ -290,10 +280,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       {
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
-      return coreQueue.expireMessage(refs.get(0).getMessage().getMessageID(),
-                                     storageManager,
-                                     postOffice,
-                                     queueSettingsRepository);
+      return coreQueue.expireMessage(refs.get(0).getMessage().getMessageID());
    }
 
    public int expireMessages(final String filterStr) throws Exception
@@ -301,7 +288,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       try
       {
          Filter filter = createFilterFromJMSSelector(filterStr);
-         return coreQueue.expireMessages(filter, storageManager, postOffice, queueSettingsRepository);
+         return coreQueue.expireMessages(filter);
       }
       catch (MessagingException e)
       {
@@ -317,10 +304,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       {
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
-      return coreQueue.sendMessageToDeadLetterAddress(refs.get(0).getMessage().getMessageID(),
-                                                      storageManager,
-                                                      postOffice,
-                                                      queueSettingsRepository);
+      return coreQueue.sendMessageToDeadLetterAddress(refs.get(0).getMessage().getMessageID());
    }
 
    public boolean changeMessagePriority(final String messageID, final int newPriority) throws Exception
@@ -336,11 +320,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       {
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
-      return coreQueue.changeMessagePriority(refs.get(0).getMessage().getMessageID(),
-                                             (byte)newPriority,
-                                             storageManager,
-                                             postOffice,
-                                             queueSettingsRepository);
+      return coreQueue.changeMessagePriority(refs.get(0).getMessage().getMessageID(), (byte)newPriority);
    }
 
    public boolean moveMessage(String messageID, String otherQueueName) throws Exception
@@ -357,7 +337,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
 
-      return coreQueue.moveMessage(refs.get(0).getMessage().getMessageID(), binding.getAddress(), storageManager, postOffice, queueSettingsRepository);
+      return coreQueue.moveMessage(refs.get(0).getMessage().getMessageID(), binding.getAddress());
    }
 
    public int moveMatchingMessages(String filterStr, String otherQueueName) throws Exception
@@ -369,7 +349,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       }
 
       Filter filter = createFilterFromJMSSelector(filterStr);
-      return coreQueue.moveMessages(filter, otherBinding.getAddress(), storageManager, postOffice, queueSettingsRepository);
+      return coreQueue.moveMessages(filter, otherBinding.getAddress());
    }
 
    public int moveAllMessages(String otherQueueName) throws Exception

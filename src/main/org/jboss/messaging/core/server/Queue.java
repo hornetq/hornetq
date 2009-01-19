@@ -22,15 +22,11 @@
 
 package org.jboss.messaging.core.server;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -44,18 +40,19 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface Queue extends Bindable
 {
-   void addLast(MessageReference ref);
+   MessageReference reroute(ServerMessage message, Transaction tx) throws Exception;
 
-   void addFirst(MessageReference ref);
+   SimpleString getName();
 
-   /**
-    * This method is used to add a List of MessageReferences atomically at the head of the list.
-    * Useful when cancelling messages and guaranteeing ordering
-    * @param list
-    */
-   void addListFirst(LinkedList<MessageReference> list);
+   long getPersistenceID();
 
-   void deliverAsync(Executor executor);
+   void setPersistenceID(long id);
+
+   Filter getFilter();
+
+   boolean isDurable();
+
+   boolean isTemporary();
 
    void addConsumer(Consumer consumer);
 
@@ -63,15 +60,25 @@ public interface Queue extends Bindable
 
    int getConsumerCount();
 
+   void addLast(MessageReference ref);
+
+   void addFirst(MessageReference ref);
+
+   void acknowledge(MessageReference ref) throws Exception;
+
+   void acknowledge(Transaction tx, MessageReference ref) throws Exception;
+   
+   void reacknowledge(Transaction tx, MessageReference ref) throws Exception;
+
+   void cancel(Transaction tx, MessageReference ref) throws Exception;
+
+   void deliverAsync(Executor executor);
+
    List<MessageReference> list(Filter filter);
 
    int getMessageCount();
 
    int getDeliveringCount();
-
-   void referenceAcknowledged(MessageReference ref) throws Exception;
-
-   void referenceCancelled();
 
    void referenceHandled();
 
@@ -83,76 +90,39 @@ public interface Queue extends Bindable
 
    void setDistributionPolicy(Distributor policy);
 
-   boolean isClustered();
-
-   boolean isDurable();
-
-   boolean isTemporary();
-
-   SimpleString getName();
-
    int getMessagesAdded();
 
    MessageReference removeReferenceWithID(long id) throws Exception;
 
    /** Remove message from queue, add it to the scheduled delivery list without affect reference counting */
-   void rescheduleDelivery(long id, long scheduledDeliveryTime);
+   //void rescheduleDelivery(long id, long scheduledDeliveryTime);
 
    MessageReference getReference(long id);
 
-   int deleteAllReferences(StorageManager storageManager,
-                           PostOffice postOffice,
-                           HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+   int deleteAllReferences() throws Exception;
 
-   boolean deleteReference(long messageID,
-                           StorageManager storageManager,
-                           PostOffice postOffice,
-                           HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+   boolean deleteReference(long messageID) throws Exception;
 
-   int deleteMatchingReferences(Filter filter,
-                                StorageManager storageManager,
-                                PostOffice postOffice,
-                                HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+   int deleteMatchingReferences(Filter filter) throws Exception;
 
-   boolean expireMessage(long messageID,
-                         StorageManager storageManager,
-                         PostOffice postOffice,
-                         HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+   boolean expireMessage(long messageID) throws Exception;
 
    /**
-    * Flagged all the messages in the queue which matches the filter as <em>expired</em>
+    * Expire all the messages in the queue which matches the filter
     */
-   int expireMessages(Filter filter,
-                      StorageManager storageManager,
-                      PostOffice postOffice,
-                      HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+   int expireMessages(Filter filter) throws Exception;
 
-   void expireMessages(final StorageManager storageManager,
-                       final PostOffice postOffice,
-                       final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+   void expireMessages() throws Exception;
 
-   boolean sendMessageToDeadLetterAddress(long messageID,
-                                          StorageManager storageManager,
-                                          PostOffice postOffice,
-                                          HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+   void expire(MessageReference ref) throws Exception;
 
-   boolean changeMessagePriority(long messageID,
-                                 byte newPriority,
-                                 StorageManager storageManager,
-                                 PostOffice postOffice,
-                                 HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+   boolean sendMessageToDeadLetterAddress(long messageID) throws Exception;
 
-   boolean moveMessage(long messageID,
-                       SimpleString toAddress,
-                       StorageManager storageManager,
-                       PostOffice postOffice,
-                       HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+   boolean changeMessagePriority(long messageID, byte newPriority) throws Exception;
 
-   int moveMessages(Filter filter,
-                    SimpleString toAddress,
-                    StorageManager storageManager,
-                    PostOffice postOffice,
-                    HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+   boolean moveMessage(long messageID, SimpleString toAddress) throws Exception;
+
+   int moveMessages(Filter filter, SimpleString toAddress) throws Exception;
 
    void setBackup();
 
@@ -162,11 +132,8 @@ public interface Queue extends Bindable
 
    boolean isBackup();
 
-   MessageReference removeFirst();
-
    boolean consumerFailedOver();
 
    // Only used in testing
    void deliverNow();
-
 }

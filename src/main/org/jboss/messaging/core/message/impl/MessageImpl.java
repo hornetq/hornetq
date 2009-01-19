@@ -55,20 +55,22 @@ public abstract class MessageImpl implements Message
 
    private static final Logger log = Logger.getLogger(MessageImpl.class);
 
-   public static final SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("JBM_ACTUAL_EXPIRY");
+   public static final SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("_JBM_ACTUAL_EXPIRY");
 
-   public static final SimpleString HDR_ORIGIN_QUEUE = new SimpleString("JBM_ORIG_DESTINATION");
+   public static final SimpleString HDR_ORIGINAL_DESTINATION = new SimpleString("_JBM_ORIG_DESTINATION");
 
-   public static final SimpleString HDR_ORIG_MESSAGE_ID = new SimpleString("JBM_ORIG_MESSAGE_ID");
+   public static final SimpleString HDR_ORIG_MESSAGE_ID = new SimpleString("_JBM_ORIG_MESSAGE_ID");
 
-   public static final SimpleString HDR_GROUP_ID = new SimpleString("JBM_GROUP_ID");
+   public static final SimpleString HDR_GROUP_ID = new SimpleString("_JBM_GROUP_ID");
 
-   public static final SimpleString HDR_SCHEDULED_DELIVERY_TIME = new SimpleString("JBM_SCHED_DELIVERY");
+   public static final SimpleString HDR_SCHEDULED_DELIVERY_TIME = new SimpleString("_JBM_SCHED_DELIVERY");
    
-   public static final SimpleString HDR_DUPLICATE_DETECTION_ID = new SimpleString("JBM_DUPL_ID");
+   public static final SimpleString HDR_DUPLICATE_DETECTION_ID = new SimpleString("_JBM_DUPL_ID");
    
-   public static final SimpleString HDR_MAX_HOPS = new SimpleString("JBM_MAX_HOPS");
-
+   public static final SimpleString HDR_MAX_HOPS = new SimpleString("_JBM_MAX_HOPS");
+   
+   public static final SimpleString HDR_ROUTE_TO_PREFIX = new SimpleString("_JBM_ROUTE_TO:");
+   
    // Attributes ----------------------------------------------------
 
    protected long messageID;
@@ -89,7 +91,7 @@ public abstract class MessageImpl implements Message
    private byte priority;
 
    private MessagingBuffer body;
-
+   
    // Constructors --------------------------------------------------
 
    protected MessageImpl()
@@ -154,7 +156,7 @@ public abstract class MessageImpl implements Message
       buffer.putInt(getBodySize());
       encodeBody(buffer);
    }
-
+   
    public int getEncodeSize()
    {
       return getPropertiesEncodeSize() + SIZE_INT + getBodySize();

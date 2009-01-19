@@ -176,7 +176,7 @@ public class MessageReferenceImplTest extends UnitTestCase
 //      
 //      EasyMock.expect(serverMessage.getDestination()).andReturn(queueName);
 //      
-//      serverMessage.putStringProperty(MessageImpl.HDR_ORIGIN_QUEUE, queueName);
+//      serverMessage.putStringProperty(MessageImpl.HDR_ORIGINAL_DESTINATION, queueName);
 //      serverMessage.setExpiration(0);
 //      serverMessage.setDestination(dlqName);
 //      
@@ -275,7 +275,7 @@ public class MessageReferenceImplTest extends UnitTestCase
 //      EasyMock.expect(serverMessage.copy()).andReturn(serverMessage);
 //      //serverMessage.setMessageID(2);
 //      EasyMock.expect(serverMessage.getDestination()).andReturn(queueName);
-//      serverMessage.putStringProperty(MessageImpl.HDR_ORIGIN_QUEUE, queueName);
+//      serverMessage.putStringProperty(MessageImpl.HDR_ORIGINAL_DESTINATION, queueName);
 //      serverMessage.setExpiration(0);
 //      serverMessage.putLongProperty(EasyMock.eq(MessageImpl.HDR_ACTUAL_EXPIRY_TIME), EasyMock.anyLong());
 //      EasyMock.expect(expQBinding.getAddress()).andStubReturn(expQName);
@@ -326,7 +326,7 @@ public class MessageReferenceImplTest extends UnitTestCase
 //      EasyMock.expect(persistenceManager.generateUniqueID()).andReturn(newMessageID);
 //      copyMessage.setMessageID(newMessageID);
 //      EasyMock.expect(copyMessage.getDestination()).andReturn(fromAddress);
-//      copyMessage.putStringProperty(MessageImpl.HDR_ORIGIN_QUEUE, fromAddress);
+//      copyMessage.putStringProperty(MessageImpl.HDR_ORIGINAL_DESTINATION, fromAddress);
 //      copyMessage.setExpiration(0);
 //      EasyMock.expect(toBinding.getAddress()).andStubReturn(toAddress);
 //      copyMessage.setDestination(toAddress);

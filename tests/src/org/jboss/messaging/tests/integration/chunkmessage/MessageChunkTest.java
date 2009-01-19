@@ -67,7 +67,7 @@ public class MessageChunkTest extends ChunkTestBase
    // Constants -----------------------------------------------------
 
    final static int RECEIVE_WAIT_TIME = 10000;
-   
+
    // Attributes ----------------------------------------------------
 
    static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
@@ -160,7 +160,7 @@ public class MessageChunkTest extends ChunkTestBase
          mockFactory.setBlockOnPersistentSend(false);
          mockFactory.setBlockOnAcknowledge(false);
 
-         session = mockFactory.createSession(null, null, false, true, true, false,  0);
+         session = mockFactory.createSession(null, null, false, true, true, false, 0);
 
          callback.session = session;
 
@@ -205,7 +205,7 @@ public class MessageChunkTest extends ChunkTestBase
 
       checkFileRead(file, 13333);
    }
-   
+
    public void testClearOnClientBuffer() throws Exception
    {
       clearData();
@@ -215,7 +215,7 @@ public class MessageChunkTest extends ChunkTestBase
 
       final int numberOfIntegers = 10;
       final int numberOfMessages = 100;
-      
+
       try
       {
          ClientSessionFactory sf = createInVMFactory();
@@ -227,7 +227,7 @@ public class MessageChunkTest extends ChunkTestBase
          ClientSession session = sf.createSession(null, null, false, true, false, false, 0);
 
          session.createQueue(ADDRESS, ADDRESS, null, true, false);
-         
+
          messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize();
 
          ClientProducer producer = session.createProducer(ADDRESS);
@@ -243,16 +243,15 @@ public class MessageChunkTest extends ChunkTestBase
             producer.send(message);
          }
 
-
          ClientConsumer consumer = session.createFileConsumer(new File(getClientLargeMessagesDir()), ADDRESS);;
 
          File clientfiles = new File(getClientLargeMessagesDir());
-         
+
          session.start();
-         
+
          ClientMessage msg = consumer.receive(1000);
          msg.acknowledge();
-         
+
          for (int i = 0; i < 100; i++)
          {
             if (clientfiles.listFiles().length > 0)
@@ -261,16 +260,14 @@ public class MessageChunkTest extends ChunkTestBase
             }
             Thread.sleep(100);
          }
-         
+
          assertTrue(clientfiles.listFiles().length > 0);
 
          session.close();
-         
-         
+
          assertEquals(1, clientfiles.list().length); // 1 message was received, that should be kept
 
          validateNoFilesOnLargeDir();
-         
 
       }
       finally
@@ -283,7 +280,7 @@ public class MessageChunkTest extends ChunkTestBase
          {
          }
       }
-      
+
    }
 
    public void testMessageChunkFilePersistence() throws Exception
@@ -296,11 +293,11 @@ public class MessageChunkTest extends ChunkTestBase
       testChunks(true, false, false, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
    }
 
-//Uncomment when https://jira.jboss.org/jira/browse/JBMESSAGING-1472 is complete   
-//   public void testMessageChunkFilePersistenceBlockedPreCommit() throws Exception
-//   {
-//      testChunks(true, false, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
-//   }
+   // Uncomment when https://jira.jboss.org/jira/browse/JBMESSAGING-1472 is complete
+   // public void testMessageChunkFilePersistenceBlockedPreCommit() throws Exception
+   // {
+   // testChunks(true, false, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
+   // }
 
    public void testMessageChunkFilePersistenceDelayed() throws Exception
    {
@@ -320,7 +317,6 @@ public class MessageChunkTest extends ChunkTestBase
    public void testPageOnLargeMessage() throws Exception
    {
       testPageOnLargeMessage(true, false);
-
    }
 
    public void testPageOnLargeMessageNullPersistence() throws Exception
@@ -393,46 +389,41 @@ public class MessageChunkTest extends ChunkTestBase
 
          session.createQueue(ADDRESS, queue[0], null, true, false);
          session.createQueue(ADDRESS, queue[1], null, true, false);
-         
 
          int numberOfIntegers = 100000;
 
          Message clientFile = createLargeClientMessage(session, numberOfIntegers);
-         //Message clientFile = createLargeClientMessage(session, numberOfIntegers);
+         // Message clientFile = createLargeClientMessage(session, numberOfIntegers);
 
          ClientProducer producer = session.createProducer(ADDRESS);
-         
-
 
          session.start();
-         
+
          producer.send(clientFile);
 
          producer.close();
 
-         
          ClientConsumer consumer = session.createFileConsumer(new File(getClientLargeMessagesDir()), queue[1]);
          ClientMessage msg = consumer.receive(RECEIVE_WAIT_TIME);
-         assertNull(consumer.receive(1000)); 
+         assertNull(consumer.receive(1000));
          assertNotNull(msg);
-         
+
          msg.acknowledge();
          consumer.close();
-         
+
          System.out.println("Stopping");
 
          session.stop();
-         
+
          ClientConsumer consumer1 = session.createFileConsumer(new File(getClientLargeMessagesDir()), queue[0]);
 
          session.start();
-         
 
          msg = consumer1.receive(RECEIVE_WAIT_TIME);
          assertNotNull(msg);
          msg.acknowledge();
          consumer1.close();
-         
+
          session.commit();
 
          session.close();
@@ -484,12 +475,11 @@ public class MessageChunkTest extends ChunkTestBase
 
          session.createQueue(ADDRESS, queue[0], null, true, false);
          session.createQueue(ADDRESS, queue[1], null, true, false);
-         
 
          int numberOfIntegers = 100000;
 
          Message clientFile = createLargeClientMessage(session, numberOfIntegers);
-         //Message clientFile = createLargeClientMessage(session, numberOfIntegers);
+         // Message clientFile = createLargeClientMessage(session, numberOfIntegers);
 
          ClientProducer producer = session.createProducer(ADDRESS);
          producer.send(clientFile);
@@ -503,6 +493,8 @@ public class MessageChunkTest extends ChunkTestBase
             session.close();
 
             messagingService.stop();
+
+            log.info("Restartning");
 
             messagingService = createService(true);
 
@@ -554,7 +546,6 @@ public class MessageChunkTest extends ChunkTestBase
 
    protected void testPageOnLargeMessage(final boolean realFiles, final boolean sendBlocking) throws Exception
    {
-
       clearData();
 
       Configuration config = createDefaultConfig();
@@ -647,6 +638,8 @@ public class MessageChunkTest extends ChunkTestBase
          for (int i = 0; i < 100; i++)
          {
             ClientMessage message2 = consumer.receive(RECEIVE_WAIT_TIME);
+            
+            log.info("got message " + i);
 
             assertNotNull(message2);
 

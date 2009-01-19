@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2005-2009, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -21,20 +21,52 @@
  */
 
 
-package org.jboss.messaging.core.server;
+package org.jboss.messaging.core.postoffice.impl;
 
+import org.jboss.messaging.core.postoffice.DivertBinding;
+import org.jboss.messaging.core.server.Bindable;
+import org.jboss.messaging.core.server.Divert;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- * A Link
+ * A DivertBindingImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 24 Dec 2008 09:58:04
+ * Created 9 Jan 2009 15:45:09
  *
  *
  */
-public interface Link extends Bindable
+public class DivertBindingImpl implements DivertBinding
 {
-   SimpleString getLinkAddress();
+   private SimpleString address;
+   
+   private Divert divert;
+   
+   public DivertBindingImpl(final SimpleString address, final Divert divert)
+   {
+      this.address = address;
+      
+      this.divert = divert;  
+   }
+        
+   public SimpleString getAddress()
+   {
+      return address;
+   }
+
+   public Bindable getBindable()
+   {      
+      return divert;
+   }
+   
+   public Divert getDivert()
+   {
+      return divert;
+   }
+
+   public boolean isQueueBinding()
+   {
+      return false;
+   }
 }

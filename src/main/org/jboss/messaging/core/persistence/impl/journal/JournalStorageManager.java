@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.persistence.impl.journal;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
 import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
 import static org.jboss.messaging.util.DataConstants.SIZE_INT;
 import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
@@ -30,6 +29,8 @@ import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +44,6 @@ import javax.transaction.xa.Xid;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.journal.Journal;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
@@ -54,22 +54,19 @@ import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
+import org.jboss.messaging.core.persistence.QueueBindingInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.impl.BindingImpl;
+import org.jboss.messaging.core.postoffice.QueueBinding;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.XidCodecSupport;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.core.server.Bindable;
-import org.jboss.messaging.core.server.BindableFactory;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.LargeServerMessage;
-import org.jboss.messaging.core.server.Link;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -101,7 +98,7 @@ public class JournalStorageManager implements StorageManager
 
    // Bindings journal record type
 
-   public static final byte BINDING_RECORD = 21;
+   public static final byte QUEUE_BINDING_RECORD = 21;
 
    public static final byte DESTINATION_RECORD = 22;
 
@@ -114,11 +111,13 @@ public class JournalStorageManager implements StorageManager
 
    public static final byte ADD_MESSAGE = 31;
 
-   public static final byte ACKNOWLEDGE_REF = 32;
+   public static final byte ADD_REF = 32;
 
-   public static final byte UPDATE_DELIVERY_COUNT = 33;
+   public static final byte ACKNOWLEDGE_REF = 33;
 
-   public static final byte PAGE_TRANSACTION = 34;
+   public static final byte UPDATE_DELIVERY_COUNT = 34;
+
+   public static final byte PAGE_TRANSACTION = 35;
 
    public static final byte SET_SCHEDULED_DELIVERY_TIME = 36;
 
@@ -255,9 +254,14 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
+   public void storeReference(final long queueID, final long messageID) throws Exception
+   {
+      messageJournal.appendUpdateRecord(messageID, ADD_REF, new RefEncoding(queueID));
+   }
+
    public void storeAcknowledge(final long queueID, final long messageID) throws Exception
    {
-      messageJournal.appendUpdateRecord(messageID, ACKNOWLEDGE_REF, new ACKEncoding(queueID));
+      messageJournal.appendUpdateRecord(messageID, ACKNOWLEDGE_REF, new RefEncoding(queueID));
    }
 
    public void deleteMessage(final long messageID) throws Exception
@@ -332,9 +336,14 @@ public class JournalStorageManager implements StorageManager
                                                   pageTransaction);
    }
 
+   public void storeReferenceTransactional(final long txID, final long queueID, final long messageID) throws Exception
+   {
+      messageJournal.appendUpdateRecordTransactional(txID, messageID, ADD_REF, new RefEncoding(queueID));
+   }
+
    public void storeAcknowledgeTransactional(final long txID, final long queueID, final long messageID) throws Exception
    {
-      messageJournal.appendUpdateRecordTransactional(txID, messageID, ACKNOWLEDGE_REF, new ACKEncoding(queueID));
+      messageJournal.appendUpdateRecordTransactional(txID, messageID, ACKNOWLEDGE_REF, new RefEncoding(queueID));
    }
 
    public void deletePageTransactional(final long txID, final long recordID) throws Exception
@@ -408,6 +417,20 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(), UPDATE_DELIVERY_COUNT, updateInfo);
    }
 
+   private static final class AddMessageRecord
+   {
+      public AddMessageRecord(final ServerMessage message)
+      {
+         this.message = message;
+      }
+
+      final ServerMessage message;
+
+      long scheduledDeliveryTime;
+
+      int deliveryCount;
+   }
+
    public void loadMessageJournal(final PostOffice postOffice,
                                   final StorageManager storageManager,
                                   final HierarchicalRepository<QueueSettings> queueSettingsRepository,
@@ -420,6 +443,10 @@ public class JournalStorageManager implements StorageManager
       List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 
       messageJournal.load(records, preparedTransactions);
+
+      Map<Long, ServerMessage> messages = new HashMap<Long, ServerMessage>();
+
+      Map<Long, Map<Long, AddMessageRecord>> queueMap = new HashMap<Long, Map<Long, AddMessageRecord>>();
 
       for (RecordInfo record : records)
       {
@@ -441,9 +468,7 @@ public class JournalStorageManager implements StorageManager
 
                messageEncoding.decode(buff);
 
-               largeMessage.setReload();
-
-               postOffice.route(largeMessage, null);
+               messages.put(record.id, largeMessage);
 
                break;
             }
@@ -453,9 +478,35 @@ public class JournalStorageManager implements StorageManager
 
                message.decode(buff);
 
-               message.setReload();
+               messages.put(record.id, message);
 
-               postOffice.route(message, null);
+               break;
+            }
+            case ADD_REF:
+            {
+               long messageID = record.id;
+
+               RefEncoding encoding = new RefEncoding();
+
+               encoding.decode(buff);
+
+               Map<Long, AddMessageRecord> queueMessages = queueMap.get(encoding.queueID);
+
+               if (queueMessages == null)
+               {
+                  queueMessages = new LinkedHashMap<Long, AddMessageRecord>();
+
+                  queueMap.put(encoding.queueID, queueMessages);
+               }
+
+               ServerMessage message = messages.get(messageID);
+
+               if (message == null)
+               {
+                  throw new IllegalStateException("Cannot find message " + record.id);
+               }
+
+               queueMessages.put(messageID, new AddMessageRecord(message));
 
                break;
             }
@@ -463,22 +514,22 @@ public class JournalStorageManager implements StorageManager
             {
                long messageID = record.id;
 
-               ACKEncoding encoding = new ACKEncoding();
+               RefEncoding encoding = new RefEncoding();
 
                encoding.decode(buff);
 
-               Queue queue = queues.get(encoding.queueID);
+               Map<Long, AddMessageRecord> queueMessages = queueMap.get(encoding.queueID);
 
-               if (queue == null)
+               if (queueMessages == null)
                {
-                  throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
+                  throw new IllegalStateException("Cannot find queue messages " + encoding.queueID);
                }
 
-               MessageReference removed = queue.removeReferenceWithID(messageID);
+               AddMessageRecord rec = queueMessages.remove(messageID);
 
-               if (removed == null)
+               if (rec == null)
                {
-                  throw new IllegalStateException("Failed to remove reference for " + messageID);
+                  throw new IllegalStateException("Cannot find message " + messageID);
                }
 
                break;
@@ -487,25 +538,25 @@ public class JournalStorageManager implements StorageManager
             {
                long messageID = record.id;
 
-               DeliveryCountUpdateEncoding deliveryUpdate = new DeliveryCountUpdateEncoding();
+               DeliveryCountUpdateEncoding encoding = new DeliveryCountUpdateEncoding();
 
-               deliveryUpdate.decode(buff);
+               encoding.decode(buff);
 
-               Queue queue = queues.get(deliveryUpdate.queueID);
+               Map<Long, AddMessageRecord> queueMessages = queueMap.get(encoding.queueID);
 
-               if (queue == null)
+               if (queueMessages == null)
                {
-                  throw new IllegalStateException("Cannot find queue with id " + deliveryUpdate.queueID);
+                  throw new IllegalStateException("Cannot find queue messages " + encoding.queueID);
                }
 
-               MessageReference reference = queue.getReference(messageID);
+               AddMessageRecord rec = queueMessages.get(messageID);
 
-               if (reference == null)
+               if (rec == null)
                {
-                  throw new IllegalStateException("Failed to find reference for " + messageID);
+                  throw new IllegalStateException("Cannot find message " + messageID);
                }
-
-               reference.setDeliveryCount(deliveryUpdate.count);
+               
+               rec.deliveryCount = encoding.count;
 
                break;
             }
@@ -518,7 +569,7 @@ public class JournalStorageManager implements StorageManager
                pageTransactionInfo.setRecordID(record.id);
 
                PagingManager pagingManager = postOffice.getPagingManager();
-
+               
                pagingManager.addTransaction(pageTransactionInfo);
 
                break;
@@ -531,14 +582,21 @@ public class JournalStorageManager implements StorageManager
 
                encoding.decode(buff);
 
-               Queue queue = queues.get(encoding.queueID);
+               Map<Long, AddMessageRecord> queueMessages = queueMap.get(encoding.queueID);
 
-               if (queue == null)
+               if (queueMessages == null)
                {
-                  throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
+                  throw new IllegalStateException("Cannot find queue messages " + encoding.queueID);
                }
-               // remove the reference and then add it back in with the scheduled time set.
-               queue.rescheduleDelivery(messageID, encoding.scheduledDeliveryTime);
+
+               AddMessageRecord rec = queueMessages.get(messageID);
+
+               if (rec == null)
+               {
+                  throw new IllegalStateException("Cannot find message " + messageID);
+               }
+               
+               rec.scheduledDeliveryTime = encoding.scheduledDeliveryTime;
 
                break;
             }
@@ -567,67 +625,255 @@ public class JournalStorageManager implements StorageManager
             }
          }
       }
+      
+      for (Map.Entry<Long, Map<Long, AddMessageRecord>> entry: queueMap.entrySet())
+      {
+         long queueID = entry.getKey();
+         
+         Map<Long, AddMessageRecord> queueRecords = entry.getValue();
+         
+         Queue queue = queues.get(queueID);
+         
+         for (AddMessageRecord record: queueRecords.values())
+         {
+            long scheduledDeliveryTime = record.scheduledDeliveryTime;
+            
+            if (scheduledDeliveryTime != 0)
+            {
+               record.message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, scheduledDeliveryTime);
+            }
+            
+            MessageReference ref = queue.reroute(record.message, null);
+            
+            ref.setDeliveryCount(record.deliveryCount);
+         }
+      }
 
-      loadPreparedTransactions(postOffice, storageManager, queueSettingsRepository, queues, resourceManager, preparedTransactions, duplicateIDMap);
+      loadPreparedTransactions(postOffice,
+                               storageManager,
+                               queueSettingsRepository,
+                               queues,
+                               resourceManager,
+                               preparedTransactions,
+                               duplicateIDMap);
+   }
+   
+   private void loadPreparedTransactions(final PostOffice postOffice,
+                                         final StorageManager storageManager,
+                                         final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                                         final Map<Long, Queue> queues,
+                                         final ResourceManager resourceManager,
+                                         final List<PreparedTransactionInfo> preparedTransactions,
+                                         final Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap) throws Exception
+   {
+      final PagingManager pagingManager = postOffice.getPagingManager();
+
+      // recover prepared transactions
+      for (PreparedTransactionInfo preparedTransaction : preparedTransactions)
+      {
+         XidEncoding encodingXid = new XidEncoding(preparedTransaction.extraData);
+
+         Xid xid = encodingXid.xid;
+
+         Transaction tx = new TransactionImpl(preparedTransaction.id, xid, this);
+
+         List<MessageReference> referencesToAck = new ArrayList<MessageReference>();
+
+         Map<Long, ServerMessage> messages = new HashMap<Long, ServerMessage>();
+           
+         //Use same method as load message journal to prune out acks, so they don't get added.
+         //Then have reacknowledge(tx) methods on queue, which needs to add the page size
+
+         // first get any sent messages for this tx and recreate
+         for (RecordInfo record : preparedTransaction.records)
+         {
+            byte[] data = record.data;
+
+            ByteBuffer bb = ByteBuffer.wrap(data);
+
+            MessagingBuffer buff = new ByteBufferWrapper(bb);
+
+            byte recordType = record.getUserRecordType();
+
+            switch (recordType)
+            {
+               case ADD_MESSAGE:
+               {
+                  ServerMessage message = new ServerMessageImpl(record.id);
+
+                  message.decode(buff);
+
+                  messages.put(record.id, message);
+
+                  break;
+               }
+               case ADD_REF:
+               {
+                  long messageID = record.id;
+
+                  RefEncoding encoding = new RefEncoding();
+
+                  encoding.decode(buff);
+
+                  Queue queue = queues.get(encoding.queueID);
+
+                  if (queue == null)
+                  {
+                     throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
+                  }
+
+                  ServerMessage message = messages.get(messageID);
+
+                  if (message == null)
+                  {
+                     throw new IllegalStateException("Cannot find message with id " + messageID);
+                  }
+
+                  queue.reroute(message, tx);
+
+                  break;
+               }
+               case ACKNOWLEDGE_REF:
+               {
+                  long messageID = record.id;
+
+                  RefEncoding encoding = new RefEncoding();
+
+                  encoding.decode(buff);
+
+                  Queue queue = queues.get(encoding.queueID);
+
+                  if (queue == null)
+                  {
+                     throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
+                  }
+
+                  MessageReference removed = queue.removeReferenceWithID(messageID);
+
+                  referencesToAck.add(removed);
+
+                  if (removed == null)
+                  {
+                     throw new IllegalStateException("Failed to remove reference for " + messageID);
+                  }
+
+                  break;
+               }
+               case PAGE_TRANSACTION:
+               {
+                  PageTransactionInfo pageTransactionInfo = new PageTransactionInfoImpl();
+
+                  pageTransactionInfo.decode(buff);
+
+                  pageTransactionInfo.markIncomplete();
+
+                  tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pageTransactionInfo);
+
+                  pagingManager.addTransaction(pageTransactionInfo);
+
+                  break;
+               }
+               case SET_SCHEDULED_DELIVERY_TIME:
+               {
+                  // Do nothing - for prepared txs, the set scheduled delivery time will only occur in a send in which
+                  // case the message will already have the header for the scheduled delivery time, so no need to do
+                  // anything.
+
+                  break;
+               }
+               case DUPLICATE_ID:
+               {
+                  // We need load the duplicate ids at prepare time too
+                  DuplicateIDEncoding encoding = new DuplicateIDEncoding();
+
+                  encoding.decode(buff);
+
+                  List<Pair<SimpleString, Long>> ids = duplicateIDMap.get(encoding.address);
+
+                  if (ids == null)
+                  {
+                     ids = new ArrayList<Pair<SimpleString, Long>>();
+
+                     duplicateIDMap.put(encoding.address, ids);
+                  }
+
+                  ids.add(new Pair<SimpleString, Long>(encoding.duplID, record.id));
+
+                  break;
+               }
+               default:
+               {
+                  log.warn("InternalError: Record type " + recordType +
+                           " not recognized. Maybe you're using journal files created on a different version");
+               }
+            }
+         }
+
+         for (RecordInfo record : preparedTransaction.recordsToDelete)
+         {
+            byte[] data = record.data;
+
+            ByteBuffer bb = ByteBuffer.wrap(data);
+
+            MessagingBuffer buff = new ByteBufferWrapper(bb);
+
+            long messageID = record.id;
+
+            DeleteEncoding encoding = new DeleteEncoding();
+
+            encoding.decode(buff);
+
+            Queue queue = queues.get(encoding.queueID);
+
+            if (queue == null)
+            {
+               throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
+            }
+
+            MessageReference removed = queue.removeReferenceWithID(messageID);
+
+            referencesToAck.add(removed);
+
+            if (removed == null)
+            {
+               throw new IllegalStateException("Failed to remove reference for " + messageID);
+            }
+         }
+
+         for (MessageReference ack : referencesToAck)
+         {
+            ack.getQueue().reacknowledge(tx, ack);
+         }
+
+         tx.setState(Transaction.State.PREPARED);
+
+         resourceManager.putTransaction(xid, tx);
+      }
    }
 
    // Bindings operations
 
-   public void addBinding(final Binding binding, final boolean duplicateDetection) throws Exception
+   public void addQueueBinding(final QueueBinding binding) throws Exception
    {
-      // We generate the queue id here
+      Filter filter = binding.getQueue().getFilter();
 
-      Bindable bindable = binding.getBindable();
+      SimpleString filterString = filter == null ? null : filter.getFilterString();
 
-      long bindingID = idGenerator.generateID();
+      PersistentQueueBindingEncoding bindingEncoding = new PersistentQueueBindingEncoding(binding.getBindable()
+                                                                                                 .getUniqueName(),
+                                                                                          binding.getAddress(),
+                                                                                          filterString);
 
-      bindable.setPersistenceID(bindingID);
+      long id = this.generateUniqueID();
 
-      final SimpleString filterString;
+      binding.getQueue().setPersistenceID(id);
 
-      final Filter filter = bindable.getFilter();
-
-      if (filter != null)
-      {
-         filterString = filter.getFilterString();
-      }
-      else
-      {
-         filterString = null;
-      }
-
-      SimpleString linkAddress;
-
-      if (binding.getType() == BindingType.LINK)
-      {
-         linkAddress = ((Link)bindable).getLinkAddress();
-      }
-      else
-      {
-         linkAddress = null;
-      }
-
-      BindingEncoding bindingEncoding = new BindingEncoding(binding.getType(),
-                                                            bindable.getName(),
-                                                            binding.getAddress(),
-                                                            filterString,
-                                                            binding.isExclusive(),
-                                                            linkAddress,
-                                                            duplicateDetection);
-
-      bindingsJournal.appendAddRecord(bindingID, BINDING_RECORD, bindingEncoding);
+      bindingsJournal.appendAddRecord(id, QUEUE_BINDING_RECORD, bindingEncoding);
    }
 
-   public void deleteBinding(final Binding binding) throws Exception
+   public void deleteQueueBinding(final long queueBindingID) throws Exception
    {
-      long id = binding.getBindable().getPersistenceID();
-
-      if (id == -1)
-      {
-         throw new IllegalArgumentException("Cannot delete binding, id is -1");
-      }
-
-      bindingsJournal.appendDeleteRecord(id);
+      bindingsJournal.appendDeleteRecord(queueBindingID);
    }
 
    public boolean addDestination(final SimpleString destination) throws Exception
@@ -665,9 +911,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   public void loadBindings(final BindableFactory bindableFactory,
-                            final List<Binding> bindings,
-                            final List<SimpleString> destinations) throws Exception
+   public void loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos, final List<SimpleString> destinations) throws Exception
    {
       List<RecordInfo> records = new ArrayList<RecordInfo>();
 
@@ -683,43 +927,15 @@ public class JournalStorageManager implements StorageManager
 
          byte rec = record.getUserRecordType();
 
-         if (rec == BINDING_RECORD)
+         if (rec == QUEUE_BINDING_RECORD)
          {
-            BindingEncoding bindingEncoding = new BindingEncoding();
+            PersistentQueueBindingEncoding bindingEncoding = new PersistentQueueBindingEncoding();
 
             bindingEncoding.decode(buffer);
 
-            Filter filter = null;
+            bindingEncoding.setPersistenceID(id);
 
-            if (bindingEncoding.filter != null)
-            {
-               filter = new FilterImpl(bindingEncoding.filter);
-            }
-
-            Bindable bindable;
-
-            if (bindingEncoding.type == BindingType.QUEUE)
-            {
-
-               bindable = bindableFactory.createQueue(id, bindingEncoding.name, filter, true, false);
-            }
-            else
-            {
-               bindable = bindableFactory.createLink(id,
-                                                     bindingEncoding.name,
-                                                     filter,
-                                                     true,
-                                                     false,
-                                                     bindingEncoding.linkAddress,
-                                                     bindingEncoding.duplicateDetection);
-            }
-
-            Binding binding = new BindingImpl(bindingEncoding.type,
-                                              bindingEncoding.address,
-                                              bindable,
-                                              bindingEncoding.exclusive);
-
-            bindings.add(binding);
+            queueBindingInfos.add(bindingEncoding);
          }
          else if (rec == DESTINATION_RECORD)
          {
@@ -833,169 +1049,7 @@ public class JournalStorageManager implements StorageManager
 
    // Private ----------------------------------------------------------------------------------
 
-   private void loadPreparedTransactions(final PostOffice postOffice,
-                                         final StorageManager storageManager,
-                                         final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-                                         final Map<Long, Queue> queues,
-                                         final ResourceManager resourceManager,
-                                         final List<PreparedTransactionInfo> preparedTransactions,
-                                         final Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap) throws Exception
-   {
-      final PagingManager pagingManager = postOffice.getPagingManager();
-      
-      // recover prepared transactions
-      for (PreparedTransactionInfo preparedTransaction : preparedTransactions)
-      {
-         XidEncoding encodingXid = new XidEncoding(preparedTransaction.extraData);
-
-         Xid xid = encodingXid.xid;
-
-         Transaction tx = new TransactionImpl(preparedTransaction.id, xid, this);
-
-         List<MessageReference> referencesToAck = new ArrayList<MessageReference>();
-
-         // first get any sent messages for this tx and recreate
-         for (RecordInfo record : preparedTransaction.records)
-         {
-            byte[] data = record.data;
-
-            ByteBuffer bb = ByteBuffer.wrap(data);
-
-            MessagingBuffer buff = new ByteBufferWrapper(bb);
-
-            byte recordType = record.getUserRecordType();
-
-            switch (recordType)
-            {
-               case ADD_MESSAGE:
-               {
-                  ServerMessage message = new ServerMessageImpl(record.id);
-
-                  message.decode(buff);
-
-                  message.setReload();
-
-                  postOffice.route(message, tx);
-
-                  break;
-               }
-               case ACKNOWLEDGE_REF:
-               {
-                  long messageID = record.id;
-
-                  ACKEncoding encoding = new ACKEncoding();
-
-                  encoding.decode(buff);
-
-                  Queue queue = queues.get(encoding.queueID);
-
-                  if (queue == null)
-                  {
-                     throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
-                  }
-
-                  MessageReference removed = queue.removeReferenceWithID(messageID);
-
-                  referencesToAck.add(removed);
-
-                  if (removed == null)
-                  {
-                     throw new IllegalStateException("Failed to remove reference for " + messageID);
-                  }
-
-                  break;
-               }
-               case PAGE_TRANSACTION:
-               {
-                  PageTransactionInfo pageTransactionInfo = new PageTransactionInfoImpl();
-
-                  pageTransactionInfo.decode(buff);
-
-                  pageTransactionInfo.markIncomplete();
-
-                  tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pageTransactionInfo);                  
-                  
-                  pagingManager.addTransaction(pageTransactionInfo);
-
-                  break;
-               }
-               case SET_SCHEDULED_DELIVERY_TIME:
-               {
-                  // Do nothing - for prepared txs, the set scheduled delivery time will only occur in a send in which
-                  // case the message will already have the header for the scheduled delivery time, so no need to do
-                  // anything.
-
-                  break;
-               }
-               case DUPLICATE_ID:
-               {
-                  // We need load the duplicate ids at prepare time too
-                  DuplicateIDEncoding encoding = new DuplicateIDEncoding();
-
-                  encoding.decode(buff);
-
-                  List<Pair<SimpleString, Long>> ids = duplicateIDMap.get(encoding.address);
-
-                  if (ids == null)
-                  {
-                     ids = new ArrayList<Pair<SimpleString, Long>>();
-
-                     duplicateIDMap.put(encoding.address, ids);
-                  }
-
-                  ids.add(new Pair<SimpleString, Long>(encoding.duplID, record.id));
-
-                  break;
-               }
-               default:
-               {
-                  log.warn("InternalError: Record type " + recordType +
-                           " not recognized. Maybe you're using journal files created on a different version");
-               }
-            }
-         }
-
-         for (RecordInfo record : preparedTransaction.recordsToDelete)
-         {
-            byte[] data = record.data;
-
-            ByteBuffer bb = ByteBuffer.wrap(data);
-
-            MessagingBuffer buff = new ByteBufferWrapper(bb);
-
-            long messageID = record.id;
-
-            DeleteEncoding encoding = new DeleteEncoding();
-
-            encoding.decode(buff);
-
-            Queue queue = queues.get(encoding.queueID);
-
-            if (queue == null)
-            {
-               throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
-            }
-
-            MessageReference removed = queue.removeReferenceWithID(messageID);
-
-            referencesToAck.add(removed);
-
-            if (removed == null)
-            {
-               throw new IllegalStateException("Failed to remove reference for " + messageID);
-            }
-         }
-
-         for (MessageReference ack : referencesToAck)
-         {
-            ack.reacknowledge(tx, storageManager, postOffice, queueSettingsRepository);
-         }
-
-         tx.setState(Transaction.State.PREPARED);
-
-         resourceManager.putTransaction(xid, tx);
-      }
-   }
+  
 
    private void checkAndCreateDir(final String dir, final boolean create)
    {
@@ -1077,98 +1131,72 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private static class BindingEncoding implements EncodingSupport
+   private static class PersistentQueueBindingEncoding implements EncodingSupport, QueueBindingInfo
    {
-      BindingType type;
+      long persistenceID;
 
       SimpleString name;
 
       SimpleString address;
 
-      SimpleString filter;
+      SimpleString filterString;
 
-      boolean exclusive;
-
-      SimpleString linkAddress;
-
-      boolean duplicateDetection;
-
-      public BindingEncoding()
+      public PersistentQueueBindingEncoding()
       {
       }
 
-      public BindingEncoding(final BindingType type,
-                             final SimpleString name,
-                             final SimpleString address,
-                             final SimpleString filter,
-                             final boolean exclusive,
-                             final SimpleString linkAddress,
-                             final boolean duplicateDetection)
+      public PersistentQueueBindingEncoding(final SimpleString name,
+                                            final SimpleString address,
+                                            final SimpleString filterString)
       {
-         super();
-         this.type = type;
          this.name = name;
          this.address = address;
-         this.filter = filter;
-         this.exclusive = exclusive;
-         this.linkAddress = linkAddress;
-         this.duplicateDetection = duplicateDetection;
+         this.filterString = filterString;
+      }
+
+      public long getPersistenceID()
+      {
+         return persistenceID;
+      }
+
+      public void setPersistenceID(final long id)
+      {
+         this.persistenceID = id;
+      }
+
+      public SimpleString getAddress()
+      {
+         return address;
+      }
+
+      public SimpleString getFilterString()
+      {
+         return filterString;
+      }
+
+      public SimpleString getQueueName()
+      {
+         return name;
       }
 
       public void decode(final MessagingBuffer buffer)
       {
-         int itype = buffer.getInt();
-         switch (itype)
-         {
-            case 0:
-            {
-               type = BindingType.LINK;
-               break;
-            }
-            case 1:
-            {
-               type = BindingType.QUEUE;
-               break;
-            }
-            default:
-            {
-               throw new IllegalArgumentException("Invalid binding type " + itype);
-            }
-         }
          name = buffer.getSimpleString();
          address = buffer.getSimpleString();
-         filter = buffer.getNullableSimpleString();
-         exclusive = buffer.getBoolean();
-         linkAddress = buffer.getNullableSimpleString();
-         duplicateDetection = buffer.getBoolean();
+         filterString = buffer.getNullableSimpleString();
       }
 
       public void encode(final MessagingBuffer buffer)
       {
-         if (type == BindingType.LINK)
-         {
-            buffer.putInt(0);
-         }
-         else
-         {
-            buffer.putInt(1);
-         }
          buffer.putSimpleString(name);
          buffer.putSimpleString(address);
-         buffer.putNullableSimpleString(filter);
-         buffer.putBoolean(exclusive);
-         buffer.putNullableSimpleString(linkAddress);
-         buffer.putBoolean(duplicateDetection);
+         buffer.putNullableSimpleString(filterString);
       }
 
       public int getEncodeSize()
       {
-         return SIZE_INT + SimpleString.sizeofString(name) +
-                SimpleString.sizeofString(address) +
-                SimpleString.sizeofNullableString(filter) +
-                SIZE_BOOLEAN +
-                SimpleString.sizeofNullableString(linkAddress) +
-                SIZE_BOOLEAN;
+         return SimpleString.sizeofString(name) + SimpleString.sizeofString(address) +
+                SimpleString.sizeofNullableString(filterString);
       }
    }
 
@@ -1317,14 +1345,14 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private static class ACKEncoding extends QueueEncoding
+   private static class RefEncoding extends QueueEncoding
    {
-      public ACKEncoding()
+      public RefEncoding()
       {
          super();
       }
 
-      public ACKEncoding(final long queueID)
+      public RefEncoding(final long queueID)
       {
          super(queueID);
       }

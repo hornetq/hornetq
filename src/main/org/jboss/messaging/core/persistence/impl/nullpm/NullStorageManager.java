@@ -28,10 +28,10 @@ import java.util.Map;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.paging.PageTransactionInfo;
+import org.jboss.messaging.core.persistence.QueueBindingInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.BindableFactory;
+import org.jboss.messaging.core.postoffice.QueueBinding;
 import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
@@ -58,7 +58,11 @@ public class NullStorageManager implements StorageManager
 
    private volatile boolean started;
 
-   public void addBinding(final Binding binding, final boolean duplicateDetection) throws Exception
+   public void addQueueBinding(final QueueBinding queueBinding) throws Exception
+   {
+   }
+
+   public void deleteQueueBinding(long queueBindingID) throws Exception
    {
    }
 
@@ -71,19 +75,15 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   public void deleteBinding(final Binding binding) throws Exception
-   {
-   }
-
    public boolean deleteDestination(final SimpleString destination) throws Exception
    {
       return true;
    }
 
-   public void loadBindings(final BindableFactory queueFactory,
-                            final List<Binding> bindings,
-                            final List<SimpleString> destinations) throws Exception
+   public void loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos,                               
+                                  final List<SimpleString> destinations) throws Exception
    {
+
    }
 
    public void prepare(final long txID, final Xid xid) throws Exception
@@ -91,6 +91,14 @@ public class NullStorageManager implements StorageManager
    }
 
    public void rollback(final long txID) throws Exception
+   {
+   }
+   
+   public void storeReference(final long queueID, final long messageID) throws Exception
+   {
+   }
+   
+   public void storeReferenceTransactional(final long txID, final long queueID, final long messageID) throws Exception
    {
    }
 

@@ -84,6 +84,14 @@ public class PairsInfo
       }
       return pairs;
    }
+   
+   public static TabularData toTabularData(Pair<String, String> pair)
+   {
+      List<Pair<String, String>> list = new ArrayList<Pair<String, String>>();
+      list.add(pair);
+      PairsInfo info = new PairsInfo(list);
+      return info.toTabularData();
+   }
 
    public static TabularData toTabularData(List<Pair<String, String>> pairs)
    {

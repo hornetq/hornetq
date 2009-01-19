@@ -51,6 +51,7 @@ import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
@@ -86,6 +87,7 @@ public class ManagementServiceImplTest extends TestCase
       expect(configuration.isMessageCounterEnabled()).andReturn(false);
       HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
       HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      QueueFactory queueFactory = createMock(QueueFactory.class);
       ResourceManager resourceManager = createMock(ResourceManager.class);
       RemotingService remotingService = createMock(RemotingService.class);
       MessagingServer messagingServer = createMock(MessagingServer.class);
@@ -111,7 +113,8 @@ public class ManagementServiceImplTest extends TestCase
                              securityRepository,
                              resourceManager,
                              remotingService,
-                             messagingServer);
+                             messagingServer,
+                             queueFactory);
 
       verify(mbeanServer,
              postOffice,
@@ -136,6 +139,7 @@ public class ManagementServiceImplTest extends TestCase
       expect(configuration.isMessageCounterEnabled()).andReturn(false);
       HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
       HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      QueueFactory queueFactory = createMock(QueueFactory.class);
       ResourceManager resourceManager = createMock(ResourceManager.class);
       RemotingService remotingService = createMock(RemotingService.class);
       MessagingServer messagingServer = createMock(MessagingServer.class);
@@ -162,7 +166,8 @@ public class ManagementServiceImplTest extends TestCase
                              securityRepository,
                              resourceManager,
                              remotingService,
-                             messagingServer);
+                             messagingServer,
+                             queueFactory);
 
       verify(mbeanServer,
              postOffice,

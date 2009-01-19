@@ -144,7 +144,6 @@ public class AcknowledgementTest extends JMSTestCase
          assertNotNull(m2);
          assertEquals("testing123", m2.getText());
 
-         log.info("rolling back");
          sess.rollback();
 
          m2 = (TextMessage)cons.receive(3000);
@@ -220,13 +219,9 @@ public class AcknowledgementTest extends JMSTestCase
             producer.send(m);
          }
          
-         log.info("sent messages");
-
          assertRemainingMessages(0);
 
-         log.info("rolling back");
          producerSess.rollback();
-         log.info("rolled back");
 
          // Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
@@ -235,54 +230,40 @@ public class AcknowledgementTest extends JMSTestCase
             producer.send(m);
          }
          assertRemainingMessages(0);
-         log.info("sent more");
 
          producerSess.commit();
-         log.info("committed");
 
          assertRemainingMessages(NUM_MESSAGES);
 
-         log.trace("Sent all messages");
 
          int count = 0;
          while (true)
          {
             Message m = consumer.receive(200);
-            log.info("got message "+m);
             if (m == null)
             {
                break;
             }
             count++;
          }
-         
-         
-
+                  
          assertRemainingMessages(NUM_MESSAGES);
-
-         log.info("Received " + count + " messages");
 
          assertEquals(count, NUM_MESSAGES);
 
-         log.info("*** rolling back");
          consumerSess.rollback();
 
          assertRemainingMessages(NUM_MESSAGES);
-
-         log.info("Session rollback called");
 
          int i = 0;
          for (; i < NUM_MESSAGES; i++)
          {
             consumer.receive();
-            log.info("Received message " + i);
          }
 
          assertRemainingMessages(NUM_MESSAGES);
 
          // if I don't receive enough messages, the test will timeout
-
-         log.info("Received " + i + " messages after recover");
 
          consumerSess.commit();
 
@@ -1061,8 +1042,6 @@ public class AcknowledgementTest extends JMSTestCase
 
          listener.waitForMessages();
 
-         log.info("Waited for messages");
-
          cons.close();
          
          assertRemainingMessages(0);
@@ -1216,8 +1195,6 @@ public class AcknowledgementTest extends JMSTestCase
 
             TextMessage tm = (TextMessage)m;
 
-            log.info("got message " + tm.getText());
-
             // Receive first three messages then recover() session
             // Only last message should be redelivered
             if (count == 1)
@@ -1289,8 +1266,6 @@ public class AcknowledgementTest extends JMSTestCase
             count++;
 
             TextMessage tm = (TextMessage)m;
-
-            log.info("Got message " + tm.getText());
 
             // Receive first three messages then recover() session
             // Only last message should be redelivered
@@ -1364,14 +1339,12 @@ public class AcknowledgementTest extends JMSTestCase
 
             TextMessage tm = (TextMessage)m;
 
-            log.info("Got message " + tm.getText() + " message id: " + ((JBossTextMessage)tm).getCoreMessage().getMessageID());
-
             if (count == 1)
             {
                assertRemainingMessages(3);
                if (!"a".equals(tm.getText()))
                {
-                  log.info("Expected a but got " + tm.getText());
+                  log.trace("Expected a but got " + tm.getText());
                   failed = true;
                   latch.countDown();
                }
@@ -1381,7 +1354,7 @@ public class AcknowledgementTest extends JMSTestCase
                assertRemainingMessages(3);
                if (!"b".equals(tm.getText()))
                {
-                  log.info("Expected b but got " + tm.getText());
+                  log.trace("Expected b but got " + tm.getText());
                   failed = true;
                   latch.countDown();
                }
@@ -1391,11 +1364,11 @@ public class AcknowledgementTest extends JMSTestCase
                assertRemainingMessages(3);
                if (!"c".equals(tm.getText()))
                {
-                  log.info("Expected c but got " + tm.getText());
+                  log.trace("Expected c but got " + tm.getText());
                   failed = true;
                   latch.countDown();
                }
-               log.info("calling recover");
+               log.trace("calling recover");
                sess.recover();
             }
             if (count == 4)
@@ -1403,14 +1376,14 @@ public class AcknowledgementTest extends JMSTestCase
                assertRemainingMessages(3);
                if (!"a".equals(tm.getText()))
                {
-                  log.info("Expected a but got " + tm.getText());
+                  log.trace("Expected a but got " + tm.getText());
                   failed = true;
                   latch.countDown();
                }
-               log.info("*** calling acknowledge");
+               log.trace("*** calling acknowledge");
                tm.acknowledge();
                assertRemainingMessages(2);
-               log.info("calling recover");
+               log.trace("calling recover");
                sess.recover();
             }
             if (count == 5)
@@ -1418,11 +1391,11 @@ public class AcknowledgementTest extends JMSTestCase
                assertRemainingMessages(2);
                if (!"b".equals(tm.getText()))
                {
-                  log.info("Expected b but got " + tm.getText());
+                  log.trace("Expected b but got " + tm.getText());
                   failed = true;
                   latch.countDown();
                }
-               log.info("calling recover");
+               log.trace("calling recover");
                sess.recover();
             }
             if (count == 6)
@@ -1430,7 +1403,7 @@ public class AcknowledgementTest extends JMSTestCase
                assertRemainingMessages(2);
                if (!"b".equals(tm.getText()))
                {
-                  log.info("Expected b but got " + tm.getText());
+                  log.trace("Expected b but got " + tm.getText());
                   failed = true;
                   latch.countDown();
                }
@@ -1440,7 +1413,7 @@ public class AcknowledgementTest extends JMSTestCase
                assertRemainingMessages(2);
                if (!"c".equals(tm.getText()))
                {
-                  log.info("Expected c but got " + tm.getText());
+                  log.trace("Expected c but got " + tm.getText());
                   failed = true;
                   latch.countDown();
                }

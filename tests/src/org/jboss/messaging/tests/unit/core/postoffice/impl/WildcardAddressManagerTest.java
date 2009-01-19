@@ -33,6 +33,8 @@ public class WildcardAddressManagerTest extends SimpleAddressManagerTest
       sam = new WildcardAddressManager();
    }
 
+   
+   
    public void testAddDestinations()
    {
       /*SimpleString address = new SimpleString("test.add1");

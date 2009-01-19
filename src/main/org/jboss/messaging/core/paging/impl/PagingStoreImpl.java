@@ -403,7 +403,6 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             if (currentPage != null)
             {
-
                currentPage.write(message);
 
                if (sync)
@@ -421,7 +420,6 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             currentPageLock.readLock().unlock();
          }
-
       }
       finally
       {
@@ -505,6 +503,9 @@ public class PagingStoreImpl implements TestSupportPageStore
          try
          {
             running = false;
+
+            // FIXME -!! using a volatile to control execution is ugly.
+            // The runnable could remain running after paging store is stopped
 
             if (currentPage != null)
             {
@@ -651,18 +652,17 @@ public class PagingStoreImpl implements TestSupportPageStore
    public Page depage() throws Exception
    {
       writeLock.lock();
+
       currentPageLock.writeLock().lock(); // Make sure no checks are done on currentPage while we are depaging
 
       try
       {
-
          if (numberOfPages == 0)
          {
             return null;
          }
          else
          {
-
             numberOfPages--;
 
             final Page returnPage;
@@ -685,7 +685,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                   throw new IllegalStateException("CurrentPage is null");
                }
 
-               // The current page is empty... what means we achieved the end of the pages
+               // The current page is empty... which means we reached the end of the pages
                if (returnPage.getNumberOfMessages() == 0)
                {
                   returnPage.open();
@@ -722,7 +722,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    // Protected -----------------------------------------------------
 
-   // In order to test failures, we need to be able to extend this class 
+   // In order to test failures, we need to be able to extend this class
    // and replace the Page for another Page that will fail before the file is removed
    // That's why createPage is not a private method
    protected Page createPage(final int page) throws Exception
@@ -751,7 +751,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       return new PageImpl(fileFactory, file, page);
    }
-
 
    // Private -------------------------------------------------------
 
@@ -805,6 +804,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                log.warn("Transaction " + pagedMessage.getTransactionID() +
                         " used during paging not found, ignoring message " +
                         message);
+               
                continue;
             }
 
@@ -966,7 +966,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       onDepage(page.getPageId(), storeName, messages);
 
       page.delete();
-
    }
 
    // Inner classes -------------------------------------------------
@@ -990,6 +989,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                {
                   readPage();
                }
+
                // Note: clearDepage is an atomic operation, it needs to be done even if readPage was not executed
                // because the page was full
                if (!clearDepage())

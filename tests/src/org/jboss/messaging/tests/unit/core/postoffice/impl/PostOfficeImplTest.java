@@ -22,28 +22,12 @@
 
 package org.jboss.messaging.tests.unit.core.postoffice.impl;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.paging.PagingManager;
-import org.jboss.messaging.core.paging.PagingStore;
-import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.impl.BindingImpl;
-import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.BindableFactory;
-import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
@@ -57,7 +41,7 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class PostOfficeImplTest extends UnitTestCase
 {
-   private final BindableFactory queueFactory = new FakeQueueFactory();
+   private final QueueFactory queueFactory = new FakeQueueFactory();
 
    protected boolean wildCardRoutingEnabled;
 //

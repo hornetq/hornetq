@@ -20,10 +20,8 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.server;
 
-import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.util.SimpleString;
 
@@ -38,15 +36,14 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface Bindable
 {
-   Filter getFilter();
+   void route(ServerMessage message, Transaction tx) throws Exception;
    
-   SimpleString getName();
+   SimpleString getUniqueName();
    
-   long getPersistenceID();
+   SimpleString getRoutingName();
    
-   void setPersistenceID(long id);
+   boolean accept(ServerMessage message);
    
-   boolean route(ServerMessage message, Transaction tx) throws Exception;
-   
-   boolean isDurable();
+   boolean isExclusive();
 }
+

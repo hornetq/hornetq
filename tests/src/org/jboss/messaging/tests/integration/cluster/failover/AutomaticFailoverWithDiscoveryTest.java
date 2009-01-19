@@ -220,7 +220,7 @@ public class AutomaticFailoverWithDiscoveryTest extends TestCase
                                                                               broadcastPeriod,
                                                                               connectorNames);
       
-      Set<BroadcastGroupConfiguration> bcConfigs1 = new HashSet<BroadcastGroupConfiguration>();
+      List<BroadcastGroupConfiguration> bcConfigs1 = new ArrayList<BroadcastGroupConfiguration>();
       bcConfigs1.add(bcConfig1);
       liveConf.setBroadcastGroupConfigurations(bcConfigs1);
       

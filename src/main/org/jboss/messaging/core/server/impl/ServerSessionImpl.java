@@ -33,9 +33,10 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.postoffice.QueueBinding;
+import org.jboss.messaging.core.postoffice.impl.QueueBindingImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.DelayedResult;
 import org.jboss.messaging.core.remoting.FailureListener;
@@ -81,6 +82,7 @@ import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -89,7 +91,6 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.SimpleIDGenerator;
@@ -163,6 +164,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private final SimpleString managementAddress;
 
+   private final QueueFactory queueFactory;
+
    private volatile LargeServerMessage largeMessage;
 
    // Constructors ---------------------------------------------------------------------------------
@@ -185,6 +188,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                             final Executor executor,
                             final Channel channel,
                             final ManagementService managementService,
+                            final QueueFactory queueFactory,
                             final MessagingServer server,
                             final SimpleString managementAddress) throws Exception
    {
@@ -230,6 +234,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       this.server = server;
 
       this.managementAddress = managementAddress;
+
+      this.queueFactory = queueFactory;
    }
 
    // ServerSession implementation ----------------------------------------------------------------------------
@@ -371,7 +377,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void handleDeleteQueue(final SessionDeleteQueueMessage packet)
    {
       final SendLock lock;
-      
+
       if (channel.getReplicatingChannel() != null)
       {
          Binding binding = postOffice.getBinding(packet.getQueueName());
@@ -1245,7 +1251,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private void doHandleCreateConsumer(final SessionCreateConsumerMessage packet)
    {
-      SimpleString queueName = packet.getQueueName();
+      SimpleString name = packet.getQueueName();
 
       SimpleString filterString = packet.getFilterString();
 
@@ -1255,9 +1261,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       try
       {
-         Binding binding = postOffice.getBinding(queueName);
+         Binding binding = postOffice.getBinding(name);
 
-         if (binding == null || binding.getType() != BindingType.QUEUE)
+         if (binding == null || !binding.isQueueBinding())
          {
             throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
          }
@@ -1277,7 +1283,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             // We consume a copy of the queue - TODO - this is a temporary measure
             // and will disappear once we can provide a proper iterator on the queue
 
-            theQueue = new QueueImpl(-1, queueName, filter, false, false, false, null, postOffice, storageManager);
+            theQueue = queueFactory.createQueue(-1, name, filter, false, true);
 
             // There's no need for any special locking since the list method is synchronized
             List<MessageReference> refs = ((Queue)binding.getBindable()).list(filter);
@@ -1298,9 +1304,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                                                           filter,
                                                           started,
                                                           browseOnly,
-                                                          storageManager,
-                                                          queueSettingsRepository,
-                                                          postOffice,
+                                                          storageManager,                                                 
                                                           channel,
                                                           preAcknowledge);
 
@@ -1331,7 +1335,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       SimpleString address = packet.getAddress();
 
-      SimpleString queueName = packet.getQueueName();
+      SimpleString name = packet.getQueueName();
 
       SimpleString filterString = packet.getFilterString();
 
@@ -1349,7 +1353,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             securityStore.check(address, CheckType.CREATE, this);
          }
 
-         Binding binding = postOffice.getBinding(queueName);
+         Binding binding = postOffice.getBinding(name);
 
          if (binding != null)
          {
@@ -1363,7 +1367,18 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             filter = new FilterImpl(filterString);
          }
 
-         binding = postOffice.addQueueBinding(queueName, address, filter, durable, temporary, false);
+         final Queue queue = queueFactory.createQueue(-1, name, filter, durable, temporary);
+
+         binding = new QueueBindingImpl(address, queue);
+
+         if (durable)
+         {
+            QueueBinding queueBinding = (QueueBinding)binding;
+            
+            storageManager.addQueueBinding(queueBinding);                        
+         }
+
+         postOffice.addBinding(binding);
 
          if (temporary)
          {
@@ -1372,8 +1387,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             // dies. It does not mean it will get deleted automatically when the
             // session is closed.
             // It is up to the user to delete the queue when finished with it
-
-            final Queue queue = (Queue)binding.getBindable();
 
             failureRunners.add(new Runnable()
             {
@@ -1414,15 +1427,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private void doHandleDeleteQueue(final SessionDeleteQueueMessage packet)
    {
-      SimpleString queueName = packet.getQueueName();
+      SimpleString name = packet.getQueueName();
 
       Packet response = null;
 
       try
       {
-         Binding binding = postOffice.removeBinding(queueName);
+         Binding binding = postOffice.removeBinding(name);
 
-         if (binding == null || binding.getType() != BindingType.QUEUE)
+         if (binding == null || !binding.isQueueBinding())
          {
             throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
          }
@@ -1433,10 +1446,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             throw new MessagingException(MessagingException.ILLEGAL_STATE, "Cannot delete queue - it has consumers");
          }
-         
+
          if (queue.isDurable())
          {
-            queue.deleteAllReferences(storageManager, postOffice, queueSettingsRepository);
+            storageManager.deleteQueueBinding(queue.getPersistenceID());
+
+            queue.deleteAllReferences();
          }
 
          response = new NullResponseMessage();
@@ -1462,20 +1477,20 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private void doHandleExecuteQueueQuery(final SessionQueueQueryMessage packet)
    {
-      SimpleString queueName = packet.getQueueName();
+      SimpleString name = packet.getQueueName();
 
       Packet response = null;
 
       try
       {
-         if (queueName == null)
+         if (name == null)
          {
             throw new IllegalArgumentException("Queue name is null");
          }
 
-         Binding binding = postOffice.getBinding(queueName);
+         Binding binding = postOffice.getBinding(name);
 
-         if (binding != null && binding.getType() == BindingType.QUEUE)
+         if (binding != null && binding.isQueueBinding())
          {
             Queue queue = (Queue)binding.getBindable();
 
@@ -1528,7 +1543,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          boolean exists = postOffice.containsDestination(address);
 
-         List<SimpleString> queueNames = new ArrayList<SimpleString>();
+         List<SimpleString> names = new ArrayList<SimpleString>();
 
          if (exists)
          {
@@ -1536,14 +1551,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
             for (Binding binding : bindings.getBindings())
             {
-               if (binding.getType() == BindingType.QUEUE)
+               if (binding.isQueueBinding())
                {
-                  queueNames.add(binding.getBindable().getName());
+                  names.add(binding.getBindable().getUniqueName());
                }
             }
          }
 
-         response = new SessionBindingQueryResponseMessage(exists, queueNames);
+         response = new SessionBindingQueryResponseMessage(exists, names);
       }
       catch (Exception e)
       {
@@ -1613,7 +1628,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          // Null implies a browser
          if (ref != null)
          {
-            ref.expire(storageManager, postOffice, queueSettingsRepository);
+            ref.getQueue().expire(ref);
          }
       }
       catch (Exception e)
@@ -2535,7 +2550,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       for (MessageReference ref : toCancel)
       {
-         ref.cancel(tx, storageManager, postOffice, queueSettingsRepository);
+         ref.getQueue().cancel(tx, ref);
       }
 
       theTx.rollback();
@@ -2594,34 +2609,4 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   // private void moveReferencesBackToHeadOfQueues(final List<MessageReference> references) throws Exception
-   // {
-   // Map<Queue, LinkedList<MessageReference>> queueMap = new HashMap<Queue, LinkedList<MessageReference>>();
-   //
-   // for (MessageReference ref : references)
-   // {
-   // if (ref.cancel(storageManager, postOffice, queueSettingsRepository))
-   // {
-   // Queue queue = ref.getQueue();
-   //
-   // LinkedList<MessageReference> list = queueMap.get(queue);
-   //
-   // if (list == null)
-   // {
-   // list = new LinkedList<MessageReference>();
-   //
-   // queueMap.put(queue, list);
-   // }
-   //
-   // list.add(ref);
-   // }
-   // }
-   //
-   // for (Map.Entry<Queue, LinkedList<MessageReference>> entry : queueMap.entrySet())
-   // {
-   // LinkedList<MessageReference> refs = entry.getValue();
-   //
-   // entry.getKey().addListFirst(refs);
-   // }
-   // }
 }

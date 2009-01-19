@@ -73,127 +73,127 @@ public class MessageFlowBatchTimeTest extends MessageFlowTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
-   public void testBatchTime() throws Exception
-   {
-      Map<String, Object> service0Params = new HashMap<String, Object>();
-      MessagingService service0 = createMessagingService(0, service0Params);
-
-      Map<String, Object> service1Params = new HashMap<String, Object>();
-      MessagingService service1 = createMessagingService(1, service1Params);
-      service1.start();
-
-      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-      TransportConfiguration server1tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service1Params,
-                                                                    "connector1");
-      connectors.put(server1tc.getName(), server1tc);
-      service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
-
-      final SimpleString address1 = new SimpleString("testaddress");
-
-      final int batchSize = 10;
-      final long batchTime = 250;
-
-      List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();
-      connectorNames.add(new Pair<String, String>(server1tc.getName(), null));
-
-      MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1",
-                                                                       address1.toString(),
-                                                                       null,
-                                                                       false,
-                                                                       batchSize,
-                                                                       batchTime,
-                                                                       null,
-                                                                       DEFAULT_RETRY_INTERVAL,
-                                                                       DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                       DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
-                                                                       DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
-                                                                       DEFAULT_USE_DUPLICATE_DETECTION,
-                                                                       DEFAULT_MAX_HOPS,
-                                                                       connectorNames);
-      Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
-      ofconfigs.add(ofconfig);
-      service0.getServer().getConfiguration().setMessageFlowConfigurations(ofconfigs);
-
-      service0.start();
-
-      TransportConfiguration server0tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service0Params);
-
-      ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
-
-      ClientSession session0 = csf0.createSession(false, true, true);
-
-      ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
-
-      ClientSession session1 = csf1.createSession(false, true, true);
-
-      session0.createQueue(address1, address1, null, false, false);
-
-      session1.createQueue(address1, address1, null, false, false);
-
-      ClientProducer prod0_1 = session0.createProducer(address1);
-
-      ClientConsumer cons0_1 = session0.createConsumer(address1);
-
-      ClientConsumer cons1_1 = session1.createConsumer(address1);
-
-      session0.start();
-
-      session1.start();
-
-      final SimpleString propKey = new SimpleString("testkey");
-
-      for (int j = 0; j < 5; j++)
-      {
-
-         for (int i = 0; i < batchSize - 1; i++)
-         {
-            ClientMessage message = session0.createClientMessage(false);
-            message.putIntProperty(propKey, i);
-            message.getBody().flip();
-
-            prod0_1.send(message);
-         }
-
-         for (int i = 0; i < batchSize - 1; i++)
-         {
-            ClientMessage rmessage1 = cons0_1.receive(1000);
-
-            assertNotNull(rmessage1);
-
-            assertEquals(i, rmessage1.getProperty(propKey));
-         }
-
-         ClientMessage rmessage1 = cons1_1.receiveImmediate();
-
-         assertNull(rmessage1);
-
-         // Now wait until max batch time is exceeded - this should prompt delivery
-
-         Thread.sleep(batchTime * 2);
-
-         for (int i = 0; i < batchSize - 1; i++)
-         {
-            rmessage1 = cons1_1.receive(1000);
-
-            assertNotNull(rmessage1);
-
-            assertEquals(i, rmessage1.getProperty(propKey));
-         }
-      }
-
-      session0.close();
-
-      session1.close();
-
-      service0.stop();
-      service1.stop();
-
-      assertEquals(0, service0.getServer().getRemotingService().getConnections().size());
-      assertEquals(0, service1.getServer().getRemotingService().getConnections().size());
-   }
+//
+//   public void testBatchTime() throws Exception
+//   {
+//      Map<String, Object> service0Params = new HashMap<String, Object>();
+//      MessagingService service0 = createMessagingService(0, service0Params);
+//
+//      Map<String, Object> service1Params = new HashMap<String, Object>();
+//      MessagingService service1 = createMessagingService(1, service1Params);
+//      service1.start();
+//
+//      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
+//      TransportConfiguration server1tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+//                                                                    service1Params,
+//                                                                    "connector1");
+//      connectors.put(server1tc.getName(), server1tc);
+//      service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
+//
+//      final SimpleString address1 = new SimpleString("testaddress");
+//
+//      final int batchSize = 10;
+//      final long batchTime = 250;
+//
+//      List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();
+//      connectorNames.add(new Pair<String, String>(server1tc.getName(), null));
+//
+//      MessageFlowConfiguration ofconfig = new MessageFlowConfiguration("outflow1",
+//                                                                       address1.toString(),
+//                                                                       null,
+//                                                                       false,
+//                                                                       batchSize,
+//                                                                       batchTime,
+//                                                                       null,
+//                                                                       DEFAULT_RETRY_INTERVAL,
+//                                                                       DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+//                                                                       DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+//                                                                       DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
+//                                                                       DEFAULT_USE_DUPLICATE_DETECTION,
+//                                                                       DEFAULT_MAX_HOPS,
+//                                                                       connectorNames);
+//      Set<MessageFlowConfiguration> ofconfigs = new HashSet<MessageFlowConfiguration>();
+//      ofconfigs.add(ofconfig);
+//      service0.getServer().getConfiguration().setMessageFlowConfigurations(ofconfigs);
+//
+//      service0.start();
+//
+//      TransportConfiguration server0tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+//                                                                    service0Params);
+//
+//      ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
+//
+//      ClientSession session0 = csf0.createSession(false, true, true);
+//
+//      ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
+//
+//      ClientSession session1 = csf1.createSession(false, true, true);
+//
+//      session0.createQueue(address1, address1, null, false, false);
+//
+//      session1.createQueue(address1, address1, null, false, false);
+//
+//      ClientProducer prod0_1 = session0.createProducer(address1);
+//
+//      ClientConsumer cons0_1 = session0.createConsumer(address1);
+//
+//      ClientConsumer cons1_1 = session1.createConsumer(address1);
+//
+//      session0.start();
+//
+//      session1.start();
+//
+//      final SimpleString propKey = new SimpleString("testkey");
+//
+//      for (int j = 0; j < 5; j++)
+//      {
+//
+//         for (int i = 0; i < batchSize - 1; i++)
+//         {
+//            ClientMessage message = session0.createClientMessage(false);
+//            message.putIntProperty(propKey, i);
+//            message.getBody().flip();
+//
+//            prod0_1.send(message);
+//         }
+//
+//         for (int i = 0; i < batchSize - 1; i++)
+//         {
+//            ClientMessage rmessage1 = cons0_1.receive(1000);
+//
+//            assertNotNull(rmessage1);
+//
+//            assertEquals(i, rmessage1.getProperty(propKey));
+//         }
+//
+//         ClientMessage rmessage1 = cons1_1.receiveImmediate();
+//
+//         assertNull(rmessage1);
+//
+//         // Now wait until max batch time is exceeded - this should prompt delivery
+//
+//         Thread.sleep(batchTime * 2);
+//
+//         for (int i = 0; i < batchSize - 1; i++)
+//         {
+//            rmessage1 = cons1_1.receive(1000);
+//
+//            assertNotNull(rmessage1);
+//
+//            assertEquals(i, rmessage1.getProperty(propKey));
+//         }
+//      }
+//
+//      session0.close();
+//
+//      session1.close();
+//
+//      service0.stop();
+//      service1.stop();
+//
+//      assertEquals(0, service0.getServer().getRemotingService().getConnections().size());
+//      assertEquals(0, service1.getServer().getRemotingService().getConnections().size());
+//   }
 
    // Package protected ---------------------------------------------
 

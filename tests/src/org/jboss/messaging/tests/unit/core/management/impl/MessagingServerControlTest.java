@@ -60,6 +60,7 @@ import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
@@ -95,6 +96,8 @@ public class MessagingServerControlTest extends TestCase
    private MessageCounterManager messageCounterManager;
 
    private RemotingService remotingService;
+   
+   private QueueFactory queueFactory;
 
    // Constants -----------------------------------------------------
 
@@ -626,6 +629,7 @@ public class MessagingServerControlTest extends TestCase
       expect(configuration.isMessageCounterEnabled()).andReturn(false);
       securityRepository = createMock(HierarchicalRepository.class);
       queueSettingsRepository = createMock(HierarchicalRepository.class);
+      queueFactory = createMock(QueueFactory.class);
       remotingService = createMock(RemotingService.class);
       resourceManager = createMock(ResourceManager.class);
       server = createMock(MessagingServer.class);
@@ -654,13 +658,13 @@ public class MessagingServerControlTest extends TestCase
    {
       MessagingServerControl control = new MessagingServerControl(postOffice,
                                                                   storageManager,
-                                                                  configuration,
-                                                                  queueSettingsRepository,
+                                                                  configuration,                                                            
                                                                   resourceManager,
                                                                   remotingService,
                                                                   server,
                                                                   messageCounterManager,
-                                                                  new NotificationBroadcasterSupport());
+                                                                  new NotificationBroadcasterSupport(),
+                                                                  queueFactory);
       return control;
    }
 

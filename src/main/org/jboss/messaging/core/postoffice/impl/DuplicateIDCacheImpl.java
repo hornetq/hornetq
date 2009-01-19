@@ -161,32 +161,32 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       return cache.contains(duplID);
    }
    
-   public synchronized void addToCache(final SimpleString duplID) throws Exception
-   {
-      long recordID = storageManager.generateUniqueID();
-      
-      if (persist)
-      {
-         storageManager.storeDuplicateID(address, duplID, recordID);
-      }
-
-      addToCacheInMemory(duplID, recordID);
-   }
-
    public synchronized void addToCache(final SimpleString duplID, final Transaction tx) throws Exception
    {
       long recordID = storageManager.generateUniqueID();
-
-      if (persist)
+      
+      if (tx == null)
       {
-         storageManager.storeDuplicateIDTransactional(tx.getID(), address, duplID, recordID);
+         if (persist)
+         {
+            storageManager.storeDuplicateID(address, duplID, recordID);
+         }
 
-         tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
+         addToCacheInMemory(duplID, recordID);
       }
-
-      // For a tx, it's important that the entry is not added to the cache until commit (or prepare)
-      // since if the client fails then resends them tx we don't want it to get rejected
-      tx.addOperation(new AddDuplicateIDOperation(duplID, recordID));      
+      else
+      {             
+         if (persist)
+         {
+            storageManager.storeDuplicateIDTransactional(tx.getID(), address, duplID, recordID);
+   
+            tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
+         }
+   
+         // For a tx, it's important that the entry is not added to the cache until commit (or prepare)
+         // since if the client fails then resends them tx we don't want it to get rejected
+         tx.addOperation(new AddDuplicateIDOperation(duplID, recordID));      
+      }
    }
 
    private void addToCacheInMemory(final SimpleString duplID, final long recordID) throws Exception

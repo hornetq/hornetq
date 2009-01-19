@@ -13,6 +13,7 @@
 package org.jboss.messaging.core.server.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,16 +29,27 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.DivertConfiguration;
+import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
+import org.jboss.messaging.core.persistence.QueueBindingInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.DivertBinding;
+import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.postoffice.QueueBinding;
+import org.jboss.messaging.core.postoffice.impl.DivertBindingImpl;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
+import org.jboss.messaging.core.postoffice.impl.QueueBindingImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.RemotingConnection;
@@ -52,11 +64,13 @@ import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
+import org.jboss.messaging.core.server.Divert;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.BindableFactory;
+import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.server.cluster.ClusterManager;
+import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.core.server.cluster.impl.ClusterManagerImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
@@ -67,6 +81,8 @@ import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
+import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.VersionLoader;
 
 /**
@@ -101,7 +117,7 @@ public class MessagingServerImpl implements MessagingServer
 
    private ScheduledExecutorService scheduledExecutor;
 
-   private BindableFactory queueFactory;
+   private QueueFactory queueFactory;
 
    private PagingManager pagingManager;
 
@@ -156,7 +172,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          return;
       }
-      
+
       asyncDeliveryPool = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-async-session-delivery-threads"));
 
       executorFactory = new OrderedExecutorFactory(asyncDeliveryPool);
@@ -214,10 +230,10 @@ public class MessagingServerImpl implements MessagingServer
       queueSettingsRepository.setDefault(new QueueSettings());
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
                                                           new JBMThreadFactory("JBM-scheduled-threads"));
-      queueFactory = new BindableFactoryImpl(scheduledExecutor, queueSettingsRepository, storageManager);
+      queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository, storageManager);
 
       pagingManager = createPagingManager();
-      
+
       pagingManager.start();
 
       resourceManager = new ResourceManagerImpl((int)configuration.getTransactionTimeout() / 1000,
@@ -225,12 +241,10 @@ public class MessagingServerImpl implements MessagingServer
       postOffice = new PostOfficeImpl(storageManager,
                                       pagingManager,
                                       queueFactory,
-                                      managementService,
-                                      queueSettingsRepository,
+                                      managementService,                               
                                       configuration.getMessageExpiryScanPeriod(),
                                       configuration.getMessageExpiryThreadPriority(),
                                       configuration.isRequireDestinations(),
-                                      resourceManager,
                                       configuration.isWildcardRoutingEnabled(),
                                       configuration.isBackup(),
                                       configuration.getIDCacheSize(),
@@ -243,7 +257,72 @@ public class MessagingServerImpl implements MessagingServer
 
       postOffice.start();
 
+      List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
+      List<SimpleString> destinations = new ArrayList<SimpleString>();
+
+      storageManager.loadBindingJournal(queueBindingInfos, destinations);
+
+      // Destinations must be added first to ensure flow controllers exist
+      // before queues are created
+      for (SimpleString destination : destinations)
+      {
+         postOffice.addDestination(destination, true);
+      }
+
+      Map<Long, Queue> queues = new HashMap<Long, Queue>();
+
+      for (QueueBindingInfo queueBindingInfo : queueBindingInfos)
+      {
+         Filter filter = null;
+
+         if (queueBindingInfo.getFilterString() != null)
+         {
+            filter = new FilterImpl(queueBindingInfo.getFilterString());
+         }
+
+         Queue queue = queueFactory.createQueue(queueBindingInfo.getPersistenceID(),
+                                                queueBindingInfo.getQueueName(),
+                                                filter,
+                                                true,
+                                                false);
+
+         Binding binding = new QueueBindingImpl(queueBindingInfo.getAddress(), queue);
+
+         queues.put(queueBindingInfo.getPersistenceID(), queue);
+
+         postOffice.addBinding(binding);
+      }
+
+      Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<SimpleString, Long>>>();
+
+      storageManager.loadMessageJournal(postOffice,
+                                        storageManager,
+                                        queueSettingsRepository,
+                                        queues,
+                                        resourceManager,
+                                        duplicateIDMap);
+
+      for (Map.Entry<SimpleString, List<Pair<SimpleString, Long>>> entry : duplicateIDMap.entrySet())
+      {
+         SimpleString address = entry.getKey();
+
+         DuplicateIDCache cache = postOffice.getDuplicateIDCache(address);
+
+         if (configuration.isPersistIDCache())
+         {
+            cache.load(entry.getValue());
+         }
+      }
+
+      pagingManager.reloadStores();
+
       resourceManager.start();
+
+      // Deploy any pre-defined queues
+      deployQueues();
+
+      // Deply and pre-defined diverts
+      deployDiverts();
 
       // FIXME the destination corresponding to the notification address is always created
       // so that queues can be created wether the address is allowable or not (to revisit later)
@@ -287,8 +366,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          clusterManager = new ClusterManagerImpl(executorFactory,
                                                  storageManager,
-                                                 postOffice,
-                                                 queueSettingsRepository,
+                                                 postOffice,                                        
                                                  scheduledExecutor,
                                                  managementService,
                                                  configuration);
@@ -303,7 +381,8 @@ public class MessagingServerImpl implements MessagingServer
                                                           securityRepository,
                                                           resourceManager,
                                                           remotingService,
-                                                          this);
+                                                          this,
+                                                          queueFactory);
 
       log.info("Started messaging server");
 
@@ -657,6 +736,11 @@ public class MessagingServerImpl implements MessagingServer
       return postOffice;
    }
 
+   public QueueFactory getQueueFactory()
+   {
+      return queueFactory;
+   }
+
    // Public
    // ---------------------------------------------------------------------------------------
 
@@ -665,24 +749,129 @@ public class MessagingServerImpl implements MessagingServer
 
    // Protected
    // ------------------------------------------------------------------------------------
-   
+
    /**
     * Method could be replaced for test purposes 
     */
    protected PagingManager createPagingManager()
    {
       return new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(),
-                                                                      configuration.getPagingMaxThreads()),
-                                            storageManager,
-                                            queueSettingsRepository,
-                                            configuration.getPagingMaxGlobalSizeBytes(),
-                                            configuration.getPagingDefaultSize(),
-                                            configuration.isJournalSyncNonTransactional());
+                                                             configuration.getPagingMaxThreads()),
+                                   storageManager,
+                                   queueSettingsRepository,
+                                   configuration.getPagingMaxGlobalSizeBytes(),
+                                   configuration.getPagingDefaultSize(),
+                                   configuration.isJournalSyncNonTransactional());
    }
-
 
    // Private
    // --------------------------------------------------------------------------------------
+
+   private void deployQueues() throws Exception
+   {
+      for (QueueConfiguration config : configuration.getQueueConfigurations())
+      {
+         if (config.getName() == null)
+         {
+            log.warn("Must specify a unique name for each queue. This one will not be deployed.");
+
+            continue;
+         }
+
+         if (config.getAddress() == null)
+         {
+            log.warn("Must specify an address for each queue. This one will not be deployed.");
+
+            continue;
+         }
+
+         SimpleString name = new SimpleString(config.getName());
+
+         Binding binding = postOffice.getBinding(name);
+
+         if (binding == null)
+         {
+            Filter filter = null;
+
+            if (config.getFilterString() != null)
+            {
+               filter = new FilterImpl(new SimpleString(config.getFilterString()));
+            }
+
+            Queue queue = queueFactory.createQueue(-1, name, filter, config.isDurable(), false);
+
+            QueueBinding queueBinding = new QueueBindingImpl(new SimpleString(config.getAddress()), queue);
+
+            postOffice.addBinding(binding);
+
+            if (config.isDurable())
+            {
+               storageManager.addQueueBinding(queueBinding);
+            }
+         }
+      }
+   }
+
+   private void deployDiverts() throws Exception
+   {
+      for (DivertConfiguration config : configuration.getDivertConfigurations())
+      {
+         if (config.getName() == null)
+         {
+            log.warn("Must specify a name for each divert. This one will not be deployed.");
+
+            return;
+         }
+
+         if (config.getAddress() == null)
+         {
+            log.warn("Must specify an address for each divert. This one will not be deployed.");
+
+            return;
+         }
+
+         if (config.getForwardingAddress() == null)
+         {
+            log.warn("Must specify an forwarding address for each divert. This one will not be deployed.");
+
+            return;
+         }
+         
+         SimpleString sName = new SimpleString(config.getName());
+
+         log.info("deploying divert with name " + sName);
+         
+         if (postOffice.getBinding(sName) != null)
+         {
+            log.warn("Binding already exists with name " + sName + ", divert will not be deployed");
+            
+            continue;
+         }
+
+         SimpleString sAddress = new SimpleString(config.getAddress());
+
+         Transformer transformer = instantiateTransformer(config.getTransformerClassName());
+
+         Filter filter = null;
+
+         if (config.getFilterString() != null)
+         {
+            filter = new FilterImpl(new SimpleString(config.getFilterString()));
+         }
+
+         Divert divert = new DivertImpl(new SimpleString(config.getForwardingAddress()),
+                                        sName,
+                                        new SimpleString(config.getRoutingName()),
+                                        config.isExclusive(),
+                                        filter,
+                                        transformer,
+                                        postOffice);
+
+         DivertBinding binding = new DivertBindingImpl(sAddress, divert);
+
+         postOffice.addBinding(binding);
+      }
+   }
 
    private CreateSessionResponseMessage doCreateSession(final String name,
                                                         final long channelID,
@@ -745,6 +934,7 @@ public class MessagingServerImpl implements MessagingServer
                                                               executorFactory.getExecutor(),
                                                               channel,
                                                               managementService,
+                                                              queueFactory,
                                                               this,
                                                               configuration.getManagementAddress());
 
@@ -757,6 +947,27 @@ public class MessagingServerImpl implements MessagingServer
       connection.addFailureListener(session);
 
       return new CreateSessionResponseMessage(version.getIncrementingVersion());
+   }
+
+   private Transformer instantiateTransformer(final String transformerClassName)
+   {
+      Transformer transformer = null;
+
+      if (transformerClassName != null)
+      {
+         ClassLoader loader = Thread.currentThread().getContextClassLoader();
+         try
+         {
+            Class<?> clz = loader.loadClass(transformerClassName);
+            transformer = (Transformer)clz.newInstance();
+         }
+         catch (Exception e)
+         {
+            throw new IllegalArgumentException("Error instantiating transformer class \"" + transformerClassName + "\"",
+                                               e);
+         }
+      }
+      return transformer;
    }
 
    // Inner classes

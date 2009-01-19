@@ -36,5 +36,5 @@ import org.jboss.messaging.core.server.MessagingComponent;
  */
 public interface ClusterManager extends MessagingComponent
 {
-   Map<String, MessageFlow> getMessageFlows();
+   Map<String, Bridge> getBridges();
 }

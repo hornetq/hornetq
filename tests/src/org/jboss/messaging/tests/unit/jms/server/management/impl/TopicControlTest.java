@@ -22,33 +22,17 @@
 
 package org.jboss.messaging.tests.unit.jms.server.management.impl;
 
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.easymock.classextension.EasyMock.createMock;
-import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
-import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.TabularData;
-
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.impl.BindingsImpl;
-import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.JBossTopic;
-import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.impl.TopicControl;
 
 /**
@@ -77,11 +61,10 @@ public class TopicControlTest extends TestCase
       JBossTopic topic = new JBossTopic(name);
       PostOffice postOffice = createMock(PostOffice.class);
       StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
-
+ 
       replay(postOffice, storageManager);
 
-      TopicControl control = new TopicControl(topic, jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      TopicControl control = new TopicControl(topic, jndiBinding, postOffice);
       assertEquals(name, control.getName());
 
       verify(postOffice, storageManager);
@@ -95,11 +78,10 @@ public class TopicControlTest extends TestCase
       JBossTopic topic = new JBossTopic(name);
       PostOffice postOffice = createMock(PostOffice.class);
       StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
 
       replay(postOffice, storageManager);
 
-      TopicControl control = new TopicControl(topic, jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      TopicControl control = new TopicControl(topic, jndiBinding, postOffice);
       assertEquals(topic.getAddress(), control.getAddress());
 
       verify(postOffice, storageManager);
@@ -113,11 +95,10 @@ public class TopicControlTest extends TestCase
       JBossTopic topic = new JBossTopic(name);
       PostOffice postOffice = createMock(PostOffice.class);
       StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
 
       replay(postOffice, storageManager);
 
-      TopicControl control = new TopicControl(topic, jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      TopicControl control = new TopicControl(topic, jndiBinding, postOffice);
       assertEquals(jndiBinding, control.getJNDIBinding());
 
       verify(postOffice, storageManager);
@@ -131,11 +112,10 @@ public class TopicControlTest extends TestCase
       JBossTopic topic = new JBossTopic(name);
       PostOffice postOffice = createMock(PostOffice.class);
       StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
 
       replay(postOffice, storageManager);
 
-      TopicControl control = new TopicControl(topic, jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      TopicControl control = new TopicControl(topic, jndiBinding, postOffice);
       assertEquals(topic.isTemporary(), control.isTemporary());
 
       verify(postOffice, storageManager);

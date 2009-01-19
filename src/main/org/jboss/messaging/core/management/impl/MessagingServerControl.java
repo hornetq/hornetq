@@ -53,17 +53,15 @@ import org.jboss.messaging.core.management.TransportConfigurationInfo;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.postoffice.QueueBinding;
+import org.jboss.messaging.core.postoffice.impl.QueueBindingImpl;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerSession;
-import org.jboss.messaging.core.server.impl.ServerSessionImpl;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
@@ -89,8 +87,6 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
    private final Configuration configuration;
 
-   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
-
    private final ResourceManager resourceManager;
 
    private final RemotingService remotingService;
@@ -101,6 +97,8 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
    private final NotificationBroadcasterSupport broadcaster;
 
+   private final QueueFactory queueFactory;
+
    private boolean messageCounterEnabled;
 
    // Static --------------------------------------------------------
@@ -110,22 +108,22 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    public MessagingServerControl(final PostOffice postOffice,
                                  final StorageManager storageManager,
                                  final Configuration configuration,
-                                 final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                                  final ResourceManager resourceManager,
                                  final RemotingService remotingService,
                                  final MessagingServer messagingServer,
                                  final MessageCounterManager messageCounterManager,
-                                 final NotificationBroadcasterSupport broadcaster) throws Exception
+                                 final NotificationBroadcasterSupport broadcaster,
+                                 final QueueFactory queueFactory) throws Exception
    {
       this.postOffice = postOffice;
       this.storageManager = storageManager;
       this.configuration = configuration;
-      this.queueSettingsRepository = queueSettingsRepository;
       this.resourceManager = resourceManager;
       this.remotingService = remotingService;
       server = messagingServer;
       this.messageCounterManager = messageCounterManager;
       this.broadcaster = broadcaster;
+      this.queueFactory = queueFactory;
 
       messageCounterEnabled = configuration.isMessageCounterEnabled();
       if (messageCounterEnabled)
@@ -150,7 +148,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    {
       SimpleString sName = new SimpleString(name);
       Binding binding = postOffice.getBinding(sName);
-      if (binding == null || binding.getType() != BindingType.QUEUE)
+      if (binding == null || !binding.isQueueBinding())
       {
          throw new IllegalArgumentException("No queue with name " + sName);
       }
@@ -291,14 +289,17 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    }
 
    // TODO - do we really need this method?
-     
+
    public void createQueue(final String address, final String name) throws Exception
    {
       SimpleString sAddress = new SimpleString(address);
       SimpleString sName = new SimpleString(name);
       if (postOffice.getBinding(sName) == null)
       {
-         postOffice.addQueueBinding(sName, sAddress, null, true, false, false);
+         Queue queue = queueFactory.createQueue(-1, sName, null, true, false);
+         QueueBinding binding = new QueueBindingImpl(sAddress, queue);
+         storageManager.addQueueBinding(binding);
+         postOffice.addBinding(binding);
       }
    }
 
@@ -314,7 +315,13 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       }
       if (postOffice.getBinding(sName) == null)
       {
-         postOffice.addQueueBinding(sName, sAddress, filter, durable, false, false);
+         Queue queue = queueFactory.createQueue(-1, sName, filter, durable, false);
+         QueueBinding binding = new QueueBindingImpl(sAddress, queue);
+         if (durable)
+         {
+            storageManager.addQueueBinding(binding);
+         }
+         postOffice.addBinding(binding);
       }
    }
 
@@ -325,14 +332,19 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
       if (binding != null)
       {
-         if (binding.getType() == BindingType.QUEUE)
+         if (binding.isQueueBinding())
          {
             Queue queue = (Queue)binding.getBindable();
-   
-            queue.deleteAllReferences(storageManager, postOffice, queueSettingsRepository);
-         }
 
-         postOffice.removeBinding(sName);
+            queue.deleteAllReferences();
+
+            postOffice.removeBinding(sName);
+
+            if (queue.isDurable())
+            {
+               storageManager.deleteQueueBinding(queue.getPersistenceID());
+            }
+         }
       }
    }
 

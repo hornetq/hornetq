@@ -104,11 +104,6 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
       return localControl.getScheduledCount();
    }
 
-   public boolean isClustered()
-   {
-      return localControl.isClustered();
-   }
-
    public boolean isDurable()
    {
       return localControl.isDurable();

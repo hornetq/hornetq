@@ -24,51 +24,56 @@ package org.jboss.messaging.core.management.impl;
 
 import javax.management.openmbean.TabularData;
 
-import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
-import org.jboss.messaging.core.management.MessageFlowControlMBean;
+import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
+import org.jboss.messaging.core.management.BridgeControlMBean;
 import org.jboss.messaging.core.management.PairsInfo;
-import org.jboss.messaging.core.server.cluster.MessageFlow;
+import org.jboss.messaging.core.server.cluster.Bridge;
 
 /**
- * A MessageFlowControl
+ * A BridgeControl
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * Created 11 dec. 2008 17:09:04
  */
-public class MessageFlowControl implements MessageFlowControlMBean
+public class BridgeControl implements BridgeControlMBean
 {
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
+ 
+   private final Bridge bridge;
 
-   private final MessageFlow messageFlow;
-
-   private final MessageFlowConfiguration configuration;
+   private final BridgeConfiguration configuration;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public MessageFlowControl(final MessageFlow messageFlow, final MessageFlowConfiguration configuration)
+   public BridgeControl(final Bridge messageFlow, final BridgeConfiguration configuration)
    {
-      this.messageFlow = messageFlow;
+      this.bridge = messageFlow;
       this.configuration = configuration;
    }
 
-   // MessageFlowControlMBean implementation ---------------------------
+   // BridgeControlMBean implementation ---------------------------
 
-   public String getAddress()
+   public TabularData getConnectorPair()
    {
-      return configuration.getAddress();
+      return PairsInfo.toTabularData(configuration.getConnectorPair());
    }
 
-   public TabularData getConnectorNamePairs()
+   public String getForwardingAddress()
    {
-      return PairsInfo.toTabularData(configuration.getConnectorNamePairs());
+      return configuration.getForwardingAddress();
    }
 
+   public String getQueueName()
+   {
+      return configuration.getQueueName();
+   }
+   
    public String getDiscoveryGroupName()
    {
       return configuration.getDiscoveryGroupName();
@@ -119,14 +124,9 @@ public class MessageFlowControl implements MessageFlowControlMBean
       return configuration.getTransformerClassName();
    }
 
-   public boolean isExclusive()
-   {
-      return configuration.isExclusive();
-   }
-
    public boolean isStarted()
    {
-      return messageFlow.isStarted();
+      return bridge.isStarted();
    }
 
    public boolean isUseDuplicateDetection()
@@ -136,12 +136,12 @@ public class MessageFlowControl implements MessageFlowControlMBean
 
    public void start() throws Exception
    {
-      messageFlow.start();
+      bridge.start();
    }
 
    public void stop() throws Exception
    {
-      messageFlow.stop();
+      bridge.stop();
    }
 
    // Public --------------------------------------------------------

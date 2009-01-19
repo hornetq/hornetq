@@ -22,27 +22,23 @@
 
 package org.jboss.messaging.tests.performance.persistence;
 
-import org.jboss.messaging.core.filter.Filter;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.BindableFactory;
-import org.jboss.messaging.core.server.Link;
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.SendLockImpl;
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.SimpleString;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -55,50 +51,15 @@ public class FakePostOffice implements PostOffice
 {
    private ConcurrentHashMap<SimpleString, Binding> bindings = new ConcurrentHashMap<SimpleString, Binding>();
 
-   private BindableFactory queueFactory = new FakeQueueFactory();
-
    private ConcurrentHashSet<SimpleString> addresses = new ConcurrentHashSet<SimpleString>();
 
    private volatile boolean started;
-
-   public Binding addQueueBinding(SimpleString address,
-                                  SimpleString queueName,
-                                  Filter filter,
-                                  boolean durable,
-                                  boolean temporary,
-                                  boolean exclusive) throws Exception
+   
+   public void addBinding(Binding binding) throws Exception
    {
-      Queue queue = queueFactory.createQueue(-1, queueName, filter, durable, false);
-      Binding binding = new FakeBinding(address, queue);
-      bindings.put(address, binding);
-      return binding;
+      bindings.put(binding.getAddress(), binding);
    }
-
-   public Binding addLinkBinding(SimpleString address,
-                                 SimpleString queueName,
-                                 Filter filter,
-                                 boolean durable,
-                                 boolean temporary,
-                                 boolean exclusive,
-                                 SimpleString linkAddress,
-                                 boolean duplicateDetection) throws Exception
-   {
-      Link link = queueFactory.createLink(-1, queueName, filter, durable, false, linkAddress, duplicateDetection);
-      Binding binding = new FakeBinding(address, link);
-      bindings.put(address, binding);
-      return binding;
-   }
-
-   public List<MessageReference> reroute(ServerMessage message) throws Exception
-   {
-      return null;
-   }
-
-   public List<MessageReference> route(ServerMessage message, Transaction tx, boolean deliver) throws Exception
-   {
-      return null;
-   }
-
+ 
    public void route(ServerMessage message, Transaction tx) throws Exception
    {
    }
@@ -185,28 +146,6 @@ public class FakePostOffice implements PostOffice
    public DuplicateIDCache getDuplicateIDCache(SimpleString address)
    {
       return null;
-   }
-
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.postoffice.PostOffice#deliver(java.util.List)
-    */
-   public void deliver(List<MessageReference> references)
-   {
-
-   }
-
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.postoffice.PostOffice#scheduleReferences(long, java.util.List)
-    */
-   public void scheduleReferences(long scheduledDeliveryTime, List<MessageReference> references) throws Exception
-   {
-   }
-
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.postoffice.PostOffice#scheduleReferences(long, long, java.util.List)
-    */
-   public void scheduleReferences(long transactionID, long scheduledDeliveryTime, List<MessageReference> references) throws Exception
-   {
    }
 
 }

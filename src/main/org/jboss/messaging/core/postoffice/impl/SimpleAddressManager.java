@@ -50,7 +50,7 @@ public  class SimpleAddressManager implements AddressManager
 
    public void addBinding(final Binding binding)
    {
-      if (nameMap.putIfAbsent(binding.getBindable().getName(), binding) != null)
+      if (nameMap.putIfAbsent(binding.getBindable().getUniqueName(), binding) != null)
       {
          throw new IllegalStateException("Binding already exists " + binding);
       }
@@ -157,7 +157,7 @@ public  class SimpleAddressManager implements AddressManager
 
       for (Binding binding: bindings.getBindings())
       {
-         if (binding.getBindable().getName().equals(bindableName))
+         if (binding.getBindable().getUniqueName().equals(bindableName))
          {
             theBinding = binding;
 

@@ -53,6 +53,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.MessageInfo;
 import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
@@ -67,6 +68,8 @@ import org.jboss.messaging.util.SimpleString;
 public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTestBase
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(ReplicationAwareQueueControlWrapperTest.class);
 
    // Attributes ----------------------------------------------------
 
@@ -297,7 +300,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       MessageInfo[] messageInfos = MessageInfo.from(messages);
       assertEquals(1, messageInfos.length);
       long messageID = messageInfos[0].getID();
-      
+            
       assertTrue(liveQueueControl.moveMessage(messageID, otherQueue.toString()));
       
       // check the message is no longer in the queue on both live & backup nodes

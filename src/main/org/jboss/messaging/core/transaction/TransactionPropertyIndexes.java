@@ -34,17 +34,13 @@ package org.jboss.messaging.core.transaction;
  */
 public class TransactionPropertyIndexes
 {
-   public static final int QUEUE_MAP_INDEX = 0;
-   
-   public static final int ROLLBACK_COUNTER_INDEX = 1;
-   
-   public static final int DESTINATIONS_IN_PAGE_MODE = 2;
-   
    public static final int IS_DEPAGE = 3;
    
    public static final int CONTAINS_PERSISTENT = 4;
    
    public static final int PAGE_TRANSACTION = 5;
    
-   public static final int PAGED_MESSAGES = 6;
+   public static final int REFS_OPERATION = 6;
+   
+   public static final int PAGE_MESSAGES_OPERATION = 7;
 }

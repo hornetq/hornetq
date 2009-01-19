@@ -189,7 +189,7 @@ public class TypedProperties
       }
    }
 
-   public void decode(final MessagingBuffer buffer)
+   public synchronized void decode(final MessagingBuffer buffer)
    {
       byte b = buffer.getByte();
 
@@ -292,7 +292,7 @@ public class TypedProperties
       }
    }
 
-   public void encode(final MessagingBuffer buffer)
+   public synchronized void encode(final MessagingBuffer buffer)
    {
       if (properties == null)
       {
@@ -347,7 +347,7 @@ public class TypedProperties
       }
    }
 
-   private void doPutValue(final SimpleString key, final PropertyValue value)
+   private synchronized void doPutValue(final SimpleString key, final PropertyValue value)
    {
       PropertyValue oldValue = properties.put(key, value);
       if (oldValue != null)
@@ -360,7 +360,7 @@ public class TypedProperties
       }
    }
 
-   private Object doRemoveProperty(final SimpleString key)
+   private synchronized Object doRemoveProperty(final SimpleString key)
    {
       if (properties == null)
       {
@@ -381,7 +381,7 @@ public class TypedProperties
       }
    }
 
-   private Object doGetProperty(final Object key)
+   private synchronized Object doGetProperty(final Object key)
    {
       if (properties == null)
       {

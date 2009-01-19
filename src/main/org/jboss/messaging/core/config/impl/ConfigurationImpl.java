@@ -15,15 +15,20 @@ package org.jboss.messaging.core.config.impl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.ClusterConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.DivertConfiguration;
 import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
+import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.util.SimpleString;
 
@@ -118,8 +123,9 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_USE_DUPLICATE_DETECTION = true;
    
    public static final int DEFAULT_MAX_HOPS = 1;
-
-
+   
+   public static final boolean DEFAULT_DIVERT_EXCLUSIVE = false;
+   
    // Attributes -----------------------------------------------------------------------------
 
    protected boolean clustered = DEFAULT_CLUSTERED;
@@ -158,11 +164,17 @@ public class ConfigurationImpl implements Configuration
 
    protected String backupConnectorName;
    
-   protected Set<MessageFlowConfiguration> messageFlowConfigurations = new HashSet<MessageFlowConfiguration>();
+   protected List<BridgeConfiguration> bridgeConfigurations = new ArrayList<BridgeConfiguration>();
    
-   protected Set<BroadcastGroupConfiguration> broadcastGroupConfigurations = new HashSet<BroadcastGroupConfiguration>();
+   protected List<DivertConfiguration> divertConfigurations = new ArrayList<DivertConfiguration>();
    
-   protected Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations = new HashMap<String, DiscoveryGroupConfiguration>();
+   protected List<ClusterConfiguration> clusterConfigurations = new ArrayList<ClusterConfiguration>();
+   
+   protected List<QueueConfiguration> queueConfigurations = new ArrayList<QueueConfiguration>();
+   
+   protected List<BroadcastGroupConfiguration> broadcastGroupConfigurations = new ArrayList<BroadcastGroupConfiguration>();
+   
+   protected Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations = new LinkedHashMap<String, DiscoveryGroupConfiguration>();
    
    
    // Paging related attributes ------------------------------------------------------------
@@ -334,24 +346,54 @@ public class ConfigurationImpl implements Configuration
       this.backupConnectorName = backupConnectorName;
    }
    
-   public Set<MessageFlowConfiguration> getMessageFlowConfigurations()
+   public List<BridgeConfiguration> getBridgeConfigurations()
    {
-      return messageFlowConfigurations;
-   }
-
-   public void setMessageFlowConfigurations(final Set<MessageFlowConfiguration> configs)
-   {
-      this.messageFlowConfigurations = configs;
+      return bridgeConfigurations;
    }
    
-   public Set<BroadcastGroupConfiguration> getBroadcastGroupConfigurations()
+   public void setBridgeConfigurations(final List<BridgeConfiguration> configs)
    {
-      return broadcastGroupConfigurations;
+      this.bridgeConfigurations = configs;
    }
 
-   public void setBroadcastGroupConfigurations(Set<BroadcastGroupConfiguration> broadcastGroupConfigurations)
+   public List<BroadcastGroupConfiguration> getBroadcastGroupConfigurations()
    {
-      this.broadcastGroupConfigurations = broadcastGroupConfigurations;
+      return this.broadcastGroupConfigurations;
+   }
+   
+   public void setBroadcastGroupConfigurations(final List<BroadcastGroupConfiguration> configs)
+   {
+      this.broadcastGroupConfigurations = configs;
+   }
+
+   public List<ClusterConfiguration> getClusterConfigurations()
+   {
+      return this.clusterConfigurations;
+   }
+   
+   public void setClusterConfigurations(final List<ClusterConfiguration> configs)
+   {
+      this.clusterConfigurations = configs;
+   }
+
+   public List<DivertConfiguration> getDivertConfigurations()
+   {
+      return this.divertConfigurations;
+   }
+   
+   public void setDivertConfigurations(final List<DivertConfiguration> configs)
+   {
+      this.divertConfigurations = configs;
+   }
+
+   public List<QueueConfiguration> getQueueConfigurations()
+   {
+      return this.queueConfigurations;
+   }
+
+   public void setQueueConfigurations(final List<QueueConfiguration> configs)
+   {
+      this.queueConfigurations = configs;
    }
 
    public Map<String, DiscoveryGroupConfiguration> getDiscoveryGroupConfigurations()
@@ -359,7 +401,7 @@ public class ConfigurationImpl implements Configuration
       return discoveryGroupConfigurations;
    }
 
-   public void setDiscoveryGroupConfigurations(Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations)
+   public void setDiscoveryGroupConfigurations(final Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations)
    {
       this.discoveryGroupConfigurations = discoveryGroupConfigurations;
    }
@@ -369,7 +411,7 @@ public class ConfigurationImpl implements Configuration
       return idCacheSize;
    }
    
-   public void setIDCacheSize(int idCacheSize)
+   public void setIDCacheSize(final int idCacheSize)
    {
       this.idCacheSize = idCacheSize;
    }
@@ -379,7 +421,7 @@ public class ConfigurationImpl implements Configuration
       return persistIDCache;
    }
    
-   public void setPersistIDCache(boolean persist)
+   public void setPersistIDCache(final boolean persist)
    {
       this.persistIDCache = persist;
    }
@@ -418,7 +460,6 @@ public class ConfigurationImpl implements Configuration
    {
       this.pagingMaxThreads = pagingMaxThreads;
    }
-
    
    public void setPagingDirectory(final String dir)
    {

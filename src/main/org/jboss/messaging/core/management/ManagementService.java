@@ -22,13 +22,17 @@
 
 package org.jboss.messaging.core.management;
 
+import java.util.Set;
+
+import javax.management.ObjectName;
+
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
-import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -39,16 +43,14 @@ import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
-import org.jboss.messaging.core.server.cluster.MessageFlow;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TypedProperties;
-
-import javax.management.ObjectName;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -67,7 +69,8 @@ public interface ManagementService extends MessagingComponent
                                               HierarchicalRepository<Set<Role>> securityRepository,
                                               ResourceManager resourceManager,
                                               RemotingService remotingService,
-                                              MessagingServer messagingServer) throws Exception;
+                                              MessagingServer messagingServer,
+                                              QueueFactory queueFactory) throws Exception;
 
    void unregisterServer() throws Exception;
 
@@ -95,9 +98,9 @@ public interface ManagementService extends MessagingComponent
 
    void unregisterDiscoveryGroup(String name) throws Exception;
 
-   void registerMessageFlow(MessageFlow messageFlow, MessageFlowConfiguration configuration) throws Exception;
+   void registerBridge(Bridge bridge, BridgeConfiguration configuration) throws Exception;
 
-   void unregisterMessageFlow(String name) throws Exception;
+   void unregisterBridge(String name) throws Exception;
 
    void registerResource(ObjectName objectName, Object resource) throws Exception;
 
