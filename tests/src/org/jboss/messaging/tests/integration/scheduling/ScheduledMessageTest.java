@@ -238,7 +238,9 @@ public class ScheduledMessageTest extends ServiceTestBase
 
       session.start();
       ClientMessage message3 = consumer.receive(1000);
+      assertNotNull(message3);
       ClientMessage message2 = consumer2.receive(1000);
+      assertNotNull(message2);
       assertEquals("m1", message3.getBody().getString());
       assertEquals("m1", message2.getBody().getString());
       long time = System.currentTimeMillis();
@@ -256,8 +258,10 @@ public class ScheduledMessageTest extends ServiceTestBase
       consumer = session.createConsumer(atestq);
       consumer2 = session.createConsumer(atestq2);
       session.start();
-      message3 = consumer.receive(1000);
+      message3 = consumer.receive(5250);
+      assertNotNull(message3);
       message2 = consumer2.receive(5250);
+      assertNotNull(message2);
       time += 5000;
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m1", message3.getBody().getString());
