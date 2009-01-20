@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.util;
 
@@ -78,7 +78,7 @@ public class XMLUtil
 
    public static String readerToString(Reader r) throws Exception
    {
-      //Read into string
+      // Read into string
       StringBuffer buff = new StringBuffer();
       int c;
       while ((c = r.read()) != -1)
@@ -90,7 +90,7 @@ public class XMLUtil
 
    public static Element readerToElement(Reader r) throws Exception
    {
-      //Read into string
+      // Read into string
       StringBuffer buff = new StringBuffer();
       int c;
       while ((c = r.read()) != -1)
@@ -98,7 +98,7 @@ public class XMLUtil
          buff.append((char)c);
       }
 
-      //Quick hardcoded replace, FIXME this is a kludge - use regexp to match properly
+      // Quick hardcoded replace, FIXME this is a kludge - use regexp to match properly
       String s = buff.toString();
       s = doReplace(s, "jboss.messaging.groupname", "MessagingPostOffice");
       s = doReplace(s, "jboss.messaging.datachanneludpaddress", "228.6.6.6");
@@ -115,7 +115,7 @@ public class XMLUtil
       Document doc = parser.parse(new InputSource(sreader));
       return doc.getDocumentElement();
    }
-   
+
    public static String elementToString(Node n)
    {
 
@@ -139,14 +139,10 @@ public class XMLUtil
       NamedNodeMap attrs = n.getAttributes();
       if (attrs != null)
       {
-         for(int i = 0; i < attrs.getLength(); i++)
+         for (int i = 0; i < attrs.getLength(); i++)
          {
             Node attr = attrs.item(i);
-            sb.append(' ').
-               append(attr.getNodeName()).
-               append("=\"").
-               append(attr.getNodeValue()).
-               append("\"");
+            sb.append(' ').append(attr.getNodeName()).append("=\"").append(attr.getNodeValue()).append("\"");
          }
       }
 
@@ -168,7 +164,7 @@ public class XMLUtil
       {
          sb.append('>').append('\n');
          boolean hasValidChildren = false;
-         for(int i = 0; i < children.getLength(); i++)
+         for (int i = 0; i < children.getLength(); i++)
          {
             String childToString = elementToString(children.item(i));
             if (!"".equals(childToString))
@@ -206,7 +202,7 @@ public class XMLUtil
       {
          StringBuffer sb = new StringBuffer();
          NodeList nl = n.getChildNodes();
-         for(int i = 0; i < nl.getLength(); i++)
+         for (int i = 0; i < nl.getLength(); i++)
          {
             sb.append(XMLUtil.elementToString(nl.item(i)));
             if (i < nl.getLength() - 1)
@@ -224,16 +220,16 @@ public class XMLUtil
 
       Method[] methods = Node.class.getMethods();
 
-      for(int i = 0; i < methods.length; i++)
+      for (int i = 0; i < methods.length; i++)
       {
-         if("getTextContent".equals(methods[i].getName()))
+         if ("getTextContent".equals(methods[i].getName()))
          {
             Method getTextContext = methods[i];
             try
             {
                return (String)getTextContext.invoke(n, EMPTY_ARRAY);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                log.error("Failed to invoke getTextContent() on node " + n, e);
                return null;
@@ -246,7 +242,7 @@ public class XMLUtil
       if (n.hasChildNodes())
       {
          NodeList nl = n.getChildNodes();
-         for(int i = 0; i < nl.getLength(); i++)
+         for (int i = 0; i < nl.getLength(); i++)
          {
             Node c = nl.item(i);
             if (c.getNodeType() == Node.TEXT_NODE)
@@ -268,7 +264,7 @@ public class XMLUtil
                }
                if (textContent == null)
                {
-                 break;
+                  break;
                }
             }
          }
@@ -322,13 +318,13 @@ public class XMLUtil
          throw new IllegalArgumentException("nodes hava a different number of attributes");
       }
 
-      outer: for(int i = 0; i < attrCount; i++)
+      outer: for (int i = 0; i < attrCount; i++)
       {
          Node n = attrs.item(i);
          String name = n.getNodeName();
          String value = n.getNodeValue();
 
-         for(int j = 0; j < attrCount; j++)
+         for (int j = 0; j < attrCount; j++)
          {
             Node n2 = attrs2.item(j);
             String name2 = n2.getNodeName();
@@ -354,7 +350,7 @@ public class XMLUtil
          NodeList nl = node.getChildNodes();
          NodeList nl2 = node2.getChildNodes();
 
-         short[] toFilter = new short[] {Node.TEXT_NODE, Node.ATTRIBUTE_NODE, Node.COMMENT_NODE};
+         short[] toFilter = new short[] { Node.TEXT_NODE, Node.ATTRIBUTE_NODE, Node.COMMENT_NODE };
          List nodes = filter(nl, toFilter);
          List nodes2 = filter(nl2, toFilter);
 
@@ -365,7 +361,7 @@ public class XMLUtil
             throw new IllegalArgumentException("nodes hava a different number of children");
          }
 
-         for(int i = 0; i < length; i++)
+         for (int i = 0; i < length; i++)
          {
             Node n = (Node)nodes.get(i);
             Node n2 = (Node)nodes2.get(i);
@@ -383,8 +379,7 @@ public class XMLUtil
          int i = s.indexOf("]]>");
          if (i == -1)
          {
-            throw new IllegalStateException(
-               "argument starts with <![CDATA[ but cannot find pairing ]]>");
+            throw new IllegalStateException("argument starts with <![CDATA[ but cannot find pairing ]]>");
          }
          s = s.substring(0, i);
       }
@@ -397,9 +392,9 @@ public class XMLUtil
       Enumeration e = properties.propertyNames();
       while (e.hasMoreElements())
       {
-         String key =  (String)e.nextElement();
-         String s = "${" +  key + "}";
-         if(xml.contains(s))
+         String key = (String)e.nextElement();
+         String s = "${" + key + "}";
+         if (xml.contains(s))
          {
             xml = xml.replace(s, properties.getProperty(key));
          }
@@ -407,7 +402,7 @@ public class XMLUtil
       }
       return xml;
    }
-   
+
    public static long parseLong(final Node elem)
    {
       String value = elem.getTextContent().trim();
@@ -458,7 +453,7 @@ public class XMLUtil
                                             "' cannot be parsed as a Boolean");
       }
    }
-   
+
    public static double parseDouble(final Node elem)
    {
       String value = elem.getTextContent().trim();
@@ -484,13 +479,16 @@ public class XMLUtil
       Validator validator = schema.newValidator();
 
       // validate the DOM tree
-      try {
-          validator.validate(new DOMSource(node));
-      } catch (SAXException e) {
+      try
+      {
+         validator.validate(new DOMSource(node));
+      }
+      catch (SAXException e)
+      {
          throw new IllegalStateException("Invalid configuration", e);
       }
    }
-   
+
    // Attributes -----------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
@@ -498,20 +496,20 @@ public class XMLUtil
    // Public ---------------------------------------------------------------------------------------
 
    // Package protected ----------------------------------------------------------------------------
-   
+
    // Protected ------------------------------------------------------------------------------------
-   
+
    // Private --------------------------------------------------------------------------------------
 
    private static List filter(NodeList nl, short[] typesToFilter)
    {
       List nodes = new ArrayList();
 
-      outer: for(int i = 0; i < nl.getLength(); i++)
+      outer: for (int i = 0; i < nl.getLength(); i++)
       {
          Node n = nl.item(i);
          short type = n.getNodeType();
-         for(int j = 0; j < typesToFilter.length; j++)
+         for (int j = 0; j < typesToFilter.length; j++)
          {
             if (typesToFilter[j] == type)
             {
@@ -522,19 +520,17 @@ public class XMLUtil
       }
       return nodes;
    }
-   
-   //Quick dirty replace - use a reg exp to use true default value
+
+   // Quick dirty replace - use a reg exp to use true default value
    private static String doReplace(String s, String propertyName, String defaultValue)
    {
       String sysProp = System.getProperty(propertyName);
-      
+
       s = s.replace("${" + propertyName + ":" + defaultValue + "}", sysProp == null ? defaultValue : sysProp);
-      
+
       return s;
    }
 
-
    // Inner classes --------------------------------------------------------------------------------
-
 
 }
