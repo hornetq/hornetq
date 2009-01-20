@@ -160,6 +160,9 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
    public synchronized void deploy(final URL url) throws Exception
    {
       Element e = getRootElement(url);
+      
+      validate(e);
+      
       //find all thenodes to deploy
       String elements[] = getElementTagName();
       for (String element : elements)
@@ -258,6 +261,11 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
     * @throws Exception .
     */
    public abstract void deploy(final Node node) throws Exception;
+
+   /**
+    * Validate the DOM 
+    */
+   public abstract void validate(final Node rootNode) throws Exception;
 
    /**
     * undeploys an element

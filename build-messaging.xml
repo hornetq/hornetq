@@ -85,6 +85,7 @@
    <property name="src.dir" value="src"/>
    <property name="src.main.dir" value="${src.dir}/main"/>
    <property name="src.config.dir" value="${src.dir}/config"/>
+   <property name="src.schemas.dir" value="${src.dir}/schemas"/>
    <property name="src.bin.dir" value="${src.dir}/bin"/>
    <property name="doc.dir" value="docs"/>
    <property name="licenses.dir" value="licenses"/>
@@ -100,6 +101,7 @@
              value="${build.dir}/${build.artifact}"/>
    <property name="build.distro.lib.dir" value="${build.distro.dir}/lib"/>
    <property name="build.distro.config.dir" value="${build.distro.dir}/config"/>
+   <property name="build.distro.schemas.dir" value="${build.distro.dir}/schemas"/>
    <property name="build.distro.bin.dir" value="${build.distro.dir}/bin"/>
    <property name="build.distro.api.dir" value="${build.distro.dir}/docs/api"/>
    <property name="build.distro.examples.dir" value="${build.distro.dir}/examples"/>
@@ -284,6 +286,7 @@
       <pathelement location="${test.dir}/tmpfiles"/>
       <pathelement location="${test.classes.dir}"/>
       <pathelement location="${src.config.dir}"/>
+      <pathelement location="${src.schemas.dir}"/>
       <path refid="test.compilation.classpath"/>
       <path refid="oswego.concurrent.classpath"/>
       <path refid="slf4j.api.classpath"/>
@@ -301,6 +304,7 @@
    <path id="jms.test.execution.classpath">
       <pathelement location="${test.dir}/config"/>
       <pathelement location="${src.config.dir}"/>
+      <pathelement location="${src.schemas.dir}"/>
       <pathelement location="${test.jms.dir}/config"/>
       <pathelement location="${test.jms.classes.dir}"/>
       <path location="${build.jars.dir}/${transports.jar.name}"/>
@@ -333,6 +337,7 @@
    <path id="jms.standalone.server.classpath">
       <pathelement location="${test.dir}/config"/>
       <pathelement location="${src.config.dir}"/>
+      <pathelement location="${src.schemas.dir}"/>
       <pathelement location="${test.jms.dir}/config"/>
       <pathelement location="${test.jms.classes.dir}"/>
       <path location="${build.jars.dir}/${transports.jar.name}"/>
@@ -542,6 +547,30 @@
          <arg line="bootstrap"/>
       </exec>
    </target>
+    
+   <target name="validate-configuration" description="validate configuration files">
+      <echo>validating server configuration</echo>
+      <schemavalidate file="src/config/jbm-configuration.xml">
+         <schema namespace="urn:jboss:messaging-configuration" 
+                 file="src/schemas/jbm-configuration.xsd"/>
+      </schemavalidate>
+      <echo>validating security credentials</echo>
+      <schemavalidate file="src/config/jbm-security.xml">
+         <schema namespace="urn:jboss:messaging-security" 
+                 file="src/schemas/jbm-security.xsd"/>
+      </schemavalidate>
+      <echo>validating queue settings</echo>
+      <schemavalidate file="src/config/queues.xml">
+         <schema namespace="urn:jboss:messaging-queues" 
+                 file="src/schemas/queues.xsd"/>
+      </schemavalidate>
+      <echo>validating jms resources</echo>
+      <schemavalidate file="src/config/jbm-jms.xml">
+         <schema namespace="urn:jboss:messaging-jms" 
+                 file="src/schemas/jbm-jms.xsd"/>
+      </schemavalidate>
+   </target>
+    
    <!-- ======================================================================================== -->
    <!-- Archival Tasks                                                                           -->
    <!-- ======================================================================================== -->
@@ -719,7 +748,7 @@
       </javac>
    </target>
 
-   <target name="distro" depends="jar, jar-client">
+   <target name="distro" depends="jar, jar-client, validate-configuration">
 
       <mkdir dir="${build.distro.dir}"/>
       <mkdir dir="${build.distro.lib.dir}"/>
@@ -822,13 +851,17 @@
             <include name="messaging.truststore"/>
          </fileset>
       </copy>
+      <copy todir="${build.distro.schemas.dir}">
+         <fileset dir="${src.schemas.dir}">
+            <include name="*.xsd"/>
+         </fileset>
+      </copy>
       <copy todir="${build.distro.bin.dir}">
          <fileset dir="${src.bin.dir}">
             <include name="run.sh"/>
             <include name="run.bat"/>
          </fileset>
       </copy>
-
       <copy todir="${build.distro.bin.dir}">
          <fileset dir="${native.bin.dir}">
             <include name="*.so"/>

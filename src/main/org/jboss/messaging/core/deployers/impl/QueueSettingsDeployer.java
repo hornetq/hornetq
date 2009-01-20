@@ -26,6 +26,7 @@ import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -68,6 +69,12 @@ public class QueueSettingsDeployer extends XmlDeployer
    public String[] getElementTagName()
    {
       return new String[]{"queue-settings"};
+   }
+
+   @Override
+   public void validate(Node rootNode) throws Exception
+   {
+      XMLUtil.validate(rootNode, "queues.xsd");
    }
 
    /**

@@ -226,6 +226,11 @@ public class XMLDeployerTest extends TestCase
          return "test";
       }
 
+      @Override
+      public void validate(Node rootNode) throws Exception
+      {
+      }
+
       public void deploy(Node node) throws Exception
       {
          deployments++;

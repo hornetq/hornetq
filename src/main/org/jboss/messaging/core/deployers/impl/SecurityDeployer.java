@@ -29,6 +29,7 @@ import java.util.Set;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -72,6 +73,12 @@ public class SecurityDeployer extends XmlDeployer
       return new String[]{SECURITY_ELEMENT_NAME};
    }
 
+   @Override
+   public void validate(Node rootNode) throws Exception
+   {
+      XMLUtil.validate(rootNode, "queues.xsd");
+   }
+   
    /**
     * the key attribute for theelement, usually 'name' but can be overridden
     *

@@ -1,4 +1,6 @@
-<deployment>
+<deployment xmlns="urn:jboss:messaging-jms" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:jboss:messaging-jms ../schemas/jbm-jms.xsd ">
 
    <connection-factory name="testConnectionFactory">
       <connector-ref connector-name="netty"/>
@@ -16,12 +18,12 @@
 
    <connection-factory name="ServerAckConnectionFactory">
       <connector-ref connector-name="netty"/>
-      <pre-acknowledge>true</pre-acknowledge>
       <entry name="ServerAckConnectionFactory"/>
       <entry name="/ServerAckConnectionFactory"/>
       <entry name="/ServerAckXAConnectionFactory"/>
       <entry name="java:/ServerAckConnectionFactory"/>
       <entry name="java:/ServerAckXAConnectionFactory"/>
+      <pre-acknowledge>true</pre-acknowledge>
    </connection-factory>
 
    <connection-factory name="ClusteredConnectionFactory">
@@ -42,18 +44,18 @@
 
    <connection-factory name="MyExampleConnectionFactory">
       <connector-ref connector-name="netty"/>
-      <ping-period>5000</ping-period>
-      <call-timeout>30000</call-timeout>
       <entry name="/MyExampleConnectionFactory"/>
       <entry name="/acme/MyExampleConnectionFactoryDupe"/>
       <entry name="java:/xyz/CF1"/>
       <entry name="java:/connectionfactories/acme/connection_factory"/>
+      <ping-period>5000</ping-period>
+      <call-timeout>30000</call-timeout>
       <!-- You can specify the default Client ID to use for connections created using this factory -->
       <client-id>MyClientID</client-id>
       <!-- The batch size in bytes to use when using the DUPS_OK_ACKNOWLEDGE acknowledgement mode -->
-      <dups-ok-batch-size>1048576</dups-ok-batch-size>-size>
+      <dups-ok-batch-size>1048576</dups-ok-batch-size>
       <!-- The batch size in bytes to use when using transactional sessions -->
-      <transaction-batch-size>1048576</transaction-batch-size>-size>
+      <transaction-batch-size>1048576</transaction-batch-size>
       <!-- This is the send window size in bytes -->
       <producer-window-size>1048576</producer-window-size>
       <!-- This is the maximum producer send rate that will be applied when using rate based producer flow control -->

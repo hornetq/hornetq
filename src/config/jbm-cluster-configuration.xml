@@ -1,4 +1,5 @@
-<deployment>
+<deployment xmlns="urn:jboss:messaging-configuration" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:jboss:messaging-configuration ../schemas/jbm-configuration.xsd ">
+
    <configuration>
 
       <clustered>true</clustered>
@@ -78,14 +79,14 @@
       </remoting-interceptors>
       -->
       
-      <backup>false</backup>
-      
       <queue-activation-timeout>30000</queue-activation-timeout>
 
+      <backup>false</backup>      
+
       <!--
-      <backup-connector connector-name="backup-connector"/>
+      <backup-connector-ref connector-name="netty-backup"/>
       -->
-      
+
       <!-- Connectors -->
       
       <connector name="netty-backup">

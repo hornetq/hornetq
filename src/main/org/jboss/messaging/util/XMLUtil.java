@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.util;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
@@ -32,8 +33,15 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Source;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.w3c.dom.Document;
@@ -42,6 +50,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -467,6 +476,21 @@ public class XMLUtil
       }
    }
 
+   public static void validate(Node node, String schemaFile) throws Exception
+   {
+      SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+      Source schemaSource = new StreamSource(ClassLoader.getSystemResourceAsStream(schemaFile));
+      Schema schema = factory.newSchema(schemaSource);
+      Validator validator = schema.newValidator();
+
+      // validate the DOM tree
+      try {
+          validator.validate(new DOMSource(node));
+      } catch (SAXException e) {
+         throw new IllegalStateException("Invalid configuration", e);
+      }
+   }
+   
    // Attributes -----------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------

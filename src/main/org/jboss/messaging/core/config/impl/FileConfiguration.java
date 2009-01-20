@@ -66,6 +66,7 @@ public class FileConfiguration extends ConfigurationImpl
    // Constants ------------------------------------------------------------------------
 
    private static final String DEFAULT_CONFIGURATION_URL = "jbm-configuration.xml";
+   private static final String CONFIGURATION_SCHEMA_URL = "jbm-configuration.xsd";
 
    // Attributes ----------------------------------------------------------------------
 
@@ -80,6 +81,7 @@ public class FileConfiguration extends ConfigurationImpl
       String xml = XMLUtil.readerToString(reader);
       xml = XMLUtil.replaceSystemProps(xml);
       Element e = XMLUtil.stringToElement(xml);
+      XMLUtil.validate(e, CONFIGURATION_SCHEMA_URL);
 
       clustered = getBoolean(e, "clustered", clustered);
 

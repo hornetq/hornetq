@@ -123,6 +123,12 @@ public class JMSServerDeployer extends XmlDeployer
       return new String[] { QUEUE_NODE_NAME, TOPIC_NODE_NAME, CONNECTION_FACTORY_NODE_NAME };
    }
 
+   @Override
+   public void validate(Node rootNode) throws Exception
+   {
+      XMLUtil.validate(rootNode, "jbm-jms.xsd");
+   }
+   
    /**
     * deploy an element
     * 
@@ -292,7 +298,7 @@ public class JMSServerDeployer extends XmlDeployer
 
                if (backupNode != null)
                {
-                  String backupConnectorName = node.getNodeValue();
+                  String backupConnectorName = backupNode.getNodeValue();
 
                   backupConnector = configuration.getConnectorConfigurations().get(backupConnectorName);
 

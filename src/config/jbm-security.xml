@@ -1,4 +1,4 @@
-<deployment>
+<deployment xmlns="urn:jboss:messaging-security" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:jboss:messaging-security ../schemas/jbm-security.xsd ">
       <user name="guest" password="guest">
          <role name="guest"/>
       </user>

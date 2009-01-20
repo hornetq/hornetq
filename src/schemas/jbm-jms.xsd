@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   targetNamespace="urn:jboss:messaging-jms"
+   xmlns="urn:jboss:messaging-jms"
+   elementFormDefault="qualified"
+   attributeFormDefault="unqualified"
+   version="1.0">
+   
+   <xsd:element name="deployment">
+   	<xsd:complexType>
+   		<xsd:sequence>
+   			<xsd:element ref="connection-factory"
+   				maxOccurs="unbounded" minOccurs="1">
+   			</xsd:element>
+   			<xsd:choice maxOccurs="unbounded" minOccurs="1">
+   				<xsd:element ref="queue" maxOccurs="1"
+   					minOccurs="1">
+   				</xsd:element>
+   				<xsd:element ref="topic" maxOccurs="1" minOccurs="1"></xsd:element>
+   			</xsd:choice>
+   		</xsd:sequence>
+   	</xsd:complexType>
+   </xsd:element>
+
+   <xsd:element name="connection-factory">
+   	<xsd:complexType>
+   		<xsd:sequence>
+            <xsd:choice>
+            	<xsd:element ref="connector-ref" maxOccurs="1"
+            		minOccurs="1">
+            	</xsd:element>
+            	<xsd:element name="discovery-group-ref" type="discovery-group-refType" maxOccurs="1" minOccurs="1"></xsd:element>
+            </xsd:choice>
+            <xsd:element name="entry" type="entryType"
+   				maxOccurs="unbounded" minOccurs="1">
+   			</xsd:element>
+   			<xsd:element name="ping-period" type="xsd:long"
+   				maxOccurs="1" minOccurs="0">
+   			</xsd:element>
+            <xsd:element name="call-timeout" type="xsd:long"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="client-id" type="xsd:string"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="dups-ok-batch-size" type="xsd:long"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="transaction-batch-size" type="xsd:long"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="producer-window-size" type="xsd:long"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="producer-max-rate" type="xsd:int"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="consumer-window-size" type="xsd:long"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="consumer-max-rate" type="xsd:int"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="block-on-acknowledge" type="xsd:boolean"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="send-np-messages-synchronously" type="xsd:boolean"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="send-p-messages-synchronously" type="xsd:boolean"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="auto-group-id" type="xsd:boolean"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+   			<xsd:element name="pre-acknowledge" type="xsd:boolean"
+   				maxOccurs="1" minOccurs="0">
+   			</xsd:element>
+   		</xsd:sequence>
+   		<xsd:attribute name="name" type="xsd:string"></xsd:attribute>
+   	</xsd:complexType>
+   </xsd:element>
+
+    <xsd:element name="connector-ref" type="connector-refType"></xsd:element>
+
+    <xsd:complexType name="connector-refType">
+    	<xsd:attribute name="connector-name" type="xsd:string" use="required"></xsd:attribute>
+    	<xsd:attribute name="backup-connector-name" type="xsd:string" use="optional"></xsd:attribute>
+    </xsd:complexType>
+    
+    <xsd:complexType name="entryType">
+    	<xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="discovery-group-refType">
+    	<xsd:attribute name="discovery-group-name" type="xsd:string" use="required"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:element name="queue" type="destinationType"></xsd:element>
+
+
+    
+    <xsd:complexType name="destinationType">
+    	<xsd:sequence>
+    		<xsd:element name="entry" type="entryType" maxOccurs="1" minOccurs="1"></xsd:element>
+    	</xsd:sequence>
+    	<xsd:attribute name="name" type="xsd:ID" use="required"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:element name="topic" type="destinationType"></xsd:element>
+</xsd:schema>

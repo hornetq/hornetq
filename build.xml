@@ -105,6 +105,11 @@
    <target name="userdoc">
       <ant antfile="build-messaging.xml" target="userdoc"/>
    </target>
+    
+   <target name="validate-configuration">
+      <ant antfile="build-messaging.xml" target="validate-configuration"/>
+   </target>
+
    <!-- ======================================================================================== -->
    <!-- Archival Tasks                                                                           -->
    <!-- ======================================================================================== -->

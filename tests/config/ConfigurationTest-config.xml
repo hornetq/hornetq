@@ -1,25 +1,24 @@
-<deployment>
+<deployment xmlns="urn:jboss:messaging-configuration" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:jboss:messaging-configuration ../../src/schemas/jbm-configuration.xsd ">
    <configuration>
       <clustered>true</clustered>
-      <backup>true</backup>
-      <queue-activation-timeout>12456</queue-activation-timeout>
       <scheduled-max-pool-size>12345</scheduled-max-pool-size>        
       <require-destinations>false</require-destinations>
       <security-enabled>false</security-enabled>
       <security-invalidation-interval>5423</security-invalidation-interval>
       <wild-card-routing-enabled>true</wild-card-routing-enabled>
-      <call-timeout>7654</call-timeout>    
-      <packet-confirmation-batch-size>543</packet-confirmation-batch-size>
+      <management-address>Giraffe</management-address>
       <connection-scan-period>6543</connection-scan-period>
       <transaction-timeout>98765</transaction-timeout>
       <transaction-timeout-scan-period>56789</transaction-timeout-scan-period>
       <message-expiry-scan-period>10111213</message-expiry-scan-period>
       <message-expiry-thread-priority>8</message-expiry-thread-priority>
-      <management-address>Giraffe</management-address>
       <remoting-interceptors>
          <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1</class-name>
          <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor2</class-name>
       </remoting-interceptors>
+      <queue-activation-timeout>12456</queue-activation-timeout>
+      <backup>true</backup>
+      <backup-connector-ref connector-name="backup-connector"/>
       <connector name="backup-connector">
          <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory1</factory-class>
          <param key="c_mykey1" value="c_foovalue1" type="String"/>
@@ -27,7 +26,6 @@
          <param key="c_mykey3" value="60" type="Integer"/>
          <param key="c_mykey4" value="c_foovalue4" type="String"/>      
       </connector>
-      <backup-connector-ref connector-name="backup-connector"/>
       <acceptor>
          <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory1</factory-class>           
          <param key="a_mykey1" value="a_foovalue1" type="String"/>
@@ -52,8 +50,6 @@
       <journal-file-size>12345678</journal-file-size>
       <journal-min-files>100</journal-min-files>
       <journal-max-aio>56546</journal-max-aio>
-      <journal-aio-timeout>432323</journal-aio-timeout>
-      <journal-task-period>6544</journal-task-period>      
    </configuration>
 
 </deployment>

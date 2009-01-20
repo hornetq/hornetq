@@ -1,4 +1,6 @@
-<deployment>
+<deployment xmlns="urn:jboss:messaging-queues" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+            xsi:schemaLocation="urn:jboss:messaging-queues ../schemas/queues.xsd ">
 
    <security match="topicjms.testTopic">
       <permission type="create" roles="durpublisher"/>
@@ -65,7 +67,7 @@
 
    <queue-settings match="queuejms.QueueWithOwnDLQAndExpiryQueue">
       <dead-letter-address>queuejms.PrivateDLQ</dead-letter-address>
-      <expiry-queue>queuejms.PrivateExpiryQueue</expiry-queue>
+      <expiry-address>queuejms.PrivateExpiryQueue</expiry-address>
    </queue-settings>
 
    <queue-settings match="topicjms.TopicWithOwnDLQAndExpiryQueue">
