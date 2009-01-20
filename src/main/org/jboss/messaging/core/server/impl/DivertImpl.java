@@ -26,6 +26,9 @@ import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIGINAL_DES
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.paging.PagingManager;
+import org.jboss.messaging.core.paging.PagingStore;
+import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Divert;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -59,6 +62,10 @@ public class DivertImpl implements Divert
    private final Filter filter;
 
    private final Transformer transformer;
+   
+   private final PagingManager pagingManager;
+   
+   private final StorageManager storageManager;
 
    public DivertImpl(final SimpleString forwardAddress,
                      final SimpleString uniqueName,
@@ -66,7 +73,9 @@ public class DivertImpl implements Divert
                      final boolean exclusive,
                      final Filter filter,
                      final Transformer transformer,
-                     final PostOffice postOffice)
+                     final PostOffice postOffice,
+                     final PagingManager pagingManager,
+                     final StorageManager storageManager)
    {
       this.forwardAddress = forwardAddress;
 
@@ -81,6 +90,10 @@ public class DivertImpl implements Divert
       this.transformer = transformer;
 
       this.postOffice = postOffice;
+      
+      this.pagingManager = pagingManager;
+      
+      this.storageManager = storageManager;
    }
 
    public boolean accept(final ServerMessage message) throws Exception
@@ -91,6 +104,25 @@ public class DivertImpl implements Divert
       }
       else
       {
+         //We need to increment ref count here to ensure that the message doesn't get stored, deleted and stored again in a single route which
+         //can occur if the message is routed to a queue, then acked before it's routed here
+         
+         //TODO - combine with similar code in QueueImpl.accept()
+         
+         int count = message.incrementRefCount();
+         
+         if (count == 1)
+         {
+            PagingStore store = pagingManager.getPageStore(message.getDestination());
+            
+            store.addSize(message.getMemoryEstimate());
+         }
+       
+         if (message.isDurable())
+         {
+            message.incrementDurableRefCount();
+         }
+         
          return true;
       }
    }
@@ -109,6 +141,29 @@ public class DivertImpl implements Divert
       }
 
       postOffice.route(message, tx);
+      
+      //Decrement the ref count here - and delete the message if necessary
+      
+      //TODO combine this with code in QueueImpl::postAcknowledge
+      
+      if (message.isDurable())
+      {
+         int count = message.decrementDurableRefCount();
+
+         if (count == 0)
+         {
+            storageManager.deleteMessage(message.getMessageID());
+         }
+      }
+
+      // TODO: We could optimize this by storing the paging-store for the address on the Queue. We would need to know
+      // the Address for the Queue
+      PagingStore store = pagingManager.getPageStore(message.getDestination());
+
+      if (message.decrementRefCount() == 0)
+      {
+         store.addSize(-message.getMemoryEstimate());         
+      }
    }
 
    public SimpleString getRoutingName()

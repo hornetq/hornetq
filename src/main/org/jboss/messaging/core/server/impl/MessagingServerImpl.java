@@ -874,7 +874,9 @@ public class MessagingServerImpl implements MessagingServer
                                         config.isExclusive(),
                                         filter,
                                         transformer,
-                                        postOffice);
+                                        postOffice,
+                                        pagingManager,
+                                        storageManager);
 
          DivertBinding binding = new DivertBindingImpl(sAddress, divert);
 
