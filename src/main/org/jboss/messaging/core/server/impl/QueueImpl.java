@@ -200,7 +200,7 @@ public class QueueImpl implements Queue
    }
    
    public void route(final ServerMessage message, final Transaction tx) throws Exception
-   {
+   { 
       // Temp
       SimpleString routeToHeader = MessageImpl.HDR_ROUTE_TO_PREFIX.concat(name);
       message.removeProperty(routeToHeader);
@@ -243,7 +243,7 @@ public class QueueImpl implements Queue
          addLast(ref);
       }
       else
-      {
+      {         
          if (durableRef)
          {
             if (!message.isStored())

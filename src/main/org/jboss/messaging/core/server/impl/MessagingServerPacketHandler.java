@@ -81,7 +81,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
       Packet response = null;
 
       byte type = packet.getType();
-
+      
       // All these operations need to be idempotent since they are outside of the session
       // reliability replay functionality
       try
@@ -160,7 +160,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
       if (response != null)
       {
          if (result == null)
-         {
+         {           
             channel1.send(response);
          }
          else
@@ -170,13 +170,13 @@ public class MessagingServerPacketHandler implements ChannelHandler
             result.setResultRunner(new Runnable()
             {
                public void run()
-               {
+               {                  
                   channel1.send(theResponse);
                }
             });
          }
       }
-
+    
       channel1.replicateComplete();
    }
 }

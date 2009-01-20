@@ -59,7 +59,7 @@ public final class UUIDGenerator
     * care of it); it might even be good for getting really 'random' stuff to
     * get shared access...
     */
-   public Random getRandomNumberGenerator()
+   public final Random getRandomNumberGenerator()
    {
       /*
        * Could be synchronized, but since side effects are trivial (ie.
@@ -73,7 +73,7 @@ public final class UUIDGenerator
       return mRnd;
    }
 
-   public UUID generateTimeBasedUUID(InetAddress addr)
+   public final UUID generateTimeBasedUUID(InetAddress addr)
    {
       byte[] contents = new byte[16];
       byte[] byteAddr = addr.getAddress();
@@ -96,17 +96,29 @@ public final class UUIDGenerator
       return new UUID(UUID.TYPE_TIME_BASED, contents);
    }
    
-   public SimpleString generateSimpleStringUUID()
+   private InetAddress address;
+   
+   private final InetAddress getAddress()
    {
-      InetAddress localHost = null;
-      
-      try
+      if (address == null)
       {
-         localHost = InetAddress.getLocalHost();
+         address = null;
+         
+         try
+         {
+            address = InetAddress.getLocalHost();
+         }
+         catch (UnknownHostException e)
+         {        
+         }
       }
-      catch (UnknownHostException e)
-      {        
-      }
+      return address;
+   }
+   
+   public final SimpleString generateSimpleStringUUID()
+   {
+      InetAddress localHost  = getAddress();
+      
       SimpleString uid;
       if (localHost == null)
       {
@@ -121,17 +133,29 @@ public final class UUIDGenerator
       return uid;
    }
    
-   public String generateStringUUID()
+   public final SimpleString generateSimpleStringUUID2()
    {
-      InetAddress localHost = null;
+      UUID uuid = generateUUID();
       
-      try
-      {
-         localHost = InetAddress.getLocalHost();
-      }
-      catch (UnknownHostException e)
-      {        
-      }
+      SimpleString str = new SimpleString(uuid.asBytes());
+      
+      return str;
+   }
+   
+   public final UUID generateUUID()
+   {
+      InetAddress localHost  = getAddress();
+      
+      UUIDGenerator gen = UUIDGenerator.getInstance();
+      UUID uid = gen.generateTimeBasedUUID(localHost);         
+      
+      return uid;
+   }
+   
+   public final String generateStringUUID()
+   {
+      InetAddress localHost  = getAddress();
+      
       String uid;
       if (localHost == null)
       {

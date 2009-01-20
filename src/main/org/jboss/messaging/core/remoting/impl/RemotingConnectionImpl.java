@@ -506,7 +506,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
    {
       final Packet packet = decode(buffer);
-
+      
       synchronized (transferLock)
       {
          if (!frozen)
@@ -1034,7 +1034,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                }
 
                if (connection.active || packet.isWriteAlways())
-               {
+               {              
                   connection.transportConnection.write(buffer);
                }
             }
@@ -1388,7 +1388,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       }
 
       private void handlePacket(final Packet packet)
-      {
+      {     
          if (packet.getType() == PACKETS_CONFIRMED)
          {
             if (resendCache != null)
@@ -1433,7 +1433,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             }
 
             if (packet.isResponse())
-            {
+            {           
                response = packet;
 
                confirm(packet);

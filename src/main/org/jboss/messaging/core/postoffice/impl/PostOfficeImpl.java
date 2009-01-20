@@ -285,7 +285,7 @@ public class PostOfficeImpl implements PostOffice
    }
 
    public void route(final ServerMessage message, Transaction tx) throws Exception
-   {
+   {      
       SimpleString address = message.getDestination();
 
       if (checkAllowable)
@@ -360,7 +360,7 @@ public class PostOfficeImpl implements PostOffice
       }
 
       Bindings bindings = addressManager.getBindings(address);
-
+          
       if (bindings != null)
       {
          bindings.route(message, tx);

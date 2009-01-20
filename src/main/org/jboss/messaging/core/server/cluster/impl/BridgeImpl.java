@@ -35,10 +35,11 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.server.HandleStatus;
@@ -47,8 +48,6 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.Transformer;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.Future;
@@ -73,7 +72,7 @@ public class BridgeImpl implements Bridge, FailureListener
    // Attributes ----------------------------------------------------
 
    private final SimpleString name;
-   
+
    private final Queue queue;
 
    private final Executor executor;
@@ -83,8 +82,10 @@ public class BridgeImpl implements Bridge, FailureListener
    private final int maxBatchSize;
 
    private final long maxBatchTime;
-   
+
    private final SimpleString filterString;
+
+   private final Filter filter;
 
    private final SimpleString forwardingAddress;
 
@@ -110,8 +111,6 @@ public class BridgeImpl implements Bridge, FailureListener
 
    private final ScheduledFuture<?> future;
 
-   private final int maxHops;
-   
    private final boolean useDuplicateDetection;
 
    // Static --------------------------------------------------------
@@ -134,12 +133,11 @@ public class BridgeImpl implements Bridge, FailureListener
                      final long retryInterval,
                      final double retryIntervalMultiplier,
                      final int maxRetriesBeforeFailover,
-                     final int maxRetriesAfterFailover,
-                     final int maxHops,
-                     final boolean useDuplicateDetection)
+                     final int maxRetriesAfterFailover,                 
+                     final boolean useDuplicateDetection) throws Exception
    {
       this.name = name;
-      
+
       this.queue = queue;
 
       this.executor = executor;
@@ -147,8 +145,17 @@ public class BridgeImpl implements Bridge, FailureListener
       this.maxBatchSize = maxBatchSize;
 
       this.maxBatchTime = maxBatchTime;
-      
+
       this.filterString = filterString;
+
+      if (this.filterString != null)
+      {
+         this.filter = new FilterImpl(filterString);
+      }
+      else
+      {
+         this.filter = null;
+      }
 
       this.forwardingAddress = forwardingAddress;
 
@@ -156,8 +163,6 @@ public class BridgeImpl implements Bridge, FailureListener
 
       this.transformer = transformer;
 
-      this.maxHops = maxHops;
-      
       this.useDuplicateDetection = useDuplicateDetection;
 
       this.csf = new ClientSessionFactoryImpl(connectorPair.a,
@@ -179,8 +184,6 @@ public class BridgeImpl implements Bridge, FailureListener
          future = null;
       }
    }
-   
-   
 
    public synchronized void start() throws Exception
    {
@@ -251,6 +254,11 @@ public class BridgeImpl implements Bridge, FailureListener
       if (busy)
       {
          return HandleStatus.BUSY;
+      }
+
+      if (filter != null && !filter.match(reference.getMessage()))
+      {
+         return HandleStatus.NO_MATCH;
       }
 
       synchronized (this)
@@ -379,20 +387,6 @@ public class BridgeImpl implements Bridge, FailureListener
                message = transformer.transform(message);
             }
 
-            if (maxHops != -1)
-            {
-               Integer iMaxHops = (Integer)message.getProperty(MessageImpl.HDR_MAX_HOPS);
-
-               if (iMaxHops == null)
-               {
-                  message.putIntProperty(MessageImpl.HDR_MAX_HOPS, maxHops - 1);
-               }
-               else
-               {
-                  message.putIntProperty(MessageImpl.HDR_MAX_HOPS, iMaxHops - 1);
-               }
-            }
-
             SimpleString dest;
 
             if (forwardingAddress != null)
@@ -490,11 +484,6 @@ public class BridgeImpl implements Bridge, FailureListener
    public Transformer getTransformer()
    {
       return transformer;
-   }
-
-   public int getMaxHops()
-   {
-      return maxHops;
    }
 
    public boolean isUseDuplicateDetection()

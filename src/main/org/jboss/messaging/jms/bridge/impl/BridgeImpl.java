@@ -226,7 +226,7 @@ public class BridgeImpl implements MessagingComponent, Bridge
    // MessagingComponent overrides --------------------------------------------------
         
    public synchronized void start() throws Exception
-   {
+   {      
       if (started)
       {
          log.warn("Attempt to start, but is already started");

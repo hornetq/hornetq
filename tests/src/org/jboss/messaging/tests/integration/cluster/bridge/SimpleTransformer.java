@@ -21,7 +21,7 @@
  */
 
 
-package org.jboss.messaging.tests.integration.cluster.distribution;
+package org.jboss.messaging.tests.integration.cluster.bridge;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;

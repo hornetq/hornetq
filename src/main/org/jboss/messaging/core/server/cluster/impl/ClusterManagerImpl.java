@@ -479,11 +479,11 @@ public class ClusterManagerImpl implements ClusterManager
 
          return;
       }
-      
+
       Transformer transformer = instantiateTransformer(config.getTransformerClassName());
 
       Pair<String, String> connectorNamePair = config.getConnectorPair();
-      
+
       Binding binding = postOffice.getBinding(new SimpleString(config.getQueueName()));
 
       if (binding == null)
@@ -494,7 +494,7 @@ public class ClusterManagerImpl implements ClusterManager
       }
 
       Queue queue = (Queue)binding.getBindable();
-      
+
       Bridge bridge;
 
       if (connectorNamePair != null)
@@ -523,69 +523,64 @@ public class ClusterManagerImpl implements ClusterManager
             }
          }
 
-         
          Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connector,
                                                                                                                               backupConnector);
 
          bridge = new BridgeImpl(new SimpleString(config.getName()),
-                                        queue,
-                                        pair,
-                                        executorFactory.getExecutor(),
-                                        config.getMaxBatchSize(),
-                                        config.getMaxBatchTime(),
-                                        new SimpleString(config.getForwardingAddress()),
-                                        config.getFilterString() == null ? null
-                                                                        : new SimpleString(config.getFilterString()),
-                                        storageManager,                      
-                                        scheduledExecutor,
-                                        transformer,
-                                        config.getRetryInterval(),
-                                        config.getRetryIntervalMultiplier(),
-                                        config.getMaxRetriesBeforeFailover(),
-                                        config.getMaxRetriesAfterFailover(),
-                                        config.getMaxHops(),
-                                        config.isUseDuplicateDetection());  
-         
+                                 queue,
+                                 pair,
+                                 executorFactory.getExecutor(),
+                                 config.getMaxBatchSize(),
+                                 config.getMaxBatchTime(),
+                                 config.getFilterString() == null ? null : new SimpleString(config.getFilterString()),
+                                 new SimpleString(config.getForwardingAddress()),                                 
+                                 storageManager,
+                                 scheduledExecutor,
+                                 transformer,
+                                 config.getRetryInterval(),
+                                 config.getRetryIntervalMultiplier(),
+                                 config.getMaxRetriesBeforeFailover(),
+                                 config.getMaxRetriesAfterFailover(),                               
+                                 config.isUseDuplicateDetection());
+
          bridges.put(config.getName(), bridge);
 
-         log.info("registering bridge");
          managementService.registerBridge(bridge, config);
 
-         bridge.start();                 
+         bridge.start();
       }
-//      else
-//      {
-//         DiscoveryGroup group = discoveryGroups.get(config.getDiscoveryGroupName());     
-//         
-//         if (group == null)
-//         {
-//            log.warn("There is no discovery-group with name " + config.getDiscoveryGroupName() +
-//                     " deployed. This one will not be deployed.");
-//
-//            return;
-//         }
-//         
-//         bridge = new BridgeImpl(new SimpleString(config.getName()),
-//                                        queue,
-//                                        config.getDiscoveryGroupName(),
-//                                        executorFactory.getExecutor(),
-//                                        config.getMaxBatchSize(),
-//                                        config.getMaxBatchTime(),
-//                                        new SimpleString(config.getForwardingAddress()),
-//                                        config.getFilterString() == null ? null
-//                                                                        : new SimpleString(config.getFilterString()),
-//                                        storageManager,                      
-//                                        scheduledExecutor,
-//                                        transformer,
-//                                        config.getRetryInterval(),
-//                                        config.getRetryIntervalMultiplier(),
-//                                        config.getMaxRetriesBeforeFailover(),
-//                                        config.getMaxRetriesAfterFailover(),
-//                                        config.getMaxHops(),
-//                                        config.isUseDuplicateDetection());
-//      }
-      
-      
+      // else
+      // {
+      // DiscoveryGroup group = discoveryGroups.get(config.getDiscoveryGroupName());
+      //         
+      // if (group == null)
+      // {
+      // log.warn("There is no discovery-group with name " + config.getDiscoveryGroupName() +
+      // " deployed. This one will not be deployed.");
+      //
+      // return;
+      // }
+      //         
+      // bridge = new BridgeImpl(new SimpleString(config.getName()),
+      // queue,
+      // config.getDiscoveryGroupName(),
+      // executorFactory.getExecutor(),
+      // config.getMaxBatchSize(),
+      // config.getMaxBatchTime(),
+      // new SimpleString(config.getForwardingAddress()),
+      // config.getFilterString() == null ? null
+      // : new SimpleString(config.getFilterString()),
+      // storageManager,
+      // scheduledExecutor,
+      // transformer,
+      // config.getRetryInterval(),
+      // config.getRetryIntervalMultiplier(),
+      // config.getMaxRetriesBeforeFailover(),
+      // config.getMaxRetriesAfterFailover(),
+      // config.getMaxHops(),
+      // config.isUseDuplicateDetection());
+      // }
+
    }
 
    private Transformer instantiateTransformer(final String transformerClassName)

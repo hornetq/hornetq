@@ -54,7 +54,5 @@ public interface Bridge extends Consumer, MessagingComponent
 
    Transformer getTransformer();
 
-   int getMaxHops();
-
    boolean isUseDuplicateDetection();   
 }

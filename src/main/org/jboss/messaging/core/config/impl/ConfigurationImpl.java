@@ -122,8 +122,6 @@ public class ConfigurationImpl implements Configuration
    
    public static final boolean DEFAULT_USE_DUPLICATE_DETECTION = true;
    
-   public static final int DEFAULT_MAX_HOPS = 1;
-   
    public static final boolean DEFAULT_DIVERT_EXCLUSIVE = false;
    
    // Attributes -----------------------------------------------------------------------------

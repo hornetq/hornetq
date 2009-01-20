@@ -30,7 +30,6 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -140,7 +139,7 @@ public class JournalStorageManager implements StorageManager
    private volatile boolean started;
 
    private final ExecutorService executor;
-
+    
    public JournalStorageManager(final Configuration config)
    {
       this.executor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-journal-storage-manager"));
@@ -230,7 +229,7 @@ public class JournalStorageManager implements StorageManager
    {
       return idGenerator.generateID();
    }
-
+   
    public LargeServerMessage createLargeMessage()
    {
       return new JournalLargeServerMessage(this);
@@ -1240,7 +1239,7 @@ public class JournalStorageManager implements StorageManager
       }
 
    }
-
+   
    private static class LargeMessageEncoding implements EncodingSupport
    {
       private final LargeServerMessage message;

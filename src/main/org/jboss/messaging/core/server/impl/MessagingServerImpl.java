@@ -659,8 +659,8 @@ public class MessagingServerImpl implements MessagingServer
                                                      final boolean xa,
                                                      final int sendWindowSize) throws Exception
    {
-      checkActivate(connection);
-
+      checkActivate(connection);     
+      
       return doCreateSession(name,
                              channelID,
                              username,
@@ -847,9 +847,7 @@ public class MessagingServerImpl implements MessagingServer
          }
          
          SimpleString sName = new SimpleString(config.getName());
-
-         log.info("deploying divert with name " + sName);
-         
+     
          if (postOffice.getBinding(sName) != null)
          {
             log.warn("Binding already exists with name " + sName + ", divert will not be deployed");

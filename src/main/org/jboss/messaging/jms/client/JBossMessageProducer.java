@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.jms.client;
 
@@ -61,138 +61,140 @@ import org.jboss.messaging.util.UUIDGenerator;
 public class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublisher
 {
    // Constants -----------------------------------------------------
-   
-   // Static --------------------------------------------------------      
+
+   // Static --------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(JBossMessageProducer.class);
-   
+
    // Attributes ----------------------------------------------------
-   
+
    private JBossConnection jbossConn;
-   
+
    private final SimpleString connID;
-   
+
    private ClientProducer producer;
-   
+
    private boolean disableMessageID = false;
-   
+
    private boolean disableMessageTimestamp = false;
-   
+
    private int defaultPriority = 4;
-   
+
    private long defaultTimeToLive = 0;
-   
+
    private int defaultDeliveryMode = DeliveryMode.PERSISTENT;
-   
+
    private JBossDestination defaultDestination;
-   
+
    private final String messageIDPrefix;
-   
+
    private final AtomicLong sequenceNumber = new AtomicLong(0);
-   
+
    private ClientSession clientSession;
 
    // Constructors --------------------------------------------------
-   
-   public JBossMessageProducer(final JBossConnection jbossConn, final ClientProducer producer,
-            final JBossDestination defaultDestination, final ClientSession clientSession) throws JMSException
+
+   public JBossMessageProducer(final JBossConnection jbossConn,
+                               final ClientProducer producer,
+                               final JBossDestination defaultDestination,
+                               final ClientSession clientSession) throws JMSException
    {
       this.jbossConn = jbossConn;
-      
+
       this.connID = jbossConn.getUID();
-      
-      this.producer = producer;     
-      
+
+      this.producer = producer;
+
       this.defaultDestination = defaultDestination;
 
       this.clientSession = clientSession;
-      
-      //TODO the UUID should be generated at the JMS Connection level, 
+
+      // TODO the UUID should be generated at the JMS Connection level,
       // then session, producers & messages ID could be created using simple sequences
       String uuid = UUIDGenerator.getInstance().generateSimpleStringUUID().toString();
-      
+
       messageIDPrefix = "ID:" + uuid + ":";
    }
-   
+
    // MessageProducer implementation --------------------------------
-   
+
    public void setDisableMessageID(boolean value) throws JMSException
    {
       checkClosed();
-      
+
       disableMessageID = value;
    }
-   
+
    public boolean getDisableMessageID() throws JMSException
    {
       checkClosed();
-      
+
       return disableMessageID;
    }
-   
+
    public void setDisableMessageTimestamp(boolean value) throws JMSException
    {
       checkClosed();
-      
+
       disableMessageTimestamp = value;
    }
-   
+
    public boolean getDisableMessageTimestamp() throws JMSException
    {
       checkClosed();
-      
+
       return disableMessageTimestamp;
    }
-   
+
    public void setDeliveryMode(int deliveryMode) throws JMSException
    {
       checkClosed();
-      
+
       this.defaultDeliveryMode = deliveryMode;
    }
-   
+
    public int getDeliveryMode() throws JMSException
    {
       checkClosed();
-      
+
       return this.defaultDeliveryMode;
    }
-   
+
    public void setPriority(int defaultPriority) throws JMSException
    {
       checkClosed();
-      
+
       this.defaultPriority = defaultPriority;
    }
-   
+
    public int getPriority() throws JMSException
    {
       checkClosed();
-      
+
       return defaultPriority;
    }
-   
+
    public void setTimeToLive(long timeToLive) throws JMSException
    {
       checkClosed();
-      
+
       this.defaultTimeToLive = timeToLive;
    }
-   
+
    public long getTimeToLive() throws JMSException
    {
       checkClosed();
-      
+
       return defaultTimeToLive;
    }
-   
+
    public Destination getDestination() throws JMSException
    {
       checkClosed();
-      
+
       return defaultDestination;
    }
-   
+
    public void close() throws JMSException
    {
       try
@@ -201,54 +203,49 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
       }
       catch (MessagingException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);     
-      }   
+         throw JMSExceptionHelper.convertFromMessagingException(e);
+      }
    }
-   
+
    public void send(Message message) throws JMSException
    {
       checkClosed();
 
       message.setJMSDeliveryMode(defaultDeliveryMode);
-      
+
       message.setJMSPriority(defaultPriority);
-      
+
       doSend(message, defaultTimeToLive, null);
    }
-   
+
    public void send(Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
-   { 
+   {
       checkClosed();
 
       message.setJMSDeliveryMode(deliveryMode);
-      
+
       message.setJMSPriority(priority);
-            
+
       doSend(message, timeToLive, null);
    }
-   
+
    public void send(Destination destination, Message message) throws JMSException
-   {      
+   {
       checkClosed();
 
       if (destination != null && !(destination instanceof JBossDestination))
       {
          throw new InvalidDestinationException("Not a JBoss Destination:" + destination);
       }
-      
+
       message.setJMSDeliveryMode(defaultDeliveryMode);
-      
+
       message.setJMSPriority(defaultPriority);
-      
+
       doSend(message, defaultTimeToLive, (JBossDestination)destination);
    }
 
-
-   public void send(Destination destination,
-                    Message message,
-                    int deliveryMode,
-                    int priority,
-                    long timeToLive) throws JMSException
+   public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
    {
       checkClosed();
 
@@ -258,9 +255,9 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
       }
 
       message.setJMSDeliveryMode(deliveryMode);
-      
+
       message.setJMSPriority(priority);
-            
+
       doSend(message, timeToLive, (JBossDestination)destination);
    }
 
@@ -270,25 +267,23 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
    {
       return (Topic)getDestination();
    }
-   
+
    public void publish(Message message) throws JMSException
    {
       send(message);
    }
-   
+
    public void publish(Topic topic, Message message) throws JMSException
    {
       send(topic, message);
    }
-   
-   public void publish(Message message, int deliveryMode, int priority, long timeToLive)
-      throws JMSException
+
+   public void publish(Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
    {
       send(message, deliveryMode, priority, timeToLive);
    }
-   
-   public void publish(Topic topic, Message message, int deliveryMode,
-                       int priority, long timeToLive) throws JMSException
+
+   public void publish(Topic topic, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
    {
       send(topic, message, deliveryMode, priority, timeToLive);
    }
@@ -299,18 +294,17 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
    {
       send((Destination)queue, message);
    }
-   
-   public void send(Queue queue, Message message, int deliveryMode, int priority,
-                    long timeToLive) throws JMSException
+
+   public void send(Queue queue, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
    {
       send((Destination)queue, message, deliveryMode, priority, timeToLive);
    }
-   
+
    public Queue getQueue() throws JMSException
    {
       return (Queue)getDestination();
    }
-   
+
    // Public --------------------------------------------------------
 
    public String toString()
@@ -319,11 +313,11 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
    }
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    private void doSend(Message message, long timeToLive, JBossDestination destination) throws JMSException
    {
       if (timeToLive == 0)
@@ -334,7 +328,7 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
       {
          message.setJMSExpiration(System.currentTimeMillis() + timeToLive);
       }
-      
+
       if (!disableMessageTimestamp)
       {
          message.setJMSTimestamp(System.currentTimeMillis());
@@ -343,34 +337,33 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
       {
          message.setJMSTimestamp(0);
       }
-      
+
       SimpleString address = null;
-      
+
       if (destination == null)
       {
-      	if (defaultDestination == null)
-      	{
-      		throw new InvalidDestinationException("Destination must be specified on send with an anonymous producer");
-      	}
-      	
-      	destination = defaultDestination;
+         if (defaultDestination == null)
+         {
+            throw new InvalidDestinationException("Destination must be specified on send with an anonymous producer");
+         }
+
+         destination = defaultDestination;
       }
       else
       {
-      	if (defaultDestination != null)
-      	{
-      		if (!destination.equals(defaultDestination))
-      		{
-      			throw new JMSException("Where a default destination is specified " +
-                     "for the sender and a destination is " +
-                     "specified in the arguments to the send, " +
-                     "these destinations must be equal");
-      		}
-      	}
-      	
-      	address = destination.getSimpleAddress();
+         if (defaultDestination != null)
+         {
+            if (!destination.equals(defaultDestination))
+            {
+               throw new JMSException("Where a default destination is specified " + "for the sender and a destination is "
+                                      + "specified in the arguments to the send, "
+                                      + "these destinations must be equal");
+            }
+         }
+
+         address = destination.getSimpleAddress();
       }
-      
+
       JBossMessage jbm;
 
       boolean foreign = false;
@@ -383,7 +376,7 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
 
          if (message instanceof BytesMessage)
          {
-            jbm = new JBossBytesMessage((BytesMessage)message, clientSession );
+            jbm = new JBossBytesMessage((BytesMessage)message, clientSession);
          }
          else if (message instanceof MapMessage)
          {
@@ -436,9 +429,9 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
       catch (Exception e)
       {
          JMSException je = new JMSException(e.getMessage());
-         
+
          je.initCause(e);
-         
+
          throw je;
       }
 
@@ -450,15 +443,15 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
       }
 
       try
-      {      	
-      	producer.send(address, coreMessage);         
+      {
+         producer.send(address, coreMessage);
       }
       catch (MessagingException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);     
-      } 
+         throw JMSExceptionHelper.convertFromMessagingException(e);
+      }
    }
-   
+
    private void checkClosed() throws JMSException
    {
       if (producer.isClosed())
@@ -466,6 +459,6 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
          throw new IllegalStateException("Producer is closed");
       }
    }
-   
+
    // Inner classes -------------------------------------------------
 }

@@ -40,7 +40,7 @@ package org.jboss.messaging.util;
  * bytes).
  */
 
-public class UUID
+public final class UUID
 {
    private final static String kHexChars = "0123456789abcdefABCDEF";
 
@@ -101,6 +101,11 @@ public class UUID
       mId[INDEX_VARIATION] &= (byte) 0x3F;
       mId[INDEX_VARIATION] |= (byte) 0x80;
    }
+   
+   public final byte[] asBytes()
+   {
+      return mId;
+   }
 
    /**
     * Could use just the default hash code, but we can probably create a better
@@ -116,7 +121,7 @@ public class UUID
     */
    private final static int[] kShifts = { 3, 7, 17, 21, 29, 4, 9 };
 
-   public int hashCode()
+   public final int hashCode()
    {
       if (mHashCode == 0)
       {
@@ -158,7 +163,7 @@ public class UUID
       return mHashCode;
    }
 
-   public String toString()
+   public final String toString()
    {
       /*
        * Could be synchronized, but there isn't much harm in just taking our
@@ -197,7 +202,7 @@ public class UUID
    /**
     * Checking equality of UUIDs is easy; just compare the 128-bit number.
     */
-   public boolean equals(Object o)
+   public final boolean equals(Object o)
    {
       if (!(o instanceof UUID))
       {

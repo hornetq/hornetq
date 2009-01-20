@@ -703,8 +703,6 @@ public class FileConfiguration extends ConfigurationImpl
       
       boolean useDuplicateDetection = DEFAULT_USE_DUPLICATE_DETECTION;
       
-      int maxHops = DEFAULT_MAX_HOPS;
-      
       NodeList children = brNode.getChildNodes();
 
       for (int j = 0; j < children.getLength(); j++)
@@ -763,10 +761,6 @@ public class FileConfiguration extends ConfigurationImpl
          {
             useDuplicateDetection = XMLUtil.parseBoolean(child);
          }
-         else if (child.getNodeName().equals("max-hops"))
-         {
-            maxHops = XMLUtil.parseInt(child);
-         }
          else if (child.getNodeName().equals("connector-ref"))
          {
             String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
@@ -799,8 +793,7 @@ public class FileConfiguration extends ConfigurationImpl
                                                retryIntervalMultiplier,
                                                maxRetriesBeforeFailover,
                                                maxRetriesAfterFailover,
-                                               useDuplicateDetection,
-                                               maxHops,                                               
+                                               useDuplicateDetection,                                                                                       
                                                connectorPair);
       }
       else
@@ -816,8 +809,7 @@ public class FileConfiguration extends ConfigurationImpl
                                                retryIntervalMultiplier,
                                                maxRetriesBeforeFailover,
                                                maxRetriesAfterFailover,       
-                                               useDuplicateDetection,
-                                               maxHops,                                               
+                                               useDuplicateDetection,                                                                                         
                                                discoveryGroupName);
       }
 

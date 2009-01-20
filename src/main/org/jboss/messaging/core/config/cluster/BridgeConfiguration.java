@@ -68,8 +68,6 @@ public class BridgeConfiguration implements Serializable
 
    private final boolean useDuplicateDetection;
 
-   private final int maxHops;
-
    public BridgeConfiguration(final String name,
                               final String queueName,
                               final String forwardingAddress,
@@ -81,8 +79,7 @@ public class BridgeConfiguration implements Serializable
                               final double retryIntervalMultiplier,
                               final int maxRetriesBeforeFailover,
                               final int maxRetriesAfterFailover,
-                              final boolean useDuplicateDetection,
-                              final int maxHops,
+                              final boolean useDuplicateDetection,                             
                               final Pair<String, String> connectorPair)
    {
       this.name = name;
@@ -97,7 +94,6 @@ public class BridgeConfiguration implements Serializable
       this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
       this.maxRetriesAfterFailover = maxRetriesAfterFailover;
       this.useDuplicateDetection = useDuplicateDetection;
-      this.maxHops = maxHops;
       this.connectorPair = connectorPair;
       this.discoveryGroupName = null;
    }
@@ -113,8 +109,7 @@ public class BridgeConfiguration implements Serializable
                               final double retryIntervalMultiplier,
                               final int maxRetriesBeforeFailover,
                               final int maxRetriesAfterFailover,
-                              final boolean useDuplicateDetection,
-                              final int maxHops,
+                              final boolean useDuplicateDetection,                             
                               final String discoveryGroupName)
    {
       this.name = name;
@@ -129,7 +124,6 @@ public class BridgeConfiguration implements Serializable
       this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
       this.maxRetriesAfterFailover = maxRetriesAfterFailover;
       this.useDuplicateDetection = useDuplicateDetection;
-      this.maxHops = maxHops;
       this.connectorPair = null;
       this.discoveryGroupName = discoveryGroupName;
    }
@@ -176,7 +170,7 @@ public class BridgeConfiguration implements Serializable
 
    public String getDiscoveryGroupName()
    {
-      return this.discoveryGroupName;
+      return discoveryGroupName;
    }
 
    public long getRetryInterval()
@@ -202,10 +196,5 @@ public class BridgeConfiguration implements Serializable
    public boolean isUseDuplicateDetection()
    {
       return useDuplicateDetection;
-   }
-
-   public int getMaxHops()
-   {
-      return maxHops;
    }
 }

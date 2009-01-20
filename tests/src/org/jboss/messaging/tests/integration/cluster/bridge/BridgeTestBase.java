@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.cluster.distribution;
+package org.jboss.messaging.tests.integration.cluster.bridge;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +35,7 @@ import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 
 /**
- * A MessageFlowTestBase
+ * A BridgeTestBase
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
@@ -43,13 +43,8 @@ import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
  *
  *
  */
-public abstract class MessageFlowTestBase extends TestCase
+public abstract class BridgeTestBase extends TestCase
 {
-   public void testFoo()
-   {      
-   }
-   
-   
    protected MessagingService createMessagingServiceNIO(final int id, final Map<String, Object> params)
    {
       Configuration serviceConf = new ConfigurationImpl();

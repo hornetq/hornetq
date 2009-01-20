@@ -77,8 +77,7 @@ public class BridgeControlTest extends TestCase
                                      randomDouble(),
                                      randomPositiveInt(),
                                      randomPositiveInt(),
-                                     randomBoolean(),
-                                     randomPositiveInt(),
+                                     randomBoolean(),                              
                                      connectorPair);
    }
 
