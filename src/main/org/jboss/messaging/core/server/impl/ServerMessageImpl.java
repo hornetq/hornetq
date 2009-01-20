@@ -158,8 +158,6 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       ServerMessage m = new ServerMessageImpl(this);
       
-      log.info("created copy, new ref count is " + m.getRefCount());
-      
       return m;
    }
 

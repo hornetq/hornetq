@@ -223,7 +223,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public boolean addSize(final long size) throws Exception
    {
-      //log.info("Adding size " + size);
       final long maxSize = getMaxSizeBytes();
 
       final long pageSize = getPageSizeBytes();

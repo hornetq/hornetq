@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.persistence.impl.journal;
 
+import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+
 import java.nio.ByteBuffer;
 
 import org.jboss.messaging.core.exception.MessagingException;
@@ -189,12 +191,20 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
          storageManager.deleteFile(file);
       }
    }
+   
+   //We cache this
+   private volatile int memoryEstimate = -1;
 
    @Override
    public synchronized int getMemoryEstimate()
    {
-      // The body won't be on memory (aways on-file), so we don't consider this for paging
-      return super.getPropertiesEncodeSize();
+      if (memoryEstimate == -1)
+      {
+         // The body won't be on memory (aways on-file), so we don't consider this for paging
+         memoryEstimate = getPropertiesEncodeSize() + SIZE_INT + getEncodeSize() + (16 + 4) * 2 + 1;
+      }
+      
+      return memoryEstimate;
    }
 
    public synchronized void complete() throws Exception

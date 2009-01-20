@@ -204,7 +204,7 @@ public class ChunkTestBase extends ServiceTestBase
          if (realFiles)
          {
             messagingService.stop();
-
+            
             messagingService = createService(realFiles);
             messagingService.start();
 
@@ -348,8 +348,6 @@ public class ChunkTestBase extends ServiceTestBase
    {
       File tmpFile = new File(directory + "/" + name);
 
-      log.info("Creating file " + tmpFile);
-
       RandomAccessFile random = new RandomAccessFile(tmpFile, "rw");
       FileChannel channel = random.getChannel();
 
@@ -374,8 +372,6 @@ public class ChunkTestBase extends ServiceTestBase
 
       channel.close();
       random.close();
-
-      log.info("file " + tmpFile + " created");
 
       return tmpFile;
    }
