@@ -223,6 +223,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public boolean addSize(final long size) throws Exception
    {
+      //log.info("Adding size " + size);
       final long maxSize = getMaxSizeBytes();
 
       final long pageSize = getPageSizeBytes();
@@ -790,7 +791,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          message = pagedMessage.getMessage(storageManager);
 
          final long transactionIdDuringPaging = pagedMessage.getTransactionID();
-         
+
          if (transactionIdDuringPaging >= 0)
          {
             final PageTransactionInfo pageTransactionInfo = pagingManager.getTransaction(transactionIdDuringPaging);

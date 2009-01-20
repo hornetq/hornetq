@@ -39,6 +39,10 @@ public interface ServerMessage extends Message, EncodingSupport
 
    MessageReference createReference(Queue queue);
 
+   int incrementRefCount();
+   
+   int incrementDurableRefCount();
+   
    int decrementDurableRefCount();
    
    int decrementRefCount();
@@ -50,5 +54,7 @@ public interface ServerMessage extends Message, EncodingSupport
    void setStored();
    
    boolean isStored();
+   
+   int getRefCount();
 }
 

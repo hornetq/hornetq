@@ -808,6 +808,8 @@ public class MessagingServerImpl implements MessagingServer
             Queue queue = queueFactory.createQueue(-1, name, filter, config.isDurable(), false);
 
             QueueBinding queueBinding = new QueueBindingImpl(new SimpleString(config.getAddress()), queue);
+            
+            binding = queueBinding;
 
             postOffice.addBinding(binding);
 

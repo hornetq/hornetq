@@ -190,185 +190,187 @@ public class PersistentDivertTest extends ServiceTestBase
       messagingService.stop();
    }
    
-//   public void testPersistentDivertRestartBeforeConsume() throws Exception
-//   {
-//      Configuration conf = createDefaultConfig();
-//      
-//      conf.setClustered(true);
-//      
-//      final String testAddress = "testAddress";
-//      
-//      final String forwardAddress1 = "forwardAddress1";
-//      
-//      final String forwardAddress2 = "forwardAddress2";
-//      
-//      final String forwardAddress3 = "forwardAddress3";
-//      
-//      DivertConfiguration divertConf1 = new DivertConfiguration("divert1", "divert1", testAddress, forwardAddress1, false, null, null);
-//      
-//      DivertConfiguration divertConf2 = new DivertConfiguration("divert2", "divert2", testAddress, forwardAddress2, false, null, null);
-//      
-//      DivertConfiguration divertConf3 = new DivertConfiguration("divert3", "divert3", testAddress, forwardAddress3, false, null, null);
-//      
-//      List<DivertConfiguration> divertConfs = new ArrayList<DivertConfiguration>();
-//      
-//      divertConfs.add(divertConf1);
-//      divertConfs.add(divertConf2);
-//      divertConfs.add(divertConf3);
-//      
-//      conf.setDivertConfigurations(divertConfs);
-//      
-//      MessagingService messagingService = MessagingServiceImpl.newMessagingService(conf);
-//           
-//      messagingService.start();
-//      
-//      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
-//      
-//      sf.setBlockOnPersistentSend(true);
-//
-//      ClientSession session = sf.createSession(false, true, true);
-//      
-//      final SimpleString queueName1 = new SimpleString("queue1");
-//      
-//      final SimpleString queueName2 = new SimpleString("queue2");
-//      
-//      final SimpleString queueName3 = new SimpleString("queue3");
-//      
-//      final SimpleString queueName4 = new SimpleString("queue4");
-//      
-//      session.createQueue(new SimpleString(forwardAddress1), queueName1, null, true, false);
-//      
-//      session.createQueue(new SimpleString(forwardAddress2), queueName2, null, true, false);
-//      
-//      session.createQueue(new SimpleString(forwardAddress3), queueName3, null, true, false);
-//      
-//      session.createQueue(new SimpleString(testAddress), queueName4, null, true, false);
-//
-//      ClientProducer producer = session.createProducer(new SimpleString(testAddress));
-//           
-//      final int numMessages = 10;
-//      
-//      final SimpleString propKey = new SimpleString("testkey");
-//      
-//      for (int i = 0; i < numMessages; i++)
-//      {
-//         ClientMessage message = session.createClientMessage(true);
-//         
-//         message.putIntProperty(propKey, i);
-//         
-//         producer.send(message);
-//      }
-//      
-//      session.close();
-//      
-//      sf.close();
-//      
-//      messagingService.stop();
-//      
-//      messagingService.start();
-//      
-//      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
-//      
-//      sf.setBlockOnPersistentSend(true);
-//
-//      session = sf.createSession(false, true, true);
-//      
-//      ClientConsumer consumer1 = session.createConsumer(queueName1);
-//      
-//      ClientConsumer consumer2 = session.createConsumer(queueName2);
-//      
-//      ClientConsumer consumer3 = session.createConsumer(queueName3);
-//      
-//      ClientConsumer consumer4 = session.createConsumer(queueName4);
-//      
-//      for (int i = 0; i < numMessages; i++)
-//      {
-//         ClientMessage message = consumer1.receive(200);
-//         
-//         assertNotNull(message);
-//         
-//         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
-//         
-//         message.acknowledge();
-//      }
-//      
-//      assertNull(consumer1.receive(200));
-//      
-//      for (int i = 0; i < numMessages; i++)
-//      {
-//         ClientMessage message = consumer2.receive(200);
-//         
-//         assertNotNull(message);
-//         
-//         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
-//         
-//         message.acknowledge();
-//      }
-//      
-//      assertNull(consumer2.receive(200));
-//      
-//      for (int i = 0; i < numMessages; i++)
-//      {
-//         ClientMessage message = consumer3.receive(200);
-//         
-//         assertNotNull(message);
-//         
-//         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
-//         
-//         message.acknowledge();
-//      }
-//      
-//      assertNull(consumer3.receive(200));
-//      
-//      for (int i = 0; i < numMessages; i++)
-//      {
-//         ClientMessage message = consumer4.receive(200);
-//         
-//         assertNotNull(message);
-//         
-//         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
-//         
-//         message.acknowledge();
-//      }
-//      
-//      assertNull(consumer4.receive(200));
-//                 
-//      session.close();
-//      
-//      sf.close();
-//      
-//      messagingService.stop();
-//      
-//      messagingService.start();
-//      
-//      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
-//      
-//      sf.setBlockOnPersistentSend(true);
-//
-//      session = sf.createSession(false, true, true);
-//      
-//      consumer1 = session.createConsumer(queueName1);
-//      
-//      consumer2 = session.createConsumer(queueName2);
-//      
-//      consumer3 = session.createConsumer(queueName3);
-//      
-//      consumer4 = session.createConsumer(queueName4);
-//            
-//      assertNull(consumer1.receive(200));
-//      
-//      assertNull(consumer2.receive(200));
-//      
-//      assertNull(consumer3.receive(200));
-//      
-//      assertNull(consumer4.receive(200));
-//      
-//      session.close();
-//      
-//      sf.close();
-//      
-//      messagingService.stop();
-//   }
+   public void testPersistentDivertRestartBeforeConsume() throws Exception
+   {
+      Configuration conf = createDefaultConfig();
+      
+      conf.setClustered(true);
+      
+      final String testAddress = "testAddress";
+      
+      final String forwardAddress1 = "forwardAddress1";
+      
+      final String forwardAddress2 = "forwardAddress2";
+      
+      final String forwardAddress3 = "forwardAddress3";
+      
+      DivertConfiguration divertConf1 = new DivertConfiguration("divert1", "divert1", testAddress, forwardAddress1, false, null, null);
+      
+      DivertConfiguration divertConf2 = new DivertConfiguration("divert2", "divert2", testAddress, forwardAddress2, false, null, null);
+      
+      DivertConfiguration divertConf3 = new DivertConfiguration("divert3", "divert3", testAddress, forwardAddress3, false, null, null);
+      
+      List<DivertConfiguration> divertConfs = new ArrayList<DivertConfiguration>();
+      
+      divertConfs.add(divertConf1);
+      divertConfs.add(divertConf2);
+      divertConfs.add(divertConf3);
+      
+      conf.setDivertConfigurations(divertConfs);
+      
+      MessagingService messagingService = MessagingServiceImpl.newMessagingService(conf);
+           
+      messagingService.start();
+      
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      
+      sf.setBlockOnPersistentSend(true);
+
+      ClientSession session = sf.createSession(false, true, true);
+      
+      final SimpleString queueName1 = new SimpleString("queue1");
+      
+      final SimpleString queueName2 = new SimpleString("queue2");
+      
+      final SimpleString queueName3 = new SimpleString("queue3");
+      
+      final SimpleString queueName4 = new SimpleString("queue4");
+      
+      session.createQueue(new SimpleString(forwardAddress1), queueName1, null, true, false);
+      
+      session.createQueue(new SimpleString(forwardAddress2), queueName2, null, true, false);
+      
+      session.createQueue(new SimpleString(forwardAddress3), queueName3, null, true, false);
+      
+      session.createQueue(new SimpleString(testAddress), queueName4, null, true, false);
+
+      ClientProducer producer = session.createProducer(new SimpleString(testAddress));
+           
+      final int numMessages = 10;
+      
+      final SimpleString propKey = new SimpleString("testkey");
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createClientMessage(true);
+         
+         message.putIntProperty(propKey, i);
+         
+         producer.send(message);
+      }
+      
+      session.close();
+      
+      sf.close();
+      
+      messagingService.stop();
+      
+      messagingService.start();
+      
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      
+      sf.setBlockOnPersistentSend(true);
+
+      session = sf.createSession(false, true, true);
+      
+      session.start();
+      
+      ClientConsumer consumer1 = session.createConsumer(queueName1);
+      
+      ClientConsumer consumer2 = session.createConsumer(queueName2);
+      
+      ClientConsumer consumer3 = session.createConsumer(queueName3);
+      
+      ClientConsumer consumer4 = session.createConsumer(queueName4);
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = consumer1.receive(200);
+         
+         assertNotNull(message);
+         
+         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         
+         message.acknowledge();
+      }
+      
+      assertNull(consumer1.receive(200));
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = consumer2.receive(200);
+         
+         assertNotNull(message);
+         
+         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         
+         message.acknowledge();
+      }
+      
+      assertNull(consumer2.receive(200));
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = consumer3.receive(200);
+         
+         assertNotNull(message);
+         
+         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         
+         message.acknowledge();
+      }
+      
+      assertNull(consumer3.receive(200));
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = consumer4.receive(200);
+         
+         assertNotNull(message);
+         
+         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         
+         message.acknowledge();
+      }
+      
+      assertNull(consumer4.receive(200));
+                 
+      session.close();
+      
+      sf.close();
+      
+      messagingService.stop();
+      
+      messagingService.start();
+      
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      
+      sf.setBlockOnPersistentSend(true);
+
+      session = sf.createSession(false, true, true);
+      
+      consumer1 = session.createConsumer(queueName1);
+      
+      consumer2 = session.createConsumer(queueName2);
+      
+      consumer3 = session.createConsumer(queueName3);
+      
+      consumer4 = session.createConsumer(queueName4);
+            
+      assertNull(consumer1.receive(200));
+      
+      assertNull(consumer2.receive(200));
+      
+      assertNull(consumer3.receive(200));
+      
+      assertNull(consumer4.receive(200));
+      
+      session.close();
+      
+      sf.close();
+      
+      messagingService.stop();
+   }
    
 
 }

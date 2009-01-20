@@ -53,11 +53,11 @@ public class DivertImpl implements Divert
    private final SimpleString uniqueName;
 
    private final SimpleString routingName;
-   
+
    private final boolean exclusive;
-   
+
    private final Filter filter;
-   
+
    private final Transformer transformer;
 
    public DivertImpl(final SimpleString forwardAddress,
@@ -69,37 +69,21 @@ public class DivertImpl implements Divert
                      final PostOffice postOffice)
    {
       this.forwardAddress = forwardAddress;
-      
+
       this.uniqueName = uniqueName;
-      
+
       this.routingName = routingName;
-      
+
       this.exclusive = exclusive;
-      
+
       this.filter = filter;
-      
+
       this.transformer = transformer;
 
       this.postOffice = postOffice;
    }
 
-   public void route(ServerMessage message, final Transaction tx) throws Exception
-   {
-      SimpleString originalDestination = message.getDestination();
-
-      message.setDestination(forwardAddress);
-
-      message.putStringProperty(HDR_ORIGINAL_DESTINATION, originalDestination);
-      
-      if (transformer != null)
-      {
-         message = transformer.transform(message);
-      }
-
-      postOffice.route(message, tx);
-   }
-
-   public boolean accept(final ServerMessage message)
+   public boolean accept(final ServerMessage message) throws Exception
    {
       if (filter != null && !filter.match(message))
       {
@@ -111,6 +95,22 @@ public class DivertImpl implements Divert
       }
    }
 
+   public void route(ServerMessage message, final Transaction tx) throws Exception
+   {      
+      SimpleString originalDestination = message.getDestination();
+
+      message.setDestination(forwardAddress);
+
+      message.putStringProperty(HDR_ORIGINAL_DESTINATION, originalDestination);
+
+      if (transformer != null)
+      {
+         message = transformer.transform(message);
+      }
+
+      postOffice.route(message, tx);
+   }
+
    public SimpleString getRoutingName()
    {
       return routingName;
@@ -120,11 +120,9 @@ public class DivertImpl implements Divert
    {
       return uniqueName;
    }
-   
+
    public boolean isExclusive()
    {
       return exclusive;
    }
-
-
 }

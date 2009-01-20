@@ -156,7 +156,7 @@ public class QueueImpl implements Queue
 
    // Bindable implementation -------------------------------------------------------------------------------------
 
-   public boolean accept(final ServerMessage message)
+   public boolean accept(final ServerMessage message) throws Exception
    {
       if (filter != null && !filter.match(message))
       {
@@ -164,6 +164,22 @@ public class QueueImpl implements Queue
       }
       else
       {
+         int count = message.incrementRefCount();
+                                     
+         if (count == 1)
+         {
+            PagingStore store = pagingManager.getPageStore(message.getDestination());
+            
+            store.addSize(message.getMemoryEstimate());
+         }
+       
+         boolean durableRef = message.isDurable() && durable;
+         
+         if (durableRef)
+         {
+            message.incrementDurableRefCount();
+         }
+         
          return true;
       }
    }
@@ -194,7 +210,9 @@ public class QueueImpl implements Queue
       // If durable, must be persisted before anything is routed
       MessageReference ref = message.createReference(this);
       
-      addSizeToPaging(ref);
+      PagingStore store = pagingManager.getPageStore(message.getDestination());
+      
+      store.addSize(ref.getMemoryEstimate());
       
       Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
       
@@ -210,6 +228,8 @@ public class QueueImpl implements Queue
             if (!message.isStored())
             {
                storageManager.storeMessage(message);
+               
+               message.setStored();
             }
             
             storageManager.storeReference(ref.getQueue().getPersistenceID(), message.getMessageID());
@@ -228,7 +248,9 @@ public class QueueImpl implements Queue
          {
             if (!message.isStored())
             {                  
-               storageManager.storeMessageTransactional(tx.getID(), message);                                               
+               storageManager.storeMessageTransactional(tx.getID(), message);   
+               
+               message.setStored();
             }
             
             tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);        
@@ -243,8 +265,6 @@ public class QueueImpl implements Queue
 
          getRefsOperation(tx).addRef(ref);
       }
-
-      message.setStored();
    }
    
    public MessageReference reroute(final ServerMessage message, final Transaction tx) throws Exception
@@ -255,15 +275,31 @@ public class QueueImpl implements Queue
    
       MessageReference ref = message.createReference(this);
       
+      int count = message.incrementRefCount();
+      
+      PagingStore store = pagingManager.getPageStore(message.getDestination());
+      
+      if (count == 1)
+      {
+         store.addSize(message.getMemoryEstimate());
+      }
+
+      store.addSize(ref.getMemoryEstimate());
+      
+      boolean durableRef = message.isDurable() && durable;
+      
+      if (durableRef)
+      {
+         message.incrementDurableRefCount();
+      }
+      
       Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
       
       if (scheduledDeliveryTime != null)
       {
          ref.setScheduledDeliveryTime(scheduledDeliveryTime);
       }
-      
-      addSizeToPaging(ref);
-      
+                       
       if (tx == null)
       {
          addLast(ref);
@@ -863,20 +899,6 @@ public class QueueImpl implements Queue
    // Private
    // ------------------------------------------------------------------------------
 
-   private void addSizeToPaging(final MessageReference ref) throws Exception
-   {
-      ServerMessage message = ref.getMessage();
-      
-      PagingStore store = pagingManager.getPageStore(message.getDestination());
-      
-      if (!message.isStored())
-      {
-         store.addSize(message.getMemoryEstimate());
-      }
-
-      store.addSize(ref.getMemoryEstimate());
-   }
-     
    private void move(final SimpleString toAddress, final MessageReference ref) throws Exception
    {
       move(toAddress, ref, false);

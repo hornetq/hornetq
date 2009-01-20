@@ -42,7 +42,7 @@ public interface Bindable
    
    SimpleString getRoutingName();
    
-   boolean accept(ServerMessage message);
+   boolean accept(ServerMessage message) throws Exception;
    
    boolean isExclusive();
 }

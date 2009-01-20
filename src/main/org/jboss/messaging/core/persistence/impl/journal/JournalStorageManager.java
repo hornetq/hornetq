@@ -649,6 +649,11 @@ public class JournalStorageManager implements StorageManager
             MessageReference ref = queue.reroute(record.message, null);
             
             ref.setDeliveryCount(record.deliveryCount);
+            
+            if (scheduledDeliveryTime != 0)
+            {
+               record.message.removeProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+            }
          }
       }
 
@@ -751,6 +756,7 @@ public class JournalStorageManager implements StorageManager
                      throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
                   }
 
+                  //TODO - this involves a scan - we should find a quicker qay of doing it
                   MessageReference removed = queue.removeReferenceWithID(messageID);
 
                   referencesToAck.add(removed);

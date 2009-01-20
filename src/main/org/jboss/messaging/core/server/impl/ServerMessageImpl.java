@@ -24,6 +24,7 @@ package org.jboss.messaging.core.server.impl;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.MessageReference;
@@ -41,6 +42,8 @@ import org.jboss.messaging.core.server.ServerMessage;
  */
 public class ServerMessageImpl extends MessageImpl implements ServerMessage
 {
+   private static final Logger log = Logger.getLogger(ServerMessageImpl.class);
+   
    private final AtomicInteger durableRefCount = new AtomicInteger(0);
 
    /** Global reference counts for paging control */
@@ -50,7 +53,6 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    
    //We cache this
    private volatile int memoryEstimate = -1;
-
    
    /*
     * Constructor for when reading from network
@@ -93,13 +95,13 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    public MessageReference createReference(final Queue queue)
    {
       MessageReference ref = new MessageReferenceImpl(this, queue);
-
-      if (durable && queue.isDurable())
-      {
-         durableRefCount.incrementAndGet();
-      }
-      
-      refCount.incrementAndGet();
+//
+//      if (durable && queue.isDurable())
+//      {
+//         durableRefCount.incrementAndGet();
+//      }
+//      
+//      refCount.incrementAndGet();
     
       return ref;
    }
@@ -113,6 +115,16 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       stored = true;
    }
+   
+   public int incrementRefCount()
+   {
+      return refCount.incrementAndGet();
+   }
+   
+   public int incrementDurableRefCount()
+   {
+      return durableRefCount.incrementAndGet();
+   }
 
    public int decrementDurableRefCount()
    {
@@ -122,6 +134,11 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    public int decrementRefCount()
    {
       return refCount.decrementAndGet();
+   }
+   
+   public int getRefCount()
+   {
+      return refCount.get();
    }
    
    public int getMemoryEstimate()
@@ -139,7 +156,11 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 
    public ServerMessage copy()
    {
-      return new ServerMessageImpl(this);
+      ServerMessage m = new ServerMessageImpl(this);
+      
+      log.info("created copy, new ref count is " + m.getRefCount());
+      
+      return m;
    }
 
    @Override

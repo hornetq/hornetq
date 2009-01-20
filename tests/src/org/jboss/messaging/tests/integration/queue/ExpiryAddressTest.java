@@ -32,6 +32,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -43,6 +44,8 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class ExpiryAddressTest extends UnitTestCase
 {
+   private static final Logger log = Logger.getLogger(ExpiryAddressTest.class);
+
    private MessagingService messagingService;
 
    private ClientSession clientSession;
@@ -119,6 +122,7 @@ public class ExpiryAddressTest extends UnitTestCase
       
       assertNotNull(m);
       
+      log.info("acking");
       m.acknowledge();
       
       assertEquals(m.getBody().getString(), "heyho!");
@@ -131,6 +135,7 @@ public class ExpiryAddressTest extends UnitTestCase
       
       assertNotNull(m);
       
+      log.info("acking");
       m.acknowledge();
       
       assertEquals(m.getBody().getString(), "heyho!");
