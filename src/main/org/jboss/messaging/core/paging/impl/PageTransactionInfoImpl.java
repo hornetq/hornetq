@@ -142,7 +142,14 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    
    public boolean waitCompletion(int timeoutMilliseconds) throws InterruptedException
    {
-      return countDownCompleted.await(timeoutMilliseconds, TimeUnit.MILLISECONDS);
+      if (countDownCompleted == null)
+      {
+         return true;
+      }
+      else
+      {
+         return countDownCompleted.await(timeoutMilliseconds, TimeUnit.MILLISECONDS);
+      }
    }
    
    
