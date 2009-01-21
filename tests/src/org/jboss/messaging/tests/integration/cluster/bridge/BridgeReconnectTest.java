@@ -153,10 +153,10 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       log.info("Simulating failure");
 
-      // Now we will simulate a failure of the message flow connection between server1 and server2
+      // Now we will simulate a failure of the bridge connection between server1 and server2
       // And prevent reconnection for a few tries, then it will reconnect without failing over
       Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
-      RemotingConnection forwardingConnection = ((BridgeImpl)bridge).getForwardingConnection();
+      RemotingConnection forwardingConnection = getForwardingConnection(bridge);
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = retriesBeforeFailover - 1;
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
@@ -286,10 +286,10 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       log.info("Simulating failure");
 
-      // Now we will simulate a failure of the message flow connection between server1 and server2
+      // Now we will simulate a failure of the bridge connection between server1 and server2
       // And prevent reconnection for a few tries, then it will reconnect without failing over
       Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
-      RemotingConnection forwardingConnection = ((BridgeImpl)bridge).getForwardingConnection();
+      RemotingConnection forwardingConnection = getForwardingConnection(bridge);
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = retriesBeforeFailover;
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
@@ -324,6 +324,26 @@ public class BridgeReconnectTest extends BridgeTestBase
       assertEquals(0, service0.getServer().getRemotingService().getConnections().size());
       assertEquals(0, service1.getServer().getRemotingService().getConnections().size());
       assertEquals(0, service2.getServer().getRemotingService().getConnections().size());
+   }
+   
+   private RemotingConnection getForwardingConnection(final Bridge bridge) throws Exception
+   {
+      long start = System.currentTimeMillis();
+      
+      do
+      {
+         RemotingConnection forwardingConnection = ((BridgeImpl)bridge).getForwardingConnection();
+         
+         if (forwardingConnection != null)
+         {
+            return forwardingConnection;
+         }
+                  
+         Thread.sleep(10);
+      }
+      while (System.currentTimeMillis() - start < 50000);
+      
+      throw new IllegalStateException("Failed to get forwarding connection");
    }
 
    public void testFailoverThenReconnectAfterFailover() throws Exception
@@ -419,16 +439,16 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       log.info("Simulating failure");
 
-      // Now we will simulate a failure of the message flow connection between server1 and server2
+      // Now we will simulate a failure of the bridge connection between server1 and server2
       // And prevent reconnection for a few tries, then it will reconnect without failing over
       Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
-      RemotingConnection forwardingConnection = ((BridgeImpl)bridge).getForwardingConnection();
+      RemotingConnection forwardingConnection = getForwardingConnection(bridge);
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = retriesBeforeFailover;
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
       // Now we should be failed over so fail again and should reconnect
-      forwardingConnection = ((BridgeImpl)bridge).getForwardingConnection();
+      forwardingConnection = getForwardingConnection(bridge);
       InVMConnector.resetFailures();
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = retriesBeforeFailover - 1;
@@ -545,10 +565,10 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       log.info("Simulating failure");
 
-      // Now we will simulate a failure of the message flow connection between server1 and server2
+      // Now we will simulate a failure of the bridge connection between server1 and server2
       // And prevent reconnection for a few tries, then it will reconnect without failing over
       Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
-      RemotingConnection forwardingConnection = ((BridgeImpl)bridge).getForwardingConnection();
+      RemotingConnection forwardingConnection = getForwardingConnection(bridge);
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = retriesBeforeFailover - 1;
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
@@ -661,10 +681,10 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       log.info("Simulating failure");
 
-      // Now we will simulate a failure of the message flow connection between server1 and server2
+      // Now we will simulate a failure of the bridge connection between server1 and server2
       // And prevent reconnection for a few tries, then it will reconnect without failing over
       Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
-      RemotingConnection forwardingConnection = ((BridgeImpl)bridge).getForwardingConnection();
+      RemotingConnection forwardingConnection = getForwardingConnection(bridge);
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = retriesBeforeFailover * 2;
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));

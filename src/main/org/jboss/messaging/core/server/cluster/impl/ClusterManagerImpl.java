@@ -267,193 +267,25 @@ public class ClusterManagerImpl implements ClusterManager
       group.start();
    }
 
-   // private synchronized void deployMessageFlow(final MessageFlowConfiguration config) throws Exception
-   // {
-   // if (config.getName() == null)
-   // {
-   // log.warn("Must specify a unique name for each message flow. This one will not be deployed.");
-   //
-   // return;
-   // }
-   //
-   // if (config.getAddress() == null)
-   // {
-   // log.warn("Must specify an address each message flow. This one will not be deployed.");
-   //
-   // return;
-   // }
-   //
-   // if (messageFlows.containsKey(config.getName()))
-   // {
-   // log.warn("There is already a message-flow with name " + config.getName() +
-   // " deployed. This one will not be deployed.");
-   //
-   // return;
-   // }
-   //
-   // if (config.getMaxBatchTime() == 0 || config.getMaxBatchTime() < -1)
-   // {
-   // log.warn("Invalid value for max-batch-time. Valid values are -1 or > 0");
-   //
-   // return;
-   // }
-   //
-   // if (config.getMaxBatchSize() < 1)
-   // {
-   // log.warn("Invalid value for max-batch-size. Valid values are > 0");
-   //
-   // return;
-   // }
-   //
-   // Transformer transformer = null;
-   //
-   // if (config.getTransformerClassName() != null)
-   // {
-   // ClassLoader loader = Thread.currentThread().getContextClassLoader();
-   // try
-   // {
-   // Class<?> clz = loader.loadClass(config.getTransformerClassName());
-   // transformer = (Transformer)clz.newInstance();
-   // }
-   // catch (Exception e)
-   // {
-   // throw new IllegalArgumentException("Error instantiating transformer class \"" + config.getTransformerClassName() +
-   // "\"",
-   // e);
-   // }
-   // }
-   //
-   // SimpleString flowName = new SimpleString(config.getName());
-   //      
-   // List<LinkInfo> linkInfos = linkInfoMap.get(flowName);
-   //      
-   // MessageFlow flow;
-   //
-   // if (config.getDiscoveryGroupName() == null)
-   // {
-   // // Create message flow with list of static connectors
-   //
-   // List<Pair<TransportConfiguration, TransportConfiguration>> conns = new ArrayList<Pair<TransportConfiguration,
-   // TransportConfiguration>>();
-   //
-   // for (Pair<String, String> connectorNamePair : config.getConnectorNamePairs())
-   // {
-   // TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorNamePair.a);
-   //
-   // if (connector == null)
-   // {
-   // log.warn("No connector defined with name '" + connectorNamePair.a +
-   // "'. The message flow will not be deployed.");
-   //
-   // return;
-   // }
-   //
-   // TransportConfiguration backupConnector = null;
-   //
-   // if (connectorNamePair.b != null)
-   // {
-   // backupConnector = configuration.getConnectorConfigurations().get(connectorNamePair.b);
-   //
-   // if (backupConnector == null)
-   // {
-   // log.warn("No connector defined with name '" + connectorNamePair.b +
-   // "'. The message flow will not be deployed.");
-   //
-   // return;
-   // }
-   // }
-   //
-   // conns.add(new Pair<TransportConfiguration, TransportConfiguration>(connector, backupConnector));
-   // }
-   //
-   // flow = new MessageFlowImpl(flowName,
-   // new SimpleString(config.getAddress()),
-   // new SimpleString(config.getForwardingAddress()),
-   // config.getMaxBatchSize(),
-   // config.getMaxBatchTime(),
-   // config.getFilterString() == null ? null
-   // : new SimpleString(config.getFilterString()),
-   // executorFactory,
-   // storageManager,
-   // postOffice,
-   // queueSettingsRepository,
-   // scheduledExecutor,
-   // transformer,
-   // config.getRetryInterval(),
-   // config.getRetryIntervalMultiplier(),
-   // config.getMaxRetriesBeforeFailover(),
-   // config.getMaxRetriesAfterFailover(),
-   // config.isUseDuplicateDetection(),
-   // config.getMaxHops(),
-   // config.isUseRemoteQueueInformation(),
-   // linkInfos,
-   // conns,
-   // queueFactory);
-   // }
-   // else
-   // {
-   // // Create message flow with connectors from discovery group
-   //
-   // DiscoveryGroup group = discoveryGroups.get(config.getDiscoveryGroupName());
-   //
-   // if (group == null)
-   // {
-   // log.warn("There is no discovery-group with name " + config.getDiscoveryGroupName() +
-   // " deployed. This one will not be deployed.");
-   //
-   // return;
-   // }
-   //                  
-   // flow = new MessageFlowImpl(flowName,
-   // new SimpleString(config.getAddress()),
-   // new SimpleString(config.getForwardingAddress()),
-   // config.getMaxBatchSize(),
-   // config.getMaxBatchTime(),
-   // config.getFilterString() == null ? null
-   // : new SimpleString(config.getFilterString()),
-   // this.executorFactory,
-   // storageManager,
-   // postOffice,
-   // queueSettingsRepository,
-   // scheduledExecutor,
-   // transformer,
-   // config.getRetryInterval(),
-   // config.getRetryIntervalMultiplier(),
-   // config.getMaxRetriesBeforeFailover(),
-   // config.getMaxRetriesAfterFailover(),
-   // config.isUseDuplicateDetection(),
-   // config.getMaxHops(),
-   // config.isUseRemoteQueueInformation(),
-   // linkInfos,
-   // group,
-   // queueFactory);
-   // }
-   //
-   // messageFlows.put(config.getName(), flow);
-   // managementService.registerMessageFlow(flow, config);
-   //
-   // flow.start();
-   // }
-
    private synchronized void deployBridge(final BridgeConfiguration config) throws Exception
    {
       if (config.getName() == null)
       {
-         log.warn("Must specify a unique name for each message flow. This one will not be deployed.");
+         log.warn("Must specify a unique name for each bridge. This one will not be deployed.");
 
          return;
       }
 
       if (config.getQueueName() == null)
       {
-         log.warn("Must specify a queue name for each message flow. This one will not be deployed.");
+         log.warn("Must specify a queue name for each bridge. This one will not be deployed.");
 
          return;
       }
 
       if (config.getForwardingAddress() == null)
       {
-         log.warn("Must specify an forwarding address each message flow. This one will not be deployed.");
+         log.warn("Must specify an forwarding address each bridge. This one will not be deployed.");
 
          return;
       }
@@ -533,54 +365,23 @@ public class ClusterManagerImpl implements ClusterManager
                                  config.getMaxBatchSize(),
                                  config.getMaxBatchTime(),
                                  config.getFilterString() == null ? null : new SimpleString(config.getFilterString()),
-                                 new SimpleString(config.getForwardingAddress()),                                 
+                                 new SimpleString(config.getForwardingAddress()),
                                  storageManager,
                                  scheduledExecutor,
                                  transformer,
                                  config.getRetryInterval(),
                                  config.getRetryIntervalMultiplier(),
                                  config.getMaxRetriesBeforeFailover(),
-                                 config.getMaxRetriesAfterFailover(),                               
+                                 config.getMaxRetriesAfterFailover(),
                                  config.isUseDuplicateDetection());
 
+         log.info("put bridge " + this);
          bridges.put(config.getName(), bridge);
 
          managementService.registerBridge(bridge, config);
 
          bridge.start();
       }
-      // else
-      // {
-      // DiscoveryGroup group = discoveryGroups.get(config.getDiscoveryGroupName());
-      //         
-      // if (group == null)
-      // {
-      // log.warn("There is no discovery-group with name " + config.getDiscoveryGroupName() +
-      // " deployed. This one will not be deployed.");
-      //
-      // return;
-      // }
-      //         
-      // bridge = new BridgeImpl(new SimpleString(config.getName()),
-      // queue,
-      // config.getDiscoveryGroupName(),
-      // executorFactory.getExecutor(),
-      // config.getMaxBatchSize(),
-      // config.getMaxBatchTime(),
-      // new SimpleString(config.getForwardingAddress()),
-      // config.getFilterString() == null ? null
-      // : new SimpleString(config.getFilterString()),
-      // storageManager,
-      // scheduledExecutor,
-      // transformer,
-      // config.getRetryInterval(),
-      // config.getRetryIntervalMultiplier(),
-      // config.getMaxRetriesBeforeFailover(),
-      // config.getMaxRetriesAfterFailover(),
-      // config.getMaxHops(),
-      // config.isUseDuplicateDetection());
-      // }
-
    }
 
    private Transformer instantiateTransformer(final String transformerClassName)

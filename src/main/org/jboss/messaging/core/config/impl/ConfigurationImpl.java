@@ -27,7 +27,6 @@ import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.ClusterConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
-import org.jboss.messaging.core.config.cluster.MessageFlowConfiguration;
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.util.SimpleString;

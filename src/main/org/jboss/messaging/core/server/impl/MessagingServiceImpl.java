@@ -152,9 +152,11 @@ public class MessagingServiceImpl implements MessagingService
 
    public void start() throws Exception
    {
-      storageManager.start();
-      remotingService.start();
+      storageManager.start();      
       server.start();
+      //Remoting service should always be started last, otherwise create session packets can be received before the message server packet handler has been registered
+      //resulting in create session attempts to "hang" since response will never be sent back.
+      remotingService.start();
    }
 
    public void stop() throws Exception

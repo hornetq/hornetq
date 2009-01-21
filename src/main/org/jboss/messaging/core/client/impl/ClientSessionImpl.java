@@ -791,7 +791,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       // We lock the channel to prevent any packets to be added to the resend
       // cache during the failover process
       channel.lock();
-
+      
       try
       {
          channel.transferConnection(backupConnection);

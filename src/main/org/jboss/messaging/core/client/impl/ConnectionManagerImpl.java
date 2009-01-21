@@ -398,6 +398,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
    {
       if (me.getCode() == MessagingException.OBJECT_CLOSED)
       {
+         log.info("The server closed the connection");
          // The server has closed the connection. We don't want failover to occur in this case -
          // either the server has booted off the connection, or it didn't receive a ping in time
          // in either case server side resources on both live and backup will be removed so the client
@@ -421,7 +422,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
    // --------------------------------------------------------------------------------------
 
    private RemotingConnection getConnectionForCreateSession() throws MessagingException
-   {
+   {      
       while (true)
       {         
          RemotingConnection connection = getConnection(1);
@@ -430,11 +431,19 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
          {
             // Connection is dead - failover/reconnect
             boolean failedOver = failover();
-            
+                               
             if (!failedOver)
             {
                //Nothing we can do here
                throw new MessagingException(MessagingException.NOT_CONNECTED, "Unabled to create session - server is unavailable and no backup server or backup is unavailable");
+            }
+            
+            try
+            {
+               Thread.sleep(retryInterval);
+            }
+            catch (Exception ignore)
+            {              
             }
          }
          else
@@ -537,11 +546,6 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
                // First try reconnecting to current node if configured to do this
 
                done = reconnect(maxRetriesBeforeFailover);
-
-               if (done)
-               {
-                  log.info("reconnected to original node");
-               }
             }
 
             if (!done)
@@ -756,32 +760,34 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
    private RemotingConnection getConnection(final int count)
    {      
       RemotingConnection conn;
-      
-      
-
+           
       if (connections.size() < maxConnections)
       {
          // Create a new one
          
          DelegatingBufferHandler handler = new DelegatingBufferHandler();
-
-         Connector connector = connectorFactory.createConnector(transportParams, handler, this);
-
-         connector.start();
-
+                 
+         Connector connector;
+         
          Connection tc;
          
          try
          {
+            connector = connectorFactory.createConnector(transportParams, handler, this);
+
+            connector.start();
+                        
             tc = connector.createConnection();
          }
          catch (Exception e)
          {
             //Sanity catch for badly behaved remoting plugins
             
-            log.warn("connector.create should never throw an exception, implementation is badly behaved");
+            log.warn("connector.create or connectorFactory.createConnector should never throw an exception, implementation is badly behaved, but we'll deal with it anyway.");
             
             tc = null;
+            
+            connector = null;
          }
 
          if (tc == null)

@@ -357,7 +357,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.retryIntervalMultiplier = retryIntervalMultiplier;
       this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
       this.maxRetriesAfterFailover = maxRetriesAfterFailover;
-
+      
       this.initialWaitTimeout = -1;
 
       Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connectorConfig,

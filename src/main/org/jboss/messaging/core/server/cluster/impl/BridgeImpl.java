@@ -101,17 +101,29 @@ public class BridgeImpl implements Bridge, FailureListener
 
    private final Transformer transformer;
 
-   private final ClientSessionFactory csf;
+   private volatile ClientSessionFactory csf;
 
-   private ClientSession session;
+   private volatile ClientSession session;
 
-   private ClientProducer producer;
+   private volatile ClientProducer producer;
 
    private volatile boolean started;
 
    private final ScheduledFuture<?> future;
 
    private final boolean useDuplicateDetection;
+
+   private volatile boolean active;
+   
+   private final Pair<TransportConfiguration, TransportConfiguration> connectorPair;
+   
+   private final long retryInterval;
+   
+   private final double retryIntervalMultiplier;
+   
+   private final int maxRetriesBeforeFailover;
+   
+   private final int maxRetriesAfterFailover;
 
    // Static --------------------------------------------------------
 
@@ -133,7 +145,7 @@ public class BridgeImpl implements Bridge, FailureListener
                      final long retryInterval,
                      final double retryIntervalMultiplier,
                      final int maxRetriesBeforeFailover,
-                     final int maxRetriesAfterFailover,                 
+                     final int maxRetriesAfterFailover,
                      final boolean useDuplicateDetection) throws Exception
    {
       this.name = name;
@@ -164,13 +176,16 @@ public class BridgeImpl implements Bridge, FailureListener
       this.transformer = transformer;
 
       this.useDuplicateDetection = useDuplicateDetection;
-
-      this.csf = new ClientSessionFactoryImpl(connectorPair.a,
-                                              connectorPair.b,
-                                              retryInterval,
-                                              retryIntervalMultiplier,
-                                              maxRetriesBeforeFailover,
-                                              maxRetriesAfterFailover);
+      
+      this.connectorPair = connectorPair;
+      
+      this.retryInterval = retryInterval;
+      
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+      
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
+      
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
 
       if (maxBatchTime != -1)
       {
@@ -191,22 +206,55 @@ public class BridgeImpl implements Bridge, FailureListener
       {
          return;
       }
+      
+      executor.execute(new CreateObjectsRunnable());
 
-      queue.addConsumer(this);
+      started = true;
+   }
 
-      createTx();
-
-      if (createObjects())
+   private class CreateObjectsRunnable implements Runnable
+   {
+      public synchronized void run()
       {
-         started = true;
+         try
+         {
+            createTx();
 
-         queue.deliverAsync(executor);
+            queue.addConsumer(BridgeImpl.this);
+            
+            csf = new ClientSessionFactoryImpl(connectorPair.a,
+                                               connectorPair.b,
+                                               retryInterval,
+                                               retryIntervalMultiplier,
+                                               maxRetriesBeforeFailover,
+                                               maxRetriesAfterFailover);
+
+            session = csf.createSession(false, false, false);
+
+            producer = session.createProducer();
+
+            session.addFailureListener(BridgeImpl.this);
+
+            active = true;
+
+            queue.deliverAsync(executor);
+         }
+         catch (Exception e)
+         {
+            log.warn("Unable to connect. Bridge is now disabled.", e);
+
+            active = false;
+            
+            started = false;
+         }
       }
    }
 
    public synchronized void stop() throws Exception
    {
       started = false;
+
+      active = false;
 
       queue.removeConsumer(this);
 
@@ -227,13 +275,8 @@ public class BridgeImpl implements Bridge, FailureListener
       {
          log.warn("Timed out waiting for batch to be sent");
       }
-
-      if (session != null)
-      {
-         session.close();
-      }
-
-      started = false;
+      
+      csf.close();
    }
 
    public boolean isStarted()
@@ -244,7 +287,14 @@ public class BridgeImpl implements Bridge, FailureListener
    // For testing only
    public RemotingConnection getForwardingConnection()
    {
-      return ((ClientSessionImpl)session).getConnection();
+      if (session == null)
+      {
+         return null;
+      }
+      else
+      {
+         return ((ClientSessionImpl)session).getConnection();
+      }
    }
 
    // Consumer implementation ---------------------------------------
@@ -263,7 +313,7 @@ public class BridgeImpl implements Bridge, FailureListener
 
       synchronized (this)
       {
-         if (!started)
+         if (!active)
          {
             return HandleStatus.BUSY;
          }
@@ -294,22 +344,32 @@ public class BridgeImpl implements Bridge, FailureListener
 
    public synchronized boolean connectionFailed(final MessagingException me)
    {
-      // By the time this is called
-      synchronized (this)
+      fail();
+
+      return true;
+   }
+   
+   private void fail()
+   {
+      if (!started)
       {
-         try
-         {
-            session.close();
-
-            createObjects();
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to reconnect", e);
-         }
-
-         return true;
+         return;
       }
+      
+      log.warn("Bridge connection to target failed. Will try to reconnect");
+            
+      try
+      {
+         tx.rollback();
+         
+         stop();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to stop", e);
+      }
+      
+      executor.execute(new CreateObjectsRunnable());
    }
 
    // Package protected ---------------------------------------------
@@ -318,31 +378,9 @@ public class BridgeImpl implements Bridge, FailureListener
 
    // Private -------------------------------------------------------
 
-   private boolean createObjects() throws Exception
-   {
-      try
-      {
-         session = csf.createSession(false, false, false);
-      }
-      catch (MessagingException me)
-      {
-         log.warn("Unable to connect. Message flow is now disabled.");
-
-         stop();
-
-         return false;
-      }
-
-      session.addFailureListener(this);
-
-      producer = session.createProducer();
-
-      return true;
-   }
-
    private synchronized void timeoutBatch()
    {
-      if (!started)
+      if (!active)
       {
          return;
       }
@@ -417,14 +455,7 @@ public class BridgeImpl implements Bridge, FailureListener
       {
          log.error("Failed to forward batch", e);
 
-         try
-         {
-            tx.rollback();
-         }
-         catch (Exception e2)
-         {
-            log.error("Failed to rollback", e2);
-         }
+         fail();
       }
    }
 

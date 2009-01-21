@@ -21,7 +21,7 @@
  */
 
 
-package org.jboss.messaging.tests.integration.cluster.distribution;
+package org.jboss.messaging.tests.integration.discovery;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 

@@ -215,11 +215,6 @@ public class MessagingServerImpl implements MessagingServer
          throw new IllegalStateException("StorageManager must be started before MessagingServer is started");
       }
 
-      if (!remotingService.isStarted())
-      {
-         throw new IllegalStateException("RemotingService must be started before MessagingServer is started");
-      }
-
       managementService.start();
 
       // The rest of the components are not pluggable and created and started
