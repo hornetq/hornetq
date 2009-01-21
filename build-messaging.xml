@@ -1049,8 +1049,6 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${test.classes.dir}">
                <include name="${tests.param}"/>
-               <exclude name="**/**/MultiThreadRandomFailoverTest.class"/>
-                <exclude name="**/**/RandomFailoverTest.class"/>
             </fileset>
          </batchtest>
       </junit>
