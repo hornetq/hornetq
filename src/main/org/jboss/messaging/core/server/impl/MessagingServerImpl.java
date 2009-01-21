@@ -252,6 +252,16 @@ public class MessagingServerImpl implements MessagingServer
       
       pagingManager.start();
 
+      serverManagement = managementService.registerServer(postOffice,
+                                                          storageManager,
+                                                          configuration,
+                                                          queueSettingsRepository,
+                                                          securityRepository,
+                                                          resourceManager,
+                                                          remotingService,
+                                                          this,
+                                                          queueFactory);
+
       List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
       List<SimpleString> destinations = new ArrayList<SimpleString>();
 
@@ -367,18 +377,6 @@ public class MessagingServerImpl implements MessagingServer
 
          clusterManager.start();
       }
-
-      serverManagement = managementService.registerServer(postOffice,
-                                                          storageManager,
-                                                          configuration,
-                                                          queueSettingsRepository,
-                                                          securityRepository,
-                                                          resourceManager,
-                                                          remotingService,
-                                                          this,
-                                                          queueFactory);
-      
-      
       
       // We need to startDepage when we restart the server to eventually resume destinations that were in depage mode during last stop
       // This is the last thing done at the start, after everything else is up and running
