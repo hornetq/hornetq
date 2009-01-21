@@ -524,6 +524,85 @@ public class MessageChunkTest extends ChunkTestBase
 
    }
 
+   public void testSimpleRollback() throws Exception
+   {
+      // there are two bindings.. one is ACKed, the other is not, the server is restarted
+      // The other binding is acked... The file must be deleted
+
+      clearData();
+
+      try
+      {
+
+         messagingService = createService(true);
+
+         messagingService.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+
+         ClientSession session = sf.createSession(false, false, false);
+
+         session.createQueue(ADDRESS, ADDRESS, null, true, false);
+
+         int numberOfIntegers = 100;
+
+         Message clientFile = createLargeClientMessage(session, numberOfIntegers);
+
+         session.start();
+
+         log.info ("Session started");
+         
+         ClientProducer producer = session.createProducer(ADDRESS);
+
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         
+         for (int n = 0; n < 10; n++)
+         {
+            producer.send(clientFile);
+
+            assertNull(consumer.receiveImmediate());
+
+            session.commit();
+
+            for (int i = 0; i < 2; i++)
+            {
+
+               ClientMessage clientMessage = consumer.receive(5000);
+
+               assertNotNull(clientMessage);
+
+               assertEquals(numberOfIntegers * 4, clientMessage.getBody().limit());
+
+               clientMessage.acknowledge();
+
+               if (i == 0)
+               {
+                  session.rollback();
+               }
+               else
+               {
+                  session.commit();
+               }
+            }
+         }
+
+         session.close();
+
+         validateNoFilesOnLargeDir();
+      }
+      finally
+      {
+         try
+         {
+            messagingService.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

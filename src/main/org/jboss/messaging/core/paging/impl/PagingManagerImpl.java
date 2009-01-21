@@ -36,7 +36,6 @@ import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -59,6 +58,8 @@ public class PagingManagerImpl implements PagingManager
    private volatile boolean started = false;
 
    private final long maxGlobalSize;
+   
+   private volatile boolean backup;
 
    private final AtomicLong globalSize = new AtomicLong(0);
 
@@ -91,7 +92,8 @@ public class PagingManagerImpl implements PagingManager
                             final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                             final long maxGlobalSize,
                             final long defaultPageSize,
-                            final boolean syncNonTransactional)
+                            final boolean syncNonTransactional,
+                            final boolean backup)
    {
       this.pagingStoreFactory = pagingSPI;
       this.queueSettingsRepository = queueSettingsRepository;
@@ -99,6 +101,7 @@ public class PagingManagerImpl implements PagingManager
       this.defaultPageSize = defaultPageSize;
       this.maxGlobalSize = maxGlobalSize;
       this.syncNonTransactional = syncNonTransactional;
+      this.backup = backup; 
    }
 
    // Public
@@ -107,6 +110,19 @@ public class PagingManagerImpl implements PagingManager
    // PagingManager implementation
    // -----------------------------------------------------------------------------------------------------
 
+   public void activate()
+   {
+      this.backup = false;
+      
+      startGlobalDepage();
+   }
+   
+   
+   public boolean isBackup()
+   {
+      return this.backup;
+   }
+   
    public boolean isGlobalPageMode()
    {
       return globalMode.get();
@@ -278,10 +294,13 @@ public class PagingManagerImpl implements PagingManager
 
    public synchronized void startGlobalDepage()
    {
-      setGlobalPageMode(true);
-      for (PagingStore store : stores.values())
+      if (!isBackup())
       {
-         store.startDepaging(pagingStoreFactory.getGlobalDepagerExecutor());
+         setGlobalPageMode(true);
+         for (PagingStore store : stores.values())
+         {
+            store.startDepaging(pagingStoreFactory.getGlobalDepagerExecutor());
+         }
       }
    }
 

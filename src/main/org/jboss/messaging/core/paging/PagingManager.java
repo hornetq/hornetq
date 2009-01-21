@@ -58,6 +58,10 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface PagingManager extends MessagingComponent
 {
+   void activate();
+   
+   boolean isBackup();
+   
    /** The system is paging because of global-page-mode */
    boolean isGlobalPageMode();
 

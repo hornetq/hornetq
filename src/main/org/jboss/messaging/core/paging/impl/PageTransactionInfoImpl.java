@@ -47,7 +47,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 
    private volatile long recordID;
 
-   private CountDownLatch countDownCompleted;
+   private volatile CountDownLatch countDownCompleted;
 
    private volatile boolean committed;
    private volatile boolean rolledback;

@@ -258,7 +258,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       if (headerSize > minLargeMessageSize)
       {
          throw new MessagingException(MessagingException.ILLEGAL_STATE,
-                                      "Header size is too big, use the messageBody for large data, or increase minLargeMessageSize");
+                                      "Header size (" + headerSize + ") is too big, use the messageBody for large data, or increase minLargeMessageSize");
       }
 
       MessagingBuffer headerBuffer = new ByteBufferWrapper(ByteBuffer.allocate(headerSize));

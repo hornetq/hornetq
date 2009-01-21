@@ -637,12 +637,20 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
       }
 
    }
-
-
+   
    public void testPageMultipleDestinations() throws Exception
    {
-      clearData();
+      internalTestPageMultipleDestinations(false);
+   }
 
+   
+   public void testPageMultipleDestinationsTransacted() throws Exception
+   {
+      internalTestPageMultipleDestinations(true);
+   }
+   
+   private void internalTestPageMultipleDestinations(boolean transacted) throws Exception
+   {
       Configuration config = createDefaultConfig();
 
       final int MAX_SIZE = 90 * 1024; // this must be lower than minlargeMessageSize on the SessionFactory
@@ -666,7 +674,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
          sf.setBlockOnPersistentSend(true);
          sf.setBlockOnAcknowledge(true);
 
-         ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
+         ClientSession session = sf.createSession(null, null, false, !transacted, true, false, 0);
 
          for (int i = 0; i < NUMBER_OF_BINDINGS; i++)
          {
@@ -687,6 +695,11 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
             producer.send(message);
+            
+            if (transacted) 
+            {
+               session.commit();
+            }
          }
 
          session.close();

@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.server;
 
@@ -34,27 +34,28 @@ import org.jboss.messaging.core.message.Message;
  *
  */
 public interface ServerMessage extends Message, EncodingSupport
-{      
+{
    void setMessageID(long id);
 
    MessageReference createReference(Queue queue);
 
    int incrementRefCount();
-   
+
    int incrementDurableRefCount();
-   
+
    int decrementDurableRefCount();
-   
+
    int decrementRefCount();
-   
+
    ServerMessage copy();
-   
+
    int getMemoryEstimate();
 
+   boolean isLargeMessage();
+
    void setStored();
-   
+
    boolean isStored();
-   
+
    int getRefCount();
 }
-

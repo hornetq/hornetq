@@ -761,7 +761,8 @@ public class MessagingServerImpl implements MessagingServer
                                    queueSettingsRepository,
                                    configuration.getPagingMaxGlobalSizeBytes(),
                                    configuration.getPagingDefaultSize(),
-                                   configuration.isJournalSyncNonTransactional());
+                                   configuration.isJournalSyncNonTransactional(),
+                                   configuration.isBackup());
    }
 
    // Private

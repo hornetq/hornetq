@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -33,8 +34,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.paging.PagingManager;
+import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.DelayedResult;
 import org.jboss.messaging.core.remoting.Packet;
@@ -52,10 +54,9 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * Concrete implementation of a ClientConsumer.
@@ -68,18 +69,21 @@ import org.jboss.messaging.core.transaction.impl.TransactionImpl;
  */
 public class ServerConsumerImpl implements ServerConsumer
 {
-   // Constants
-   // ------------------------------------------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ServerConsumerImpl.class);
 
-   // Static
-   // ---------------------------------------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes
-   // -----------------------------------------------------------------------------------
+   // private static final boolean trace = log.isTraceEnabled();
+   private static final boolean trace = false;
 
-   private final boolean trace = log.isTraceEnabled();
+   private static void trace(final String message)
+   {
+      log.trace(message);
+   }
+
+   // Attributes -----------------------------------------------------------------------------------
 
    private final long id;
 
@@ -91,13 +95,19 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final ServerSession session;
 
+   private final Executor executor;
+
    private final Lock lock = new ReentrantLock();
 
    private AtomicInteger availableCredits = new AtomicInteger(0);
 
    private boolean started;
 
-   private volatile LargeMessageSender largeMessageSender = null;
+   private volatile LargeMessageDeliverer largeMessageDeliverer = null;
+
+   // We will only be sending one largeMessage at any time, however during replication you may have
+   // more than one LargeMessage pending on the replicationBuffer
+   private final AtomicInteger pendingLargeMessagesCounter = new AtomicInteger(0);
 
    /**
     * if we are a browse only consumer we don't need to worry about acknowledgemenets or being started/stopeed by the session.
@@ -105,6 +115,8 @@ public class ServerConsumerImpl implements ServerConsumer
    private final boolean browseOnly;
 
    private final StorageManager storageManager;
+   
+   private final PagingManager pagingManager;
 
    private final java.util.Queue<MessageReference> deliveringRefs = new ConcurrentLinkedQueue<MessageReference>();
 
@@ -114,8 +126,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final boolean preAcknowledge;
 
-   // Constructors
-   // ---------------------------------------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public ServerConsumerImpl(final long id,
                              final ServerSession session,
@@ -124,8 +135,10 @@ public class ServerConsumerImpl implements ServerConsumer
                              final boolean started,
                              final boolean browseOnly,
                              final StorageManager storageManager,
+                             final PagingManager pagingManager,
                              final Channel channel,
-                             final boolean preAcknowledge)
+                             final boolean preAcknowledge,
+                             final Executor executor)
    {
       this.id = id;
 
@@ -134,6 +147,8 @@ public class ServerConsumerImpl implements ServerConsumer
       this.filter = filter;
 
       this.session = session;
+
+      this.executor = executor;
 
       this.started = browseOnly || started;
 
@@ -144,6 +159,8 @@ public class ServerConsumerImpl implements ServerConsumer
       this.channel = channel;
 
       this.preAcknowledge = preAcknowledge;
+      
+      this.pagingManager = pagingManager;
 
       messageQueue.addConsumer(this);
 
@@ -238,17 +255,17 @@ public class ServerConsumerImpl implements ServerConsumer
       Iterator<MessageReference> iter = refs.iterator();
 
       closed = true;
-      
+
       Transaction tx = new TransactionImpl(storageManager);
 
       while (iter.hasNext())
       {
          MessageReference ref = iter.next();
-         
-         //ref.cancel(tx, storageManager, postOffice, queueSettingsRepository);  
+
+         // ref.cancel(tx, storageManager, postOffice, queueSettingsRepository);
          ref.getQueue().cancel(tx, ref);
       }
-      
+
       tx.rollback();
    }
 
@@ -344,7 +361,7 @@ public class ServerConsumerImpl implements ServerConsumer
          else
          {
             ref.getQueue().acknowledge(tx, ref);
-            //ref.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
+            // ref.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
 
             // Del count is not actually updated in storage unless it's
             // cancelled
@@ -393,11 +410,11 @@ public class ServerConsumerImpl implements ServerConsumer
       return ref;
    }
 
-   public void deliverReplicated(final long messageID) throws Exception
+   public void deliverReplicated(final SimpleString address, final long messageID) throws Exception
    {
       // It may not be the first in the queue - since there may be multiple producers
       // sending to the queue
-      MessageReference ref = messageQueue.removeReferenceWithID(messageID);
+      MessageReference ref = removeReferenceOnBackup(address, messageID);
 
       if (ref == null)
       {
@@ -412,7 +429,9 @@ public class ServerConsumerImpl implements ServerConsumer
 
       if (handled != HandleStatus.HANDLED)
       {
-         throw new IllegalStateException("Reference was not handled " + ref + " " + handled);
+         throw new IllegalStateException("Reference " + ref +
+                                         " was not handled on backup node, handleStatus = " +
+                                         handled);
       }
    }
 
@@ -437,25 +456,86 @@ public class ServerConsumerImpl implements ServerConsumer
       lock.unlock();
    }
 
-   // Public
-   // -----------------------------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
-   // Private
-   // --------------------------------------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
+
+   private MessageReference removeReferenceOnBackup(SimpleString address, long id) throws Exception
+   {
+
+      // most of the times, the remove will work ok, so we first try it without any locks
+      MessageReference ref = messageQueue.removeReferenceWithID(id);
+
+      if (ref == null)
+      {
+         PagingStore store = pagingManager.getPageStore(address);
+
+         for (;;)
+         {
+            // Can't have the same store being depaged in more than one thread
+            synchronized (store)
+            {
+               // as soon as it gets the lock, it needs to verify if another thread couldn't find the reference
+               ref = messageQueue.removeReferenceWithID(id);
+               if (ref == null)
+               {
+                  // force a depage
+                  if (!store.readPage())
+                  {
+                     break;
+                  }
+               }
+               else
+               {
+                  break;
+               }
+            }
+         }
+      }
+
+      return ref;
+
+   }
 
    private void promptDelivery()
    {
-      if (largeMessageSender != null)
+      lock.lock();
+      try
       {
-         if (largeMessageSender.sendLargeMessage())
+         // largeMessageDeliverer is aways set inside a lock
+         // if we don't acquire a lock, we will have NPE eventually
+         if (largeMessageDeliverer != null)
          {
-            // prompt Delivery only if chunk was finished
+            resumeLargeMessage();
+         }
+         else
+         {
             session.promptDelivery(messageQueue);
          }
       }
+      finally
+      {
+         lock.unlock();
+      }
+   }
+
+   /**
+    * 
+    */
+   private void resumeLargeMessage()
+   {
+      if (messageQueue.isBackup())
+      {
+         // We are supposed to finish largeMessageDeliverer, or use all the possible credits before we return this
+         // method.
+         // If we play the commands on a different order than how they were generated on the live node, we will
+         // eventually still be running this largeMessage before the next message come, what would reject messages
+         // from the cluster
+         largeMessageDeliverer.deliver();
+      }
       else
       {
-         session.promptDelivery(messageQueue);
+         executor.execute(resumeLargeMessageRunnable);
       }
    }
 
@@ -465,23 +545,31 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          return HandleStatus.BUSY;
       }
-      
+
       lock.lock();
 
       try
       {
-         // If there is a pendingLargeMessage we can't take another message
-         // This has to be checked inside the lock as the set to null is done inside the lock
-         if (largeMessageSender != null)
-         {
-            return HandleStatus.BUSY;
-         }
 
          // If the consumer is stopped then we don't accept the message, it
          // should go back into the
          // queue for delivery later.
          if (!started)
          {
+            return HandleStatus.BUSY;
+         }
+
+         // If there is a pendingLargeMessage we can't take another message
+         // This has to be checked inside the lock as the set to null is done inside the lock
+         if (pendingLargeMessagesCounter.get() > 0)
+         {
+            if (messageQueue.isBackup())
+            {
+               log.warn("doHandle: rejecting message while send is pending, ignoring reference = " + ref +
+                        " backup = " +
+                        messageQueue.isBackup());
+            }
+
             return HandleStatus.BUSY;
          }
 
@@ -498,46 +586,25 @@ public class ServerConsumerImpl implements ServerConsumer
             {
                deliveringRefs.add(ref);
             }
-            
+
             ref.getQueue().referenceHandled();
          }
-         
+
          if (preAcknowledge)
          {
-            //With pre-ack, we ack *before* sending to the client
+            // With pre-ack, we ack *before* sending to the client
             ref.getQueue().acknowledge(ref);
          }
-                  
-         // TODO: get rid of the instanceof by something like message.isLargeMessage()
-         if (message instanceof LargeServerMessage)
-         {            
-            //FIXME - please put the replication logic in the sendLargeMessage method
-            
-            DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id,
-                                                                                               message.getMessageID()));
 
-            if (result == null)
-            {
-               sendLargeMessage(ref, message);
-            }
-            else
-            {
-               // Send when replicate delivery response comes back
-               result.setResultRunner(new Runnable()
-               {
-                  public void run()
-                  {
-                     sendLargeMessage(ref, message);
-                  }
-               });
-            }
-
+         if (message.isLargeMessage())
+         {
+            deliverLargeMessage(ref, message);
          }
          else
          {
-            sendStandardMessage(ref, message);
+            deliverStandardMessage(ref, message);
          }
-         
+
          return HandleStatus.HANDLED;
       }
       finally
@@ -546,18 +613,54 @@ public class ServerConsumerImpl implements ServerConsumer
       }
    }
 
-   private void sendLargeMessage(final MessageReference ref, final ServerMessage message)
+   private void deliverLargeMessage(final MessageReference ref, final ServerMessage message)
    {
-      largeMessageSender = new LargeMessageSender((LargeServerMessage)message, ref);
+      pendingLargeMessagesCounter.incrementAndGet();
 
-      largeMessageSender.sendLargeMessage();
+      final LargeMessageDeliverer localDeliverer = new LargeMessageDeliverer((LargeServerMessage)message, ref);
+
+      DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id,
+                                                                                         message.getMessageID(),
+                                                                                         message.getDestination()));
+
+      if (result == null)
+      {
+         // it doesn't need lock because deliverLargeMesasge is already inside the lock.lock()
+         largeMessageDeliverer = localDeliverer;
+         largeMessageDeliverer.deliver();
+      }
+      else
+      {
+         result.setResultRunner(new Runnable()
+         {
+            public void run()
+            {
+               // setting & unsetting largeMessageDeliver is done inside the lock,
+               // so this needs to be locked
+               lock.lock();
+               try
+               {
+                  largeMessageDeliverer = localDeliverer;
+                  if (largeMessageDeliverer.deliver())
+                  {
+                     promptDelivery();
+                  }
+               }
+               finally
+               {
+                  lock.unlock();
+               }
+            }
+         });
+      }
+
    }
 
    /**
     * @param ref
     * @param message
     */
-   private void sendStandardMessage(final MessageReference ref, final ServerMessage message)
+   private void deliverStandardMessage(final MessageReference ref, final ServerMessage message)
    {
       if (availableCredits != null)
       {
@@ -566,7 +669,9 @@ public class ServerConsumerImpl implements ServerConsumer
 
       final SessionReceiveMessage packet = new SessionReceiveMessage(id, message, ref.getDeliveryCount() + 1);
 
-      DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id, message.getMessageID()));
+      DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id,
+                                                                                         message.getMessageID(),
+                                                                                         message.getDestination()));
 
       if (result == null)
       {
@@ -590,9 +695,29 @@ public class ServerConsumerImpl implements ServerConsumer
    // Inner classes
    // ------------------------------------------------------------------------
 
+   final Runnable resumeLargeMessageRunnable = new Runnable()
+   {
+      public void run()
+      {
+         lock.lock();
+         try
+         {
+            if (largeMessageDeliverer == null || largeMessageDeliverer.deliver())
+            {
+               // prompt Delivery only if chunk was finished
+               session.promptDelivery(messageQueue);
+            }
+         }
+         finally
+         {
+            lock.unlock();
+         }
+      }
+   };
+
    /** Internal encapsulation of the logic on sending LargeMessages.
     *  This Inner class was created to avoid a bunch of loose properties about the current LargeMessage being sent*/
-   private class LargeMessageSender
+   private class LargeMessageDeliverer
    {
       private final long sizePendingLargeMessage;
 
@@ -606,9 +731,7 @@ public class ServerConsumerImpl implements ServerConsumer
       /** The current position on the message being processed */
       private volatile long positionPendingLargeMessage;
 
-      private volatile SessionReceiveContinuationMessage readAheadChunk;
-
-      public LargeMessageSender(final LargeServerMessage message, final MessageReference ref)
+      public LargeMessageDeliverer(final LargeServerMessage message, final MessageReference ref)
       {
          pendingLargeMessage = message;
 
@@ -617,7 +740,7 @@ public class ServerConsumerImpl implements ServerConsumer
          this.ref = ref;
       }
 
-      public boolean sendLargeMessage()
+      public boolean deliver()
       {
          lock.lock();
 
@@ -633,8 +756,23 @@ public class ServerConsumerImpl implements ServerConsumer
                return false;
             }
 
+            int creditsUsed;
+
+            if (availableCredits != null)
+            {
+               creditsUsed = preCalculateFlowControl();
+            }
+            else
+            {
+               creditsUsed = 0;
+            }
+
             if (!sentFirstMessage)
             {
+               if (trace)
+               {
+                  trace("deliverLargeMessage:: sending initialMessage, backup = " + messageQueue.isBackup());
+               }
                sentFirstMessage = true;
 
                MessagingBuffer headerBuffer = new ByteBufferWrapper(ByteBuffer.allocate(pendingLargeMessage.getPropertiesEncodeSize()));
@@ -649,34 +787,37 @@ public class ServerConsumerImpl implements ServerConsumer
 
                if (availableCredits != null)
                {
-                  // RequiredBufferSize on this case represents the right number of bytes sent
-                  availableCredits.addAndGet(-initialMessage.getRequiredBufferSize());
+                  if ((creditsUsed -= initialMessage.getRequiredBufferSize()) < 0)
+                  {
+                     log.warn("Credit logic is not working properly, too many credits were taken");
+                  }
+
+                  if (trace)
+                  {
+                     trace("deliverLargeMessage:: Initial send, taking out " + initialMessage.getRequiredBufferSize() +
+                           " credits, current = " +
+                           creditsUsed +
+                           " isBackup = " +
+                           messageQueue.isBackup());
+
+                  }
                }
             }
-
-            if (readAheadChunk != null)
+            else
             {
-               int chunkLen = readAheadChunk.getBody().length;
-
-               positionPendingLargeMessage += chunkLen;
-
-               if (availableCredits != null)
+               if (trace)
                {
-                  availableCredits.addAndGet(-readAheadChunk.getRequiredBufferSize());
+                  trace("deliverLargeMessage: Resuming deliverLargeMessage, currentPosition = " + positionPendingLargeMessage);
                }
-
-               channel.send(readAheadChunk);
-
-               readAheadChunk = null;
             }
 
             while (positionPendingLargeMessage < sizePendingLargeMessage)
             {
-               if (availableCredits != null && availableCredits.get() <= 0)
+               if (creditsUsed <= 0)
                {
-                  if (readAheadChunk == null)
+                  if (trace)
                   {
-                     readAheadChunk = createChunkSend();
+                     trace("deliverLargeMessage: Leaving loop of send LargeMessage because of credits, backup = " + messageQueue.isBackup());
                   }
                   return false;
                }
@@ -687,7 +828,19 @@ public class ServerConsumerImpl implements ServerConsumer
 
                if (availableCredits != null)
                {
-                  availableCredits.addAndGet(-chunk.getRequiredBufferSize());
+                  if ((creditsUsed -= chunk.getRequiredBufferSize()) < 0)
+                  {
+                     log.warn("Flowcontrol logic is not working properly, too many credits were taken");
+                  }
+               }
+
+               if (trace)
+               {
+                  trace("deliverLargeMessage: Sending " + chunk.getRequiredBufferSize() +
+                        " availableCredits now is " +
+                        availableCredits +
+                        " isBackup = " +
+                        messageQueue.isBackup());
                }
 
                channel.send(chunk);
@@ -695,15 +848,60 @@ public class ServerConsumerImpl implements ServerConsumer
                positionPendingLargeMessage += chunkLen;
             }
 
+            if (creditsUsed != 0)
+            {
+               log.warn("Flowcontrol logic is not working properly... creidts = " + creditsUsed);
+            }
+
+            if (trace)
+            {
+               trace("Finished deliverLargeMessage isBackup = " + messageQueue.isBackup());
+            }
+
             pendingLargeMessage.releaseResources();
 
-            largeMessageSender = null;
+            largeMessageDeliverer = null;
+
+            pendingLargeMessagesCounter.decrementAndGet();
 
             return true;
          }
          finally
          {
             lock.unlock();
+         }
+      }
+
+      /**
+       * Credits flow control are calculated in advance.
+       * @return
+       */
+      private int preCalculateFlowControl()
+      {
+         for (;;)
+         {
+            final int currentCredit;
+            int creditsUsed = 0;
+            currentCredit = availableCredits.get();
+
+            if (!sentFirstMessage)
+            {
+               creditsUsed = SessionReceiveMessage.SESSION_RECEIVE_MESSAGE_LARGE_MESSAGE_SIZE + pendingLargeMessage.getPropertiesEncodeSize();
+            }
+
+            long chunkLen = 0;
+            for (long i = positionPendingLargeMessage; creditsUsed < currentCredit && i < sizePendingLargeMessage; i += chunkLen)
+            {
+               chunkLen = (int)Math.min(sizePendingLargeMessage - i, minLargeMessageSize);
+               creditsUsed += chunkLen + SessionReceiveContinuationMessage.SESSION_RECEIVE_CONTINUATION_BASE_SIZE;
+            }
+
+            // The calculation of credits and taking credits out has to be taken atomically.
+            // Since we are not sending anything to the client during this calculation, this is unlikely to happen
+            if (availableCredits.compareAndSet(currentCredit, currentCredit - creditsUsed))
+            {
+               return creditsUsed;
+            }
          }
       }
 

@@ -344,7 +344,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
 
       // Flow control for the first packet, we will have others
-      flowControl(packet.getPacketSize());
+      flowControl(packet.getPacketSize(), true);
 
       currentChunkMessage = createFileMessage(packet.getLargeMessageHeader());
    }
@@ -360,7 +360,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       if (chunk.isContinues())
       {
-         flowControl(chunk.getPacketSize());
+         flowControl(chunk.getPacketSize(), true);
       }
 
       if (isFileConsumer())
@@ -468,7 +468,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       sessionExecutor.execute(runner);
    }
 
-   private void flowControl(final int messageBytes) throws MessagingException
+   private void flowControl(final int messageBytes, final boolean useExecutor) throws MessagingException
    {
       if (clientWindowSize > 0)
       {
@@ -476,9 +476,28 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          if (creditsToSend >= clientWindowSize)
          {
-            channel.send(new SessionConsumerFlowCreditMessage(id, creditsToSend));
 
-            creditsToSend = 0;
+            if (useExecutor)
+            {
+               // Flowcontrol on largeMessages continuations needs to be done in a separate thread or failover would block
+               final int credits = creditsToSend;
+
+               creditsToSend = 0;
+               sessionExecutor.execute(new Runnable()
+               {
+
+                  public void run()
+                  {
+                     channel.send(new SessionConsumerFlowCreditMessage(id, credits));
+                  }
+
+               });
+            }
+            else
+            {
+               channel.send(new SessionConsumerFlowCreditMessage(id, creditsToSend));
+               creditsToSend = 0;
+            }
          }
       }
    }
@@ -567,7 +586,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private void flowControlBeforeConsumption(final ClientMessageInternal message) throws MessagingException
    {
       // Chunk messages will execute the flow control while receiving the chunks
-      flowControl(message.getFlowControlSize());
+      flowControl(message.getFlowControlSize(), false);
    }
 
    private void doCleanUp(final boolean sendCloseMessage) throws MessagingException
@@ -608,7 +627,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             channel.sendBlocking(new SessionConsumerCloseMessage(id));
          }
-         
+
          clearBuffer();
       }
       finally
@@ -616,16 +635,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          session.removeConsumer(this);
       }
    }
-   
+
    private void clearBuffer()
    {
       if (isFileConsumer())
       {
-         for (ClientMessage message: buffer)
+         for (ClientMessage message : buffer)
          {
             if (message instanceof ClientFileMessage)
             {
-               ((ClientFileMessage) message).getFile().delete();
+               ((ClientFileMessage)message).getFile().delete();
             }
          }
       }
@@ -675,7 +694,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                                                   "-" +
                                                   getID() +
                                                   ".jbm"));
-         
+
          cloneMessage.setFlowControlSize(message.getFlowControlSize());
 
          addBytesBody(cloneMessage, message.getBody().array());
@@ -696,7 +715,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          if (!directory.exists())
          {
             boolean ok = directory.mkdirs();
-            
+
             if (!ok)
             {
                throw new IOException("Failed to create directory " + directory.getCanonicalPath());

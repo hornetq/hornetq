@@ -46,6 +46,7 @@ import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.Transaction;
@@ -363,17 +364,17 @@ public class PagingStoreImpl implements TestSupportPageStore
             // We set the duplicate detection header to prevent the message being depaged more than once in case of
             // failure during depage
 
+            ServerMessage msg = message.getMessage(storageManager);
+
             byte[] bytes = new byte[8];
 
             ByteBuffer buff = ByteBuffer.wrap(bytes);
-
-            ServerMessage msg = message.getMessage(storageManager);
 
             buff.putLong(msg.getMessageID());
 
             SimpleString duplID = new SimpleString(bytes);
 
-            message.getMessage(storageManager).putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, duplID);
+            msg.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, duplID);
          }
 
          int bytesToWrite = message.getEncodeSize() + PageImpl.SIZE_RECORD;
@@ -450,6 +451,11 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public boolean startDepaging(final Executor executor)
    {
+      if (pagingManager.isBackup())
+      {
+         return false;
+      }
+
       currentPageLock.readLock().lock();
       try
       {
@@ -631,6 +637,38 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
 
+   /**
+    * Depage one page-file, read it and send it to the pagingManager / postoffice
+    * @return
+    * @throws Exception
+    */
+   public boolean readPage() throws Exception
+   {
+      Page page = depage();
+
+      if (page == null)
+      {
+         return false;
+      }
+
+      page.open();
+
+      List<PagedMessage> messages = page.read();
+
+      onDepage(page.getPageId(), storeName, messages);
+
+      if (onDepage(page.getPageId(), storeName, messages))
+      {
+         page.delete();
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+
+   }
+
    // TestSupportPageStore ------------------------------------------
 
    public void forceAnotherPage() throws Exception
@@ -641,6 +679,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    /** 
     *  It returns a Page out of the Page System without reading it. 
     *  The method calling this method will remove the page and will start reading it outside of any locks.
+    *  This method could also replace the current file by a new file, and that process is done through acquiring a writeLock on currentPageLock
     *   
     *  Observation: This method is used internally as part of the regular depage process, but externally is used only on tests, 
     *               and that's why this method is part of the Testable Interface 
@@ -778,102 +817,113 @@ public class PagingStoreImpl implements TestSupportPageStore
       // back to where it was
 
       Transaction depageTransaction = new TransactionImpl(storageManager);
-
-      depageTransaction.putProperty(TransactionPropertyIndexes.IS_DEPAGE, Boolean.valueOf(true));
-
-      HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
       
-      for (PagedMessage pagedMessage : pagedMessages)
+      SendLock sendLock = postOffice.getAddressLock(destination);
+      
+      sendLock.beforeSend();
+      
+      try
       {
-         ServerMessage message = null;
-
-         message = pagedMessage.getMessage(storageManager);
-
-         final long transactionIdDuringPaging = pagedMessage.getTransactionID();
-
-         if (transactionIdDuringPaging >= 0)
+         depageTransaction.putProperty(TransactionPropertyIndexes.IS_DEPAGE, Boolean.valueOf(true));
+   
+         HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
+         
+         for (PagedMessage pagedMessage : pagedMessages)
          {
-            final PageTransactionInfo pageTransactionInfo = pagingManager.getTransaction(transactionIdDuringPaging);
-
-            // http://wiki.jboss.org/wiki/JBossMessaging2Paging
-            // This is the Step D described on the "Transactions on Paging"
-            // section
-            if (pageTransactionInfo == null)
+            ServerMessage message = null;
+   
+            message = pagedMessage.getMessage(storageManager);
+   
+            final long transactionIdDuringPaging = pagedMessage.getTransactionID();
+   
+            if (transactionIdDuringPaging >= 0)
             {
-               log.warn("Transaction " + pagedMessage.getTransactionID() +
-                        " used during paging not found, ignoring message " +
-                        message);
-
-               continue;
-            }
-
-            // This is to avoid a race condition where messages are depaged
-            // before the commit arrived
-            
-            while (running && !pageTransactionInfo.waitCompletion(500))
-            {
-               // This is just to give us a chance to interrupt the process..
-               // if we start a shutdown in the middle of transactions, the commit/rollback may never come, delaying the shutdown of the server
-               if (isTrace)
+               final PageTransactionInfo pageTransactionInfo = pagingManager.getTransaction(transactionIdDuringPaging);
+   
+               // http://wiki.jboss.org/wiki/JBossMessaging2Paging
+               // This is the Step D described on the "Transactions on Paging"
+               // section
+               if (pageTransactionInfo == null)
                {
-                  trace("Waiting pageTransaction to complete");
+                  log.warn("Transaction " + pagedMessage.getTransactionID() +
+                           " used during paging not found, ignoring message " +
+                           message);
+   
+                  continue;
+               }
+   
+               // This is to avoid a race condition where messages are depaged
+               // before the commit arrived
+               
+               while (running && !pageTransactionInfo.waitCompletion(500))
+               {
+                  // This is just to give us a chance to interrupt the process..
+                  // if we start a shutdown in the middle of transactions, the commit/rollback may never come, delaying the shutdown of the server
+                  if (isTrace)
+                  {
+                     trace("Waiting pageTransaction to complete");
+                  }
+               }
+               
+               if (!running)
+               {
+                  break;
+               }
+               
+               if (!pageTransactionInfo.isCommit())
+               {
+                  if (isTrace)
+                  {
+                     trace("Rollback was called after prepare, ignoring message " + message);
+                  }
+                  continue;
+               }
+   
+               // Update information about transactions
+               if (message.isDurable())
+               {
+                  pageTransactionInfo.decrement();
+                  pageTransactionsToUpdate.add(pageTransactionInfo);
                }
             }
-            
-            if (!running)
-            {
-               break;
-            }
-            
-            if (!pageTransactionInfo.isCommit())
-            {
-               if (isTrace)
-               {
-                  trace("Rollback was called after prepare, ignoring message " + message);
-               }
-               continue;
-            }
-
-            // Update information about transactions
-            if (message.isDurable())
-            {
-               pageTransactionInfo.decrement();
-               pageTransactionsToUpdate.add(pageTransactionInfo);
-            }
+   
+            postOffice.route(message, depageTransaction);
          }
-
-         postOffice.route(message, depageTransaction);
-      }
-      
-      if (!running)
-      {
-         depageTransaction.rollback();
-         return false;
-      }
-
-      for (PageTransactionInfo pageWithTransaction : pageTransactionsToUpdate)
-      {
-         // This will set the journal transaction to commit;
-         depageTransaction.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
-
-         if (pageWithTransaction.getNumberOfMessages() == 0)
+         
+         if (!running)
          {
-            // http://wiki.jboss.org/wiki/JBossMessaging2Paging
-            // numberOfReads==numberOfWrites -> We delete the record
-            storageManager.deletePageTransactional(depageTransaction.getID(), pageWithTransaction.getRecordID());
-            pagingManager.removeTransaction(pageWithTransaction.getTransactionID());
+            depageTransaction.rollback();
+            return false;
          }
-         else
+   
+         for (PageTransactionInfo pageWithTransaction : pageTransactionsToUpdate)
          {
-            storageManager.storePageTransaction(depageTransaction.getID(), pageWithTransaction);
+            // This will set the journal transaction to commit;
+            depageTransaction.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
+   
+            if (pageWithTransaction.getNumberOfMessages() == 0)
+            {
+               // http://wiki.jboss.org/wiki/JBossMessaging2Paging
+               // numberOfReads==numberOfWrites -> We delete the record
+               storageManager.deletePageTransactional(depageTransaction.getID(), pageWithTransaction.getRecordID());
+               pagingManager.removeTransaction(pageWithTransaction.getTransactionID());
+            }
+            else
+            {
+               storageManager.storePageTransaction(depageTransaction.getID(), pageWithTransaction);
+            }
+         }
+   
+         depageTransaction.commit();
+   
+         if (isTrace)
+         {
+            trace("Depage committed, running = " + running);
          }
       }
-
-      depageTransaction.commit();
-
-      if (isTrace)
+      finally
       {
-         trace("Depage committed, running = " + running);
+         sendLock.afterSend();
       }
       
       return true;
@@ -972,30 +1022,6 @@ public class PagingStoreImpl implements TestSupportPageStore
    private static int getPageIdFromFileName(final String fileName)
    {
       return Integer.parseInt(fileName.substring(0, fileName.indexOf('.')));
-   }
-
-   /**
-    * Depage one page-file, read it and send it to the pagingManager / postoffice
-    * @return
-    * @throws Exception
-    */
-   private void readPage() throws Exception
-   {
-      Page page = depage();
-
-      if (page == null)
-      {
-         return;
-      }
-
-      page.open();
-
-      List<PagedMessage> messages = page.read();
-
-      if (onDepage(page.getPageId(), storeName, messages))
-      {
-         page.delete();
-      }
    }
 
    // Inner classes -------------------------------------------------

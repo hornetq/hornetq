@@ -39,6 +39,8 @@ public class SessionReceiveContinuationMessage extends SessionContinuationMessag
 
    // Constants -----------------------------------------------------
 
+   public static final int SESSION_RECEIVE_CONTINUATION_BASE_SIZE = SESSION_CONTINUATION_BASE_SIZE + DataConstants.SIZE_LONG;
+   
    // Attributes ----------------------------------------------------
 
    private long consumerID;
@@ -83,7 +85,7 @@ public class SessionReceiveContinuationMessage extends SessionContinuationMessag
    @Override
    public int getRequiredBufferSize()
    {
-      return super.getRequiredBufferSize() + DataConstants.SIZE_LONG;
+      return SESSION_RECEIVE_CONTINUATION_BASE_SIZE + body.length; 
    }
 
    @Override

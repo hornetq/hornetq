@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -56,7 +57,7 @@ public interface ServerConsumer extends Consumer
 	
 	void failedOver();
 	
-	void deliverReplicated(final long messageID) throws Exception;
+	void deliverReplicated(SimpleString address, long messageID) throws Exception;
 	
 	void lock();
 	

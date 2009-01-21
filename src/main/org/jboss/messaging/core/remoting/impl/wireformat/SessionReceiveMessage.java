@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.impl.ClientMessageInternal;
 import org.jboss.messaging.core.logging.Logger;
@@ -40,6 +39,11 @@ import org.jboss.messaging.util.DataConstants;
 public class SessionReceiveMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
+
+   public static final int SESSION_RECEIVE_MESSAGE_LARGE_MESSAGE_SIZE = BASIC_PACKET_SIZE + DataConstants.SIZE_LONG +
+                                                                       DataConstants.SIZE_INT +
+                                                                       DataConstants.SIZE_BOOLEAN +
+                                                                       DataConstants.SIZE_INT;
 
    private static final Logger log = Logger.getLogger(SessionReceiveMessage.class);
 
@@ -115,7 +119,7 @@ public class SessionReceiveMessage extends PacketImpl
    {
       return largeMessageHeader;
    }
-   
+
    /**
     * @return the largeMessage
     */
@@ -133,11 +137,7 @@ public class SessionReceiveMessage extends PacketImpl
    {
       if (largeMessage)
       {
-         return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG +
-                DataConstants.SIZE_INT +
-                DataConstants.SIZE_BOOLEAN +
-                DataConstants.SIZE_INT +
-                largeMessageHeader.length;
+         return SESSION_RECEIVE_MESSAGE_LARGE_MESSAGE_SIZE + largeMessageHeader.length;
       }
       else
       {
@@ -147,7 +147,6 @@ public class SessionReceiveMessage extends PacketImpl
                 serverMessage.getEncodeSize();
       }
    }
-
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putLong(consumerID);

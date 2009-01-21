@@ -72,7 +72,8 @@ public class PagingManagerIntegrationTest extends UnitTestCase
                                                             queueSettings,
                                                             -1,
                                                             1024 * 1024,
-                                                            true);
+                                                            true,
+                                                            false);
 
       managerImpl.start();
 
@@ -122,6 +123,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
                                                             queueSettings,
                                                             -1,
                                                             1024 * 1024,
+                                                            false,
                                                             false);
       managerImpl.start();
 

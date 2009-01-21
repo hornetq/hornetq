@@ -112,6 +112,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private static final boolean trace = log.isTraceEnabled();
 
+   private static void trace(String message)
+   {
+      log.trace(message);
+   }
+
    // Static -------------------------------------------------------------------------------
 
    // Attributes ----------------------------------------------------------------------------
@@ -166,7 +171,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private final QueueFactory queueFactory;
 
-   private volatile LargeServerMessage largeMessage;
+   // The current currentLargeMessage being processed
+   // In case of replication, currentLargeMessage should only be accessed within the replication callbacks 
+   private volatile LargeServerMessage currentLargeMessage;
+
+   // The current destination used for sending LargeMessages
+   /**
+    * We can't lookup for the address on the currentLargeMessage, as that is changed as the replication packets are coming backup from the backup node
+    */
+   private volatile SimpleString largeMessageCurrentAddress;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -298,11 +311,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       server.removeSession(name);
 
-      if (largeMessage != null)
+      if (currentLargeMessage != null)
       {
          try
          {
-            largeMessage.deleteFile();
+            currentLargeMessage.deleteFile();
          }
          catch (Throwable error)
          {
@@ -357,6 +370,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (result == null)
       {
+         if (trace)
+         {
+            trace("(NoReplication) CreateQueue address =  " + packet.getAddress() +
+                  " queueName = " +
+                  packet.getQueueName());
+         }
          doHandleCreateQueue(packet);
       }
       else
@@ -366,6 +385,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             public void run()
             {
+               if (trace)
+               {
+                  trace("(Replication) CreateQueue address =  " + packet.getAddress() +
+                        " queueName = " +
+                        packet.getQueueName());
+               }
                doHandleCreateQueue(packet);
 
                lock.unlock();
@@ -394,6 +419,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (result == null)
       {
+         if (trace)
+         {
+            trace("(NoReplication) DeleteQueue queueName = " + packet.getQueueName());
+         }
          doHandleDeleteQueue(packet);
       }
       else
@@ -403,6 +432,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             public void run()
             {
+               if (trace)
+               {
+                  trace("(Replication) DeleteQueue queueName = " + packet.getQueueName());
+               }
                doHandleDeleteQueue(packet);
 
                lock.unlock();
@@ -997,19 +1030,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       DelayedResult result = channel.replicatePacket(packet);
 
-      try
-      {
-         // Note we don't wait for response before handling this
-
-         consumers.get(packet.getConsumerID()).receiveCredits(packet.getCredits());
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to receive credits", e);
-      }
-
       if (result == null)
       {
+         try
+         {
+            consumers.get(packet.getConsumerID()).receiveCredits(packet.getCredits());
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to receive credits", e);
+         }
          channel.confirm(packet);
       }
       else
@@ -1018,6 +1048,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             public void run()
             {
+               try
+               {
+                  consumers.get(packet.getConsumerID()).receiveCredits(packet.getCredits());
+               }
+               catch (Exception e)
+               {
+                  log.error("Failed to receive credits", e);
+               }
                channel.confirm(packet);
             }
          });
@@ -1034,6 +1072,23 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          packet.setMessageID(id);
       }
 
+      // need to create the LargeMessage before continue
+      final LargeServerMessage msg = doCreateLargeMessage(packet);
+
+      if (msg == null)
+      {
+         // packet logged an error, and played with channel.returns... and nothing needs to be done now
+         return;
+      }
+
+      largeMessageCurrentAddress = msg.getDestination();
+
+      if (channel.getReplicatingChannel() != null)
+      {
+         msg.putBooleanProperty(new SimpleString("clustered"), true);
+      }
+
+      // Note: We don't need to use address lock until the last packet
       DelayedResult result = channel.replicatePacket(packet);
 
       // With a send we must make sure it is replicated to backup before being processed on live
@@ -1041,6 +1096,17 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (result == null)
       {
+         if (trace)
+         {
+            trace("(withoutReplication) SendLargeMessage, id=" + msg.getMessageID());
+         }
+
+         if (currentLargeMessage != null)
+         {
+            log.warn("Replacing incomplete LargeMessage with ID=" + currentLargeMessage.getMessageID());
+         }
+
+         currentLargeMessage = msg;
          doSendLargeMessage(packet);
       }
       else
@@ -1049,9 +1115,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             public void run()
             {
+               if (trace)
+               {
+                  trace("(Replication) SendLargeMessage, id=" + msg.getMessageID());
+               }
+
+               if (currentLargeMessage != null)
+               {
+                  log.warn("Replacing incomplete LargeMessage with ID=" + currentLargeMessage.getMessageID());
+               }
+
+               currentLargeMessage = msg;
                doSendLargeMessage(packet);
             }
          });
+
       }
 
    }
@@ -1114,13 +1192,31 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void handleSendContinuations(final SessionSendContinuationMessage packet)
    {
-      DelayedResult result = channel.replicatePacket(packet);
+      final SendLock lock;
 
-      // With a send we must make sure it is replicated to backup before being processed on live
-      // or can end up with delivery being processed on backup before original send
+      // We only use the addressLock at the last packet
+      if (channel.getReplicatingChannel() != null && !packet.isContinues())
+      {
+         lock = postOffice.getAddressLock(largeMessageCurrentAddress);
+
+         lock.beforeSend();
+      }
+      else
+      {
+         lock = null;
+      }
+
+      DelayedResult result = channel.replicatePacket(packet);
 
       if (result == null)
       {
+         if (trace)
+         {
+            if (!packet.isContinues())
+            {
+               trace("(NoReplication) Sending LasChunk MessageID = " + currentLargeMessage.getMessageID());
+            }
+         }
          doSendContinuations(packet);
       }
       else
@@ -1129,7 +1225,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             public void run()
             {
+               if (trace && !packet.isContinues())
+               {
+                  trace("(Replication) Sending LasChunk MessageID = " + currentLargeMessage.getMessageID());
+               }
                doSendContinuations(packet);
+               if (lock != null)
+               {
+                  lock.afterSend();
+               }
             }
          });
       }
@@ -1146,7 +1250,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       try
       {
-         consumer.deliverReplicated(packet.getMessageID());
+         consumer.deliverReplicated(packet.getAddress(), packet.getMessageID());
       }
       catch (Exception e)
       {
@@ -1304,9 +1408,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                                                           filter,
                                                           started,
                                                           browseOnly,
-                                                          storageManager,                                                 
+                                                          storageManager,
+                                                          postOffice.getPagingManager(),
                                                           channel,
-                                                          preAcknowledge);
+                                                          preAcknowledge,
+                                                          executor);
 
          consumers.put(consumer.getID(), consumer);
 
@@ -1374,8 +1480,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          if (durable)
          {
             QueueBinding queueBinding = (QueueBinding)binding;
-            
-            storageManager.addQueueBinding(queueBinding);                        
+
+            storageManager.addQueueBinding(queueBinding);
          }
 
          postOffice.addBinding(binding);
@@ -2359,14 +2465,48 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       started = s;
    }
 
+   /**
+    * We need to create the LargeMessage before replicating the packe, or else we won't know how to extract the destination,
+    * which is stored on the header
+    * @param packet
+    * @throws Exception
+    */
+   private LargeServerMessage doCreateLargeMessage(final SessionSendMessage packet)
+   {
+      try
+      {
+         return createLargeMessageStorage(packet.getMessageID(), packet.getLargeMessageHeader());
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to create large message", e);
+         Packet response = null;
+         if (packet.isRequiresResponse())
+         {
+            if (e instanceof MessagingException)
+            {
+               response = new MessagingExceptionMessage((MessagingException)e);
+            }
+            else
+            {
+               response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            }
+         }
+         channel.confirm(packet);
+         if (response != null)
+         {
+            channel.send(response);
+         }
+         return null;
+      }
+   }
+
    private void doSendLargeMessage(final SessionSendMessage packet)
    {
       Packet response = null;
 
       try
       {
-         largeMessage = createLargeMessageStorage(packet.getMessageID(), packet.getLargeMessageHeader());
-
          if (packet.isRequiresResponse())
          {
             response = new NullResponseMessage();
@@ -2456,18 +2596,18 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       try
       {
 
-         if (largeMessage == null)
+         if (currentLargeMessage == null)
          {
             throw new MessagingException(MessagingException.ILLEGAL_STATE, "large-message not initialized on server");
          }
 
-         largeMessage.addBytes(packet.getBody());
+         currentLargeMessage.addBytes(packet.getBody());
 
          if (!packet.isContinues())
          {
-            final LargeServerMessage message = largeMessage;
+            final LargeServerMessage message = currentLargeMessage;
 
-            largeMessage = null;
+            currentLargeMessage = null;
 
             message.complete();
 
@@ -2526,7 +2666,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       largeMessage.decodeProperties(headerBuffer);
 
-      // client didn send the ID originally
+      // client didn't send the ID originally
       largeMessage.setMessageID(messageID);
 
       return largeMessage;

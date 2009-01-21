@@ -68,8 +68,7 @@ public class JustReplicationTest extends FailoverTestBase
       factory.setBlockOnNonPersistentSend(true);
       factory.setBlockOnPersistentSend(true);
       
-      // Enable this and the test will fail
-      //factory.setMinLargeMessageSize(10 * 1024);
+      factory.setMinLargeMessageSize(10 * 1024);
 
       ClientSession session = factory.createSession(null, null, false, true, true, false, 0);
 
@@ -145,7 +144,7 @@ public class JustReplicationTest extends FailoverTestBase
    @Override
    protected void setUp() throws Exception
    {
-      setUpFileBased();
+      setUpFileBased(100*1024*1024);
    }
 
    protected void tearDown() throws Exception

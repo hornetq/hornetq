@@ -385,6 +385,8 @@ public class PostOfficeImpl implements PostOffice
    public List<Queue> activate()
    {
       backup = false;
+      
+      pagingManager.activate();
 
       Map<SimpleString, Binding> nameMap = addressManager.getBindings();
 

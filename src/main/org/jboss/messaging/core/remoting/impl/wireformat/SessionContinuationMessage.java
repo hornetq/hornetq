@@ -39,19 +39,20 @@ public abstract class SessionContinuationMessage extends PacketImpl
 
    // Constants -----------------------------------------------------
 
+   public static final int SESSION_CONTINUATION_BASE_SIZE = BASIC_PACKET_SIZE + DataConstants.SIZE_INT +
+                                                            DataConstants.SIZE_BOOLEAN;
+
    // Attributes ----------------------------------------------------
 
-   private byte[] body;
+   protected byte[] body;
 
-   private boolean continues;
+   protected boolean continues;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionContinuationMessage(byte type,
-                                     final byte[] body,
-                                     final boolean continues)
+   public SessionContinuationMessage(byte type, final byte[] body, final boolean continues)
    {
       super(type);
       this.body = body;
@@ -84,9 +85,7 @@ public abstract class SessionContinuationMessage extends PacketImpl
    @Override
    public int getRequiredBufferSize()
    {
-      return BASIC_PACKET_SIZE + DataConstants.SIZE_INT +
-             body.length +
-             DataConstants.SIZE_BOOLEAN;
+      return SESSION_CONTINUATION_BASE_SIZE + body.length; 
    }
 
    @Override

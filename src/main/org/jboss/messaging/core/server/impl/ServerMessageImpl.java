@@ -140,7 +140,12 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       return refCount.get();
    }
-   
+
+   public boolean isLargeMessage()
+   {
+      return false;
+   }
+
    public int getMemoryEstimate()
    {
       if (memoryEstimate == -1)

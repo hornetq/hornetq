@@ -103,6 +103,11 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
       
    }
 
+   public boolean isLargeMessage()
+   {
+      return true;
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

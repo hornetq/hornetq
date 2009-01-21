@@ -184,7 +184,12 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       return currentRefCount;
    }
 
-   public void deleteFile() throws MessagingException
+   public boolean isLargeMessage()
+   {
+      return true;
+   }
+
+   public synchronized void deleteFile() throws MessagingException
    {
       if (file != null)
       {
