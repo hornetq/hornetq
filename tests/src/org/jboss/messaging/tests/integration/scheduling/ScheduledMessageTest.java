@@ -258,7 +258,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       consumer = session.createConsumer(atestq);
       consumer2 = session.createConsumer(atestq2);
       session.start();
-      message3 = consumer.receive(5250);
+      message3 = consumer.receive(1000);
       assertNotNull(message3);
       message2 = consumer2.receive(5250);
       assertNotNull(message2);
