@@ -1135,8 +1135,13 @@
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout}">
 
-        <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
+          <sysproperty key="user.home" value="${user.home}"/>
+          <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
          <jvmarg value="-Xmx1024M"/>
+         <jvmarg value="-Dmodule.output=./"/>
+         <jvmarg value="-Djava.util.logging.config.file=src/config/logging.properties"/>
+         <jvmarg value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin"/>
+      	
          <jvmarg value="-Djava.library.path=native/bin"/>
          <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
          <!--<jvmarg value="-ea"/>-->
