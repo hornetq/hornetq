@@ -75,7 +75,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
-   public void testFoo() throws Exception
+   public void disabledtestFoo() throws Exception
    {
       
       final int numberOfInserts = 50000;
