@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.util;
 
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
@@ -36,9 +35,7 @@ import java.util.Properties;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
@@ -474,8 +471,7 @@ public class XMLUtil
    public static void validate(Node node, String schemaFile) throws Exception
    {
       SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-      Source schemaSource = new StreamSource(ClassLoader.getSystemResourceAsStream(schemaFile));
-      Schema schema = factory.newSchema(schemaSource);
+      Schema schema = factory.newSchema(ClassLoader.getSystemResource(schemaFile));
       Validator validator = schema.newValidator();
 
       // validate the DOM tree

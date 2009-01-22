@@ -1,6 +1,6 @@
-<deployment xmlns="urn:jboss:messaging-queues" 
+<settings xmlns="urn:jboss:messaging" 
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-            xsi:schemaLocation="urn:jboss:messaging-queues ../schemas/queues.xsd ">
+            xsi:schemaLocation="urn:jboss:messaging ../schemas/queues.xsd ">
 
    <security match="topicjms.testTopic">
       <permission type="create" roles="durpublisher"/>
@@ -119,4 +119,5 @@
       <message-counter-history-day-limit>10</message-counter-history-day-limit>
    </queue-settings>
 
-</deployment>
+   <queue name="foo" address="blah" filter="color > 1" durable="false" />
+</settings>

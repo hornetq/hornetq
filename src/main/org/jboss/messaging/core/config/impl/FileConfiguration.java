@@ -703,17 +703,15 @@ public class FileConfiguration extends ConfigurationImpl
       
       boolean useDuplicateDetection = DEFAULT_USE_DUPLICATE_DETECTION;
       
+      name = brNode.getAttribute("name");
+      
       NodeList children = brNode.getChildNodes();
 
       for (int j = 0; j < children.getLength(); j++)
       {
          Node child = children.item(j);
 
-         if (child.getNodeName().equals("name"))
-         {
-            name = child.getTextContent().trim();
-         }
-         else if (child.getNodeName().equals("queue-name"))
+         if (child.getNodeName().equals("queue-name"))
          {
             queueName = child.getTextContent().trim();
          }
@@ -721,9 +719,9 @@ public class FileConfiguration extends ConfigurationImpl
          {
             forwardingAddress = child.getTextContent().trim();
          }
-         else if (child.getNodeName().equals("filter-string"))
+         else if (child.getNodeName().equals("filter"))
          {
-            filterString = child.getTextContent().trim();
+            filterString = child.getAttributes().getNamedItem("string").getNodeValue();
          }
          else if (child.getNodeName().equals("max-batch-size"))
          {
@@ -732,10 +730,6 @@ public class FileConfiguration extends ConfigurationImpl
          else if (child.getNodeName().equals("max-batch-time"))
          {
             maxBatchTime = XMLUtil.parseLong(child);
-         }
-         else if (child.getNodeName().equals("discovery-group-ref"))
-         {
-            discoveryGroupName = child.getAttributes().getNamedItem("discovery-group-name").getNodeValue();
          }
          else if (child.getNodeName().equals("transformer-class-name"))
          {
@@ -760,6 +754,10 @@ public class FileConfiguration extends ConfigurationImpl
          else if (child.getNodeName().equals("use-duplicate-detection"))
          {
             useDuplicateDetection = XMLUtil.parseBoolean(child);
+         }
+         else if (child.getNodeName().equals("discovery-group-ref"))
+         {
+            discoveryGroupName = child.getAttributes().getNamedItem("discovery-group-name").getNodeValue();
          }
          else if (child.getNodeName().equals("connector-ref"))
          {
@@ -858,9 +856,9 @@ public class FileConfiguration extends ConfigurationImpl
          {
             exclusive = XMLUtil.parseBoolean(child);
          }
-         else if (child.getNodeName().equals("filter-string"))
+         else if (child.getNodeName().equals("filter"))
          {
-            filterString = child.getTextContent().trim();
+            filterString = child.getAttributes().getNamedItem("string").getNodeValue();
          }
          else if (child.getNodeName().equals("transformer-class-name"))
          {

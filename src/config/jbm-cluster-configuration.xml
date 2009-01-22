@@ -1,44 +1,9 @@
-<deployment xmlns="urn:jboss:messaging-configuration" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:jboss:messaging-configuration ../schemas/jbm-configuration.xsd ">
-
+<deployment xmlns="urn:jboss:messaging" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-configuration.xsd">
    <configuration>
 
       <clustered>true</clustered>
-      
-      <!-- Clustering configuration -->
-      
-      <broadcast-group name="bg-group1">
-      	<local-bind-address>localhost</local-bind-address>
-      	<local-bind-port>1234</local-bind-port>
-      	<group-address>231.7.7.7</group-address>
-      	<group-port>9876</group-port>
-      	<broadcast-period>5000</broadcast-period>
-      	<connector-ref connector-name="netty" backup-connector-name="netty-backup"/>
-      </broadcast-group>
-      
-      <discovery-group name="dg-group1">
-      	<group-address>231.7.7.7</group-address>
-      	<group-port>9876</group-port>
-      	<refresh-timeout>10000</refresh-timeout>
-      </discovery-group>
-      
-      <message-flow name="jms-distributed-queues">
-         <address>jmsqueues.testDistributedQueue</address>
-         <discovery-group-ref discovery-group-name="dg-group1"/>       
-      </message-flow>
-      
-      <message-flow name="jms-distributed-topics">
-         <address>jmstopics.#</address>
-         <discovery-group-ref discovery-group-name="dg-group1"/>
-         <exclusive>false</exclusive>      
-      </message-flow>
-      
-      <!--<message-flow name="example-static-connectors">
-         <address>jmstopics.#</address>
-         <connector-ref connector-name="connector1" backup-connector-name="backup-connector1"/>
-         <connector-ref connector-name="connector2"/>
-         <connector-ref connector-name="connector3"/>
-         <exclusive>false</exclusive>      
-      </message-flow>-->
       
       <!-- Maximum number of threads to use for scheduled deliveries -->
       <scheduled-max-pool-size>30</scheduled-max-pool-size>
@@ -156,6 +121,30 @@
          <param key="jbm.remoting.mina.port" value="${jbm.remoting.mina.port}" type="Integer"/>	                     
       </acceptor>
       
+            <!-- Clustering configuration -->
+      
+      <broadcast-group name="bg-group1">
+        <local-bind-address>localhost</local-bind-address>
+        <local-bind-port>1234</local-bind-port>
+        <group-address>231.7.7.7</group-address>
+        <group-port>9876</group-port>
+        <broadcast-period>5000</broadcast-period>
+        <connector-ref connector-name="netty" backup-connector-name="netty-backup"/>
+      </broadcast-group>
+      
+      <discovery-group name="dg-group1">
+        <group-address>231.7.7.7</group-address>
+        <group-port>9876</group-port>
+        <refresh-timeout>10000</refresh-timeout>
+      </discovery-group>
+
+<bridge name="foo">
+    <queue-name>toto</queue-name>
+    <forwarding-address>blah</forwarding-address>
+    <filter string="color > 1"/>
+    <connector-ref connector-name="netty"/>
+</bridge>
+
       <!--  Paging configuration -->
       
       <paging-max-threads>10</paging-max-threads>

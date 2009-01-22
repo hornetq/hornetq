@@ -1,19 +1,22 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-   targetNamespace="urn:jboss:messaging-queues"
-   xmlns="urn:jboss:messaging-queues"
+   targetNamespace="urn:jboss:messaging"
+   xmlns="urn:jboss:messaging"
    elementFormDefault="qualified"
    attributeFormDefault="unqualified"
    version="1.0">
    
-   <xsd:element name="deployment">
+   <xsd:element name="settings">
    	<xsd:complexType>
    		<xsd:sequence>
    			<xsd:element ref="security" maxOccurs="unbounded"
    				minOccurs="0">
    			</xsd:element>
-   			<xsd:element ref="queue-settings" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+   			<xsd:element ref="queue-settings" maxOccurs="unbounded"
+   				minOccurs="0">
+   			</xsd:element>
+   			<xsd:element ref="queue" maxOccurs="unbounded" minOccurs="0"></xsd:element>
    		</xsd:sequence>
    	</xsd:complexType>
    </xsd:element>
@@ -68,4 +71,14 @@
    	</xsd:sequence>
    	<xsd:attribute name="match" type="xsd:string" use="required"></xsd:attribute>
    </xsd:complexType>
+
+    <xsd:element name="queue">
+   <xsd:complexType>
+   	<xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
+   	<xsd:attribute name="address" type="xsd:string" use="required"></xsd:attribute>
+   	<xsd:attribute name="filter" type="xsd:string" use="optional"></xsd:attribute>
+   	<xsd:attribute name="durable" type="xsd:boolean" use="optional"></xsd:attribute>
+   </xsd:complexType>
+   </xsd:element>
+   
 </xsd:schema>
