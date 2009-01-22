@@ -118,6 +118,4 @@
       <distribution-policy-class>org.jboss.messaging.core.server.impl.RoundRobinDistributor</distribution-policy-class>
       <message-counter-history-day-limit>10</message-counter-history-day-limit>
    </queue-settings>
-
-   <queue name="foo" address="blah" filter="color > 1" durable="false" />
 </settings>

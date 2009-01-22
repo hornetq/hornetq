@@ -16,7 +16,6 @@
    			<xsd:element ref="queue-settings" maxOccurs="unbounded"
    				minOccurs="0">
    			</xsd:element>
-   			<xsd:element ref="queue" maxOccurs="unbounded" minOccurs="0"></xsd:element>
    		</xsd:sequence>
    	</xsd:complexType>
    </xsd:element>
@@ -70,15 +69,5 @@
         </xsd:element>
    	</xsd:sequence>
    	<xsd:attribute name="match" type="xsd:string" use="required"></xsd:attribute>
-   </xsd:complexType>
-
-    <xsd:element name="queue">
-   <xsd:complexType>
-   	<xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
-   	<xsd:attribute name="address" type="xsd:string" use="required"></xsd:attribute>
-   	<xsd:attribute name="filter" type="xsd:string" use="optional"></xsd:attribute>
-   	<xsd:attribute name="durable" type="xsd:boolean" use="optional"></xsd:attribute>
-   </xsd:complexType>
-   </xsd:element>
-   
+   </xsd:complexType>   
 </xsd:schema>
