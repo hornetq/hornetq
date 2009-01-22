@@ -58,7 +58,7 @@ public class PagingManagerImpl implements PagingManager
    private volatile boolean started = false;
 
    private final long maxGlobalSize;
-   
+
    private volatile boolean backup;
 
    private final AtomicLong globalSize = new AtomicLong(0);
@@ -95,13 +95,13 @@ public class PagingManagerImpl implements PagingManager
                             final boolean syncNonTransactional,
                             final boolean backup)
    {
-      this.pagingStoreFactory = pagingSPI;
+      pagingStoreFactory = pagingSPI;
       this.queueSettingsRepository = queueSettingsRepository;
       this.storageManager = storageManager;
       this.defaultPageSize = defaultPageSize;
       this.maxGlobalSize = maxGlobalSize;
       this.syncNonTransactional = syncNonTransactional;
-      this.backup = backup; 
+      this.backup = backup;
    }
 
    // Public
@@ -112,17 +112,16 @@ public class PagingManagerImpl implements PagingManager
 
    public void activate()
    {
-      this.backup = false;
-      
+      backup = false;
+
       startGlobalDepage();
    }
-   
-   
+
    public boolean isBackup()
    {
-      return this.backup;
+      return backup;
    }
-   
+
    public boolean isGlobalPageMode()
    {
       return globalMode.get();
@@ -140,7 +139,7 @@ public class PagingManagerImpl implements PagingManager
    {
       List<PagingStore> destinations = pagingStoreFactory.reloadStores(queueSettingsRepository);
 
-      for (PagingStore store: destinations)
+      for (PagingStore store : destinations)
       {
          store.start();
          stores.put(store.getStoreName(), store);
@@ -168,6 +167,7 @@ public class PagingManagerImpl implements PagingManager
       return store;
    }
 
+   /** stores is a ConcurrentHashMap, so we don't need to synchronize this method */
    public PagingStore getPageStore(final SimpleString storeName) throws Exception
    {
       PagingStore store = stores.get(storeName);
@@ -256,7 +256,7 @@ public class PagingManagerImpl implements PagingManager
       pagingStoreFactory.setPagingManager(this);
 
       pagingStoreFactory.setStorageManager(storageManager);
-      
+
       reloadStores();
 
       started = true;
@@ -275,13 +275,13 @@ public class PagingManagerImpl implements PagingManager
       {
          store.stop();
       }
-      
+
       stores.clear();
 
       pagingStoreFactory.stop();
-      
+
       globalSize.set(0);
-      
+
       globalMode.set(false);
    }
 
