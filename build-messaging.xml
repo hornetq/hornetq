@@ -711,6 +711,11 @@
          </fileset>
       </copy>
       <copy todir="${build.sar.dir}">
+         <fileset dir="${src.schemas.dir}">
+            <include name="*.xsd"/>
+         </fileset>
+      </copy>
+      <copy todir="${build.sar.dir}">
          <fileset dir="${build.jars.dir}">
             <include name="*.jar"/>
          </fileset>
