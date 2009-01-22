@@ -303,7 +303,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                          (maxGlobalSize - pagingManager.getDefaultPageSize()));
             }
 
-            if (pagingManager.isGlobalPageMode() && currentGlobalSize < maxGlobalSize - pagingManager.getDefaultPageSize())
+            if (maxGlobalSize > 0 && pagingManager.isGlobalPageMode() && currentGlobalSize < maxGlobalSize - pagingManager.getDefaultPageSize())
             {
                pagingManager.startGlobalDepage();
             }

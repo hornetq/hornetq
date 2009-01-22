@@ -88,6 +88,8 @@ public class ServerConsumerImpl implements ServerConsumer
    private final long id;
 
    private final Queue messageQueue;
+   
+   private final SimpleString bindingAddress;
 
    private final Filter filter;
 
@@ -115,7 +117,7 @@ public class ServerConsumerImpl implements ServerConsumer
    private final boolean browseOnly;
 
    private final StorageManager storageManager;
-   
+
    private final PagingManager pagingManager;
 
    private final java.util.Queue<MessageReference> deliveringRefs = new ConcurrentLinkedQueue<MessageReference>();
@@ -130,6 +132,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public ServerConsumerImpl(final long id,
                              final ServerSession session,
+                             final SimpleString bindingAddress,
                              final Queue messageQueue,
                              final Filter filter,
                              final boolean started,
@@ -143,6 +146,8 @@ public class ServerConsumerImpl implements ServerConsumer
       this.id = id;
 
       this.messageQueue = messageQueue;
+      
+      this.bindingAddress = bindingAddress;
 
       this.filter = filter;
 
@@ -159,7 +164,7 @@ public class ServerConsumerImpl implements ServerConsumer
       this.channel = channel;
 
       this.preAcknowledge = preAcknowledge;
-      
+
       this.pagingManager = pagingManager;
 
       messageQueue.addConsumer(this);
@@ -361,7 +366,7 @@ public class ServerConsumerImpl implements ServerConsumer
          else
          {
             ref.getQueue().acknowledge(tx, ref);
-            
+
             // Del count is not actually updated in storage unless it's
             // cancelled
             ref.incrementDeliveryCount();
@@ -409,11 +414,11 @@ public class ServerConsumerImpl implements ServerConsumer
       return ref;
    }
 
-   public void deliverReplicated(final SimpleString address, final long messageID) throws Exception
+   public void deliverReplicated(final long messageID) throws Exception
    {
       // It may not be the first in the queue - since there may be multiple producers
       // sending to the queue
-      MessageReference ref = removeReferenceOnBackup(address, messageID);
+      MessageReference ref = removeReferenceOnBackup(messageID);
 
       if (ref == null)
       {
@@ -459,7 +464,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    // Private --------------------------------------------------------------------------------------
 
-   private MessageReference removeReferenceOnBackup(SimpleString address, long id) throws Exception
+   private MessageReference removeReferenceOnBackup(long id) throws Exception
    {
 
       // most of the times, the remove will work ok, so we first try it without any locks
@@ -467,9 +472,9 @@ public class ServerConsumerImpl implements ServerConsumer
 
       if (ref == null)
       {
-         PagingStore store = pagingManager.getPageStore(address);
+         PagingStore store = pagingManager.getPageStore(bindingAddress);
 
-         for (;;)
+         while (true)
          {
             // Can't have the same store being depaged in more than one thread
             synchronized (store)
@@ -478,8 +483,9 @@ public class ServerConsumerImpl implements ServerConsumer
                ref = messageQueue.removeReferenceWithID(id);
                if (ref == null)
                {
+                  System.out.println("Forcing depage");
                   // force a depage
-                  if (!store.readPage())
+                  if (!store.readPage()) // This returns false if there are no pages
                   {
                      break;
                   }
@@ -558,8 +564,8 @@ public class ServerConsumerImpl implements ServerConsumer
             return HandleStatus.BUSY;
          }
 
-         //TODO use a null or boolean check here for performance
-         
+         // note: Since we schedule deliveries to start under replication, we use a counter of pendingLargeMessages.
+
          // If there is a pendingLargeMessage we can't take another message
          // This has to be checked inside the lock as the set to null is done inside the lock
          if (pendingLargeMessagesCounter.get() > 0)
@@ -620,9 +626,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       final LargeMessageDeliverer localDeliverer = new LargeMessageDeliverer((LargeServerMessage)message, ref);
 
-      DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id,
-                                                                                         message.getMessageID(),
-                                                                                         message.getDestination()));
+      DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id, message.getMessageID()));
 
       if (result == null)
       {
@@ -670,9 +674,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       final SessionReceiveMessage packet = new SessionReceiveMessage(id, message, ref.getDeliveryCount() + 1);
 
-      DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id,
-                                                                                         message.getMessageID(),
-                                                                                         message.getDestination()));
+      DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id, message.getMessageID()));
 
       if (result == null)
       {
@@ -757,16 +759,16 @@ public class ServerConsumerImpl implements ServerConsumer
                return false;
             }
 
-            int creditsUsed;
+            int precalculateAvailableCredits;
 
             if (availableCredits != null)
             {
                // Flow control needs to be done in advance.
-               creditsUsed = preCalculateFlowControl();
+               precalculateAvailableCredits = preCalculateFlowControl();
             }
             else
             {
-               creditsUsed = 0;
+               precalculateAvailableCredits = 0;
             }
 
             if (!sentFirstMessage)
@@ -789,7 +791,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
                if (availableCredits != null)
                {
-                  if ((creditsUsed -= initialMessage.getRequiredBufferSize()) < 0)
+                  if ((precalculateAvailableCredits -= initialMessage.getRequiredBufferSize()) < 0)
                   {
                      log.warn("Credit logic is not working properly, too many credits were taken");
                   }
@@ -798,7 +800,7 @@ public class ServerConsumerImpl implements ServerConsumer
                   {
                      trace("deliverLargeMessage:: Initial send, taking out " + initialMessage.getRequiredBufferSize() +
                            " credits, current = " +
-                           creditsUsed +
+                           precalculateAvailableCredits +
                            " isBackup = " +
                            messageQueue.isBackup());
 
@@ -815,7 +817,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
             while (positionPendingLargeMessage < sizePendingLargeMessage)
             {
-               if (creditsUsed <= 0)
+               if (precalculateAvailableCredits <= 0)
                {
                   if (trace)
                   {
@@ -830,7 +832,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
                if (availableCredits != null)
                {
-                  if ((creditsUsed -= chunk.getRequiredBufferSize()) < 0)
+                  if ((precalculateAvailableCredits -= chunk.getRequiredBufferSize()) < 0)
                   {
                      log.warn("Flowcontrol logic is not working properly, too many credits were taken");
                   }
@@ -850,9 +852,9 @@ public class ServerConsumerImpl implements ServerConsumer
                positionPendingLargeMessage += chunkLen;
             }
 
-            if (creditsUsed != 0)
+            if (precalculateAvailableCredits != 0)
             {
-               log.warn("Flowcontrol logic is not working properly... creidts = " + creditsUsed);
+               log.warn("Flowcontrol logic is not working properly... creidts = " + precalculateAvailableCredits);
             }
 
             if (trace)
@@ -880,29 +882,28 @@ public class ServerConsumerImpl implements ServerConsumer
        */
       private int preCalculateFlowControl()
       {
-         for (;;)
+         while (true)
          {
-            final int currentCredit;
-            int creditsUsed = 0;
-            currentCredit = availableCredits.get();
+            final int currentCredit = availableCredits.get();
+            int precalculatedCredits = 0;
 
             if (!sentFirstMessage)
             {
-               creditsUsed = SessionReceiveMessage.SESSION_RECEIVE_MESSAGE_LARGE_MESSAGE_SIZE + pendingLargeMessage.getPropertiesEncodeSize();
+               precalculatedCredits = SessionReceiveMessage.SESSION_RECEIVE_MESSAGE_LARGE_MESSAGE_SIZE + pendingLargeMessage.getPropertiesEncodeSize();
             }
 
             long chunkLen = 0;
-            for (long i = positionPendingLargeMessage; creditsUsed < currentCredit && i < sizePendingLargeMessage; i += chunkLen)
+            for (long i = positionPendingLargeMessage; precalculatedCredits < currentCredit && i < sizePendingLargeMessage; i += chunkLen)
             {
                chunkLen = (int)Math.min(sizePendingLargeMessage - i, minLargeMessageSize);
-               creditsUsed += chunkLen + SessionReceiveContinuationMessage.SESSION_RECEIVE_CONTINUATION_BASE_SIZE;
+               precalculatedCredits += chunkLen + SessionReceiveContinuationMessage.SESSION_RECEIVE_CONTINUATION_BASE_SIZE;
             }
 
             // The calculation of credits and taking credits out has to be taken atomically.
             // Since we are not sending anything to the client during this calculation, this is unlikely to happen
-            if (availableCredits.compareAndSet(currentCredit, currentCredit - creditsUsed))
+            if (availableCredits.compareAndSet(currentCredit, currentCredit - precalculatedCredits))
             {
-               return creditsUsed;
+               return precalculatedCredits;
             }
          }
       }

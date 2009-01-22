@@ -1029,16 +1029,19 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       DelayedResult result = channel.replicatePacket(packet);
 
+      try
+      {
+         // Note we don't wait for response before handling this
+
+         consumers.get(packet.getConsumerID()).receiveCredits(packet.getCredits());
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to receive credits", e);
+      }
+
       if (result == null)
       {
-         try
-         {
-            consumers.get(packet.getConsumerID()).receiveCredits(packet.getCredits());
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to receive credits", e);
-         }
          channel.confirm(packet);
       }
       else
@@ -1047,14 +1050,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             public void run()
             {
-               try
-               {
-                  consumers.get(packet.getConsumerID()).receiveCredits(packet.getCredits());
-               }
-               catch (Exception e)
-               {
-                  log.error("Failed to receive credits", e);
-               }
                channel.confirm(packet);
             }
          });
@@ -1249,7 +1244,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       try
       {
-         consumer.deliverReplicated(packet.getAddress(), packet.getMessageID());
+         consumer.deliverReplicated(packet.getMessageID());
       }
       catch (Exception e)
       {
@@ -1403,6 +1398,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          ServerConsumer consumer = new ServerConsumerImpl(idGenerator.generateID(),
                                                           this,
+                                                          binding.getAddress(),
                                                           theQueue,
                                                           filter,
                                                           started,

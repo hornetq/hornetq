@@ -136,14 +136,14 @@ public class PagingManagerImpl implements PagingManager
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.paging.PagingManager#reloadStores()
     */
-   public void reloadStores() throws Exception
+   public synchronized void reloadStores() throws Exception
    {
       List<PagingStore> destinations = pagingStoreFactory.reloadStores(queueSettingsRepository);
 
       for (PagingStore store: destinations)
       {
-         stores.put(store.getStoreName(), store);
          store.start();
+         stores.put(store.getStoreName(), store);
       }
 
    }
@@ -152,7 +152,7 @@ public class PagingManagerImpl implements PagingManager
     * @param destination
     * @return
     */
-   public synchronized PagingStore createPageStore(final SimpleString storeName, final boolean createDir) throws Exception
+   public synchronized PagingStore createPageStore(final SimpleString storeName) throws Exception
    {
       PagingStore store = stores.get(storeName);
 
@@ -160,16 +160,9 @@ public class PagingManagerImpl implements PagingManager
       {
          store = newStore(storeName);
 
-         PagingStore oldStore = stores.putIfAbsent(storeName, store);
+         store.start();
 
-         if (oldStore != null)
-         {
-            store = oldStore;
-         }
-         else
-         {
-            store.start();
-         }
+         stores.put(storeName, store);
       }
 
       return store;
@@ -181,7 +174,7 @@ public class PagingManagerImpl implements PagingManager
 
       if (store == null)
       {
-         store = createPageStore(storeName, true);
+         store = createPageStore(storeName);
       }
 
       return store;

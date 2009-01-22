@@ -57,7 +57,7 @@ public interface ServerConsumer extends Consumer
 	
 	void failedOver();
 	
-	void deliverReplicated(SimpleString address, long messageID) throws Exception;
+	void deliverReplicated(long messageID) throws Exception;
 	
 	void lock();
 	

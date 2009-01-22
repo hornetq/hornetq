@@ -73,7 +73,7 @@ public interface PagingManager extends MessagingComponent
     * @return
     * @throws Exception 
     */
-   PagingStore createPageStore(SimpleString destination, boolean createDir) throws Exception;
+   PagingStore createPageStore(SimpleString destination) throws Exception;
 
    /** To return the PageStore associated with the address */
    PagingStore getPageStore(SimpleString address) throws Exception;

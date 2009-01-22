@@ -13,8 +13,6 @@
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.util.DataConstants;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -30,21 +28,17 @@ public class SessionReplicateDeliveryMessage extends PacketImpl
 
    private long messageID;
 
-   private SimpleString address;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionReplicateDeliveryMessage(final long consumerID, final long messageID, final SimpleString address)
+   public SessionReplicateDeliveryMessage(final long consumerID, final long messageID)
    {
       super(SESS_REPLICATE_DELIVERY);
 
       this.consumerID = consumerID;
 
       this.messageID = messageID;
-
-      this.address = address;
    }
 
    public SessionReplicateDeliveryMessage()
@@ -64,18 +58,11 @@ public class SessionReplicateDeliveryMessage extends PacketImpl
       return messageID;
    }
 
-   public SimpleString getAddress()
-   {
-      return address;
-   }
-
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.putLong(consumerID);
 
       buffer.putLong(messageID);
-
-      buffer.putSimpleString(address);
    }
 
    public void decodeBody(final MessagingBuffer buffer)
@@ -83,18 +70,11 @@ public class SessionReplicateDeliveryMessage extends PacketImpl
       consumerID = buffer.getLong();
 
       messageID = buffer.getLong();
-
-      address = buffer.getSimpleString();
    }
-
+   
    public boolean isRequiresConfirmations()
-   {
+   {      
       return false;
-   }
-
-   public int getRequiredBufferSize()
-   {
-      return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG + DataConstants.SIZE_LONG + SimpleString.sizeofString(address);
    }
 
    public boolean equals(Object other)
@@ -108,7 +88,7 @@ public class SessionReplicateDeliveryMessage extends PacketImpl
 
       return super.equals(other) && this.consumerID == r.consumerID && this.messageID == r.messageID;
    }
-
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
