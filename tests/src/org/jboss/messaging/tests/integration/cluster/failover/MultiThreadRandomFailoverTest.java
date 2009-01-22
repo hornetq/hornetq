@@ -23,7 +23,7 @@ import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 
 /**
- * A MultiThreadRandomFailoverTest
+ * A MultiThreadRandomFailoverStressTest
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -66,7 +66,7 @@ public class MultiThreadRandomFailoverTest extends MultiThreadRandomFailoverTest
     * @see org.jboss.messaging.tests.integration.cluster.failover.MultiThreadRandomFailoverTestBase#setBody(org.jboss.messaging.core.client.ClientMessage)
     */
    @Override
-   protected void setBody(ClientMessage message) throws Exception
+   protected void setBody(final ClientMessage message) throws Exception
    {
       message.getBody().flip();
    }
@@ -75,7 +75,7 @@ public class MultiThreadRandomFailoverTest extends MultiThreadRandomFailoverTest
     * @see org.jboss.messaging.tests.integration.cluster.failover.MultiThreadRandomFailoverTestBase#checkSize(org.jboss.messaging.core.client.ClientMessage)
     */
    @Override
-   protected boolean checkSize(ClientMessage message)
+   protected boolean checkSize(final ClientMessage message)
    {
       return 0 == message.getBody().limit();
    }

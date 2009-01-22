@@ -125,12 +125,6 @@ public class LargeMessageMuliThreadFailoverTest extends MultiThreadRandomFailove
 
    }
    
-   protected int getNumIterations()
-   {
-      return 10;
-   }
-
-
    @Override
    protected void setBody(final ClientMessage message) throws Exception
    {

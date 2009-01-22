@@ -760,6 +760,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
             if (availableCredits != null)
             {
+               // Flow control needs to be done in advance.
                creditsUsed = preCalculateFlowControl();
             }
             else
