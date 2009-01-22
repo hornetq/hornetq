@@ -483,7 +483,6 @@ public class ServerConsumerImpl implements ServerConsumer
                ref = messageQueue.removeReferenceWithID(id);
                if (ref == null)
                {
-                  System.out.println("Forcing depage");
                   // force a depage
                   if (!store.readPage()) // This returns false if there are no pages
                   {
