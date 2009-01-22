@@ -471,7 +471,7 @@ public class XMLUtil
    public static void validate(Node node, String schemaFile) throws Exception
    {
       SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-      Schema schema = factory.newSchema(ClassLoader.getSystemResource(schemaFile));
+      Schema schema = factory.newSchema(Thread.currentThread().getContextClassLoader().getResource(schemaFile));
       Validator validator = schema.newValidator();
 
       // validate the DOM tree
