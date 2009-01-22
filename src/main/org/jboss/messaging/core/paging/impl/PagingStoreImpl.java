@@ -655,8 +655,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       List<PagedMessage> messages = page.read();
 
-      onDepage(page.getPageId(), storeName, messages);
-
       if (onDepage(page.getPageId(), storeName, messages))
       {
          page.delete();
