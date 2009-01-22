@@ -1,0 +1,141 @@
+<deployment xmlns="urn:jboss:messaging" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:jboss:messaging ../../src/schemas/jbm-configuration.xsd ">
+   <configuration>
+      <clustered>true</clustered>
+      <scheduled-max-pool-size>12345</scheduled-max-pool-size>        
+      <require-destinations>false</require-destinations>
+      <security-enabled>false</security-enabled>
+      <security-invalidation-interval>5423</security-invalidation-interval>
+      <wild-card-routing-enabled>true</wild-card-routing-enabled>
+      <management-address>Giraffe</management-address>
+      <management-notification-address>Whatever</management-notification-address>
+      <jmx-management-enabled>false</jmx-management-enabled>
+      <message-counter-enabled>true</message-counter-enabled>
+      <connection-scan-period>6543</connection-scan-period>
+      <connection-ttl-override>12345</connection-ttl-override>
+      <transaction-timeout>98765</transaction-timeout>
+      <transaction-timeout-scan-period>56789</transaction-timeout-scan-period>
+      <message-expiry-scan-period>10111213</message-expiry-scan-period>
+      <message-expiry-thread-priority>8</message-expiry-thread-priority>
+      <id-cache-size>127</id-cache-size>
+      <persist-id-cache>true</persist-id-cache>
+      <remoting-interceptors>
+         <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1</class-name>
+         <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor2</class-name>
+      </remoting-interceptors>
+      <queue-activation-timeout>12456</queue-activation-timeout>
+      <backup>true</backup>
+      <backup-connector-ref connector-name="backup-connector"/>
+      <connector name="connector">
+         <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory1</factory-class>
+         <param key="d_mykey1" value="d_foovalue1" type="String"/>
+         <param key="d_mykey2" value="6000" type="Long"/>
+         <param key="d_mykey3" value="60" type="Integer"/>
+         <param key="d_mykey4" value="d_foovalue4" type="String"/>      
+      </connector>
+      <connector name="backup-connector">
+         <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory1</factory-class>
+         <param key="c_mykey1" value="c_foovalue1" type="String"/>
+         <param key="c_mykey2" value="6000" type="Long"/>
+         <param key="c_mykey3" value="60" type="Integer"/>
+         <param key="c_mykey4" value="c_foovalue4" type="String"/>      
+      </connector>
+      <acceptor name="acceptor1">
+         <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory1</factory-class>           
+         <param key="a_mykey1" value="a_foovalue1" type="String"/>
+         <param key="a_mykey2" value="1234567" type="Long"/>
+         <param key="a_mykey3" value="123" type="Integer"/>
+         <param key="a_mykey4" value="a_foovalue4" type="String"/>                     
+      </acceptor>
+	  <acceptor name="acceptor2">
+	      <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory2</factory-class>           
+	      <param key="b_mykey1" value="b_foovalue1" type="String"/>
+	      <param key="b_mykey2" value="7654321" type="Long"/>
+	      <param key="b_mykey3" value="321" type="Integer"/>
+	      <param key="b_mykey4" value="b_foovalue4" type="String"/>            
+	   </acceptor>
+	  <broadcast-group name="bg1">
+	     <local-bind-address>127.0.0.1</local-bind-address>
+	     <local-bind-port>10999</local-bind-port>
+	     <group-address>192.168.0.120</group-address>
+	     <group-port>11999</group-port>
+         <broadcast-period>12345</broadcast-period>
+         <connector-ref connector-name="connector"/>
+	  </broadcast-group>
+      <broadcast-group name="bg2">
+         <local-bind-address>127.0.0.1</local-bind-address>
+         <local-bind-port>10999</local-bind-port>
+         <group-address>192.168.0.120</group-address>
+         <group-port>11999</group-port>
+         <broadcast-period>12345</broadcast-period>
+         <connector-ref connector-name="connector"/>
+      </broadcast-group>
+      <discovery-group name="dg1">
+         <group-address>192.168.0.121</group-address>
+         <group-port>11999</group-port>
+         <refresh-timeout>12345</refresh-timeout>
+      </discovery-group>
+      <discovery-group name="dg2">
+         <group-address>192.168.0.121</group-address>
+         <group-port>11999</group-port>
+         <refresh-timeout>12345</refresh-timeout>
+      </discovery-group>
+      <divert name="divert1">
+         <unique-name>unique-name1</unique-name>
+         <routing-name>routing-name1</routing-name>
+         <address>address1</address>
+         <forwarding-address>forwarding-addres1</forwarding-address>
+         <filter string="speed > 88"/>
+         <transformer-class-name>org.foo.Transformer</transformer-class-name>
+         <exclusive>true</exclusive>
+      </divert>
+      <divert name="divert2">
+         <unique-name>unique-name2</unique-name>
+         <routing-name>routing-name2</routing-name>
+         <address>address2</address>
+         <forwarding-address>forwarding-addres2</forwarding-address>
+         <filter string="speed > 88"/>
+         <transformer-class-name>org.foo.Transformer</transformer-class-name>
+         <exclusive>false</exclusive>
+      </divert>
+      <queue name="foo" address="bar" filter="color = 'red'" durable="false" />
+      <queue name="foo2" address="bar2" filter="color = 'red'" durable="false" />
+      <bridge name="bridge">
+          <queue-name>foo</queue-name>
+          <forwarding-address>bridge-forwarding-address</forwarding-address>
+          <filter string="sku > 1"/>
+          <max-batch-size>124</max-batch-size>
+          <max-batch-time>123456</max-batch-time>
+          <transformer-class-name>org.foo.BridgeTransformer</transformer-class-name>
+          <retry-interval>3</retry-interval>
+          <retry-interval-multiplier>0.2</retry-interval-multiplier>
+          <max-retries-before-failover>2</max-retries-before-failover>
+          <max-retries-after-failover>5</max-retries-after-failover>
+          <use-duplicate-detection>true</use-duplicate-detection>
+          <connector-ref connector-name="connector"/>
+      </bridge>
+      <bridge name="bridge2">
+          <queue-name>foo2</queue-name>
+          <forwarding-address>bridge-forwarding-address</forwarding-address>
+          <filter string="sku > 1"/>
+          <disccovery-group-ref discovery-group-name="dg1"/>
+      </bridge>
+
+      <paging-max-threads>2</paging-max-threads>
+      <paging-directory>pagingdir</paging-directory>
+      <paging-default-size>123</paging-default-size>
+      <paging-max-global-size-bytes>4567</paging-max-global-size-bytes>
+      <bindings-directory>somedir</bindings-directory>
+      <create-bindings-dir>false</create-bindings-dir>
+      <journal-directory>somedir2</journal-directory>
+      <create-journal-dir>false</create-journal-dir>
+      <journal-type>NIO</journal-type>
+      <journal-buffer-reuse-size>128</journal-buffer-reuse-size>
+      <journal-sync-transactional>false</journal-sync-transactional>      
+      <journal-sync-non-transactional>true</journal-sync-non-transactional>
+      <journal-file-size>12345678</journal-file-size>
+      <journal-min-files>100</journal-min-files>
+      <journal-max-aio>56546</journal-max-aio>
+      <large-messages-directory>largemessagesdir</large-messages-directory>
+   </configuration>
+
+</deployment>

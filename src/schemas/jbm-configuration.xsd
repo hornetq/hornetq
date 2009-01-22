@@ -74,7 +74,7 @@
 				<xsd:element name="id-cache-size" type="xsd:int"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
-				<xsd:element name="persist-id-cache" type="xsd:int"
+				<xsd:element name="persist-id-cache" type="xsd:boolean"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element ref="remoting-interceptors" maxOccurs="1"
@@ -104,7 +104,7 @@
 				<xsd:element name="divert" type="divertType"
 					maxOccurs="unbounded" minOccurs="0">
 				</xsd:element>
-				<xsd:element name="queue" maxOccurs="unbounded"
+				<xsd:element name="queue" type="queueType" maxOccurs="unbounded"
                     minOccurs="0">
                 </xsd:element>
 				<xsd:element name="bridge" type="bridgeType"
@@ -398,12 +398,10 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
-	    <xsd:element name="queue">
-   <xsd:complexType>
+   <xsd:complexType name="queueType">
     <xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
     <xsd:attribute name="address" type="xsd:string" use="required"></xsd:attribute>
     <xsd:attribute name="filter" type="xsd:string" use="optional"></xsd:attribute>
     <xsd:attribute name="durable" type="xsd:boolean" use="optional"></xsd:attribute>
    </xsd:complexType>
-   </xsd:element>
 </xsd:schema>
