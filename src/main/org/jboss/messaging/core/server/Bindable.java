@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.server;
 
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * A Bindable
@@ -38,12 +37,6 @@ public interface Bindable
 {
    void route(ServerMessage message, Transaction tx) throws Exception;
    
-   SimpleString getUniqueName();
-   
-   SimpleString getRoutingName();
-   
    boolean accept(ServerMessage message) throws Exception;
-   
-   boolean isExclusive();
 }
 

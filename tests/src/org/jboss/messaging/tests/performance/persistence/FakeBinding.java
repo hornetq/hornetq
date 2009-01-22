@@ -24,6 +24,7 @@ package org.jboss.messaging.tests.performance.persistence;
 
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.server.Bindable;
+import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -33,6 +34,30 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class FakeBinding implements Binding
 {
+   public boolean accept(ServerMessage message) throws Exception
+   {
+      // TODO Auto-generated method stub
+      return false;
+   }
+
+   public SimpleString getRoutingName()
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
+   public SimpleString getUniqueName()
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
+   public boolean isExclusive()
+   {
+      // TODO Auto-generated method stub
+      return false;
+   }
+
    private SimpleString address;
 
    private Bindable bindable;

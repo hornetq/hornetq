@@ -30,8 +30,8 @@ import javax.transaction.xa.Xid;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.persistence.QueueBindingInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.QueueBinding;
 import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
@@ -58,7 +58,7 @@ public class NullStorageManager implements StorageManager
 
    private volatile boolean started;
 
-   public void addQueueBinding(final QueueBinding queueBinding) throws Exception
+   public void addQueueBinding(final Binding queueBinding) throws Exception
    {
    }
 

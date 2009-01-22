@@ -20,21 +20,51 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
+package org.jboss.messaging.core.postoffice.impl;
 
-package org.jboss.messaging.core.postoffice;
-
-import org.jboss.messaging.core.server.Divert;
+import org.jboss.messaging.core.server.Bindable;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.cluster.impl.FlowBindingFilter;
+import org.jboss.messaging.util.SimpleString;
 
 /**
- * A DivertBinding
+ * A FlowBinding
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 9 Jan 2009 18:28:42
+ * Created 21 Jan 2009 18:55:22
  *
  *
  */
-public interface DivertBinding extends Binding
+public class FlowBinding extends BindingImpl
 {
-   public Divert getDivert();
+   private final FlowBindingFilter filter;
+
+   public FlowBinding(final SimpleString address,
+                      final SimpleString uniqueName,
+                      final SimpleString routingName,
+                      final Bindable bindable,
+                      final FlowBindingFilter filter)
+   {
+      super(address, uniqueName, routingName, bindable, false, false);
+
+      this.filter = filter;
+   }
+
+   public boolean accept(final ServerMessage message) throws Exception
+   {
+      if (filter.match(message))
+      {
+         return bindable.accept(message);
+      }
+      else
+      {
+         return false;
+      }
+   }
+   
+   public FlowBindingFilter getFilter()
+   {
+      return filter;
+   }
 }

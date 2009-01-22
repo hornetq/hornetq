@@ -21,52 +21,54 @@
  */
 
 
-package org.jboss.messaging.core.postoffice.impl;
+package org.jboss.messaging.core.server.cluster.impl;
 
-import org.jboss.messaging.core.postoffice.DivertBinding;
-import org.jboss.messaging.core.server.Bindable;
-import org.jboss.messaging.core.server.Divert;
-import org.jboss.messaging.util.SimpleString;
+import java.util.List;
 
 /**
- * A DivertBindingImpl
+ * A QueueInfo
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 9 Jan 2009 15:45:09
+ * Created 21 Jan 2009 20:55:06
  *
  *
  */
-public class DivertBindingImpl implements DivertBinding
+public class QueueInfo
 {
-   private SimpleString address;
+   private final String queueName;
    
-   private Divert divert;
+   private final String address;
    
-   public DivertBindingImpl(final SimpleString address, final Divert divert)
+   private final List<String> filterStrings;
+   
+   private final int numberOfConsumers;
+
+   public QueueInfo(final String queueName, final String address, final List<String> filterStrings, final int numberOfConsumers)
    {
+      this.queueName = queueName;
       this.address = address;
-      
-      this.divert = divert;  
+      this.filterStrings = filterStrings;
+      this.numberOfConsumers = numberOfConsumers;
    }
-        
-   public SimpleString getAddress()
+
+   public String getQueueName()
+   {
+      return queueName;
+   }
+
+   public String getAddress()
    {
       return address;
    }
 
-   public Bindable getBindable()
-   {      
-      return divert;
-   }
-   
-   public Divert getDivert()
+   public List<String> getFilterStrings()
    {
-      return divert;
+      return filterStrings;
    }
 
-   public boolean isQueueBinding()
+   public int getNumberOfConsumers()
    {
-      return false;
-   }
+      return numberOfConsumers;
+   }            
 }

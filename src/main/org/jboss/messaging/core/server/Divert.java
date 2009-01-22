@@ -24,6 +24,7 @@
 package org.jboss.messaging.core.server;
 
 
+
 /**
  * A Divert
  *
@@ -35,5 +36,5 @@ package org.jboss.messaging.core.server;
  */
 public interface Divert extends Bindable
 {
-   boolean isExclusive();
+   //boolean isExclusive();
 }

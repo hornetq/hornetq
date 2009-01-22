@@ -23,7 +23,7 @@
 
 package org.jboss.messaging.tests.stress.failover;
 
-import org.jboss.messaging.tests.integration.cluster.failover.LargeMessageMuliThreadFailoverTest;
+import org.jboss.messaging.tests.integration.cluster.failover.LargeMessageMultiThreadFailoverTest;
 
 /**
  * A LargeMessageMultiThreadFailoverStressTest
@@ -34,7 +34,7 @@ import org.jboss.messaging.tests.integration.cluster.failover.LargeMessageMuliTh
  *
  *
  */
-public class LargeMessageMultiThreadFailoverStressTest extends LargeMessageMuliThreadFailoverTest
+public class LargeMessageMultiThreadFailoverStressTest extends LargeMessageMultiThreadFailoverTest
 {
 
    // Constants -----------------------------------------------------

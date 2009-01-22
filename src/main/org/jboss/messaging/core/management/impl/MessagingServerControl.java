@@ -54,10 +54,10 @@ import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.QueueBinding;
-import org.jboss.messaging.core.postoffice.impl.QueueBindingImpl;
+import org.jboss.messaging.core.postoffice.impl.BindingImpl;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
@@ -297,7 +297,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       if (postOffice.getBinding(sName) == null)
       {
          Queue queue = queueFactory.createQueue(-1, sName, null, true, false);
-         QueueBinding binding = new QueueBindingImpl(sAddress, queue);
+         Binding binding = new BindingImpl(sAddress, sName, sName, queue, false, true);
          storageManager.addQueueBinding(binding);
          postOffice.addBinding(binding);
       }
@@ -316,7 +316,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       if (postOffice.getBinding(sName) == null)
       {
          Queue queue = queueFactory.createQueue(-1, sName, filter, durable, false);
-         QueueBinding binding = new QueueBindingImpl(sAddress, queue);
+         Binding binding = new BindingImpl(sAddress, sName, sName, queue, false, true);
          if (durable)
          {
             storageManager.addQueueBinding(binding);

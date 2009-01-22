@@ -38,7 +38,7 @@ import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 
 /**
- * A LargeMessageMuliThreadFailoverTest
+ * A LargeMessageMultiThreadFailoverTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * 
@@ -46,7 +46,7 @@ import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
  *
  *
  */
-public class LargeMessageMuliThreadFailoverTest extends MultiThreadRandomFailoverTestBase
+public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailoverTestBase
 {
 
    // Constants -----------------------------------------------------

@@ -60,8 +60,8 @@ import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
 import org.jboss.messaging.core.persistence.QueueBindingInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.QueueBinding;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.XidCodecSupport;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
@@ -863,20 +863,20 @@ public class JournalStorageManager implements StorageManager
 
    // Bindings operations
 
-   public void addQueueBinding(final QueueBinding binding) throws Exception
+   public void addQueueBinding(final Binding binding) throws Exception
    {
-      Filter filter = binding.getQueue().getFilter();
+      Queue queue = (Queue)binding.getBindable();
+      Filter filter = queue.getFilter();
 
       SimpleString filterString = filter == null ? null : filter.getFilterString();
 
-      PersistentQueueBindingEncoding bindingEncoding = new PersistentQueueBindingEncoding(binding.getBindable()
-                                                                                                 .getUniqueName(),
+      PersistentQueueBindingEncoding bindingEncoding = new PersistentQueueBindingEncoding(queue.getName(),
                                                                                           binding.getAddress(),
                                                                                           filterString);
 
       long id = this.generateUniqueID();
 
-      binding.getQueue().setPersistenceID(id);
+      queue.setPersistenceID(id);
 
       bindingsJournal.appendAddRecord(id, QUEUE_BINDING_RECORD, bindingEncoding);
    }

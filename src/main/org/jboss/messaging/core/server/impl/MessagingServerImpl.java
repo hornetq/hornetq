@@ -43,13 +43,10 @@ import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
 import org.jboss.messaging.core.persistence.QueueBindingInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.DivertBinding;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.QueueBinding;
-import org.jboss.messaging.core.postoffice.impl.DivertBindingImpl;
+import org.jboss.messaging.core.postoffice.impl.BindingImpl;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
-import org.jboss.messaging.core.postoffice.impl.QueueBindingImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.RemotingConnection;
@@ -64,6 +61,7 @@ import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
+import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.Divert;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
@@ -291,11 +289,11 @@ public class MessagingServerImpl implements MessagingServer
                                                 true,
                                                 false);
 
-         Binding binding = new QueueBindingImpl(queueBindingInfo.getAddress(), queue);
+         Binding binding = new BindingImpl(queueBindingInfo.getAddress(), queueBindingInfo.getQueueName(), queueBindingInfo.getQueueName(), queue, false, true);
 
          queues.put(queueBindingInfo.getPersistenceID(), queue);
 
-         postOffice.addBinding(binding);
+         postOffice.addBinding(binding);         
       }
 
       Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<SimpleString, Long>>>();
@@ -801,7 +799,7 @@ public class MessagingServerImpl implements MessagingServer
 
             Queue queue = queueFactory.createQueue(-1, name, filter, config.isDurable(), false);
 
-            QueueBinding queueBinding = new QueueBindingImpl(new SimpleString(config.getAddress()), queue);
+            Binding queueBinding = new BindingImpl(new SimpleString(config.getAddress()), name, name, queue, false, true);
             
             binding = queueBinding;
 
@@ -870,7 +868,7 @@ public class MessagingServerImpl implements MessagingServer
                                         pagingManager,
                                         storageManager);
 
-         DivertBinding binding = new DivertBindingImpl(sAddress, divert);
+         Binding binding = new BindingImpl(sAddress, sName, new SimpleString(config.getRoutingName()), divert, config.isExclusive(), false);
 
          postOffice.addBinding(binding);
       }

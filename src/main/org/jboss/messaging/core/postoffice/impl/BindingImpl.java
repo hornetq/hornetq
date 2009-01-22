@@ -20,53 +20,90 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.postoffice.impl;
 
-import org.jboss.messaging.core.postoffice.QueueBinding;
+import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.server.Bindable;
-import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- * A QueueBindingImpl
+ * A BindingImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 9 Jan 2009 15:45:09
+ * Created 21 Jan 2009 18:52:15
  *
  *
  */
-public class QueueBindingImpl implements QueueBinding
+public class BindingImpl implements Binding
 {
-   private SimpleString address;
-   
-   private Queue queue;
-   
-   public QueueBindingImpl(final SimpleString address, final Queue queue)
+   private final SimpleString address;
+
+   private final SimpleString uniqueName;
+
+   private final SimpleString routingName;
+
+   protected final Bindable bindable;
+
+   private final boolean exclusive;
+
+   private final boolean isQueue;
+
+   public BindingImpl(final SimpleString address,
+                      final SimpleString uniqueName,
+                      final SimpleString routingName,
+                      final Bindable bindable,                      
+                      final boolean exclusive,
+                      final boolean isQueue)
    {
       this.address = address;
-      
-      this.queue = queue;      
+
+      this.uniqueName = uniqueName;
+
+      this.routingName = routingName;
+
+      this.bindable = bindable;
+
+      this.exclusive = exclusive;
+
+      this.isQueue = isQueue;
    }
-        
+
    public SimpleString getAddress()
    {
       return address;
    }
 
    public Bindable getBindable()
-   {      
-      return queue;
-   }
-   
-   public Queue getQueue()
    {
-      return queue;
+      return bindable;
    }
 
    public boolean isQueueBinding()
    {
-      return true;
+      return isQueue;
    }
+
+   public boolean accept(final ServerMessage message) throws Exception
+   {
+      return bindable.accept(message);
+   }
+
+   public SimpleString getRoutingName()
+   {
+      return routingName;
+   }
+
+   public SimpleString getUniqueName()
+   {
+      return uniqueName;
+   }
+
+   public boolean isExclusive()
+   {
+      return exclusive;
+   }
+
 }

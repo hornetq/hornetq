@@ -361,8 +361,7 @@ public class ServerConsumerImpl implements ServerConsumer
          else
          {
             ref.getQueue().acknowledge(tx, ref);
-            // ref.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
-
+            
             // Del count is not actually updated in storage unless it's
             // cancelled
             ref.incrementDeliveryCount();
@@ -559,6 +558,8 @@ public class ServerConsumerImpl implements ServerConsumer
             return HandleStatus.BUSY;
          }
 
+         //TODO use a null or boolean check here for performance
+         
          // If there is a pendingLargeMessage we can't take another message
          // This has to be checked inside the lock as the set to null is done inside the lock
          if (pendingLargeMessagesCounter.get() > 0)

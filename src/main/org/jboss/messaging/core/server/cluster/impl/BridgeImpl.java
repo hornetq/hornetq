@@ -433,7 +433,8 @@ public class BridgeImpl implements Bridge, FailureListener
             }
             else
             {
-               dest = (SimpleString)message.getProperty(MessageImpl.HDR_ORIGINAL_DESTINATION);
+               //Preserve the original address
+               dest = message.getDestination();
             }
 
             producer.send(dest, message);

@@ -18,13 +18,13 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.postoffice;
 
 import org.jboss.messaging.core.server.Bindable;
+import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
-
 
 /**
  * 
@@ -36,8 +36,16 @@ import org.jboss.messaging.util.SimpleString;
 public interface Binding
 {
    SimpleString getAddress();
-         
-   Bindable getBindable();    
-   
+
+   Bindable getBindable();
+
    boolean isQueueBinding();
+
+   SimpleString getUniqueName();
+
+   SimpleString getRoutingName();
+
+   boolean accept(ServerMessage message) throws Exception;
+
+   boolean isExclusive();
 }

@@ -1243,7 +1243,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
    protected int getNumIterations()
    {
-      return 1;
+      return 20;
    }
 
    @Override

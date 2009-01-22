@@ -28,8 +28,8 @@ import java.util.Map;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.paging.PageTransactionInfo;
+import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.QueueBinding;
 import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingComponent;
@@ -110,7 +110,7 @@ public interface StorageManager extends MessagingComponent
 
    // Bindings related operations
 
-   void addQueueBinding(QueueBinding binding) throws Exception;
+   void addQueueBinding(Binding binding) throws Exception;
    
    void deleteQueueBinding(long queueBindingID) throws Exception;
    

@@ -21,16 +21,10 @@
  */
 package org.jboss.messaging.tests.unit.core.postoffice.impl;
 
-import org.easymock.EasyMock;
 import org.jboss.messaging.core.postoffice.AddressManager;
-import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.BindingType;
-import org.jboss.messaging.core.postoffice.impl.QueueBindingImpl;
 import org.jboss.messaging.core.postoffice.impl.SimpleAddressManager;
-import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

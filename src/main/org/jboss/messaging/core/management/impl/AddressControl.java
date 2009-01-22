@@ -87,7 +87,7 @@ public class AddressControl implements AddressControlMBean
          for (int i = 0; i < bindings.getBindings().size(); i++)
          {
             Binding binding = bindings.getBindings().get(i);
-            queueNames[i] = binding.getBindable().getUniqueName().toString();
+            queueNames[i] = binding.getUniqueName().toString();
          }
          return queueNames;
       }

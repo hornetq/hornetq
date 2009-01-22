@@ -67,13 +67,13 @@ public class BindingsImpl implements Bindings
 
    public void addBinding(final Binding binding)
    {
-      if (binding.getBindable().isExclusive())
+      if (binding.isExclusive())
       {
          exclusiveBindings.add(binding);
       }
       else
       {
-         SimpleString routingName = binding.getBindable().getRoutingName();
+         SimpleString routingName = binding.getRoutingName();
          
          List<Binding> bindings = routingNameBindingMap.get(routingName);
          
@@ -97,13 +97,13 @@ public class BindingsImpl implements Bindings
    
    public void removeBinding(final Binding binding)
    {
-      if (binding.getBindable().isExclusive())
+      if (binding.isExclusive())
       {
          exclusiveBindings.remove(binding);
       }
       else
       {
-         SimpleString routingName = binding.getBindable().getRoutingName();
+         SimpleString routingName = binding.getRoutingName();
          
          List<Binding> bindings = routingNameBindingMap.get(routingName);
          
@@ -189,11 +189,11 @@ public class BindingsImpl implements Bindings
                   pos = 0;
                }
                
-               if (binding.getBindable().accept(message))
+               if (binding.accept(message))
                {
                   chosen.add(binding.getBindable());
                   
-                  SimpleString headerName = MessageImpl.HDR_ROUTE_TO_PREFIX.concat(binding.getBindable().getRoutingName());
+                  SimpleString headerName = MessageImpl.HDR_ROUTE_TO_PREFIX.concat(binding.getRoutingName());
                   
                   message.putBooleanProperty(headerName, Boolean.valueOf(true)); 
                   
