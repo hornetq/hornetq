@@ -108,6 +108,8 @@ public class XMLUtil
       StringReader sreader = new StringReader(s);
 
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      // see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6529766
+      factory.setNamespaceAware(true);
       DocumentBuilder parser = factory.newDocumentBuilder();
       Document doc = parser.parse(new InputSource(sreader));
       return doc.getDocumentElement();
