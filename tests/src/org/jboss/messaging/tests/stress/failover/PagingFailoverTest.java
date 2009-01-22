@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.cluster.failover;
+package org.jboss.messaging.tests.stress.failover;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
@@ -40,6 +40,7 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
+import org.jboss.messaging.tests.integration.cluster.failover.FailoverTestBase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
