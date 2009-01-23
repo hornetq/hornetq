@@ -61,7 +61,6 @@ import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
-import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.Divert;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
@@ -320,12 +319,6 @@ public class MessagingServerImpl implements MessagingServer
 
       resourceManager.start();
 
-      // Deploy any pre-defined queues
-      deployQueues();
-
-      // Deply and pre-defined diverts
-      deployDiverts();
-
       // FIXME the destination corresponding to the notification address is always created
       // so that queues can be created wether the address is allowable or not (to revisit later)
       if (!postOffice.containsDestination(configuration.getManagementNotificationAddress()))
@@ -333,6 +326,12 @@ public class MessagingServerImpl implements MessagingServer
          postOffice.addDestination(configuration.getManagementNotificationAddress(), true);
       }
 
+      // Deploy any pre-defined queues
+      deployQueues();
+
+      // Deply and pre-defined diverts
+      deployDiverts();
+      
       String backupConnectorName = configuration.getBackupConnectorName();
 
       if (backupConnectorName != null)
