@@ -1434,7 +1434,7 @@ public class RandomFailoverTest extends TestCase
 
    protected int getNumIterations()
    {
-      return 20;
+      return 1;
    }
 
    protected void setUp() throws Exception
