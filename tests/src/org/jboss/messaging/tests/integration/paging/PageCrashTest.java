@@ -88,7 +88,7 @@ public class PageCrashTest extends ServiceTestBase
 
    public void testCrashDuringDeleteFile() throws Exception
    {
-      
+
       pageAndFail();
 
       File pageDir = new File(getPageDir());
@@ -143,8 +143,7 @@ public class PageCrashTest extends ServiceTestBase
    }
 
    // Private -------------------------------------------------------
-   
-   
+
    /** This method will leave garbage on paging. 
     *  It will not delete page files as if the server crashed right after commit, 
     *  and before removing the file*/
@@ -164,7 +163,8 @@ public class PageCrashTest extends ServiceTestBase
       {
          ClientSessionFactory sf = createInVMFactory();
 
-         // Making it synchronous, just because we want to stop sending messages as soon as the page-store becomes in page mode
+         // Making it synchronous, just because we want to stop sending messages as soon as the page-store becomes in
+         // page mode
          // and we could only guarantee that by setting it to synchronous
          sf.setBlockOnNonPersistentSend(true);
          sf.setBlockOnPersistentSend(true);
@@ -276,12 +276,9 @@ public class PageCrashTest extends ServiceTestBase
 
    /** This is hacking MessagingServerImpl, 
     *  to make sure the server will fail right 
-    *  after before the page-file was removed */
+    *  before the page-file was removed */
    class FailingMessagingServiceImpl extends MessagingServerImpl
    {
-      /**
-       * Method could be replaced for test purposes 
-       */
       @Override
       protected PagingManager createPagingManager()
       {
