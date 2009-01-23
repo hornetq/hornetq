@@ -96,7 +96,6 @@
       <!-- Netty standard TCP acceptor -->
       <acceptor name="netty">
          <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         <!-- <param key="jbm.remoting.netty.host" value="192.168.0.10" type="String"/> -->         
       </acceptor>   
       <!-- Netty SSL Acceptor
       <acceptor name="netty-ssl">
