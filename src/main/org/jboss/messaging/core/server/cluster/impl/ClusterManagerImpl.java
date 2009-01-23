@@ -25,7 +25,9 @@ package org.jboss.messaging.core.server.cluster.impl;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -36,6 +38,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.ClusterConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
@@ -43,8 +46,10 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
+import org.jboss.messaging.core.server.cluster.Cluster;
 import org.jboss.messaging.core.server.cluster.ClusterManager;
 import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.util.ExecutorFactory;
@@ -69,6 +74,8 @@ public class ClusterManagerImpl implements ClusterManager
    private final Map<String, DiscoveryGroup> discoveryGroups = new HashMap<String, DiscoveryGroup>();
 
    private final Map<String, Bridge> bridges = new HashMap<String, Bridge>();
+   
+   private final Map<String, Cluster> clusters = new HashMap<String, Cluster>();
 
    private final ExecutorFactory executorFactory;
 
@@ -81,6 +88,8 @@ public class ClusterManagerImpl implements ClusterManager
    private final ManagementService managementService;
 
    private final Configuration configuration;
+   
+   private final QueueFactory queueFactory;
 
    private volatile boolean started;
 
@@ -89,7 +98,8 @@ public class ClusterManagerImpl implements ClusterManager
                              final PostOffice postOffice,
                              final ScheduledExecutorService scheduledExecutor,
                              final ManagementService managementService,
-                             final Configuration configuration)
+                             final Configuration configuration,
+                             final QueueFactory queueFactory)
    {
       this.executorFactory = executorFactory;
 
@@ -102,6 +112,8 @@ public class ClusterManagerImpl implements ClusterManager
       this.managementService = managementService;
 
       this.configuration = configuration;
+      
+      this.queueFactory = queueFactory;
    }
 
    public synchronized void start() throws Exception
@@ -124,6 +136,11 @@ public class ClusterManagerImpl implements ClusterManager
       for (BridgeConfiguration config : configuration.getBridgeConfigurations())
       {
          deployBridge(config);
+      }
+      
+      for (ClusterConfiguration config: configuration.getClusterConfigurations())
+      {
+         deployCluster(config);
       }
 
       started = true;
@@ -152,6 +169,12 @@ public class ClusterManagerImpl implements ClusterManager
       {
          bridge.stop();
          managementService.unregisterBridge(bridge.getName().toString());
+      }
+      
+      for (Cluster cluster: clusters.values())
+      {
+         cluster.stop();
+         managementService.unregisterCluster(cluster.getName().toString());
       }
 
       broadcastGroups.clear();
@@ -374,15 +397,106 @@ public class ClusterManagerImpl implements ClusterManager
                                  config.getMaxRetriesBeforeFailover(),
                                  config.getMaxRetriesAfterFailover(),
                                  config.isUseDuplicateDetection(),
+                                 null,
                                  null);
 
-         log.info("put bridge " + this);
          bridges.put(config.getName(), bridge);
 
          managementService.registerBridge(bridge, config);
 
          bridge.start();
       }
+   }
+   
+   private synchronized void deployCluster(final ClusterConfiguration config) throws Exception
+   {
+      if (config.getName() == null)
+      {
+         log.warn("Must specify a unique name for each cluster. This one will not be deployed.");
+
+         return;
+      }
+
+      if (config.getAddress() == null)
+      {
+         log.warn("Must specify an address for each cluster. This one will not be deployed.");
+
+         return;
+      }
+      
+      Cluster cluster;
+     
+      List<Pair<TransportConfiguration, TransportConfiguration>> connectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+      
+      if (config.getStaticConnectorNamePairs() != null)
+      {
+         for (Pair<String, String> connectorNamePair: config.getStaticConnectorNamePairs())
+         {                    
+            TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorNamePair.a);
+   
+            if (connector == null)
+            {
+               log.warn("No connector defined with name '" + connectorNamePair.a + "'. The bridge will not be deployed.");
+   
+               return;
+            }
+   
+            TransportConfiguration backupConnector = null;
+   
+            if (connectorNamePair.b != null)
+            {
+               backupConnector = configuration.getConnectorConfigurations().get(connectorNamePair.b);
+   
+               if (backupConnector == null)
+               {
+                  log.warn("No connector defined with name '" + connectorNamePair.b +
+                           "'. The bridge will not be deployed.");
+   
+                  return;
+               }
+            }
+   
+            Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connector,
+                                                                                                                                 backupConnector);
+            
+            connectors.add(pair);
+         }
+         
+         cluster = new ClusterImpl(new SimpleString(config.getName()),
+                                           new SimpleString(config.getAddress()),
+                                           config.getBridgeConfig(),
+                                           config.isDuplicateDetection(),
+                                           executorFactory,
+                                           storageManager,
+                                           postOffice,
+                                           scheduledExecutor,
+                                           queueFactory,
+                                           connectors);
+      }
+      else
+      {
+         DiscoveryGroup dg = discoveryGroups.get(config.getDiscoveryGroupName());
+         
+         if (dg == null)
+         {
+            log.warn("No discovery group with name '" + config.getDiscoveryGroupName() + "'. The bridge will not be deployed.");
+         }
+         
+         cluster = new ClusterImpl(new SimpleString(config.getName()),
+                                           new SimpleString(config.getAddress()),
+                                           config.getBridgeConfig(),
+                                           config.isDuplicateDetection(),
+                                           executorFactory,
+                                           storageManager,
+                                           postOffice,
+                                           scheduledExecutor,
+                                           queueFactory,
+                                           dg);
+      }
+
+      managementService.registerCluster(cluster, config);
+
+      clusters.put(config.getName(), cluster);
    }
 
    private Transformer instantiateTransformer(final String transformerClassName)

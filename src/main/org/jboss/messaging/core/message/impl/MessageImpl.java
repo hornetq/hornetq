@@ -67,11 +67,11 @@ public abstract class MessageImpl implements Message
    
    public static final SimpleString HDR_DUPLICATE_DETECTION_ID = new SimpleString("JBM_DUPL_ID");
    
-   public static final SimpleString HDR_MAX_HOPS = new SimpleString("JBM_MAX_HOPS");
-   
    public static final SimpleString HDR_ROUTE_TO_PREFIX = new SimpleString("JBM_ROUTE_TO:");
-   
+      
    public static final SimpleString HDR_RESET_QUEUE_DATA = new SimpleString("JBM_RESET_QUEUE_DATA");
+      
+   public static final SimpleString HDR_FROM_CLUSTER = new SimpleString("JBM_FROM_CLUSTER");
    
    // Attributes ----------------------------------------------------
 

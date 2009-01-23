@@ -140,6 +140,8 @@ public class BridgeImpl implements Bridge, FailureListener
    private final int maxRetriesAfterFailover;
 
    private final MessageHandler queueInfoMessageHandler;
+   
+   private final String queueDataAddress;
 
    // Static --------------------------------------------------------
 
@@ -163,7 +165,8 @@ public class BridgeImpl implements Bridge, FailureListener
                      final int maxRetriesBeforeFailover,
                      final int maxRetriesAfterFailover,
                      final boolean useDuplicateDetection,
-                     final MessageHandler queueInfoMessageHandler) throws Exception
+                     final MessageHandler queueInfoMessageHandler,
+                     final String queueDataAddress) throws Exception
    {
       this.name = name;
 
@@ -205,6 +208,8 @@ public class BridgeImpl implements Bridge, FailureListener
       this.maxRetriesAfterFailover = maxRetriesAfterFailover;
 
       this.queueInfoMessageHandler = queueInfoMessageHandler;
+      
+      this.queueDataAddress = queueDataAddress;
 
       if (maxBatchTime != -1)
       {
@@ -260,7 +265,8 @@ public class BridgeImpl implements Bridge, FailureListener
 
                SimpleString notifQueueName = UUIDGenerator.getInstance().generateSimpleStringUUID();
 
-               SimpleString filter = new SimpleString(ManagementHelper.HDR_NOTIFICATION_TYPE + " IN (" +
+               SimpleString filter = new SimpleString(ManagementHelper.HDR_ADDRESS + " LIKE '" + queueDataAddress + "' AND " +                                                                                                           
+                                                      ManagementHelper.HDR_NOTIFICATION_TYPE + " IN (" +
                                                       "'" +
                                                       NotificationType.QUEUE_CREATED +
                                                       "'" +

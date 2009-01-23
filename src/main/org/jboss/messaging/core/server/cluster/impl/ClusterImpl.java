@@ -48,9 +48,8 @@ import org.jboss.messaging.core.postoffice.impl.BindingImpl;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.cluster.Bridge;
+import org.jboss.messaging.core.server.cluster.Cluster;
 import org.jboss.messaging.core.server.cluster.FlowBinding;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
@@ -66,7 +65,7 @@ import org.jboss.messaging.util.UUIDGenerator;
  *
  *
  */
-public class ClusterImpl implements DiscoveryListener
+public class ClusterImpl implements Cluster, DiscoveryListener
 {
    private static final Logger log = Logger.getLogger(ClusterImpl.class);
 
@@ -76,8 +75,6 @@ public class ClusterImpl implements DiscoveryListener
 
    private final PostOffice postOffice;
 
-   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
-
    private final SimpleString name;
 
    private final SimpleString address;
@@ -86,8 +83,6 @@ public class ClusterImpl implements DiscoveryListener
 
    private final boolean useDuplicateDetection;
 
-   private final int maxHops;
-   
    private Map<Pair<TransportConfiguration, TransportConfiguration>, MessageFlowRecord> records = new HashMap<Pair<TransportConfiguration, TransportConfiguration>, MessageFlowRecord>();
 
    private final DiscoveryGroup discoveryGroup;
@@ -104,12 +99,10 @@ public class ClusterImpl implements DiscoveryListener
    public ClusterImpl(final SimpleString name,
                       final SimpleString address,
                       final BridgeConfiguration bridgeConfig,
-                      final boolean useDuplicateDetection,
-                      final int maxHops,
+                      final boolean useDuplicateDetection,                
                       final ExecutorFactory executorFactory,
                       final StorageManager storageManager,
-                      final PostOffice postOffice,
-                      final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                      final PostOffice postOffice,                     
                       final ScheduledExecutorService scheduledExecutor,
                       final QueueFactory queueFactory,
                       final List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception
@@ -122,15 +115,11 @@ public class ClusterImpl implements DiscoveryListener
 
       this.useDuplicateDetection = useDuplicateDetection;
 
-      this.maxHops = maxHops;
-
       this.executorFactory = executorFactory;
 
       this.storageManager = storageManager;
 
       this.postOffice = postOffice;
-
-      this.queueSettingsRepository = queueSettingsRepository;
 
       this.discoveryGroup = null;
 
@@ -147,12 +136,10 @@ public class ClusterImpl implements DiscoveryListener
    public ClusterImpl(final SimpleString name,
                       final SimpleString address,
                       final BridgeConfiguration bridgeConfig,
-                      final boolean useDuplicateDetection,
-                      final int maxHops,
+                      final boolean useDuplicateDetection,              
                       final ExecutorFactory executorFactory,
                       final StorageManager storageManager,
-                      final PostOffice postOffice,
-                      final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                      final PostOffice postOffice,             
                       final ScheduledExecutorService scheduledExecutor,
                       final QueueFactory queueFactory,
                       final DiscoveryGroup discoveryGroup) throws Exception
@@ -169,8 +156,6 @@ public class ClusterImpl implements DiscoveryListener
 
       this.postOffice = postOffice;
 
-      this.queueSettingsRepository = queueSettingsRepository;
-
       this.scheduledExecutor = scheduledExecutor;
 
       this.queueFactory = queueFactory;
@@ -178,8 +163,6 @@ public class ClusterImpl implements DiscoveryListener
       this.discoveryGroup = discoveryGroup;
 
       this.useDuplicateDetection = useDuplicateDetection;
-
-      this.maxHops = maxHops;
    }
 
    public synchronized void start() throws Exception
@@ -318,7 +301,8 @@ public class ClusterImpl implements DiscoveryListener
                                            bridgeConfig.getMaxRetriesBeforeFailover(),
                                            bridgeConfig.getMaxRetriesAfterFailover(),
                                            false,
-                                           record);
+                                           record,
+                                           address.toString());
             
             record.setBridge(bridge);
 

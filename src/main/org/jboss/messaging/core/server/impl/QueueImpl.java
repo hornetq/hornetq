@@ -114,6 +114,8 @@ public class QueueImpl implements Queue
 
    private int consumersToFailover = -1;
 
+   private final SimpleString routeToPropertyName;  
+      
    public QueueImpl(final long persistenceID,
                     final SimpleString name,
                     final Filter filter,
@@ -139,6 +141,8 @@ public class QueueImpl implements Queue
       this.storageManager = storageManager;
 
       this.queueSettingsRepository = queueSettingsRepository;
+      
+      this.routeToPropertyName = MessageImpl.HDR_ROUTE_TO_PREFIX.concat(name);
 
       if (postOffice == null)
       {
@@ -158,6 +162,14 @@ public class QueueImpl implements Queue
 
    public boolean accept(final ServerMessage message) throws Exception
    {
+//      if (message.containsProperty(MessageImpl.HDR_FROM_CLUSTER))
+//      {
+//         if (message.removeProperty(routeToPropertyName) == null)
+//         {
+//            return false;
+//         }                  
+//      }
+            
       if (filter != null && !filter.match(message))
       {
          return false;

@@ -40,32 +40,49 @@ public class ClusterConfiguration implements Serializable
 {
    private static final long serialVersionUID = 8948303813427795935L;
 
+   private final String name;
+   
    private final String address;
 
    private final BridgeConfiguration bridgeConfig;
+   
+   private final boolean duplicateDetection;
 
    private final List<Pair<String, String>> staticConnectorNamePairs;
 
    private final String discoveryGroupName;
 
-   public ClusterConfiguration(final String address,
+   public ClusterConfiguration(final String name,
+                               final String address,
                                final BridgeConfiguration bridgeConfig,
+                               final boolean duplicateDetection,
                                final List<Pair<String, String>> staticConnectorNamePairs)
    {
+      this.name = name;
       this.address = address;
       this.bridgeConfig = bridgeConfig;
       this.staticConnectorNamePairs = staticConnectorNamePairs;
+      this.duplicateDetection = duplicateDetection;
       this.discoveryGroupName = null;
    }
 
-   public ClusterConfiguration(final String address,
+   public ClusterConfiguration(final String name,
+                               final String address,
                                final BridgeConfiguration bridgeConfig,
+                               final boolean duplicateDetection,
                                final String discoveryGroupName)
    {
+      this.name = name;
       this.address = address;
       this.bridgeConfig = bridgeConfig;
+      this.duplicateDetection = duplicateDetection;
       this.discoveryGroupName = discoveryGroupName;
       this.staticConnectorNamePairs = null;
+   }
+   
+   public String getName()
+   {
+      return name;
    }
 
    public String getAddress()
@@ -76,6 +93,11 @@ public class ClusterConfiguration implements Serializable
    public BridgeConfiguration getBridgeConfig()
    {
       return bridgeConfig;
+   }
+   
+   public boolean isDuplicateDetection()
+   {
+      return duplicateDetection;
    }
 
    public List<Pair<String, String>> getStaticConnectorNamePairs()

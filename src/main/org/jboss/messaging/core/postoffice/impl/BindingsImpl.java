@@ -192,11 +192,7 @@ public class BindingsImpl implements Bindings
                if (binding.accept(message))
                {
                   chosen.add(binding.getBindable());
-                  
-                  SimpleString headerName = MessageImpl.HDR_ROUTE_TO_PREFIX.concat(binding.getRoutingName());
-                  
-                  message.putBooleanProperty(headerName, Boolean.valueOf(true)); 
-                  
+                   
                   break;
                }
             }

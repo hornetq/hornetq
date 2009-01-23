@@ -32,6 +32,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.ClusterConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -46,11 +47,11 @@ import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
+import org.jboss.messaging.core.server.cluster.Cluster;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.TypedProperties;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -101,6 +102,10 @@ public interface ManagementService extends MessagingComponent
    void registerBridge(Bridge bridge, BridgeConfiguration configuration) throws Exception;
 
    void unregisterBridge(String name) throws Exception;
+   
+   void registerCluster(Cluster cluster, ClusterConfiguration configuration) throws Exception;
+   
+   void unregisterCluster(String name) throws Exception;
 
    void registerResource(ObjectName objectName, Object resource) throws Exception;
 

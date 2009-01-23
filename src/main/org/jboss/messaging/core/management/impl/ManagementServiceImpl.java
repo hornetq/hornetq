@@ -47,6 +47,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.ClusterConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.AcceptorControlMBean;
@@ -76,6 +77,7 @@ import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
+import org.jboss.messaging.core.server.cluster.Cluster;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -427,6 +429,16 @@ public class ManagementServiceImpl implements ManagementService
    {
       unregisterFromRegistry(objectName);
       unregisterFromJMX(objectName);
+   }
+   
+   public void registerCluster(final Cluster cluster, final ClusterConfiguration configuration) throws Exception
+   {      
+      //TODO
+   }
+   
+   public void unregisterCluster(final String name) throws Exception
+   {      
+      //TODO
    }
 
    public Object getResource(final ObjectName objectName)

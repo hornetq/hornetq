@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.server.cluster.impl;
 
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_FROM_CLUSTER;
+
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,6 +57,8 @@ public class FlowBindingImpl extends BindingImpl implements FlowBinding
    private int consumerCount;
    
    private final boolean duplicateDetection;
+   
+   private final SimpleString headerName;
 
    public FlowBindingImpl(final SimpleString address,
                           final SimpleString uniqueName,
@@ -65,10 +69,17 @@ public class FlowBindingImpl extends BindingImpl implements FlowBinding
       super(address, uniqueName, routingName, bindable, false, false);
       
       this.duplicateDetection = duplicateDetection;
+      
+      headerName = MessageImpl.HDR_ROUTE_TO_PREFIX.concat(routingName);
    }
 
    public boolean accept(final ServerMessage message) throws Exception
    {
+      if (message.containsProperty(MessageImpl.HDR_FROM_CLUSTER))
+      {
+         return false;
+      }
+      
       if (consumerCount == 0)
       {
          return false;
@@ -111,6 +122,11 @@ public class FlowBindingImpl extends BindingImpl implements FlowBinding
          }
       }
       
+            
+      message.putBooleanProperty(headerName, Boolean.valueOf(true)); 
+      
+      message.putBooleanProperty(HDR_FROM_CLUSTER, Boolean.valueOf(true));
+           
       return accepted;
    }
 
