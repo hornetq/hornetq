@@ -118,7 +118,7 @@ public class PageStressTest extends ServiceTestBase
          ClientMessage msg = null;
          do
          {
-            msg = consumer.receive(1000);
+            msg = consumer.receive(10000);
             if (msg != null)
             {
                msg.acknowledge();
@@ -152,7 +152,7 @@ public class PageStressTest extends ServiceTestBase
          msg = null;
          do
          {
-            msg = consumer.receive(1000);
+            msg = consumer.receive(10000);
             if (msg != null)
             {
                msg.acknowledge();
