@@ -95,14 +95,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    public MessageReference createReference(final Queue queue)
    {
       MessageReference ref = new MessageReferenceImpl(this, queue);
-//
-//      if (durable && queue.isDurable())
-//      {
-//         durableRefCount.incrementAndGet();
-//      }
-//      
-//      refCount.incrementAndGet();
-    
+
       return ref;
    }
    

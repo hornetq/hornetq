@@ -33,7 +33,6 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
-import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -44,6 +43,7 @@ import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
+import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
@@ -108,9 +108,7 @@ public interface ManagementService extends MessagingComponent
 
    public Object getResource(ObjectName objectName);
 
-   void handleMessage(Message message);
-
-   void sendNotification(NotificationType type, String message) throws Exception;
+   void handleMessage(ServerMessage message);  
 
    /** 
     * the message corresponding to a notification will always contain the properties:
@@ -124,7 +122,11 @@ public interface ManagementService extends MessagingComponent
     * 
     * @see ManagementHelper
     */
-   void sendNotification(NotificationType type, String message, TypedProperties props) throws Exception;
+   void sendNotification(Notification notification) throws Exception;
 
    void enableNotifications(boolean enable);
+   
+   void addNotificationListener(NotificationListener listener);
+   
+   void removeNotificationListener(NotificationListener listener);
 }

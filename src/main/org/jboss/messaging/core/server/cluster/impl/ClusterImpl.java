@@ -22,7 +22,8 @@
 
 package org.jboss.messaging.core.server.cluster.impl;
 
-import java.util.ArrayList;
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_RESET_QUEUE_DATA;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,28 +32,29 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.MessageHandler;
+import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.cluster.DiscoveryListener;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
-import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.BindingImpl;
-import org.jboss.messaging.core.postoffice.impl.FlowBinding;
-import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
-import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.cluster.Bridge;
+import org.jboss.messaging.core.server.cluster.FlowBinding;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * 
@@ -85,8 +87,8 @@ public class ClusterImpl implements DiscoveryListener
    private final boolean useDuplicateDetection;
 
    private final int maxHops;
-
-   private Map<Pair<TransportConfiguration, TransportConfiguration>, Bridge> bridges = new HashMap<Pair<TransportConfiguration, TransportConfiguration>, Bridge>();
+   
+   private Map<Pair<TransportConfiguration, TransportConfiguration>, MessageFlowRecord> records = new HashMap<Pair<TransportConfiguration, TransportConfiguration>, MessageFlowRecord>();
 
    private final DiscoveryGroup discoveryGroup;
 
@@ -158,7 +160,7 @@ public class ClusterImpl implements DiscoveryListener
       this.name = name;
 
       this.address = address;
-      
+
       this.bridgeConfig = bridgeConfig;
 
       this.executorFactory = executorFactory;
@@ -170,7 +172,7 @@ public class ClusterImpl implements DiscoveryListener
       this.queueSettingsRepository = queueSettingsRepository;
 
       this.scheduledExecutor = scheduledExecutor;
-      
+
       this.queueFactory = queueFactory;
 
       this.discoveryGroup = discoveryGroup;
@@ -209,9 +211,9 @@ public class ClusterImpl implements DiscoveryListener
          discoveryGroup.unregisterListener(this);
       }
 
-      for (Bridge bridge : bridges.values())
+      for (MessageFlowRecord record : records.values())
       {
-         bridge.stop();
+         record.close();
       }
 
       started = false;
@@ -249,18 +251,19 @@ public class ClusterImpl implements DiscoveryListener
 
       connectorSet.addAll(connectors);
 
-      Iterator<Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, Bridge>> iter = bridges.entrySet()
-                                                                                                      .iterator();
+      Iterator<Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, MessageFlowRecord>> iter = records.entrySet()
+                                                                                                                 .iterator();
 
       while (iter.hasNext())
       {
-         Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, Bridge> entry = iter.next();
+         Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, MessageFlowRecord> entry = iter.next();
 
          if (!connectorSet.contains(entry.getKey()))
          {
-            // Connector no longer there - we should remove and close it - we don't delete the queue though - it may have messages - this is up to the admininstrator to do this
+            // Connector no longer there - we should remove and close it - we don't delete the queue though - it may
+            // have messages - this is up to the admininstrator to do this
 
-            entry.getValue().stop();
+            entry.getValue().close();
 
             iter.remove();
          }
@@ -268,14 +271,9 @@ public class ClusterImpl implements DiscoveryListener
 
       for (Pair<TransportConfiguration, TransportConfiguration> connectorPair : connectors)
       {
-         if (!bridges.containsKey(connectorPair))
+         if (!records.containsKey(connectorPair))
          {
-            SimpleString queueName = new SimpleString("cluster." + name +
-                                                      "." +
-                                                      generateConnectorString(connectorPair.a) +
-                                                      "-" +
-                                                      (connectorPair.b == null ? "null"
-                                                                              : generateConnectorString(connectorPair.b)));
+            SimpleString queueName = generateQueueName(name, connectorPair);
 
             Binding queueBinding = postOffice.getBinding(queueName);
 
@@ -289,12 +287,20 @@ public class ClusterImpl implements DiscoveryListener
             {
                queue = queueFactory.createQueue(-1, name, null, true, false);
 
-               // Add binding in storage so the queue will get reloaded on startup and we can find it - it's never actually routed to at that address though
+               // Add binding in storage so the queue will get reloaded on startup and we can find it - it's never
+               // actually routed to at that address though
 
-               Binding storeBinding = new BindingImpl(queue.getName(), queue.getName(), queue.getName(), queue, false, true);
+               Binding storeBinding = new BindingImpl(queue.getName(),
+                                                      queue.getName(),
+                                                      queue.getName(),
+                                                      queue,
+                                                      false,
+                                                      true);
 
                storageManager.addQueueBinding(storeBinding);
             }
+            
+            MessageFlowRecord record = new MessageFlowRecord(queue);
 
             Bridge bridge = new BridgeImpl(queueName,
                                            queue,
@@ -311,59 +317,28 @@ public class ClusterImpl implements DiscoveryListener
                                            bridgeConfig.getRetryIntervalMultiplier(),
                                            bridgeConfig.getMaxRetriesBeforeFailover(),
                                            bridgeConfig.getMaxRetriesAfterFailover(),
-                                           false);
+                                           false,
+                                           record);
+            
+            record.setBridge(bridge);
 
-            bridges.put(connectorPair, bridge);
+            records.put(connectorPair, record);
 
             bridge.start();
          }
       }
    }
-       
-   private void updateQueueInfo(final Pair<TransportConfiguration, TransportConfiguration> connectorPair, final QueueInfo info) throws Exception
+
+   private SimpleString generateQueueName(final SimpleString clusterName,
+                                          final Pair<TransportConfiguration, TransportConfiguration> connectorPair) throws Exception
    {
-      Bridge bridge = this.bridges.get(connectorPair);
-      
-      if (bridge == null)
-      {
-         throw new IllegalArgumentException("Cannot find bridge for " + connectorPair);
-      }
-      
-      SimpleString uniqueName = null;  // ?????
-      
-      FlowBinding flowBinding = (FlowBinding)postOffice.getBinding(uniqueName);
-      
-      if (flowBinding == null)
-      {
-         //TODO - can be optimised by storing the queue with the bridge in this class
-         Binding binding = postOffice.getBinding(bridge.getName());
-         
-         if (binding == null)
-         {
-            throw new IllegalStateException("Cannot find queue with name " + bridge.getName());
-         }
-         
-         Queue queue = (Queue)binding.getBindable();
-           
-         FlowBindingFilter filter = new FlowBindingFilter(info);
-         
-         flowBinding = new FlowBinding(new SimpleString(info.getAddress()), uniqueName, new SimpleString(info.getQueueName()), queue, filter);
-         
-         postOffice.addBinding(flowBinding);
-      }
-      else
-      {
-         FlowBindingFilter filter = flowBinding.getFilter();
-         
-         filter.updateInfo(info);
-      }
+      return new SimpleString("cluster." + name +
+                              "." +
+                              generateConnectorString(connectorPair.a) +
+                              "-" +
+                              (connectorPair.b == null ? "null" : generateConnectorString(connectorPair.b)));
    }
-   
-   private void removeQueueInfo()
-   {
-      //TODO
-   }
-   
+
    private String replaceWildcardChars(final String str)
    {
       return str.replace('.', '-');
@@ -397,5 +372,115 @@ public class ClusterImpl implements DiscoveryListener
 
       return new SimpleString(str.toString());
    }
+   
+   // Inner classes -----------------------------------------------------------------------------------
+   
+   private class MessageFlowRecord implements MessageHandler
+   {
+      private Bridge bridge;
+
+      private final Queue queue;
+
+      private final Map<SimpleString, FlowBinding> bindings = new HashMap<SimpleString, FlowBinding>();
+      
+      private boolean firstReset = false;
+
+      public MessageFlowRecord(final Queue queue)
+      {
+         this.queue = queue;
+      }
+
+      public void close() throws Exception
+      {
+         bridge.stop();
+
+         for (FlowBinding binding : bindings.values())
+         {
+            postOffice.removeBinding(binding.getUniqueName());
+         }
+      }
+      
+      public void setBridge(final Bridge bridge)
+      {
+         this.bridge = bridge;
+      }
+
+      public void onMessage(final ClientMessage message)
+      {
+         try
+         {
+            // Reset the bindings
+            if (message.getProperty(HDR_RESET_QUEUE_DATA) != null)
+            {
+               for (FlowBinding binding : bindings.values())
+               {
+                  postOffice.removeBinding(binding.getUniqueName());
+               }
+   
+               bindings.clear();
+               
+               firstReset = true;
+            }
+            
+            if (!firstReset)
+            {
+               return;
+            }
+   
+            NotificationType type = NotificationType.valueOf(message.getProperty(ManagementHelper.HDR_NOTIFICATION_TYPE)
+                                                                    .toString());
+   
+            if (type == NotificationType.QUEUE_CREATED)
+            {
+               SimpleString uniqueName = new SimpleString("flow-").concat(UUIDGenerator.getInstance()
+                                                                                       .generateSimpleStringUUID());
+   
+               SimpleString queueAddress = (SimpleString)message.getProperty(ManagementHelper.HDR_ADDRESS);
+   
+               SimpleString queueName = (SimpleString)message.getProperty(ManagementHelper.HDR_QUEUE_NAME);
+   
+               FlowBinding binding = new FlowBindingImpl(queueAddress, uniqueName, queueName, queue, useDuplicateDetection);
+   
+               bindings.put(queueName, binding);
+   
+               postOffice.addBinding(binding);
+            }
+            else if (type == NotificationType.QUEUE_DESTROYED)
+            {
+               SimpleString queueName = (SimpleString)message.getProperty(ManagementHelper.HDR_QUEUE_NAME);
+   
+               FlowBinding binding = bindings.remove(queueName);
+   
+               postOffice.removeBinding(binding.getUniqueName());
+            }
+            else if (type == NotificationType.CONSUMER_CREATED)
+            {
+               SimpleString queueName = (SimpleString)message.getProperty(ManagementHelper.HDR_QUEUE_NAME);
+   
+               SimpleString filterString = (SimpleString)message.getProperty(ManagementHelper.HDR_FILTERSTRING);
+   
+               FlowBinding binding = bindings.get(queueName);
+   
+               binding.addConsumer(filterString);
+            }
+            else if (type == NotificationType.CONSUMER_CLOSED)
+            {
+               SimpleString queueName = (SimpleString)message.getProperty(ManagementHelper.HDR_QUEUE_NAME);
+   
+               SimpleString filterString = (SimpleString)message.getProperty(ManagementHelper.HDR_FILTERSTRING);
+   
+               FlowBinding binding = bindings.get(queueName);
+   
+               binding.removeConsumer(filterString);
+            }
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to handle message", e);
+         }
+      }
+
+   }
+
 
 }

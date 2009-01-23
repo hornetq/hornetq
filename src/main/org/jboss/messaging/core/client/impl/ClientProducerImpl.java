@@ -233,7 +233,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       SessionSendMessage message = new SessionSendMessage(msg, sendBlocking);
 
-      if (msg.getEncodeSize() > minLargeMessageSize)
+      if (msg.getEncodeSize() >= minLargeMessageSize)
       {
          sendMessageInChunks(sendBlocking, msg);
       }
@@ -255,7 +255,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    {
       int headerSize = msg.getPropertiesEncodeSize();
 
-      if (headerSize > minLargeMessageSize)
+      if (headerSize >= minLargeMessageSize)
       {
          throw new MessagingException(MessagingException.ILLEGAL_STATE,
                                       "Header size (" + headerSize + ") is too big, use the messageBody for large data, or increase minLargeMessageSize");

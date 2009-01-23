@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2005-2009, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -18,30 +18,21 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
-package org.jboss.messaging.core.server;
 
-import java.util.List;
+package org.jboss.messaging.core.management;
 
 /**
- * 
- * A Distributor
- * 
+ * A NotificationListener
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * Created 22 Jan 2009 16:48:27
+ *
  *
  */
-public interface Distributor
+public interface NotificationListener
 {
-   HandleStatus distribute(final MessageReference reference);
-
-   void addConsumer(Consumer consumer);
-
-   boolean removeConsumer(Consumer consumer);
-
-   int getConsumerCount();
-
-   boolean hasConsumers();
-   
-   List<Consumer> getConsumers();
+   void onNotification(Notification notification);
 }

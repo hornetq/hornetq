@@ -53,4 +53,9 @@ public abstract class DistributorImpl implements Distributor
    {
       return !consumers.isEmpty();
    }
+   
+   public List<Consumer> getConsumers()
+   {
+      return consumers;
+   }
 }

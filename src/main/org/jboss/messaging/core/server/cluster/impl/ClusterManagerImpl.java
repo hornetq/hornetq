@@ -373,7 +373,8 @@ public class ClusterManagerImpl implements ClusterManager
                                  config.getRetryIntervalMultiplier(),
                                  config.getMaxRetriesBeforeFailover(),
                                  config.getMaxRetriesAfterFailover(),
-                                 config.isUseDuplicateDetection());
+                                 config.isUseDuplicateDetection(),
+                                 null);
 
          log.info("put bridge " + this);
          bridges.put(config.getName(), bridge);

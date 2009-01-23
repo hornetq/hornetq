@@ -48,23 +48,27 @@ public class ManagementHelper
 
    // Constants -----------------------------------------------------
 
-   public static final SimpleString HDR_JMX_OBJECTNAME = new SimpleString("JBMJMXObjectName");
+   public static final SimpleString HDR_JMX_OBJECTNAME = new SimpleString("JBM_JMX_ObjectName");
 
-   public static final SimpleString HDR_JMX_ATTRIBUTE_PREFIX = new SimpleString("JBMJMXAttribute.");
+   public static final SimpleString HDR_JMX_ATTRIBUTE_PREFIX = new SimpleString("JBM_JMXAttribute.");
 
-   public static final SimpleString HDR_JMX_OPERATION_PREFIX = new SimpleString("JBMJMXOperation.");
+   public static final SimpleString HDR_JMX_OPERATION_PREFIX = new SimpleString("JBM_JMXOperation.");
 
    public static final SimpleString HDR_JMX_OPERATION_NAME = new SimpleString(HDR_JMX_OPERATION_PREFIX + "name");
 
-   public static final SimpleString HDR_JMX_OPERATION_SUCCEEDED = new SimpleString("JBMJMXOperationSucceeded");
+   public static final SimpleString HDR_JMX_OPERATION_SUCCEEDED = new SimpleString("JBM_JMXOperationSucceeded");
 
-   public static final SimpleString HDR_JMX_OPERATION_EXCEPTION = new SimpleString("JBMJMXOperationException");
+   public static final SimpleString HDR_JMX_OPERATION_EXCEPTION = new SimpleString("JBM_JMXOperationException");
 
-   public static final SimpleString HDR_NOTIFICATION_TYPE = new SimpleString("JBMNotifType");
+   public static final SimpleString HDR_NOTIFICATION_TYPE = new SimpleString("JBM_NotifType");
 
-   public static final SimpleString HDR_NOTIFICATION_MESSAGE = new SimpleString("JBMNotifMessage");
-
-   public static final SimpleString HDR_NOTIFICATION_TIMESTAMP = new SimpleString("JBMNotifTimestamp");
+   public static final SimpleString HDR_NOTIFICATION_TIMESTAMP = new SimpleString("JBM_NotifTimestamp");
+   
+   public static final SimpleString HDR_QUEUE_NAME = new SimpleString("JBM_QueueName");
+   
+   public static final SimpleString HDR_ADDRESS = new SimpleString("JBM_Address");
+   
+   public static final SimpleString HDR_FILTERSTRING = new SimpleString("JBM_FilterString");
 
    // Attributes ----------------------------------------------------
 

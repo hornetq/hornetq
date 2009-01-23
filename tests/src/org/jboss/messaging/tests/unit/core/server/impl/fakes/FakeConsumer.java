@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.unit.core.server.impl.fakes;
 
@@ -29,6 +29,7 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * 
@@ -40,69 +41,75 @@ import org.jboss.messaging.core.server.MessageReference;
 public class FakeConsumer implements Consumer
 {
    private HandleStatus statusToReturn = HandleStatus.HANDLED;
-   
+
    private HandleStatus newStatus;
-   
+
    private int delayCountdown = 0;
-   
+
    private LinkedList<MessageReference> references = new LinkedList<MessageReference>();
-   
+
    private Filter filter;
-   
+
    public FakeConsumer()
-   {         
+   {
    }
-   
+
    public FakeConsumer(Filter filter)
    {
       this.filter = filter;
    }
-   
+
+   public SimpleString getFilterString()
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
    public synchronized MessageReference waitForNextReference(long timeout)
    {
       while (references.isEmpty() && timeout > 0)
       {
-         long start = System.currentTimeMillis(); 
+         long start = System.currentTimeMillis();
          try
          {
             wait();
          }
          catch (InterruptedException e)
-         {                 
+         {
          }
          timeout -= (System.currentTimeMillis() - start);
       }
-      
+
       if (timeout <= 0)
       {
          throw new IllegalStateException("Timed out waiting for reference");
       }
-      
+
       return references.removeFirst();
    }
-   
+
    public synchronized void setStatusImmediate(HandleStatus newStatus)
    {
       this.statusToReturn = newStatus;
    }
-   
+
    public synchronized void setStatusDelayed(HandleStatus newStatus, int numReferences)
    {
       this.newStatus = newStatus;
-      
+
       this.delayCountdown = numReferences;
    }
-   
+
    public synchronized List<MessageReference> getReferences()
    {
       return references;
    }
-   
+
    public synchronized void clearReferences()
    {
       this.references.clear();
    }
-   
+
    public synchronized HandleStatus handle(MessageReference reference)
    {
       if (filter != null)
@@ -112,7 +119,7 @@ public class FakeConsumer implements Consumer
             references.addLast(reference);
             reference.getQueue().referenceHandled();
             notify();
-            
+
             return HandleStatus.HANDLED;
          }
          else
@@ -120,28 +127,28 @@ public class FakeConsumer implements Consumer
             return HandleStatus.NO_MATCH;
          }
       }
-      
+
       if (newStatus != null)
-      {           
+      {
          if (delayCountdown == 0)
          {
             statusToReturn = newStatus;
-            
+
             newStatus = null;
          }
          else
-         {            
+         {
             delayCountdown--;
          }
       }
-      
+
       if (statusToReturn == HandleStatus.HANDLED)
       {
          reference.getQueue().referenceHandled();
          references.addLast(reference);
          notify();
       }
-      
+
       return statusToReturn;
    }
 }

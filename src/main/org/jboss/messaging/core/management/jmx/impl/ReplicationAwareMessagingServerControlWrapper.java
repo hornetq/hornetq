@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.management.jmx.impl;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.management.MBeanInfo;
 import javax.management.ObjectName;
@@ -33,6 +32,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.impl.MessagingServerControl;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A ReplicationAwareMessagingServerControlWrapper
@@ -64,12 +64,11 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
 
    // MessagingServerControlMBean implementation ------------------------------
 
-   
    public String getBackupConnectorName()
    {
       return localControl.getBackupConnectorName();
    }
-   
+
    public String getBindingsDirectory()
    {
       return localControl.getBindingsDirectory();
@@ -234,12 +233,17 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
    {
       return localControl.listSessions(connectionID);
    }
-   
+
    public TabularData getConnectors() throws Exception
    {
       return localControl.getConnectors();
    }
-   
+
+   public void sendQueueInfoToQueue(final SimpleString queueName) throws Exception
+   {
+      localControl.sendQueueInfoToQueue(queueName);
+   }
+
    public boolean addAddress(String address) throws Exception
    {
       return (Boolean)replicationAwareInvoke("addAddress", address);

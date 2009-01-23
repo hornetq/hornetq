@@ -589,6 +589,11 @@ public class QueueImplTest extends UnitTestCase
 
       class NullConsumer implements Consumer
       {
+         public SimpleString getFilterString()
+         {
+            return null;
+         }
+
          public HandleStatus handle(MessageReference reference)
          {
             return null;
@@ -1399,6 +1404,11 @@ public class QueueImplTest extends UnitTestCase
 
    class DummyDistributionPolicy implements Distributor
    {
+      public List<Consumer> getConsumers()
+      {         
+         return null;
+      }
+
       Consumer consumer;
       public Consumer select(ServerMessage message, boolean redeliver)
       {

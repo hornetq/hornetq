@@ -80,4 +80,6 @@ public interface PostOffice extends MessagingComponent
    SendLock getAddressLock(SimpleString address);
 
    DuplicateIDCache getDuplicateIDCache(SimpleString address);
+   
+   void sendQueueInfoToQueue(SimpleString queueName) throws Exception;
 }

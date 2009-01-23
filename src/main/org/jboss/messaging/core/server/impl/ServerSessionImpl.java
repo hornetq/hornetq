@@ -12,6 +12,8 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CREATED;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -26,11 +28,13 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
+import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.management.Notification;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
@@ -94,6 +98,7 @@ import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.SimpleIDGenerator;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.TypedProperties;
 
 /*
  * Session implementation 
@@ -1392,7 +1397,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             }
          }
          else
-         {
+         {            
             theQueue = (Queue)binding.getBindable();
          }
 
@@ -1407,9 +1412,26 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                                                           postOffice.getPagingManager(),
                                                           channel,
                                                           preAcknowledge,
-                                                          executor);
+                                                          executor,
+                                                          managementService);
 
          consumers.put(consumer.getID(), consumer);
+         
+         if (!browseOnly)
+         {
+            TypedProperties props = new TypedProperties();
+            
+            props.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, name);
+            
+            if (filterString != null)
+            {
+               props.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
+            }
+            
+            Notification notification = new Notification(CONSUMER_CREATED, props);
+            
+            managementService.sendNotification(notification);
+         }
 
          response = new NullResponseMessage();
       }
@@ -1478,7 +1500,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          }
 
          postOffice.addBinding(binding);
-
+         
          if (temporary)
          {
             // Temporary queue in core simply means the queue will be deleted if

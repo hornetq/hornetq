@@ -39,7 +39,6 @@ import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.SimpleString;
 
-
 /**
  *
  * A FakePostOffice
@@ -54,12 +53,12 @@ public class FakePostOffice implements PostOffice
    private ConcurrentHashSet<SimpleString> addresses = new ConcurrentHashSet<SimpleString>();
 
    private volatile boolean started;
-   
+
    public void addBinding(Binding binding) throws Exception
    {
       bindings.put(binding.getAddress(), binding);
    }
- 
+
    public void route(ServerMessage message, Transaction tx) throws Exception
    {
    }
@@ -148,4 +147,9 @@ public class FakePostOffice implements PostOffice
       return null;
    }
 
+   public void sendQueueInfoToQueue(SimpleString queueName) throws Exception
+   {
+   }
+
+   
 }

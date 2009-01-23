@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.postoffice.impl;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,9 +35,13 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.management.Notification;
+import org.jboss.messaging.core.management.NotificationListener;
+import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.paging.PagingManager;
@@ -47,12 +52,15 @@ import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.postoffice.QueueInfo;
+import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.SendLockImpl;
+import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
@@ -60,6 +68,7 @@ import org.jboss.messaging.core.transaction.Transaction.State;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.TypedProperties;
 
 /**
  * A PostOfficeImpl
@@ -68,7 +77,7 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="csuconic@redhat.com">Clebert Suconic</a>
  */
-public class PostOfficeImpl implements PostOffice
+public class PostOfficeImpl implements PostOffice, NotificationListener
 {
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
 
@@ -143,13 +152,15 @@ public class PostOfficeImpl implements PostOffice
 
       this.idCacheSize = idCacheSize;
 
-      this.persistIDCache = persistIDCache;
+      this.persistIDCache = persistIDCache;            
    }
 
    // MessagingComponent implementation ---------------------------------------
 
    public void start() throws Exception
    {
+      managementService.addNotificationListener(this);
+      
       if (pagingManager != null)
       {
          pagingManager.setPostOffice(this);
@@ -174,11 +185,12 @@ public class PostOfficeImpl implements PostOffice
 
    public void stop() throws Exception
    {
+      managementService.removeNotificationListener(this);
+      
       if (messageExpiryExecutor != null)
       {
          messageExpiryExecutor.shutdown();
       }
-
 
       addressManager.clear();
 
@@ -196,6 +208,168 @@ public class PostOfficeImpl implements PostOffice
    public boolean isStarted()
    {
       return started;
+   }
+   
+   // NotificationListener implementation -------------------------------------
+   
+   
+   private Map<SimpleString, QueueInfo> queueInfos = new HashMap<SimpleString, QueueInfo>();
+   
+   private final Object notificationLock = new Object();
+   
+   public void onNotification(final Notification notification)
+   {
+      synchronized (notificationLock)
+      {
+         NotificationType type = notification.getType();
+         
+         if (type == NotificationType.QUEUE_CREATED)
+         {
+            TypedProperties props = notification.getProperties();
+            
+            SimpleString queueName = (SimpleString)props.getProperty(ManagementHelper.HDR_QUEUE_NAME);
+            
+            SimpleString address = (SimpleString)props.getProperty(ManagementHelper.HDR_ADDRESS);
+            
+            QueueInfo info = new QueueInfo(queueName, address);
+            
+            queueInfos.put(queueName, info);
+         }
+         else if (type == NotificationType.QUEUE_DESTROYED)
+         {
+            TypedProperties props = notification.getProperties();
+            
+            SimpleString queueName = (SimpleString)props.getProperty(ManagementHelper.HDR_QUEUE_NAME);
+                     
+            queueInfos.remove(queueName);  
+         }
+         else if (type == NotificationType.CONSUMER_CREATED)
+         {
+            TypedProperties props = notification.getProperties();
+            
+            SimpleString queueName = (SimpleString)props.getProperty(ManagementHelper.HDR_QUEUE_NAME); 
+            
+            SimpleString filterString = (SimpleString)props.getProperty(ManagementHelper.HDR_FILTERSTRING);
+            
+            QueueInfo info = queueInfos.get(queueName);
+            
+            info.incrementConsumers();
+            
+            if (filterString != null)
+            {
+               List<SimpleString> filterStrings = info.getFilterStrings();
+               
+               if (filterStrings == null)
+               {
+                  filterStrings = new ArrayList<SimpleString>();
+                  
+                  info.setFilterStrings(filterStrings);
+               }
+            }         
+         }
+         else if (type == NotificationType.CONSUMER_CLOSED)
+         {
+            TypedProperties props = notification.getProperties();
+            
+            SimpleString queueName = (SimpleString)props.getProperty(ManagementHelper.HDR_QUEUE_NAME); 
+            
+            SimpleString filterString = (SimpleString)props.getProperty(ManagementHelper.HDR_FILTERSTRING);
+            
+            QueueInfo info = queueInfos.get(queueName);
+            
+            info.decrementConsumers();
+            
+            if (filterString != null)
+            {
+               List<SimpleString> filterStrings = info.getFilterStrings();
+               
+               filterStrings.remove(filterString);
+            }             
+         }
+         else
+         {
+            return;
+         }
+      }
+   }
+   
+   private ServerMessage createQueueInfoMessage(final NotificationType type, final SimpleString queueName)
+   {
+      ServerMessage message = new ServerMessageImpl(storageManager.generateUniqueID());
+      message.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
+      
+      message.setDestination(queueName);
+      
+      message.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE, new SimpleString(NotificationType.QUEUE_CREATED.toString()));        
+      message.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
+      
+      return message;
+   }
+   
+   public void sendQueueInfoToQueue(final SimpleString queueName) throws Exception
+   {
+      //We send direct to the queue so we can send it to the same queue that is bound to the notifications adress - this is crucial for ensuring
+      //that queue infos and notifications are received in a contiguous consistent stream
+      Binding binding = addressManager.getBinding(queueName);
+      
+      if (binding == null)
+      {
+         throw new IllegalStateException("Cannot find queue " + queueName);
+      }
+      
+      Queue queue = (Queue)binding.getBindable();
+      
+      //Need to lock to make sure all queue info and notifications are in the correct order with no gaps
+      synchronized (notificationLock)
+      {
+         //First send a reset message
+         
+         ServerMessage message = new ServerMessageImpl(storageManager.generateUniqueID()); 
+         message.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
+         message.setDestination(queueName);
+         message.putBooleanProperty(MessageImpl.HDR_RESET_QUEUE_DATA, true);
+         
+         queue.accept(message);            
+         queue.route(message, null);
+                  
+         for (QueueInfo info: queueInfos.values())
+         {
+            message = createQueueInfoMessage(NotificationType.QUEUE_CREATED, queueName);
+            
+            message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
+            message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName());
+            
+            queue.accept(message);            
+            queue.route(message, null);
+            
+            int consumersWithFilters = info.getFilterStrings() != null ? info.getFilterStrings().size() : 0;
+            
+            for (int i = 0; i < info.getNumberOfConsumers() - consumersWithFilters; i++)
+            {
+               message = createQueueInfoMessage(NotificationType.CONSUMER_CREATED, queueName);
+               
+               message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName()); 
+               
+               queue.accept(message);            
+               queue.route(message, null);
+            }
+            
+            if (info.getFilterStrings() != null)
+            {
+               for (SimpleString filterString: info.getFilterStrings())
+               {
+                  message = createQueueInfoMessage(NotificationType.CONSUMER_CREATED, queueName);
+                  
+                  message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName());
+                  message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString); 
+                  
+                  queue.accept(message);            
+                  queue.route(message, null);
+               }
+            }           
+         }
+      }
+      
    }
 
    // PostOffice implementation -----------------------------------------------
@@ -285,7 +459,7 @@ public class PostOfficeImpl implements PostOffice
    }
 
    public void route(final ServerMessage message, Transaction tx) throws Exception
-   {      
+   {            
       SimpleString address = message.getDestination();
 
       if (checkAllowable)
@@ -360,7 +534,7 @@ public class PostOfficeImpl implements PostOffice
       }
 
       Bindings bindings = addressManager.getBindings(address);
-          
+      
       if (bindings != null)
       {
          bindings.route(message, tx);
@@ -442,7 +616,7 @@ public class PostOfficeImpl implements PostOffice
 
       return cache;
    }
-
+   
    // Private -----------------------------------------------------------------
    
    private final PageMessageOperation getPageOperation(final Transaction tx)

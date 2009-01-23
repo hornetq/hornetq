@@ -22,24 +22,36 @@
 
 package org.jboss.messaging.core.server.cluster.impl;
 
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.management.NotificationType;
+import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.QueueInfo;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.server.HandleStatus;
@@ -53,6 +65,8 @@ import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.Future;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.TypedProperties;
+import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * A BridgeImpl
@@ -114,16 +128,18 @@ public class BridgeImpl implements Bridge, FailureListener
    private final boolean useDuplicateDetection;
 
    private volatile boolean active;
-   
+
    private final Pair<TransportConfiguration, TransportConfiguration> connectorPair;
-   
+
    private final long retryInterval;
-   
+
    private final double retryIntervalMultiplier;
-   
+
    private final int maxRetriesBeforeFailover;
-   
+
    private final int maxRetriesAfterFailover;
+
+   private final MessageHandler queueInfoMessageHandler;
 
    // Static --------------------------------------------------------
 
@@ -146,7 +162,8 @@ public class BridgeImpl implements Bridge, FailureListener
                      final double retryIntervalMultiplier,
                      final int maxRetriesBeforeFailover,
                      final int maxRetriesAfterFailover,
-                     final boolean useDuplicateDetection) throws Exception
+                     final boolean useDuplicateDetection,
+                     final MessageHandler queueInfoMessageHandler) throws Exception
    {
       this.name = name;
 
@@ -176,16 +193,18 @@ public class BridgeImpl implements Bridge, FailureListener
       this.transformer = transformer;
 
       this.useDuplicateDetection = useDuplicateDetection;
-      
+
       this.connectorPair = connectorPair;
-      
+
       this.retryInterval = retryInterval;
-      
+
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      
+
       this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
-      
+
       this.maxRetriesAfterFailover = maxRetriesAfterFailover;
+
+      this.queueInfoMessageHandler = queueInfoMessageHandler;
 
       if (maxBatchTime != -1)
       {
@@ -206,7 +225,7 @@ public class BridgeImpl implements Bridge, FailureListener
       {
          return;
       }
-      
+
       executor.execute(new CreateObjectsRunnable());
 
       started = true;
@@ -221,7 +240,7 @@ public class BridgeImpl implements Bridge, FailureListener
             createTx();
 
             queue.addConsumer(BridgeImpl.this);
-            
+
             csf = new ClientSessionFactoryImpl(connectorPair.a,
                                                connectorPair.b,
                                                retryInterval,
@@ -235,6 +254,42 @@ public class BridgeImpl implements Bridge, FailureListener
 
             session.addFailureListener(BridgeImpl.this);
 
+            if (queueInfoMessageHandler != null)
+            {
+               // Get the queue data
+
+               SimpleString notifQueueName = UUIDGenerator.getInstance().generateSimpleStringUUID();
+
+               SimpleString filter = new SimpleString(ManagementHelper.HDR_NOTIFICATION_TYPE + " IN (" +
+                                                      "'" +
+                                                      NotificationType.QUEUE_CREATED +
+                                                      "'" +
+                                                      "'" +
+                                                      NotificationType.QUEUE_DESTROYED +
+                                                      "'" +
+                                                      "'" +
+                                                      NotificationType.CONSUMER_CREATED +
+                                                      "'" +
+                                                      "'" +
+                                                      NotificationType.CONSUMER_CLOSED +
+                                                      "'");
+               
+               session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueueName, filter, false, true);
+
+               ClientConsumer notifConsumer = session.createConsumer(notifQueueName);
+
+               notifConsumer.setMessageHandler(queueInfoMessageHandler);
+
+               session.start();
+
+               ClientMessage message = session.createClientMessage(false);
+
+               ManagementHelper.putOperationInvocation(message,
+                                                       ManagementServiceImpl.getMessagingServerObjectName(),
+                                                       "sendQueueInfoToQueue",
+                                                       notifQueueName);
+            }
+
             active = true;
 
             queue.deliverAsync(executor);
@@ -244,7 +299,7 @@ public class BridgeImpl implements Bridge, FailureListener
             log.warn("Unable to connect. Bridge is now disabled.", e);
 
             active = false;
-            
+
             started = false;
          }
       }
@@ -275,7 +330,7 @@ public class BridgeImpl implements Bridge, FailureListener
       {
          log.warn("Timed out waiting for batch to be sent");
       }
-      
+
       csf.close();
    }
 
@@ -348,27 +403,27 @@ public class BridgeImpl implements Bridge, FailureListener
 
       return true;
    }
-   
+
    private void fail()
    {
       if (!started)
       {
          return;
       }
-      
+
       log.warn("Bridge connection to target failed. Will try to reconnect");
-            
+
       try
       {
          tx.rollback();
-         
+
          stop();
       }
       catch (Exception e)
       {
          log.error("Failed to stop", e);
       }
-      
+
       executor.execute(new CreateObjectsRunnable());
    }
 
@@ -433,7 +488,7 @@ public class BridgeImpl implements Bridge, FailureListener
             }
             else
             {
-               //Preserve the original address
+               // Preserve the original address
                dest = message.getDestination();
             }
 

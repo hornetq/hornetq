@@ -20,51 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.postoffice.impl;
 
-import org.jboss.messaging.core.server.Bindable;
-import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.server.cluster.impl.FlowBindingFilter;
-import org.jboss.messaging.util.SimpleString;
+package org.jboss.messaging.core.management;
+
+import org.jboss.messaging.util.TypedProperties;
 
 /**
- * A FlowBinding
+ * A Notification
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 21 Jan 2009 18:55:22
+ * Created 22 Jan 2009 16:41:12
  *
  *
  */
-public class FlowBinding extends BindingImpl
+public class Notification
 {
-   private final FlowBindingFilter filter;
-
-   public FlowBinding(final SimpleString address,
-                      final SimpleString uniqueName,
-                      final SimpleString routingName,
-                      final Bindable bindable,
-                      final FlowBindingFilter filter)
+   private final NotificationType type;
+   
+   private final TypedProperties properties;
+      
+   public Notification(final NotificationType type, final TypedProperties properties)
    {
-      super(address, uniqueName, routingName, bindable, false, false);
-
-      this.filter = filter;
-   }
-
-   public boolean accept(final ServerMessage message) throws Exception
-   {
-      if (filter.match(message))
-      {
-         return bindable.accept(message);
-      }
-      else
-      {
-         return false;
-      }
+      this.type = type;
+      this.properties = properties;
    }
    
-   public FlowBindingFilter getFilter()
+   public NotificationType getType()
    {
-      return filter;
+      return type;
+   }
+
+   public TypedProperties getProperties()
+   {
+      return properties;
    }
 }

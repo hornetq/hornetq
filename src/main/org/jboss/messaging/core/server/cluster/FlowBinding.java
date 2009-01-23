@@ -21,54 +21,24 @@
  */
 
 
-package org.jboss.messaging.core.server.cluster.impl;
+package org.jboss.messaging.core.server.cluster;
 
-import java.util.List;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.util.SimpleString;
 
 /**
- * A QueueInfo
+ * A FlowBinding
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 21 Jan 2009 20:55:06
+ * Created 23 Jan 2009 11:58:05
  *
  *
  */
-public class QueueInfo
+public interface FlowBinding extends Binding
 {
-   private final String queueName;
+   void addConsumer(SimpleString filterString) throws Exception;
    
-   private final String address;
-   
-   private final List<String> filterStrings;
-   
-   private final int numberOfConsumers;
+   void removeConsumer(SimpleString filterString) throws Exception;
 
-   public QueueInfo(final String queueName, final String address, final List<String> filterStrings, final int numberOfConsumers)
-   {
-      this.queueName = queueName;
-      this.address = address;
-      this.filterStrings = filterStrings;
-      this.numberOfConsumers = numberOfConsumers;
-   }
-
-   public String getQueueName()
-   {
-      return queueName;
-   }
-
-   public String getAddress()
-   {
-      return address;
-   }
-
-   public List<String> getFilterStrings()
-   {
-      return filterStrings;
-   }
-
-   public int getNumberOfConsumers()
-   {
-      return numberOfConsumers;
-   }            
 }

@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.server;
 
+import org.jboss.messaging.util.SimpleString;
+
 
 
 /**
@@ -34,4 +36,6 @@ package org.jboss.messaging.core.server;
 public interface Consumer
 {
    HandleStatus handle(MessageReference reference) throws Exception;
+   
+   SimpleString getFilterString();
 }

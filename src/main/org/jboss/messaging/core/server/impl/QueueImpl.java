@@ -393,6 +393,11 @@ public class QueueImpl implements Queue
    {
       return distributionPolicy.getConsumerCount();
    }
+   
+   public synchronized List<Consumer> getConsumers()
+   {
+      return new ArrayList<Consumer>(distributionPolicy.getConsumers());
+   }
 
    public synchronized List<MessageReference> list(final Filter filter)
    {

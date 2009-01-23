@@ -31,9 +31,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.management.Notification;
+import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -57,6 +61,7 @@ import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.TypedProperties;
 
 /**
  * Concrete implementation of a ClientConsumer.
@@ -127,6 +132,8 @@ public class ServerConsumerImpl implements ServerConsumer
    private volatile boolean closed;
 
    private final boolean preAcknowledge;
+   
+   private final ManagementService managementService;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -141,7 +148,8 @@ public class ServerConsumerImpl implements ServerConsumer
                              final PagingManager pagingManager,
                              final Channel channel,
                              final boolean preAcknowledge,
-                             final Executor executor)
+                             final Executor executor,
+                             final ManagementService managementService)
    {
       this.id = id;
 
@@ -166,6 +174,8 @@ public class ServerConsumerImpl implements ServerConsumer
       this.preAcknowledge = preAcknowledge;
 
       this.pagingManager = pagingManager;
+      
+      this.managementService = managementService;
 
       messageQueue.addConsumer(this);
 
@@ -183,6 +193,18 @@ public class ServerConsumerImpl implements ServerConsumer
    public HandleStatus handle(final MessageReference ref) throws Exception
    {
       return doHandle(ref);
+   }
+   
+   public SimpleString getFilterString()
+   {
+      if (filter != null)
+      {
+         return filter.getFilterString();
+      }
+      else
+      {
+         return null;
+      }
    }
 
    public void handleClose(final Packet packet)
@@ -272,6 +294,17 @@ public class ServerConsumerImpl implements ServerConsumer
       }
 
       tx.rollback();
+      
+      if (!browseOnly)
+      {
+         TypedProperties props = new TypedProperties();
+         
+         props.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, messageQueue.getName());
+         
+         Notification notification = new Notification(NotificationType.CONSUMER_CLOSED, props);
+         
+         managementService.sendNotification(notification);
+      }
    }
 
    public LinkedList<MessageReference> cancelRefs() throws Exception

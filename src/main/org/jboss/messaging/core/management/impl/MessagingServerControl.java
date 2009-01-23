@@ -57,7 +57,6 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.BindingImpl;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
@@ -543,6 +542,11 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    {
       Collection<TransportConfiguration> connectorConfigurations = configuration.getConnectorConfigurations().values();
       return TransportConfigurationInfo.toTabularData(connectorConfigurations);
+   }
+   
+   public void sendQueueInfoToQueue(final SimpleString queueName) throws Exception
+   {
+      postOffice.sendQueueInfoToQueue(queueName);
    }
 
    // NotificationEmitter implementation ----------------------------

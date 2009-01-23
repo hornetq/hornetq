@@ -59,6 +59,8 @@ public interface Queue extends Bindable
    boolean removeConsumer(Consumer consumer) throws Exception;
 
    int getConsumerCount();
+   
+   List<Consumer> getConsumers();
 
    void addLast(MessageReference ref);
 

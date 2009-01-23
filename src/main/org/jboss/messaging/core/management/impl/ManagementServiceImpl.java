@@ -55,11 +55,12 @@ import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
 import org.jboss.messaging.core.management.DiscoveryGroupControlMBean;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.Notification;
+import org.jboss.messaging.core.management.NotificationListener;
 import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareAddressControlWrapper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareMessagingServerControlWrapper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareQueueControlWrapper;
-import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
@@ -79,11 +80,13 @@ import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TypedProperties;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:fox@redhat.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  */
@@ -122,7 +125,9 @@ public class ManagementServiceImpl implements ManagementService
    private boolean started = false;
 
    private boolean noticationsEnabled;
-
+      
+   private final Set<NotificationListener> listeners = new ConcurrentHashSet<NotificationListener>();
+   
    // Static --------------------------------------------------------
 
    public static ObjectName getMessagingServerObjectName() throws Exception
@@ -233,19 +238,31 @@ public class ManagementServiceImpl implements ManagementService
       AddressControl addressControl = new AddressControl(address, postOffice, securityRepository);
 
       registerInJMX(objectName, new ReplicationAwareAddressControlWrapper(objectName, addressControl));
+      
       registerInRegistry(objectName, addressControl);
+      
       if (log.isDebugEnabled())
       {
          log.debug("registered address " + objectName);
       }
-      sendNotification(NotificationType.ADDRESS_ADDED, address.toString());
+      TypedProperties props = new TypedProperties();
+      
+      props.putStringProperty(ManagementHelper.HDR_ADDRESS, address);
+            
+      sendNotification(new Notification(NotificationType.ADDRESS_ADDED, props));
    }
 
    public void unregisterAddress(final SimpleString address) throws Exception
    {
       ObjectName objectName = getAddressObjectName(address);
+      
       unregisterResource(objectName);
-      sendNotification(NotificationType.ADDRESS_REMOVED, address.toString());
+      
+      TypedProperties props = new TypedProperties();
+      
+      props.putStringProperty(ManagementHelper.HDR_ADDRESS, address);
+      
+      sendNotification(new Notification(NotificationType.ADDRESS_REMOVED, props));
    }
 
    public void registerQueue(final Queue queue, final SimpleString address, final StorageManager storageManager) throws Exception
@@ -266,7 +283,13 @@ public class ManagementServiceImpl implements ManagementService
       {
          log.debug("registered queue " + objectName);
       }
-      sendNotification(NotificationType.QUEUE_CREATED, queue.getName().toString());
+      
+      TypedProperties props = new TypedProperties();
+      
+      props.putStringProperty(ManagementHelper.HDR_ADDRESS, address);
+      props.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, queue.getName());
+      
+      sendNotification(new Notification(NotificationType.QUEUE_CREATED, props));
    }
 
    public void unregisterQueue(final SimpleString name, final SimpleString address) throws Exception
@@ -274,8 +297,13 @@ public class ManagementServiceImpl implements ManagementService
       ObjectName objectName = getQueueObjectName(address, name);
       unregisterResource(objectName);
       messageCounterManager.unregisterMessageCounter(name.toString());
+      
+      TypedProperties props = new TypedProperties();
+      
+      props.putStringProperty(ManagementHelper.HDR_ADDRESS, address);
+      props.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, name);
 
-      sendNotification(NotificationType.QUEUE_DESTROYED, name.toString());
+      sendNotification(new Notification(NotificationType.QUEUE_DESTROYED, props));
    }
 
    public void registerAcceptor(final Acceptor acceptor, final TransportConfiguration configuration) throws Exception
@@ -334,7 +362,7 @@ public class ManagementServiceImpl implements ManagementService
       unregisterResource(objectName);
    }
 
-   public void handleMessage(final Message message)
+   public void handleMessage(final ServerMessage message)
    {
       SimpleString objectName = (SimpleString)message.getProperty(ManagementHelper.HDR_JMX_OBJECTNAME);
       if (log.isDebugEnabled())
@@ -425,6 +453,16 @@ public class ManagementServiceImpl implements ManagementService
       registry.put(objectName, managedResource);
    }
 
+   public void addNotificationListener(final NotificationListener listener)
+   {
+      listeners.add(listener);
+   }
+   
+   public void removeNotificationListener(final NotificationListener listener)
+   {
+      listeners.remove(listener);
+   }
+
    // MessagingComponent implementation -----------------------------
 
    public void start() throws Exception
@@ -476,45 +514,53 @@ public class ManagementServiceImpl implements ManagementService
          }
       }
    }
-
-   public void sendNotification(final NotificationType type, final String message) throws Exception
-   {
-      sendNotification(type, message, null);
-   }
-
-   public void sendNotification(final NotificationType type, final String message, TypedProperties props) throws Exception
-   {
-      // TODO - we need a parameter to determine if the notification is durable or not
+      
+   public void sendNotification(final Notification notification) throws Exception
+   {     
       if (managedServer != null && noticationsEnabled)
       {
-         ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
-         notificationMessage.setDestination(managementNotificationAddress);
-         notificationMessage.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
-
-         TypedProperties notifProps;
-         if (props != null)
+         //This needs to be synchronized since we need to ensure notifications are processed in strict sequence
+         synchronized (this)
          {
-            notifProps = props;
+            //First send to any local listeners
+            for (NotificationListener listener: listeners)
+            {
+               try
+               {
+                  listener.onNotification(notification);
+               }
+               catch (Exception e)
+               {
+                  //Exception thrown from one listener should not stop execution of others
+                  log.error("Failed to call listener", e);
+               }            
+            }
+            
+            //Now send message
+            
+            ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
+            notificationMessage.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
+            //Notification messages are always durable so the user can choose whether to add a durable queue to consume them in
+            notificationMessage.setDurable(true);
+            notificationMessage.setDestination(managementNotificationAddress);
+               
+            TypedProperties notifProps;
+            if (notification.getProperties() != null)
+            {
+               notifProps = notification.getProperties();
+            }
+            else
+            {
+               notifProps = new TypedProperties();
+            }
+   
+            notifProps.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE, new SimpleString(notification.getType().toString()));        
+            notifProps.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
+            
+            notificationMessage.putTypedProperties(notifProps);
+            
+            postOffice.route(notificationMessage, null);
          }
-         else
-         {
-            notifProps = new TypedProperties();
-         }
-
-         notifProps.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE, new SimpleString(type.toString()));
-         notifProps.putStringProperty(ManagementHelper.HDR_NOTIFICATION_MESSAGE, new SimpleString(message));
-         notifProps.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
-
-         notificationMessage.putTypedProperties(notifProps);
-
-         // List<MessageReference> refs = postOffice.route(notificationMessage);
-         //
-         // for (MessageReference ref : refs)
-         // {
-         // ref.getQueue().add(ref);
-         // }
-
-         postOffice.route(notificationMessage, null);
       }
    }
 

@@ -55,21 +55,23 @@ public abstract class MessageImpl implements Message
 
    private static final Logger log = Logger.getLogger(MessageImpl.class);
 
-   public static final SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("_JBM_ACTUAL_EXPIRY");
+   public static final SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("JBM_ACTUAL_EXPIRY");
 
-   public static final SimpleString HDR_ORIGINAL_DESTINATION = new SimpleString("_JBM_ORIG_DESTINATION");
+   public static final SimpleString HDR_ORIGINAL_DESTINATION = new SimpleString("JBM_ORIG_DESTINATION");
 
-   public static final SimpleString HDR_ORIG_MESSAGE_ID = new SimpleString("_JBM_ORIG_MESSAGE_ID");
+   public static final SimpleString HDR_ORIG_MESSAGE_ID = new SimpleString("JBM_ORIG_MESSAGE_ID");
 
-   public static final SimpleString HDR_GROUP_ID = new SimpleString("_JBM_GROUP_ID");
+   public static final SimpleString HDR_GROUP_ID = new SimpleString("JBM_GROUP_ID");
 
-   public static final SimpleString HDR_SCHEDULED_DELIVERY_TIME = new SimpleString("_JBM_SCHED_DELIVERY");
+   public static final SimpleString HDR_SCHEDULED_DELIVERY_TIME = new SimpleString("JBM_SCHED_DELIVERY");
    
-   public static final SimpleString HDR_DUPLICATE_DETECTION_ID = new SimpleString("_JBM_DUPL_ID");
+   public static final SimpleString HDR_DUPLICATE_DETECTION_ID = new SimpleString("JBM_DUPL_ID");
    
-   public static final SimpleString HDR_MAX_HOPS = new SimpleString("_JBM_MAX_HOPS");
+   public static final SimpleString HDR_MAX_HOPS = new SimpleString("JBM_MAX_HOPS");
    
-   public static final SimpleString HDR_ROUTE_TO_PREFIX = new SimpleString("_JBM_ROUTE_TO:");
+   public static final SimpleString HDR_ROUTE_TO_PREFIX = new SimpleString("JBM_ROUTE_TO:");
+   
+   public static final SimpleString HDR_RESET_QUEUE_DATA = new SimpleString("JBM_RESET_QUEUE_DATA");
    
    // Attributes ----------------------------------------------------
 
