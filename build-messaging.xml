@@ -1133,7 +1133,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout}">
+             timeout="${stress.junit.timeout}">
 
           <sysproperty key="user.home" value="${user.home}"/>
           <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
