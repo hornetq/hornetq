@@ -790,63 +790,48 @@ public class ServerConsumerImpl implements ServerConsumer
             {
                return false;
             }
-
-            int precalculateAvailableCredits;
-
-            if (availableCredits != null)
+            SessionReceiveMessage initialMessage;
+            
+            if (sentFirstMessage)
             {
-               // Flow control needs to be done in advance.
-               precalculateAvailableCredits = preCalculateFlowControl();
+               initialMessage = null;
             }
             else
             {
-               precalculateAvailableCredits = 0;
-            }
-
-            if (!sentFirstMessage)
-            {
-               if (trace)
-               {
-                  trace("deliverLargeMessage:: sending initialMessage, backup = " + messageQueue.isBackup());
-               }
                sentFirstMessage = true;
 
                MessagingBuffer headerBuffer = new ByteBufferWrapper(ByteBuffer.allocate(pendingLargeMessage.getPropertiesEncodeSize()));
 
                pendingLargeMessage.encodeProperties(headerBuffer);
 
-               SessionReceiveMessage initialMessage = new SessionReceiveMessage(id,
+               initialMessage = new SessionReceiveMessage(id,
                                                                                 headerBuffer.array(),
                                                                                 ref.getDeliveryCount() + 1);
+            }
 
-               channel.send(initialMessage);
+            int precalculateAvailableCredits;
 
-               if (availableCredits != null)
-               {
-                  if ((precalculateAvailableCredits -= initialMessage.getRequiredBufferSize()) < 0)
-                  {
-                     log.warn("Credit logic is not working properly, too many credits were taken");
-                  }
-
-                  if (trace)
-                  {
-                     trace("deliverLargeMessage:: Initial send, taking out " + initialMessage.getRequiredBufferSize() +
-                           " credits, current = " +
-                           precalculateAvailableCredits +
-                           " isBackup = " +
-                           messageQueue.isBackup());
-
-                  }
-               }
+            if (availableCredits != null)
+            {
+               // Flow control needs to be done in advance.
+               precalculateAvailableCredits = preCalculateFlowControl(initialMessage);
             }
             else
             {
-               if (trace)
-               {
-                  trace("deliverLargeMessage: Resuming deliverLargeMessage, currentPosition = " + positionPendingLargeMessage);
-               }
+               precalculateAvailableCredits = 0;
             }
 
+
+            if (initialMessage != null)
+            {
+               channel.send(initialMessage);
+   
+               if (availableCredits != null)
+               {
+                  precalculateAvailableCredits -= initialMessage.getRequiredBufferSize();
+               }
+            }
+            
             while (positionPendingLargeMessage < sizePendingLargeMessage)
             {
                if (precalculateAvailableCredits <= 0)
@@ -912,16 +897,16 @@ public class ServerConsumerImpl implements ServerConsumer
        * Credits flow control are calculated in advance.
        * @return
        */
-      private int preCalculateFlowControl()
+      private int preCalculateFlowControl(SessionReceiveMessage firstPacket)
       {
          while (true)
          {
             final int currentCredit = availableCredits.get();
             int precalculatedCredits = 0;
 
-            if (!sentFirstMessage)
+            if (firstPacket != null)
             {
-               precalculatedCredits = SessionReceiveMessage.SESSION_RECEIVE_MESSAGE_LARGE_MESSAGE_SIZE + pendingLargeMessage.getPropertiesEncodeSize();
+               precalculatedCredits = firstPacket.getRequiredBufferSize();
             }
 
             long chunkLen = 0;
