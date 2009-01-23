@@ -61,11 +61,9 @@ public class QueueDeployer extends XmlDeployer
    {
       if ("deployment".equals(rootNode.getNodeName()))
       {
-         System.out.println("QueueSettingsDeployer.validate() QUEUE_SETTINGS IN JBM_CONFIGURATION");
          XMLUtil.validate(rootNode, "jbm-configuration.xsd");
       } else 
       {
-         System.out.println("QueueSettingsDeployer.validate() QUEUE_SETTINGS IN QUEUES");
          XMLUtil.validate(rootNode, "queues.xsd");         
       }
    }
