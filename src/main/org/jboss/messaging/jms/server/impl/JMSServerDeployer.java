@@ -453,14 +453,9 @@ public class JMSServerDeployer extends XmlDeployer
       }
    }
 
-   /**
-    * The name of the configuration file name to look for for deployment
-    * 
-    * @return The name of the config file
-    */
-   public String getConfigFileName()
+   public String[] getConfigFileNames()
    {
-      return "jbm-jms.xml";
+      return new String[] {"jbm-jms.xml"};
    }
 
 }

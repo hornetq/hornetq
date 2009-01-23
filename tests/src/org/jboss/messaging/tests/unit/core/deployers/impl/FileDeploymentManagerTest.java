@@ -82,7 +82,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
 
       try
       {      
-         EasyMock.expect(deployer.getConfigFileName()).andReturn(filename);
+         EasyMock.expect(deployer.getConfigFileNames()).andReturn(new String[] {filename});
          
          URL url = file.toURL();
          
@@ -156,15 +156,15 @@ public class FileDeploymentManagerTest extends UnitTestCase
       
       try
       {      
-         EasyMock.expect(deployer1.getConfigFileName()).andReturn(filename1);      
+         EasyMock.expect(deployer1.getConfigFileNames()).andReturn(new String[] {filename1});      
          URL url1 = file1.toURL();      
          deployer1.deploy(url1);
          
-         EasyMock.expect(deployer2.getConfigFileName()).andReturn(filename2);      
+         EasyMock.expect(deployer2.getConfigFileNames()).andReturn(new String[] {filename2});      
          URL url2 = file2.toURL();      
          deployer2.deploy(url2);
          
-         EasyMock.expect(deployer3.getConfigFileName()).andReturn(filename3);      
+         EasyMock.expect(deployer3.getConfigFileNames()).andReturn(new String[] {filename3});      
          URL url3 = file3.toURL();      
          deployer3.deploy(url3);
    
@@ -199,7 +199,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
          
          EasyMock.reset(deployer1, deployer2, deployer3);
          
-         EasyMock.expect(deployer1.getConfigFileName()).andReturn(filename1); 
+         EasyMock.expect(deployer1.getConfigFileNames()).andReturn(new String[] {filename1}); 
                   
          EasyMock.replay(deployer1, deployer2, deployer3);
          
@@ -214,8 +214,8 @@ public class FileDeploymentManagerTest extends UnitTestCase
          
          EasyMock.reset(deployer1, deployer2, deployer3);
          
-         EasyMock.expect(deployer2.getConfigFileName()).andReturn(filename2); 
-         EasyMock.expect(deployer3.getConfigFileName()).andReturn(filename3); 
+         EasyMock.expect(deployer2.getConfigFileNames()).andReturn(new String[] {filename2}); 
+         EasyMock.expect(deployer3.getConfigFileNames()).andReturn(new String[] {filename3}); 
          
          EasyMock.replay(deployer1, deployer2, deployer3);
          
@@ -262,7 +262,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
  
       try
       {      
-         EasyMock.expect(deployer.getConfigFileName()).andReturn(filename);      
+         EasyMock.expect(deployer.getConfigFileNames()).andReturn(new String[] {filename});      
          URL url = file.toURL();      
          deployer.deploy(url);
          
@@ -277,7 +277,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
          
          EasyMock.reset(deployer);
                            
-         EasyMock.expect(deployer.getConfigFileName()).andReturn(filename);          
+         EasyMock.expect(deployer.getConfigFileNames()).andReturn(new String[] {filename});          
          deployer.redeploy(url);
          
          EasyMock.replay(deployer);
@@ -296,7 +296,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
          
          EasyMock.reset(deployer);
          
-         EasyMock.expect(deployer.getConfigFileName()).andReturn(filename); 
+         EasyMock.expect(deployer.getConfigFileNames()).andReturn(new String[] {filename}); 
          
          EasyMock.replay(deployer);
          
@@ -328,7 +328,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
  
       try
       {      
-         EasyMock.expect(deployer.getConfigFileName()).andReturn(filename);      
+         EasyMock.expect(deployer.getConfigFileNames()).andReturn(new String[] {filename});      
          URL url = file.toURL();      
          deployer.deploy(url);
          
@@ -348,7 +348,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
          
          EasyMock.reset(deployer);
          
-         EasyMock.expect(deployer.getConfigFileName()).andReturn(filename);   
+         EasyMock.expect(deployer.getConfigFileNames()).andReturn(new String[] {filename});   
          
          deployer.undeploy(url);
          
@@ -368,7 +368,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
          
          EasyMock.reset(deployer);
          
-         EasyMock.expect(deployer.getConfigFileName()).andReturn(filename);  
+         EasyMock.expect(deployer.getConfigFileNames()).andReturn(new String[] {filename});  
          
          deployer.deploy(url);
          

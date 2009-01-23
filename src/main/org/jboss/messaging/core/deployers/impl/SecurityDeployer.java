@@ -159,8 +159,8 @@ public class SecurityDeployer extends XmlDeployer
     *
     * @return The name of the config file
     */
-   public String getConfigFileName()
+   public String[] getConfigFileNames()
    {
-      return QUEUES_XML;
+      return new String[] {QUEUES_XML};
    }
 }

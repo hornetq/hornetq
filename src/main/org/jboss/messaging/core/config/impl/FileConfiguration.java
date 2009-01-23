@@ -40,7 +40,6 @@ import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
-import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.util.Pair;
@@ -227,15 +226,6 @@ public class FileConfiguration extends ConfigurationImpl
          Element dvNode = (Element)dvNodes.item(i);
 
          parseDivertConfiguration(dvNode);
-      }
-
-      NodeList queueNodes = e.getElementsByTagName("queue");
-
-      for (int i = 0; i < queueNodes.getLength(); i++)
-      {
-         Element queueNode = (Element)queueNodes.item(i);
-
-         parseQueueConfiguration(queueNode);
       }
       
       // Persistence config
@@ -880,18 +870,4 @@ public class FileConfiguration extends ConfigurationImpl
       
       divertConfigurations.add(config);
    }
-
-   private void parseQueueConfiguration(final Element node)
-   {
-      String name = node.getAttribute("name");
-      
-      String address = node.getAttribute("address");
-
-      String filterString = node.getAttribute("filter");
-
-      boolean durable = Boolean.parseBoolean(node.getAttribute("durable"));
-      
-      queueConfigurations.add(new QueueConfiguration(address, name, filterString, durable));
-   }
-
 }

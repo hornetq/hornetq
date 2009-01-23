@@ -221,9 +221,9 @@ public class XMLDeployerTest extends TestCase
          return new String[] { elementname };
       }
 
-      public String getConfigFileName()
+      public String[] getConfigFileNames()
       {
-         return "test";
+         return new String[] {"test"};
       }
 
       @Override

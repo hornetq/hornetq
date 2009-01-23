@@ -106,31 +106,34 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
       {
          deployers.add(deployer);
          
-         String filename = deployer.getConfigFileName();
+         String[] filenames = deployer.getConfigFileNames();
          
-         log.debug("the filename is " + filename);
-         
-         log.debug(System.getProperty("java.class.path"));
-         
-         Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(filename);
-         
-         while (urls.hasMoreElements())
+         for (String filename : filenames)
          {
-            URL url = urls.nextElement();
-            
-            log.debug("Got url " + url);
-                                 
-            try
+            log.debug("the filename is " + filename);
+
+            log.debug(System.getProperty("java.class.path"));
+
+            Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(filename);
+
+            while (urls.hasMoreElements())
             {
-               log.debug("Deploying " + deployer + " with url " + url);
-               deployer.deploy(url);
+               URL url = urls.nextElement();
+
+               log.debug("Got url " + url);
+
+               try
+               {
+                  log.debug("Deploying " + deployer + " with url " + url);
+                  deployer.deploy(url);
+               }
+               catch (Exception e)
+               {
+                  log.error("Error deploying " + url, e);
+               }
+
+               deployed.put(url, new DeployInfo(deployer, new File(url.getFile()).lastModified()));            
             }
-            catch (Exception e)
-            {
-               log.error("Error deploying " + url, e);
-            }
-            
-            deployed.put(url, new DeployInfo(deployer, new File(url.getFile()).lastModified()));            
          }
       }      
       
@@ -146,13 +149,17 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
       
       if (deployers.remove(deployer))
       {
-         Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(deployer.getConfigFileName());
-         while (urls.hasMoreElements())
+         String[] filenames = deployer.getConfigFileNames();
+         for (String filename : filenames)
          {
-            URL url = urls.nextElement();
-            
-            deployed.remove(url);
-         }         
+            Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(filename);
+            while (urls.hasMoreElements())
+            {
+               URL url = urls.nextElement();
+
+               deployed.remove(url);
+            }         
+         }
       }
    }
 
@@ -170,47 +177,52 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
       {
          for (Deployer deployer : deployers)
          {
-            Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(deployer.getConfigFileName());
+            String[] filenames = deployer.getConfigFileNames();
 
-            while (urls.hasMoreElements())
+            for (String filename : filenames)
             {
-               URL url = urls.nextElement();
-               
-               DeployInfo info = deployed.get(url);
-               
-               long newLastModified = new File(url.getFile()).lastModified();
-                  
-               if (info == null)
-               {                              
-                  try
-                  {
-                     log.debug("Deploying " + deployer + " with url " + url);
-                     
-                     deployer.deploy(url);
-                     
-                     deployed.put(url, new DeployInfo(deployer, new File(url.getFile()).lastModified()));
+               Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(filename);
+
+               while (urls.hasMoreElements())
+               {
+                  URL url = urls.nextElement();
+
+                  DeployInfo info = deployed.get(url);
+
+                  long newLastModified = new File(url.getFile()).lastModified();
+
+                  if (info == null)
+                  {                              
+                     try
+                     {
+                        log.debug("Deploying " + deployer + " with url " + url);
+
+                        deployer.deploy(url);
+
+                        deployed.put(url, new DeployInfo(deployer, new File(url.getFile()).lastModified()));
+                     }
+                     catch (Exception e)
+                     {
+                        log.error("Error deploying " + url, e);
+                     }
                   }
-                  catch (Exception e)
-                  {
-                     log.error("Error deploying " + url, e);
+                  else if (newLastModified > info.lastModified)
+                  {                              
+                     try
+                     {
+                        log.debug("Redeploying " + deployer + " with url " + url);
+
+                        deployer.redeploy(url);
+
+                        deployed.put(url, new DeployInfo(deployer, new File(url.getFile()).lastModified()));
+                     }
+                     catch (Exception e)
+                     {
+                        log.error("Error redeploying " + url, e);
+                     }
                   }
-               }
-               else if (newLastModified > info.lastModified)
-               {                              
-                  try
-                  {
-                     log.debug("Redeploying " + deployer + " with url " + url);
-                     
-                     deployer.redeploy(url);
-                     
-                     deployed.put(url, new DeployInfo(deployer, new File(url.getFile()).lastModified()));
-                  }
-                  catch (Exception e)
-                  {
-                     log.error("Error redeploying " + url, e);
-                  }
-               }
-            }         
+               }               
+            }
          }
          
          for (Map.Entry<URL, DeployInfo> entry : deployed.entrySet())

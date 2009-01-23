@@ -45,6 +45,8 @@
 
    <bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
       <depends>QueueSettingsDeployer</depends>
+      <depends>QueueDeployer</depends>
+      
       <property name="storageManager">
          <inject bean="StorageManager"/>
       </property>
@@ -126,6 +128,17 @@
       </constructor>
    </bean>
 
+   <bean name="QueueDeployer" class="org.jboss.messaging.core.deployers.impl.QueueDeployer">
+      <constructor>
+         <parameter>
+            <inject bean="DeploymentManager"/>
+         </parameter>
+         <parameter>
+            <inject bean="Configuration"/>
+         </parameter>
+      </constructor>
+   </bean>
+   
    <bean name="SecurityDeployer" class="org.jboss.messaging.core.deployers.impl.SecurityDeployer">
       <constructor>
          <parameter>

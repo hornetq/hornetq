@@ -74,7 +74,15 @@ public class QueueSettingsDeployer extends XmlDeployer
    @Override
    public void validate(Node rootNode) throws Exception
    {
-      XMLUtil.validate(rootNode, "queues.xsd");
+      if ("deployment".equals(rootNode.getNodeName()))
+      {
+         System.out.println("QueueSettingsDeployer.validate() QUEUE_SETTINGS IN JBM_CONFIGURATION");
+         XMLUtil.validate(rootNode, "jbm-configuration.xsd");
+      } else 
+      {
+         System.out.println("QueueSettingsDeployer.validate() QUEUE_SETTINGS IN QUEUES");
+         XMLUtil.validate(rootNode, "queues.xsd");         
+      }
    }
 
    /**
@@ -137,14 +145,9 @@ public class QueueSettingsDeployer extends XmlDeployer
       queueSettingsRepository.addMatch(match, queueSettings);
    }
 
-   /**
-    * The name of the configuration file name to look for for deployment
-    *
-    * @return The name of the config file
-    */
-   public String getConfigFileName()
+   public String[] getConfigFileNames()
    {
-      return "queues.xml";
+      return new String[] {"jbm-configuration", "queues.xml"};
    }
 
    /**

@@ -139,6 +139,7 @@
         <refresh-timeout>10000</refresh-timeout>
       </discovery-group>
 
+<queue name="in-jbm-configuration" address="in-jbm-configuration" filter="wtf > 1"/>
       <!--  Paging configuration -->
       
       <paging-max-threads>10</paging-max-threads>
@@ -181,5 +182,11 @@
       <journal-max-aio>10000</journal-max-aio>
 
    </configuration>
+   
+   <settings>
+   
+      <queue name="in-jbm-configuration-settings" address="in-jbm-configuration-settings"/>
+   
+</settings>
    
    </deployment>

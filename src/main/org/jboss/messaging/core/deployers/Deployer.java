@@ -34,11 +34,11 @@ import org.jboss.messaging.core.server.MessagingComponent;
 public interface Deployer extends MessagingComponent
 {
    /**
-    * The name of the configuration file name to look for for deployment
+    * The name of the configuration files to look for for deployment
     *
-    * @return The name of the config file
+    * @return The names of the config files
     */
-   String getConfigFileName();
+   String[] getConfigFileNames();
 
    /**
     * Deploy the URL for the first time
