@@ -107,48 +107,6 @@ public class PagingManagerIntegrationTest extends UnitTestCase
    }
 
 
-   public void testPagingManagerAddressFull() throws Exception
-   {
-      HierarchicalRepository<QueueSettings> queueSettings = new HierarchicalObjectRepository<QueueSettings>();
-      queueSettings.setDefault(new QueueSettings());
-
-      QueueSettings simpleTestSettings = new QueueSettings();
-      simpleTestSettings.setDropMessagesWhenFull(true);
-      simpleTestSettings.setMaxSizeBytes(200);
-
-      queueSettings.addMatch("simple-test", simpleTestSettings);
-
-      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(getJournalDir(), 10),
-                                                            null,
-                                                            queueSettings,
-                                                            -1,
-                                                            1024 * 1024,
-                                                            false,
-                                                            false);
-      managerImpl.start();
-
-      managerImpl.createPageStore(new SimpleString("simple-test"));
-
-      ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(100));
-
-      assertTrue(managerImpl.getPageStore(msg.getDestination()).addSize(msg.getMemoryEstimate()));
-
-      for (int i = 0; i < 10; i++)
-      {
-         long currentSize = managerImpl.getPageStore(new SimpleString("simple-test")).getAddressSize();
-         assertFalse(managerImpl.getPageStore(msg.getDestination()).addSize(msg.getMemoryEstimate()));
-
-         // should be unchanged
-         assertEquals(currentSize, managerImpl.getPageStore(new SimpleString("simple-test")).getAddressSize());
-      }
-
-      managerImpl.getPageStore(msg.getDestination()).addSize(-msg.getMemoryEstimate());
-
-      assertTrue(managerImpl.getPageStore(msg.getDestination()).addSize(msg.getMemoryEstimate()));
-
-      managerImpl.stop();
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

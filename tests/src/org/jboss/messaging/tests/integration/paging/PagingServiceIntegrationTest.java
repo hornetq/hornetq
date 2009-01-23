@@ -74,6 +74,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
    {
       super.tearDown();
    }
+
    public void testSendReceivePaging() throws Exception
    {
       clearData();
@@ -637,18 +638,197 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
       }
 
    }
-   
+
    public void testPageMultipleDestinations() throws Exception
    {
       internalTestPageMultipleDestinations(false);
    }
 
-   
    public void testPageMultipleDestinationsTransacted() throws Exception
    {
       internalTestPageMultipleDestinations(true);
    }
-   
+
+   public void testDropMessagesQueueMax() throws Exception
+   {
+      testDropMessages(false);
+   }
+
+   public void testDropMessagesGlobalMax() throws Exception
+   {
+      testDropMessages(true);
+   }
+
+   private void testDropMessages(boolean global) throws Exception
+   {
+      clearData();
+
+      Configuration config = createDefaultConfig();
+
+      if (global)
+      {
+         config.setPagingMaxGlobalSizeBytes(10 * 1024);
+      }
+      else
+      {
+         config.setPagingMaxGlobalSizeBytes(-1);
+      }
+
+      config.setPagingDefaultSize(10 * 1024);
+
+      HashMap<String, QueueSettings> settings = new HashMap<String, QueueSettings>();
+
+      QueueSettings set = new QueueSettings();
+      set.setDropMessagesWhenFull(true);
+      if (!global)
+      {
+         set.setMaxSizeBytes(10 * 1024);
+      }
+      else
+      {
+         set.setMaxSizeBytes(-1);
+         
+      }
+      settings.put(ADDRESS.toString(), set);
+
+      MessagingService messagingService = createService(true, config, settings);
+
+      messagingService.start();
+
+      final int sizeOfMessage = 1024;
+      final int numberOfMessages = 1000;
+
+      try
+      {
+         ClientSessionFactory sf = createInVMFactory();
+
+         sf.setBlockOnNonPersistentSend(true);
+         sf.setBlockOnPersistentSend(true);
+         sf.setBlockOnAcknowledge(true);
+
+         ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
+
+         session.createQueue(ADDRESS, ADDRESS, null, true, false);
+
+         ClientProducer producer = session.createProducer(ADDRESS);
+
+         ByteBuffer ioBuffer = ByteBuffer.allocate(sizeOfMessage);
+
+         ClientMessage message = null;
+
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            MessagingBuffer bodyLocal = new ByteBufferWrapper(ioBuffer);
+
+            message = session.createClientMessage(true);
+            message.setBody(bodyLocal);
+
+            producer.send(message);
+         }
+
+         session = sf.createSession(null, null, false, true, true, false, 0);
+
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
+
+         session.start();
+
+         for (int i = 0; i < 9; i++)
+         {
+            ClientMessage message2 = consumer.receive(10000);
+
+            assertNotNull(message2);
+
+            message2.acknowledge();
+         }
+
+         assertNull(consumer.receive(100));
+
+         assertEquals(0, messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, messagingService.getServer()
+                                         .getPostOffice()
+                                         .getPagingManager()
+                                         .getPageStore(ADDRESS)
+                                         .getAddressSize());
+
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            MessagingBuffer bodyLocal = new ByteBufferWrapper(ioBuffer);
+
+            message = session.createClientMessage(true);
+            message.setBody(bodyLocal);
+
+            producer.send(message);
+         }
+
+         for (int i = 0; i < 9; i++)
+         {
+            ClientMessage message2 = consumer.receive(10000);
+
+            assertNotNull(message2);
+
+            message2.acknowledge();
+         }
+
+         assertNull(consumer.receive(100));
+
+         session.close();
+
+         session = sf.createSession(false, true, true);
+
+         producer = session.createProducer(ADDRESS);
+
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            MessagingBuffer bodyLocal = new ByteBufferWrapper(ioBuffer);
+
+            message = session.createClientMessage(true);
+            message.setBody(bodyLocal);
+
+            producer.send(message);
+         }
+
+         session.commit();
+
+         consumer = session.createConsumer(ADDRESS);
+
+         session.start();
+
+         for (int i = 0; i < 9; i++)
+         {
+            ClientMessage message2 = consumer.receive(10000);
+
+            assertNotNull(message2);
+
+            message2.acknowledge();
+         }
+
+         session.commit();
+
+         assertNull(consumer.receive(100));
+
+         session.close();
+
+         assertEquals(0, messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, messagingService.getServer()
+                                         .getPostOffice()
+                                         .getPagingManager()
+                                         .getPageStore(ADDRESS)
+                                         .getAddressSize());
+
+      }
+      finally
+      {
+         try
+         {
+            messagingService.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
+
    private void internalTestPageMultipleDestinations(boolean transacted) throws Exception
    {
       Configuration config = createDefaultConfig();
@@ -695,8 +875,8 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
             producer.send(message);
-            
-            if (transacted) 
+
+            if (transacted)
             {
                session.commit();
             }

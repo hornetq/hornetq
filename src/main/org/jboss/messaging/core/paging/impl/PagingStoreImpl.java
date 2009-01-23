@@ -204,7 +204,14 @@ public class PagingStoreImpl implements TestSupportPageStore
       currentPageLock.readLock().lock();
       try
       {
-         return currentPage != null;
+         if (isDropWhenMaxSize())
+         {
+            return isDrop();
+         }
+         else
+         {
+            return currentPage != null;
+         }
       }
       finally
       {
@@ -221,35 +228,19 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       return storeName;
    }
-
-   public boolean addSize(final long size) throws Exception
+   
+   public void addSize(final long size) throws Exception
    {
       final long maxSize = getMaxSizeBytes();
 
       final long pageSize = getPageSizeBytes();
 
-      if (isDropWhenMaxSize() && size > 0)
+      if (isDropWhenMaxSize())
       {
-         // if destination configured to drop messages && size is over the
-         // limit, we return -1 which means drop the message
-         if (getAddressSize() + size > maxSize || pagingManager.getMaxGlobalSize() > 0 &&
-             pagingManager.getGlobalSize() + size > pagingManager.getMaxGlobalSize())
-         {
-            if (!printedDropMessagesWarning)
-            {
-               printedDropMessagesWarning = true;
+         addAddressSize(size);
+         pagingManager.addGlobalSize(size);
 
-               log.warn("Messages are being dropped on adress " + getStoreName());
-            }
-
-            return false;
-         }
-         else
-         {
-            addAddressSize(size);
-
-            return true;
-         }
+         return;
       }
       else
       {
@@ -303,7 +294,8 @@ public class PagingStoreImpl implements TestSupportPageStore
                          (maxGlobalSize - pagingManager.getDefaultPageSize()));
             }
 
-            if (maxGlobalSize > 0 && pagingManager.isGlobalPageMode() && currentGlobalSize < maxGlobalSize - pagingManager.getDefaultPageSize())
+            if (maxGlobalSize > 0 && pagingManager.isGlobalPageMode() &&
+                currentGlobalSize < maxGlobalSize - pagingManager.getDefaultPageSize())
             {
                pagingManager.startGlobalDepage();
             }
@@ -316,7 +308,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             }
          }
 
-         return true;
+         return;
       }
    }
 
@@ -328,10 +320,24 @@ public class PagingStoreImpl implements TestSupportPageStore
          throw new IllegalStateException("PagingStore(" + getStoreName() + ") not initialized");
       }
 
-      // We should never page when drop-messages is activated.
       if (dropMessagesWhenFull)
       {
-         return false;
+         if (isDrop())
+         {
+            if (!printedDropMessagesWarning)
+            {
+               printedDropMessagesWarning = true;
+
+               log.warn("Messages are being dropped on adress " + getStoreName());
+            }
+
+            // Address is full, we just pretend we are paging, and drop the data
+            return true;
+         }
+         else
+         {
+            return false;
+         }
       }
 
       // We need to ensure a read lock, as depage could change the paging state
@@ -455,7 +461,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          return false;
       }
-      
+
       if (pagingManager.isBackup())
       {
          return false;
@@ -820,29 +826,29 @@ public class PagingStoreImpl implements TestSupportPageStore
       // back to where it was
 
       Transaction depageTransaction = new TransactionImpl(storageManager);
-      
+
       SendLock sendLock = postOffice.getAddressLock(destination);
-      
+
       sendLock.beforeSend();
-      
+
       try
       {
          depageTransaction.putProperty(TransactionPropertyIndexes.IS_DEPAGE, Boolean.valueOf(true));
-   
+
          HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
-         
+
          for (PagedMessage pagedMessage : pagedMessages)
          {
             ServerMessage message = null;
-   
+
             message = pagedMessage.getMessage(storageManager);
-   
+
             final long transactionIdDuringPaging = pagedMessage.getTransactionID();
-   
+
             if (transactionIdDuringPaging >= 0)
             {
                final PageTransactionInfo pageTransactionInfo = pagingManager.getTransaction(transactionIdDuringPaging);
-   
+
                // http://wiki.jboss.org/wiki/JBossMessaging2Paging
                // This is the Step D described on the "Transactions on Paging"
                // section
@@ -851,28 +857,29 @@ public class PagingStoreImpl implements TestSupportPageStore
                   log.warn("Transaction " + pagedMessage.getTransactionID() +
                            " used during paging not found, ignoring message " +
                            message);
-   
+
                   continue;
                }
-   
+
                // This is to avoid a race condition where messages are depaged
                // before the commit arrived
-               
+
                while (running && !pageTransactionInfo.waitCompletion(500))
                {
                   // This is just to give us a chance to interrupt the process..
-                  // if we start a shutdown in the middle of transactions, the commit/rollback may never come, delaying the shutdown of the server
+                  // if we start a shutdown in the middle of transactions, the commit/rollback may never come, delaying
+                  // the shutdown of the server
                   if (isTrace)
                   {
                      trace("Waiting pageTransaction to complete");
                   }
                }
-               
+
                if (!running)
                {
                   break;
                }
-               
+
                if (!pageTransactionInfo.isCommit())
                {
                   if (isTrace)
@@ -881,7 +888,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                   }
                   continue;
                }
-   
+
                // Update information about transactions
                if (message.isDurable())
                {
@@ -889,21 +896,21 @@ public class PagingStoreImpl implements TestSupportPageStore
                   pageTransactionsToUpdate.add(pageTransactionInfo);
                }
             }
-   
+
             postOffice.route(message, depageTransaction);
          }
-         
+
          if (!running)
          {
             depageTransaction.rollback();
             return false;
          }
-   
+
          for (PageTransactionInfo pageWithTransaction : pageTransactionsToUpdate)
          {
             // This will set the journal transaction to commit;
             depageTransaction.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
-   
+
             if (pageWithTransaction.getNumberOfMessages() == 0)
             {
                // http://wiki.jboss.org/wiki/JBossMessaging2Paging
@@ -916,9 +923,9 @@ public class PagingStoreImpl implements TestSupportPageStore
                storageManager.storePageTransaction(depageTransaction.getID(), pageWithTransaction);
             }
          }
-   
+
          depageTransaction.commit();
-   
+
          if (isTrace)
          {
             trace("Depage committed, running = " + running);
@@ -928,7 +935,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          sendLock.afterSend();
       }
-      
+
       return true;
    }
 
@@ -1027,6 +1034,14 @@ public class PagingStoreImpl implements TestSupportPageStore
       return Integer.parseInt(fileName.substring(0, fileName.indexOf('.')));
    }
 
+   // To be used on isDropMessagesWhenFull
+   private boolean isDrop()
+   {
+      return (getMaxSizeBytes() > 0 && getAddressSize() > getMaxSizeBytes()) ||
+             (pagingManager.getMaxGlobalSize() > 0 && pagingManager.getGlobalSize() > pagingManager.getMaxGlobalSize());
+   }
+
+
    // Inner classes -------------------------------------------------
 
    private class DepageRunnable implements Runnable
@@ -1050,7 +1065,8 @@ public class PagingStoreImpl implements TestSupportPageStore
                }
 
                // Note: clearDepage is an atomic operation, it needs to be done even if readPage was not executed
-               // however clearDepage shouldn't be executed if the page-store is being stopped, as stop will be holding the lock and this would dead lock
+               // however clearDepage shouldn't be executed if the page-store is being stopped, as stop will be holding
+               // the lock and this would dead lock
                if (running && !clearDepage())
                {
                   followingExecutor.execute(this);

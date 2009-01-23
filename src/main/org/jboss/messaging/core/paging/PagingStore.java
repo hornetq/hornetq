@@ -80,5 +80,5 @@ public interface PagingStore extends MessagingComponent
     * @return
     * @throws Exception 
     */
-   boolean addSize(long memoryEstimate) throws Exception;
+   void addSize(long memoryEstimate) throws Exception;
 }
