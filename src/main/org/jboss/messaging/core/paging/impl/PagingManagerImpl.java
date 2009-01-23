@@ -276,8 +276,6 @@ public class PagingManagerImpl implements PagingManager
          store.stop();
       }
 
-      stores.clear();
-
       pagingStoreFactory.stop();
 
       globalSize.set(0);
@@ -285,14 +283,25 @@ public class PagingManagerImpl implements PagingManager
       globalMode.set(false);
    }
 
-   public synchronized void startGlobalDepage()
+   public void startGlobalDepage()
    {
-      if (!isBackup())
+      if (!started)
       {
-         setGlobalPageMode(true);
-         for (PagingStore store : stores.values())
+         // If stop the server while depaging, the server may call a rollback,
+         // the rollback may addSizes back and that would fire a globalDepage.
+         // Because of that we must ignore any startGlobalDepage calls, 
+         // and this check needs to be done outside of the lock
+         return;
+      }
+      synchronized (this)
+      {
+         if (!isBackup())
          {
-            store.startDepaging(pagingStoreFactory.getGlobalDepagerExecutor());
+            setGlobalPageMode(true);
+            for (PagingStore store : stores.values())
+            {
+               store.startDepaging(pagingStoreFactory.getGlobalDepagerExecutor());
+            }
          }
       }
    }

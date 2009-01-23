@@ -26,7 +26,6 @@ import java.util.Collection;
 
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
@@ -59,9 +58,9 @@ import org.jboss.messaging.util.SimpleString;
 public interface PagingManager extends MessagingComponent
 {
    void activate();
-   
+
    boolean isBackup();
-   
+
    /** The system is paging because of global-page-mode */
    boolean isGlobalPageMode();
 
@@ -95,10 +94,9 @@ public interface PagingManager extends MessagingComponent
     * @param sync - Sync should be called right after the write
     * @return false if destination is not on page mode
     */
-   
-   
-   //FIXME - why are these methods still on PagingManager???
-   //The current code is doing  a lookup every time through this class just to call page store!!
+
+   // FIXME - why are these methods still on PagingManager???
+   // The current code is doing a lookup every time through this class just to call page store!!
    boolean page(ServerMessage message, boolean duplicateDetection) throws Exception;
 
    /**
@@ -106,10 +104,9 @@ public interface PagingManager extends MessagingComponent
     * @param message
     * @return false if destination is not on page mode
     */
-   
 
-   //FIXME - why are these methods still on PagingManager???
-   //The current code is doing  a lookup every time through this class just to call page store!!
+   // FIXME - why are these methods still on PagingManager???
+   // The current code is doing a lookup every time through this class just to call page store!!
    boolean page(ServerMessage message, long transactionId, boolean duplicateDetection) throws Exception;
 
    /**

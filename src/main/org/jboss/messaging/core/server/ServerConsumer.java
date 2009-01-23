@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * 

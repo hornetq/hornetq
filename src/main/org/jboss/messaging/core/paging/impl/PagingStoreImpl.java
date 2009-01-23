@@ -451,6 +451,11 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public boolean startDepaging(final Executor executor)
    {
+      if (!running)
+      {
+         return false;
+      }
+      
       if (pagingManager.isBackup())
       {
          return false;
@@ -511,7 +516,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
          if (!ok)
          {
-            log.warn("Timed out waiting for depage executor to stop");
+            log.warn("Timed out waiting for depage executor on destination " + this.storeName + " to stop");
          }
 
          if (currentPage != null)
@@ -1045,15 +1050,11 @@ public class PagingStoreImpl implements TestSupportPageStore
                }
 
                // Note: clearDepage is an atomic operation, it needs to be done even if readPage was not executed
-               // because the page was full
+               // however clearDepage shouldn't be executed if the page-store is being stopped, as stop will be holding the lock and this would dead lock
                if (running && !clearDepage())
                {
                   followingExecutor.execute(this);
                }
-            }
-            else
-            {
-               System.out.println("Not running, giving up");
             }
          }
          catch (Exception e)

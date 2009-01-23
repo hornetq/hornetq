@@ -313,11 +313,21 @@ public class PageStressTest extends ServiceTestBase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+   protected Configuration createDefaultConfig()
+   {
+      Configuration config = super.createDefaultConfig();
+
+      config.setJournalFileSize(10 * 1024 * 1024);
+      config.setJournalMinFiles(5);
+      
+      return config;
+   }
 
    @Override
    protected void setUp() throws Exception
    {
       clearData();
+      super.setUp();
    }
 
    @Override
