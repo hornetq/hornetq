@@ -1128,7 +1128,7 @@
       <mkdir dir="${test.reports.dir}"/>
       <junit printsummary="${junit.printsummary}"
              fork="on"
-             forkMode="once"
+             forkMode="perTest"
              includeantruntime="${junit.includeantruntime}"
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
