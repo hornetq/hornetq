@@ -631,6 +631,12 @@ public class ServerConsumerImpl implements ServerConsumer
 
          if (preAcknowledge)
          {
+            if (message.isLargeMessage())
+            {
+               // we must hold one reference, or the file will be deleted before it could be delivered
+               message.incrementRefCount();
+            }
+            
             // With pre-ack, we ack *before* sending to the client
             ref.getQueue().acknowledge(ref);
          }
@@ -877,6 +883,26 @@ public class ServerConsumerImpl implements ServerConsumer
             if (trace)
             {
                trace("Finished deliverLargeMessage isBackup = " + messageQueue.isBackup());
+            }
+
+            // we must hold one reference, or the file will be deleted before it could be delivered
+            if (preAcknowledge)
+            {
+               if (pendingLargeMessage.decrementRefCount() == 0)
+               {
+                  // On pre-acks for Large messages, the decrement was deferred to large-message, hence we need to 
+                  // subtract the size inside largeMessage
+                  try
+                  {
+                     PagingStore store = pagingManager.getPageStore(bindingAddress);
+                     store.addSize(-pendingLargeMessage.getMemoryEstimate());
+                  }
+                  catch (Exception e)
+                  {
+                     // This shouldn't happen on getPageStore
+                     log.error("Error getting pageStore", e);
+                  }
+               }
             }
 
             pendingLargeMessage.releaseResources();

@@ -293,11 +293,10 @@ public class MessageChunkTest extends ChunkTestBase
       testChunks(true, false, false, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
    }
 
-   // Uncomment when https://jira.jboss.org/jira/browse/JBMESSAGING-1472 is complete
-   // public void testMessageChunkFilePersistenceBlockedPreCommit() throws Exception
-   // {
-   // testChunks(true, false, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
-   // }
+   public void testMessageChunkFilePersistenceBlockedPreCommit() throws Exception
+   {
+      testChunks(true, false, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
+   }
 
    public void testMessageChunkFilePersistenceDelayed() throws Exception
    {
