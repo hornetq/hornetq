@@ -113,6 +113,7 @@
       </constructor>
    </bean>
    
+   <!--
    <bean name="QueueDeployer" class="org.jboss.messaging.core.deployers.impl.QueueDeployer">
       <constructor>
          <parameter>
@@ -123,6 +124,7 @@
          </parameter>
       </constructor>
    </bean>
+   -->
 
    <bean name="SecurityDeployer" class="org.jboss.messaging.core.deployers.impl.SecurityDeployer">
       <constructor>
