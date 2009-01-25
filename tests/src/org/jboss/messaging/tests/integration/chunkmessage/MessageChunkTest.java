@@ -293,7 +293,7 @@ public class MessageChunkTest extends ChunkTestBase
       testChunks(true, false, false, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
    }
 
-   public void testMessageChunkFilePersistenceBlockedPreCommit() throws Exception
+   public void testMessageChunkFilePersistenceBlockedPreACK() throws Exception
    {
       testChunks(true, false, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
    }
