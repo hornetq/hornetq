@@ -152,9 +152,11 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return memoryEstimate;
    }
 
-   public ServerMessage copy()
+   public ServerMessage copy(final long newID) throws Exception
    {
       ServerMessage m = new ServerMessageImpl(this);
+      
+      m.setMessageID(newID);
       
       return m;
    }

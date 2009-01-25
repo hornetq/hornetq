@@ -31,6 +31,7 @@ import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.LargeServerMessage;
+import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 
 /**
@@ -68,6 +69,15 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
    public JournalLargeServerMessage(final JournalStorageManager storageManager)
    {
       this.storageManager = storageManager;
+   }
+
+   public JournalLargeServerMessage(final JournalLargeServerMessage copy, final SequentialFile fileCopy)
+   {
+      super(copy);
+      this.storageManager = copy.storageManager;
+      this.file = fileCopy;
+      this.complete = true;
+      this.bodySize = copy.bodySize;
    }
 
    // Public --------------------------------------------------------
@@ -237,11 +247,49 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
          }
       }
    }
+   
+   // TODO: Optimize this per https://jira.jboss.org/jira/browse/JBMESSAGING-1468
+   public synchronized ServerMessage copy(final long newID) throws Exception
+   {
+      SequentialFile newfile = storageManager.createFileForLargeMessage(newID, complete);
+      
+      file.open();
+      newfile.open();
+      
+      file.position(0);
+      newfile.position(0);
+      
+      ByteBuffer buffer = ByteBuffer.allocate(100 * 1024);
+      
+      for (long i = 0;i<file.size();)
+      {
+         buffer.rewind();
+         file.read(buffer);
+         newfile.write(buffer, false);
+         i+=buffer.limit();
+      }
+      
+      
+      file.close();
+      newfile.close();
+      
+      JournalLargeServerMessage newMessage = new JournalLargeServerMessage(this, newfile);
+      newMessage.setMessageID(newID);
+      
+      return newMessage;
+   }
+      
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
+   protected void finalize() throws Throwable
+   {
+      releaseResources();
+      super.finalize();
+   }
+   
    // Private -------------------------------------------------------
 
    private synchronized void validateFile() throws Exception

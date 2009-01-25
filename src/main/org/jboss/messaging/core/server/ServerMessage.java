@@ -47,7 +47,7 @@ public interface ServerMessage extends Message, EncodingSupport
 
    int decrementRefCount();
 
-   ServerMessage copy();
+   ServerMessage copy(long newID) throws Exception;
 
    int getMemoryEstimate();
 

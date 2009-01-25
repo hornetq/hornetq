@@ -947,14 +947,12 @@ public class QueueImpl implements Queue
        and original message id
       */
 
-      ServerMessage copy = message.copy();
-
       // (JBMESSAGING-1468)
       // FIXME - this won't work with replication!!!!!!!!!!!
-      // FIXME - this won't work with LargeMessages also!!!!
       long newMessageId = storageManager.generateUniqueID();
 
-      copy.setMessageID(newMessageId);
+
+      ServerMessage copy = message.copy(newMessageId);
 
       SimpleString originalQueue = copy.getDestination();
       copy.putStringProperty(HDR_ORIGINAL_DESTINATION, originalQueue);

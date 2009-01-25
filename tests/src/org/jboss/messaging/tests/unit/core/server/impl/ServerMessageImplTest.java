@@ -65,7 +65,7 @@ public class ServerMessageImplTest extends MessageImplTestBase
       assertEquals(id, msg.getMessageID());
    }
    
-   public void testCopyConstructor()
+   public void testCopyConstructor() throws Exception
    {
       for (int j = 0; j < 10; j++)
       {
@@ -89,7 +89,7 @@ public class ServerMessageImplTest extends MessageImplTestBase
          
          assertMessagesEquivalent(message, message2);
          
-         ServerMessage message3 = message2.copy();
+         ServerMessage message3 = message2.copy(message2.getMessageID());
          
          assertMessagesEquivalent(message2, message3);
       }

@@ -33,6 +33,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
@@ -58,7 +59,6 @@ public class ServiceTestBase extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   
    protected static final String INVM_ACCEPTOR_FACTORY = InVMAcceptorFactory.class.getCanonicalName();
 
    protected static final String INVM_CONNECTOR_FACTORY = InVMConnectorFactory.class.getCanonicalName();
@@ -78,13 +78,11 @@ public class ServiceTestBase extends UnitTestCase
 
    // Protected -----------------------------------------------------
 
-
    protected void clearData()
    {
       clearData(getTestDir());
    }
 
-   
    protected void clearData(String testDir)
    {
       deleteAndCreateDir(getJournalDir(testDir));
@@ -100,6 +98,15 @@ public class ServiceTestBase extends UnitTestCase
       File file = new File(directory);
       deleteDirectory(file);
       file.mkdirs();
+   }
+
+   protected FileConfiguration createFileConfig()
+   {
+      FileConfiguration config = new FileConfiguration();
+      config.setJournalDirectory(getJournalDir());
+      config.setBindingsDirectory(getBindingsDir());
+      config.setLargeMessagesDirectory(getLargeMessagesDir());
+      return config;
    }
 
    protected MessagingService createService(final boolean realFiles,
@@ -135,12 +142,16 @@ public class ServiceTestBase extends UnitTestCase
    {
       return createService(realFiles, configuration, new HashMap<String, QueueSettings>());
    }
-   
-   protected MessagingService createClusteredServiceWithParams(final int index, final boolean realFiles, final Map<String, Object> params)
+
+   protected MessagingService createClusteredServiceWithParams(final int index,
+                                                               final boolean realFiles,
+                                                               final Map<String, Object> params)
    {
-      return createService(realFiles, createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY), new HashMap<String, QueueSettings>());
+      return createService(realFiles,
+                           createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY),
+                           new HashMap<String, QueueSettings>());
    }
-   
+
    protected Configuration createDefaultConfig()
    {
       return createDefaultConfig(false);
@@ -155,18 +166,20 @@ public class ServiceTestBase extends UnitTestCase
       else
       {
          return createDefaultConfig(new HashMap<String, Object>(), INVM_ACCEPTOR_FACTORY);
-      }      
+      }
    }
-   
-   protected Configuration createClusteredDefaultConfig(final int index, final Map<String, Object> params, final String... acceptors)
+
+   protected Configuration createClusteredDefaultConfig(final int index,
+                                                        final Map<String, Object> params,
+                                                        final String... acceptors)
    {
       Configuration config = createDefaultConfig(index, params, acceptors);
-      
+
       config.setClustered(true);
-      
+
       return config;
    }
-   
+
    protected Configuration createDefaultConfig(int index, final Map<String, Object> params, final String... acceptors)
    {
       Configuration configuration = new ConfigurationImpl();
@@ -223,8 +236,7 @@ public class ServiceTestBase extends UnitTestCase
 
    protected ClientSessionFactory createFactory(final String connectorClass)
    {
-      return new ClientSessionFactoryImpl(new TransportConfiguration(connectorClass),
-                                          null);
+      return new ClientSessionFactoryImpl(new TransportConfiguration(connectorClass), null);
 
    }
 
