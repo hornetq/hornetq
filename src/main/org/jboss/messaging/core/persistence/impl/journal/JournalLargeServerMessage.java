@@ -71,13 +71,19 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       this.storageManager = storageManager;
    }
 
-   public JournalLargeServerMessage(final JournalLargeServerMessage copy, final SequentialFile fileCopy)
+   /**
+    * Copy constructor
+    * @param copy
+    * @param fileCopy
+    */
+   private JournalLargeServerMessage(final JournalLargeServerMessage copy, final SequentialFile fileCopy, final long newID)
    {
       super(copy);
       this.storageManager = copy.storageManager;
       this.file = fileCopy;
       this.complete = true;
       this.bodySize = copy.bodySize;
+      this.setMessageID(newID);
    }
 
    // Public --------------------------------------------------------
@@ -273,8 +279,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       file.close();
       newfile.close();
       
-      JournalLargeServerMessage newMessage = new JournalLargeServerMessage(this, newfile);
-      newMessage.setMessageID(newID);
+      JournalLargeServerMessage newMessage = new JournalLargeServerMessage(this, newfile, newID);
       
       return newMessage;
    }
