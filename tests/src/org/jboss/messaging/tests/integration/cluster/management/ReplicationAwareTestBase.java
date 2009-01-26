@@ -38,8 +38,8 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 
 /**
  * A ReplicationAwareAddressControlWrapperTest
@@ -105,7 +105,7 @@ public class ReplicationAwareTestBase extends TestCase
                                                                             backupParams));
       backupConf.setBackup(true);
       backupConf.setJMXManagementEnabled(true);
-      backupService = MessagingServiceImpl.newNullStorageMessagingService(backupConf, backupMBeanServer);
+      backupService = Messaging.newNullStorageMessagingService(backupConf, backupMBeanServer);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -119,7 +119,7 @@ public class ReplicationAwareTestBase extends TestCase
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
       liveConf.setJMXManagementEnabled(true);
-      liveService = MessagingServiceImpl.newNullStorageMessagingService(liveConf, liveMBeanServer);
+      liveService = Messaging.newNullStorageMessagingService(liveConf, liveMBeanServer);
       liveService.start();
    }
 

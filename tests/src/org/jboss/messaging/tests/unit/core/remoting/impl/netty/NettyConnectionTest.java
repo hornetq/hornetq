@@ -24,8 +24,8 @@ package org.jboss.messaging.tests.unit.core.remoting.impl.netty;
 import java.util.UUID;
 
 import org.easymock.EasyMock;
-import org.jboss.messaging.integration.transports.netty.NettyConnection;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.integration.transports.netty.NettyConnection;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.netty.channel.Channel;
 

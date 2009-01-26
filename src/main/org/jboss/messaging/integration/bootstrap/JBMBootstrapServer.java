@@ -77,8 +77,17 @@ public class JBMBootstrapServer extends BasicBootstrap
 
    public void run()
    {
-      super.run();
-      log.info("JBM Server Started");
+      try
+      {
+         super.run();
+         log.info("JBM Server Started");
+      }
+      catch (RuntimeException e)
+      {
+         log.error("Failed to start server", e);
+         
+         throw e;
+      }
    }
 
    /**

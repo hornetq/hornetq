@@ -35,7 +35,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
+import org.jboss.messaging.core.server.Messaging;
 
 /**
  * A LargeMessageMultiThreadFailoverTest
@@ -95,7 +95,7 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
                 .add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName(), backupParams));
       backupConf.setBackup(true);
 
-      backupService = MessagingServiceImpl.newMessagingService(backupConf);
+      backupService = Messaging.newMessagingService(backupConf);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -119,7 +119,7 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = MessagingServiceImpl.newMessagingService(liveConf);
+      liveService = Messaging.newMessagingService(liveConf);
 
       liveService.start();
 

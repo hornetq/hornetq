@@ -36,8 +36,8 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.postoffice.impl.DuplicateIDCacheImpl;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.util.SimpleString;
@@ -813,7 +813,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(cacheSize);
       
-      MessagingService messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      MessagingService messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -851,7 +851,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       messagingService2.stop();
       
-      messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -896,7 +896,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       conf.setIDCacheSize(theCacheSize);
       
-      MessagingService messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      MessagingService messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -930,7 +930,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       messagingService2.stop();
       
-      messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -974,7 +974,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       conf.setIDCacheSize(initialCacheSize);
       
-      MessagingService messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      MessagingService messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -1010,7 +1010,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       conf.setIDCacheSize(subsequentCacheSize);
       
-      messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -1063,7 +1063,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       conf.setIDCacheSize(initialCacheSize);
       
-      MessagingService messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      MessagingService messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -1099,7 +1099,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       conf.setIDCacheSize(subsequentCacheSize);
       
-      messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
       
@@ -1109,7 +1109,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       conf.setIDCacheSize(initialCacheSize);
       
-      messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
       
@@ -1162,7 +1162,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       conf.setPersistIDCache(false);
       
-      MessagingService messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      MessagingService messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -1200,7 +1200,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       messagingService2.stop();
       
-      messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -1245,7 +1245,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       conf.setPersistIDCache(false);
       
-      MessagingService messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      MessagingService messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -1285,7 +1285,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       messagingService2.stop();
       
-      messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -1330,7 +1330,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(cacheSize);
       
-      MessagingService messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      MessagingService messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -1374,7 +1374,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       messagingService2.stop();
       
-      messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -1421,7 +1421,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       conf.setPersistIDCache(false);
       
-      MessagingService messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      MessagingService messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -1463,7 +1463,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       messagingService2.stop();
       
-      messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -1520,7 +1520,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(cacheSize);
       
-      MessagingService messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      MessagingService messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -1560,7 +1560,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       messagingService2.stop();
       
-      messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -1617,7 +1617,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(cacheSize);
       
-      MessagingService messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      MessagingService messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -1659,7 +1659,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       messagingService2.stop();
       
-      messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -1716,7 +1716,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(cacheSize);
       
-      MessagingService messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      MessagingService messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -1757,7 +1757,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       
       messagingService2.stop();
       
-      messagingService2 = MessagingServiceImpl.newMessagingService(conf);
+      messagingService2 = Messaging.newMessagingService(conf);
 
       messagingService2.start();
 
@@ -1817,7 +1817,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(cacheSize);
 
-      messagingService = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      messagingService = Messaging.newNullStorageMessagingService(conf);
 
       messagingService.start();
    }

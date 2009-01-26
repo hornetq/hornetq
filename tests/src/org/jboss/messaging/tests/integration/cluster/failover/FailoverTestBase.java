@@ -34,8 +34,8 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 
 /**
@@ -109,7 +109,7 @@ public class FailoverTestBase extends ServiceTestBase
 
       clearData(getTestDir() + "/backup");
 
-      backupService = MessagingServiceImpl.newMessagingService(backupConf);
+      backupService = Messaging.newMessagingService(backupConf);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -135,7 +135,7 @@ public class FailoverTestBase extends ServiceTestBase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = MessagingServiceImpl.newMessagingService(liveConf);
+      liveService = Messaging.newMessagingService(liveConf);
 
       clearData(getTestDir() + "/live");
 

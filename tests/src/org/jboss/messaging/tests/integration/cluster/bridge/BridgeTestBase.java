@@ -31,8 +31,8 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 
 /**
  * A BridgeTestBase
@@ -56,7 +56,7 @@ public abstract class BridgeTestBase extends TestCase
       serviceConf.getAcceptorConfigurations()
                   .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                   params));
-      MessagingService service = MessagingServiceImpl.newMessagingService(serviceConf);
+      MessagingService service = Messaging.newMessagingService(serviceConf);
       return service;
    }
    
@@ -69,7 +69,7 @@ public abstract class BridgeTestBase extends TestCase
       serviceConf.getAcceptorConfigurations()
                   .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                   params));
-      MessagingService service = MessagingServiceImpl.newNullStorageMessagingService(serviceConf);
+      MessagingService service = Messaging.newNullStorageMessagingService(serviceConf);
       return service;
    }
    
@@ -83,7 +83,7 @@ public abstract class BridgeTestBase extends TestCase
       serviceConf.getAcceptorConfigurations()
                   .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                   params));
-      MessagingService service = MessagingServiceImpl.newNullStorageMessagingService(serviceConf);
+      MessagingService service = Messaging.newNullStorageMessagingService(serviceConf);
       return service;
    }
    

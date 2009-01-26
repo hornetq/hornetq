@@ -30,8 +30,8 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.util.SimpleString;
 /**
@@ -73,7 +73,7 @@ public class TransactionDurabilityTest extends ServiceTestBase
       
       final SimpleString queue2 = new SimpleString("queue2");
                    
-      MessagingService messagingService = MessagingServiceImpl.newMessagingService(conf);
+      MessagingService messagingService = Messaging.newMessagingService(conf);
       
       messagingService.start();
 

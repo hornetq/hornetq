@@ -43,8 +43,8 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -404,7 +404,7 @@ public class QueueControlTest extends TestCase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
+      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
    }
 

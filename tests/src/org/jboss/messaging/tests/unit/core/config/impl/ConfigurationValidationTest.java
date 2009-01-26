@@ -22,12 +22,11 @@
 
 package org.jboss.messaging.tests.unit.core.config.impl;
 
+import junit.framework.TestCase;
+
 import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
-
-import junit.framework.TestCase;
 
 /**
  * A ConfigurationValidationTr

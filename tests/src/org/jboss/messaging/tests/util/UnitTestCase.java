@@ -44,6 +44,7 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.journal.EncodingSupport;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.MessageReference;
@@ -64,6 +65,9 @@ import org.jboss.messaging.util.SimpleString;
 public class UnitTestCase extends TestCase
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(UnitTestCase.class);
+   
 
    public static final String INVM_ACCEPTOR_FACTORY = "org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory";
 
@@ -315,6 +319,14 @@ public class UnitTestCase extends TestCase
 
    // Protected -----------------------------------------------------
 
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      
+      log.info("###### starting test " + this.getName());
+   }
+   
    @Override
    protected void tearDown() throws Exception
    {

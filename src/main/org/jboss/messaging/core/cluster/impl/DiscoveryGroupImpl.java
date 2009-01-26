@@ -71,7 +71,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
    private final long timeout;
    
    private volatile boolean started;
-      
+   
    public DiscoveryGroupImpl(final String name, final InetAddress groupAddress, final int groupPort, final long timeout) throws Exception
    {
       this.name = name;

@@ -46,8 +46,8 @@ import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
@@ -185,14 +185,14 @@ public class SimpleManualFailoverTest extends TestCase
       server1Conf.getAcceptorConfigurations()
                  .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                  server1Params));
-      server1Service = MessagingServiceImpl.newNullStorageMessagingService(server1Conf);
+      server1Service = Messaging.newNullStorageMessagingService(server1Conf);
       server1Service.start();
 
       Configuration server0Conf = new ConfigurationImpl();
       server0Conf.setSecurityEnabled(false);
       server0Conf.getAcceptorConfigurations()
                  .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server0Service = MessagingServiceImpl.newNullStorageMessagingService(server0Conf);
+      server0Service = Messaging.newNullStorageMessagingService(server0Conf);
       server0Service.start();
    }
 

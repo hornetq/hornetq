@@ -47,10 +47,8 @@ import static org.jboss.messaging.core.filter.impl.Operator.NOT_LIKE_ESCAPE;
 import static org.jboss.messaging.core.filter.impl.Operator.OR;
 import static org.jboss.messaging.core.filter.impl.Operator.SUB;
 
-import java.util.Collections;
 import java.util.HashSet;
 
-import junit.framework.Test;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.filter.impl.Operator;

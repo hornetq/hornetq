@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.tests.integration.http;
 
+import java.util.HashMap;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -30,13 +32,11 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.HashMap;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -55,7 +55,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       params.put("jbm.remoting.netty.httpenabled", true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
 
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
 
       messagingService.start();
 
@@ -108,7 +108,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       params.put("jbm.remoting.netty.httpenabled", true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
 
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
 
       messagingService.start();
 

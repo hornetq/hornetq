@@ -40,8 +40,8 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.util.Pair;
 
@@ -99,7 +99,7 @@ public class BroadcastGroupControlTest extends TestCase
       conf.setClustered(true);
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
-      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
+      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
       BroadcastGroupControlMBean broadcastGroupControl = createBroadcastGroupControl(broadcastGroupConfig.getName(), mbeanServer);
@@ -125,7 +125,7 @@ public class BroadcastGroupControlTest extends TestCase
       conf.setClustered(true);
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
-      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
+      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
       BroadcastGroupControlMBean broadcastGroupControl = createBroadcastGroupControl(broadcastGroupConfig.getName(), mbeanServer);

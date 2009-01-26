@@ -39,8 +39,8 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
@@ -1478,7 +1478,7 @@ public class RandomFailoverTest extends TestCase
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = MessagingServiceImpl.newNullStorageMessagingService(backupConf);
+      backupService = Messaging.newNullStorageMessagingService(backupConf);
       backupService.start();
 
       // We need to sleep > 16 ms otherwise the id generators on live and backup could be initialised
@@ -1496,7 +1496,7 @@ public class RandomFailoverTest extends TestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = MessagingServiceImpl.newNullStorageMessagingService(liveConf);
+      liveService = Messaging.newNullStorageMessagingService(liveConf);
       liveService.start();
    }
 

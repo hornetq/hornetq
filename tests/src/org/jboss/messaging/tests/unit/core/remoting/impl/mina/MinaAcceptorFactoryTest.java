@@ -25,11 +25,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.easymock.EasyMock;
-import org.jboss.messaging.integration.transports.mina.MinaAcceptor;
-import org.jboss.messaging.integration.transports.mina.MinaAcceptorFactory;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
+import org.jboss.messaging.integration.transports.mina.MinaAcceptor;
+import org.jboss.messaging.integration.transports.mina.MinaAcceptorFactory;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**

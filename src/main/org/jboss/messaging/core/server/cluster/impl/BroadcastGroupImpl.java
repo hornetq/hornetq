@@ -172,7 +172,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       byte[] data = bos.toByteArray();
 
       DatagramPacket packet = new DatagramPacket(data, data.length, groupAddress, groupPort);
-
+      
       socket.send(packet);
    }
 

@@ -21,21 +21,21 @@
  */
 package org.jboss.messaging.tests.integration.http;
 
-import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.integration.transports.netty.NettyAcceptor;
-import org.jboss.messaging.integration.transports.netty.TransportConstants;
-import org.jboss.messaging.integration.transports.netty.NettyConnector;
-import org.jboss.messaging.core.remoting.spi.BufferHandler;
-import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.core.remoting.spi.Connection;
-import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
-import org.jboss.messaging.core.remoting.impl.AbstractBufferHandler;
-import org.jboss.messaging.core.exception.MessagingException;
-
-import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.impl.AbstractBufferHandler;
+import org.jboss.messaging.core.remoting.spi.BufferHandler;
+import org.jboss.messaging.core.remoting.spi.Connection;
+import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.integration.transports.netty.NettyAcceptor;
+import org.jboss.messaging.integration.transports.netty.NettyConnector;
+import org.jboss.messaging.integration.transports.netty.TransportConstants;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

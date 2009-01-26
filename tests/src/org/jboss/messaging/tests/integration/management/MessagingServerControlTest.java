@@ -38,8 +38,8 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.TransportConfigurationInfo;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 
 /**
  * A QueueControlTest
@@ -77,7 +77,7 @@ public class MessagingServerControlTest extends TestCase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
-      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
+      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
       MessagingServerControlMBean serverControl = ManagementControlHelper.createMessagingServerControl(mbeanServer);

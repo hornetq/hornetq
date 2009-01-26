@@ -22,10 +22,7 @@
 
 package org.jboss.messaging.tests.unit.core.config.impl;
 
-import java.util.Map;
-
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.util.SimpleString;
 

@@ -37,8 +37,8 @@ import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
@@ -118,11 +118,11 @@ public class ServiceTestBase extends UnitTestCase
 
       if (realFiles)
       {
-         service = MessagingServiceImpl.newMessagingService(configuration);
+         service = Messaging.newMessagingService(configuration);
       }
       else
       {
-         service = MessagingServiceImpl.newNullStorageMessagingService(configuration);
+         service = Messaging.newNullStorageMessagingService(configuration);
       }
 
       for (Map.Entry<String, QueueSettings> setting : settings.entrySet())

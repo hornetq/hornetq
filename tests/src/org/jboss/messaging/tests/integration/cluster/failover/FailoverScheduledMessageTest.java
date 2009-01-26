@@ -43,8 +43,8 @@ import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
@@ -193,7 +193,7 @@ public class FailoverScheduledMessageTest extends TestCase
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = MessagingServiceImpl.newNullStorageMessagingService(backupConf);
+      backupService = Messaging.newNullStorageMessagingService(backupConf);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -206,7 +206,7 @@ public class FailoverScheduledMessageTest extends TestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = MessagingServiceImpl.newNullStorageMessagingService(liveConf);
+      liveService = Messaging.newNullStorageMessagingService(liveConf);
       liveService.start();
    }
 

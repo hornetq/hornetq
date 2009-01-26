@@ -27,6 +27,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.persistence.impl.nullpm.NullStorageManager;
 import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
@@ -73,7 +74,7 @@ public class MessagingServiceImplTest extends UnitTestCase
    public void testNewNullStorageMessagingServer() throws Exception
    {
       Configuration config = new ConfigurationImpl();
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService(config);
+      MessagingService messagingService = Messaging.newNullStorageMessagingService(config);
       messagingService.start();
       assertTrue(messagingService.isStarted());
       assertEquals(messagingService.getServer().getStorageManager().getClass(), NullStorageManager.class);
@@ -83,7 +84,7 @@ public class MessagingServiceImplTest extends UnitTestCase
 
    public void testNewNullStorageMessagingServerDefault() throws Exception
    {
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService();
+      MessagingService messagingService = Messaging.newNullStorageMessagingService();
       messagingService.start();
       assertTrue(messagingService.isStarted());
       assertEquals(messagingService.getServer().getStorageManager().getClass(), NullStorageManager.class);

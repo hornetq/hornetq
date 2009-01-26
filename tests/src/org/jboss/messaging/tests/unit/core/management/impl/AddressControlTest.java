@@ -42,13 +42,9 @@ import junit.framework.TestCase;
 
 import org.jboss.messaging.core.management.RoleInfo;
 import org.jboss.messaging.core.management.impl.AddressControl;
-import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.impl.BindingsImpl;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.util.SimpleString;
 

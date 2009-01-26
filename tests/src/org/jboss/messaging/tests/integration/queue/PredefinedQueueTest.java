@@ -38,8 +38,8 @@ import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.Bindings;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.util.SimpleString;
 
@@ -83,7 +83,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       conf.setQueueConfigurations(queueConfs);
       
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
            
       messagingService.start();
       
@@ -153,7 +153,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       conf.setQueueConfigurations(queueConfs);
       
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
            
       messagingService.start();
       
@@ -221,7 +221,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       final String queueName3 = "queue3";
                  
-      MessagingService messagingService = MessagingServiceImpl.newMessagingService(conf);
+      MessagingService messagingService = Messaging.newMessagingService(conf);
            
       messagingService.start();
       
@@ -334,7 +334,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       conf.setQueueConfigurations(queueConfs);
       
-      MessagingService messagingService = MessagingServiceImpl.newMessagingService(conf);
+      MessagingService messagingService = Messaging.newMessagingService(conf);
            
       messagingService.start();
       
@@ -420,7 +420,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       conf.setQueueConfigurations(queueConfs);
       
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
            
       messagingService.start();
       

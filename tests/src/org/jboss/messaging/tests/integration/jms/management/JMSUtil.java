@@ -56,7 +56,6 @@ import javax.jms.TopicSubscriber;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
-import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 
 /**

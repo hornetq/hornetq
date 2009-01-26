@@ -37,9 +37,9 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
@@ -63,7 +63,7 @@ public class AutoGroupClientTest extends TestCase
 
       conf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
 
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
 
       messagingService.getServer().getQueueSettingsRepository().addMatch("testGroupQueue", qs);
       messagingService.start();
@@ -124,7 +124,7 @@ public class AutoGroupClientTest extends TestCase
 
       conf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
 
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
 
       messagingService.getServer().getQueueSettingsRepository().addMatch("testGroupQueue", qs);
       messagingService.start();
@@ -193,7 +193,7 @@ public class AutoGroupClientTest extends TestCase
 
       conf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
 
-      MessagingService messagingService = MessagingServiceImpl.newNullStorageMessagingService(conf);
+      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
       messagingService.getServer().getQueueSettingsRepository().addMatch("testGroupQueue", qs);
       messagingService.start();
 

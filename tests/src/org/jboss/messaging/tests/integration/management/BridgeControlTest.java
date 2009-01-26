@@ -22,25 +22,15 @@
 
 package org.jboss.messaging.tests.integration.management;
 
-import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createBridgeControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomDouble;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
-import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.management.BridgeControlMBean;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.util.Pair;
 
 /**
@@ -100,7 +90,7 @@ public class BridgeControlTest extends TestCase
 //      conf.setClustered(true);
 //      conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
 //      conf.getBridgeConfigurations().add(bridgeConfig);
-//      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
+//      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
 //      service.start();
 //
 //      BridgeControlMBean bridgeControl = createBridgeControl(bridgeConfig.getName(), mbeanServer);
@@ -124,7 +114,7 @@ public class BridgeControlTest extends TestCase
 //      conf.setClustered(true);
 //      conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
 //      conf.getBridgeConfigurations().add(bridgeConfig);
-//      service = MessagingServiceImpl.newNullStorageMessagingService(conf, mbeanServer);
+//      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
 //      service.start();
 //
 //      BridgeControlMBean bridgeControl = createBridgeControl(bridgeConfig.getName(), mbeanServer);

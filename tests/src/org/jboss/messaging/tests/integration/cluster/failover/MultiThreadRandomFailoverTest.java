@@ -20,7 +20,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
+import org.jboss.messaging.core.server.Messaging;
 
 /**
  * A MultiThreadRandomFailoverStressTest
@@ -40,7 +40,7 @@ public class MultiThreadRandomFailoverTest extends MultiThreadRandomFailoverTest
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = MessagingServiceImpl.newNullStorageMessagingService(backupConf);
+      backupService = Messaging.newNullStorageMessagingService(backupConf);
       backupService.start();
 
       // We need to sleep > 16 ms otherwise the id generators on live and backup could be initialised
@@ -58,7 +58,7 @@ public class MultiThreadRandomFailoverTest extends MultiThreadRandomFailoverTest
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = MessagingServiceImpl.newNullStorageMessagingService(liveConf);
+      liveService = Messaging.newNullStorageMessagingService(liveConf);
       liveService.start();
    }
 
