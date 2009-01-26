@@ -44,7 +44,7 @@ public class SecurityDeployer extends XmlDeployer
    private static final String PERMISSION_ELEMENT_NAME = "permission";
    private static final String TYPE_ATTR_NAME = "type";
    private static final String ROLES_ATTR_NAME = "roles";
-   private static final String QUEUES_XML = "queues.xml";
+   private static final String QUEUES_XML = "jbm-queues.xml";
    private static final String MATCH = "match";
    private static final String SECURITY_ELEMENT_NAME = "security";
 
@@ -76,7 +76,7 @@ public class SecurityDeployer extends XmlDeployer
    @Override
    public void validate(Node rootNode) throws Exception
    {
-      XMLUtil.validate(rootNode, "queues.xsd");
+      XMLUtil.validate(rootNode, "jbm-queues.xsd");
    }
    
    /**
