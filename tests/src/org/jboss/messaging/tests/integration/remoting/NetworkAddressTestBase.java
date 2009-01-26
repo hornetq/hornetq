@@ -38,9 +38,6 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
-import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
-import org.jboss.messaging.integration.transports.netty.TransportConstants;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 
 /**
@@ -70,7 +67,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
          Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
          for (Entry<NetworkInterface, InetAddress> entry : set)
          {
-            s.append(entry.getKey().getDisplayName() + ": " + entry.getValue().getHostName() + "\n");
+            s.append(entry.getKey().getDisplayName() + ": " + entry.getValue().getHostAddress() + "\n");
          }
          System.out.println(s);
       }
@@ -110,7 +107,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
       Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
       for (Entry<NetworkInterface, InetAddress> entry : set)
       {
-         String host = entry.getValue().getHostName();
+         String host = entry.getValue().getHostAddress();
          testConnection(host, host, true);
       }
    }
@@ -121,7 +118,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
       Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
       for (Entry<NetworkInterface, InetAddress> entry : set)
       {
-         String host = entry.getValue().getHostName();
+         String host = entry.getValue().getHostAddress();
          testConnection("0.0.0.0", host, true);
       }
    }
@@ -129,30 +126,38 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
    public void testConnectToServerAcceptingOnlyAnotherHost() throws Exception
    {
       Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
-      assertTrue("There must be at least 2 network interfaces: test will not be executed", map.size() > 1);
+      if (map.size() <= 2)
+      {
+         System.err.println("There must be at least 3 network interfaces: test will not be executed");
+         return;
+      }
 
       Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
       Iterator<Entry<NetworkInterface, InetAddress>> iterator = set.iterator();
       Entry<NetworkInterface, InetAddress> acceptorEntry = iterator.next();
       Entry<NetworkInterface, InetAddress> connectorEntry = iterator.next();
 
-      testConnection(acceptorEntry.getValue().getHostName(), connectorEntry.getValue().getHostName(), false);
+      testConnection(acceptorEntry.getValue().getHostName(), connectorEntry.getValue().getHostAddress(), false);
    }
 
    public void testConnectorToServerAcceptingAListOfHosts() throws Exception
    {
       Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
-      assertTrue("There must be at least 2 network interfaces: test will not be executed", map.size() > 1);
+      if (map.size() <= 2)
+      {
+         System.err.println("There must be at least 3 network interfaces: test will not be executed");
+         return;
+      }
 
       Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
       Iterator<Entry<NetworkInterface, InetAddress>> iterator = set.iterator();
       Entry<NetworkInterface, InetAddress> entry1 = iterator.next();
       Entry<NetworkInterface, InetAddress> entry2 = iterator.next();
 
-      String listOfHosts = entry1.getValue().getHostName() + ", " + entry2.getValue().getHostName();
+      String listOfHosts = entry1.getValue().getHostName() + ", " + entry2.getValue().getHostAddress();
 
-      testConnection(listOfHosts, entry1.getValue().getHostName(), true);
-      testConnection(listOfHosts, entry2.getValue().getHostName(), true);
+      testConnection(listOfHosts, entry1.getValue().getHostAddress(), true);
+      testConnection(listOfHosts, entry2.getValue().getHostAddress(), true);
    }
 
    public void testConnectorToServerAcceptingAListOfHosts_2() throws Exception
@@ -160,7 +165,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
       Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
       if (map.size() <= 2)
       {
-         System.out.println("There must be at least 3 network interfaces: test will not be executed");
+         System.err.println("There must be at least 3 network interfaces: test will not be executed");
          return;
       }
 
@@ -172,13 +177,14 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
 
       String listOfHosts = entry1.getValue().getHostName() + ", " + entry2.getValue().getHostName();
 
-      testConnection(listOfHosts, entry1.getValue().getHostName(), true);
-      testConnection(listOfHosts, entry2.getValue().getHostName(), true);
-      testConnection(listOfHosts, entry3.getValue().getHostName(), false);
+      testConnection(listOfHosts, entry1.getValue().getHostAddress(), true);
+      testConnection(listOfHosts, entry2.getValue().getHostAddress(), true);
+      testConnection(listOfHosts, entry3.getValue().getHostAddress(), false);
    }
 
    public void testConnection(String acceptorHost, String connectorHost, boolean mustConnect) throws Exception
    {
+      System.out.println("acceptor=" + acceptorHost + ", connector=" + connectorHost + ", mustConnect=" + mustConnect);
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(getHostPropertyKey(), acceptorHost);
       TransportConfiguration acceptorConfig = new TransportConfiguration(getAcceptorFactoryClassName(), params);
