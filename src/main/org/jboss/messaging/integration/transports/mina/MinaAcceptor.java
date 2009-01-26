@@ -23,6 +23,9 @@
 package org.jboss.messaging.integration.transports.mina;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.mina.core.buffer.IoBuffer;
@@ -34,6 +37,7 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.SocketAcceptor;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
@@ -149,7 +153,6 @@ public class MinaAcceptor implements Acceptor
       FilterChainSupport.addCodecFilter(filterChain, handler);
 
       // Bind
-      acceptor.setDefaultLocalAddress(new InetSocketAddress(host, port));      
       acceptor.getSessionConfig().setTcpNoDelay(tcpNoDelay);      
       if (tcpReceiveBufferSize != -1)
       {
@@ -165,7 +168,13 @@ public class MinaAcceptor implements Acceptor
       acceptor.setCloseOnDeactivation(false);
 
       acceptor.setHandler(new MinaHandler());
-      acceptor.bind();
+      String[] hosts = TransportConfiguration.splitHosts(host);
+      List<SocketAddress> addresses = new ArrayList<SocketAddress>();      
+      for (String h : hosts)
+      {
+         addresses.add(new InetSocketAddress(h, port));
+      }
+      acceptor.bind(addresses);
       acceptorListener = new MinaSessionListener();
       acceptor.addListener(acceptorListener);
    }

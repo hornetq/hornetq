@@ -41,6 +41,21 @@ public class TransportConfiguration implements Serializable
    
    private final Map<String, Object> params;
    
+   public static String[] splitHosts(final String commaSeparatedHosts)
+   {  
+      if (commaSeparatedHosts == null)
+      {
+         return new String[0];
+      }
+      String[] hosts = commaSeparatedHosts.split(",");
+      
+      for (int i = 0; i < hosts.length; i++)
+      {
+         hosts[i] = hosts[i].trim();         
+      }
+      return hosts;      
+   }
+   
    public TransportConfiguration(final String className, final Map<String, Object> params, final String name)
    {
       this.factoryClassName = className;
@@ -127,5 +142,4 @@ public class TransportConfiguration implements Serializable
          return false;
       }
    }
-   
 }

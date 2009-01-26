@@ -24,7 +24,10 @@ package org.jboss.messaging.integration.transports.netty;
 
 import static org.jboss.netty.channel.Channels.pipeline;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.Timer;
 import java.util.concurrent.ExecutorService;
@@ -33,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
@@ -53,6 +57,7 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
+import org.jboss.netty.group.DefaultChannelGroup;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.jboss.netty.handler.ssl.SslHandler;
@@ -75,7 +80,7 @@ public class NettyAcceptor implements Acceptor
 
    private ChannelFactory channelFactory;
 
-   private Channel serverChannel;
+   private DefaultChannelGroup serverChannelGroup;
 
    private ServerBootstrap bootstrap;
 
@@ -256,7 +261,6 @@ public class NettyAcceptor implements Acceptor
       });
 
       // Bind
-      bootstrap.setOption("localAddress", new InetSocketAddress(host, port));
       bootstrap.setOption("child.tcpNoDelay", tcpNoDelay);
       if (tcpReceiveBufferSize != -1)
       {
@@ -270,7 +274,14 @@ public class NettyAcceptor implements Acceptor
       bootstrap.setOption("child.reuseAddress", true);
       bootstrap.setOption("child.keepAlive", true);
 
-      serverChannel = bootstrap.bind();
+      serverChannelGroup = new DefaultChannelGroup("jbm");
+      
+      String[] hosts = TransportConfiguration.splitHosts(host);
+      for (String h : hosts)
+      {
+         Channel serverChannel = bootstrap.bind(new InetSocketAddress(h, port));
+         serverChannelGroup.add(serverChannel);
+      }
    }
 
    public synchronized void stop()
@@ -286,7 +297,7 @@ public class NettyAcceptor implements Acceptor
 
          httpKeepAliveTimer.cancel();
       }
-      serverChannel.close().awaitUninterruptibly();
+      serverChannelGroup.close().awaitUninterruptibly();
       bossExecutor.shutdown();
       workerExecutor.shutdown();
       for (;;)
