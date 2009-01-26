@@ -551,22 +551,22 @@
    <target name="validate-configuration" description="validate configuration files">
       <echo>validating server configuration</echo>
       <schemavalidate file="src/config/jbm-configuration.xml">
-         <schema namespace="urn:jboss:messaging-configuration" 
+         <schema namespace="urn:jboss:messaging" 
                  file="src/schemas/jbm-configuration.xsd"/>
       </schemavalidate>
       <echo>validating security credentials</echo>
       <schemavalidate file="src/config/jbm-security.xml">
-         <schema namespace="urn:jboss:messaging-security" 
+         <schema namespace="urn:jboss:messaging" 
                  file="src/schemas/jbm-security.xsd"/>
       </schemavalidate>
       <echo>validating queue settings</echo>
-      <schemavalidate file="src/config/queues.xml">
-         <schema namespace="urn:jboss:messaging-queues" 
-                 file="src/schemas/queues.xsd"/>
+      <schemavalidate file="src/config/jbm-queues.xml">
+         <schema namespace="urn:jboss:messaging" 
+                 file="src/schemas/jbm-queues.xsd"/>
       </schemavalidate>
       <echo>validating jms resources</echo>
       <schemavalidate file="src/config/jbm-jms.xml">
-         <schema namespace="urn:jboss:messaging-jms" 
+         <schema namespace="urn:jboss:messaging" 
                  file="src/schemas/jbm-jms.xsd"/>
       </schemavalidate>
    </target>

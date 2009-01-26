@@ -137,5 +137,9 @@
       <journal-max-aio>56546</journal-max-aio>
       <large-messages-directory>largemessagesdir</large-messages-directory>
    </configuration>
+   
+   <settings>
+    <queue name="foo3" address="bar" />
+   </settings>
 
 </deployment>

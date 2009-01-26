@@ -64,7 +64,7 @@ public class QueueDeployer extends XmlDeployer
          XMLUtil.validate(rootNode, "jbm-configuration.xsd");
       } else 
       {
-         XMLUtil.validate(rootNode, "queues.xsd");         
+         XMLUtil.validate(rootNode, "jbm-queues.xsd");         
       }
    }
 
@@ -93,7 +93,7 @@ public class QueueDeployer extends XmlDeployer
     */
    public String[] getConfigFileNames()
    {
-      return new String[] {"jbm-configuration.xml", "queues.xml"};
+      return new String[] {"jbm-configuration.xml", "jbm-queues.xml"};
    }
 
    private QueueConfiguration parseQueueConfiguration(final Node node)
