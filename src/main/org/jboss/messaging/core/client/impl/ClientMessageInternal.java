@@ -44,4 +44,6 @@ public interface ClientMessageInternal extends ClientMessage
    void onReceipt(ClientConsumerInternal consumer);
 
    boolean isLargeMessage();
+   
+   boolean isFileMessage();
 }

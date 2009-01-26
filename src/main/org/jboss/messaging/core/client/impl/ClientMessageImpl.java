@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.client.impl;
 
-import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
@@ -130,13 +129,21 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       return largeMessage;
    }
-
+   
    /**
     * @param largeMessage the largeMessage to set
     */
    public void setLargeMessage(final boolean largeMessage)
    {
       this.largeMessage = largeMessage;
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.client.impl.ClientMessageInternal#isFileMessage()
+    */
+   public boolean isFileMessage()
+   {
+      return false;
    }
 
 }

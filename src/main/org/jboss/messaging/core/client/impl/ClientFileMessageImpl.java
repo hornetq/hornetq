@@ -213,6 +213,12 @@ public class ClientFileMessageImpl extends ClientMessageImpl implements ClientFi
    {
       return (int)file.length();
    }
+   
+   public boolean isFileMessage()
+   {
+      return true;
+   }
+
 
    /**
     * @return

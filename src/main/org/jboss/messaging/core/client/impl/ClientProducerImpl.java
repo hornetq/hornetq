@@ -235,7 +235,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       if (msg.getEncodeSize() >= minLargeMessageSize)
       {
-         sendMessageInChunks(sendBlocking, msg);
+         sendMessageInChunks(sendBlocking, (ClientMessageInternal)msg);
       }
       else if (sendBlocking)
       {
@@ -251,7 +251,7 @@ public class ClientProducerImpl implements ClientProducerInternal
     * @param msg
     * @throws MessagingException
     */
-   private void sendMessageInChunks(final boolean sendBlocking, final Message msg) throws MessagingException
+   private void sendMessageInChunks(final boolean sendBlocking, final ClientMessageInternal msg) throws MessagingException
    {
       int headerSize = msg.getPropertiesEncodeSize();
 
@@ -298,15 +298,17 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       }
 
-      if (msg instanceof ClientFileMessageInternal)
+      // Note: This could be either a regular message, with a huge body,
+      //       or a ClientFileMessage.
+      if (msg.isFileMessage())
       {
-         //FIXME - this is very ugly - do we really need an instanceof check???
          try
          {
             ((ClientFileMessageInternal)msg).closeChannel();
          }
          catch (Exception e)
          {
+            log.warn(e.getMessage(), e);
          }
       }
    }
