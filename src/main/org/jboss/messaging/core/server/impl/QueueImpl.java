@@ -105,6 +105,8 @@ public class QueueImpl implements Queue
    private final Runnable deliverRunner = new DeliverRunner();
 
    private final PagingManager pagingManager;
+   
+   private volatile PagingStore pagingStore;
 
    private final StorageManager storageManager;
 
@@ -1116,12 +1118,34 @@ public class QueueImpl implements Queue
          {
             if (iterator == null)
             {
+               if (pagingStore != null)
+               {
+                  // If the queue is empty, we need to check if there are pending messages, and throw a warning
+                  if (pagingStore.isPaging() && !pagingStore.isDropWhenMaxSize())
+                  {
+                     log.warn("The Queue " + this.name + " is empty, however there are pending messages on Paging for the address " + pagingStore.getStoreName() + " waiting message ACK before they could be routed");
+                  }
+               }
                // We delivered all the messages - go into direct delivery
                direct = true;
 
                promptDelivery = false;
             }
             return;
+         }
+         
+         if (pagingStore == null)
+         {
+            // TODO: It would be better if we could initialize the pagingStore during the construction
+            try
+            {
+               pagingStore = pagingManager.getPageStore(reference.getMessage().getDestination());
+            }
+            catch (Exception e)
+            {
+               // This shouldn't happen, and if it happens, this shouldn't abort the route
+               log.warn("Error getting the page-store Destination", e);
+            }
          }
 
          HandleStatus status = deliver(reference);
