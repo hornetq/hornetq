@@ -904,12 +904,9 @@ public class Operator
     */
    Object like(final boolean not, final boolean use_escape) throws Exception
    {
-      log.info("in like ");
       Character escapeChar = null;
 
       computeArgument1();
-      
-      log.info("arg 1 is " + arg1);
       
       if (arg1 == null)
       {
@@ -922,9 +919,7 @@ public class Operator
       }
 
       computeArgument2();
-      
-      log.info("arg 2 is " + arg2);
-      
+       
       if (arg2 == null)
       {
          return Boolean.FALSE;
