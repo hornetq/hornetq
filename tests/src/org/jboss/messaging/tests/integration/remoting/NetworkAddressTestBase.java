@@ -101,139 +101,138 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
-//   public void testConnectToServerWithSameHost() throws Exception
-//   {
-//      Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
-//      Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
-//      for (Entry<NetworkInterface, InetAddress> entry : set)
-//      {
-//         String host = entry.getValue().getHostAddress();
-//         testConnection(host, host, true);
-//      }
-//   }
-//
-//   public void testConnectToServerAcceptingAllHosts() throws Exception
-//   {
-//      Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
-//      Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
-//      for (Entry<NetworkInterface, InetAddress> entry : set)
-//      {
-//         String host = entry.getValue().getHostAddress();
-//         testConnection("0.0.0.0", host, true);
-//      }
-//   }
-//
-//   public void testConnectToServerAcceptingOnlyAnotherHost() throws Exception
-//   {
-//      Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
-//      if (map.size() <= 2)
-//      {
-//         System.err.println("There must be at least 3 network interfaces: test will not be executed");
-//         return;
-//      }
-//
-//      Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
-//      Iterator<Entry<NetworkInterface, InetAddress>> iterator = set.iterator();
-//      Entry<NetworkInterface, InetAddress> acceptorEntry = iterator.next();
-//      Entry<NetworkInterface, InetAddress> connectorEntry = iterator.next();
-//
-//      testConnection(acceptorEntry.getValue().getHostName(), connectorEntry.getValue().getHostAddress(), false);
-//   }
-//
-//   public void testConnectorToServerAcceptingAListOfHosts() throws Exception
-//   {
-//      Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
-//      if (map.size() <= 2)
-//      {
-//         System.err.println("There must be at least 3 network interfaces: test will not be executed");
-//         return;
-//      }
-//
-//      Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
-//      Iterator<Entry<NetworkInterface, InetAddress>> iterator = set.iterator();
-//      Entry<NetworkInterface, InetAddress> entry1 = iterator.next();
-//      Entry<NetworkInterface, InetAddress> entry2 = iterator.next();
-//
-//      String listOfHosts = entry1.getValue().getHostName() + ", " + entry2.getValue().getHostAddress();
-//
-//      testConnection(listOfHosts, entry1.getValue().getHostAddress(), true);
-//      testConnection(listOfHosts, entry2.getValue().getHostAddress(), true);
-//   }
-//
-//   public void testConnectorToServerAcceptingAListOfHosts_2() throws Exception
-//   {
-//      Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
-//      if (map.size() <= 2)
-//      {
-//         System.err.println("There must be at least 3 network interfaces: test will not be executed");
-//         return;
-//      }
-//
-//      Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
-//      Iterator<Entry<NetworkInterface, InetAddress>> iterator = set.iterator();
-//      Entry<NetworkInterface, InetAddress> entry1 = iterator.next();
-//      Entry<NetworkInterface, InetAddress> entry2 = iterator.next();
-//      Entry<NetworkInterface, InetAddress> entry3 = iterator.next();
-//
-//      String listOfHosts = entry1.getValue().getHostName() + ", " + entry2.getValue().getHostName();
-//
-//      testConnection(listOfHosts, entry1.getValue().getHostAddress(), true);
-//      testConnection(listOfHosts, entry2.getValue().getHostAddress(), true);
-//      testConnection(listOfHosts, entry3.getValue().getHostAddress(), false);
-//   }
-//
-//   public void testConnection(String acceptorHost, String connectorHost, boolean mustConnect) throws Exception
-//   {
-//      System.out.println("acceptor=" + acceptorHost + ", connector=" + connectorHost + ", mustConnect=" + mustConnect);
-//      Map<String, Object> params = new HashMap<String, Object>();
-//      params.put(getHostPropertyKey(), acceptorHost);
-//      TransportConfiguration acceptorConfig = new TransportConfiguration(getAcceptorFactoryClassName(), params);
-//      Set<TransportConfiguration> transportConfigs = new HashSet<TransportConfiguration>();
-//      transportConfigs.add(acceptorConfig);
-//
-//      Configuration config = createDefaultConfig(true);
-//      config.setAcceptorConfigurations(transportConfigs);
-//      MessagingService messagingService = createService(false, config);
-//      messagingService.start();
-//
-//      params = new HashMap<String, Object>();
-//      params.put(getHostPropertyKey(), connectorHost);
-//      TransportConfiguration connectorConfig = new TransportConfiguration(getConnectorFactoryClassName(), params);
-//
-//      try
-//      {
-//         ClientSessionFactory sf = new ClientSessionFactoryImpl(connectorConfig);
-//
-//         if (mustConnect)
-//         {
-//            ClientSession session = sf.createSession(false, true, true);
-//            session.close();
-//         }
-//         else
-//         {
-//            try
-//            {
-//               sf.createSession(false, true, true);
-//               fail("session creation must fail because connector must not be able to connect to the server bound to another network interface");
-//            }
-//            catch (Exception e)
-//            {
-//            }
-//         }
-//      }
-//      finally
-//      {
-//         if (messagingService != null)
-//         {
-//            messagingService.stop();
-//         }
-//      }
-//   }
-   
-   public void testFoo()
-   {      
+   public void testConnectToServerWithSameHost() throws Exception
+   {
+      Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
+      if (map.size() > 0)
+      {
+         Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
+         Iterator<Entry<NetworkInterface, InetAddress>> iterator = set.iterator();
+         InetAddress address = iterator.next().getValue();
+         String host = address.getHostAddress();
+         testConnection(host, host, true);
+      }
+   }
+   public void testConnectToServerAcceptingAllHosts() throws Exception
+   {
+      Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
+      Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
+      for (Entry<NetworkInterface, InetAddress> entry : set)
+      {
+         String host = entry.getValue().getHostAddress();
+         testConnection("0.0.0.0", host, true);
+      }
    }
 
+   public void testConnectToServerAcceptingOnlyAnotherHost() throws Exception
+   {
+      Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
+      if (map.size() <= 1)
+      {
+         System.err.println("There must be at least 1 network interfaces: test will not be executed");
+         return;
+      }
+
+      Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
+      Iterator<Entry<NetworkInterface, InetAddress>> iterator = set.iterator();
+      Entry<NetworkInterface, InetAddress> acceptorEntry = iterator.next();
+      Entry<NetworkInterface, InetAddress> connectorEntry = iterator.next();
+
+      testConnection(acceptorEntry.getValue().getHostName(), connectorEntry.getValue().getHostAddress(), false);
+   }
+
+   public void testConnectorToServerAcceptingAListOfHosts() throws Exception
+   {
+      Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
+      if (map.size() <= 1)
+      {
+         System.err.println("There must be at least 2 network interfaces: test will not be executed");
+         return;
+      }
+
+      Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
+      Iterator<Entry<NetworkInterface, InetAddress>> iterator = set.iterator();
+      Entry<NetworkInterface, InetAddress> entry1 = iterator.next();
+      Entry<NetworkInterface, InetAddress> entry2 = iterator.next();
+
+      String listOfHosts = entry1.getValue().getHostAddress() + ", " + entry2.getValue().getHostAddress();
+
+      testConnection(listOfHosts, entry1.getValue().getHostAddress(), true);
+      testConnection(listOfHosts, entry2.getValue().getHostAddress(), true);
+   }
+
+   public void testConnectorToServerAcceptingAListOfHosts_2() throws Exception
+   {
+      Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
+      if (map.size() <= 2)
+      {
+         System.err.println("There must be at least 3 network interfaces: test will not be executed");
+         return;
+      }
+
+      Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
+      Iterator<Entry<NetworkInterface, InetAddress>> iterator = set.iterator();
+      Entry<NetworkInterface, InetAddress> entry1 = iterator.next();
+      Entry<NetworkInterface, InetAddress> entry2 = iterator.next();
+      Entry<NetworkInterface, InetAddress> entry3 = iterator.next();
+
+      String listOfHosts = entry1.getValue().getHostAddress() + ", " + entry2.getValue().getHostAddress();
+
+      testConnection(listOfHosts, entry1.getValue().getHostAddress(), true);
+      testConnection(listOfHosts, entry2.getValue().getHostAddress(), true);
+      testConnection(listOfHosts, entry3.getValue().getHostAddress(), false);
+   }
+
+   public void testConnection(String acceptorHost, String connectorHost, boolean mustConnect) throws Exception
+   {
+      System.out.println("acceptor=" + acceptorHost + ", connector=" + connectorHost + ", mustConnect=" + mustConnect);
+      
+      Map<String, Object> params = new HashMap<String, Object>();
+      params.put(getHostPropertyKey(), acceptorHost);
+      TransportConfiguration acceptorConfig = new TransportConfiguration(getAcceptorFactoryClassName(), params);
+      Set<TransportConfiguration> transportConfigs = new HashSet<TransportConfiguration>();
+      transportConfigs.add(acceptorConfig);
+
+      Configuration config = createDefaultConfig(true);
+      config.setAcceptorConfigurations(transportConfigs);
+      MessagingService messagingService = createService(false, config);
+      messagingService.start();
+
+      params = new HashMap<String, Object>();
+      params.put(getHostPropertyKey(), connectorHost);
+      TransportConfiguration connectorConfig = new TransportConfiguration(getConnectorFactoryClassName(), params);
+
+      try
+      {
+         ClientSessionFactory sf = new ClientSessionFactoryImpl(connectorConfig);
+
+         if (mustConnect)
+         {
+            ClientSession session = sf.createSession(false, true, true);
+            session.close();
+            System.out.println("connection OK");
+         }
+         else
+         {
+            try
+            {
+               sf.createSession(false, true, true);
+               fail("session creation must fail because connector must not be able to connect to the server bound to another network interface");
+            }
+            catch (Exception e)
+            {
+            }
+         }
+      }
+      finally
+      {
+         if (messagingService != null)
+         {
+            messagingService.stop();
+         }
+      }
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
