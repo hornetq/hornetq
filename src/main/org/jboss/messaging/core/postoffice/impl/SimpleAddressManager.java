@@ -48,13 +48,13 @@ public  class SimpleAddressManager implements AddressManager
 
    private final ConcurrentMap<SimpleString, Binding> nameMap = new ConcurrentHashMap<SimpleString, Binding>();
 
-   public boolean addMapping(final SimpleString address, final Binding binding)
+   public boolean addMapping(final Binding binding)
    {
       if (nameMap.putIfAbsent(binding.getUniqueName(), binding) != null)
       {
          throw new IllegalStateException("Binding already exists " + binding);
       }
-      return addMappingInternal(address, binding);
+      return addMappingInternal(binding.getAddress(), binding);
    }
 
    public Bindings getBindings(final SimpleString address)

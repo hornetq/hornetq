@@ -89,16 +89,15 @@ public class WildcardAddressManager extends SimpleAddressManager
     * If the address to add the binding to contains a wildcard then a copy of the binding (with the same underlying queue)
     * will be added to the actual mappings. Otherwise the binding is added as normal.
     *
-    * @param address the address to add the mapping to
     * @param binding the binding to add
     * @return true if the address was a new mapping
     */
-   public boolean addMapping(final SimpleString address, final Binding binding)
+   public boolean addMapping(final Binding binding)
    {
-      boolean exists = super.addMapping(address, binding);
+      boolean exists = super.addMapping(binding);
       if (!exists)
       {
-         Address add = addAndUpdateAddressMap(address);
+         Address add = addAndUpdateAddressMap(binding.getAddress());
          if (add.containsWildCard())
          {
             for (Address destAdd : add.getLinkedAddresses())
@@ -113,7 +112,7 @@ public class WildcardAddressManager extends SimpleAddressManager
                Bindings bindings = super.getBindings(destAdd.getAddress());
                for (Binding b : bindings.getBindings())
                {
-                  super.addMappingInternal(address, b);
+                  super.addMappingInternal(binding.getAddress(), b);
                }
             }
          }

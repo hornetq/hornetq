@@ -35,7 +35,7 @@ import java.util.Set;
  */
 public interface AddressManager
 {
-   boolean addMapping(SimpleString address, Binding binding);
+   boolean addMapping(Binding binding);
 
    Bindings getBindings(SimpleString address);
 

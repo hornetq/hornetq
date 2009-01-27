@@ -637,7 +637,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    private void addBindingInMemory(final Binding binding) throws Exception
    {
-      boolean exists = addressManager.addMapping(binding.getAddress(), binding);
+      boolean exists = addressManager.addMapping(binding);
 
       if (!exists)
       {
