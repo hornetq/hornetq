@@ -141,25 +141,25 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
       testConnection(acceptorEntry.getValue().getHostName(), connectorEntry.getValue().getHostAddress(), false);
    }
 
-   public void testConnectorToServerAcceptingAListOfHosts() throws Exception
-   {
-      Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
-      if (map.size() <= 1)
-      {
-         System.err.println("There must be at least 2 network interfaces: test will not be executed");
-         return;
-      }
-
-      Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
-      Iterator<Entry<NetworkInterface, InetAddress>> iterator = set.iterator();
-      Entry<NetworkInterface, InetAddress> entry1 = iterator.next();
-      Entry<NetworkInterface, InetAddress> entry2 = iterator.next();
-
-      String listOfHosts = entry1.getValue().getHostAddress() + ", " + entry2.getValue().getHostAddress();
-
-      testConnection(listOfHosts, entry1.getValue().getHostAddress(), true);
-      testConnection(listOfHosts, entry2.getValue().getHostAddress(), true);
-   }
+//   public void testConnectorToServerAcceptingAListOfHosts() throws Exception
+//   {
+//      Map<NetworkInterface, InetAddress> map = getAddressForEachNetworkInterface();
+//      if (map.size() <= 1)
+//      {
+//         System.err.println("There must be at least 2 network interfaces: test will not be executed");
+//         return;
+//      }
+//
+//      Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
+//      Iterator<Entry<NetworkInterface, InetAddress>> iterator = set.iterator();
+//      Entry<NetworkInterface, InetAddress> entry1 = iterator.next();
+//      Entry<NetworkInterface, InetAddress> entry2 = iterator.next();
+//
+//      String listOfHosts = entry1.getValue().getHostAddress() + ", " + entry2.getValue().getHostAddress();
+//
+//      testConnection(listOfHosts, entry1.getValue().getHostAddress(), true);
+//      testConnection(listOfHosts, entry2.getValue().getHostAddress(), true);
+//   }
 
    public void testConnectorToServerAcceptingAListOfHosts_2() throws Exception
    {
