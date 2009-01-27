@@ -655,8 +655,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
          managementService.registerQueue(queue, binding.getAddress(), storageManager);
       }
-
-      addressManager.addBinding(binding);
    }
 
    private Binding removeBindingInMemory(final SimpleString bindingName) throws Exception

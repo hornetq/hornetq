@@ -48,35 +48,13 @@ public  class SimpleAddressManager implements AddressManager
 
    private final ConcurrentMap<SimpleString, Binding> nameMap = new ConcurrentHashMap<SimpleString, Binding>();
 
-   public void addBinding(final Binding binding)
+   public boolean addMapping(final SimpleString address, final Binding binding)
    {
       if (nameMap.putIfAbsent(binding.getUniqueName(), binding) != null)
       {
          throw new IllegalStateException("Binding already exists " + binding);
       }
-   }
-
-   public boolean addMapping(final SimpleString address, final Binding binding)
-   {
-      Bindings bindings = mappings.get(address);
-
-      Bindings prevBindings = null;
-
-      if (bindings == null)
-      {
-         bindings = new BindingsImpl();
-
-         prevBindings = mappings.putIfAbsent(address, bindings);
-
-         if (prevBindings != null)
-         {
-            bindings = prevBindings;
-         }
-      }
-
-      bindings.addBinding(binding);
-
-      return prevBindings != null;
+      return addMappingInternal(address, binding);
    }
 
    public Bindings getBindings(final SimpleString address)
@@ -173,5 +151,28 @@ public  class SimpleAddressManager implements AddressManager
       bindings.removeBinding(theBinding);
 
       return theBinding;
+   }
+
+   protected boolean addMappingInternal(final SimpleString address, final Binding binding)
+   {
+      Bindings bindings = mappings.get(address);
+
+      Bindings prevBindings = null;
+
+      if (bindings == null)
+      {
+         bindings = new BindingsImpl();
+
+         prevBindings = mappings.putIfAbsent(address, bindings);
+
+         if (prevBindings != null)
+         {
+            bindings = prevBindings;
+         }
+      }
+
+      bindings.addBinding(binding);
+
+      return prevBindings != null;
    }
 }

@@ -75,7 +75,7 @@ public class WildcardAddressManager extends SimpleAddressManager
                   List<Binding> theBindings = b.getBindings();
                   for (Binding theBinding : theBindings)
                   {
-                     super.addMapping(address, theBinding);
+                     super.addMappingInternal(address, theBinding);
                   }
                }
             }
@@ -103,7 +103,7 @@ public class WildcardAddressManager extends SimpleAddressManager
          {
             for (Address destAdd : add.getLinkedAddresses())
             {
-               super.addMapping(destAdd.getAddress(), binding);
+               super.addMappingInternal(destAdd.getAddress(), binding);
             }
          }
          else
@@ -113,7 +113,7 @@ public class WildcardAddressManager extends SimpleAddressManager
                Bindings bindings = super.getBindings(destAdd.getAddress());
                for (Binding b : bindings.getBindings())
                {
-                  super.addMapping(address, b);
+                  super.addMappingInternal(address, b);
                }
             }
          }
