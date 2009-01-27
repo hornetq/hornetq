@@ -24,6 +24,7 @@ package org.jboss.messaging.core.filter.impl;
 
 import java.util.HashSet;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -38,6 +39,8 @@ import org.jboss.messaging.util.SimpleString;
 */
 public class Operator
 {
+   private static final Logger log = Logger.getLogger(Operator.class);
+
    int operation;
 
    Object oper1;
@@ -901,22 +904,30 @@ public class Operator
     */
    Object like(final boolean not, final boolean use_escape) throws Exception
    {
+      log.info("in like ");
       Character escapeChar = null;
 
       computeArgument1();
+      
+      log.info("arg 1 is " + arg1);
+      
       if (arg1 == null)
       {
-         return null;
+         return Boolean.FALSE;
       }
+      
       if (class1 != SIMPLE_STRING)
       {
          throwBadObjectException(class1);
       }
 
       computeArgument2();
+      
+      log.info("arg 2 is " + arg2);
+      
       if (arg2 == null)
       {
-         return null;
+         return Boolean.FALSE;
       }
       if (class2 != SIMPLE_STRING)
       {

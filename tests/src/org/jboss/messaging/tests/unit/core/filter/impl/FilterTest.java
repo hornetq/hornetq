@@ -225,6 +225,7 @@ public class FilterTest  extends TestCase
    {
       // test LIKE operator with no wildcards
       filter = new FilterImpl(new SimpleString("MyString LIKE 'astring'"));
+      assertFalse(filter.match(message));
       
       // test where LIKE operand matches
       doPutStringProperty("MyString", "astring");
@@ -278,6 +279,7 @@ public class FilterTest  extends TestCase
       
       // first, some tests with the wildcard by itself
       filter = new FilterImpl(new SimpleString("MyString LIKE '_'"));
+      assertFalse(filter.match(message));
       
       // test match against single character
       doPutStringProperty("MyString", "a");
@@ -402,6 +404,14 @@ public class FilterTest  extends TestCase
       // test match failures
    }
    
+   public void testNotLikeExpression() throws Exception
+   {
+      //Should evaluate to true since the property MyString does not exist
+      filter = new FilterImpl(new SimpleString("NOT (MyString LIKE '%')"));
+
+      assertTrue(filter.match(message));
+   }
+   
    public void testStringLikePercentWildcard() throws Exception
    {
       // test LIKE operator with the % wildcard, which
@@ -411,6 +421,7 @@ public class FilterTest  extends TestCase
       
       // first, some tests with the wildcard by itself
       filter = new FilterImpl(new SimpleString("MyString LIKE '%'"));
+      assertFalse(filter.match(message));
       
       // test match against single character
       doPutStringProperty("MyString", "a");
@@ -548,6 +559,8 @@ public class FilterTest  extends TestCase
       // GNU regexp.
       
       filter = new FilterImpl(new SimpleString("MyString LIKE 'a^$b'"));
+      assertFalse(filter.match(message));
+      
       doPutStringProperty("MyString", "a^$b");
       assertTrue(filter.match(message));
       
