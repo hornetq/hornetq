@@ -446,7 +446,7 @@ public class OperatorTest extends TestCase
       assertSuccess(LIKE, new SimpleString("lose"), pattern, true);
       assertSuccess(LIKE, new SimpleString("loose"), pattern, false);
 
-      assertSuccess(LIKE, null, pattern, null);
+      assertSuccess(LIKE, null, pattern, false);
    }
 
    public void test_LIKE_ESCAPE() throws Exception
@@ -455,7 +455,7 @@ public class OperatorTest extends TestCase
       SimpleString escapeChar = new SimpleString("\\");
       assertSuccess(LIKE_ESCAPE, new SimpleString("_foo"), pattern, escapeChar, true);
       assertSuccess(LIKE_ESCAPE, new SimpleString("bar"), pattern, escapeChar, false);
-      assertSuccess(LIKE_ESCAPE, null, pattern, escapeChar, null);
+      assertSuccess(LIKE_ESCAPE, null, pattern, escapeChar, false);
 
       assertFailure(LIKE_ESCAPE, new SimpleString("_foo"), pattern, new SimpleString("must be a single char"));
    }
@@ -466,7 +466,7 @@ public class OperatorTest extends TestCase
       assertSuccess(NOT_LIKE, new SimpleString("123"), pattern, false);
       assertSuccess(NOT_LIKE, new SimpleString("12993"), pattern, false);
       assertSuccess(NOT_LIKE, new SimpleString("1234"), pattern, true);
-      assertSuccess(NOT_LIKE, null, pattern, null);
+      assertSuccess(NOT_LIKE, null, pattern, false);
    }
 
    public void test_NOT_LIKE_ESCAPE() throws Exception
@@ -475,7 +475,7 @@ public class OperatorTest extends TestCase
       SimpleString escapeChar = new SimpleString("\\");
       assertSuccess(NOT_LIKE_ESCAPE, new SimpleString("_foo"), pattern, escapeChar, false);
       assertSuccess(NOT_LIKE_ESCAPE, new SimpleString("bar"), pattern, escapeChar, true);
-      assertSuccess(NOT_LIKE_ESCAPE, null, pattern, escapeChar, null);
+      assertSuccess(NOT_LIKE_ESCAPE, null, pattern, escapeChar, false);
 
       assertFailure(NOT_LIKE_ESCAPE, new SimpleString("_foo"), pattern, new SimpleString("must be a single char"));
    }
