@@ -22,9 +22,6 @@
 
 package org.jboss.messaging.core.server.cluster.impl;
 
-import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_FROM_CLUSTER;
-
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,15 +29,15 @@ import java.util.Set;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
-import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.postoffice.impl.BindingImpl;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.Bindable;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.server.cluster.FlowBinding;
+import org.jboss.messaging.core.server.cluster.RemoteQueueBinding;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- * A FlowBindingImpl
+ * A RemoteQueueBindingImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
@@ -48,36 +45,107 @@ import org.jboss.messaging.util.SimpleString;
  *
  *
  */
-public class FlowBindingImpl extends BindingImpl implements FlowBinding
+public class RemoteQueueBindingImpl implements RemoteQueueBinding
 {
+   private static final Logger log = Logger.getLogger(RemoteQueueBindingImpl.class);
+
+   private final SimpleString address;
+
+   private final Queue storeAndForwardQueue;
+
+   private final SimpleString uniqueName;
+
+   private final SimpleString routingName;
+
+   private final Filter queueFilter;
+
    private final Set<Filter> filters = new HashSet<Filter>();
 
    private final Map<SimpleString, Integer> filterCounts = new HashMap<SimpleString, Integer>();
 
    private int consumerCount;
-   
+
    private final boolean duplicateDetection;
    
-   private final SimpleString headerName;
+   private final boolean forwardWhenNoMatchingConsumers;
 
-   public FlowBindingImpl(final SimpleString address,
-                          final SimpleString uniqueName,
-                          final SimpleString routingName,
-                          final Bindable bindable,
-                          final boolean duplicateDetection)
+   public RemoteQueueBindingImpl(final SimpleString address,
+                                 final SimpleString uniqueName,
+                                 final SimpleString routingName,
+                                 final SimpleString filterString,
+                                 final Queue storeAndForwardQueue,
+                                 final boolean duplicateDetection,
+                                 final boolean forwardWhenNoMatchingConsumers) throws Exception
    {
-      super(address, uniqueName, routingName, bindable, false, false);
-      
+      this.address = address;
+
+      this.storeAndForwardQueue = storeAndForwardQueue;
+
+      this.uniqueName = uniqueName;
+
+      this.routingName = routingName;
+
       this.duplicateDetection = duplicateDetection;
+
+      if (filterString != null)
+      {
+         queueFilter = new FilterImpl(filterString);
+      }
+      else
+      {
+         queueFilter = null;
+      }
       
-      headerName = MessageImpl.HDR_ROUTE_TO_PREFIX.concat(routingName);
+      this.forwardWhenNoMatchingConsumers = forwardWhenNoMatchingConsumers;
    }
 
-   public boolean accept(final ServerMessage message) throws Exception
+   public SimpleString getAddress()
    {
-      if (message.containsProperty(MessageImpl.HDR_FROM_CLUSTER))
+      return address;
+   }
+
+   public Bindable getBindable()
+   {
+      return storeAndForwardQueue;
+   }
+
+   public SimpleString getRoutingName()
+   {
+      return routingName;
+   }
+
+   public SimpleString getUniqueName()
+   {
+      return uniqueName;
+   }
+
+   public boolean isExclusive()
+   {
+      return false;
+   }
+
+   public boolean isQueueBinding()
+   {
+      return false;
+   }
+
+   public boolean filterMatches(final ServerMessage message) throws Exception
+   {
+      if (queueFilter != null && !queueFilter.match(message))
       {
          return false;
+      }
+      else
+      {
+         return true;
+      }
+   }
+
+   public boolean isHighAcceptPriority(final ServerMessage message)
+   {
+      if (forwardWhenNoMatchingConsumers)
+      {
+         return true;
       }
       
       if (consumerCount == 0)
@@ -85,11 +153,9 @@ public class FlowBindingImpl extends BindingImpl implements FlowBinding
          return false;
       }
 
-      boolean accepted = false;
-      
       if (filters.isEmpty())
       {
-         accepted = true;
+         return true;
       }
       else
       {
@@ -97,37 +163,12 @@ public class FlowBindingImpl extends BindingImpl implements FlowBinding
          {
             if (filter.match(message))
             {
-               accepted = true;
-               
-               break;
+               return true;
             }
-         }         
-      }
-      
-      if (duplicateDetection && accepted)
-      {
-         if (!message.containsProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID))
-         {
-            //Add the message id as a duplicate id header - this will be detected when routing on the remote node - 
-            //any duplicates will be rejected
-            byte[] bytes = new byte[8];
-            
-            ByteBuffer buff = ByteBuffer.wrap(bytes);
-            
-            buff.putLong(message.getMessageID());
-            
-            SimpleString dupID = new SimpleString(bytes);
-            
-            message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);                       
          }
       }
-      
-            
-      message.putBooleanProperty(headerName, Boolean.valueOf(true)); 
-      
-      message.putBooleanProperty(HDR_FROM_CLUSTER, Boolean.valueOf(true));
-           
-      return accepted;
+
+      return false;
    }
 
    public synchronized void addConsumer(final SimpleString filterString) throws Exception

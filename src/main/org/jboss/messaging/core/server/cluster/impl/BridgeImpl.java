@@ -24,11 +24,7 @@ package org.jboss.messaging.core.server.cluster.impl;
 
 import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -44,6 +40,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
@@ -51,7 +48,6 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.QueueInfo;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.server.HandleStatus;
@@ -65,7 +61,6 @@ import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.Future;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.TypedProperties;
 import org.jboss.messaging.util.UUIDGenerator;
 
 /**
@@ -168,6 +163,7 @@ public class BridgeImpl implements Bridge, FailureListener
                      final MessageHandler queueInfoMessageHandler,
                      final String queueDataAddress) throws Exception
    {
+      log.info("Creating new bridge " + name + " queue " + queue);
       this.name = name;
 
       this.queue = queue;
@@ -209,6 +205,8 @@ public class BridgeImpl implements Bridge, FailureListener
 
       this.queueInfoMessageHandler = queueInfoMessageHandler;
       
+      log.info("queue info handler " + this.queueInfoMessageHandler);
+      
       this.queueDataAddress = queueDataAddress;
 
       if (maxBatchTime != -1)
@@ -242,6 +240,7 @@ public class BridgeImpl implements Bridge, FailureListener
       {
          try
          {
+            log.info("creating objects");
             createTx();
 
             queue.addConsumer(BridgeImpl.this);
@@ -263,22 +262,23 @@ public class BridgeImpl implements Bridge, FailureListener
             {
                // Get the queue data
 
-               SimpleString notifQueueName = UUIDGenerator.getInstance().generateSimpleStringUUID();
+               SimpleString notifQueueName = new SimpleString("notif-").concat(UUIDGenerator.getInstance().generateSimpleStringUUID());
 
-               SimpleString filter = new SimpleString(ManagementHelper.HDR_ADDRESS + " LIKE '" + queueDataAddress + "' AND " +                                                                                                           
+               SimpleString filter = new SimpleString(                                                                                                         
                                                       ManagementHelper.HDR_NOTIFICATION_TYPE + " IN (" +
                                                       "'" +
                                                       NotificationType.QUEUE_CREATED +
-                                                      "'" +
+                                                      "'," +
                                                       "'" +
                                                       NotificationType.QUEUE_DESTROYED +
-                                                      "'" +
+                                                      "'," +
                                                       "'" +
                                                       NotificationType.CONSUMER_CREATED +
-                                                      "'" +
+                                                      "'," +
                                                       "'" +
                                                       NotificationType.CONSUMER_CLOSED +
-                                                      "'");
+                                                      "') AND " +                                                     
+                                                      ManagementHelper.HDR_ADDRESS + " LIKE '" + queueDataAddress + "%'");
                
                session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueueName, filter, false, true);
 
@@ -293,8 +293,14 @@ public class BridgeImpl implements Bridge, FailureListener
                ManagementHelper.putOperationInvocation(message,
                                                        ManagementServiceImpl.getMessagingServerObjectName(),
                                                        "sendQueueInfoToQueue",
-                                                       notifQueueName);
+                                                       notifQueueName.toString());
+               
+               ClientProducer prod = session.createProducer(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS);
+               
+               prod.send(message);
             }
+            
+            log.info("Created objects");
 
             active = true;
 
@@ -313,6 +319,11 @@ public class BridgeImpl implements Bridge, FailureListener
 
    public synchronized void stop() throws Exception
    {
+      if (!started)
+      {
+         return;
+      }
+      
       started = false;
 
       active = false;
@@ -465,6 +476,8 @@ public class BridgeImpl implements Bridge, FailureListener
          {
             return;
          }
+         
+         log.info("sending batch");
 
          // TODO - if batch size = 1 then don't need tx
 
@@ -564,9 +577,9 @@ public class BridgeImpl implements Bridge, FailureListener
       return maxBatchTime;
    }
 
-   public SimpleString getFilterString()
+   public Filter getFilter()
    {
-      return filterString;
+      return filter;
    }
 
    public SimpleString getForwardingAddress()

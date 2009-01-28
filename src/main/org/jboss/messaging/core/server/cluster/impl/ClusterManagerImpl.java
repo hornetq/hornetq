@@ -38,7 +38,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
-import org.jboss.messaging.core.config.cluster.ClusterConfiguration;
+import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
@@ -49,7 +49,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
-import org.jboss.messaging.core.server.cluster.Cluster;
+import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.core.server.cluster.ClusterManager;
 import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.util.ExecutorFactory;
@@ -74,8 +74,8 @@ public class ClusterManagerImpl implements ClusterManager
    private final Map<String, DiscoveryGroup> discoveryGroups = new HashMap<String, DiscoveryGroup>();
 
    private final Map<String, Bridge> bridges = new HashMap<String, Bridge>();
-   
-   private final Map<String, Cluster> clusters = new HashMap<String, Cluster>();
+
+   private final Map<String, ClusterConnection> clusters = new HashMap<String, ClusterConnection>();
 
    private final ExecutorFactory executorFactory;
 
@@ -88,7 +88,7 @@ public class ClusterManagerImpl implements ClusterManager
    private final ManagementService managementService;
 
    private final Configuration configuration;
-   
+
    private final QueueFactory queueFactory;
 
    private volatile boolean started;
@@ -112,7 +112,7 @@ public class ClusterManagerImpl implements ClusterManager
       this.managementService = managementService;
 
       this.configuration = configuration;
-      
+
       this.queueFactory = queueFactory;
    }
 
@@ -137,10 +137,10 @@ public class ClusterManagerImpl implements ClusterManager
       {
          deployBridge(config);
       }
-      
-      for (ClusterConfiguration config: configuration.getClusterConfigurations())
+
+      for (ClusterConnectionConfiguration config : configuration.getClusterConfigurations())
       {
-         deployCluster(config);
+         deployClusterConnection(config);
       }
 
       started = true;
@@ -170,11 +170,12 @@ public class ClusterManagerImpl implements ClusterManager
          bridge.stop();
          managementService.unregisterBridge(bridge.getName().toString());
       }
-      
-      for (Cluster cluster: clusters.values())
+
+      log.info("stopping cluster connecttions");
+      for (ClusterConnection clusterConnection : clusters.values())
       {
-         cluster.stop();
-         managementService.unregisterCluster(cluster.getName().toString());
+         clusterConnection.stop();
+         managementService.unregisterCluster(clusterConnection.getName().toString());
       }
 
       broadcastGroups.clear();
@@ -407,8 +408,8 @@ public class ClusterManagerImpl implements ClusterManager
          bridge.start();
       }
    }
-   
-   private synchronized void deployCluster(final ClusterConfiguration config) throws Exception
+
+   private synchronized void deployClusterConnection(final ClusterConnectionConfiguration config) throws Exception
    {
       if (config.getName() == null)
       {
@@ -423,80 +424,86 @@ public class ClusterManagerImpl implements ClusterManager
 
          return;
       }
-      
-      Cluster cluster;
-     
+
+      ClusterConnection clusterConnection;
+
       List<Pair<TransportConfiguration, TransportConfiguration>> connectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      
+
       if (config.getStaticConnectorNamePairs() != null)
       {
-         for (Pair<String, String> connectorNamePair: config.getStaticConnectorNamePairs())
-         {                    
+         for (Pair<String, String> connectorNamePair : config.getStaticConnectorNamePairs())
+         {
             TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorNamePair.a);
-   
+
             if (connector == null)
             {
-               log.warn("No connector defined with name '" + connectorNamePair.a + "'. The bridge will not be deployed.");
-   
+               log.warn("No connector defined with name '" + connectorNamePair.a +
+                        "'. The bridge will not be deployed.");
+
                return;
             }
-   
+
             TransportConfiguration backupConnector = null;
-   
+
             if (connectorNamePair.b != null)
             {
                backupConnector = configuration.getConnectorConfigurations().get(connectorNamePair.b);
-   
+
                if (backupConnector == null)
                {
                   log.warn("No connector defined with name '" + connectorNamePair.b +
                            "'. The bridge will not be deployed.");
-   
+
                   return;
                }
             }
-   
+
             Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connector,
                                                                                                                                  backupConnector);
-            
+
             connectors.add(pair);
          }
-         
-         cluster = new ClusterImpl(new SimpleString(config.getName()),
-                                           new SimpleString(config.getAddress()),
-                                           config.getBridgeConfig(),
-                                           config.isDuplicateDetection(),
-                                           executorFactory,
-                                           storageManager,
-                                           postOffice,
-                                           scheduledExecutor,
-                                           queueFactory,
-                                           connectors);
+
+         clusterConnection = new ClusterConnectionImpl(new SimpleString(config.getName()),
+                                                       new SimpleString(config.getAddress()),
+                                                       config.getBridgeConfig(),
+                                                       config.isDuplicateDetection(),
+                                                       config.isForwardWhenNoConsumers(),
+                                                       executorFactory,
+                                                       storageManager,
+                                                       postOffice,
+                                                       scheduledExecutor,
+                                                       queueFactory,
+                                                       connectors);
       }
       else
       {
          DiscoveryGroup dg = discoveryGroups.get(config.getDiscoveryGroupName());
-         
+
          if (dg == null)
          {
-            log.warn("No discovery group with name '" + config.getDiscoveryGroupName() + "'. The bridge will not be deployed.");
+            log.warn("No discovery group with name '" + config.getDiscoveryGroupName() +
+                     "'. The bridge will not be deployed.");
          }
-         
-         cluster = new ClusterImpl(new SimpleString(config.getName()),
-                                           new SimpleString(config.getAddress()),
-                                           config.getBridgeConfig(),
-                                           config.isDuplicateDetection(),
-                                           executorFactory,
-                                           storageManager,
-                                           postOffice,
-                                           scheduledExecutor,
-                                           queueFactory,
-                                           dg);
+
+         clusterConnection = new ClusterConnectionImpl(new SimpleString(config.getName()),
+                                                       new SimpleString(config.getAddress()),
+                                                       config.getBridgeConfig(),
+                                                       config.isDuplicateDetection(),
+                                                       config.isForwardWhenNoConsumers(),
+                                                       executorFactory,
+                                                       storageManager,
+                                                       postOffice,
+                                                       scheduledExecutor,
+                                                       queueFactory,
+                                                       dg);
       }
 
-      managementService.registerCluster(cluster, config);
+      managementService.registerCluster(clusterConnection, config);
 
-      clusters.put(config.getName(), cluster);
+      clusters.put(config.getName(), clusterConnection);
+
+      clusterConnection.start();
    }
 
    private Transformer instantiateTransformer(final String transformerClassName)

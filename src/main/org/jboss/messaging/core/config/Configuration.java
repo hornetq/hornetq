@@ -29,7 +29,7 @@ import java.util.Set;
 
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
-import org.jboss.messaging.core.config.cluster.ClusterConfiguration;
+import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
@@ -119,9 +119,9 @@ public interface Configuration extends Serializable
 
    void setDivertConfigurations(final List<DivertConfiguration> configs);
    
-   List<ClusterConfiguration> getClusterConfigurations();
+   List<ClusterConnectionConfiguration> getClusterConfigurations();
 
-   void setClusterConfigurations(final List<ClusterConfiguration> configs);
+   void setClusterConfigurations(final List<ClusterConnectionConfiguration> configs);
    
    List<QueueConfiguration> getQueueConfigurations();
 

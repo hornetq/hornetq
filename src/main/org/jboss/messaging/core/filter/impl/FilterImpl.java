@@ -143,14 +143,14 @@ public class FilterImpl implements Filter
             Object val = null;
 
             if (id.getName().startsWith(JBM_PREFIX))
-            {
+            {               
                // Look it up as header fields
                val = getHeaderFieldValue(message, id.getName());
             }
 
             if (val == null)
-            {
-               val = message.getProperty(id.getName());
+            {               
+               val = message.getProperty(id.getName());               
             }
 
             id.setValue(val);
@@ -158,7 +158,7 @@ public class FilterImpl implements Filter
          }
 
          // Compute the result of this operator
-
+         
          boolean res = (Boolean)operator.apply();
 
          return res;

@@ -47,7 +47,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
-import org.jboss.messaging.core.config.cluster.ClusterConfiguration;
+import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.AcceptorControlMBean;
@@ -77,7 +77,7 @@ import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
-import org.jboss.messaging.core.server.cluster.Cluster;
+import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.QueueSettings;
@@ -288,6 +288,7 @@ public class ManagementServiceImpl implements ManagementService
       
       TypedProperties props = new TypedProperties();
       
+      log.info("registering queue with address "+ address);
       props.putStringProperty(ManagementHelper.HDR_ADDRESS, address);
       props.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, queue.getName());
       
@@ -431,7 +432,7 @@ public class ManagementServiceImpl implements ManagementService
       unregisterFromJMX(objectName);
    }
    
-   public void registerCluster(final Cluster cluster, final ClusterConfiguration configuration) throws Exception
+   public void registerCluster(final ClusterConnection cluster, final ClusterConnectionConfiguration configuration) throws Exception
    {      
       //TODO
    }

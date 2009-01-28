@@ -57,16 +57,17 @@ public  class SimpleAddressManager implements AddressManager
       return addMappingInternal(binding.getAddress(), binding);
    }
 
-   public Binding removeBinding(final SimpleString bindableName)
+   public Binding removeBinding(final SimpleString uniqueName)
    {
-      Binding binding = nameMap.remove(bindableName);
+      Binding binding = nameMap.remove(uniqueName);
 
       if (binding == null)
       {
-         throw new IllegalStateException("Queue is not bound " + bindableName);
+         throw new IllegalStateException("Queue is not bound " + uniqueName);
       }
 
-      removeBindingInternal(binding.getAddress(), bindableName);
+      removeBindingInternal(binding.getAddress(), uniqueName);
+      
       return binding;
    }
 

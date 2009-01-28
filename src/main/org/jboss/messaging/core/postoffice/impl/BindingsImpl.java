@@ -48,17 +48,17 @@ import org.jboss.messaging.util.SimpleString;
  *
  */
 public class BindingsImpl implements Bindings
-{   
+{
    private static final Logger log = Logger.getLogger(BindingsImpl.class);
 
    private final ConcurrentMap<SimpleString, List<Binding>> routingNameBindingMap = new ConcurrentHashMap<SimpleString, List<Binding>>();
-   
+
    private final Map<SimpleString, Integer> routingNamePositions = new ConcurrentHashMap<SimpleString, Integer>();
-   
+
    private final List<Binding> bindingsList = new CopyOnWriteArrayList<Binding>();
-   
+
    private final List<Binding> exclusiveBindings = new CopyOnWriteArrayList<Binding>();
-   
+
    public List<Binding> getBindings()
    {
       return bindingsList;
@@ -73,27 +73,27 @@ public class BindingsImpl implements Bindings
       else
       {
          SimpleString routingName = binding.getRoutingName();
-         
+
          List<Binding> bindings = routingNameBindingMap.get(routingName);
-         
+
          if (bindings == null)
          {
             bindings = new CopyOnWriteArrayList<Binding>();
-            
+
             List<Binding> oldBindings = routingNameBindingMap.putIfAbsent(routingName, bindings);
-            
+
             if (oldBindings != null)
             {
                bindings = oldBindings;
             }
          }
-         
+
          bindings.add(binding);
       }
-      
+
       bindingsList.add(binding);
    }
-   
+
    public void removeBinding(final Binding binding)
    {
       if (binding.isExclusive())
@@ -103,33 +103,33 @@ public class BindingsImpl implements Bindings
       else
       {
          SimpleString routingName = binding.getRoutingName();
-         
+
          List<Binding> bindings = routingNameBindingMap.get(routingName);
-         
+
          if (bindings != null)
          {
             bindings.remove(binding);
-            
+
             if (bindings.isEmpty())
             {
                routingNameBindingMap.remove(routingName);
             }
          }
       }
-      
+
       bindingsList.remove(binding);
    }
-   
+
    public void route(ServerMessage message) throws Exception
    {
       route(message, null);
    }
-   
+
    public void route(ServerMessage message, Transaction tx) throws Exception
    {
       if (!exclusiveBindings.isEmpty())
       {
-         for (Binding binding: exclusiveBindings)
+         for (Binding binding : exclusiveBindings)
          {
             binding.getBindable().route(message, tx);
          }
@@ -137,42 +137,46 @@ public class BindingsImpl implements Bindings
       else
       {
          Set<Bindable> chosen = new HashSet<Bindable>();
-          
-         for (Map.Entry<SimpleString, List<Binding>> entry: routingNameBindingMap.entrySet())
+
+         for (Map.Entry<SimpleString, List<Binding>> entry : routingNameBindingMap.entrySet())
          {
             SimpleString routingName = entry.getKey();
-            
+
             List<Binding> bindings = entry.getValue();
-            
+
             if (bindings == null)
             {
-               //The value can become null if it's concurrently removed while we're iterating - this is expected ConcurrentHashMap behaviour!
+               // The value can become null if it's concurrently removed while we're iterating - this is expected
+               // ConcurrentHashMap behaviour!
                continue;
             }
-               
+
             Integer ipos = routingNamePositions.get(routingName);
-            
+
             int pos = ipos != null ? ipos.intValue() : 0;
-              
-            int startPos = pos;
-            
+
             int length = bindings.size();
-              
-            do
-            {               
+
+            int startPos = pos;
+
+            Binding theBinding = null;
+
+            int lastNoMatchingConsumerPos = -1;
+
+            while (true)
+            {
                Binding binding;
-               
                try
                {
                   binding = bindings.get(pos);
                }
                catch (IndexOutOfBoundsException e)
                {
-                  //This can occur if binding is removed while in route
+                  // This can occur if binding is removed while in route
                   if (!bindings.isEmpty())
                   {
                      pos = 0;
-                     
+
                      continue;
                   }
                   else
@@ -180,34 +184,94 @@ public class BindingsImpl implements Bindings
                      break;
                   }
                }
-               
-               pos++;
-               
-               if (pos == length)
+
+               if (binding.filterMatches(message))
                {
-                  pos = 0;
+                  // bindings.length == 1 ==> only a local queue so we don't check for matching consumers (it's an
+                  // unnecessary overhead)
+                  if (length == 1 || binding.isHighAcceptPriority(message))
+                  {
+                     theBinding = binding;
+
+                     pos = incrementPos(pos, length);
+
+                     break;
+                  }
+                  else
+                  {
+                     lastNoMatchingConsumerPos = pos;
+                  }
                }
-               
-               if (binding.accept(message))
+
+               pos = incrementPos(pos, length);
+
+               if (pos == startPos)
                {
-                  chosen.add(binding.getBindable());
-                   
+                  if (lastNoMatchingConsumerPos != -1)
+                  {                     
+                     try
+                     {
+                        theBinding = bindings.get(pos);
+                     }
+                     catch (IndexOutOfBoundsException e)
+                     {
+                        // This can occur if binding is removed while in route
+                        if (!bindings.isEmpty())
+                        {
+                           pos = 0;
+                           
+                           lastNoMatchingConsumerPos = -1;
+
+                           continue;
+                        }
+                        else
+                        {
+                           break;
+                        }
+                     }
+                                         
+                     pos = lastNoMatchingConsumerPos;
+
+                     pos = incrementPos(pos, length);
+                  }
                   break;
                }
             }
-            while (startPos != pos);
-            
-            if (pos != startPos)
+
+            if (theBinding != null)
             {
-               routingNamePositions.put(routingName, pos);
+               chosen.add(theBinding.getBindable());
             }
+
+            routingNamePositions.put(routingName, pos);
+
          }
-                     
-         for (Bindable bindable: chosen)
+
+         //TODO refactor to do this is one iteration
+         
+         for (Bindable bindable : chosen)
+         {
+            bindable.preroute(message, tx);
+         }
+         
+         for (Bindable bindable : chosen)
          {
             bindable.route(message, tx);
          }
-      }      
+      }
+
    }
-   
+
+   private final int incrementPos(int pos, int length)
+   {
+      pos++;
+
+      if (pos == length)
+      {
+         pos = 0;
+      }
+
+      return pos;
+   }
+
 }

@@ -48,27 +48,27 @@ public class ManagementHelper
 
    // Constants -----------------------------------------------------
 
-   public static final SimpleString HDR_JMX_OBJECTNAME = new SimpleString("JBM_JMX_ObjectName");
+   public static final SimpleString HDR_JMX_OBJECTNAME = new SimpleString("_JBM_JMX_ObjectName");
 
-   public static final SimpleString HDR_JMX_ATTRIBUTE_PREFIX = new SimpleString("JBM_JMXAttribute.");
+   public static final SimpleString HDR_JMX_ATTRIBUTE_PREFIX = new SimpleString("_JBM_JMXAttribute.");
 
-   public static final SimpleString HDR_JMX_OPERATION_PREFIX = new SimpleString("JBM_JMXOperation.");
+   public static final SimpleString HDR_JMX_OPERATION_PREFIX = new SimpleString("_JBM_JMXOperation.");
 
    public static final SimpleString HDR_JMX_OPERATION_NAME = new SimpleString(HDR_JMX_OPERATION_PREFIX + "name");
 
-   public static final SimpleString HDR_JMX_OPERATION_SUCCEEDED = new SimpleString("JBM_JMXOperationSucceeded");
+   public static final SimpleString HDR_JMX_OPERATION_SUCCEEDED = new SimpleString("_JBM_JMXOperationSucceeded");
 
-   public static final SimpleString HDR_JMX_OPERATION_EXCEPTION = new SimpleString("JBM_JMXOperationException");
+   public static final SimpleString HDR_JMX_OPERATION_EXCEPTION = new SimpleString("_JBM_JMXOperationException");
 
-   public static final SimpleString HDR_NOTIFICATION_TYPE = new SimpleString("JBM_NotifType");
+   public static final SimpleString HDR_NOTIFICATION_TYPE = new SimpleString("_JBM_NotifType");
 
-   public static final SimpleString HDR_NOTIFICATION_TIMESTAMP = new SimpleString("JBM_NotifTimestamp");
+   public static final SimpleString HDR_NOTIFICATION_TIMESTAMP = new SimpleString("_JBM_NotifTimestamp");
    
-   public static final SimpleString HDR_QUEUE_NAME = new SimpleString("JBM_QueueName");
+   public static final SimpleString HDR_QUEUE_NAME = new SimpleString("_JBM_QueueName");
    
-   public static final SimpleString HDR_ADDRESS = new SimpleString("JBM_Address");
+   public static final SimpleString HDR_ADDRESS = new SimpleString("_JBM_Address");
    
-   public static final SimpleString HDR_FILTERSTRING = new SimpleString("JBM_FilterString");
+   public static final SimpleString HDR_FILTERSTRING = new SimpleString("_JBM_FilterString");
 
    // Attributes ----------------------------------------------------
 

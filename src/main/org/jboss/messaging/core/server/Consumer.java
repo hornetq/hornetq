@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.server;
 
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.core.filter.Filter;
 
 
 
@@ -37,5 +37,5 @@ public interface Consumer
 {
    HandleStatus handle(MessageReference reference) throws Exception;
    
-   SimpleString getFilterString();
+   Filter getFilter();
 }

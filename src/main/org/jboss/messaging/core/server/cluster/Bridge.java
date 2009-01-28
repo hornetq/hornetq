@@ -48,8 +48,6 @@ public interface Bridge extends Consumer, MessagingComponent
 
    long getMaxBatchTime();
 
-   SimpleString getFilterString();
-
    SimpleString getForwardingAddress();
 
    Transformer getTransformer();

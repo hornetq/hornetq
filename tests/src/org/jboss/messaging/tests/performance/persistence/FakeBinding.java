@@ -34,7 +34,14 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class FakeBinding implements Binding
 {
-   public boolean accept(ServerMessage message) throws Exception
+   
+   public boolean filterMatches(ServerMessage message) throws Exception
+   {
+      // TODO Auto-generated method stub
+      return false;
+   }
+
+   public boolean isHighAcceptPriority(ServerMessage message)
    {
       // TODO Auto-generated method stub
       return false;

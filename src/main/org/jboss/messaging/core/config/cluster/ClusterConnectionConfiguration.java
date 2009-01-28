@@ -28,7 +28,7 @@ import java.util.List;
 import org.jboss.messaging.util.Pair;
 
 /**
- * A ClusterConfiguration
+ * A ClusterConnectionConfiguration
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
@@ -36,50 +36,56 @@ import org.jboss.messaging.util.Pair;
  *
  *
  */
-public class ClusterConfiguration implements Serializable
+public class ClusterConnectionConfiguration implements Serializable
 {
    private static final long serialVersionUID = 8948303813427795935L;
 
    private final String name;
-   
+
    private final String address;
 
    private final BridgeConfiguration bridgeConfig;
-   
+
    private final boolean duplicateDetection;
+   
+   private final boolean forwardWhenNoConsumers;
 
    private final List<Pair<String, String>> staticConnectorNamePairs;
 
    private final String discoveryGroupName;
 
-   public ClusterConfiguration(final String name,
-                               final String address,
-                               final BridgeConfiguration bridgeConfig,
-                               final boolean duplicateDetection,
-                               final List<Pair<String, String>> staticConnectorNamePairs)
+   public ClusterConnectionConfiguration(final String name,
+                                         final String address,
+                                         final BridgeConfiguration bridgeConfig,
+                                         final boolean duplicateDetection,
+                                         final boolean forwardWhenNoConsumers,
+                                         final List<Pair<String, String>> staticConnectorNamePairs)
    {
       this.name = name;
       this.address = address;
       this.bridgeConfig = bridgeConfig;
       this.staticConnectorNamePairs = staticConnectorNamePairs;
       this.duplicateDetection = duplicateDetection;
+      this.forwardWhenNoConsumers = forwardWhenNoConsumers;
       this.discoveryGroupName = null;
    }
 
-   public ClusterConfiguration(final String name,
-                               final String address,
-                               final BridgeConfiguration bridgeConfig,
-                               final boolean duplicateDetection,
-                               final String discoveryGroupName)
+   public ClusterConnectionConfiguration(final String name,
+                                         final String address,
+                                         final BridgeConfiguration bridgeConfig,
+                                         final boolean duplicateDetection,
+                                         final boolean forwardWhenNoConsumers,
+                                         final String discoveryGroupName)
    {
       this.name = name;
       this.address = address;
       this.bridgeConfig = bridgeConfig;
       this.duplicateDetection = duplicateDetection;
+      this.forwardWhenNoConsumers = forwardWhenNoConsumers;
       this.discoveryGroupName = discoveryGroupName;
       this.staticConnectorNamePairs = null;
    }
-   
+
    public String getName()
    {
       return name;
@@ -94,10 +100,15 @@ public class ClusterConfiguration implements Serializable
    {
       return bridgeConfig;
    }
-   
+
    public boolean isDuplicateDetection()
    {
       return duplicateDetection;
+   }
+   
+   public boolean isForwardWhenNoConsumers()
+   {
+      return forwardWhenNoConsumers;
    }
 
    public List<Pair<String, String>> getStaticConnectorNamePairs()

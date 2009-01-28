@@ -45,7 +45,9 @@ public interface Binding
 
    SimpleString getRoutingName();
 
-   boolean accept(ServerMessage message) throws Exception;
+   boolean filterMatches(ServerMessage message) throws Exception;
+   
+   boolean isHighAcceptPriority(ServerMessage message);
 
    boolean isExclusive();
 }

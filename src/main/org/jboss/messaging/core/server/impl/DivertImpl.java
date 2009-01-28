@@ -96,35 +96,26 @@ public class DivertImpl implements Divert
       this.storageManager = storageManager;
    }
 
-   public boolean accept(final ServerMessage message) throws Exception
+   public void preroute(final ServerMessage message, final Transaction tx) throws Exception
    {
-      if (filter != null && !filter.match(message))
+      //We need to increment ref count here to ensure that the message doesn't get stored, deleted and stored again in a single route which
+      //can occur if the message is routed to a queue, then acked before it's routed here
+      
+      //TODO - combine with similar code in QueueImpl.accept()
+      
+      int count = message.incrementRefCount();
+      
+      if (count == 1)
       {
-         return false;
+         PagingStore store = pagingManager.getPageStore(message.getDestination());
+         
+         store.addSize(message.getMemoryEstimate());
       }
-      else
+    
+      if (message.isDurable())
       {
-         //We need to increment ref count here to ensure that the message doesn't get stored, deleted and stored again in a single route which
-         //can occur if the message is routed to a queue, then acked before it's routed here
-         
-         //TODO - combine with similar code in QueueImpl.accept()
-         
-         int count = message.incrementRefCount();
-         
-         if (count == 1)
-         {
-            PagingStore store = pagingManager.getPageStore(message.getDestination());
-            
-            store.addSize(message.getMemoryEstimate());
-         }
-       
-         if (message.isDurable())
-         {
-            message.incrementDurableRefCount();
-         }
-         
-         return true;
-      }
+         message.incrementDurableRefCount();
+      }     
    }
 
    public void route(ServerMessage message, final Transaction tx) throws Exception
@@ -179,5 +170,10 @@ public class DivertImpl implements Divert
    public boolean isExclusive()
    {
       return exclusive;
+   }
+   
+   public Filter getFilter()
+   {
+      return filter;
    }
 }

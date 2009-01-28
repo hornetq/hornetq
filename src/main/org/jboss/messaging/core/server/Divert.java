@@ -23,6 +23,9 @@
 
 package org.jboss.messaging.core.server;
 
+import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.util.SimpleString;
+
 
 
 /**
@@ -36,5 +39,11 @@ package org.jboss.messaging.core.server;
  */
 public interface Divert extends Bindable
 {
-   //boolean isExclusive();
+   Filter getFilter();
+   
+   boolean isExclusive();
+   
+   SimpleString getUniqueName();
+   
+   SimpleString getRoutingName();
 }

@@ -125,12 +125,12 @@ public class WildcardAddressManager extends SimpleAddressManager
     * If the address is a wild card then the binding will be removed from the actual mappings for any linked address.
     * otherwise it will be removed as normal.
     *
-    * @param bindableName the name of the queue for the binding to remove
+    * @param uniqueName the name of the binding to remove
     * @return true if this was the last mapping for a specific address
     */
-   public Binding removeBinding(final SimpleString bindableName)
+   public Binding removeBinding(final SimpleString uniqueName)
    {
-      Binding binding = super.removeBinding(bindableName);
+      Binding binding = super.removeBinding(uniqueName);
       if (binding != null)
       {
          Address add = getAddress(binding.getAddress());
@@ -152,7 +152,7 @@ public class WildcardAddressManager extends SimpleAddressManager
          {
             for (Address destination : add.getLinkedAddresses())
             {
-               super.removeBindingInternal(destination.getAddress(), bindableName);
+               super.removeBindingInternal(destination.getAddress(), uniqueName);
             }
          }
          removeAndUpdateAddressMap(add);

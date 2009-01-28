@@ -116,7 +116,7 @@ public class QueueImpl implements Queue
 
    private int consumersToFailover = -1;
 
-   private final SimpleString routeToPropertyName;
+  // private final SimpleString routeToPropertyName;
 
    public QueueImpl(final long persistenceID,
                     final SimpleString name,
@@ -144,8 +144,6 @@ public class QueueImpl implements Queue
 
       this.queueSettingsRepository = queueSettingsRepository;
 
-      routeToPropertyName = MessageImpl.HDR_ROUTE_TO_PREFIX.concat(name);
-
       if (postOffice == null)
       {
          pagingManager = null;
@@ -161,43 +159,7 @@ public class QueueImpl implements Queue
    }
 
    // Bindable implementation -------------------------------------------------------------------------------------
-
-   public boolean accept(final ServerMessage message) throws Exception
-   {
-      // if (message.containsProperty(MessageImpl.HDR_FROM_CLUSTER))
-      // {
-      // if (message.removeProperty(routeToPropertyName) == null)
-      // {
-      // return false;
-      // }
-      // }
-
-      if (filter != null && !filter.match(message))
-      {
-         return false;
-      }
-      else
-      {
-         int count = message.incrementRefCount();
-
-         if (count == 1)
-         {
-            PagingStore store = pagingManager.getPageStore(message.getDestination());
-
-            store.addSize(message.getMemoryEstimate());
-         }
-
-         boolean durableRef = message.isDurable() && durable;
-
-         if (durableRef)
-         {
-            message.incrementDurableRefCount();
-         }
-
-         return true;
-      }
-   }
-
+  
    public SimpleString getRoutingName()
    {
       return name;
@@ -213,12 +175,27 @@ public class QueueImpl implements Queue
       return false;
    }
 
+   public void preroute(final ServerMessage message, final Transaction tx) throws Exception
+   {
+      int count = message.incrementRefCount();
+
+      if (count == 1)
+      {
+         PagingStore store = pagingManager.getPageStore(message.getDestination());
+
+         store.addSize(message.getMemoryEstimate());
+      }
+
+      boolean durableRef = message.isDurable() && durable;
+
+      if (durableRef)
+      {
+         message.incrementDurableRefCount();
+      }      
+   }
+   
    public void route(final ServerMessage message, final Transaction tx) throws Exception
    {
-      // Temp
-      SimpleString routeToHeader = MessageImpl.HDR_ROUTE_TO_PREFIX.concat(name);
-      message.removeProperty(routeToHeader);
-
       boolean durableRef = message.isDurable() && durable;
 
       // If durable, must be persisted before anything is routed
@@ -285,10 +262,6 @@ public class QueueImpl implements Queue
 
    public MessageReference reroute(final ServerMessage message, final Transaction tx) throws Exception
    {
-      // Temp
-      SimpleString routeToHeader = MessageImpl.HDR_ROUTE_TO_PREFIX.concat(name);
-      message.removeProperty(routeToHeader);
-
       MessageReference ref = message.createReference(this);
 
       int count = message.incrementRefCount();

@@ -59,7 +59,7 @@ public class FakeConsumer implements Consumer
       this.filter = filter;
    }
 
-   public SimpleString getFilterString()
+   public Filter getFilter()
    {
       // TODO Auto-generated method stub
       return null;

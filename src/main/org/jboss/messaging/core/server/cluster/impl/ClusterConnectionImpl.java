@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.server.cluster.impl;
 
-import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_RESET_QUEUE_DATA;
+import static org.jboss.messaging.core.postoffice.impl.PostOfficeImpl.HDR_RESET_QUEUE_DATA;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,12 +44,13 @@ import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.impl.BindingImpl;
+import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
+import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.cluster.Bridge;
-import org.jboss.messaging.core.server.cluster.Cluster;
-import org.jboss.messaging.core.server.cluster.FlowBinding;
+import org.jboss.messaging.core.server.cluster.ClusterConnection;
+import org.jboss.messaging.core.server.cluster.RemoteQueueBinding;
 import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
@@ -57,7 +58,7 @@ import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * 
- * A ClusterImpl
+ * A ClusterConnectionImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
@@ -65,9 +66,9 @@ import org.jboss.messaging.util.UUIDGenerator;
  *
  *
  */
-public class ClusterImpl implements Cluster, DiscoveryListener
+public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListener
 {
-   private static final Logger log = Logger.getLogger(ClusterImpl.class);
+   private static final Logger log = Logger.getLogger(ClusterConnectionImpl.class);
 
    private final ExecutorFactory executorFactory;
 
@@ -83,6 +84,8 @@ public class ClusterImpl implements Cluster, DiscoveryListener
 
    private final boolean useDuplicateDetection;
 
+   private final boolean forwardWhenNoMatchingConsumers;
+
    private Map<Pair<TransportConfiguration, TransportConfiguration>, MessageFlowRecord> records = new HashMap<Pair<TransportConfiguration, TransportConfiguration>, MessageFlowRecord>();
 
    private final DiscoveryGroup discoveryGroup;
@@ -96,16 +99,17 @@ public class ClusterImpl implements Cluster, DiscoveryListener
    /*
     * Constructor using static list of connectors
     */
-   public ClusterImpl(final SimpleString name,
-                      final SimpleString address,
-                      final BridgeConfiguration bridgeConfig,
-                      final boolean useDuplicateDetection,                
-                      final ExecutorFactory executorFactory,
-                      final StorageManager storageManager,
-                      final PostOffice postOffice,                     
-                      final ScheduledExecutorService scheduledExecutor,
-                      final QueueFactory queueFactory,
-                      final List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception
+   public ClusterConnectionImpl(final SimpleString name,
+                                final SimpleString address,
+                                final BridgeConfiguration bridgeConfig,
+                                final boolean useDuplicateDetection,
+                                final boolean forwardWhenNoMatchingConsumers,
+                                final ExecutorFactory executorFactory,
+                                final StorageManager storageManager,
+                                final PostOffice postOffice,
+                                final ScheduledExecutorService scheduledExecutor,
+                                final QueueFactory queueFactory,
+                                final List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception
    {
       this.name = name;
 
@@ -114,6 +118,8 @@ public class ClusterImpl implements Cluster, DiscoveryListener
       this.bridgeConfig = bridgeConfig;
 
       this.useDuplicateDetection = useDuplicateDetection;
+
+      this.forwardWhenNoMatchingConsumers = forwardWhenNoMatchingConsumers;
 
       this.executorFactory = executorFactory;
 
@@ -133,16 +139,17 @@ public class ClusterImpl implements Cluster, DiscoveryListener
    /*
     * Constructor using discovery to get connectors
     */
-   public ClusterImpl(final SimpleString name,
-                      final SimpleString address,
-                      final BridgeConfiguration bridgeConfig,
-                      final boolean useDuplicateDetection,              
-                      final ExecutorFactory executorFactory,
-                      final StorageManager storageManager,
-                      final PostOffice postOffice,             
-                      final ScheduledExecutorService scheduledExecutor,
-                      final QueueFactory queueFactory,
-                      final DiscoveryGroup discoveryGroup) throws Exception
+   public ClusterConnectionImpl(final SimpleString name,
+                                final SimpleString address,
+                                final BridgeConfiguration bridgeConfig,
+                                final boolean useDuplicateDetection,
+                                final boolean forwardWhenNoMatchingConsumers,
+                                final ExecutorFactory executorFactory,
+                                final StorageManager storageManager,
+                                final PostOffice postOffice,
+                                final ScheduledExecutorService scheduledExecutor,
+                                final QueueFactory queueFactory,
+                                final DiscoveryGroup discoveryGroup) throws Exception
    {
       this.name = name;
 
@@ -163,6 +170,8 @@ public class ClusterImpl implements Cluster, DiscoveryListener
       this.discoveryGroup = discoveryGroup;
 
       this.useDuplicateDetection = useDuplicateDetection;
+
+      this.forwardWhenNoMatchingConsumers = forwardWhenNoMatchingConsumers;
    }
 
    public synchronized void start() throws Exception
@@ -184,6 +193,8 @@ public class ClusterImpl implements Cluster, DiscoveryListener
 
    public synchronized void stop() throws Exception
    {
+      log.info("Stoping cluster connection");
+
       if (!started)
       {
          return;
@@ -194,8 +205,11 @@ public class ClusterImpl implements Cluster, DiscoveryListener
          discoveryGroup.unregisterListener(this);
       }
 
+      log.info("Three are " + records.size() + " records");
+
       for (MessageFlowRecord record : records.values())
       {
+         log.info("stopping record");
          record.close();
       }
 
@@ -273,16 +287,11 @@ public class ClusterImpl implements Cluster, DiscoveryListener
                // Add binding in storage so the queue will get reloaded on startup and we can find it - it's never
                // actually routed to at that address though
 
-               Binding storeBinding = new BindingImpl(queue.getName(),
-                                                      queue.getName(),
-                                                      queue.getName(),
-                                                      queue,
-                                                      false,
-                                                      true);
+               Binding storeBinding = new LocalQueueBinding(queue.getName(), queue);
 
                storageManager.addQueueBinding(storeBinding);
             }
-            
+
             MessageFlowRecord record = new MessageFlowRecord(queue);
 
             Bridge bridge = new BridgeImpl(queueName,
@@ -291,7 +300,8 @@ public class ClusterImpl implements Cluster, DiscoveryListener
                                            executorFactory.getExecutor(),
                                            bridgeConfig.getMaxBatchSize(),
                                            bridgeConfig.getMaxBatchTime(),
-                                           new SimpleString(bridgeConfig.getFilterString()),
+                                           bridgeConfig.getFilterString() == null ? null
+                                                                                 : new SimpleString(bridgeConfig.getFilterString()),
                                            null,
                                            storageManager,
                                            scheduledExecutor,
@@ -303,9 +313,10 @@ public class ClusterImpl implements Cluster, DiscoveryListener
                                            false,
                                            record,
                                            address.toString());
-            
+
             record.setBridge(bridge);
 
+            log.info("added record");
             records.put(connectorPair, record);
 
             bridge.start();
@@ -332,41 +343,46 @@ public class ClusterImpl implements Cluster, DiscoveryListener
    {
       StringBuilder str = new StringBuilder(replaceWildcardChars(config.getFactoryClassName()));
 
-      if (!config.getParams().isEmpty())
-      {
-         str.append("?");
-      }
+      log.info("config is " + config);
 
-      boolean first = true;
-      for (Map.Entry<String, Object> entry : config.getParams().entrySet())
+      if (config.getParams() != null)
       {
-         if (!first)
+         if (!config.getParams().isEmpty())
          {
-            str.append("&");
+            str.append("?");
          }
-         String encodedKey = replaceWildcardChars(entry.getKey());
 
-         String val = entry.getValue().toString();
-         String encodedVal = replaceWildcardChars(val);
+         boolean first = true;
+         for (Map.Entry<String, Object> entry : config.getParams().entrySet())
+         {
+            if (!first)
+            {
+               str.append("&");
+            }
+            String encodedKey = replaceWildcardChars(entry.getKey());
 
-         str.append(encodedKey).append('=').append(encodedVal);
+            String val = entry.getValue().toString();
+            String encodedVal = replaceWildcardChars(val);
 
-         first = false;
+            str.append(encodedKey).append('=').append(encodedVal);
+
+            first = false;
+         }
       }
 
       return new SimpleString(str.toString());
    }
-   
+
    // Inner classes -----------------------------------------------------------------------------------
-   
+
    private class MessageFlowRecord implements MessageHandler
    {
       private Bridge bridge;
 
       private final Queue queue;
 
-      private final Map<SimpleString, FlowBinding> bindings = new HashMap<SimpleString, FlowBinding>();
-      
+      private final Map<SimpleString, RemoteQueueBinding> bindings = new HashMap<SimpleString, RemoteQueueBinding>();
+
       private boolean firstReset = false;
 
       public MessageFlowRecord(final Queue queue)
@@ -376,14 +392,16 @@ public class ClusterImpl implements Cluster, DiscoveryListener
 
       public void close() throws Exception
       {
+         log.info("stopping bridge");
          bridge.stop();
+         log.info("stopped bridge");
 
-         for (FlowBinding binding : bindings.values())
+         for (RemoteQueueBinding binding : bindings.values())
          {
             postOffice.removeBinding(binding.getUniqueName());
          }
       }
-      
+
       public void setBridge(final Bridge bridge)
       {
          this.bridge = bridge;
@@ -396,65 +414,83 @@ public class ClusterImpl implements Cluster, DiscoveryListener
             // Reset the bindings
             if (message.getProperty(HDR_RESET_QUEUE_DATA) != null)
             {
-               for (FlowBinding binding : bindings.values())
+               for (RemoteQueueBinding binding : bindings.values())
                {
                   postOffice.removeBinding(binding.getUniqueName());
                }
-   
+
                bindings.clear();
-               
+
                firstReset = true;
+
+               log.info("did reset");
+
+               return;
             }
-            
+
             if (!firstReset)
             {
                return;
             }
-   
+
             NotificationType type = NotificationType.valueOf(message.getProperty(ManagementHelper.HDR_NOTIFICATION_TYPE)
                                                                     .toString());
-   
+
+            log.info("Got notification message " + type);
+
             if (type == NotificationType.QUEUE_CREATED)
             {
+               log.info("queue created");
                SimpleString uniqueName = new SimpleString("flow-").concat(UUIDGenerator.getInstance()
                                                                                        .generateSimpleStringUUID());
-   
+
                SimpleString queueAddress = (SimpleString)message.getProperty(ManagementHelper.HDR_ADDRESS);
-   
+
                SimpleString queueName = (SimpleString)message.getProperty(ManagementHelper.HDR_QUEUE_NAME);
-   
-               FlowBinding binding = new FlowBindingImpl(queueAddress, uniqueName, queueName, queue, useDuplicateDetection);
-   
+
+               SimpleString filterString = (SimpleString)message.getProperty(ManagementHelper.HDR_FILTERSTRING);
+
+               RemoteQueueBinding binding = new RemoteQueueBindingImpl(queueAddress,
+                                                                       uniqueName,
+                                                                       queueName,
+                                                                       filterString,
+                                                                       queue,
+                                                                       useDuplicateDetection,
+                                                                       forwardWhenNoMatchingConsumers);
+
                bindings.put(queueName, binding);
-   
+
                postOffice.addBinding(binding);
             }
             else if (type == NotificationType.QUEUE_DESTROYED)
             {
+               log.info("queue destroyed");
                SimpleString queueName = (SimpleString)message.getProperty(ManagementHelper.HDR_QUEUE_NAME);
-   
-               FlowBinding binding = bindings.remove(queueName);
-   
+
+               RemoteQueueBinding binding = bindings.remove(queueName);
+
                postOffice.removeBinding(binding.getUniqueName());
             }
             else if (type == NotificationType.CONSUMER_CREATED)
             {
+               log.info("consumer created");
                SimpleString queueName = (SimpleString)message.getProperty(ManagementHelper.HDR_QUEUE_NAME);
-   
+
                SimpleString filterString = (SimpleString)message.getProperty(ManagementHelper.HDR_FILTERSTRING);
-   
-               FlowBinding binding = bindings.get(queueName);
-   
+
+               RemoteQueueBinding binding = bindings.get(queueName);
+
                binding.addConsumer(filterString);
             }
             else if (type == NotificationType.CONSUMER_CLOSED)
             {
+               log.info("consumer closed");
                SimpleString queueName = (SimpleString)message.getProperty(ManagementHelper.HDR_QUEUE_NAME);
-   
+
                SimpleString filterString = (SimpleString)message.getProperty(ManagementHelper.HDR_FILTERSTRING);
-   
-               FlowBinding binding = bindings.get(queueName);
-   
+
+               RemoteQueueBinding binding = bindings.get(queueName);
+
                binding.removeConsumer(filterString);
             }
          }
@@ -465,6 +501,5 @@ public class ClusterImpl implements Cluster, DiscoveryListener
       }
 
    }
-
 
 }

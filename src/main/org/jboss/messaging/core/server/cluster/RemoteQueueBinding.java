@@ -27,7 +27,7 @@ import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- * A FlowBinding
+ * A RemoteQueueBinding
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
@@ -35,7 +35,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  *
  */
-public interface FlowBinding extends Binding
+public interface RemoteQueueBinding extends Binding
 {
    void addConsumer(SimpleString filterString) throws Exception;
    

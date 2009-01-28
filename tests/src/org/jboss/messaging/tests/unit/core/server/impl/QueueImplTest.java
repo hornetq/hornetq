@@ -589,7 +589,7 @@ public class QueueImplTest extends UnitTestCase
 
       class NullConsumer implements Consumer
       {
-         public SimpleString getFilterString()
+         public Filter getFilter()
          {
             return null;
          }

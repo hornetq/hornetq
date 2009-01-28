@@ -35,8 +35,8 @@ import org.jboss.messaging.core.transaction.Transaction;
  */
 public interface Bindable
 {
-   void route(ServerMessage message, Transaction tx) throws Exception;
+   void preroute(ServerMessage message, Transaction tx) throws Exception;
    
-   boolean accept(ServerMessage message) throws Exception;
+   void route(ServerMessage message, Transaction tx) throws Exception;
 }
 

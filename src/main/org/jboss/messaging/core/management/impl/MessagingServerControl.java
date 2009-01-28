@@ -54,7 +54,7 @@ import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.impl.BindingImpl;
+import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -296,7 +296,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       if (postOffice.getBinding(sName) == null)
       {
          Queue queue = queueFactory.createQueue(-1, sName, null, true, false);
-         Binding binding = new BindingImpl(sAddress, sName, sName, queue, false, true);
+         Binding binding = new LocalQueueBinding(sAddress, queue);
          storageManager.addQueueBinding(binding);
          postOffice.addBinding(binding);
       }
@@ -315,7 +315,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       if (postOffice.getBinding(sName) == null)
       {
          Queue queue = queueFactory.createQueue(-1, sName, filter, durable, false);
-         Binding binding = new BindingImpl(sAddress, sName, sName, queue, false, true);
+         Binding binding = new LocalQueueBinding(sAddress, queue);
          if (durable)
          {
             storageManager.addQueueBinding(binding);
@@ -544,9 +544,9 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return TransportConfigurationInfo.toTabularData(connectorConfigurations);
    }
    
-   public void sendQueueInfoToQueue(final SimpleString queueName) throws Exception
+   public void sendQueueInfoToQueue(final String queueName) throws Exception
    {
-      postOffice.sendQueueInfoToQueue(queueName);
+      postOffice.sendQueueInfoToQueue(new SimpleString(queueName));
    }
 
    // NotificationEmitter implementation ----------------------------

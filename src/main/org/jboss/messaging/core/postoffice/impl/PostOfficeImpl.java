@@ -80,7 +80,9 @@ import org.jboss.messaging.util.TypedProperties;
 public class PostOfficeImpl implements PostOffice, NotificationListener
 {
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
-
+   
+   public static final SimpleString HDR_RESET_QUEUE_DATA = new SimpleString("_JBM_RESET_QUEUE_DATA");
+   
    private static final List<MessageReference> emptyList = Collections.<MessageReference> emptyList();
 
    private final AddressManager addressManager;
@@ -300,7 +302,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       
       message.setDestination(queueName);
       
-      message.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE, new SimpleString(NotificationType.QUEUE_CREATED.toString()));        
+      message.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE, new SimpleString(type.toString()));        
       message.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
       
       return message;
@@ -327,19 +329,20 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          ServerMessage message = new ServerMessageImpl(storageManager.generateUniqueID()); 
          message.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
          message.setDestination(queueName);
-         message.putBooleanProperty(MessageImpl.HDR_RESET_QUEUE_DATA, true);
+         message.putBooleanProperty(HDR_RESET_QUEUE_DATA, true);
          
-         queue.accept(message);            
+         queue.preroute(message, null);            
          queue.route(message, null);
                   
          for (QueueInfo info: queueInfos.values())
          {
+            log.info("creatign queue created message");
             message = createQueueInfoMessage(NotificationType.QUEUE_CREATED, queueName);
             
             message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
             message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName());
             
-            queue.accept(message);            
+            queue.preroute(message, null);            
             queue.route(message, null);
             
             int consumersWithFilters = info.getFilterStrings() != null ? info.getFilterStrings().size() : 0;
@@ -350,7 +353,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                
                message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName()); 
                
-               queue.accept(message);            
+               queue.preroute(message, null);            
                queue.route(message, null);
             }
             
@@ -363,7 +366,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                   message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName());
                   message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString); 
                   
-                  queue.accept(message);            
+                  queue.preroute(message, null);            
                   queue.route(message, null);
                }
             }           

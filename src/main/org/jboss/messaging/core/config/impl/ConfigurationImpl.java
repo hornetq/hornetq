@@ -24,7 +24,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
-import org.jboss.messaging.core.config.cluster.ClusterConfiguration;
+import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
@@ -165,7 +165,7 @@ public class ConfigurationImpl implements Configuration
    
    protected List<DivertConfiguration> divertConfigurations = new ArrayList<DivertConfiguration>();
    
-   protected List<ClusterConfiguration> clusterConfigurations = new ArrayList<ClusterConfiguration>();
+   protected List<ClusterConnectionConfiguration> clusterConfigurations = new ArrayList<ClusterConnectionConfiguration>();
    
    protected List<QueueConfiguration> queueConfigurations = new ArrayList<QueueConfiguration>();
    
@@ -363,12 +363,12 @@ public class ConfigurationImpl implements Configuration
       this.broadcastGroupConfigurations = configs;
    }
 
-   public List<ClusterConfiguration> getClusterConfigurations()
+   public List<ClusterConnectionConfiguration> getClusterConfigurations()
    {
       return this.clusterConfigurations;
    }
    
-   public void setClusterConfigurations(final List<ClusterConfiguration> configs)
+   public void setClusterConfigurations(final List<ClusterConnectionConfiguration> configs)
    {
       this.clusterConfigurations = configs;
    }

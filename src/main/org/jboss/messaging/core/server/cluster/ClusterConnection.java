@@ -27,7 +27,7 @@ import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- * A Cluster
+ * A ClusterConnection
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
@@ -35,7 +35,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  *
  */
-public interface Cluster extends MessagingComponent
+public interface ClusterConnection extends MessagingComponent
 {
    SimpleString getName();
 }

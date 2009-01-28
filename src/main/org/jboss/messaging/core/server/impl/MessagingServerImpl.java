@@ -45,7 +45,8 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.impl.BindingImpl;
+import org.jboss.messaging.core.postoffice.impl.DivertBinding;
+import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
@@ -288,7 +289,7 @@ public class MessagingServerImpl implements MessagingServer
                                                 true,
                                                 false);
 
-         Binding binding = new BindingImpl(queueBindingInfo.getAddress(), queueBindingInfo.getQueueName(), queueBindingInfo.getQueueName(), queue, false, true);
+         Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue);
 
          queues.put(queueBindingInfo.getPersistenceID(), queue);
 
@@ -799,7 +800,7 @@ public class MessagingServerImpl implements MessagingServer
 
             Queue queue = queueFactory.createQueue(-1, name, filter, config.isDurable(), false);
 
-            Binding queueBinding = new BindingImpl(new SimpleString(config.getAddress()), name, name, queue, false, true);
+            Binding queueBinding = new LocalQueueBinding(new SimpleString(config.getAddress()), queue);
             
             binding = queueBinding;
 
@@ -868,7 +869,7 @@ public class MessagingServerImpl implements MessagingServer
                                         pagingManager,
                                         storageManager);
 
-         Binding binding = new BindingImpl(sAddress, sName, new SimpleString(config.getRoutingName()), divert, config.isExclusive(), false);
+         Binding binding = new DivertBinding(sAddress, divert);
 
          postOffice.addBinding(binding);
       }

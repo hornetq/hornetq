@@ -239,7 +239,7 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
       return localControl.getConnectors();
    }
 
-   public void sendQueueInfoToQueue(final SimpleString queueName) throws Exception
+   public void sendQueueInfoToQueue(final String queueName) throws Exception
    {
       localControl.sendQueueInfoToQueue(queueName);
    }

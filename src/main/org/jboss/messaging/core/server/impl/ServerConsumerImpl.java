@@ -195,16 +195,9 @@ public class ServerConsumerImpl implements ServerConsumer
       return doHandle(ref);
    }
    
-   public SimpleString getFilterString()
+   public Filter getFilter()
    {
-      if (filter != null)
-      {
-         return filter.getFilterString();
-      }
-      else
-      {
-         return null;
-      }
+      return filter;
    }
 
    public void handleClose(final Packet packet)

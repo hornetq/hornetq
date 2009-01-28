@@ -37,7 +37,7 @@ public interface AddressManager
 {
    boolean addBinding(Binding binding);
 
-   Binding removeBinding(SimpleString queueName);
+   Binding removeBinding(SimpleString uniqueName);
 
    Bindings getBindings(SimpleString address);
 

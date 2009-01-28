@@ -39,7 +39,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.impl.BindingImpl;
+import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.DelayedResult;
 import org.jboss.messaging.core.remoting.FailureListener;
@@ -1492,7 +1492,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          final Queue queue = queueFactory.createQueue(-1, name, filter, durable, temporary);
 
-         binding = new BindingImpl(address, name, name, queue, false, true);
+         binding = new LocalQueueBinding(address, queue);
 
          if (durable)
          {
