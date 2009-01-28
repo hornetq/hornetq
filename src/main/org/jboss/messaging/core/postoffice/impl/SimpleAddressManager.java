@@ -48,13 +48,26 @@ public  class SimpleAddressManager implements AddressManager
 
    private final ConcurrentMap<SimpleString, Binding> nameMap = new ConcurrentHashMap<SimpleString, Binding>();
 
-   public boolean addMapping(final Binding binding)
+   public boolean addBinding(final Binding binding)
    {
       if (nameMap.putIfAbsent(binding.getUniqueName(), binding) != null)
       {
          throw new IllegalStateException("Binding already exists " + binding);
       }
       return addMappingInternal(binding.getAddress(), binding);
+   }
+
+   public Binding removeBinding(final SimpleString bindableName)
+   {
+      Binding binding = nameMap.remove(bindableName);
+
+      if (binding == null)
+      {
+         throw new IllegalStateException("Queue is not bound " + bindableName);
+      }
+
+      removeBindingInternal(binding.getAddress(), bindableName);
+      return binding;
    }
 
    public Bindings getBindings(final SimpleString address)
@@ -99,18 +112,7 @@ public  class SimpleAddressManager implements AddressManager
       mappings.clear();
    }
 
-   public Binding removeBinding(final SimpleString bindableName)
-   {
-      Binding binding = nameMap.remove(bindableName);
-
-      if (binding == null)
-      {
-         throw new IllegalStateException("Queue is not bound " + bindableName);
-      }
-      return binding;
-   }
-
-   public boolean removeMapping(final SimpleString address, final SimpleString bindableName)
+   protected void removeBindingInternal(final SimpleString address, final SimpleString bindableName)
    {
       Bindings bindings = mappings.get(address);
 
@@ -122,11 +124,7 @@ public  class SimpleAddressManager implements AddressManager
          {
             mappings.remove(address);
          }
-
-         return true;
       }
-
-      return false;
    }
 
    protected Binding removeMapping(final SimpleString bindableName, final Bindings bindings)

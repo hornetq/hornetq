@@ -637,7 +637,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    private void addBindingInMemory(final Binding binding) throws Exception
    {
-      boolean exists = addressManager.addMapping(binding);
+      boolean exists = addressManager.addBinding(binding);
 
       if (!exists)
       {
@@ -661,7 +661,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    {
       Binding binding = addressManager.removeBinding(bindingName);
 
-      if (addressManager.removeMapping(binding.getAddress(), bindingName))
+      if (binding != null)
       {
          managementService.unregisterAddress(binding.getAddress());
       }

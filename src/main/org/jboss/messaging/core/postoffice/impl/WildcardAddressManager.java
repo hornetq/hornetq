@@ -92,9 +92,9 @@ public class WildcardAddressManager extends SimpleAddressManager
     * @param binding the binding to add
     * @return true if the address was a new mapping
     */
-   public boolean addMapping(final Binding binding)
+   public boolean addBinding(final Binding binding)
    {
-      boolean exists = super.addMapping(binding);
+      boolean exists = super.addBinding(binding);
       if (!exists)
       {
          Address add = addAndUpdateAddressMap(binding.getAddress());
@@ -125,16 +125,15 @@ public class WildcardAddressManager extends SimpleAddressManager
     * If the address is a wild card then the binding will be removed from the actual mappings for any linked address.
     * otherwise it will be removed as normal.
     *
-    * @param address      the address to remove the binding from
     * @param bindableName the name of the queue for the binding to remove
     * @return true if this was the last mapping for a specific address
     */
-   public boolean removeMapping(final SimpleString address, final SimpleString bindableName)
+   public Binding removeBinding(final SimpleString bindableName)
    {
-      boolean removed = super.removeMapping(address, bindableName);
-      if (removed)
+      Binding binding = super.removeBinding(bindableName);
+      if (binding != null)
       {
-         Address add = getAddress(address);
+         Address add = getAddress(binding.getAddress());
          if (!add.containsWildCard())
          {
             for (Address destination : add.getLinkedAddresses())
@@ -144,7 +143,7 @@ public class WildcardAddressManager extends SimpleAddressManager
                {
                   for (Binding b : bindings.getBindings())
                   {
-                     super.removeMapping(address, b.getUniqueName());
+                     super.removeBindingInternal(binding.getAddress(), b.getUniqueName());
                   }
                }
             }
@@ -153,12 +152,12 @@ public class WildcardAddressManager extends SimpleAddressManager
          {
             for (Address destination : add.getLinkedAddresses())
             {
-               super.removeMapping(destination.getAddress(), bindableName);
+               super.removeBindingInternal(destination.getAddress(), bindableName);
             }
          }
          removeAndUpdateAddressMap(add);
       }
-      return removed;
+      return binding;
    }
 
    public boolean containsDestination(final SimpleString address)

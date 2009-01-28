@@ -35,15 +35,13 @@ import java.util.Set;
  */
 public interface AddressManager
 {
-   boolean addMapping(Binding binding);
+   boolean addBinding(Binding binding);
+
+   Binding removeBinding(SimpleString queueName);
 
    Bindings getBindings(SimpleString address);
 
    void clear();
-
-   Binding removeBinding(SimpleString queueName);
-
-   boolean removeMapping(SimpleString address, SimpleString queueName);
 
    boolean addDestination(SimpleString address);
 
