@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.tests.integration.remoting;
 
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
@@ -89,8 +90,11 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
          while (enumeration.hasMoreElements())
          {
             InetAddress inetAddress = (InetAddress)enumeration.nextElement();
-            map.put(iface, inetAddress);
-            break;
+            if (inetAddress instanceof Inet4Address)
+            {
+               map.put(iface, inetAddress);
+               break;
+            }
          }
       }
 
