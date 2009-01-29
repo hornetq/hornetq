@@ -926,7 +926,6 @@ public class QueueImpl implements Queue
        and original message id
       */
 
-      // (JBMESSAGING-1468)
       // FIXME - this won't work with replication!!!!!!!!!!!
       long newMessageId = storageManager.generateUniqueID();
 
