@@ -23,6 +23,7 @@
 package org.jboss.messaging.tests.integration.cluster.failover;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.CountDownLatch;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -59,24 +60,75 @@ public class JustReplicationTest extends FailoverTestBase
 
    public void testFactory() throws Exception
    {
+      final ClientSessionFactory factory = createFailoverFactory(); // Just a regular factory with Backup configured
+      
+      final int NUMBER_OF_THREADS = 5;
+      final int NUMBER_OF_ITERATIONS = 5;
+      final int NUMBER_OF_SESSIONS = 5;
+      
+      final CountDownLatch flagAlign = new CountDownLatch(NUMBER_OF_THREADS);
+      final CountDownLatch flagStart = new CountDownLatch(1);
 
-     final ClientSessionFactory factory = createFailoverFactory(); // Just a regular factory with Backup configured
+      class LocalThread extends Thread
+      {
 
-     for (int i = 0; i < 2; i++)
-     {
-        ClientSession sessions[] = new ClientSession[10];
-        for (int j = 0; j < 10; j++)
-        {
-           sessions[j] = factory.createSession(false, true, true);
-           sessions[j].start();
-        }
+         Throwable e;
 
-        for (ClientSession session: sessions)
-        {
-           session.close();
-        }
+         @Override
+         public void run()
+         {
+            try
+            {
+               flagAlign.countDown();
+               flagStart.await();
 
-     }
+               
+               for (int i = 0; i < NUMBER_OF_ITERATIONS; i++)
+               {
+                  ClientSession sessions[] = new ClientSession[NUMBER_OF_SESSIONS];
+                  for (int j = 0; j < NUMBER_OF_SESSIONS; j++)
+                  {
+                     sessions[j] = factory.createSession(false, true, true);
+                     sessions[j].start();
+                  }
+
+                  for (ClientSession session : sessions)
+                  {
+                     session.close();
+                  }
+
+               }
+            }
+            catch (Throwable e)
+            {
+               this.e = e;
+            }
+         }
+      }
+
+      LocalThread t[] = new LocalThread[NUMBER_OF_THREADS];
+
+      for (int i = 0; i < t.length; i++)
+      {
+         t[i] = new LocalThread();
+         t[i].start();
+      }
+      
+      flagAlign.await();
+      flagStart.countDown();
+
+      for (LocalThread localT : t)
+      {
+         localT.join();
+      }
+
+      for (LocalThread localT : t)
+      {
+         if (localT.e != null)
+         {
+            throw new Exception(localT.e.getMessage(), localT.e);
+         }
+      }
 
    }
 
@@ -86,7 +138,7 @@ public class JustReplicationTest extends FailoverTestBase
       factory.setBlockOnAcknowledge(true);
       factory.setBlockOnNonPersistentSend(true);
       factory.setBlockOnPersistentSend(true);
-      
+
       factory.setMinLargeMessageSize(10 * 1024);
 
       ClientSession session = factory.createSession(null, null, false, true, true, false, 0);
@@ -94,7 +146,7 @@ public class JustReplicationTest extends FailoverTestBase
       final int numberOfMessages = 500;
 
       final int numberOfBytes = 15000;
-      
+
       try
       {
          session.createQueue(ADDRESS, ADDRESS, null, true, false);
@@ -163,9 +215,10 @@ public class JustReplicationTest extends FailoverTestBase
    @Override
    protected void setUp() throws Exception
    {
-      setUpFileBased(100*1024*1024);
+      setUpFileBased(100 * 1024 * 1024);
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
