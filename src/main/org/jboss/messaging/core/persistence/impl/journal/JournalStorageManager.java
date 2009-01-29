@@ -79,6 +79,7 @@ import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
 import org.jboss.messaging.core.transaction.Transaction.State;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
+import org.jboss.messaging.util.DataConstants;
 import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.Pair;
@@ -279,14 +280,14 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(), SET_SCHEDULED_DELIVERY_TIME, encoding);
    }
 
-   public void storeDuplicateID(final SimpleString address, final SimpleString duplID, final long recordID) throws Exception
+   public void storeDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
    {
       DuplicateIDEncoding encoding = new DuplicateIDEncoding(address, duplID);
 
       messageJournal.appendAddRecord(recordID, DUPLICATE_ID, encoding);
    }
 
-   public void updateDuplicateID(final SimpleString address, final SimpleString duplID, final long recordID) throws Exception
+   public void updateDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
    {
       DuplicateIDEncoding encoding = new DuplicateIDEncoding(address, duplID);
 
@@ -386,7 +387,7 @@ public class JournalStorageManager implements StorageManager
 
    public void storeDuplicateIDTransactional(final long txID,
                                              final SimpleString address,
-                                             final SimpleString duplID,
+                                             final byte[] duplID,
                                              final long recordID) throws Exception
    {
       DuplicateIDEncoding encoding = new DuplicateIDEncoding(address, duplID);
@@ -396,7 +397,7 @@ public class JournalStorageManager implements StorageManager
 
    public void updateDuplicateIDTransactional(final long txID,
                                               final SimpleString address,
-                                              final SimpleString duplID,
+                                              final byte[] duplID,
                                               final long recordID) throws Exception
    {
       DuplicateIDEncoding encoding = new DuplicateIDEncoding(address, duplID);
@@ -438,7 +439,7 @@ public class JournalStorageManager implements StorageManager
                                   final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                                   final Map<Long, Queue> queues,
                                   final ResourceManager resourceManager,
-                                  final Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap) throws Exception
+                                  final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
    {
       List<RecordInfo> records = new ArrayList<RecordInfo>();
 
@@ -608,16 +609,16 @@ public class JournalStorageManager implements StorageManager
 
                encoding.decode(buff);
 
-               List<Pair<SimpleString, Long>> ids = duplicateIDMap.get(encoding.address);
+               List<Pair<byte[], Long>> ids = duplicateIDMap.get(encoding.address);
 
                if (ids == null)
                {
-                  ids = new ArrayList<Pair<SimpleString, Long>>();
+                  ids = new ArrayList<Pair<byte[], Long>>();
 
                   duplicateIDMap.put(encoding.address, ids);
                }
 
-               ids.add(new Pair<SimpleString, Long>(encoding.duplID, record.id));
+               ids.add(new Pair<byte[], Long>(encoding.duplID, record.id));
 
                break;
             }
@@ -671,7 +672,7 @@ public class JournalStorageManager implements StorageManager
                                          final Map<Long, Queue> queues,
                                          final ResourceManager resourceManager,
                                          final List<PreparedTransactionInfo> preparedTransactions,
-                                         final Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap) throws Exception
+                                         final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
    {
       final PagingManager pagingManager = postOffice.getPagingManager();
 
@@ -798,16 +799,16 @@ public class JournalStorageManager implements StorageManager
 
                   encoding.decode(buff);
 
-                  List<Pair<SimpleString, Long>> ids = duplicateIDMap.get(encoding.address);
+                  List<Pair<byte[], Long>> ids = duplicateIDMap.get(encoding.address);
 
                   if (ids == null)
                   {
-                     ids = new ArrayList<Pair<SimpleString, Long>>();
+                     ids = new ArrayList<Pair<byte[], Long>>();
 
                      duplicateIDMap.put(encoding.address, ids);
                   }
 
-                  ids.add(new Pair<SimpleString, Long>(encoding.duplID, record.id));
+                  ids.add(new Pair<byte[], Long>(encoding.duplID, record.id));
 
                   break;
                }
@@ -1405,9 +1406,9 @@ public class JournalStorageManager implements StorageManager
    {
       SimpleString address;
 
-      SimpleString duplID;
+      byte[] duplID;
 
-      public DuplicateIDEncoding(final SimpleString address, final SimpleString duplID)
+      public DuplicateIDEncoding(final SimpleString address, final byte[] duplID)
       {
          this.address = address;
 
@@ -1422,19 +1423,25 @@ public class JournalStorageManager implements StorageManager
       {
          address = buffer.getSimpleString();
 
-         duplID = buffer.getSimpleString();
+         int size = buffer.getInt();
+         
+         duplID = new byte[size];
+         
+         buffer.getBytes(duplID);
       }
 
       public void encode(final MessagingBuffer buffer)
       {
          buffer.putSimpleString(address);
 
-         buffer.putSimpleString(duplID);
+         buffer.putInt(duplID.length);
+         
+         buffer.putBytes(duplID);
       }
 
       public int getEncodeSize()
       {
-         return SimpleString.sizeofString(address) + SimpleString.sizeofString(duplID);
+         return SimpleString.sizeofString(address) + DataConstants.SIZE_INT + duplID.length;
       }
    }
    

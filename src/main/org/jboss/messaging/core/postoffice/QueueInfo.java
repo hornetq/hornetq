@@ -45,14 +45,17 @@ public class QueueInfo implements Serializable
    
    private final SimpleString address;
    
+   private final int id;
+   
    private List<SimpleString> filterStrings;
    
    private int numberOfConsumers;
 
-   public QueueInfo(final SimpleString queueName, final SimpleString address)
+   public QueueInfo(final SimpleString queueName, final SimpleString address, final int id)
    {
       this.queueName = queueName;
       this.address = address;      
+      this.id = id;
    }
 
    public SimpleString getQueueName()
@@ -63,6 +66,11 @@ public class QueueInfo implements Serializable
    public SimpleString getAddress()
    {
       return address;
+   }
+   
+   public int getID()
+   {
+      return id;
    }
 
    public List<SimpleString> getFilterStrings()

@@ -51,7 +51,7 @@ public class QueueFactoryImpl implements QueueFactory
    private PostOffice postOffice;
 
    private final StorageManager storageManager;
-
+      
    public QueueFactoryImpl(final ScheduledExecutorService scheduledExecutor,
                            final HierarchicalRepository<QueueSettings> queueSettingsRepository,
                            final StorageManager storageManager)
@@ -75,7 +75,7 @@ public class QueueFactoryImpl implements QueueFactory
                             final boolean temporary)
    {
       QueueSettings queueSettings = queueSettingsRepository.getMatch(name.toString());
-
+      
       Queue queue = new QueueImpl(persistenceID,
                                   name,
                                   filter,                                  

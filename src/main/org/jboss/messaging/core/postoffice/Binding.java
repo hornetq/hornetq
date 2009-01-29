@@ -48,6 +48,13 @@ public interface Binding
    boolean filterMatches(ServerMessage message) throws Exception;
    
    boolean isHighAcceptPriority(ServerMessage message);
+   
+   //TODO find a better way
+   void willRoute(ServerMessage message);
 
    boolean isExclusive();
+   
+   int getID();
+   
+   void setID(int id);
 }

@@ -80,8 +80,7 @@ public class NullStorageManager implements StorageManager
       return true;
    }
 
-   public void loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos,                               
-                                  final List<SimpleString> destinations) throws Exception
+   public void loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos, final List<SimpleString> destinations) throws Exception
    {
 
    }
@@ -93,11 +92,11 @@ public class NullStorageManager implements StorageManager
    public void rollback(final long txID) throws Exception
    {
    }
-   
+
    public void storeReference(final long queueID, final long messageID) throws Exception
    {
    }
-   
+
    public void storeReferenceTransactional(final long txID, final long queueID, final long messageID) throws Exception
    {
    }
@@ -150,24 +149,24 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   public void storeDuplicateID(final SimpleString address, final SimpleString duplID, final long recordID) throws Exception
+   public void storeDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
    {
    }
 
    public void storeDuplicateIDTransactional(final long txID,
                                              final SimpleString address,
-                                             final SimpleString duplID,
+                                             final byte[] duplID,
                                              final long recordID) throws Exception
    {
    }
 
-   public void updateDuplicateID(final SimpleString address, final SimpleString duplID, final long recordID) throws Exception
+   public void updateDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
    {
    }
 
    public void updateDuplicateIDTransactional(final long txID,
                                               final SimpleString address,
-                                              final SimpleString duplID,
+                                              final byte[] duplID,
                                               final long recordID) throws Exception
    {
    }
@@ -214,12 +213,12 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   public void loadMessageJournal(final PostOffice postOffice,
-                                  final StorageManager storageManager,
-                                  final HierarchicalRepository<QueueSettings> queueSettingsRepository,
-                                  final Map<Long, Queue> queues,
-                                  final ResourceManager resourceManager,
-                                  final Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap) throws Exception
+   public void loadMessageJournal(PostOffice postOffice,
+                                  StorageManager storageManager,
+                                  HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                                  Map<Long, Queue> queues,
+                                  ResourceManager resourceManager,
+                                  Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
    {
    }
 

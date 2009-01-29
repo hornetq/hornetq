@@ -67,9 +67,9 @@ public interface StorageManager extends MessagingComponent
 
    void updateScheduledDeliveryTime(MessageReference ref) throws Exception;
 
-   void storeDuplicateID(SimpleString address, SimpleString duplID, long recordID) throws Exception;
+   void storeDuplicateID(SimpleString address, byte[] duplID, long recordID) throws Exception;
 
-   void updateDuplicateID(SimpleString address, SimpleString duplID, long recordID) throws Exception;
+   void updateDuplicateID(SimpleString address, byte[] duplID, long recordID) throws Exception;
 
    void deleteDuplicateID(long recordID) throws Exception;
 
@@ -83,9 +83,9 @@ public interface StorageManager extends MessagingComponent
 
    void deleteMessageTransactional(long txID, long queueID, long messageID) throws Exception;
 
-   void storeDuplicateIDTransactional(long txID, SimpleString address, SimpleString duplID, long recordID) throws Exception;
+   void storeDuplicateIDTransactional(long txID, SimpleString address, byte[] duplID, long recordID) throws Exception;
 
-   void updateDuplicateIDTransactional(long txID, SimpleString address, SimpleString duplID, long recordID) throws Exception;
+   void updateDuplicateIDTransactional(long txID, SimpleString address, byte[] duplID, long recordID) throws Exception;
 
    void deleteDuplicateIDTransactional(long txID, long recordID) throws Exception;
 
@@ -106,7 +106,7 @@ public interface StorageManager extends MessagingComponent
                            HierarchicalRepository<QueueSettings> queueSettingsRepository,
                            Map<Long, Queue> queues,
                            ResourceManager resourceManager,
-                           Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap) throws Exception;
+                           Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception;
 
    // Bindings related operations
 

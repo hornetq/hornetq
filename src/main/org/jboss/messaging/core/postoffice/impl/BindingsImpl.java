@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.postoffice.impl;
 
+import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.server.Bindable;
@@ -55,13 +58,13 @@ public class BindingsImpl implements Bindings
 
    private final Map<SimpleString, Integer> routingNamePositions = new ConcurrentHashMap<SimpleString, Integer>();
 
-   private final List<Binding> bindingsList = new CopyOnWriteArrayList<Binding>();
+   private final Map<Integer, Binding> bindingsMap = new ConcurrentHashMap<Integer, Binding>();
 
    private final List<Binding> exclusiveBindings = new CopyOnWriteArrayList<Binding>();
 
-   public List<Binding> getBindings()
+   public Collection<Binding> getBindings()
    {
-      return bindingsList;
+      return bindingsMap.values();
    }
 
    public void addBinding(final Binding binding)
@@ -91,7 +94,7 @@ public class BindingsImpl implements Bindings
          bindings.add(binding);
       }
 
-      bindingsList.add(binding);
+      bindingsMap.put(binding.getID(), binding);
    }
 
    public void removeBinding(final Binding binding)
@@ -117,15 +120,48 @@ public class BindingsImpl implements Bindings
          }
       }
 
-      bindingsList.remove(binding);
+      bindingsMap.remove(binding.getID());
    }
 
-   public void route(ServerMessage message) throws Exception
+   private void routeFromCluster(final ServerMessage message, final Transaction tx) throws Exception
    {
-      route(message, null);
+      byte[] ids = (byte[])message.getProperty(MessageImpl.HDR_ROUTE_TO_IDS);
+      
+      ByteBuffer buff = ByteBuffer.wrap(ids);
+      
+      Set<Bindable> chosen = new HashSet<Bindable>();
+      
+      while (buff.hasRemaining())
+      {
+         int bindingID = buff.getInt();
+         
+         Binding binding = bindingsMap.get(bindingID);
+         
+         if (binding == null)
+         {
+            //The binding has been closed - we need to route the message somewhere else...............
+            throw new IllegalStateException("Binding not found when routing from cluster - it must have closed");
+            
+            //FIXME need to deal with this better            
+         }
+         
+         binding.willRoute(message);
+         
+         chosen.add(binding.getBindable());
+      }
+      
+      for (Bindable bindable : chosen)
+      {
+         bindable.preroute(message, tx);
+      }
+      
+      for (Bindable bindable : chosen)
+      {
+         bindable.route(message, tx);
+      }
    }
 
-   public void route(ServerMessage message, Transaction tx) throws Exception
+   public void route(final ServerMessage message, final Transaction tx) throws Exception
    {
       if (!exclusiveBindings.isEmpty())
       {
@@ -136,130 +172,137 @@ public class BindingsImpl implements Bindings
       }
       else
       {
-         Set<Bindable> chosen = new HashSet<Bindable>();
-
-         for (Map.Entry<SimpleString, List<Binding>> entry : routingNameBindingMap.entrySet())
+         if (message.getProperty(MessageImpl.HDR_FROM_CLUSTER) != null)
          {
-            SimpleString routingName = entry.getKey();
-
-            List<Binding> bindings = entry.getValue();
-
-            if (bindings == null)
+            routeFromCluster(message, tx);
+         }
+         else
+         {
+            Set<Bindable> chosen = new HashSet<Bindable>();
+   
+            for (Map.Entry<SimpleString, List<Binding>> entry : routingNameBindingMap.entrySet())
             {
-               // The value can become null if it's concurrently removed while we're iterating - this is expected
-               // ConcurrentHashMap behaviour!
-               continue;
-            }
-
-            Integer ipos = routingNamePositions.get(routingName);
-
-            int pos = ipos != null ? ipos.intValue() : 0;
-
-            int length = bindings.size();
-
-            int startPos = pos;
-
-            Binding theBinding = null;
-
-            int lastNoMatchingConsumerPos = -1;
-
-            while (true)
-            {
-               Binding binding;
-               try
+               SimpleString routingName = entry.getKey();
+   
+               List<Binding> bindings = entry.getValue();
+   
+               if (bindings == null)
                {
-                  binding = bindings.get(pos);
+                  // The value can become null if it's concurrently removed while we're iterating - this is expected
+                  // ConcurrentHashMap behaviour!
+                  continue;
                }
-               catch (IndexOutOfBoundsException e)
+   
+               Integer ipos = routingNamePositions.get(routingName);
+   
+               int pos = ipos != null ? ipos.intValue() : 0;
+   
+               int length = bindings.size();
+   
+               int startPos = pos;
+   
+               Binding theBinding = null;
+   
+               int lastNoMatchingConsumerPos = -1;
+   
+               while (true)
                {
-                  // This can occur if binding is removed while in route
-                  if (!bindings.isEmpty())
+                  Binding binding;
+                  try
                   {
-                     pos = 0;
-
-                     continue;
+                     binding = bindings.get(pos);
                   }
-                  else
+                  catch (IndexOutOfBoundsException e)
                   {
+                     // This can occur if binding is removed while in route
+                     if (!bindings.isEmpty())
+                     {
+                        pos = 0;
+   
+                        continue;
+                     }
+                     else
+                     {
+                        break;
+                     }
+                  }
+   
+                  if (binding.filterMatches(message))
+                  {
+                     // bindings.length == 1 ==> only a local queue so we don't check for matching consumers (it's an
+                     // unnecessary overhead)
+                     if (length == 1 || binding.isHighAcceptPriority(message))
+                     {
+                        theBinding = binding;
+   
+                        pos = incrementPos(pos, length);
+   
+                        break;
+                     }
+                     else
+                     {
+                        lastNoMatchingConsumerPos = pos;
+                     }
+                  }
+   
+                  pos = incrementPos(pos, length);
+   
+                  if (pos == startPos)
+                  {
+                     if (lastNoMatchingConsumerPos != -1)
+                     {                     
+                        try
+                        {
+                           theBinding = bindings.get(pos);
+                        }
+                        catch (IndexOutOfBoundsException e)
+                        {
+                           // This can occur if binding is removed while in route
+                           if (!bindings.isEmpty())
+                           {
+                              pos = 0;
+                              
+                              lastNoMatchingConsumerPos = -1;
+   
+                              continue;
+                           }
+                           else
+                           {
+                              break;
+                           }
+                        }
+                                            
+                        pos = lastNoMatchingConsumerPos;
+   
+                        pos = incrementPos(pos, length);
+                     }
                      break;
                   }
                }
-
-               if (binding.filterMatches(message))
+   
+               if (theBinding != null)
                {
-                  // bindings.length == 1 ==> only a local queue so we don't check for matching consumers (it's an
-                  // unnecessary overhead)
-                  if (length == 1 || binding.isHighAcceptPriority(message))
-                  {
-                     theBinding = binding;
-
-                     pos = incrementPos(pos, length);
-
-                     break;
-                  }
-                  else
-                  {
-                     lastNoMatchingConsumerPos = pos;
-                  }
+                  theBinding.willRoute(message);
+                  
+                  chosen.add(theBinding.getBindable());
                }
-
-               pos = incrementPos(pos, length);
-
-               if (pos == startPos)
-               {
-                  if (lastNoMatchingConsumerPos != -1)
-                  {                     
-                     try
-                     {
-                        theBinding = bindings.get(pos);
-                     }
-                     catch (IndexOutOfBoundsException e)
-                     {
-                        // This can occur if binding is removed while in route
-                        if (!bindings.isEmpty())
-                        {
-                           pos = 0;
-                           
-                           lastNoMatchingConsumerPos = -1;
-
-                           continue;
-                        }
-                        else
-                        {
-                           break;
-                        }
-                     }
-                                         
-                     pos = lastNoMatchingConsumerPos;
-
-                     pos = incrementPos(pos, length);
-                  }
-                  break;
-               }
+   
+               routingNamePositions.put(routingName, pos);
             }
-
-            if (theBinding != null)
+   
+            //TODO refactor to do this is one iteration
+            
+            for (Bindable bindable : chosen)
             {
-               chosen.add(theBinding.getBindable());
+               bindable.preroute(message, tx);
             }
-
-            routingNamePositions.put(routingName, pos);
-
-         }
-
-         //TODO refactor to do this is one iteration
-         
-         for (Bindable bindable : chosen)
-         {
-            bindable.preroute(message, tx);
-         }
-         
-         for (Bindable bindable : chosen)
-         {
-            bindable.route(message, tx);
+            
+            for (Bindable bindable : chosen)
+            {
+               bindable.route(message, tx);
+            }
          }
       }
-
    }
 
    private final int incrementPos(int pos, int length)

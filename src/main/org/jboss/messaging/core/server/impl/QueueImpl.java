@@ -73,7 +73,7 @@ public class QueueImpl implements Queue
    public static final int NUM_PRIORITIES = 10;
 
    private volatile long persistenceID = -1;
-
+   
    private final SimpleString name;
 
    private volatile Filter filter;
@@ -116,9 +116,7 @@ public class QueueImpl implements Queue
 
    private int consumersToFailover = -1;
 
-  // private final SimpleString routeToPropertyName;
-
-   public QueueImpl(final long persistenceID,
+   public QueueImpl(final long persistenceID,                   
                     final SimpleString name,
                     final Filter filter,
                     final boolean durable,
@@ -129,7 +127,7 @@ public class QueueImpl implements Queue
                     final HierarchicalRepository<QueueSettings> queueSettingsRepository)
    {
       this.persistenceID = persistenceID;
-
+      
       this.name = name;
 
       this.filter = filter;
@@ -329,7 +327,7 @@ public class QueueImpl implements Queue
    {
       persistenceID = id;
    }
-
+   
    public Filter getFilter()
    {
       return filter;

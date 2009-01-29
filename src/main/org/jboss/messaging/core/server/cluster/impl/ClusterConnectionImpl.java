@@ -310,9 +310,10 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                            bridgeConfig.getRetryIntervalMultiplier(),
                                            bridgeConfig.getMaxRetriesBeforeFailover(),
                                            bridgeConfig.getMaxRetriesAfterFailover(),
-                                           false,
+                                           false, // Duplicate detection is handled in the RemoteQueueBindingImpl
                                            record,
-                                           address.toString());
+                                           address.toString(),
+                                           true);
 
             record.setBridge(bridge);
 
@@ -438,31 +439,34 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
             log.info("Got notification message " + type);
 
-            if (type == NotificationType.QUEUE_CREATED)
+            if (type == NotificationType.BINDING_ADDED)
             {
                log.info("queue created");
-               SimpleString uniqueName = new SimpleString("flow-").concat(UUIDGenerator.getInstance()
-                                                                                       .generateSimpleStringUUID());
+               SimpleString uniqueName = UUIDGenerator.getInstance().generateSimpleStringUUID();
 
                SimpleString queueAddress = (SimpleString)message.getProperty(ManagementHelper.HDR_ADDRESS);
 
                SimpleString queueName = (SimpleString)message.getProperty(ManagementHelper.HDR_QUEUE_NAME);
 
                SimpleString filterString = (SimpleString)message.getProperty(ManagementHelper.HDR_FILTERSTRING);
+               
+               Integer queueID = (Integer)message.getProperty(ManagementHelper.HDR_BINDING_ID);
 
                RemoteQueueBinding binding = new RemoteQueueBindingImpl(queueAddress,
                                                                        uniqueName,
                                                                        queueName,
+                                                                       queueID,
                                                                        filterString,
                                                                        queue,
                                                                        useDuplicateDetection,
-                                                                       forwardWhenNoMatchingConsumers);
+                                                                       forwardWhenNoMatchingConsumers,
+                                                                       bridge.getName());
 
                bindings.put(queueName, binding);
 
                postOffice.addBinding(binding);
             }
-            else if (type == NotificationType.QUEUE_DESTROYED)
+            else if (type == NotificationType.BINDING_REMOVED)
             {
                log.info("queue destroyed");
                SimpleString queueName = (SimpleString)message.getProperty(ManagementHelper.HDR_QUEUE_NAME);

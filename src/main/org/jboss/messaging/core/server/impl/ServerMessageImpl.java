@@ -160,6 +160,13 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       
       return m;
    }
+   
+   public ServerMessage copy() throws Exception
+   {
+      ServerMessage m = new ServerMessageImpl(this);
+       
+      return m;
+   }
 
    @Override
    public String toString()

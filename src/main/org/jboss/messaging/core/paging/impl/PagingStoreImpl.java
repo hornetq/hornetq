@@ -378,9 +378,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
             buff.putLong(msg.getMessageID());
 
-            SimpleString duplID = new SimpleString(bytes);
-
-            msg.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, duplID);
+            msg.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, bytes);
          }
 
          int bytesToWrite = message.getEncodeSize() + PageImpl.SIZE_RECORD;

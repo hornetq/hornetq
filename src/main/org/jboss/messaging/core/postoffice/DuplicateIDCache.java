@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * A DuplicateIDCache
@@ -39,9 +38,9 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface DuplicateIDCache
 {
-   boolean contains(SimpleString duplicateID);
+   boolean contains(byte[] duplicateID);
    
-   void addToCache(SimpleString duplicateID, Transaction tx) throws Exception;  
+   void addToCache(byte[] duplicateID, Transaction tx) throws Exception;  
    
-   void load(List<Pair<SimpleString, Long>> theIds) throws Exception;
+   void load(List<Pair<byte[], Long>> theIds) throws Exception;
 }

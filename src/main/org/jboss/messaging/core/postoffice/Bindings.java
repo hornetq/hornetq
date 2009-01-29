@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.postoffice;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.Transaction;
@@ -38,9 +38,7 @@ import org.jboss.messaging.core.transaction.Transaction;
  */
 public interface Bindings
 {
-   List<Binding> getBindings();
-   
-   void route(final ServerMessage message) throws Exception;
+   Collection<Binding> getBindings();
    
    void route(ServerMessage message, Transaction tx) throws Exception;
    

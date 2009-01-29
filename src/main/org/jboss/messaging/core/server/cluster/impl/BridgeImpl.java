@@ -24,7 +24,9 @@ package org.jboss.messaging.core.server.cluster.impl;
 
 import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
 
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -47,6 +49,7 @@ import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
@@ -135,8 +138,12 @@ public class BridgeImpl implements Bridge, FailureListener
    private final int maxRetriesAfterFailover;
 
    private final MessageHandler queueInfoMessageHandler;
-   
+
    private final String queueDataAddress;
+
+   private final SimpleString idsHeaderName;
+
+   private final boolean forClusterConnector;
 
    // Static --------------------------------------------------------
 
@@ -161,7 +168,8 @@ public class BridgeImpl implements Bridge, FailureListener
                      final int maxRetriesAfterFailover,
                      final boolean useDuplicateDetection,
                      final MessageHandler queueInfoMessageHandler,
-                     final String queueDataAddress) throws Exception
+                     final String queueDataAddress,
+                     final boolean forClusterConnector) throws Exception
    {
       log.info("Creating new bridge " + name + " queue " + queue);
       this.name = name;
@@ -204,10 +212,14 @@ public class BridgeImpl implements Bridge, FailureListener
       this.maxRetriesAfterFailover = maxRetriesAfterFailover;
 
       this.queueInfoMessageHandler = queueInfoMessageHandler;
-      
+
       log.info("queue info handler " + this.queueInfoMessageHandler);
-      
+
       this.queueDataAddress = queueDataAddress;
+
+      this.forClusterConnector = forClusterConnector;
+
+      this.idsHeaderName = MessageImpl.HDR_ROUTE_TO_IDS.concat(name);
 
       if (maxBatchTime != -1)
       {
@@ -258,28 +270,34 @@ public class BridgeImpl implements Bridge, FailureListener
 
             session.addFailureListener(BridgeImpl.this);
 
+            // TODO - we should move this code to the ClusterConnectorImpl - and just execute it when the bridge
+            // connection is opened and closed - we can use
+            // a callback to tell us that
             if (queueInfoMessageHandler != null)
             {
                // Get the queue data
 
-               SimpleString notifQueueName = new SimpleString("notif-").concat(UUIDGenerator.getInstance().generateSimpleStringUUID());
+               SimpleString notifQueueName = new SimpleString("notif-").concat(UUIDGenerator.getInstance()
+                                                                                            .generateSimpleStringUUID());
 
-               SimpleString filter = new SimpleString(                                                                                                         
-                                                      ManagementHelper.HDR_NOTIFICATION_TYPE + " IN (" +
+               SimpleString filter = new SimpleString(ManagementHelper.HDR_NOTIFICATION_TYPE + " IN (" +
                                                       "'" +
-                                                      NotificationType.QUEUE_CREATED +
+                                                      NotificationType.BINDING_ADDED +
                                                       "'," +
                                                       "'" +
-                                                      NotificationType.QUEUE_DESTROYED +
+                                                      NotificationType.BINDING_REMOVED +
                                                       "'," +
                                                       "'" +
                                                       NotificationType.CONSUMER_CREATED +
                                                       "'," +
                                                       "'" +
                                                       NotificationType.CONSUMER_CLOSED +
-                                                      "') AND " +                                                     
-                                                      ManagementHelper.HDR_ADDRESS + " LIKE '" + queueDataAddress + "%'");
-               
+                                                      "') AND " +
+                                                      ManagementHelper.HDR_ADDRESS +
+                                                      " LIKE '" +
+                                                      queueDataAddress +
+                                                      "%'");
+
                session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueueName, filter, false, true);
 
                ClientConsumer notifConsumer = session.createConsumer(notifQueueName);
@@ -294,12 +312,12 @@ public class BridgeImpl implements Bridge, FailureListener
                                                        ManagementServiceImpl.getMessagingServerObjectName(),
                                                        "sendQueueInfoToQueue",
                                                        notifQueueName.toString());
-               
+
                ClientProducer prod = session.createProducer(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS);
-               
+
                prod.send(message);
             }
-            
+
             log.info("Created objects");
 
             active = true;
@@ -323,7 +341,7 @@ public class BridgeImpl implements Bridge, FailureListener
       {
          return;
       }
-      
+
       started = false;
 
       active = false;
@@ -476,10 +494,10 @@ public class BridgeImpl implements Bridge, FailureListener
          {
             return;
          }
-         
+
          log.info("sending batch");
 
-         // TODO - if batch size = 1 then don't need tx
+         // TODO - if batch size = 1 then don't need tx - actually we should use asynch send acknowledgement stream - then we don't need a transaction at all
 
          while (true)
          {
@@ -493,6 +511,32 @@ public class BridgeImpl implements Bridge, FailureListener
             ref.getQueue().acknowledge(tx, ref);
 
             ServerMessage message = ref.getMessage();
+            
+            if (this.forClusterConnector)
+            {
+               //We make a shallow copy of the message, then we strip out the unwanted routing id headers and leave only
+               //the one pertinent for the destination node - this is important since different queues on different nodes could have same queue ids
+               //Note we must copy since same message may get routed to other nodes which require different headers
+               message = message.copy();
+               
+               //TODO - we can optimise this
+              
+               Set<SimpleString> propNames = new HashSet<SimpleString>(message.getPropertyNames());
+               
+               byte[] queueIds = (byte[])message.getProperty(idsHeaderName);
+               
+               for (SimpleString propName: propNames)
+               {
+                  if (propName.startsWith(MessageImpl.HDR_ROUTE_TO_IDS))
+                  {
+                     message.removeProperty(propName);
+                  }
+               }
+               
+               message.putBytesProperty(MessageImpl.HDR_ROUTE_TO_IDS, queueIds);
+               
+               message.putBooleanProperty(MessageImpl.HDR_FROM_CLUSTER, Boolean.TRUE);
+            }
 
             if (transformer != null)
             {

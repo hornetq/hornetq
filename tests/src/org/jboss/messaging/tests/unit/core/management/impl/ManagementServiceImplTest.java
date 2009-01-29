@@ -250,52 +250,52 @@ public class ManagementServiceImplTest extends TestCase
       verify(mbeanServer);
    }
 
-   public void testRegisterQueue() throws Exception
-   {
-      SimpleString address = randomSimpleString();
-      SimpleString name = randomSimpleString();
-      ObjectName objectName = ManagementServiceImpl.getQueueObjectName(address, name);
-      ObjectInstance objectInstance = new ObjectInstance(objectName, QueueControl.class.getName());
-
-      MBeanServer mbeanServer = createMock(MBeanServer.class);
-      Queue queue = createMock(Queue.class);
-      expect(queue.getName()).andStubReturn(name);
-      expect(queue.isDurable()).andReturn(true);
-      StorageManager storageManager = createMock(StorageManager.class);
-      expect(mbeanServer.isRegistered(objectName)).andReturn(false);
-      expect(mbeanServer.registerMBean(isA(StandardMBean.class), eq(objectName))).andReturn(objectInstance);
-
-      replay(mbeanServer, queue, storageManager);
-
-      ManagementService service = new ManagementServiceImpl(mbeanServer, true);
-      service.registerQueue(queue, address, storageManager);
-
-      verify(mbeanServer, queue, storageManager);
-   }
-
-   public void testRegisterAlreadyRegisteredQueue() throws Exception
-   {
-      SimpleString address = randomSimpleString();
-      SimpleString name = randomSimpleString();
-      ObjectName objectName = ManagementServiceImpl.getQueueObjectName(address, name);
-      ObjectInstance objectInstance = new ObjectInstance(objectName, QueueControl.class.getName());
-
-      MBeanServer mbeanServer = createMock(MBeanServer.class);
-      Queue queue = createMock(Queue.class);
-      expect(queue.getName()).andStubReturn(name);
-      expect(queue.isDurable()).andReturn(true);
-      StorageManager storageManager = createMock(StorageManager.class);
-      expect(mbeanServer.isRegistered(objectName)).andReturn(true);
-      mbeanServer.unregisterMBean(objectName);
-      expect(mbeanServer.registerMBean(isA(StandardMBean.class), eq(objectName))).andReturn(objectInstance);
-
-      replay(mbeanServer, queue, storageManager);
-
-      ManagementService service = new ManagementServiceImpl(mbeanServer, true);
-      service.registerQueue(queue, address, storageManager);
-
-      verify(mbeanServer, queue, storageManager);
-   }
+//   public void testRegisterQueue() throws Exception
+//   {
+//      SimpleString address = randomSimpleString();
+//      SimpleString name = randomSimpleString();
+//      ObjectName objectName = ManagementServiceImpl.getQueueObjectName(address, name);
+//      ObjectInstance objectInstance = new ObjectInstance(objectName, QueueControl.class.getName());
+//
+//      MBeanServer mbeanServer = createMock(MBeanServer.class);
+//      Queue queue = createMock(Queue.class);
+//      expect(queue.getName()).andStubReturn(name);
+//      expect(queue.isDurable()).andReturn(true);
+//      StorageManager storageManager = createMock(StorageManager.class);
+//      expect(mbeanServer.isRegistered(objectName)).andReturn(false);
+//      expect(mbeanServer.registerMBean(isA(StandardMBean.class), eq(objectName))).andReturn(objectInstance);
+//
+//      replay(mbeanServer, queue, storageManager);
+//
+//      ManagementService service = new ManagementServiceImpl(mbeanServer, true);
+//      service.registerQueue(queue, address, storageManager);
+//
+//      verify(mbeanServer, queue, storageManager);
+//   }
+//
+//   public void testRegisterAlreadyRegisteredQueue() throws Exception
+//   {
+//      SimpleString address = randomSimpleString();
+//      SimpleString name = randomSimpleString();
+//      ObjectName objectName = ManagementServiceImpl.getQueueObjectName(address, name);
+//      ObjectInstance objectInstance = new ObjectInstance(objectName, QueueControl.class.getName());
+//
+//      MBeanServer mbeanServer = createMock(MBeanServer.class);
+//      Queue queue = createMock(Queue.class);
+//      expect(queue.getName()).andStubReturn(name);
+//      expect(queue.isDurable()).andReturn(true);
+//      StorageManager storageManager = createMock(StorageManager.class);
+//      expect(mbeanServer.isRegistered(objectName)).andReturn(true);
+//      mbeanServer.unregisterMBean(objectName);
+//      expect(mbeanServer.registerMBean(isA(StandardMBean.class), eq(objectName))).andReturn(objectInstance);
+//
+//      replay(mbeanServer, queue, storageManager);
+//
+//      ManagementService service = new ManagementServiceImpl(mbeanServer, true);
+//      service.registerQueue(queue, address, storageManager);
+//
+//      verify(mbeanServer, queue, storageManager);
+//   }
 
    public void testUnregisterQueue() throws Exception
    {

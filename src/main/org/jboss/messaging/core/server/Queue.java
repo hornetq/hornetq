@@ -47,7 +47,7 @@ public interface Queue extends Bindable
    long getPersistenceID();
 
    void setPersistenceID(long id);
-
+   
    Filter getFilter();
 
    boolean isDurable();

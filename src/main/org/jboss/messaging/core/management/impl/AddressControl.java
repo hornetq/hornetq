@@ -84,10 +84,10 @@ public class AddressControl implements AddressControlMBean
       {
          Bindings bindings = postOffice.getBindingsForAddress(address);
          String[] queueNames = new String[bindings.getBindings().size()];
-         for (int i = 0; i < bindings.getBindings().size(); i++)
-         {
-            Binding binding = bindings.getBindings().get(i);
-            queueNames[i] = binding.getUniqueName().toString();
+         int i = 0;
+         for (Binding binding: bindings.getBindings())
+         {           
+            queueNames[i++] = binding.getUniqueName().toString();
          }
          return queueNames;
       }

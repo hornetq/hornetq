@@ -53,6 +53,8 @@ public class DivertBinding implements Binding
    
    private final boolean exclusive;
    
+   private int id;
+      
    public DivertBinding(final SimpleString address, final Divert divert)
    {
       this.address = address;
@@ -67,6 +69,17 @@ public class DivertBinding implements Binding
       
       this.exclusive = divert.isExclusive();
    }
+   
+   public int getID()
+   {
+      return id;
+   }
+   
+   public void setID(final int id)
+   {
+      this.id = id;
+   }
+   
       
    public boolean filterMatches(final ServerMessage message) throws Exception
    {
@@ -108,6 +121,10 @@ public class DivertBinding implements Binding
    public boolean isHighAcceptPriority(final ServerMessage message)
    {
       return true;
+   }
+   
+   public void willRoute(final ServerMessage message)
+   {      
    }
 
    public boolean isQueueBinding()

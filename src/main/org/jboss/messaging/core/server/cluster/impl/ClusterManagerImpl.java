@@ -399,7 +399,8 @@ public class ClusterManagerImpl implements ClusterManager
                                  config.getMaxRetriesAfterFailover(),
                                  config.isUseDuplicateDetection(),
                                  null,
-                                 null);
+                                 null,
+                                 false);
 
          bridges.put(config.getName(), bridge);
 

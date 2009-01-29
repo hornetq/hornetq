@@ -1498,7 +1498,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             storageManager.addQueueBinding(binding);                        
          }
-
+ 
          postOffice.addBinding(binding);
          
          if (temporary)

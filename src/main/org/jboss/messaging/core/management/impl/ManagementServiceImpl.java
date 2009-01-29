@@ -284,29 +284,14 @@ public class ManagementServiceImpl implements ManagementService
       if (log.isDebugEnabled())
       {
          log.debug("registered queue " + objectName);
-      }
-      
-      TypedProperties props = new TypedProperties();
-      
-      log.info("registering queue with address "+ address);
-      props.putStringProperty(ManagementHelper.HDR_ADDRESS, address);
-      props.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, queue.getName());
-      
-      sendNotification(new Notification(NotificationType.QUEUE_CREATED, props));
+      }            
    }
 
    public void unregisterQueue(final SimpleString name, final SimpleString address) throws Exception
    {
       ObjectName objectName = getQueueObjectName(address, name);
       unregisterResource(objectName);
-      messageCounterManager.unregisterMessageCounter(name.toString());
-      
-      TypedProperties props = new TypedProperties();
-      
-      props.putStringProperty(ManagementHelper.HDR_ADDRESS, address);
-      props.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, name);
-
-      sendNotification(new Notification(NotificationType.QUEUE_DESTROYED, props));
+      messageCounterManager.unregisterMessageCounter(name.toString());     
    }
 
    public void registerAcceptor(final Acceptor acceptor, final TransportConfiguration configuration) throws Exception

@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.server.cluster.impl;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -30,11 +31,13 @@ import java.util.Set;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.cluster.RemoteQueueBinding;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * A RemoteQueueBindingImpl
@@ -56,6 +59,8 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    private final SimpleString uniqueName;
 
    private final SimpleString routingName;
+   
+   private final int remoteQueueID;
 
    private final Filter queueFilter;
 
@@ -68,14 +73,20 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    private final boolean duplicateDetection;
    
    private final boolean forwardWhenNoMatchingConsumers;
-
+   
+   private final SimpleString idsHeaderName;
+   
+   private int id;
+   
    public RemoteQueueBindingImpl(final SimpleString address,
                                  final SimpleString uniqueName,
                                  final SimpleString routingName,
+                                 final int remoteQueueID,
                                  final SimpleString filterString,
                                  final Queue storeAndForwardQueue,
                                  final boolean duplicateDetection,
-                                 final boolean forwardWhenNoMatchingConsumers) throws Exception
+                                 final boolean forwardWhenNoMatchingConsumers,
+                                 final SimpleString bridgeName) throws Exception
    {
       this.address = address;
 
@@ -84,6 +95,8 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       this.uniqueName = uniqueName;
 
       this.routingName = routingName;
+      
+      this.remoteQueueID = remoteQueueID;
 
       this.duplicateDetection = duplicateDetection;
 
@@ -97,8 +110,20 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       }
       
       this.forwardWhenNoMatchingConsumers = forwardWhenNoMatchingConsumers;
+      
+      this.idsHeaderName = MessageImpl.HDR_ROUTE_TO_IDS.concat(bridgeName);
    }
-
+   
+   public int getID()
+   {
+      return id;
+   }
+   
+   public void setID(final int id)
+   {
+      this.id = id;
+   }
+   
    public SimpleString getAddress()
    {
       return address;
@@ -169,6 +194,43 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       }
 
       return false;
+   }
+   
+   public void willRoute(final ServerMessage message)
+   {      
+      //We add a header with the name of the queue, holding a list of the transient ids of the queues to route to
+      
+      //TODO - this can be optimised
+      
+      byte[] ids = (byte[])message.getProperty(idsHeaderName);
+      
+      if (ids == null)
+      {
+         ids = new byte[4];
+      }
+      else
+      {
+         byte[] newIds = new byte[ids.length + 4];
+         
+         System.arraycopy(ids, 0, newIds, 4, ids.length);
+                          
+         ids = newIds;
+      }
+      
+      ByteBuffer buff = ByteBuffer.wrap(ids);
+      
+      buff.putInt(remoteQueueID);
+      
+      message.putBytesProperty(idsHeaderName, ids);           
+      
+      //Now add a duplicate detection header, if required.
+      //We use a GUID for this
+      if (duplicateDetection)
+      {
+         byte[] guid = UUIDGenerator.getInstance().generateUUID().asBytes();
+         
+         message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, guid);
+      }
    }
 
    public synchronized void addConsumer(final SimpleString filterString) throws Exception

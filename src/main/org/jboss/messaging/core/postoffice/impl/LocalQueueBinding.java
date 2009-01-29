@@ -52,6 +52,8 @@ public class LocalQueueBinding implements Binding
    
    private final SimpleString name;
    
+   private int id;
+      
    public LocalQueueBinding(final SimpleString address, final Queue queue)
    {
       this.address = address;
@@ -62,6 +64,17 @@ public class LocalQueueBinding implements Binding
       
       this.name = queue.getName();
    }
+   
+   public int getID()
+   {
+      return id;
+   }
+   
+   public void setID(final int id)
+   {
+      this.id = id;
+   }
+   
       
    public boolean filterMatches(final ServerMessage message) throws Exception
    {
@@ -125,6 +138,12 @@ public class LocalQueueBinding implements Binding
       
       return false;
    }
+   
+   public void willRoute(final ServerMessage message)
+   {      
+   }
+   
+   
 
    public boolean isQueueBinding()
    {

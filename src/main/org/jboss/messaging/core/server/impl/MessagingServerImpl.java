@@ -296,7 +296,7 @@ public class MessagingServerImpl implements MessagingServer
          postOffice.addBinding(binding);         
       }
 
-      Map<SimpleString, List<Pair<SimpleString, Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<SimpleString, Long>>>();
+      Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
 
 
       storageManager.loadMessageJournal(postOffice,
@@ -306,7 +306,7 @@ public class MessagingServerImpl implements MessagingServer
                                         resourceManager,
                                         duplicateIDMap);
 
-      for (Map.Entry<SimpleString, List<Pair<SimpleString, Long>>> entry : duplicateIDMap.entrySet())
+      for (Map.Entry<SimpleString, List<Pair<byte[], Long>>> entry : duplicateIDMap.entrySet())
       {
          SimpleString address = entry.getKey();
 

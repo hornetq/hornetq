@@ -21,15 +21,16 @@
  */
 package org.jboss.messaging.core.postoffice.impl;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.Address;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * extends the simple manager to allow wildcard addresses to be used.
@@ -72,7 +73,7 @@ public class WildcardAddressManager extends SimpleAddressManager
                Bindings b = super.getBindings(destAdd.getAddress());
                if (b != null)
                {
-                  List<Binding> theBindings = b.getBindings();
+                  Collection<Binding> theBindings = b.getBindings();
                   for (Binding theBinding : theBindings)
                   {
                      super.addMappingInternal(address, theBinding);

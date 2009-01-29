@@ -48,6 +48,8 @@ public interface ServerMessage extends Message, EncodingSupport
    int decrementRefCount();
 
    ServerMessage copy(long newID) throws Exception;
+   
+   ServerMessage copy() throws Exception;
 
    int getMemoryEstimate();
 
@@ -58,4 +60,6 @@ public interface ServerMessage extends Message, EncodingSupport
    boolean isStored();
 
    int getRefCount();
+   
+   //TODO - we might be able to put this in a better place
 }

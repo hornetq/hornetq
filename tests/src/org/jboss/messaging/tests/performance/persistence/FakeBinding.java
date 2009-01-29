@@ -35,6 +35,24 @@ import org.jboss.messaging.util.SimpleString;
 public class FakeBinding implements Binding
 {
    
+   public int getID()
+   {
+      // TODO Auto-generated method stub
+      return 0;
+   }
+
+   public void setID(int id)
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   public void willRoute(ServerMessage message)
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
    public boolean filterMatches(ServerMessage message) throws Exception
    {
       // TODO Auto-generated method stub
