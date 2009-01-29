@@ -32,6 +32,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.locks.Lock;
 
@@ -809,7 +811,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
          if (mapIterator == null || !mapIterator.hasNext())
          {
-            mapIterator = connections.values().iterator();
+            mapIterator = new ConnectionHolderIterator(connections.values().iterator());
          }
 
          ConnectionEntry entry = mapIterator.next();
@@ -927,4 +929,46 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
          conn.bufferReceived(connectionID, buffer);
       }
    }
+
+   private class ConnectionHolderIterator implements Iterator<ConnectionEntry>
+   {
+      Iterator<ConnectionEntry> it;
+
+      public ConnectionHolderIterator(Iterator<ConnectionEntry> connectionEntryIterator)
+      {
+         it = connectionEntryIterator;
+      }
+
+      public boolean hasNext()
+      {
+         try
+         {
+            return it.hasNext();
+         }
+         catch (ConcurrentModificationException e)
+         {
+            it = connections.values().iterator();
+            return it.hasNext();
+         }
+      }
+
+      public ConnectionEntry next()
+      {
+         try
+         {
+            return it.next();
+         }
+         catch (ConcurrentModificationException e)
+         {
+            it = connections.values().iterator();
+            return it.next();
+         }
+      }
+
+      public void remove()
+      {
+         throw new UnsupportedOperationException();
+      }
+   }
+  
 }

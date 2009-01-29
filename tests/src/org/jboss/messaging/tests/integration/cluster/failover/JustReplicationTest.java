@@ -57,6 +57,28 @@ public class JustReplicationTest extends FailoverTestBase
 
    // Public --------------------------------------------------------
 
+   public void testFactory() throws Exception
+   {
+
+     final ClientSessionFactory factory = createFailoverFactory(); // Just a regular factory with Backup configured
+
+     for (int i = 0; i < 2; i++)
+     {
+        ClientSession sessions[] = new ClientSession[10];
+        for (int j = 0; j < 10; j++)
+        {
+           sessions[j] = factory.createSession(false, true, true);
+           sessions[j].start();
+        }
+
+        for (ClientSession session: sessions)
+        {
+           session.close();
+        }
+
+     }
+
+   }
 
    public void testJustReplication() throws Exception
    {
