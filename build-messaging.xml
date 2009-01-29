@@ -66,6 +66,8 @@
    <property name="bootstrap.jar.name" value="jbm-bootstrap.jar"/>
    <property name="logging.jar.name" value="jbm-logging.jar"/>
    <property name="core.client.jar.name" value="jbm-core-client.jar"/>
+   <property name="ra.jar.name" value="jbm-ra.jar"/>
+   <property name="ra.rar.name" value="jbm-ra.rar"/>
 
    <!--source and build dirs-->
    <property name="build.dir" value="build"/>
@@ -80,6 +82,7 @@
    <property name="build.security.classes.dir" value="${build.dir}/classes/security"/>
    <property name="build.bootstrap.classes.dir" value="${build.dir}/classes/bootstrap"/>
    <property name="build.logging.classes.dir" value="${build.dir}/classes/logging"/>
+   <property name="build.ra.classes.dir" value="${build.dir}/classes/ra"/>
    <property name="build.jars.dir" value="${build.dir}/jars"/>
    <property name="build.src.dir" value="${build.dir}/src"/>
    <property name="src.dir" value="src"/>
@@ -397,6 +400,7 @@
       <mkdir dir="${build.security.classes.dir}"/>
       <mkdir dir="${build.bootstrap.classes.dir}"/>
       <mkdir dir="${build.logging.classes.dir}"/>
+      <mkdir dir="${build.ra.classes.dir}"/>
       <mkdir dir="${build.jars.dir}"/>
       <mkdir dir="${build.src.dir}"/>
    </target>
@@ -539,6 +543,27 @@
       </javac>
    </target>
 
+   <target name="compile-ra" depends="init">
+      <javac destdir="${build.ra.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${build.src.dir}"/>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="**/messaging/ra/**/*.java"/>
+         <classpath refid="jms.compilation.classpath"/>
+      </javac>
+   </target>
+
    <target name="build-native">
       <exec dir="native" executable="make">
          <arg line="clean"/>
@@ -653,9 +678,22 @@
 
    </target>
 
-   <target name="jar"
-           depends="jar-core, jar-client, jar-jms, jar-transports, jar-security, jar-bootstrap, jar-logging">
+   <target name="jar-ra" depends="compile-ra, jar-client, jar-jms">
+      <jar jarfile="${build.jars.dir}/${ra.jar.name}">
+         <fileset dir="${build.ra.classes.dir}">
+           <include name="org/jboss/messaging/ra/**/*.class"/>
+         </fileset>
+      </jar>
+      <jar jarfile="${build.jars.dir}/${ra.rar.name}">
+         <metainf dir="${src.config.dir}" includes="ra.xml"/>
+         <fileset file="${build.jars.dir}/${ra.jar.name}"/>
+         <fileset file="${build.jars.dir}/${core.client.jar.name}"/>
+         <fileset file="${build.jars.dir}/${jms.jar.name}"/>
+      </jar>
+   </target>
 
+   <target name="jar"
+           depends="jar-core, jar-client, jar-jms, jar-transports, jar-security, jar-bootstrap, jar-logging, jar-ra">
    </target>
 
 

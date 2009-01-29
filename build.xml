@@ -98,6 +98,10 @@
       <ant antfile="build-messaging.xml" target="compile-logging"/>
    </target>
 
+   <target name="compile-ra" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="compile-ra"/>
+   </target>
+
    <target name="build-native" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="build-native"/>
    </target>
@@ -144,6 +148,10 @@
 
    <target name="jar-client" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="jar-client"/>
+   </target>
+
+   <target name="jar-ra" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="jar-ra"/>
    </target>
    <!-- ======================================================================================== -->
    <!-- Distro Tasks                                                                           -->
