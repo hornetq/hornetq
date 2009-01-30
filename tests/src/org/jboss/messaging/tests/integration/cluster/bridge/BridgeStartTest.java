@@ -253,142 +253,148 @@ public class BridgeStartTest extends ServiceTestBase
       List<QueueConfiguration> queueConfigs1 = new ArrayList<QueueConfiguration>();
       queueConfigs1.add(queueConfig1);
       service1.getServer().getConfiguration().setQueueConfigurations(queueConfigs1);
-      
-      //Don't start service 1 yet
-      
-      log.info("starting 0");
-      service0.start();      
-      log.info("started 0");
 
-      ClientSessionFactory sf0 = new ClientSessionFactoryImpl(server0tc);
-      
-      ClientSession session0 = sf0.createSession(false, true, true);
-      
-      ClientProducer producer0 = session0.createProducer(new SimpleString(testAddress));
-                 
-      final int numMessages = 10;
+      try{
+         //Don't start service 1 yet
 
-      final SimpleString propKey = new SimpleString("testkey");
+         log.info("starting 0");
+         service0.start();      
+         log.info("started 0");
 
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = session0.createClientMessage(false);
+         ClientSessionFactory sf0 = new ClientSessionFactoryImpl(server0tc);
 
-         message.putIntProperty(propKey, i);
+         ClientSession session0 = sf0.createSession(false, true, true);
 
-         producer0.send(message);
+         ClientProducer producer0 = session0.createProducer(new SimpleString(testAddress));
+
+         final int numMessages = 10;
+
+         final SimpleString propKey = new SimpleString("testkey");
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage message = session0.createClientMessage(false);
+
+            message.putIntProperty(propKey, i);
+
+            producer0.send(message);
+         }
+
+         //Wait a bit
+         Thread.sleep(1000);
+
+         log.info("starting 1");
+         service1.start();
+         log.info("started server 1");
+
+         ClientSessionFactory sf1 = new ClientSessionFactoryImpl(server1tc);
+
+         ClientSession session1 = sf1.createSession(false, true, true);
+
+         ClientConsumer consumer1 = session1.createConsumer(queueName1);
+
+         session1.start();
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage message = consumer1.receive(1000);
+
+            assertNotNull(message);
+
+            assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+
+            message.acknowledge();
+         }
+
+         assertNull(consumer1.receive(200));
+
+         log.info("consumed messages");
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage message = session0.createClientMessage(false);
+
+            message.putIntProperty(propKey, i);
+
+            producer0.send(message);
+         }
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage message = consumer1.receive(1000);
+
+            assertNotNull(message);
+
+            assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+
+            message.acknowledge();
+         }
+
+         assertNull(consumer1.receive(200));
+
+         session1.close();
+
+         sf1.close();
+
+         log.info("stipping 1");
+         service1.stop();
+         log.info("stopped 1");
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage message = session0.createClientMessage(false);
+
+            message.putIntProperty(propKey, i);
+
+            producer0.send(message);
+         }
+
+         log.info("Sent more messages");
+
+         service1.start();
+
+         log.info("started service1");
+
+         sf1 = new ClientSessionFactoryImpl(server1tc);
+
+         session1 = sf1.createSession(false, true, true);
+
+         consumer1 = session1.createConsumer(queueName1);
+
+         log.info("**** started session");
+         session1.start();
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage message = consumer1.receive(1000);
+
+            assertNotNull(message);
+
+            assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+
+            message.acknowledge();
+         }
+
+         assertNull(consumer1.receive(200));
+
+         log.info("received all messages again");
+
+         session1.close();
+
+         sf1.close();
+
+         session0.close();
+
+         sf0.close();
+
+
       }
-      
-      //Wait a bit
-      Thread.sleep(1000);
-      
-      log.info("starting 1");
-      service1.start();
-      log.info("started server 1");
-      
-      ClientSessionFactory sf1 = new ClientSessionFactoryImpl(server1tc);
-      
-      ClientSession session1 = sf1.createSession(false, true, true);
-     
-      ClientConsumer consumer1 = session1.createConsumer(queueName1);
-
-      session1.start();
-
-      for (int i = 0; i < numMessages; i++)
+      finally
       {
-         ClientMessage message = consumer1.receive(1000);
+         service0.stop();
 
-         assertNotNull(message);
-
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
-
-         message.acknowledge();
+         service1.stop();
       }
-
-      assertNull(consumer1.receive(200));
-      
-      log.info("consumed messages");
-      
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = session0.createClientMessage(false);
-
-         message.putIntProperty(propKey, i);
-
-         producer0.send(message);
-      }
-                 
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = consumer1.receive(1000);
-
-         assertNotNull(message);
-
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
-
-         message.acknowledge();
-      }
-      
-      assertNull(consumer1.receive(200));
-                 
-      session1.close();
-      
-      sf1.close();
-      
-      log.info("stipping 1");
-      service1.stop();
-      log.info("stopped 1");
-      
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = session0.createClientMessage(false);
-
-         message.putIntProperty(propKey, i);
-
-         producer0.send(message);
-      }
-      
-      log.info("Sent more messages");
-      
-      service1.start();
-      
-      log.info("started service1");
-      
-      sf1 = new ClientSessionFactoryImpl(server1tc);
-      
-      session1 = sf1.createSession(false, true, true);
-     
-      consumer1 = session1.createConsumer(queueName1);
-
-      log.info("**** started session");
-      session1.start();
-      
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = consumer1.receive(1000);
-
-         assertNotNull(message);
-
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
-
-         message.acknowledge();
-      }
-      
-      assertNull(consumer1.receive(200));
-      
-      log.info("received all messages again");
-      
-      session1.close();
-      
-      sf1.close();
-            
-      session0.close();
-
-      sf0.close();
-      
-      service0.stop();
-
-      service1.stop();
    }
    
    public void testTargetServerNotAvailableNoReconnectTries() throws Exception
