@@ -22,8 +22,7 @@
 
 package org.jboss.messaging.tests.unit.util;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.net.InetAddress;
 
 import junit.framework.TestCase;
 
@@ -35,7 +34,7 @@ import org.jboss.messaging.util.UUIDGenerator;
  * @version <tt>$Revision$</tt>
  *
  */
-public class UUIDTest extends TestCase
+public class UUIDGeneratorTest extends TestCase
 {
    // Constants -----------------------------------------------------
 
@@ -47,29 +46,31 @@ public class UUIDTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   public void testManyUUIDs() throws Exception
+   public void testGetHardwareAddress() throws Exception
    {
-      final int MANY_TIMES = getTimes();
-      Set<String> uuidsSet = new HashSet<String>();
-      
-      UUIDGenerator gen = UUIDGenerator.getInstance();
-      for (int i = 0; i < MANY_TIMES; i++)
+      String javaVersion = System.getProperty("java.vm.version");
+      if (javaVersion.startsWith("1.5"))
       {
-         uuidsSet.add(gen.generateStringUUID());
+         assertNull(UUIDGenerator.getHardwareAddress());
+      } else if (javaVersion.startsWith("1.6"))
+      {
+         assertNotNull(UUIDGenerator.getHardwareAddress());
       }
-      
-      // we put them in a set to check duplicates
-      assertEquals(MANY_TIMES, uuidsSet.size());
    }
-
+   
+   public void testGetInetAddress() throws Exception
+   {
+      InetAddress address = UUIDGenerator.getInetAddress();
+      if (address != null)
+      {
+         assertFalse(address.isLoopbackAddress());
+         assertFalse(address.isSiteLocalAddress());
+      }
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   protected int getTimes()
-   {
-      return 100000;
-   }
    
    // Private -------------------------------------------------------
 

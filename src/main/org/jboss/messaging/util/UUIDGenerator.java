@@ -15,14 +15,21 @@
 
 package org.jboss.messaging.util;
 
+import java.lang.reflect.Method;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.security.SecureRandom;
+import java.util.Enumeration;
 import java.util.Random;
+
+import org.jboss.messaging.core.logging.Logger;
 
 public final class UUIDGenerator
 {
    private final static UUIDGenerator sSingleton = new UUIDGenerator();
+
+   private static final Logger log = Logger.getLogger(UUIDGenerator.class);
 
    /**
     * Random-generator, used by various UUID-generation methods:
@@ -31,6 +38,8 @@ public final class UUIDGenerator
 
    private final Object mTimerLock = new Object();
    private UUIDTimer mTimer = null;
+   private byte[] address;
+   
 
    /**
     * Constructor is private to enforce singleton access.
@@ -73,10 +82,9 @@ public final class UUIDGenerator
       return mRnd;
    }
 
-   public final UUID generateTimeBasedUUID(InetAddress addr)
+   public final UUID generateTimeBasedUUID(byte[] byteAddr)
    {
       byte[] contents = new byte[16];
-      byte[] byteAddr = addr.getAddress();
       int pos = 12;
       for (int i = 0; i < 4; ++i)
       {
@@ -96,77 +104,174 @@ public final class UUIDGenerator
       return new UUID(UUID.TYPE_TIME_BASED, contents);
    }
    
-   private InetAddress address;
-   
-   private final InetAddress getAddress()
+   public final byte[] generateDummyAddress()
    {
-      if (address == null)
+      Random rnd = getRandomNumberGenerator();
+      byte[] dummy = new byte[6];
+      rnd.nextBytes(dummy);
+      /* Need to set the broadcast bit to indicate it's not a real
+       * address.
+       */
+      dummy[0] |= (byte) 0x01;
+      
+      if (log.isDebugEnabled())
       {
-         address = null;
-         
+         log.debug("using dummy address " + asString(dummy));
+      }
+      return dummy;
+   }
+
+   /**
+    * If running java 6 or above, returns {@link NetworkInterface#getHardwareAddress()}, else return <code>null</code>.
+    * The first hardware address is returned when iterating all the NetworkInterfaces
+    */
+   public final static byte[] getHardwareAddress()
+   {
+      Method getHardwareAddressMethod;
+      try
+      {
+         getHardwareAddressMethod = NetworkInterface.class.getMethod("getHardwareAddress", null);
+      }
+      catch (Throwable t)
+      {
+         // not on Java 6 or not enough security permission
+         return null;
+      }
+      
+      try {
+         Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+         while (networkInterfaces.hasMoreElements())
+         {
+            NetworkInterface networkInterface = (NetworkInterface)networkInterfaces.nextElement();
+            Object res = getHardwareAddressMethod.invoke(networkInterface, null);
+            if (res instanceof byte[])
+            {
+               byte[] address = (byte[])res;
+               if (log.isDebugEnabled())
+               {
+                  log.debug("using hardware address " + asString(address));
+               }
+               return address;
+            }
+         }
+      } catch (Throwable t)
+      {
+      }
+
+      return null;
+   }
+   
+   /**
+    * Browse all the network interfaces and their addresses until we find the 1st InetAddress which
+    * is neither a loopback address nor a site local address.
+    * Returns <code>null</code> if no such address is found.
+    */
+   public final static InetAddress getInetAddress()
+   {
          try
          {
-            address = InetAddress.getLocalHost();
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (networkInterfaces.hasMoreElements())
+            {
+               NetworkInterface networkInterface = (NetworkInterface)networkInterfaces.nextElement();
+               Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+               while (inetAddresses.hasMoreElements())
+               {
+                  InetAddress inetAddress = (InetAddress)inetAddresses.nextElement();
+                  if (!inetAddress.isLoopbackAddress()
+                      && !inetAddress.isSiteLocalAddress())
+                  {
+                     if (log.isDebugEnabled())
+                     {
+                        log.debug("using inet address " + inetAddress);
+                     }
+                     return inetAddress;
+                  }
+               }
+            }
          }
-         catch (UnknownHostException e)
-         {        
+         catch (SocketException e)
+         {
          }
-      }
-      return address;
+         return null;
    }
    
    public final SimpleString generateSimpleStringUUID()
    {
-      InetAddress localHost  = getAddress();
-      
-      SimpleString uid;
-      if (localHost == null)
+      byte[] address = getAddressBytes();
+      if (address == null)
       {
-         uid = new SimpleString(java.util.UUID.randomUUID().toString());
+         return new SimpleString(java.util.UUID.randomUUID().toString());
       }
       else
       {
          UUIDGenerator gen = UUIDGenerator.getInstance();
-         uid = new SimpleString(gen.generateTimeBasedUUID(localHost).toString());
+         return new SimpleString(gen.generateTimeBasedUUID(address).toString());
       }    
-      
-      return uid;
-   }
-   
-   public final SimpleString generateSimpleStringUUID2()
-   {
-      UUID uuid = generateUUID();
-      
-      SimpleString str = new SimpleString(uuid.asBytes());
-      
-      return str;
    }
    
    public final UUID generateUUID()
    {
-      InetAddress localHost  = getAddress();
+      byte[] address = getAddressBytes();
       
       UUIDGenerator gen = UUIDGenerator.getInstance();
-      UUID uid = gen.generateTimeBasedUUID(localHost);         
+      UUID uid = gen.generateTimeBasedUUID(address);         
       
       return uid;
    }
    
    public final String generateStringUUID()
    {
-      InetAddress localHost  = getAddress();
+      byte[] address = getAddressBytes();
       
-      String uid;
-      if (localHost == null)
+      if (address == null)
       {
-         uid = java.util.UUID.randomUUID().toString();
+         return java.util.UUID.randomUUID().toString();
       }
       else
       {
          UUIDGenerator gen = UUIDGenerator.getInstance();
-         uid = gen.generateTimeBasedUUID(localHost).toString();
+         return gen.generateTimeBasedUUID(address).toString();
       }    
+   }
+   
+   // Private -------------------------------------------------------
+   
+   private final byte[] getAddressBytes()
+   {
+      if (address == null)
+      {
+         address = getHardwareAddress();
+         if (address == null)
+         {
+            InetAddress addr = getInetAddress();
+            if (addr != null)
+            {
+               address = addr.getAddress();
+            }
+         }
+         if (address == null)
+         {
+            address = generateDummyAddress();
+         }
+      }
       
-      return uid;
+      return address;
+   }
+   
+   private static final String asString(byte[] bytes)
+   {
+      if (bytes == null)
+      {
+         return null;
+      }
+      
+      String s = "";
+      for (int i = 0; i < bytes.length - 1; i++)
+      {
+         s += Integer.toHexString(bytes[i]) + ":";
+      }
+      s += bytes[bytes.length - 1];
+      return s;
    }
 }
