@@ -63,7 +63,7 @@ public class BindingsImpl implements Bindings
    private final List<Binding> exclusiveBindings = new CopyOnWriteArrayList<Binding>();
 
    public Collection<Binding> getBindings()
-   {
+   {      
       return bindingsMap.values();
    }
 
@@ -93,8 +93,8 @@ public class BindingsImpl implements Bindings
 
          bindings.add(binding);
       }
-
-      bindingsMap.put(binding.getID(), binding);
+      
+      bindingsMap.put(binding.getID(), binding);           
    }
 
    public void removeBinding(final Binding binding)
@@ -120,7 +120,7 @@ public class BindingsImpl implements Bindings
          }
       }
 
-      bindingsMap.remove(binding.getID());
+      bindingsMap.remove(binding.getID());          
    }
 
    private void routeFromCluster(final ServerMessage message, final Transaction tx) throws Exception

@@ -293,10 +293,11 @@ public class BridgeImpl implements Bridge, FailureListener
                                                       "'" +
                                                       NotificationType.CONSUMER_CLOSED +
                                                       "') AND " +
+                                                      "("+ ManagementHelper.HDR_ADDRESS + " IS NULL OR " +                                                      
                                                       ManagementHelper.HDR_ADDRESS +
                                                       " LIKE '" +
                                                       queueDataAddress +
-                                                      "%'");
+                                                      "%')");
 
                session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueueName, filter, false, true);
 
@@ -311,7 +312,8 @@ public class BridgeImpl implements Bridge, FailureListener
                ManagementHelper.putOperationInvocation(message,
                                                        ManagementServiceImpl.getMessagingServerObjectName(),
                                                        "sendQueueInfoToQueue",
-                                                       notifQueueName.toString());
+                                                       notifQueueName.toString(),
+                                                       queueDataAddress);
 
                ClientProducer prod = session.createProducer(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS);
 

@@ -544,9 +544,9 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return TransportConfigurationInfo.toTabularData(connectorConfigurations);
    }
    
-   public void sendQueueInfoToQueue(final String queueName) throws Exception
+   public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception
    {
-      postOffice.sendQueueInfoToQueue(new SimpleString(queueName));
+      postOffice.sendQueueInfoToQueue(new SimpleString(queueName), new SimpleString(address));
    }
 
    // NotificationEmitter implementation ----------------------------

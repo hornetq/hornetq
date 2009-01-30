@@ -193,8 +193,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
    public synchronized void stop() throws Exception
    {
-      log.info("Stoping cluster connection");
-
       if (!started)
       {
          return;
@@ -205,11 +203,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          discoveryGroup.unregisterListener(this);
       }
 
-      log.info("Three are " + records.size() + " records");
-
       for (MessageFlowRecord record : records.values())
       {
-         log.info("stopping record");
          record.close();
       }
 
@@ -317,7 +312,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
             record.setBridge(bridge);
 
-            log.info("added record");
             records.put(connectorPair, record);
 
             bridge.start();
@@ -343,8 +337,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    private SimpleString generateConnectorString(final TransportConfiguration config) throws Exception
    {
       StringBuilder str = new StringBuilder(replaceWildcardChars(config.getFactoryClassName()));
-
-      log.info("config is " + config);
 
       if (config.getParams() != null)
       {
@@ -393,9 +385,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       public void close() throws Exception
       {
-         log.info("stopping bridge");
          bridge.stop();
-         log.info("stopped bridge");
 
          for (RemoteQueueBinding binding : bindings.values())
          {
@@ -424,8 +414,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
                firstReset = true;
 
-               log.info("did reset");
-
                return;
             }
 
@@ -436,18 +424,16 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
             NotificationType type = NotificationType.valueOf(message.getProperty(ManagementHelper.HDR_NOTIFICATION_TYPE)
                                                                     .toString());
-
-            log.info("Got notification message " + type);
-
+ 
+       
             if (type == NotificationType.BINDING_ADDED)
-            {
-               log.info("queue created");
+            {               
                SimpleString uniqueName = UUIDGenerator.getInstance().generateSimpleStringUUID();
 
                SimpleString queueAddress = (SimpleString)message.getProperty(ManagementHelper.HDR_ADDRESS);
 
                SimpleString queueName = (SimpleString)message.getProperty(ManagementHelper.HDR_QUEUE_NAME);
-
+               
                SimpleString filterString = (SimpleString)message.getProperty(ManagementHelper.HDR_FILTERSTRING);
                
                Integer queueID = (Integer)message.getProperty(ManagementHelper.HDR_BINDING_ID);
@@ -468,7 +454,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
             }
             else if (type == NotificationType.BINDING_REMOVED)
             {
-               log.info("queue destroyed");
                SimpleString queueName = (SimpleString)message.getProperty(ManagementHelper.HDR_QUEUE_NAME);
 
                RemoteQueueBinding binding = bindings.remove(queueName);
@@ -477,7 +462,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
             }
             else if (type == NotificationType.CONSUMER_CREATED)
             {
-               log.info("consumer created");
                SimpleString queueName = (SimpleString)message.getProperty(ManagementHelper.HDR_QUEUE_NAME);
 
                SimpleString filterString = (SimpleString)message.getProperty(ManagementHelper.HDR_FILTERSTRING);
@@ -488,7 +472,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
             }
             else if (type == NotificationType.CONSUMER_CLOSED)
             {
-               log.info("consumer closed");
                SimpleString queueName = (SimpleString)message.getProperty(ManagementHelper.HDR_QUEUE_NAME);
 
                SimpleString filterString = (SimpleString)message.getProperty(ManagementHelper.HDR_FILTERSTRING);

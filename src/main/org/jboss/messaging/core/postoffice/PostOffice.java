@@ -81,5 +81,5 @@ public interface PostOffice extends MessagingComponent
 
    DuplicateIDCache getDuplicateIDCache(SimpleString address);
    
-   void sendQueueInfoToQueue(SimpleString queueName) throws Exception;
+   void sendQueueInfoToQueue(SimpleString queueName, SimpleString address) throws Exception;
 }

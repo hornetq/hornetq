@@ -20,23 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.server.cluster;
 
-import org.jboss.messaging.core.postoffice.QueueBinding;
-import org.jboss.messaging.util.SimpleString;
+package org.jboss.messaging.core.postoffice;
 
 /**
- * A RemoteQueueBinding
+ * A QueueBinding
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 23 Jan 2009 11:58:05
+ * Created 30 Jan 2009 11:04:37
  *
  *
  */
-public interface RemoteQueueBinding extends QueueBinding
+public interface QueueBinding extends Binding
 {
-   void addConsumer(SimpleString filterString) throws Exception;
-
-   void removeConsumer(SimpleString filterString) throws Exception;
+   int consumerCount();
 }

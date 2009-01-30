@@ -85,5 +85,8 @@
         <xsd:attribute name="durable" type="xsd:boolean"
             use="optional">
         </xsd:attribute>
+        <xsd:attribute name="insert-duplicate-detection-header" type="xsd:boolean"
+            use="optional">
+        </xsd:attribute>
     </xsd:complexType>
 </xsd:schema>

@@ -239,9 +239,9 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
       return localControl.getConnectors();
    }
 
-   public void sendQueueInfoToQueue(final String queueName) throws Exception
+   public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception
    {
-      localControl.sendQueueInfoToQueue(queueName);
+      localControl.sendQueueInfoToQueue(queueName, address);
    }
 
    public boolean addAddress(String address) throws Exception

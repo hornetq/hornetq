@@ -166,6 +166,6 @@ public interface MessagingServerControlMBean
 
    TabularData getConnectors() throws Exception;
    
-   void sendQueueInfoToQueue(String queueName) throws Exception;
+   void sendQueueInfoToQueue(String queueName, String address) throws Exception;
 
 }

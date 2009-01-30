@@ -198,6 +198,8 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    
    public void willRoute(final ServerMessage message)
    {      
+      log.info("routing to remote queue binding");
+      
       //We add a header with the name of the queue, holding a list of the transient ids of the queues to route to
       
       //TODO - this can be optimised
@@ -281,6 +283,11 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       }
 
       consumerCount--;
+   }
+   
+   public synchronized int consumerCount()
+   {
+      return consumerCount;
    }
 
 }

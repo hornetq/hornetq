@@ -48,6 +48,12 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class FakePostOffice implements PostOffice
 {
+   public void sendQueueInfoToQueue(SimpleString queueName, SimpleString address) throws Exception
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
    private ConcurrentHashMap<SimpleString, Binding> bindings = new ConcurrentHashMap<SimpleString, Binding>();
 
    private ConcurrentHashSet<SimpleString> addresses = new ConcurrentHashSet<SimpleString>();

@@ -26,7 +26,8 @@ package org.jboss.messaging.core.postoffice.impl;
 import java.util.List;
 
 import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.postoffice.QueueBinding;
 import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.Queue;
@@ -42,8 +43,10 @@ import org.jboss.messaging.util.SimpleString;
  *
  *
  */
-public class LocalQueueBinding implements Binding
+public class LocalQueueBinding implements QueueBinding
 {
+   private static final Logger log = Logger.getLogger(LocalQueueBinding.class);
+
    private final SimpleString address;
    
    private final Queue queue;
@@ -142,12 +145,15 @@ public class LocalQueueBinding implements Binding
    public void willRoute(final ServerMessage message)
    {      
    }
-   
-   
-
+     
    public boolean isQueueBinding()
    {
       return true;
+   }
+   
+   public int consumerCount()
+   {
+      return queue.getConsumerCount();
    }
 
 }

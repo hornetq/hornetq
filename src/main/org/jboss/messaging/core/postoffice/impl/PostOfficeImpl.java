@@ -228,7 +228,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    
    
    public void onNotification(final Notification notification)
-   {
+   {      
       synchronized (notificationLock)
       {
          NotificationType type = notification.getType();
@@ -238,7 +238,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
             TypedProperties props = notification.getProperties();
             
             SimpleString queueName = (SimpleString)props.getProperty(ManagementHelper.HDR_QUEUE_NAME);
-            
+               
             SimpleString address = (SimpleString)props.getProperty(ManagementHelper.HDR_ADDRESS);
             
             Integer transientID = (Integer)props.getProperty(ManagementHelper.HDR_BINDING_ID);
@@ -359,7 +359,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    // and post office is activated but queue remains unactivated after failover so delivery never occurs
    // even though failover is complete
    public synchronized void addBinding(final Binding binding) throws Exception
-   {
+   {      
       binding.setID(generateTransientID());
       
       addBindingInMemory(binding);
@@ -572,7 +572,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    
    
 
-   public void sendQueueInfoToQueue(final SimpleString queueName) throws Exception
+   public void sendQueueInfoToQueue(final SimpleString queueName, final SimpleString address) throws Exception
    {
       //We send direct to the queue so we can send it to the same queue that is bound to the notifications adress - this is crucial for ensuring
       //that queue infos and notifications are received in a contiguous consistent stream
@@ -600,43 +600,46 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                   
          for (QueueInfo info: queueInfos.values())
          {            
-            message = createQueueInfoMessage(NotificationType.BINDING_ADDED, queueName);
-            
-            message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
-            message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName());
-            message.putIntProperty(ManagementHelper.HDR_BINDING_ID, info.getID());
-            
-            queue.preroute(message, null);            
-            queue.route(message, null);
-            
-            int consumersWithFilters = info.getFilterStrings() != null ? info.getFilterStrings().size() : 0;
-            
-            for (int i = 0; i < info.getNumberOfConsumers() - consumersWithFilters; i++)
+            if (info.getAddress().startsWith(address))
             {
-               message = createQueueInfoMessage(NotificationType.CONSUMER_CREATED, queueName);
+               message = createQueueInfoMessage(NotificationType.BINDING_ADDED, queueName);
                
-               message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName()); 
+               message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
+               message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName());
+               message.putIntProperty(ManagementHelper.HDR_BINDING_ID, info.getID());
                
                queue.preroute(message, null);            
                queue.route(message, null);
-            }
-            
-            if (info.getFilterStrings() != null)
-            {
-               for (SimpleString filterString: info.getFilterStrings())
+               
+               int consumersWithFilters = info.getFilterStrings() != null ? info.getFilterStrings().size() : 0;
+               
+               for (int i = 0; i < info.getNumberOfConsumers() - consumersWithFilters; i++)
                {
                   message = createQueueInfoMessage(NotificationType.CONSUMER_CREATED, queueName);
                   
-                  message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName());
-                  message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString); 
+                  message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName()); 
                   
                   queue.preroute(message, null);            
                   queue.route(message, null);
                }
-            }           
+               
+               if (info.getFilterStrings() != null)
+               {
+                  for (SimpleString filterString: info.getFilterStrings())
+                  {
+                     message = createQueueInfoMessage(NotificationType.CONSUMER_CREATED, queueName);
+                     
+                     message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName());
+                     message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString); 
+                     
+
+                     queue.preroute(message, null);            
+                     queue.route(message, null);
+                  }
+               }     
+            }
          }
       }
-      
    }
    
    // Private -----------------------------------------------------------------
