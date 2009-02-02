@@ -1,36 +1,7 @@
 grant {
         // Allow everything for now
         //permission java.security.AllPermission;
-        
-        permission java.util.PropertyPermission "*", "read";
-        permission java.util.PropertyPermission "user.timezone", "write";
 
         permission java.lang.RuntimePermission "accessDeclaredMembers";
-        permission java.lang.RuntimePermission "modifyThread";
-        permission java.lang.RuntimePermission "selectorProvider";
-        permission java.lang.RuntimePermission "loadLibrary.net";
-        permission java.lang.RuntimePermission "loadLibrary.nio";
-        permission java.lang.RuntimePermission "loadLibrary.management";
-        permission java.lang.RuntimePermission "accessClassInPackage.sun.security.provider";
-        permission java.lang.RuntimePermission "accessClassInPackage.sun.text.resources";
-        
-        permission java.net.SocketPermission "*", "connect,resolve";
-
-        permission java.net.NetPermission "specifyStreamHandler";
-
-        permission java.io.FilePermission "/dev/random", "read, write";
-        permission java.io.FilePermission "/dev/urandom", "read";
-        permission java.io.FilePermission "${user.dir}/-", "read";
-        permission java.io.FilePermission "tests/-", "write";
-        permission java.io.FilePermission "${java.home}/-", "read";
-
-        permission java.security.SecurityPermission "getProperty.networkaddress.cache.*";
-        permission java.security.SecurityPermission "getProperty.security.provider.*";
-        permission java.security.SecurityPermission "getPolicy";
-        permission java.security.SecurityPermission "getProperty.securerandom.source";
-        permission java.security.SecurityPermission "putProviderProperty.SUN";
-
-        permission java.util.logging.LoggingPermission "control";
-
-        permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
+        permission java.net.SocketPermission "*:1024-", "connect";
 };
