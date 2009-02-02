@@ -20,9 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */ 
 
-package org.jboss.messaging.tests.integration.clientcrash;
+package org.jboss.messaging.tests.integration.security;
 
+import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+
+import java.net.URL;
+
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.ClientConsumer;
@@ -37,32 +41,24 @@ import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
+import org.jboss.messaging.tests.integration.clientcrash.GracefulClient;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
 import org.jboss.messaging.util.SimpleString;
 
 /**
- * A test that makes sure that a Messaging client gracefully exists after the last session is
- * closed. Test for http://jira.jboss.org/jira/browse/JBMESSAGING-417.
- *
- * This is not technically a crash test, but it uses the same type of topology as the crash tests
- * (local server, remote VM client).
- *
- * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- * $Id$
  */
-public class ClientExitTest extends TestCase
+public class RestrictedSecurityClientTest extends TestCase
 {
    // Constants ------------------------------------------------------------------------------------
 
    private static final String MESSAGE_TEXT = randomString();
    
-   private static final SimpleString QUEUE = new SimpleString("ClientExitTestQueue");
+   private static final SimpleString QUEUE = randomSimpleString();
       
    // Static ---------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ClientExitTest.class);
+   private static final Logger log = Logger.getLogger(RestrictedSecurityClientTest.class);
 
    // Attributes -----------------------------------------------------------------------------------
 
@@ -76,16 +72,21 @@ public class ClientExitTest extends TestCase
 
    // Public ---------------------------------------------------------------------------------------
 
-   public void testGracefulClientExit() throws Exception
+   public void testRestrictedSecurityClient() throws Exception
    {
-      // spawn a JVM that creates a JMS client, which sends a test message
-      Process p = SpawnedVMSupport.spawnVM(GracefulClient.class.getName(), QUEUE.toString(), MESSAGE_TEXT);
+      String policyFile = "restricted-security-client.policy";
+      URL policyFileURL = Thread.currentThread().getContextClassLoader().getResource(policyFile);
+      assertNotNull(policyFileURL);
+      // spawn a JVM that creates a client with a restrictive security manager which sends a test message
+      Process p = SpawnedVMSupport.spawnVM(GracefulClient.class.getName(), 
+                                           new String[] {"-Djava.security.manager", 
+                                                         "-Djava.security.policy==" + policyFileURL.getPath()},
+                                           new String[] {QUEUE.toString(), MESSAGE_TEXT});
 
       // read the message from the queue
-
       Message message = consumer.receive(15000);
 
-      assertNotNull(message);
+      assertNotNull("did not receive message from the spawned client", message);
       assertEquals(MESSAGE_TEXT, message.getBody().getString());
 
       // the client VM should exit by itself. If it doesn't, that means we have a problem

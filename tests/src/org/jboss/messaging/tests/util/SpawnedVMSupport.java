@@ -58,19 +58,31 @@ public class SpawnedVMSupport
    // Static --------------------------------------------------------
 
    public static Process spawnVM(String className, String... args)
-         throws Exception
+   throws Exception
+   {
+      return spawnVM(className, new String[0], args);
+   }
+   
+   public static Process spawnVM(String className, String[] vmargs, String... args)
+   throws Exception
    {
       StringBuffer sb = new StringBuffer();
 
       sb.append("java").append(' ');
-      
+
       sb.append("-Xms512m -Xmx512m ");
 
+      for (int i = 0; i < vmargs.length; i++)
+      {
+         String vmarg = vmargs[i];
+         sb.append(vmarg).append(' ');
+      }
+
       String classPath = System.getProperty("java.class.path");
-      
+
       // I guess it'd be simpler to check if the OS is Windows...
       if (System.getProperty("os.name").equals("Linux")
-         || System.getProperty("os.name").equals("Mac OS X"))
+               || System.getProperty("os.name").equals("Mac OS X"))
       {
          sb.append("-cp").append(" ").append(classPath).append(" ");
       } else
@@ -96,7 +108,7 @@ public class SpawnedVMSupport
       log.trace("process: " + process);
 
       ProcessLogger outputLogger = new ProcessLogger(process.getInputStream(),
-            className);
+                                                     className);
       outputLogger.start();
 
       return process;

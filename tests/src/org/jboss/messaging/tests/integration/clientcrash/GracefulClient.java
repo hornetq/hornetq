@@ -22,8 +22,6 @@
 
 package org.jboss.messaging.tests.integration.clientcrash;
 
-import static org.jboss.messaging.tests.integration.clientcrash.ClientExitTest.QUEUE;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -32,6 +30,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 
 /**
@@ -54,16 +53,24 @@ public class GracefulClient
 
    public static void main(String[] args) throws Exception
    {
+      if (args.length != 2)
+      {
+         throw new Exception("require 2 arguments: queue name + message text");
+      }
+      String queueName = args[0];
+      String messageText = args[1];
+
+      
       try
       {
-         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));         
+         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
          ClientSession session = sf.createSession(false, true, true);
-         ClientProducer producer = session.createProducer(QUEUE);
-         ClientConsumer consumer = session.createConsumer(QUEUE);
+         ClientProducer producer = session.createProducer(queueName);
+         ClientConsumer consumer = session.createConsumer(queueName);
 
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
-         message.getBody().putString(ClientExitTest.MESSAGE_TEXT);
+         message.getBody().putString(messageText);
          producer.send(message);
 
          session.start();
