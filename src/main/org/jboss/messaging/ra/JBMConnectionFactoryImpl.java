@@ -44,6 +44,9 @@ import org.jboss.messaging.core.logging.Logger;
  */
 public class JBMConnectionFactoryImpl implements JBMConnectionFactory, Referenceable
 {
+   /** Serial version UID */
+   static final long serialVersionUID = 7981708919479859360L;
+
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMConnectionFactoryImpl.class);
 
@@ -76,7 +79,7 @@ public class JBMConnectionFactoryImpl implements JBMConnectionFactory, Reference
          // This is standalone usage, no appserver
          this.cm = new JBMConnectionManager();
          if (trace)
-            log.trace("Created new ConnectionManager=" + cm);
+            log.trace("Created new ConnectionManager=" + this.cm);
       }
       else
          this.cm = cm;

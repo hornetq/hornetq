@@ -46,6 +46,9 @@ import org.jboss.messaging.core.logging.Logger;
  */
 public class JBMCredential implements Serializable
 {
+   /** Serial version UID */
+   static final long serialVersionUID = 210476602237497193L;
+
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMCredential.class);
    

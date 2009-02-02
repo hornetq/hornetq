@@ -78,6 +78,46 @@ public class Util {
    }
 
    /**
+    * Compare two longs.
+    * @param me First value
+    * @param you Second value
+    * @return True if object equals else false. 
+    */
+   public static boolean compare(final Long me, final Long you)
+   {
+      // If both null or intern equals
+      if (me == you)
+         return true;
+      
+      // if me null and you are not
+      if (me == null && you != null)
+         return false;
+      
+      // me will not be null, test for equality
+      return me.equals(you);
+   }
+
+   /**
+    * Compare two doubles.
+    * @param me First value
+    * @param you Second value
+    * @return True if object equals else false. 
+    */
+   public static boolean compare(final Double me, final Double you)
+   {
+      // If both null or intern equals
+      if (me == you)
+         return true;
+      
+      // if me null and you are not
+      if (me == null && you != null)
+         return false;
+      
+      // me will not be null, test for equality
+      return me.equals(you);
+   }
+
+   /**
     * Compare two booleans.
     * @param me First value
     * @param you Second value

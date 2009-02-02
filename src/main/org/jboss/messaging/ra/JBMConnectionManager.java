@@ -38,6 +38,9 @@ import org.jboss.messaging.core.logging.Logger;
  */
 public class JBMConnectionManager implements ConnectionManager
 {
+   /** Serial version UID */
+   static final long serialVersionUID = 4409118162975011014L;
+
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMConnectionManager.class);
    

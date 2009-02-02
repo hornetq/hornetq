@@ -36,6 +36,9 @@ import org.jboss.messaging.core.logging.Logger;
  */
 public class JBMMCFProperties implements Serializable
 {
+   /** Serial version UID */
+   static final long serialVersionUID = 6930631856481925007L;
+
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMMCFProperties.class);
    
@@ -53,6 +56,75 @@ public class JBMMCFProperties implements Serializable
 
    /** The discovery group port */
    private Integer discoveryGroupPort;
+
+   /** */
+   private Long discoveryRefreshTimeout;
+   
+   /** */
+   private Long discoveryInitialWaitTimeout;
+
+   /** */
+   private String loadBalancingPolicyClassName;
+
+   /** */
+   private Long pingPeriod;
+
+   /** */
+   private Long connectionTTL;
+
+   /** */
+   private Long callTimeout;
+
+   /** */
+   private Integer dupsOKBatchSize;
+
+   /** */
+   private Integer transactionBatchSize;
+
+   /** */
+   private Integer consumerWindowSize;
+
+   /** */
+   private Integer consumerMaxRate;
+
+   /** */
+   private Integer sendWindowSize;
+
+   /** */
+   private Integer producerMaxRate;
+
+   /** */
+   private Integer minLargeMessageSize;
+
+   /** */
+   private Boolean blockOnAcknowledge;
+
+   /** */
+   private Boolean blockOnNonPersistentSend;
+
+   /** */
+   private Boolean blockOnPersistentSend;
+
+   /** */
+   private Boolean autoGroup;
+
+   /** */
+   private Integer maxConnections;
+
+   /** */
+   private Boolean preAcknowledge;
+
+   /** */
+   private Long retryInterval;
+
+   /** */
+   private Double retryIntervalMultiplier;
+
+   /** */
+   private Integer maxRetriesBeforeFailover;
+
+   /** */
+   private Integer maxRetriesAfterFailover;
 
    /** The user name */
    private String userName;
@@ -82,6 +154,29 @@ public class JBMMCFProperties implements Serializable
 
       discoveryGroupName = null;
       discoveryGroupPort = null;
+      discoveryRefreshTimeout = null;
+      discoveryInitialWaitTimeout = null;
+      loadBalancingPolicyClassName = null;
+      pingPeriod = null;
+      connectionTTL = null;
+      callTimeout = null;
+      dupsOKBatchSize = null;
+      transactionBatchSize = null;
+      consumerWindowSize = null;
+      consumerMaxRate = null;
+      sendWindowSize = null;
+      producerMaxRate = null;
+      minLargeMessageSize = null;
+      blockOnAcknowledge = null;
+      blockOnNonPersistentSend = null;
+      blockOnPersistentSend = null;
+      autoGroup = null;
+      maxConnections = null;
+      preAcknowledge = null;
+      retryInterval = null;
+      retryIntervalMultiplier = null;
+      maxRetriesBeforeFailover = null;
+      maxRetriesAfterFailover = null;
       userName = null;
       password = null;
       clientID = null;
@@ -135,6 +230,558 @@ public class JBMMCFProperties implements Serializable
          log.trace("setDiscoveryGroupPort(" + dgp + ")");
 
       discoveryGroupPort = dgp;
+   }
+
+   /**
+    * Get discovery refresh timeout
+    * @return The value
+    */
+   public Long getDiscoveryRefreshTimeout()
+   {
+      if (trace)
+         log.trace("getDiscoveryRefreshTimeout()");
+
+      return discoveryRefreshTimeout;
+   }
+
+   /**
+    * Set discovery refresh timeout
+    * @param discoveryRefreshTimeout The value
+    */
+   public void setDiscoveryRefreshTimeout(Long discoveryRefreshTimeout)
+   {
+      if (trace)
+         log.trace("setDiscoveryRefreshTimeout(" + discoveryRefreshTimeout + ")");
+
+      this.discoveryRefreshTimeout = discoveryRefreshTimeout;
+   }
+
+   /**
+    * Get discovery initial wait timeout
+    * @return The value
+    */
+   public Long getDiscoveryInitialWaitTimeout()
+   {
+      if (trace)
+         log.trace("getDiscoveryInitialWaitTimeout()");
+
+      return discoveryInitialWaitTimeout;
+   }
+
+   /**
+    * Set discovery initial wait timeout
+    * @param discoveryInitialWaitTimeout The value
+    */
+   public void setDiscoveryInitialWaitTimeout(Long discoveryInitialWaitTimeout)
+   {
+      if (trace)
+         log.trace("setDiscoveryInitialWaitTimeout(" + discoveryInitialWaitTimeout + ")");
+
+      this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
+   }
+
+   /**
+    * Get load balancing policy class name
+    * @return The value
+    */
+   public String getLoadBalancingPolicyClassName()
+   {
+      if (trace)
+         log.trace("getLoadBalancingPolicyClassName()");
+
+      return loadBalancingPolicyClassName;
+   }
+
+   /**
+    * Set load balancing policy class name
+    * @param loadBalancingPolicyClassName The value
+    */
+   public void setLoadBalancingPolicyClassName(String loadBalancingPolicyClassName)
+   {
+      if (trace)
+         log.trace("setLoadBalancingPolicyClassName(" + loadBalancingPolicyClassName + ")");
+
+      this.loadBalancingPolicyClassName = loadBalancingPolicyClassName;
+   }
+
+   /**
+    * Get ping period
+    * @return The value
+    */
+   public Long getPingPeriod()
+   {
+      if (trace)
+         log.trace("getPingPeriod()");
+
+      return pingPeriod;
+   }
+
+   /**
+    * Set ping period
+    * @param pingPeriod The value
+    */
+   public void setPingPeriod(Long pingPeriod)
+   {
+      if (trace)
+         log.trace("setPingPeriod(" + pingPeriod + ")");
+
+      this.pingPeriod = pingPeriod;
+   }
+
+   /**
+    * Get connection TTL
+    * @return The value
+    */
+   public Long getConnectionTTL()
+   {
+      if (trace)
+         log.trace("getConnectionTTL()");
+
+      return connectionTTL;
+   }
+
+   /**
+    * Set connection TTL
+    * @param connectionTTL The value
+    */
+   public void setConnectionTTL(Long connectionTTL)
+   {
+      if (trace)
+         log.trace("setConnectionTTL(" + connectionTTL + ")");
+
+      this.connectionTTL = connectionTTL;
+   }
+
+   /**
+    * Get call timeout
+    * @return The value
+    */
+   public Long getCallTimeout()
+   {
+      if (trace)
+         log.trace("getCallTimeout()");
+
+      return callTimeout;
+   }
+
+   /**
+    * Set call timeout
+    * @param callTimeout The value
+    */
+   public void setCallTimeout(Long callTimeout)
+   {
+      if (trace)
+         log.trace("setCallTimeout(" + callTimeout + ")");
+
+      this.callTimeout = callTimeout;
+   }
+
+   /**
+    * Get dups ok batch size
+    * @return The value
+    */
+   public Integer getDupsOKBatchSize()
+   {
+      if (trace)
+         log.trace("getDupsOKBatchSize()");
+
+      return dupsOKBatchSize;
+   }
+
+   /**
+    * Set dups ok batch size
+    * @param dupsOKBatchSize The value
+    */
+   public void setDupsOKBatchSize(Integer dupsOKBatchSize)
+   {
+      if (trace)
+         log.trace("setDupsOKBatchSize(" + dupsOKBatchSize + ")");
+
+      this.dupsOKBatchSize = dupsOKBatchSize;
+   }
+
+   /**
+    * Get transaction batch size
+    * @return The value
+    */
+   public Integer getTransactionBatchSize()
+   {
+      if (trace)
+         log.trace("getTransactionBatchSize()");
+
+      return transactionBatchSize;
+   }
+
+   /**
+    * Set transaction batch size
+    * @param transactionBatchSize The value
+    */
+   public void setTransactionBatchSize(Integer transactionBatchSize)
+   {
+      if (trace)
+         log.trace("setTransactionBatchSize(" + transactionBatchSize + ")");
+
+      this.transactionBatchSize = transactionBatchSize;
+   }
+
+   /**
+    * Get consumer window size
+    * @return The value
+    */
+   public Integer getConsumerWindowSize()
+   {
+      if (trace)
+         log.trace("getConsumerWindowSize()");
+
+      return consumerWindowSize;
+   }
+
+   /**
+    * Set consumer window size
+    * @param consumerWindowSize The value
+    */
+   public void setConsumerWindowSize(Integer consumerWindowSize)
+   {
+      if (trace)
+         log.trace("setConsumerWindowSize(" + consumerWindowSize + ")");
+
+      this.consumerWindowSize = consumerWindowSize;
+   }
+
+   /**
+    * Get consumer max rate
+    * @return The value
+    */
+   public Integer getConsumerMaxRate()
+   {
+      if (trace)
+         log.trace("getConsumerMaxRate()");
+
+      return consumerMaxRate;
+   }
+
+   /**
+    * Set consumer max rate
+    * @param consumerMaxRate The value
+    */
+   public void setConsumerMaxRate(Integer consumerMaxRate)
+   {
+      if (trace)
+         log.trace("setConsumerMaxRate(" + consumerMaxRate + ")");
+
+      this.consumerMaxRate = consumerMaxRate;
+   }
+
+   /**
+    * Get send window size
+    * @return The value
+    */
+   public Integer getSendWindowSize()
+   {
+      if (trace)
+         log.trace("getSendWindowSize()");
+
+      return sendWindowSize;
+   }
+
+   /**
+    * Set send window size
+    * @param sendWindowSize The value
+    */
+   public void setSendWindowSize(Integer sendWindowSize)
+   {
+      if (trace)
+         log.trace("setSendWindowSize(" + sendWindowSize + ")");
+
+      this.sendWindowSize = sendWindowSize;
+   }
+
+   /**
+    * Get producer max rate
+    * @return The value
+    */
+   public Integer getProducerMaxRate()
+   {
+      if (trace)
+         log.trace("getProducerMaxRate()");
+
+      return producerMaxRate;
+   }
+
+   /**
+    * Set producer max rate
+    * @param producerMaxRate The value
+    */
+   public void setProducerMaxRate(Integer producerMaxRate)
+   {
+      if (trace)
+         log.trace("setProducerMaxRate(" + producerMaxRate + ")");
+
+      this.producerMaxRate = producerMaxRate;
+   }
+
+   /**
+    * Get min large message size
+    * @return The value
+    */
+   public Integer getMinLargeMessageSize()
+   {
+      if (trace)
+         log.trace("getMinLargeMessageSize()");
+
+      return minLargeMessageSize;
+   }
+
+   /**
+    * Set min large message size
+    * @param minLargeMessageSize The value
+    */
+   public void setMinLargeMessageSize(Integer minLargeMessageSize)
+   {
+      if (trace)
+         log.trace("setMinLargeMessageSize(" + minLargeMessageSize + ")");
+
+      this.minLargeMessageSize = minLargeMessageSize;
+   }
+
+   /**
+    * Get block on acknowledge
+    * @return The value
+    */
+   public Boolean getBlockOnAcknowledge()
+   {
+      if (trace)
+         log.trace("getBlockOnAcknowledge()");
+
+      return blockOnAcknowledge;
+   }
+
+   /**
+    * Set block on acknowledge
+    * @param blockOnAcknowledge The value
+    */
+   public void setBlockOnAcknowledge(Boolean blockOnAcknowledge)
+   {
+      if (trace)
+         log.trace("setBlockOnAcknowledge(" + blockOnAcknowledge + ")");
+
+      this.blockOnAcknowledge = blockOnAcknowledge;
+   }
+
+   /**
+    * Get block on non persistent send
+    * @return The value
+    */
+   public Boolean getBlockOnNonPersistentSend()
+   {
+      if (trace)
+         log.trace("getBlockOnNonPersistentSend()");
+
+      return blockOnNonPersistentSend;
+   }
+
+   /**
+    * Set block on non persistent send
+    * @param blockOnNonPersistentSend The value
+    */
+   public void setBlockOnNonPersistentSend(Boolean blockOnNonPersistentSend)
+   {
+      if (trace)
+         log.trace("setBlockOnNonPersistentSend(" + blockOnNonPersistentSend + ")");
+
+      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
+   }
+
+   /**
+    * Get block on persistent send
+    * @return The value
+    */
+   public Boolean getBlockOnPersistentSend()
+   {
+      if (trace)
+         log.trace("getBlockOnPersistentSend()");
+
+      return blockOnPersistentSend;
+   }
+
+   /**
+    * Set block on persistent send
+    * @param blockOnPersistentSend The value
+    */
+   public void setBlockOnPersistentSend(Boolean blockOnPersistentSend)
+   {
+      if (trace)
+         log.trace("setBlockOnPersistentSend(" + blockOnPersistentSend + ")");
+
+      this.blockOnPersistentSend = blockOnPersistentSend;
+   }
+
+   /**
+    * Get auto group
+    * @return The value
+    */
+   public Boolean getAutoGroup()
+   {
+      if (trace)
+         log.trace("getAutoGroup()");
+
+      return autoGroup;
+   }
+
+   /**
+    * Set auto group
+    * @param autoGroup The value
+    */
+   public void setAutoGroup(Boolean autoGroup)
+   {
+      if (trace)
+         log.trace("setAutoGroup(" + autoGroup + ")");
+
+      this.autoGroup = autoGroup;
+   }
+
+   /**
+    * Get max connections
+    * @return The value
+    */
+   public Integer getMaxConnections()
+   {
+      if (trace)
+         log.trace("getMaxConnections()");
+
+      return maxConnections;
+   }
+
+   /**
+    * Set max connections
+    * @param maxConnections The value
+    */
+   public void setMaxConnections(Integer maxConnections)
+   {
+      if (trace)
+         log.trace("setMaxConnections(" + maxConnections + ")");
+
+      this.maxConnections = maxConnections;
+   }
+
+   /**
+    * Get pre acknowledge
+    * @return The value
+    */
+   public Boolean getPreAcknowledge()
+   {
+      if (trace)
+         log.trace("getPreAcknowledge()");
+
+      return preAcknowledge;
+   }
+
+   /**
+    * Set pre acknowledge
+    * @param preAcknowledge The value
+    */
+   public void setPreAcknowledge(Boolean preAcknowledge)
+   {
+      if (trace)
+         log.trace("setPreAcknowledge(" + preAcknowledge + ")");
+
+      this.preAcknowledge = preAcknowledge;
+   }
+
+   /**
+    * Get retry interval
+    * @return The value
+    */
+   public Long getRetryInterval()
+   {
+      if (trace)
+         log.trace("getRetryInterval()");
+
+      return retryInterval;
+   }
+
+   /**
+    * Set retry interval
+    * @param retryInterval The value
+    */
+   public void setRetryInterval(Long retryInterval)
+   {
+      if (trace)
+         log.trace("setRetryInterval(" + retryInterval + ")");
+
+      this.retryInterval = retryInterval;
+   }
+
+   /**
+    * Get retry interval multiplier
+    * @return The value
+    */
+   public Double getRetryIntervalMultiplier()
+   {
+      if (trace)
+         log.trace("getRetryIntervalMultiplier()");
+
+      return retryIntervalMultiplier;
+   }
+
+   /**
+    * Set retry interval multiplier
+    * @param retryIntervalMultiplier The value
+    */
+   public void setRetryIntervalMultiplier(Double retryIntervalMultiplier)
+   {
+      if (trace)
+         log.trace("setRetryIntervalMultiplier(" + retryIntervalMultiplier + ")");
+
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+   }
+
+   /**
+    * Get max retries before failover
+    * @return The value
+    */
+   public Integer getMaxRetriesBeforeFailover()
+   {
+      if (trace)
+         log.trace("getMaxRetriesBeforeFailover()");
+
+      return maxRetriesBeforeFailover;
+   }
+
+   /**
+    * Set max retries before failover
+    * @param maxRetriesBeforeFailover The value
+    */
+   public void setMaxRetriesBeforeFailover(Integer maxRetriesBeforeFailover)
+   {
+      if (trace)
+         log.trace("setMaxRetriesBeforeFailover(" + maxRetriesBeforeFailover + ")");
+
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
+   }
+
+   /**
+    * Get max retries after failover
+    * @return The value
+    */
+   public Integer getMaxRetriesAfterFailover()
+   {
+      if (trace)
+         log.trace("getMaxRetriesAfterFailover()");
+
+      return maxRetriesAfterFailover;
+   }
+
+   /**
+    * Set max retries after failover
+    * @param maxRetriesAfterFailover The value
+    */
+   public void setMaxRetriesAfterFailover(Integer maxRetriesAfterFailover)
+   {
+      if (trace)
+         log.trace("setMaxRetriesAfterFailover(" + maxRetriesAfterFailover + ")");
+
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
    }
 
    /**
@@ -336,6 +983,29 @@ public class JBMMCFProperties implements Serializable
          JBMMCFProperties you = (JBMMCFProperties) obj;
          return (Util.compare(discoveryGroupName, you.getDiscoveryGroupName()) &&
                  Util.compare(discoveryGroupPort, you.getDiscoveryGroupPort()) &&
+                 Util.compare(discoveryRefreshTimeout, you.getDiscoveryRefreshTimeout()) &&
+                 Util.compare(discoveryInitialWaitTimeout, you.getDiscoveryInitialWaitTimeout()) &&
+                 Util.compare(loadBalancingPolicyClassName, you.getLoadBalancingPolicyClassName()) &&
+                 Util.compare(pingPeriod, you.getPingPeriod()) &&
+                 Util.compare(connectionTTL, you.getConnectionTTL()) &&
+                 Util.compare(callTimeout, you.getCallTimeout()) &&
+                 Util.compare(dupsOKBatchSize, you.getDupsOKBatchSize()) &&
+                 Util.compare(transactionBatchSize, you.getTransactionBatchSize()) &&
+                 Util.compare(consumerWindowSize, you.getConsumerWindowSize()) &&
+                 Util.compare(consumerMaxRate, you.getConsumerMaxRate()) &&
+                 Util.compare(sendWindowSize, you.getSendWindowSize()) &&
+                 Util.compare(producerMaxRate, you.getProducerMaxRate()) &&
+                 Util.compare(minLargeMessageSize, you.getMinLargeMessageSize()) &&
+                 Util.compare(blockOnAcknowledge, you.getBlockOnAcknowledge()) &&
+                 Util.compare(blockOnNonPersistentSend, you.getBlockOnNonPersistentSend()) &&
+                 Util.compare(blockOnPersistentSend, you.getBlockOnPersistentSend()) &&
+                 Util.compare(autoGroup, you.getAutoGroup()) &&
+                 Util.compare(maxConnections, you.getMaxConnections()) &&
+                 Util.compare(preAcknowledge, you.getPreAcknowledge()) &&
+                 Util.compare(retryInterval, you.getRetryInterval()) &&
+                 Util.compare(retryIntervalMultiplier, you.getRetryIntervalMultiplier()) &&
+                 Util.compare(maxRetriesBeforeFailover, you.getMaxRetriesBeforeFailover()) &&
+                 Util.compare(maxRetriesAfterFailover, you.getMaxRetriesAfterFailover()) &&
                  Util.compare(userName, you.getUserName()) &&
                  Util.compare(password, you.getPassword()) &&
                  Util.compare(clientID, you.getClientID()) &&
@@ -359,6 +1029,29 @@ public class JBMMCFProperties implements Serializable
 
       hash += 31 * hash + (discoveryGroupName != null ? discoveryGroupName.hashCode() : 0);
       hash += 31 * hash + (discoveryGroupPort != null ? discoveryGroupPort.hashCode() : 0);
+      hash += 31 * hash + (discoveryRefreshTimeout != null ? discoveryRefreshTimeout.hashCode() : 0);
+      hash += 31 * hash + (discoveryInitialWaitTimeout != null ? discoveryInitialWaitTimeout.hashCode() : 0);
+      hash += 31 * hash + (loadBalancingPolicyClassName != null ? loadBalancingPolicyClassName.hashCode() : 0);
+      hash += 31 * hash + (pingPeriod != null ? pingPeriod.hashCode() : 0);
+      hash += 31 * hash + (connectionTTL != null ? connectionTTL.hashCode() : 0);
+      hash += 31 * hash + (callTimeout != null ? callTimeout.hashCode() : 0);
+      hash += 31 * hash + (dupsOKBatchSize != null ? dupsOKBatchSize.hashCode() : 0);
+      hash += 31 * hash + (transactionBatchSize != null ? transactionBatchSize.hashCode() : 0);
+      hash += 31 * hash + (consumerWindowSize != null ? consumerWindowSize.hashCode() : 0);
+      hash += 31 * hash + (consumerMaxRate != null ? consumerMaxRate.hashCode() : 0);
+      hash += 31 * hash + (sendWindowSize != null ? sendWindowSize.hashCode() : 0);
+      hash += 31 * hash + (producerMaxRate != null ? producerMaxRate.hashCode() : 0);
+      hash += 31 * hash + (minLargeMessageSize != null ? minLargeMessageSize.hashCode() : 0);
+      hash += 31 * hash + (blockOnAcknowledge != null ? blockOnAcknowledge.hashCode() : 0);
+      hash += 31 * hash + (blockOnNonPersistentSend != null ? blockOnNonPersistentSend.hashCode() : 0);
+      hash += 31 * hash + (blockOnPersistentSend != null ? blockOnPersistentSend.hashCode() : 0);
+      hash += 31 * hash + (autoGroup != null ? autoGroup.hashCode() : 0);
+      hash += 31 * hash + (maxConnections != null ? maxConnections.hashCode() : 0);
+      hash += 31 * hash + (preAcknowledge != null ? preAcknowledge.hashCode() : 0);
+      hash += 31 * hash + (retryInterval != null ? retryInterval.hashCode() : 0);
+      hash += 31 * hash + (retryIntervalMultiplier != null ? retryIntervalMultiplier.hashCode() : 0);
+      hash += 31 * hash + (maxRetriesBeforeFailover != null ? maxRetriesBeforeFailover.hashCode() : 0);
+      hash += 31 * hash + (maxRetriesAfterFailover != null ? maxRetriesAfterFailover.hashCode() : 0);
       hash += 31 * hash + (userName != null ? userName.hashCode() : 0);
       hash += 31 * hash + (password != null ? password.hashCode() : 0);
       hash += 31 * hash + (clientID != null ? clientID.hashCode() : 0);
