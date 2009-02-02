@@ -74,7 +74,7 @@
    	<xsd:attribute name="match" type="xsd:string" use="required"></xsd:attribute>
    </xsd:complexType>   
    
-      <xsd:element name="queue" type="queueType"></xsd:element>
+   <xsd:element name="queue" type="queueType"></xsd:element>
    
     <xsd:complexType name="queueType">
         <xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>

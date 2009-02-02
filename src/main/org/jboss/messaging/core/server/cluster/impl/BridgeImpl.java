@@ -170,8 +170,7 @@ public class BridgeImpl implements Bridge, FailureListener
                      final MessageHandler queueInfoMessageHandler,
                      final String queueDataAddress,
                      final boolean forClusterConnector) throws Exception
-   {
-      log.info("Creating new bridge " + name + " queue " + queue);
+   {      
       this.name = name;
 
       this.queue = queue;
@@ -213,8 +212,6 @@ public class BridgeImpl implements Bridge, FailureListener
 
       this.queueInfoMessageHandler = queueInfoMessageHandler;
 
-      log.info("queue info handler " + this.queueInfoMessageHandler);
-
       this.queueDataAddress = queueDataAddress;
 
       this.forClusterConnector = forClusterConnector;
@@ -252,7 +249,6 @@ public class BridgeImpl implements Bridge, FailureListener
       {
          try
          {
-            log.info("creating objects");
             createTx();
 
             queue.addConsumer(BridgeImpl.this);
@@ -319,8 +315,6 @@ public class BridgeImpl implements Bridge, FailureListener
 
                prod.send(message);
             }
-
-            log.info("Created objects");
 
             active = true;
 
@@ -496,8 +490,6 @@ public class BridgeImpl implements Bridge, FailureListener
          {
             return;
          }
-
-         log.info("sending batch");
 
          // TODO - if batch size = 1 then don't need tx - actually we should use asynch send acknowledgement stream - then we don't need a transaction at all
 

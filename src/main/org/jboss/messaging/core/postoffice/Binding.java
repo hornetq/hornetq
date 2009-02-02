@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.postoffice;
 
+import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
@@ -45,7 +46,9 @@ public interface Binding
 
    SimpleString getRoutingName();
 
-   boolean filterMatches(ServerMessage message) throws Exception;
+   //boolean filterMatches(ServerMessage message) throws Exception;
+   
+   Filter getFilter();
    
    boolean isHighAcceptPriority(ServerMessage message);
    

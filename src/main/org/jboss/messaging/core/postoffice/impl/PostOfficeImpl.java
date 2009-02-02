@@ -37,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.Notification;
@@ -243,7 +244,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
             
             Integer transientID = (Integer)props.getProperty(ManagementHelper.HDR_BINDING_ID);
             
-            QueueInfo info = new QueueInfo(queueName, address, transientID);
+            SimpleString filterString = (SimpleString)props.getProperty(ManagementHelper.HDR_FILTERSTRING);
+            
+            QueueInfo info = new QueueInfo(queueName, address, filterString, transientID);
             
             queueInfos.put(queueName, info);
          }
@@ -369,6 +372,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       props.putStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
       props.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, binding.getRoutingName());
       props.putIntProperty(ManagementHelper.HDR_BINDING_ID, binding.getID());
+      Filter filter = binding.getFilter();
+      if (filter != null)
+      {
+         props.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filter.getFilterString());
+      }
       
       managementService.sendNotification(new Notification(NotificationType.BINDING_ADDED, props));
    }
@@ -569,9 +577,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       return cache;
    }
-   
-   
-
+     
    public void sendQueueInfoToQueue(final SimpleString queueName, final SimpleString address) throws Exception
    {
       //We send direct to the queue so we can send it to the same queue that is bound to the notifications adress - this is crucial for ensuring
@@ -607,6 +613,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
                message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName());
                message.putIntProperty(ManagementHelper.HDR_BINDING_ID, info.getID());
+               message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, info.getFilterString());
                
                queue.preroute(message, null);            
                queue.route(message, null);

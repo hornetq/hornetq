@@ -171,7 +171,6 @@ public class ClusterManagerImpl implements ClusterManager
          managementService.unregisterBridge(bridge.getName().toString());
       }
 
-      log.info("stopping cluster connecttions");
       for (ClusterConnection clusterConnection : clusters.values())
       {
          clusterConnection.stop();

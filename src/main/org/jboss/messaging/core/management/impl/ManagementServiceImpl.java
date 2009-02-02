@@ -117,7 +117,7 @@ public class ManagementServiceImpl implements ManagementService
    private HierarchicalRepository<Set<Role>> securityRepository;
 
    private HierarchicalRepository<QueueSettings> queueSettingsRepository;
-   
+
    private MessagingServerControl managedServer;
 
    private final MessageCounterManager messageCounterManager = new MessageCounterManagerImpl(10000);
@@ -127,9 +127,9 @@ public class ManagementServiceImpl implements ManagementService
    private boolean started = false;
 
    private boolean noticationsEnabled;
-      
+
    private final Set<NotificationListener> listeners = new ConcurrentHashSet<NotificationListener>();
-   
+
    // Static --------------------------------------------------------
 
    public static ObjectName getMessagingServerObjectName() throws Exception
@@ -214,7 +214,7 @@ public class ManagementServiceImpl implements ManagementService
       this.managementNotificationAddress = configuration.getManagementNotificationAddress();
       managedServer = new MessagingServerControl(postOffice,
                                                  storageManager,
-                                                 configuration,                                                 
+                                                 configuration,
                                                  resourceManager,
                                                  remotingService,
                                                  messagingServer,
@@ -240,30 +240,30 @@ public class ManagementServiceImpl implements ManagementService
       AddressControl addressControl = new AddressControl(address, postOffice, securityRepository);
 
       registerInJMX(objectName, new ReplicationAwareAddressControlWrapper(objectName, addressControl));
-      
+
       registerInRegistry(objectName, addressControl);
-      
+
       if (log.isDebugEnabled())
       {
          log.debug("registered address " + objectName);
       }
       TypedProperties props = new TypedProperties();
-      
+
       props.putStringProperty(ManagementHelper.HDR_ADDRESS, address);
-            
+
       sendNotification(new Notification(NotificationType.ADDRESS_ADDED, props));
    }
 
    public void unregisterAddress(final SimpleString address) throws Exception
    {
       ObjectName objectName = getAddressObjectName(address);
-      
+
       unregisterResource(objectName);
-      
+
       TypedProperties props = new TypedProperties();
-      
+
       props.putStringProperty(ManagementHelper.HDR_ADDRESS, address);
-      
+
       sendNotification(new Notification(NotificationType.ADDRESS_REMOVED, props));
    }
 
@@ -284,14 +284,14 @@ public class ManagementServiceImpl implements ManagementService
       if (log.isDebugEnabled())
       {
          log.debug("registered queue " + objectName);
-      }            
+      }
    }
 
    public void unregisterQueue(final SimpleString name, final SimpleString address) throws Exception
    {
       ObjectName objectName = getQueueObjectName(address, name);
       unregisterResource(objectName);
-      messageCounterManager.unregisterMessageCounter(name.toString());     
+      messageCounterManager.unregisterMessageCounter(name.toString());
    }
 
    public void registerAcceptor(final Acceptor acceptor, final TransportConfiguration configuration) throws Exception
@@ -341,7 +341,7 @@ public class ManagementServiceImpl implements ManagementService
       ObjectName objectName = getBridgeObjectName(configuration.getName());
       BridgeControlMBean control = new BridgeControl(bridge, configuration);
       registerInJMX(objectName, new StandardMBean(control, BridgeControlMBean.class));
-      registerInRegistry(objectName, control);           
+      registerInRegistry(objectName, control);
    }
 
    public void unregisterBridge(String name) throws Exception
@@ -416,15 +416,15 @@ public class ManagementServiceImpl implements ManagementService
       unregisterFromRegistry(objectName);
       unregisterFromJMX(objectName);
    }
-   
+
    public void registerCluster(final ClusterConnection cluster, final ClusterConnectionConfiguration configuration) throws Exception
-   {      
-      //TODO
+   {
+      // TODO
    }
-   
+
    public void unregisterCluster(final String name) throws Exception
-   {      
-      //TODO
+   {
+      // TODO
    }
 
    public Object getResource(final ObjectName objectName)
@@ -455,7 +455,7 @@ public class ManagementServiceImpl implements ManagementService
    {
       listeners.add(listener);
    }
-   
+
    public void removeNotificationListener(final NotificationListener listener)
    {
       listeners.remove(listener);
@@ -512,16 +512,16 @@ public class ManagementServiceImpl implements ManagementService
          }
       }
    }
-      
+
    public void sendNotification(final Notification notification) throws Exception
-   {     
+   {
       if (managedServer != null && noticationsEnabled)
       {
-         //This needs to be synchronized since we need to ensure notifications are processed in strict sequence
+         // This needs to be synchronized since we need to ensure notifications are processed in strict sequence
          synchronized (this)
          {
-            //First send to any local listeners
-            for (NotificationListener listener: listeners)
+            // First send to any local listeners
+            for (NotificationListener listener : listeners)
             {
                try
                {
@@ -529,19 +529,20 @@ public class ManagementServiceImpl implements ManagementService
                }
                catch (Exception e)
                {
-                  //Exception thrown from one listener should not stop execution of others
+                  // Exception thrown from one listener should not stop execution of others
                   log.error("Failed to call listener", e);
-               }            
+               }
             }
-            
-            //Now send message
-            
+
+            // Now send message
+
             ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
             notificationMessage.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
-            //Notification messages are always durable so the user can choose whether to add a durable queue to consume them in
+            // Notification messages are always durable so the user can choose whether to add a durable queue to consume
+            // them in
             notificationMessage.setDurable(true);
             notificationMessage.setDestination(managementNotificationAddress);
-               
+
             TypedProperties notifProps;
             if (notification.getProperties() != null)
             {
@@ -551,12 +552,13 @@ public class ManagementServiceImpl implements ManagementService
             {
                notifProps = new TypedProperties();
             }
-   
-            notifProps.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE, new SimpleString(notification.getType().toString()));        
+
+            notifProps.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE,
+                                         new SimpleString(notification.getType().toString()));
             notifProps.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
-            
+
             notificationMessage.putTypedProperties(notifProps);
-            
+
             postOffice.route(notificationMessage, null);
          }
       }

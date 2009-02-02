@@ -78,19 +78,11 @@ public class LocalQueueBinding implements QueueBinding
       this.id = id;
    }
    
-      
-   public boolean filterMatches(final ServerMessage message) throws Exception
+   public Filter getFilter()
    {
-      if (filter != null && !filter.match(message))
-      {
-         return false;
-      }
-      else
-      {
-         return true;
-      }
+      return filter;
    }
-
+        
    public SimpleString getAddress()
    {
       return address;

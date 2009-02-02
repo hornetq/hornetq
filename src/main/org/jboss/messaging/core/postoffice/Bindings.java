@@ -45,4 +45,6 @@ public interface Bindings
    void addBinding(Binding binding);
    
    void removeBinding(Binding binding);
+   
+   void setRouteWhenNoConsumers(boolean routeWhenNoConsumers);
 }

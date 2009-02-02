@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.tests.performance.persistence;
 
+import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -35,6 +36,12 @@ import org.jboss.messaging.util.SimpleString;
 public class FakeBinding implements Binding
 {
    
+   public Filter getFilter()
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
    public int getID()
    {
       // TODO Auto-generated method stub

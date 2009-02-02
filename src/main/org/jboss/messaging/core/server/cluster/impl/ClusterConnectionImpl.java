@@ -43,9 +43,9 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
-import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.cluster.Bridge;
@@ -84,7 +84,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
    private final boolean useDuplicateDetection;
 
-   private final boolean forwardWhenNoMatchingConsumers;
+   private final boolean routeWhenNoConsumers;
 
    private Map<Pair<TransportConfiguration, TransportConfiguration>, MessageFlowRecord> records = new HashMap<Pair<TransportConfiguration, TransportConfiguration>, MessageFlowRecord>();
 
@@ -103,7 +103,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                 final SimpleString address,
                                 final BridgeConfiguration bridgeConfig,
                                 final boolean useDuplicateDetection,
-                                final boolean forwardWhenNoMatchingConsumers,
+                                final boolean routeWhenNoConsumers,
                                 final ExecutorFactory executorFactory,
                                 final StorageManager storageManager,
                                 final PostOffice postOffice,
@@ -119,7 +119,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       this.useDuplicateDetection = useDuplicateDetection;
 
-      this.forwardWhenNoMatchingConsumers = forwardWhenNoMatchingConsumers;
+      this.routeWhenNoConsumers = routeWhenNoConsumers;
 
       this.executorFactory = executorFactory;
 
@@ -143,7 +143,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                 final SimpleString address,
                                 final BridgeConfiguration bridgeConfig,
                                 final boolean useDuplicateDetection,
-                                final boolean forwardWhenNoMatchingConsumers,
+                                final boolean routeWhenNoConsumers,
                                 final ExecutorFactory executorFactory,
                                 final StorageManager storageManager,
                                 final PostOffice postOffice,
@@ -171,7 +171,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       this.useDuplicateDetection = useDuplicateDetection;
 
-      this.forwardWhenNoMatchingConsumers = forwardWhenNoMatchingConsumers;
+      this.routeWhenNoConsumers = routeWhenNoConsumers;
    }
 
    public synchronized void start() throws Exception
@@ -424,8 +424,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
             NotificationType type = NotificationType.valueOf(message.getProperty(ManagementHelper.HDR_NOTIFICATION_TYPE)
                                                                     .toString());
- 
-       
+            
             if (type == NotificationType.BINDING_ADDED)
             {               
                SimpleString uniqueName = UUIDGenerator.getInstance().generateSimpleStringUUID();
@@ -444,13 +443,16 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                                                        queueID,
                                                                        filterString,
                                                                        queue,
-                                                                       useDuplicateDetection,
-                                                                       forwardWhenNoMatchingConsumers,
+                                                                       useDuplicateDetection,                                                           
                                                                        bridge.getName());
 
                bindings.put(queueName, binding);
 
                postOffice.addBinding(binding);
+               
+               Bindings theBindings = postOffice.getBindingsForAddress(queueAddress);
+               
+               theBindings.setRouteWhenNoConsumers(routeWhenNoConsumers);
             }
             else if (type == NotificationType.BINDING_REMOVED)
             {
@@ -467,8 +469,13 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                SimpleString filterString = (SimpleString)message.getProperty(ManagementHelper.HDR_FILTERSTRING);
 
                RemoteQueueBinding binding = bindings.get(queueName);
-
-               binding.addConsumer(filterString);
+               
+               if (binding != null)
+               {
+                  //Can legitimately be null if there are multiple cluster connections which will all receive create consumers for different addresses since
+                  //the address isn't checked on the filter when it's an add or create consumer message
+                  binding.addConsumer(filterString);
+               }
             }
             else if (type == NotificationType.CONSUMER_CLOSED)
             {
@@ -477,8 +484,14 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                SimpleString filterString = (SimpleString)message.getProperty(ManagementHelper.HDR_FILTERSTRING);
 
                RemoteQueueBinding binding = bindings.get(queueName);
+               
+               if (binding != null)
+               {
+                  //Can legitimately be null if there are multiple cluster connections which will all receive create consumers for different addresses since
+                  //the address isn't checked on the filter when it's an add or create consumer message
 
-               binding.removeConsumer(filterString);
+                  binding.removeConsumer(filterString);
+               }
             }
          }
          catch (Exception e)

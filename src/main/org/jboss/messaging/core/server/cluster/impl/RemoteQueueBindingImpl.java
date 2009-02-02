@@ -72,8 +72,6 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
 
    private final boolean duplicateDetection;
    
-   private final boolean forwardWhenNoMatchingConsumers;
-   
    private final SimpleString idsHeaderName;
    
    private int id;
@@ -84,8 +82,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
                                  final int remoteQueueID,
                                  final SimpleString filterString,
                                  final Queue storeAndForwardQueue,
-                                 final boolean duplicateDetection,
-                                 final boolean forwardWhenNoMatchingConsumers,
+                                 final boolean duplicateDetection,                      
                                  final SimpleString bridgeName) throws Exception
    {
       this.address = address;
@@ -108,8 +105,6 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       {
          queueFilter = null;
       }
-      
-      this.forwardWhenNoMatchingConsumers = forwardWhenNoMatchingConsumers;
       
       this.idsHeaderName = MessageImpl.HDR_ROUTE_TO_IDS.concat(bridgeName);
    }
@@ -154,25 +149,13 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       return false;
    }
 
-   public boolean filterMatches(final ServerMessage message) throws Exception
+   public Filter getFilter()
    {
-      if (queueFilter != null && !queueFilter.match(message))
-      {
-         return false;
-      }
-      else
-      {
-         return true;
-      }
+      return queueFilter;
    }
 
    public boolean isHighAcceptPriority(final ServerMessage message)
-   {
-      if (forwardWhenNoMatchingConsumers)
-      {
-         return true;
-      }
-      
+   {      
       if (consumerCount == 0)
       {
          return false;
@@ -198,8 +181,6 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    
    public void willRoute(final ServerMessage message)
    {      
-      log.info("routing to remote queue binding");
-      
       //We add a header with the name of the queue, holding a list of the transient ids of the queues to route to
       
       //TODO - this can be optimised

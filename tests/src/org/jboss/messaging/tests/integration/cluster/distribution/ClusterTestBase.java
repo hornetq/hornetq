@@ -90,7 +90,7 @@ public class ClusterTestBase extends ServiceTestBase
 
    private static final SimpleString COUNT_PROP = new SimpleString("count_prop");
 
-   private static final SimpleString FILTER_PROP = new SimpleString("animal");
+   protected static final SimpleString FILTER_PROP = new SimpleString("animal");
 
    private static final int MAX_SERVERS = 10;
 
@@ -136,7 +136,7 @@ public class ClusterTestBase extends ServiceTestBase
             }
          }
          
-         //log.info("binding count " + bindingCount + " consumer Count " + totConsumers);
+         log.info("binding count " + bindingCount + " consumer Count " + totConsumers);
 
          if (bindingCount == count && totConsumers == consumerCount)
          {
@@ -277,7 +277,7 @@ public class ClusterTestBase extends ServiceTestBase
          {
             ClientMessage message = consumer.receive(500);
 
-            assertNotNull(message);
+            assertNotNull("consumer " + consumerIDs[i] + " did not receive message " + j, message);
 
             assertEquals(j, message.getProperty(COUNT_PROP));
          }
@@ -299,7 +299,7 @@ public class ClusterTestBase extends ServiceTestBase
 
          ClientMessage message = consumer.receive(500);
 
-         assertNotNull(message);
+         assertNotNull("consumer " + consumerIDs[count] + " did not receive message " + i, message);
 
          assertEquals(i, message.getProperty(COUNT_PROP));
 
@@ -323,7 +323,7 @@ public class ClusterTestBase extends ServiceTestBase
             throw new IllegalArgumentException("No consumer at " + consumerIDs[i]);
          }
 
-         assertNull(consumer.receive(200));
+         assertNull("consumer " + i + " received message", consumer.receive(200));
       }
    }
 
@@ -348,6 +348,9 @@ public class ClusterTestBase extends ServiceTestBase
       }
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(serverTotc);
+      
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnPersistentSend(true);
 
       sfs[node] = sf;
    }

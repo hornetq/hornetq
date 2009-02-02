@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -61,7 +62,14 @@ public class BindingsImpl implements Bindings
    private final Map<Integer, Binding> bindingsMap = new ConcurrentHashMap<Integer, Binding>();
 
    private final List<Binding> exclusiveBindings = new CopyOnWriteArrayList<Binding>();
+   
+   private volatile boolean routeWhenNoConsumers;
 
+   public void setRouteWhenNoConsumers(final boolean routeWhenNoConsumers)
+   {      
+      this.routeWhenNoConsumers = routeWhenNoConsumers;
+   }
+   
    public Collection<Binding> getBindings()
    {      
       return bindingsMap.values();
@@ -203,7 +211,7 @@ public class BindingsImpl implements Bindings
    
                Binding theBinding = null;
    
-               int lastNoMatchingConsumerPos = -1;
+               int lastLowPriorityBinding = -1;
    
                while (true)
                {
@@ -227,11 +235,13 @@ public class BindingsImpl implements Bindings
                      }
                   }
    
-                  if (binding.filterMatches(message))
-                  {
+                  Filter filter = binding.getFilter();
+                                                     
+                  if (filter == null || filter.match(message))
+                  {                     
                      // bindings.length == 1 ==> only a local queue so we don't check for matching consumers (it's an
                      // unnecessary overhead)
-                     if (length == 1 || binding.isHighAcceptPriority(message))
+                     if (length == 1 || routeWhenNoConsumers || binding.isHighAcceptPriority(message))
                      {
                         theBinding = binding;
    
@@ -241,7 +251,10 @@ public class BindingsImpl implements Bindings
                      }
                      else
                      {
-                        lastNoMatchingConsumerPos = pos;
+                        if (lastLowPriorityBinding == -1)
+                        {
+                           lastLowPriorityBinding = pos;
+                        }
                      }
                   }
    
@@ -249,7 +262,7 @@ public class BindingsImpl implements Bindings
    
                   if (pos == startPos)
                   {
-                     if (lastNoMatchingConsumerPos != -1)
+                     if (lastLowPriorityBinding != -1)
                      {                     
                         try
                         {
@@ -262,7 +275,7 @@ public class BindingsImpl implements Bindings
                            {
                               pos = 0;
                               
-                              lastNoMatchingConsumerPos = -1;
+                              lastLowPriorityBinding = -1;
    
                               continue;
                            }
@@ -272,7 +285,7 @@ public class BindingsImpl implements Bindings
                            }
                         }
                                             
-                        pos = lastNoMatchingConsumerPos;
+                        pos = lastLowPriorityBinding;
    
                         pos = incrementPos(pos, length);
                      }
@@ -286,7 +299,7 @@ public class BindingsImpl implements Bindings
                   
                   chosen.add(theBinding.getBindable());
                }
-   
+
                routingNamePositions.put(routingName, pos);
             }
    
