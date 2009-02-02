@@ -413,14 +413,17 @@ public class ClusterTestBase extends ServiceTestBase
       return params;
    }
 
-   protected void clearServer(int node)
+   protected void clearServer(int... nodes)
    {
-      if (services[node] != null)
+      for (int i = 0; i < nodes.length; i++)
       {
-         throw new IllegalArgumentException("No service at node " + node);
+         if (services[nodes[i]] == null)
+         {
+            throw new IllegalArgumentException("No service at node " + nodes[i]);
+         }
+   
+         services[nodes[i]] = null;
       }
-
-      services[node] = null;
    }
 
    protected void setupClusterConnection(String name,
