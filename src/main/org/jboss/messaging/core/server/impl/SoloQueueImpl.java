@@ -47,12 +47,20 @@ public class SoloQueueImpl extends QueueImpl
 {
    private final Map<SimpleString, ServerMessage> map = new HashMap<SimpleString, ServerMessage>();
 
-   public SoloQueueImpl(long persistenceID, SimpleString name, Filter filter, boolean durable, boolean temporary, ScheduledExecutorService scheduledExecutor, PostOffice postOffice, StorageManager storageManager, HierarchicalRepository<AddressSettings> queueSettingsRepository)
+   public SoloQueueImpl(final long persistenceID,
+                    final SimpleString name,
+                    final Filter filter,
+                    final boolean durable,
+                    final boolean temporary,
+                    final ScheduledExecutorService scheduledExecutor,
+                    final PostOffice postOffice,
+                    final StorageManager storageManager,
+                    final HierarchicalRepository<AddressSettings> queueSettingsRepository)
    {
       super(persistenceID, name, filter, durable, temporary, scheduledExecutor, postOffice, storageManager, queueSettingsRepository);
    }
 
-   public void route(ServerMessage message, Transaction tx) throws Exception
+   public void route(final ServerMessage message, final Transaction tx) throws Exception
    {
       SimpleString prop = (SimpleString) message.getProperty(MessageImpl.HDR_SOLE_MESSAGE);
       if (prop != null)
@@ -84,7 +92,7 @@ public class SoloQueueImpl extends QueueImpl
       super.route(message, tx);
    }
 
-   public MessageReference reroute(ServerMessage message, Transaction tx) throws Exception
+   public MessageReference reroute(final ServerMessage message, final Transaction tx) throws Exception
    {
       SimpleString prop = (SimpleString) message.getProperty(MessageImpl.HDR_SOLE_MESSAGE);
       if (prop != null)
@@ -111,7 +119,7 @@ public class SoloQueueImpl extends QueueImpl
 
 
 
-   public void acknowledge(MessageReference ref) throws Exception
+   public void acknowledge(final MessageReference ref) throws Exception
    {
       super.acknowledge(ref);
       SimpleString prop = (SimpleString) ref.getMessage().getProperty(MessageImpl.HDR_SOLE_MESSAGE);
@@ -129,7 +137,7 @@ public class SoloQueueImpl extends QueueImpl
    }
 
 
-   public void cancel(Transaction tx, MessageReference ref) throws Exception
+   public void cancel(final Transaction tx, final  MessageReference ref) throws Exception
    {
       SimpleString prop = (SimpleString) ref.getMessage().getProperty(MessageImpl.HDR_SOLE_MESSAGE);
       if (prop != null)
@@ -153,7 +161,7 @@ public class SoloQueueImpl extends QueueImpl
       }
    }
 
-   void postRollback(LinkedList<MessageReference> refs) throws Exception
+   void postRollback(final LinkedList<MessageReference> refs) throws Exception
    {
       List<MessageReference> refsToDiscard = new ArrayList<MessageReference>();
       List<SimpleString> refsToClear = new ArrayList<SimpleString>();
